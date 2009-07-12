@@ -83,6 +83,7 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Serialize.signatures[1], Serialize.class),
         new FunctionDef(BinaryDoc.signatures[0], BinaryDoc.class),
         new FunctionDef(BinaryDoc.signatures[1], BinaryDoc.class),
+        new FunctionDef(BinaryDoc.signatures[2], BinaryDoc.class),
         new FunctionDef(BinaryToString.signatures[0], BinaryToString.class),
         new FunctionDef(BinaryToString.signatures[1], BinaryToString.class),
         new FunctionDef(BinaryToString.signatures[2], BinaryToString.class),
