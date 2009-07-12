@@ -62,6 +62,14 @@ public class BinaryDoc extends BasicFunction {
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+        ),
+        new FunctionSignature(
+            new QName("is-binary-doc", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Checks if the resource identified by $a is a binary resource.",
+            new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
         )
     };
     
@@ -69,28 +77,39 @@ public class BinaryDoc extends BasicFunction {
         super(context, signature);
     }
 
+    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
         Sequence defaultReturn = (isCalledAs("binary-doc") ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE);
+
         if (args[0].isEmpty())
             return defaultReturn;
+
         String path = args[0].getStringValue();
         DocumentImpl doc = null;
         try {
             doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
-            if (doc == null)
+            if(doc == null)
+            {
                 return defaultReturn;
-            if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
+            }
+            else if(doc.getResourceType() != DocumentImpl.BINARY_FILE)
+            {
                 return defaultReturn;
-            if (isCalledAs("binary-doc")) {
+            }
+            else if(isCalledAs("binary-doc"))
+            {
                 BinaryDocument bin = (BinaryDocument) doc;
                 InputStream is = context.getBroker().getBinaryResource(bin);
                 byte[] data = new byte[(int)context.getBroker().getBinaryResourceSize(bin)];
                 is.read(data);
                 is.close();
                 return new Base64Binary(data);
-            } else
+            }
+            else
+            {
                 return BooleanValue.TRUE;
+            }
         } catch (URISyntaxException e) {
             throw new XPathException(this, "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
