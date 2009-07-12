@@ -22,7 +22,6 @@
  */
 package org.exist.source;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,6 +30,7 @@ import java.io.Reader;
 import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
 import org.exist.storage.DBBroker;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * A source that wraps around a Cocoon source object.

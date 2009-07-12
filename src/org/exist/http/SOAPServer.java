@@ -21,8 +21,6 @@
  */
 package org.exist.http;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -84,6 +82,9 @@ import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

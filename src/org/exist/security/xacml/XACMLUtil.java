@@ -36,7 +36,6 @@ import com.sun.xacml.cond.Apply;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.PolicyFinderResult;
 
-import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +73,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

@@ -21,7 +21,6 @@
  */
 package org.exist.dom;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,8 +31,11 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.w3c.dom.DocumentFragment;
 import org.xml.sax.InputSource;
 

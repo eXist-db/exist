@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
@@ -36,6 +34,9 @@ import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 
 /**
  * Compression into a GZip file

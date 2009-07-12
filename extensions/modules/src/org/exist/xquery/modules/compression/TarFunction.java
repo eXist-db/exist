@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -35,6 +33,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Compresses a sequence of resources and/or collections into a Tar file

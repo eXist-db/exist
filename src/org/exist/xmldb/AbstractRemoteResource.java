@@ -3,7 +3,7 @@ package org.exist.xmldb;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +21,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;

@@ -59,6 +59,9 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamException;
@@ -72,8 +75,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
