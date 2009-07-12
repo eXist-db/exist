@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -45,11 +46,11 @@ public class DaysInMonthFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("days-in-month", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the number of days in the month of the date given in $a.",
+			"Returns the number of days in the month of the given date.",
 			new SequenceType[] { 
-				new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date that is within the month that the count of the number of days is to be given.")
 			},
-			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of days in the given month."));
 
 	public DaysInMonthFunction(XQueryContext context)
 	{

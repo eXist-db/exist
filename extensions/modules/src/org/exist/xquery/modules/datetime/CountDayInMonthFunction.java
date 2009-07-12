@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -46,12 +47,12 @@ public class CountDayInMonthFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("count-day-in-month", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the count of a specific day $a in a month for the date given in $b. $a in the range 1 to 7 where 1 = Sunday and 7 = Saturday. For example it can tell you there are 5 Fridays in February 2008.",
+			"Returns the count of a specific weekday in a month from the given date.For example it can tell you there are 5 Fridays in February 2008.",
 			new SequenceType[] { 
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("weekday", Type.INTEGER, Cardinality.EXACTLY_ONE, "Day of the week in the range of 1 to 7 where 1 = Sunday and 7 = Saturday."),
+				new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The day that will identify the month to get the count of the number of occurrences of a given weekday")
 			},
-			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of occurrences of the weekday in the selected month."));
 
 	public CountDayInMonthFunction(XQueryContext context)
 	{

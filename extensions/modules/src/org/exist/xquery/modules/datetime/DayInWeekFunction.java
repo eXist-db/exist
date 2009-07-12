@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -45,11 +46,11 @@ public class DayInWeekFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("day-in-week", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the day in the week of the date given in $a. Result is in the range 1 to 7 where 1 = Sunday, 7 = Saturday.",
+			"Returns the day in the week of the given date. Result is in the range 1 to 7 where 1 = Sunday, 7 = Saturday.",
 			new SequenceType[] { 
-				new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date that the day of the week is to be calculated.")
 			},
-			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("day-of-week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day of the week in the range of 1 to 7."));
 
 	public DayInWeekFunction(XQueryContext context)
 	{

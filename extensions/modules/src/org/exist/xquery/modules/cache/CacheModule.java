@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.cache;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -32,7 +33,9 @@ import org.exist.xquery.FunctionDef;
  */
 public class CacheModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/cache";
+    private final static Logger logger = Logger.getLogger(CacheModule.class);
+
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/cache";
 
 	public final static String PREFIX = "cache";
 
@@ -47,6 +50,7 @@ public class CacheModule extends AbstractInternalModule {
 
 	public CacheModule() {
 		super(functions);
+		logger.info("Instantiating Cache module");
 	}
 
 	public String getNamespaceURI() {

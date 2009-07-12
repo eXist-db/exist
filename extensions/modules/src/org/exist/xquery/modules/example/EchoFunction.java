@@ -22,12 +22,14 @@
  */
 package org.exist.xquery.modules.example;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -36,16 +38,21 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 /**
+ * This is an example module showing how to create a function module.
+ * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Loren Cahlander (loren@syntactica.com)
  */
 public class EchoFunction extends BasicFunction {
 
-	public final static FunctionSignature signature =
+    private final static Logger logger = Logger.getLogger(EchoFunction.class);
+
+    public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("echo", ExampleModule.NAMESPACE_URI, ExampleModule.PREFIX),
 			"A useless example function. It just echoes the input parameters.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new SequenceType[] { new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ZERO_OR_MORE, "The text to echo")},
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_MORE, "The echoed text"));
 
 	public EchoFunction(XQueryContext context) {
 		super(context, signature);
@@ -53,15 +60,21 @@ public class EchoFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering the " + ExampleModule.NAMESPACE_URI + ":echo function");
+
 		// is argument the empty sequence?
-		if (args[0].isEmpty())
+		if (args[0].isEmpty()) {
+			logger.info("Returning empty result from " + ExampleModule.NAMESPACE_URI + ":echo function");
 			return Sequence.EMPTY_SEQUENCE;
+		}
+		
 		// iterate through the argument sequence and echo each item
 		ValueSequence result = new ValueSequence();
 		for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
 			String str = i.nextItem().getStringValue();
 			result.add(new StringValue("echo: " + str));
 		}
+		logger.info("Returning result from " + ExampleModule.NAMESPACE_URI + ":echo function");
 		return result;
 	}
 

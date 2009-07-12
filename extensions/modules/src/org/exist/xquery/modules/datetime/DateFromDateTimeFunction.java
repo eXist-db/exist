@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -41,11 +42,11 @@ public class DateFromDateTimeFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("date-from-dateTime", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the xs:date portion of the xs:dateTime given in $a",
+			"Returns the xs:date portion of the given xs:dateTime",
 			new SequenceType[] { 
-				new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The xs:dateTime to extract the date from.")
 			},
-			new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The extracted date."));
 
 	public DateFromDateTimeFunction(XQueryContext context)
 	{

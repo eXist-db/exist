@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -45,11 +46,11 @@ public class WeekInMonthFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("week-in-month", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the week in the month of the date given in $a.",
+			"Returns the week in the month of the date.",
 			new SequenceType[] { 
-				new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date to find the week in the month of.")
 			},
-			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("week-number", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of the week in the month."));
 
 	public WeekInMonthFunction(XQueryContext context)
 	{

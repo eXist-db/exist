@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.modules.cache;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,14 +42,16 @@ import org.exist.xquery.value.Type;
  */
 public class CacheFunction extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = { 
+    private final static Logger logger = Logger.getLogger(CacheFunction.class);
+
+    public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 				new QName("cache", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-				"Get/create cache named as $a",
+				"Get/create named cache",
 				new SequenceType[] { 
-					new SequenceType(Type.STRING, Cardinality.ONE) 
+					new FunctionParameterSequenceType("name", Type.STRING, Cardinality.ONE, "The name of the cache to create") 
 				}, 
-		        new SequenceType(Type.JAVA_OBJECT, Cardinality.ONE)
+		        new FunctionParameterSequenceType("java-object", Type.JAVA_OBJECT, Cardinality.ONE, "The Java cache object created with the given name.")
 			) 
 	};
 
@@ -57,6 +61,7 @@ public class CacheFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		String name = args[0].itemAt(0).getStringValue();
+		logger.info("Get/create cache [" + name + "]");
 		return new JavaObjectValue(Cache.getInstance(name));
 	}
 }
