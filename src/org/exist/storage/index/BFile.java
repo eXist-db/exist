@@ -54,7 +54,6 @@ import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +61,8 @@ import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 
 /**

@@ -209,14 +209,19 @@ public class XMLUtil {
 	}
 
 	public static String parseValue(String value, int p) {
-		while ((p < value.length()) && (value.charAt(++p) != '"'));
+		while ((p < value.length()) && (value.charAt(++p) != '"'))
+        {
+            // Do nothing
+        }
 
 		if (p == value.length())
 			return null;
 
 		int e = ++p;
 
-		while ((e < value.length()) && (value.charAt(++e) != '"'));
+		while ((e < value.length()) && (value.charAt(++e) != '"')){
+            // Do nothing
+        }
 
 		if (e == value.length())
 			return null;

@@ -63,7 +63,7 @@ import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.ByteArrayOutputStream;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +72,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
