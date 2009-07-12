@@ -14,6 +14,8 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -64,7 +66,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
-
+    private static final FieldSelector NODE_FIELD_SELECTOR = new NodeFieldSelector();
+    
     private LuceneIndex index;
     private IndexController controller;
 
@@ -392,7 +395,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public void collect(int i, float score) {
             try {
-                Document doc = searcher.doc(i);
+                Document doc = searcher.doc(i, NODE_FIELD_SELECTOR);
                 Field fDocId = doc.getField("docId");
                 int docId = Integer.parseInt(fDocId.stringValue());
                 DocumentImpl storedDocument = docs.getDoc(docId);
@@ -633,9 +636,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String contentField = encodeQName(pending.qname);
 
                 doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
-                        Field.Store.COMPRESS,  Field.Index.UN_TOKENIZED));
+                        Field.Store.COMPRESS,  Field.Index.NOT_ANALYZED));
                 doc.add(new Field("nodeId", data, Field.Store.YES));
-                doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.TOKENIZED));
+                doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED));
 
                 if (pending.analyzer == null)
                     writer.addDocument(doc);
@@ -802,6 +805,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public boolean matchEquals(Match other) {
             return equals(other);
+        }
+    }
+
+    private static class NodeFieldSelector implements FieldSelector {
+
+        public FieldSelectorResult accept(String fieldName) {
+            if ("nodeId".equals(fieldName) || "docId".equals(fieldName))
+                return FieldSelectorResult.LOAD;
+            return FieldSelectorResult.NO_LOAD;
         }
     }
 }
