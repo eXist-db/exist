@@ -1,5 +1,12 @@
 package org.exist.xquery.functions.util;
 
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -13,6 +20,9 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class ExtractDocs extends BasicFunction {
@@ -47,43 +57,66 @@ public class ExtractDocs extends BasicFunction {
         return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
     }
 
-    private void functions(Module module, MemTreeBuilder builder) {
-        builder.startElement(XQDOC_NS, "functions", "functions", null);
-        FunctionSignature[] functions = module.listFunctions();
-        for (int i = 0; i < functions.length; i++) {
-            FunctionSignature function = functions[i];
-            builder.startElement(XQDOC_NS, "function", "function", null);
-            simpleElement(builder, "name", function.getName().getLocalName());
-            simpleElement(builder, "signature", function.toString());
-            builder.startElement(XQDOC_NS, "comment", "comment", null);
-            simpleElement(builder, "description", function.getDescription());
-            int index = -1;
-            if (function.getArgumentTypes() != null) {
-                for (SequenceType parameter : function.getArgumentTypes()) {
-                	simpleElement(builder, "param", parameterText(parameter, ++index));
-                }
-            } else {
-            	for (; index < function.getArgumentCount();) {
-                	simpleElement(builder, "param", parameterText(null, ++index));
-            	}
-            }
-            if (function.isOverloaded()) {
-            	simpleElement(builder, "param", "overloaded");
-            }
-            SequenceType returnValue = function.getReturnType();
-            if (returnValue instanceof FunctionParameterSequenceType) {
-            	simpleElement(builder, "return", ((FunctionParameterSequenceType)returnValue).getDescription());
-            }
+	private void functions(Module module, MemTreeBuilder builder) {
+		builder.startElement(XQDOC_NS, "functions", "functions", null);
+		FunctionSignature[] functions = module.listFunctions();
+		for (int i = 0; i < functions.length; i++) {
+			FunctionSignature function = functions[i];
+			builder.startElement(XQDOC_NS, "function", "function", null);
+			simpleElement(builder, "name", function.getName().getLocalName());
+			simpleElement(builder, "signature", function.toString());
+			builder.startElement(XQDOC_NS, "comment", "comment", null);
+			String functionDescription = function.getDescription();
+			if (false) {
+				if (functionDescription.startsWith("<?xml")) {
+					try {
+						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+						DocumentBuilder db = factory.newDocumentBuilder();
+						InputSource inStream = new InputSource();
+						inStream.setCharacterStream(new StringReader(functionDescription));
+						Document doc = db.parse(inStream);
+					} catch (ParserConfigurationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (SAXException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					simpleElement(builder, "description", functionDescription);
+				}
+			}
+			simpleElement(builder, "description", functionDescription);
+			int index = -1;
+			if (function.getArgumentTypes() != null) {
+				for (SequenceType parameter : function.getArgumentTypes()) {
+					simpleElement(builder, "param", parameterText(parameter, ++index));
+				}
+			} else {
+				for (; index < function.getArgumentCount();) {
+					simpleElement(builder, "param", parameterText(null, ++index));
+				}
+			}
+			if (function.isOverloaded()) {
+				simpleElement(builder, "param", "overloaded");
+			}
+			SequenceType returnValue = function.getReturnType();
+			if (returnValue instanceof FunctionParameterSequenceType) {
+				simpleElement(builder, "return", ((FunctionParameterSequenceType) returnValue).getDescription());
+			}
 
-            String deprecated = function.getDeprecated();            
-            if (deprecated != null && deprecated.length() > 0) {
-            	simpleElement(builder, "deprecated", deprecated);
-            }
-            builder.endElement();
-            builder.endElement();
-        }
-        builder.endElement();
-    }
+			String deprecated = function.getDeprecated();
+			if (deprecated != null && deprecated.length() > 0) {
+				simpleElement(builder, "deprecated", deprecated);
+			}
+			builder.endElement();
+			builder.endElement();
+		}
+		builder.endElement();
+	}
     
     private String parameterText(SequenceType parameter, int index) {
         char var = 'a';
