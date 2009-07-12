@@ -1355,6 +1355,8 @@ elementContent throws XPathException
 	cdataSection
 	|
 	enclosedExpr
+	|
+	xmlPI
 	;
 
 xmlComment : XML_COMMENT XML_COMMENT_END! ;

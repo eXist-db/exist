@@ -10039,6 +10039,13 @@ inputState.guessing--;
 			elementContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case XML_PI:
+		{
+			xmlPI();
+			astFactory.addASTChild(currentAST, returnAST);
+			elementContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
 		default:
 			boolean synPredMatched393 = false;
 			if (((LA(1)==LCURLY))) {
@@ -11606,7 +11613,7 @@ inputState.guessing--;
 	private static final long[] mk_tokenSet_14() {
 		long[] data = new long[8];
 		data[1]=25165824L;
-		data[2]=17592186175488L;
+		data[2]=52776558264320L;
 		data[3]=576L;
 		return data;
 	}
