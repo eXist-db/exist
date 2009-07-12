@@ -155,7 +155,11 @@ public class Profiler {
         stats.recordFunctionCall(function.getSignature().getName(), function.getContext().getSourceKey(),
                 elapsed);
     }
-    
+
+    public final void traceIndexUsage(XQueryContext context, Expression expression, int mode, long elapsed) {
+        stats.recordIndexUse(expression, context.getSourceKey(), mode, elapsed);
+    }
+
     private void save() {
         if (pool != null) {
             pool.getPerformanceStats().merge(stats);

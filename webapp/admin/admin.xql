@@ -155,13 +155,14 @@ return
             <title>eXist Database Administration</title>
             <link type="text/css" href="admin.css" rel="stylesheet"/>
 			<link type="text/css" href="styles/prettify.css" rel="stylesheet"/>
+			<link type="text/css" href="../scripts/yui/yui-skin.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
 			<script type="text/javascript" src="scripts/prettify.js"/>
-			<script type="text/javascript" src="scripts/utilities.js"></script>
+			<script type="text/javascript" src="../scripts/yui/yui-combined2.7.0.js"></script>
 			<script type="text/javascript" src="scripts/admin.js"></script>	
         </head>
-        <body>
+        <body class="yui-skin-sam">
             <div class="header">
                 {admin:info-header()}
                 <img src="logo.jpg"/>

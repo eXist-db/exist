@@ -30,7 +30,6 @@ import org.xml.sax.helpers.AttributesImpl;
 import java.util.HashMap;
 import java.util.Comparator;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
@@ -41,6 +40,42 @@ public class PerformanceStats {
 
     public static String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
     public static String CONFIG_ATTR_TRACE = "trace";
+
+    public final static int NO_INDEX = 0;
+    public final static int BASIC_INDEX = 1;
+    public final static int OPTIMIZED_INDEX = 2;
+
+    private static class IndexStats {
+
+        String source;
+        int line;
+        int column;
+        int mode = 0;
+        int usageCount = 1;
+        long executionTime = 0;
+
+        private IndexStats(String source, int line, int column, int mode) {
+            this.source = source;
+            this.line = line;
+            this.column = column;
+            this.mode = mode;
+        }
+
+        public void recordUsage(long elapsed) {
+            executionTime += elapsed;
+            usageCount++;
+        }
+
+        public int hashCode() {
+            return source.hashCode() + line + column + mode;
+        }
+
+        public boolean equals(Object obj) {
+            IndexStats other = (IndexStats) obj;
+            return other.source.equals(source) && other.line == line && other.column == column &&
+                other.mode == mode;
+        }
+    }
 
     private static class QueryStats {
 
@@ -99,7 +134,8 @@ public class PerformanceStats {
 
     private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
     private HashMap<FunctionStats, FunctionStats> functions = new HashMap<FunctionStats, FunctionStats>();
-
+    private HashMap<IndexStats, IndexStats> indexStats = new HashMap<IndexStats, IndexStats>();
+    
     private boolean enabled = false;
 
     private BrokerPool pool;
@@ -147,6 +183,17 @@ public class PerformanceStats {
         }
     }
 
+    public void recordIndexUse(Expression expression, String source, int mode, long elapsed) {
+        IndexStats newStats = new IndexStats(source, expression.getLine(), expression.getColumn(), mode);
+        IndexStats stats = indexStats.get(newStats);
+        if (stats == null) {
+            newStats.executionTime = elapsed;
+            indexStats.put(newStats, newStats);
+        } else {
+            stats.recordUsage(elapsed);
+        }
+    }
+    
     public synchronized void merge(PerformanceStats otherStats) {
         for (QueryStats other: otherStats.queries.values()) {
             QueryStats mine = queries.get(other.source);
@@ -166,6 +213,15 @@ public class PerformanceStats {
                 mine.executionTime += other.executionTime;
             }
         }
+        for (IndexStats other: otherStats.indexStats.values()) {
+           IndexStats mine = indexStats.get(other);
+           if (mine == null) {
+               indexStats.put(other, other);
+           } else {
+               mine.usageCount += other.usageCount;
+               mine.executionTime += other.executionTime;
+           }
+       }
     }
 
     private String createKey(QName qname, String source) {
@@ -219,16 +275,29 @@ public class PerformanceStats {
             builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
+        for (IndexStats stats: indexStats.values()) {
+            attrs.clear();
+            attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" +
+                stats.column + "]");
+            attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
+            attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.usageCount));
+            attrs.addAttribute("", "optimization", "optimization", "CDATA",
+                Integer.toString(stats.mode));
+            builder.startElement(new QName("index", XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
+        }
         builder.endElement();
     }
 
     public synchronized void clear() {
         queries.clear();
         functions.clear();
+        indexStats.clear();
     }
 
     public void reset() {
         queries.clear();
         functions.clear();
+        indexStats.clear();
     }
 }
