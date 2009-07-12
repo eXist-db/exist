@@ -1,8 +1,10 @@
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xquery.*;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -11,6 +13,8 @@ import org.exist.xquery.value.Type;
 /**
  */
 public class AsUser extends Function {
+
+    protected final static Logger logger = Logger.getLogger(AsUser.class);
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -22,37 +26,49 @@ public class AsUser extends Function {
             "returns the result of the execution. Before the function completes, it switches " +
             "the current user back to the old user.",
 			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the user to run the code against"),
+					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password of the user to run the code against"),
+					new FunctionParameterSequenceType("code-block", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code block to run as the identified user")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+			new FunctionParameterSequenceType("result", Type.ITEM, Cardinality.ZERO_OR_MORE, "The results of the code block executed"));
 
     public AsUser(XQueryContext context) {
         super(context, signature);
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    	logger.info("Entering the " + SystemModule.PREFIX + ":as-user XQuery function");
         Sequence userSeq = getArgument(0).eval(contextSequence, contextItem);
         Sequence passwdSeq = getArgument(1).eval(contextSequence, contextItem);
-        if (userSeq.isEmpty())
-            throw new XPathException(this, "No user specified");
+        if (userSeq.isEmpty()) {
+        	XPathException exception = new XPathException(this, "No user specified");
+        	logger.error("No user specified, throwing an exception!", exception);
+            throw exception;
+        }
         String userName = userSeq.getStringValue();
         String passwd = passwdSeq.getStringValue();
         org.exist.security.SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
         User user = security.getUser(userName);
-        if (user == null)
-            throw new XPathException(this, "Authentication failed");
+		if (user == null) {
+	        XPathException exception = new XPathException(this, "Authentication failed");
+        	logger.error("Authentication failed for setting the user to [" + userName + "] because user does not exist, throwing an exception!", exception);
+            throw exception;
+        }
         if (user.validate(passwd)) {
             User oldUser = context.getBroker().getUser();
             try {
+                logger.info("Setting the authenticated user to: [" + userName + "]");
                 context.getBroker().setUser(user);
                 return getArgument(2).eval(contextSequence, contextItem);
             } finally {
+                logger.info("Returning the user to the original user: [" + oldUser.getName() + "]");
                 context.getBroker().setUser(oldUser);
             }
-        } else
-            throw new XPathException(this, "Authentication failed");
+        } else {
+	        XPathException exception = new XPathException(this, "Authentication failed");
+        	logger.error("Authentication failed for setting the user to [" + userName + "] because of bad password, throwing an exception!", exception);
+            throw exception;
+        }
     }
 
     /* (non-Javadoc)
