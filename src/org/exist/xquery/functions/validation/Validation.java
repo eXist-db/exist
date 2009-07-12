@@ -44,6 +44,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -59,18 +60,12 @@ import org.xml.sax.helpers.AttributesImpl;
 public class Validation extends BasicFunction  {
     
     private static final String simpleFunctionTxt=
-        "Validate document specified by $a. " +
-        "$a is of type xs:anyURI, or a node (element or returned by fn:doc()). "+
+        "Validate xml. " +
         "The grammar files (DTD, XML Schema) are resolved using the global "+
         "catalog file(s).";
     
     private static final String extendedFunctionTxt=
-        "Validate document specified by $a using $b. "+
-        "$a is of type xs:anyURI, or a node (element or returned by fn:doc()). "+
-        "$b can point to an OASIS catalog file (.xml), "+
-        "a collection (path ends with '/') or a grammar document. "+
-        "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
-        "\".rng\" \".rnc\" \".sch\" and \".nvdl\".";
+        "Validate document by using a specific grammar.";
         
     
     private final Validator validator;
@@ -83,10 +78,11 @@ public class Validation extends BasicFunction  {
             ValidationModule.PREFIX),
             simpleFunctionTxt,
             new SequenceType[]{
-            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-        },
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
+            },
             new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-            ),
+        ),
         
         
         new FunctionSignature(
@@ -94,32 +90,43 @@ public class Validation extends BasicFunction  {
             ValidationModule.PREFIX),
             extendedFunctionTxt,
             new SequenceType[]{
-            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
-        },
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                        "Reference to an OASIS catalog file (.xml), "+
+                        "a collection (path ends with '/') or a grammar document. "+
+                        "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
+                        "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+            },
             new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-            ),
+        ),
         
         new FunctionSignature(
             new QName("validate-report", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
             simpleFunctionTxt+" A simple report is returned.",
             new SequenceType[]{
-            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-        },
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                            "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
+            },
             new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-            ),
+        ),
         
         new FunctionSignature(
             new QName("validate-report", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
             extendedFunctionTxt+" A simple report is returned.",
             new SequenceType[]{
-            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
-        },
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                        "Reference to an OASIS catalog file (.xml), "+
+                        "a collection (path ends with '/') or a grammar document. "+
+                        "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
+                        "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+            },
             new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-            )
+        )
                         
     };
     

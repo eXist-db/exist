@@ -47,6 +47,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -80,7 +81,7 @@ public class GrammarTooling extends BasicFunction  {
             "Remove all cached grammers.",
             null,
             new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
-            ),
+        ),
         
         new FunctionSignature(
             new QName("show-grammar-cache", ValidationModule.NAMESPACE_URI,
@@ -88,17 +89,19 @@ public class GrammarTooling extends BasicFunction  {
             "Show all cached grammars.",
             null,
             new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-            ),
+        ),
             
         new FunctionSignature(
             new QName("pre-parse-grammar", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
-            "Pre parse grammars specified by $a and add to grammar cache. Only for XML schemas (.xsd).",
+            "Pre parse grammars and add to grammar cache. Only XML schemas (.xsd)" +
+            " are supported.",
             new SequenceType[]{
-                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE)
+                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.ZERO_OR_MORE,
+                        "Reference to grammar.")
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
-            ),
+        ),
             
             
     };
