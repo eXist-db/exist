@@ -76,6 +76,25 @@ public class EvalTest {
     }
 
     @Test
+    public void testEvalwithPI() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "let $query := 'let $a := <test><?pi test?></test> return count($a//processing-instruction())'\n" +
+                    "return\n" +
+                    "util:eval($query)";            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            assertEquals("1", r);
+
+        } catch (XMLDBException e) {
+            System.out.println("testEval(): " + e);
+            fail(e.getMessage());
+        }
+
+    }
+
+    @Test
     public void testEvalInline() throws XPathException {
 
         ResourceSet result = null;
