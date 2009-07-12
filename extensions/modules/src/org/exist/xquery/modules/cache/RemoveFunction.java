@@ -21,11 +21,13 @@
  */
 package org.exist.xquery.modules.cache;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,13 +42,15 @@ import org.xml.sax.SAXException;
  */
 public class RemoveFunction extends CacheBasicFunction {
 
-	public final static FunctionSignature signatures[] = { 
+    private final static Logger logger = Logger.getLogger(RemoveFunction.class);
+
+    public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 				new QName("remove", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-				"Reove data from cache $a by key $b. Returns the previous value associated with key",
+				"Remove data from the identified cache by the key. Returns the value that was associated with key",
 				new SequenceType[] { 
-					new SequenceType(Type.ITEM, Cardinality.ONE), 
-					new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE) 
+					new FunctionParameterSequenceType("cache-value", Type.ITEM, Cardinality.ONE, "Either the Java cache object or the name of the cache"), 
+					new FunctionParameterSequenceType("key", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The key to the object within the cache") 
 				}, 
 		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
 			)
@@ -61,12 +65,14 @@ public class RemoveFunction extends CacheBasicFunction {
 		try {
 			String key = serialize(args[1]);
 			if (item.getType()==Type.STRING){
+				logger.info("removing cache value [" + item.getStringValue() + ", " + key +"]");
 				return Cache.remove(item.getStringValue(), key);
 			} else {
+				logger.info("removing cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
 				return ((Cache)item.toJavaObject(Cache.class)).remove(key);
 			}
 		} catch (SAXException e) {
-			e.printStackTrace();
+			logger.error("Error removing cache value", e);
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

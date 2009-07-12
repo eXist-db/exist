@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.modules.cache;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,7 +42,9 @@ import org.exist.xquery.value.Type;
  */
 public class ClearFunction extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = { 
+    private final static Logger logger = Logger.getLogger(ClearFunction.class);
+
+    public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 			new QName("clear", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
 			"Clear the global cache",
@@ -49,9 +53,9 @@ public class ClearFunction extends BasicFunction {
 		), 
 		new FunctionSignature(
 			new QName("clear", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-			"Clear the cache $a",
+			"Clear the identified cache",
 			new SequenceType[] { 
-				new SequenceType(Type.ITEM, Cardinality.ONE) 
+				new FunctionParameterSequenceType("cache-value", Type.ITEM, Cardinality.ONE, "Either the Java cache object or the name of the cache") 
 			}, 
 	        new SequenceType(Type.EMPTY, Cardinality.EMPTY)
 		) 
@@ -63,15 +67,19 @@ public class ClearFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		if (args.length==0){
+			logger.info("Clearing all caches");
 			Cache.clearGlobal();
 		} else {
 			Item item = args[0].itemAt(0);
 			if (item.getType()==Type.STRING){
+				logger.info("Clearing cache [" + item.getStringValue() + "]");
 				Cache.clear(item.getStringValue());
 			} else {
+				logger.info("Clearing cache [" + item.toJavaObject(Cache.class).toString() + "]");
 				((Cache)item.toJavaObject(Cache.class)).clear();
 			}
 		}
+		logger.info("Cache cleared");
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }

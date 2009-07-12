@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -45,12 +46,12 @@ public class FormatDateTimeFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("format-dateTime", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns a xs:string of the xs:dateTime in $a formatted according to the specification in $b",
+			"Returns a xs:string of the xs:dateTime according to the SimpleDateFormat format string.",
 			new SequenceType[] { 
-				new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The dateTime to to be formatted."),
+				new FunctionParameterSequenceType("simple-date-format", Type.STRING, Cardinality.EXACTLY_ONE, "Format string according to the Java java.text.SimpleDateFormat class")
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "The formatted dateTime string"));
 
 	public FormatDateTimeFunction(XQueryContext context)
 	{

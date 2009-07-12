@@ -21,11 +21,13 @@
  */
 package org.exist.xquery.modules.cache;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,14 +42,16 @@ import org.xml.sax.SAXException;
  */
 public class PutFunction extends CacheBasicFunction {
 
+    private final static Logger logger = Logger.getLogger(PutFunction.class);
+    
 	public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 				new QName("put", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-				"Put data in $c with key $b into cache $a. Returns the previous value associated with key",
+				"Put data with a key into the identified cache. Returns the previous value associated with the key",
 				new SequenceType[] { 
-					new SequenceType(Type.ITEM, Cardinality.ONE), 
-					new SequenceType(Type.ANY_TYPE, Cardinality.ONE_OR_MORE),
-					new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE) 
+					new FunctionParameterSequenceType("cache-value", Type.ITEM, Cardinality.ONE, "Either the Java cache object or the name of the cache"), 
+					new FunctionParameterSequenceType("key", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The key to the object within the cache"), 
+					new FunctionParameterSequenceType("value", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "The object to store within the cache") 
 				}, 
 		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
 			) 
@@ -63,12 +67,14 @@ public class PutFunction extends CacheBasicFunction {
 		try {
 			String key = serialize(args[1]);
 			if (item.getType()==Type.STRING){
+				logger.info("putting cache value [" + item.getStringValue() + ", " + key +"]");
 				return Cache.put(item.getStringValue(), key, value);
 			} else {
+				logger.info("putting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
 				return ((Cache)item.toJavaObject(Cache.class)).put(key, value);
 			}
 		} catch (SAXException e) {
-			e.printStackTrace();
+			logger.error("Error putting cache value", e);
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

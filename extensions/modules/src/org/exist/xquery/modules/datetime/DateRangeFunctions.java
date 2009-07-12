@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AbstractDateTimeValue;
 import org.exist.xquery.value.DurationValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -46,31 +47,31 @@ public class DateRangeFunctions extends BasicFunction {
         public final static FunctionSignature signature[] = {
                 new FunctionSignature(
                         new QName("datetime-range", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-                        "Returns a range of $c items of xs:dateTime* " +
-                        "starting at $a incremented by xs:duration $b ",
+                        "Returns a range of items of xs:dateTime* " +
+                        "starting at $date-time incremented by the duration",
                         new SequenceType[] { 
-                                new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE),
-                                new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE),
-                                new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
-                        }, new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_MORE)),
+                                new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "dateTime at the beginning of the range(s)"),
+                                new FunctionParameterSequenceType("duration", Type.DURATION, Cardinality.EXACTLY_ONE, "The xs:duration to generate the dateTime range"),
+                                new FunctionParameterSequenceType("number-of-ranges", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of ranges to generate")
+                        }, new FunctionParameterSequenceType("result", Type.DATE_TIME, Cardinality.ZERO_OR_MORE, "The range(s)")),
                 new FunctionSignature(
                     new QName("date-range", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-                    "Returns a range of $c items of xs:date* " +
-                    "starting at $a incremented by xs:duration $b ",
+                    "Returns a range of items of xs:date* " +
+                    "starting at $date incremented by the duration ",
                     new SequenceType[] { 
-                            new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
-                    }, new SequenceType(Type.DATE, Cardinality.ZERO_OR_MORE)),
+                            new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "date at the beginning of the range(s)"),
+                            new FunctionParameterSequenceType("duration", Type.DURATION, Cardinality.EXACTLY_ONE, "The xs:duration to generate the date range"),
+                            new FunctionParameterSequenceType("number-of-ranges", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of ranges to generate")
+                    }, new FunctionParameterSequenceType("result", Type.DATE_TIME, Cardinality.ZERO_OR_MORE, "The range(s)")),
                 new FunctionSignature(
                     new QName("time-range", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-                    "Returns a range of $c items of xs:time* " +
-                    "starting at $a incremented by xs:duration $b ",
+                    "Returns a range of items of xs:time* " +
+                    "starting at $time incremented by duration",
                     new SequenceType[] { 
-                            new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
-                    }, new SequenceType(Type.TIME, Cardinality.ZERO_OR_MORE))
+                            new FunctionParameterSequenceType("time", Type.TIME, Cardinality.EXACTLY_ONE, "time at the beginning of the range(s)"),
+                            new FunctionParameterSequenceType("duration", Type.DURATION, Cardinality.EXACTLY_ONE, "The xs:duration to generate the time range"),
+                            new FunctionParameterSequenceType("number-of-ranges", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of ranges to generate")
+                    }, new FunctionParameterSequenceType("result", Type.DATE_TIME, Cardinality.ZERO_OR_MORE, "The range(s)"))
         };
 
         public DateRangeFunctions(XQueryContext context, FunctionSignature signature)

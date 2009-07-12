@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -46,14 +47,14 @@ public class DateForFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the date for a given set of parameters. $a the year of interest. $b the month of interest (1 = January, 12 = December). $c The week in the month of interest (1 = first week, 4 or 5 = last week). $d The day in the week of interest (1 = Sunday, 7 = Saturday).",
+			"Returns the date for a given set of parameters.",
 			new SequenceType[] {
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
+				new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "the year of interest"),
+				new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "the month of interest (1 = January, 12 = December)"),
+				new FunctionParameterSequenceType("week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The week in the month of interest (1 = first week, 4 or 5 = last week)"),
+				new FunctionParameterSequenceType("weekday", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day in the week of interest (1 = Sunday, 7 = Saturday)"),
 			},
-			new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date generated from the parameters."));
 
 	public DateForFunction(XQueryContext context)
 	{
