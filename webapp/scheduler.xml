@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" type="xml"?>
 <book>
-    <bookinfo>
-        <graphic fileref="logo.jpg"/>
-
+    <bookinfo><graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Scheduler Module</title>
+        <date>July 2009</date>
         <author>
             <firstname>Loren</firstname>
             <surname>Cahlander</surname>
@@ -13,19 +12,45 @@
                 <address format="linespecific">
                     <email>loren at syntactica.com</email>
                 </address>
-            </affiliation>
-        </author>
-    </bookinfo>
+            </affiliation></author></bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Scheduler Module</title>
         <section>
             <title>Introduction</title>
-                <para>Quartz is a full-featured, open source job scheduling system that has been
-                    integrated with eXist. Quartz can be used to create simple or complex schedules
-                    for executing tens, hundreds, or even tens-of-thousands of jobs. The Quartz
-                    Scheduler includes many enterprise-class features, such as JTA transactions and
-                    clustering.</para>
+            <para>Quartz is a full-featured, open source job scheduling system that has been
+                integrated with eXist. Quartz can be used to create simple or complex schedules for
+                executing tens, hundreds, or even tens-of-thousands of jobs. The Quartz Scheduler
+                includes many enterprise-class features, such as JTA transactions and
+                clustering.</para>
+            <section>
+                <title>Activating</title>
+                <para> There are two type of uses of the Quartz Scheduler within eXist. The first is
+                    always active and is invoked at system startup. The second is the XQuery
+                    function module for initiating and managing scheduled jobs. This second use is
+                    not activated <emphasis role="italic">out-of-the-box</emphasis>. It has to be
+                    activated through the conf.xml file. </para>
+                <section>
+                    <title>System Startup</title>
+                    <para>The jobs that are initiated at system startup are invoked by the settings
+                        within the &lt;scheduler> tag in the <emphasis role="bold"
+                            >conf.xml</emphasis> file. There is a full set of instructions with
+                        example jobs (that are commented out) in the file.</para>
+                </section>
+                <section>
+                    <title>XQuery Function Module</title>
+                    <para>The scheduler XQuery function module is activated by uncommenting the
+                        following in conf.xml:</para>
+                    <example>
+                        <title>Scheduler XQuery Module in conf.xml</title>
+                        <programlisting lang="xml"><![CDATA[<module class="org.exist.xquery.modules.scheduler.SchedulerModule"
+         uri="http://exist-db.org/xquery/scheduler" />]]></programlisting>
+                    </example>
+                    <para>Once the scheduler XQuery function module is active, then XQuery code can
+                        be written to invoke and manage <emphasis role="bold">user</emphasis> type
+                        jobs.</para>
+                </section>
+            </section>
             <section>
                 <title>Type</title>
                 <para>The type of the job to schedule. Must be either "startup", "system" or
@@ -78,7 +103,11 @@
             </section>
             <section>
                 <title>Java Jobs</title>
-                <para/>
+                <para>A Java job that is to be invoked from the XQuery function module has to be
+                    extended from the <emphasis role="bold"
+                        >org.exist.scheduler.UserJavaJob</emphasis> class. A startup or system Java
+                    job that is invoked from the conf.xml file implements <emphasis role="bold"
+                        >org.exist.storage.SystemTask</emphasis>.</para>
                 <example>
                     <title>Sample Java Source File</title>
                     <programlisting format="linespecific" language="java"><![CDATA[
@@ -123,6 +152,9 @@ public class TestJob extends UserJavaJob {
         </section>
         <section>
             <title>Cron</title>
+            <note>This section was copied from <a
+                    href="http://www.opensymphony.com/quartz/wikidocs/CronTriggers%20Tutorial.html"
+                    >OpenSymphony CronTriggers Tutorial</a>.</note>
             <section>
                 <title>Introduction</title>
                 <para>cron is a UNIX tool that has been around for a long time, so its scheduling
