@@ -38,7 +38,7 @@ import junit.textui.TestRunner;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.XmlRpcException;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.util.MimeType;

@@ -29,7 +29,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.apache.log4j.Logger;
 

@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
 import java.io.FileOutputStream;

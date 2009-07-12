@@ -22,7 +22,7 @@
 
 package org.exist.xquery.modules.image;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;

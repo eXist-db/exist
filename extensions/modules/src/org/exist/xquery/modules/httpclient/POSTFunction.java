@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;

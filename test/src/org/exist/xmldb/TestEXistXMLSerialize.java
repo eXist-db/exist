@@ -18,7 +18,7 @@ import junit.framework.TestCase;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMSerializer;
