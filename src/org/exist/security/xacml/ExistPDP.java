@@ -22,7 +22,6 @@
 
 package org.exist.security.xacml;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,8 +29,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PDP;

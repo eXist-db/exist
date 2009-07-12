@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.dom.QName;
 
 import org.exist.validation.internal.node.NodeInputStream;
@@ -41,6 +40,8 @@ import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;

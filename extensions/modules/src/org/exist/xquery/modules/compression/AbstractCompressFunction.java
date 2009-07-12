@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +48,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

@@ -1,6 +1,5 @@
 package org.exist.client.xacml;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -9,12 +8,17 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+
 import org.exist.client.ClientFrame;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.security.xacml.XACMLUtil;
+
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;

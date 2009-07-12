@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.modules.compression;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
 
 import java.io.IOException;
 import java.io.OutputStream;

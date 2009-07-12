@@ -21,13 +21,13 @@
 package org.exist.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 public class Compressor {
 

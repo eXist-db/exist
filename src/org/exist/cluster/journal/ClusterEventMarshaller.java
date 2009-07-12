@@ -2,12 +2,12 @@
 package org.exist.cluster.journal;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.rmi.MarshalException;
 
 import org.exist.cluster.ClusterEvent;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Created by Nicola Breda.

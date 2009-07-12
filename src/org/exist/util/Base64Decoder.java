@@ -21,7 +21,8 @@
  */
 package org.exist.util;
 
-import java.io.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
 /**
  * Base 64 text to byte decoder. To produce the binary  array from
  * base 64 encoding call {@link #translate} for each sequence of

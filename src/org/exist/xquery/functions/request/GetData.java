@@ -22,7 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
