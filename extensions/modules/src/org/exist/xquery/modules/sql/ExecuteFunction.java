@@ -22,7 +22,7 @@
 
 package org.exist.xquery.modules.sql;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.PrintStream;
 import java.sql.Connection;
