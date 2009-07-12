@@ -122,6 +122,9 @@ h2 {
 .browse, .trace {
     margin-left: 15px;
     font-size: smaller;
+}
+
+.browse {
     padding-bottom: 4px;
     border-bottom: 1px solid black;
 }
@@ -253,4 +256,8 @@ td.last {
 
 .trace-elapsed, td.trace-elapsed {
     text-align: right;
+}
+
+.legend {
+	font-size: .75em;
 }

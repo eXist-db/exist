@@ -260,7 +260,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
-        
+        long start = System.currentTimeMillis();
         int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
@@ -320,6 +320,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
             }
         }
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceIndexUsage(context, this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
         return preselectResult == null ? NodeSet.EMPTY_SET : preselectResult;
     }
 
@@ -419,43 +421,57 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		return genericCompare(ls, contextSequence, contextItem);
 	}
 
-    protected Sequence genericCompare(Sequence ls, Sequence contextSequence,	Item contextItem) throws XPathException {
+    protected Sequence genericCompare(Sequence ls, Sequence contextSequence, Item contextItem) throws XPathException {
+        long start = System.currentTimeMillis();
         final Sequence rs = getRight().eval(contextSequence, contextItem);
 		final Collator collator = getCollator(contextSequence);
+        Sequence result = BooleanValue.FALSE;
 		if (ls.isEmpty() && rs.isEmpty()) {
-			return BooleanValue.valueOf(compareAtomic(collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE));
+			result = BooleanValue.valueOf(compareAtomic(collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE));
 		} else if (ls.isEmpty() && !rs.isEmpty()) {
 			for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
-				if (compareAtomic(collator, AtomicValue.EMPTY_VALUE, i2.nextItem().atomize()))
-					return BooleanValue.TRUE;
+				if (compareAtomic(collator, AtomicValue.EMPTY_VALUE, i2.nextItem().atomize())) {
+					result = BooleanValue.TRUE;
+                    break;
+                }
 			}
 		} else if (!ls.isEmpty()&& rs.isEmpty()) {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				AtomicValue lv = i1.nextItem().atomize();
-				if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE))
-					return BooleanValue.TRUE;
+				if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE)) {
+					result = BooleanValue.TRUE;
+                    break;
+                }
 			}
 		} else if (ls.hasOne() && rs.hasOne()) {
-			return BooleanValue.valueOf(compareAtomic(collator, ls.itemAt(0).atomize(), rs.itemAt(0).atomize()));
+			result = BooleanValue.valueOf(compareAtomic(collator, ls.itemAt(0).atomize(), rs.itemAt(0).atomize()));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				AtomicValue lv = i1.nextItem().atomize();
 				if (rs.isEmpty()) {
-					if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE))
-						return BooleanValue.TRUE;
+					if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE)) {
+						result = BooleanValue.TRUE;
+                        break;
+                    }
 				} else if (rs.hasOne()) {
-					if (compareAtomic(collator, lv, rs.itemAt(0).atomize()))
+					if (compareAtomic(collator, lv, rs.itemAt(0).atomize())) {
 						//return early if we are successful, continue otherwise
-						return BooleanValue.TRUE;
+						result = BooleanValue.TRUE;
+                        break;
+                    }
 				} else {
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
-						if (compareAtomic(collator, lv, i2.nextItem().atomize()))
-							return BooleanValue.TRUE;
+						if (compareAtomic(collator, lv, i2.nextItem().atomize())) {
+							result = BooleanValue.TRUE;
+                            break;
+                        }
 					}
 				}
 			}
 		}
-		return BooleanValue.FALSE;
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceIndexUsage(context, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
+		return result;
     }
 
     /**
@@ -467,7 +483,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if (context.getProfiler().isEnabled())
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");
         if (LOG.isTraceEnabled())
-        	LOG.trace("No index: fall back to nodeSetCompare");        
+        	LOG.trace("No index: fall back to nodeSetCompare");
+        long start = System.currentTimeMillis();
 		NodeSet result = new NewArrayNodeSet();
 		final Collator collator = getCollator(contextSequence);
 		if (contextSequence != null && !contextSequence.isEmpty() && !contextSequence.getDocumentSet().contains(nodes.getDocumentSet()))
@@ -500,6 +517,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 				}
 		    }
 		}
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceIndexUsage(context, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
 		return result;
 	}
 
@@ -521,6 +540,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		if (context.getProfiler().isEnabled())
 			context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
 
+        long start = System.currentTimeMillis();
+        
 		//get the NodeSet on the left
 		Sequence leftSeq = getLeft().eval(contextSequence);
         if (!leftSeq.isPersistentSet())
@@ -693,6 +714,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 		        }
             }
+            if (context.getProfiler().traceFunctions())
+                context.getProfiler().traceIndexUsage(context, this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
         	return result;
 		} else {
 	    	if (LOG.isTraceEnabled())
