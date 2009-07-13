@@ -1,17 +1,20 @@
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 public class GetModuleLoadPath extends BasicFunction {
+
+    protected final static Logger logger = Logger.getLogger(GetModuleLoadPath.class);
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -21,7 +24,7 @@ public class GetModuleLoadPath extends BasicFunction {
             "into an XQuery. This will usually the directory from which the main XQuery was " +
             "compiled.",
 			FunctionSignature.NO_ARGS,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "The load path"));
 
 
     public GetModuleLoadPath(XQueryContext context) {

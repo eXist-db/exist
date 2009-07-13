@@ -1,11 +1,12 @@
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.NodeValue;
@@ -19,6 +20,8 @@ import java.util.Date;
 
 public class GetRunningJobs extends BasicFunction {
 
+    protected final static Logger logger = Logger.getLogger(GetRunningJobs.class);
+
     final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
     final static String PREFIX                              = SystemModule.PREFIX;
 
@@ -27,7 +30,7 @@ public class GetRunningJobs extends BasicFunction {
                 new QName( "get-running-jobs", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Get a list of running jobs (dba role only).",
                 null,
-                new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+                new FunctionParameterSequenceType( "result", Type.ITEM, Cardinality.EXACTLY_ONE, "The list of running jobs" )
         );
 
     public GetRunningJobs(XQueryContext context) {

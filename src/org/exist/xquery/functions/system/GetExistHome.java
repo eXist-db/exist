@@ -23,14 +23,15 @@
 package org.exist.xquery.functions.system;
 
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -41,12 +42,14 @@ import org.exist.xquery.value.Type;
  */
 public class GetExistHome extends BasicFunction {
     
+    protected final static Logger logger = Logger.getLogger(GetExistHome.class);
+
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("get-exist-home", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
             "Returns the eXist home location.",
             FunctionSignature.NO_ARGS,
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+            new FunctionParameterSequenceType("home-location", Type.STRING, Cardinality.EXACTLY_ONE, "The path string to the eXist home"));
     
     public GetExistHome(XQueryContext context) {
         super(context, signature);
