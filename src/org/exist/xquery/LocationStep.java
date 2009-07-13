@@ -798,6 +798,7 @@ public class LocationStep extends Step {
         }
     }
     
+    @Deprecated
     private class SiblingVisitor implements NodeVisitor {
     	
     	private ExtNodeSet resultSet;

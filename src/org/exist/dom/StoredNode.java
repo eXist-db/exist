@@ -474,6 +474,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return visitor.visit(this);
     }
     
+    @Deprecated
     private final static class PreviousSiblingVisitor implements NodeVisitor {
         
         private StoredNode current;
