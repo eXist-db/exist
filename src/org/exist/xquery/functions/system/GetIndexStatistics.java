@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
@@ -12,6 +13,8 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 public class GetIndexStatistics extends BasicFunction {
+
+    protected final static Logger logger = Logger.getLogger(GetIndexStatistics.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("get-index-statistics", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),

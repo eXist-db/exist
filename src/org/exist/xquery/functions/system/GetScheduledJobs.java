@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Cardinality;
@@ -19,6 +20,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class GetScheduledJobs extends BasicFunction {
+
+    protected final static Logger logger = Logger.getLogger(GetScheduledJobs.class);
 
     private static final String TODAY_TIMESTAMP				= "HH:mm:ss.SSS Z";
 	private static final String DATE_TIME_FORMAT 			= "yyyy-MM-dd HH:mm:ss.SSS Z";
@@ -40,8 +43,11 @@ public class GetScheduledJobs extends BasicFunction {
 
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+    	logger.info("Entering " + SystemModule.PREFIX + ":get-scheduled-jobs");
         if( !context.getUser().hasDbaRole() ) {
-            throw( new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of scheduled jobs" ) );
+            XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of scheduled jobs" );
+        	logger.error("Invalid user " + SystemModule.PREFIX + ":get-scheduled-jobs", xPathException);
+			throw xPathException;
         }
 
         MemTreeBuilder builder = context.getDocumentBuilder();
@@ -50,6 +56,7 @@ public class GetScheduledJobs extends BasicFunction {
         builder.startElement( new QName( "jobs", NAMESPACE_URI, PREFIX ), null );
 
         BrokerPool brokerPool = context.getBroker().getBrokerPool();
+        logger.trace("brokerPool = " + brokerPool.toString());
         
         if( brokerPool != null ) {
             org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
@@ -74,11 +81,13 @@ public class GetScheduledJobs extends BasicFunction {
         builder.endElement();
         builder.endDocument();
 
+    	logger.info("Exiting " + SystemModule.PREFIX + ":get-scheduled-jobs");
         return( (NodeValue)builder.getDocument().getDocumentElement() );
     }
     
     private void addRow( ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning )
 	{
+    	logger.trace("Entring addRow");
     	String 	name 				= scheduledJobInfo.getName();
     	String 	group 				= scheduledJobInfo.getGroup();
     	String 	triggerName			= scheduledJobInfo.getTriggerName();
@@ -130,7 +139,7 @@ public class GetScheduledJobs extends BasicFunction {
         builder.addAttribute( new QName( "triggerState", null, null ), triggerStateName );
         builder.addAttribute( new QName( "running", null, null ), (isRunning) ? "RUNNING" : "SCHEDULED" );
         builder.endElement();
-
+        logger.trace("Exiting addRow");
     }
     
     private String dateText( Date aDate ) 

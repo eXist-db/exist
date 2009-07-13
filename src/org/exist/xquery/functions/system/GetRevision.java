@@ -25,14 +25,15 @@ package org.exist.xquery.functions.system;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -44,12 +45,14 @@ import org.exist.xquery.value.Type;
 public class GetRevision extends BasicFunction
 {
 
+    protected final static Logger logger = Logger.getLogger(GetRevision.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-revision", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the SubVersion (SVN) revision id of eXist running this query.",
 			FunctionSignature.NO_ARGS,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "The SubVersion (SVN) revision ID of the eXist running this query."));
 
 	public GetRevision(XQueryContext context)
 	{

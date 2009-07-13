@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -29,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -41,6 +43,8 @@ import org.exist.xquery.value.Type;
  */
 public class KillRunningXQuery extends BasicFunction
 {
+    protected final static Logger logger = Logger.getLogger(KillRunningXQuery.class);
+
 	final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
     final static String PREFIX                              = SystemModule.PREFIX;
     
@@ -48,19 +52,19 @@ public class KillRunningXQuery extends BasicFunction
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
-			"Kill a running XQuey (dba role only). $a is the XQuery ID obtained from get-running-xqueries()",
+			"Kill a running XQuey (dba role only).",
 			new SequenceType[] {
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "the XQuery ID obtained from get-running-xqueries()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		),
 		
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
-			"Kill a running XQuey (dba role only). $a is the XQuery ID obtained from get-running-xqueries(), $b is the wait time in milliseconds",
+			"Kill a running XQuey (dba role only).",
 			new SequenceType[] {
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.LONG, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "the XQuery ID obtained from get-running-xqueries()" ),
+				new FunctionParameterSequenceType( "wait-time", Type.LONG, Cardinality.EXACTLY_ONE, "the wait time in milliseconds before terminating the XQuery" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		),

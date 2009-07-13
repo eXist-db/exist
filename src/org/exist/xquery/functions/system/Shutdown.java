@@ -26,6 +26,7 @@ package org.exist.xquery.functions.system;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
@@ -33,6 +34,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -45,20 +47,21 @@ import org.exist.xquery.value.Type;
  */
 public class Shutdown extends BasicFunction
 {
+	protected final static Logger logger = Logger.getLogger(Shutdown.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist (dba role only).",
+			"Shutdown eXist immediately (dba role only).",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist. $a is the delay in milliseconds. (dba role only)",
+			"Shutdown eXist. (dba role only)",
 			new SequenceType[] {
-					new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
+					new FunctionParameterSequenceType("delay", Type.LONG, Cardinality.EXACTLY_ONE, "Delay in milliseconds before eXist starts to shutdown.")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		)
@@ -75,6 +78,7 @@ public class Shutdown extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + SystemModule.PREFIX + ":shutdown");
 		if(context.getUser().hasDbaRole())
 		{
 			//determine the shutdown delay
@@ -92,20 +96,25 @@ public class Shutdown extends BasicFunction
 				
 			if(delay > 0)
 			{
+				logger.info("Shuttting down in " + delay + " milliseconds.");
 				TimerTask task = new DelayedShutdownTask(pool);
 				Timer timer = new Timer();
 				timer.schedule(task, delay);
 			}
 			else
 			{
+				logger.info("Shutting down now.");
 				pool.shutdown();
 			}
 		}
 		else
 		{
-			throw new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to shutdown the database");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
 		}
 			
+		logger.info("Exiting " + SystemModule.PREFIX + ":shutdown");
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
@@ -121,6 +130,7 @@ public class Shutdown extends BasicFunction
 		
 		public void run()
 		{
+			logger.info("Shutting down now.");
 			pool.shutdown();
 		}
 	}

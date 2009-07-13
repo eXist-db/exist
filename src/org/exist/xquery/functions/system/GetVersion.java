@@ -25,6 +25,7 @@ package org.exist.xquery.functions.system;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -44,6 +45,8 @@ import org.exist.xquery.value.Type;
  */
 public class GetVersion extends BasicFunction
 {
+
+    protected final static Logger logger = Logger.getLogger(GetVersion.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -70,6 +73,7 @@ public class GetVersion extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+    	logger.info("Entering the " + SystemModule.PREFIX + ":get-version XQuery function");
 		Properties sysProperties = new Properties();
 		try
 		{
@@ -77,7 +81,7 @@ public class GetVersion extends BasicFunction
 		}
 		catch (IOException e)
 		{
-			LOG.debug("Unable to load system.properties from class loader");
+			logger.debug("Unable to load system.properties from class loader");
 		}
 		return new StringValue(sysProperties.getProperty("product-version", "unknown version"));
 	}

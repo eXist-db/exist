@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.system;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.statistics.IndexStatistics;
 import org.exist.storage.statistics.IndexStatisticsWorker;
@@ -35,6 +36,8 @@ import org.exist.xquery.value.Type;
 
 public class UpdateStatistics extends BasicFunction {
 
+	protected final static Logger logger = Logger.getLogger(UpdateStatistics.class);
+
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("update-statistics", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Internal function",
@@ -46,12 +49,15 @@ public class UpdateStatistics extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+		logger.info("Entering " + SystemModule.PREFIX + ":update-statistics");
         IndexStatisticsWorker index = (IndexStatisticsWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(IndexStatistics.ID);
-        if (index == null)
-            // module may not be enabled
-            return Sequence.EMPTY_SEQUENCE;
-        index.updateIndex(context.getBroker());
+        if (index != null) {
+            index.updateIndex(context.getBroker());
+        } else {
+        	logger.error("The module may not be enabled!");
+        }
+		logger.info("Exiting " + SystemModule.PREFIX + ":update-statistics");
         return Sequence.EMPTY_SEQUENCE;
     }
 }
