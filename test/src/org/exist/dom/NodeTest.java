@@ -213,6 +213,7 @@ public class NodeTest extends XMLTestCase {
         }
 	}
 	
+	@Deprecated
     public void testVisitor() {
         DBBroker broker = null;
         DocumentImpl doc = null;

@@ -26,9 +26,10 @@ package org.exist.dom;
  * implement to get notified of the current node.
  * 
  * @author wolf
- *
+ * @deprecated replaced by XMLStreamListener
  */
 public interface NodeVisitor {
 
+	@Deprecated
     public boolean visit(StoredNode node);
 }

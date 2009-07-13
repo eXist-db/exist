@@ -39,7 +39,6 @@
 	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.2.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.3.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-impl-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-2.1.7-deprecated.jar"/>
@@ -110,5 +109,6 @@
 	<classpathentry kind="lib" path="lib/user/svnkit.jar"/>
 	<classpathentry kind="lib" path="lib/user/jfreechart-1.0.12.jar"/>
 	<classpathentry kind="lib" path="lib/user/jcommon-1.0.15.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.4.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
