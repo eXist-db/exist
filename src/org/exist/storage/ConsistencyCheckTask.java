@@ -76,9 +76,9 @@ public class ConsistencyCheckTask implements SystemTask {
         createBackup = backup.equalsIgnoreCase("YES");
         String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
         incremental = inc.equalsIgnoreCase("YES");
-        String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "no");
+        String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "yes");
         incrementalCheck = incCheck.equalsIgnoreCase("YES");
-        String max = properties.getProperty(MAX_PROP_NAME, "-1");
+        String max = properties.getProperty(MAX_PROP_NAME, "5");
         try {
             maxInc = Integer.parseInt(max);
         } catch (NumberFormatException e) {
