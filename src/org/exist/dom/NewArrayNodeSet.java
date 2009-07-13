@@ -434,7 +434,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
-    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, int contextId) {
+    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, int contextId,
+                                       boolean copyMatches) {
         sort();
         NodeSet result = new NewArrayNodeSet();
 		NodeProxy node;
@@ -443,7 +444,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 			node = (NodeProxy) i.next();
             docIdx = findDoc(node.getDocument());
 	        if (docIdx > -1) {
-	        	getDescendantsInSet(docIdx, result, node, childOnly, includeSelf, mode, contextId);
+	        	getDescendantsInSet(docIdx, result, node, childOnly, includeSelf, mode, contextId, copyMatches);
             }
 		}
 		return result;
@@ -461,7 +462,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @param contextId
      */
     private NodeSet getDescendantsInSet(int docIdx, NodeSet result, NodeProxy parent, boolean childOnly,
-                                boolean includeSelf, int mode, int contextId) {
+                                boolean includeSelf, int mode, int contextId, boolean copyMatches) {
         NodeProxy p;
         NodeId parentId = parent.getNodeId();
         // document nodes are treated specially
@@ -485,7 +486,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                             } else {
                                 nodes[i].copyContext(parent);
                             }
-                            nodes[i].addMatches(parent);
+                            if (copyMatches)
+                                nodes[i].addMatches(parent);
                             result.add(nodes[i]);
                             break;
                         case NodeSet.ANCESTOR :
@@ -495,7 +497,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                             } else {
                                 parent.copyContext(nodes[i]);
                             }
-                            parent.addMatches(nodes[i]);
+                            if (copyMatches)
+                                parent.addMatches(nodes[i]);
                             result.add(parent, 1);
                             break;
                     }
@@ -548,7 +551,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                                 } else {
                                     nodes[i].copyContext(parent);
                                 }
-                                nodes[i].addMatches(parent);
+                                if (copyMatches)
+                                    nodes[i].addMatches(parent);
                                 result.add(nodes[i]);
                                 break;
                             case NodeSet.ANCESTOR :
@@ -558,7 +562,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                                 } else {
                                     parent.copyContext(nodes[i]);
                                 }
-                                parent.addMatches(nodes[i]);
+                                if (copyMatches)
+                                    parent.addMatches(nodes[i]);
                                 result.add(parent, 1);
                                 break;
                         }
@@ -580,12 +585,13 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @param contextId an <code>int</code> value
      * @return a <code>NodeProxy</code> value
      */
-    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId) {
+    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId,
+                                         boolean copyMatches) {
         sort();
         int docIdx = findDoc(doc);
         if (docIdx < 0)
             return null;
-        return hasDescendantsInSet(docIdx, ancestorId, contextId, includeSelf);
+        return hasDescendantsInSet(docIdx, ancestorId, contextId, includeSelf, copyMatches);
     }
 
     /**
@@ -596,7 +602,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @param includeSelf a <code>boolean</code> value
      * @return a <code>NodeProxy</code> value
      */
-    private NodeProxy hasDescendantsInSet(int docIdx, NodeId ancestorId, int contextId, boolean includeSelf) {
+    private NodeProxy hasDescendantsInSet(int docIdx, NodeId ancestorId, int contextId, boolean includeSelf,
+                                          boolean copyMatches) {
         // do a binary search to pick some node in the range of valid child
         // ids
         int low = documentOffsets[docIdx];
@@ -642,7 +649,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                     } else {
                         ancestor.copyContext(nodes[i]);
                     }
-                    ancestor.addMatches(nodes[i]);
+                    if (copyMatches)
+                        ancestor.addMatches(nodes[i]);
                     foundOne = true;
                 }
             } else {
@@ -664,7 +672,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     	sort();
         if (al instanceof VirtualNodeSet)
             return super.selectParentChild(al, mode, contextId);
-    	return getDescendantsInSet(al, true, false, mode, contextId);
+    	return getDescendantsInSet(al, true, false, mode, contextId, true);
     }
 
     private boolean isSorted() {
@@ -813,13 +821,14 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @see org.exist.dom.AbstractNodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
      */
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
-                                            boolean includeSelf, int contextId) {
+                                            boolean includeSelf, int contextId,
+                                            boolean copyMatches) {
         sort();
         if (al instanceof VirtualNodeSet) {
             return super.selectAncestorDescendant(al, mode, includeSelf,
-                                                  contextId);
+                                                  contextId, copyMatches);
         }
-        return getDescendantsInSet(al, false, includeSelf, mode, contextId);
+        return getDescendantsInSet(al, false, includeSelf, mode, contextId, copyMatches);
     }
 
     /* (non-Javadoc)

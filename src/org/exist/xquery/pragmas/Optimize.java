@@ -121,11 +121,12 @@ public class Optimize extends Pragma {
                 // determine the set of potential ancestors for which the predicate has to
                 // be re-evaluated to filter out wrong matches
                 if (contextStep == null || current > 0) {
-                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR, true, contextId);
+                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
+                        true, contextId, false);
                 } else {
                     NodeSelector selector;
                     long start = System.currentTimeMillis();
-                    selector = new AncestorSelector(selection, contextId, true);
+                    selector = new AncestorSelector(selection, contextId, true, false);
                     ElementIndex index = context.getBroker().getElementIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {

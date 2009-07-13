@@ -125,7 +125,7 @@ public class BasicNodeSetTest extends TestCase {
             
             System.out.println("Testing AncestorSelector ...");
             test = new NameTest(Type.ELEMENT, new QName("ACT", ""));
-            selector = new AncestorSelector(seq.toNodeSet(), -1, false);
+            selector = new AncestorSelector(seq.toNodeSet(), -1, false, true);
             set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
             		test.getName(), selector);
             assertEquals(15, set.getLength());
@@ -135,7 +135,7 @@ public class BasicNodeSetTest extends TestCase {
             test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
             NodeSet ns = seq.toNodeSet();
             System.out.println("ns = " + ns.getLength());
-            selector = new AncestorSelector(ns, -1, true);
+            selector = new AncestorSelector(ns, -1, true, true);
             set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
             		test.getName(), selector);
             assertEquals(2628, set.getLength());
@@ -188,12 +188,13 @@ public class BasicNodeSetTest extends TestCase {
             System.out.println("NodeSetHelper.selectParentChild: PASS");
             
             System.out.println("Testing AbstractNodeSet.selectAncestorDescendant ...");
-            result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1);
+            result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1, true);
             assertEquals(56, result.getLength());
             System.out.println("AbstractNodeSet.selectAncestorDescendant: PASS");
             
             System.out.println("Testing AbstractNodeSet.selectAncestorDescendant2 ...");
-            result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, true, -1);
+            result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT,
+                true, -1, true);
             assertEquals(1, result.getLength());
             System.out.println("AbstractNodeSet.selectAncestorDescendant2: PASS");
             
