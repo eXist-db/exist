@@ -1279,7 +1279,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, int)
      */
-    public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId) {
+    public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId,
+                                            boolean copyMatches) {
         return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 

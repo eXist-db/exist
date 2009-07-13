@@ -25,7 +25,8 @@ import org.exist.numbering.NodeId;
 
 public interface ExtNodeSet extends NodeSet {
 
-    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId);
+    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId,
+                                         boolean copyMatches);
     
     public ByDocumentIterator iterateByDocument();
 

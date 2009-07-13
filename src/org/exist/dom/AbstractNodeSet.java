@@ -254,7 +254,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * will be added to each result of the selection. 
      * 
      */
-    public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId) {
+    public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId,
+                                            boolean copyMatches) {
         return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 

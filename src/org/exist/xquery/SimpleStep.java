@@ -82,7 +82,8 @@ public class SimpleStep extends Step {
                 NodeSet nodeSet = set.toNodeSet();
                 switch(axis) {
                     case Constants.DESCENDANT_SELF_AXIS:
-                        result = nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, contextId);
+                        result = nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
+                            true, contextId, true);
                         break;
                     case Constants.CHILD_AXIS:
                         result = nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);

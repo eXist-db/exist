@@ -168,7 +168,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
 	 */
-	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId);
+	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId,
+                                            boolean copyMatches);
 		
 	/**
 	 * For a given set of potential ancestor nodes, return all ancestors

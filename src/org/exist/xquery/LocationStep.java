@@ -542,7 +542,7 @@ public class LocationStep extends Step {
                                                             NodeSet.DESCENDANT, contextId);
                     case Constants.DESCENDANT_ATTRIBUTE_AXIS:
                         return currentSet.selectAncestorDescendant(contextSet,
-                                                                   NodeSet.DESCENDANT, false, contextId);
+                                                                   NodeSet.DESCENDANT, false, contextId, true);
                     default:
                         throw new IllegalArgumentException(
                                                            "Unsupported axis specified");
@@ -686,12 +686,12 @@ public class LocationStep extends Step {
                 }
                 switch (axis) {
                     case Constants.DESCENDANT_SELF_AXIS:
-                        NodeSet tempSet = currentSet.selectAncestorDescendant(contextSet,
-                                                                              NodeSet.DESCENDANT, true, contextId);
+                        NodeSet tempSet = currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT,
+                            true, contextId, true);
                         return tempSet;
                     case Constants.DESCENDANT_AXIS:
-                        return currentSet.selectAncestorDescendant(contextSet,
-                                                                   NodeSet.DESCENDANT, false, contextId);
+                        return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false,
+                            contextId, true);
                     default:
                         throw new IllegalArgumentException(
                                                            "Unsupported axis specified");
@@ -1100,10 +1100,10 @@ public class LocationStep extends Step {
             NodeSelector selector;
             switch (axis) {
                 case Constants.ANCESTOR_SELF_AXIS:
-                    selector = new AncestorSelector(contextSet, contextId, true);
+                    selector = new AncestorSelector(contextSet, contextId, true, true);
                     break;
                 case Constants.ANCESTOR_AXIS:
-                    selector = new AncestorSelector(contextSet, contextId, false);
+                    selector = new AncestorSelector(contextSet, contextId, false, true);
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported axis specified");
