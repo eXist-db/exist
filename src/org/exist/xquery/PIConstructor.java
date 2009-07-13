@@ -49,12 +49,13 @@ public class PIConstructor extends NodeConstructor {
             target = pi;
         } else {
             target = pi.substring(0, p);
-            if(++p < pi.length())
+            if(++p < pi.length()) {
                 data = pi.substring(p);
 
-            Matcher m = wsContentStart.matcher(data);
-            if (m.matches()) {
-                data = m.group(2);
+                Matcher m = wsContentStart.matcher(data);
+                if (m.matches()) {
+                    data = m.group(2);
+                }
             }
         }
         if (target.equalsIgnoreCase("xml")) {
