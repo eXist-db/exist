@@ -40,7 +40,9 @@ public class UpdateStatistics extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("update-statistics", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-        "Internal function",
+        "This function is part of the unfinished index statistics module, which is not " +
+        "yet usable in a normal eXist setup. update-statistics rebuilds index statistics " +
+        "for the entire database.",
         null,
         new SequenceType(Type.EMPTY, Cardinality.ZERO));
 
