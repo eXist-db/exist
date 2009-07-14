@@ -19,6 +19,7 @@
  */
 package org.exist.xquery.modules.math;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -28,6 +29,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -39,25 +41,27 @@ import org.exist.xquery.value.Type;
  * @author Dannes Wessels
  */
 public class TwoParamFunctions extends BasicFunction {
+	
+	private static final Logger logger = Logger.getLogger(TwoParamFunctions.class);
     
     public final static FunctionSignature signature[] = {
         new FunctionSignature(
                 new QName("atan2", MathModule.NAMESPACE_URI),
-                "Returns the angle theta from the conversion of rectangular coordinates (x, y) to polar coordinates (r, theta). $a is y and $b is x.",
+                "Returns the angle theta from the conversion of rectangular coordinates (x, y) to polar coordinates (r, theta).",
                 new SequenceType[] {
-                    new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, ""),
+                    new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "")
                 },
-                new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("theta", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The angle theta")
                 ),
         new FunctionSignature(
                 new QName("power", MathModule.NAMESPACE_URI),
-                "Returns the value of $a raised to the power of $b.",
+                "Returns the value of $value raised to the power of $power.",
                 new SequenceType[] {
-                    new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, ""),
+                    new FunctionParameterSequenceType("power", Type.DOUBLE, Cardinality.EXACTLY_ONE, "")
                 },
-                new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
                 )
     };
     
@@ -72,6 +76,7 @@ public class TwoParamFunctions extends BasicFunction {
      * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	logger.info("Entering " + MathModule.PREFIX + ":" + getName().getLocalName());
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -107,6 +112,7 @@ public class TwoParamFunctions extends BasicFunction {
             context.getProfiler().end(this, "", result);
         }
         
+    	logger.info("Exiting " + MathModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
     
