@@ -23,12 +23,14 @@ package org.exist.xquery.modules.simpleql;
 
 import java.io.StringReader;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -39,14 +41,16 @@ import antlr.TokenStreamException;
 
 public class ParseSimpleQL extends BasicFunction {
 
+	private static final Logger logger = Logger.getLogger(ParseSimpleQL.class);
+	
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("parse-simpleql", SimpleQLModule.NAMESPACE_URI, SimpleQLModule.PREFIX),
             "Translates expressions in a simple query language to an XPath expression. A single search term " +
             "is translated into '. &= term', 'and'/'or' used to combine terms, quotes define a phrase and are translated " +
             "into near(., 'quoted terms').",
-            new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+            new SequenceType[] { new FunctionParameterSequenceType("expression", Type.STRING, Cardinality.ZERO_OR_ONE, "")},
+            new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "result"));
     
     public ParseSimpleQL(XQueryContext context) {
         super(context, signature);
@@ -54,12 +58,14 @@ public class ParseSimpleQL extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
+    	logger.info("Entering " + SimpleQLModule.PREFIX + ":" + getName().getLocalName());
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         String query = args[0].getStringValue();
         SimpleQLLexer lexer = new SimpleQLLexer(new StringReader(query));
         SimpleQLParser parser = new SimpleQLParser(lexer);
         try {
+        	logger.info("Exiting " + SimpleQLModule.PREFIX + ":" + getName().getLocalName());
             return new StringValue(parser.expr());
         } catch (RecognitionException e) {
             throw new XPathException(this, "An error occurred while parsing the query expression: " + e.getMessage(), e);
