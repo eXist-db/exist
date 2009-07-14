@@ -48,6 +48,7 @@ import org.jfree.chart.JFreeChart;
 
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 
 
@@ -59,11 +60,23 @@ import org.exist.xquery.value.NodeValue;
 public class JFreeCharting extends BasicFunction {
 
     private static final String function1Txt =
-            "Render chart using JFreechart. Generate chart of type $a " +
-            "with configuration $b the data in $c.";
+            "Render chart using JFreechart. Check documentation on " +
+            "http://www.jfree.org/jfreechart/ for details about chart types, " +
+            "parameters and data structures.";
 
      private static final String function2Txt = function1Txt +
              " Output is directly streamed into the servlet output stream.";
+
+    private static final String chartText="Supported chart types: LineChart, LineChart3D, " +
+            "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
+            "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
+            "WaterfallChart.";
+
+    private static final String parametersText="Configuration formatted as <configuration>"+
+            "<param1>Value1</param1><param2>Value2</param2>/<configuration>.  " +
+            "Supported parameters: width height title categoryAxisLabel " +
+            "valueAxisLabel domainAxisLabel rangeAxisLabel orientation " +
+            "order legend tooltips urls.";
 
     public final static FunctionSignature signatures[] = {
 
@@ -71,9 +84,10 @@ public class JFreeCharting extends BasicFunction {
             new QName("render", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX),
             function1Txt,
             new SequenceType[]{
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("chart-type", Type.STRING, Cardinality.EXACTLY_ONE, chartText),
+                new FunctionParameterSequenceType("configuration", Type.NODE, Cardinality.EXACTLY_ONE, parametersText),
+                new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE, "JFreechart " +
+                        "XML formatted CategoryDataset or PieDataset."),
             },
             new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
         ),
@@ -82,9 +96,10 @@ public class JFreeCharting extends BasicFunction {
             new QName("stream-render", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX),
             function2Txt,
             new SequenceType[]{
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("chart-type", Type.STRING, Cardinality.EXACTLY_ONE, chartText),
+                new FunctionParameterSequenceType("configuration", Type.NODE, Cardinality.EXACTLY_ONE, parametersText),
+                new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE, "JFreechart " +
+                        "XML formatted CategoryDataset or PieDataset."),
             },
             new SequenceType(Type.EMPTY, Cardinality.EMPTY)
         )
