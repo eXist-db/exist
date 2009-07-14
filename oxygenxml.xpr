@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <meta>
+        <filters directoryPatterns=".svn" filePatterns="*.java,*.class"
+            positiveFilePatterns="" showHiddenFiles="false"/>
+        <options>
+            <serialized>
+                <map>
+                    <entry>
+                        <String xml:space="preserve">key.xquery.option.pane.group</String>
+                        <Boolean xml:space="preserve">true</Boolean>
+                    </entry>
+                    <entry>
+                        <String xml:space="preserve">xquery.format.transformer.output</String>
+                        <Boolean xml:space="preserve">true</Boolean>
+                    </entry>
+                    <entry>
+                        <String xml:space="preserve">xquery.options.transformation.engine.v9</String>
+                        <String xml:space="preserve">localhost</String>
+                    </entry>
+                    <entry>
+                        <String xml:space="preserve">xquery.size.limit.sequence.view</String>
+                        <Integer xml:space="preserve">2</Integer>
+                    </entry>
+                    <entry>
+                        <String xml:space="preserve">xquery.wrap.result</String>
+                        <Boolean xml:space="preserve">false</Boolean>
+                    </entry>
+                </map>
+            </serialized>
+        </options>
+    </meta>
+    <projectTree name="oxygenxml.xpr">
+        <folder name="atom">
+            <file name="atom-example.xq"/>
+            <file name="atom-services.xml"/>
+        </folder>
+        <folder name="bin">
+            <folder name="batch.d">
+                <file name="bin/batch.d/check_jmx_status.bat"/>
+                <file name="bin/batch.d/get_opts.bat"/>
+            </folder>
+            <folder name="functions.d">
+                <file name="bin/functions.d/eXist-settings.sh"/>
+                <file name="bin/functions.d/getopt-settings.sh"/>
+                <file name="bin/functions.d/jmx-settings.sh"/>
+            </folder>
+            <file name="bin/backup.bat"/>
+            <file name="bin/backup.sh"/>
+            <file name="bin/client.bat"/>
+            <file name="bin/client.sh"/>
+            <file name="bin/cpappend.bat"/>
+            <file name="bin/exist.sh"/>
+            <file name="bin/exist-init.d.sh"/>
+            <file name="bin/query.py"/>
+            <file name="bin/rpclite.pl"/>
+            <file name="bin/run.bat"/>
+            <file name="bin/run.sh"/>
+            <file name="bin/server.bat"/>
+            <file name="bin/server.sh"/>
+            <file name="bin/shutdown.bat"/>
+            <file name="bin/shutdown.sh"/>
+            <file name="bin/startup_cluster.bat"/>
+            <file name="bin/startup.bat"/>
+            <file name="bin/startup.sh"/>
+            <file name="bin/startupCluster.sh"/>
+            <file name="bin/xmlrpc.pl"/>
+        </folder>
+        <folder name="build">
+            <folder name="scripts">
+                <folder name="cocoon">
+                    <file name="build/scripts/cocoon/build.properties"/>
+                    <file name="build/scripts/cocoon/build.xml"/>
+                    <file
+                        name="build/scripts/cocoon/exist.generator.xmap"/>
+                    <file name="build/scripts/cocoon/exist.xsamples"/>
+                    <file name="build/scripts/cocoon/exist-gump.xsl"/>
+                    <file name="build/scripts/cocoon/exist-jars.xsl"/>
+                    <file
+                        name="build/scripts/cocoon/exist-logicsheet.xconf"/>
+                    <file name="build/scripts/cocoon/exist-servlet.xweb"/>
+                    <file
+                        name="build/scripts/cocoon/exist-servlet-mapping.xweb"/>
+                    <file
+                        name="build/scripts/cocoon/exist-sourcefactory.xconf"/>
+                    <file
+                        name="build/scripts/cocoon/exist-sourcefactory-with-xindice.xconf"
+                    />
+                </folder>
+                <folder name="cruisecontrol">
+                    <folder name="projects">
+                        <file
+                            name="build/scripts/cruisecontrol/projects/build.exist.xml"/>
+                        <file
+                            name="build/scripts/cruisecontrol/projects/build.xml"
+                        />
+                    </folder>
+                    <file name="build/scripts/cruisecontrol/config.xml"
+                    />
+                </folder>
+                <file name="build/scripts/antlr3.xml"/>
+                <file name="build/scripts/build-impl.xml"/>
+                <file name="build/scripts/demoserver.xml"/>
+                <file name="build/scripts/dist.xml"/>
+                <file name="build/scripts/dist-war-conf.xsl"/>
+                <file name="build/scripts/dist-war-log4j.xsl"/>
+                <file name="build/scripts/installer.xml"/>
+                <file name="build/scripts/jarsigner.xml"/>
+                <file name="build/scripts/junit.xml"/>
+                <file name="build/scripts/minimal.xml"/>
+                <file name="build/scripts/minimal-fix-conf.xsl"/>
+                <file name="build/scripts/minimal-fix-log4j.xsl"/>
+                <file name="build/scripts/performance.xml"/>
+                <file name="build/scripts/quality.xml"/>
+                <file name="build/scripts/soap.xml"/>
+                <file name="build/scripts/subversion.xml"/>
+            </folder>
+            <file name="build.properties"/>
+            <file name="build.xml"/>
+        </folder>
+        <folder name="configuration">
+            <file name="conf.xml"/>
+            <file name="conf.xml.tmpl"/>
+            <file name="descriptor.xml"/>
+            <file name="descriptor.xml.tmpl"/>
+            <file name="log4j.dtd"/>
+            <file name="log4j.xml"/>
+            <file name="mime-types.xml"/>
+            <file name="mime-types.xml.tmpl"/>
+            <file name="server.xml"/>
+            <file name="server.xml.tmpl"/>
+        </folder>
+        <folder name="installer">
+            <folder name="scripts">
+                <file name="installer/scripts/backup.bat"/>
+                <file name="installer/scripts/backup.sh"/>
+                <file name="installer/scripts/build.bat"/>
+                <file name="installer/scripts/build.sh"/>
+                <file name="installer/scripts/client.bat"/>
+                <file name="installer/scripts/client.sh"/>
+                <file name="installer/scripts/server.bat"/>
+                <file name="installer/scripts/server.sh"/>
+                <file name="installer/scripts/setup.bat"/>
+                <file name="installer/scripts/setup.sh"/>
+                <file name="installer/scripts/shutdown.bat"/>
+                <file name="installer/scripts/shutdown.sh"/>
+                <file name="installer/scripts/startup.bat"/>
+                <file name="installer/scripts/startup.sh"/>
+            </folder>
+            <file name="installer/index.html"/>
+            <file name="installer/install.xml.tmpl"/>
+            <file name="installer/jobs.xml"/>
+            <file name="installer/launch_client.bat"/>
+            <file name="installer/launch4j.xml"/>
+            <file name="installer/NOTE.txt"/>
+            <file name="installer/readme.html"/>
+            <file name="installer/shortcutSpec.xml"/>
+            <file name="installer/UnixShortcutSpec.xml"/>
+            <file name="installer/userInput.xml"/>
+        </folder>
+        <folder name="misc">
+            <file name="backup.properties"/>
+            <file name="client.properties"/>
+            <file name="client.properties.tmpl"/>
+            <file name="examples-setup.xml"/>
+        </folder>
+        <folder name="roadmap">
+            <file name="roadmap/eXist.planner"/>
+            <file name="roadmap/eXist-from-Rennes-to-Eindhoven.html"/>
+        </folder>
+        <folder name="schema">
+            <file name="schema/collection.xconf.xsd"/>
+            <file name="schema/conf.xsd"/>
+            <file name="schema/descriptor.xsd"/>
+            <file name="schema/mime-types.xsd"/>
+            <file name="schema/server.xsd"/>
+            <file name="schema/users.xsd"/>
+        </folder>
+        <folder name="webapp">
+            <folder name="admin">
+                <folder name="scripts">
+                    <file name="webapp/admin/scripts/prettify.js"/>
+                    <file name="webapp/admin/scripts/utilities.js"/>
+                </folder>
+                <folder name="styles">
+                    <file name="webapp/admin/styles/prettify.css"/>
+                </folder>
+                <file name="webapp/admin/admin.css"/>
+                <file name="webapp/admin/admin.xql"/>
+                <file name="webapp/admin/backup.xqm"/>
+                <file name="webapp/admin/browse.xqm"/>
+                <file name="webapp/admin/controller.xql"/>
+                <file name="webapp/admin/dates.xqm"/>
+                <file name="webapp/admin/error.css"/>
+                <file name="webapp/admin/logo.jpg"/>
+                <file name="webapp/admin/proc.xql"/>
+                <file name="webapp/admin/retrieve-backup.xql"/>
+                <file name="webapp/admin/setup.xqm"/>
+                <file name="webapp/admin/shutdown.xqm"/>
+                <file name="webapp/admin/status.xqm"/>
+                <file name="webapp/admin/trace.xqm"/>
+                <file name="webapp/admin/users.xqm"/>
+                <file name="webapp/admin/versions.xql"/>
+                <file name="webapp/admin/versions.xqm"/>
+                <file name="webapp/admin/view-source.xql"/>
+                <file name="webapp/admin/xml2html.xslt"/>
+                <file name="webapp/admin/xqueries.xqm"/>
+                <file name="webapp/admin/yahoo-ui.xql"/>
+            </folder>
+            <folder name="scripts">
+                <folder name="syntax">
+                    <file name="webapp/scripts/syntax/clipboard.swf"/>
+                    <file name="webapp/scripts/syntax/shBrushCss.js"/>
+                    <file name="webapp/scripts/syntax/shBrushDiff.js"/>
+                    <file name="webapp/scripts/syntax/shBrushJava.js"/>
+                    <file name="webapp/scripts/syntax/shBrushJavaFX.js"/>
+                    <file name="webapp/scripts/syntax/shBrushJScript.js"/>
+                    <file name="webapp/scripts/syntax/shBrushPlain.js"/>
+                    <file name="webapp/scripts/syntax/shBrushSql.js"/>
+                    <file name="webapp/scripts/syntax/shBrushXml.js"/>
+                    <file name="webapp/scripts/syntax/shBrushXQuery.js"/>
+                    <file name="webapp/scripts/syntax/shCore.js"/>
+                    <file name="webapp/scripts/syntax/shLegacy.js"/>
+                    <file name="webapp/scripts/syntax/sh-min.js"/>
+                </folder>
+                <folder name="yui">
+                    <file name="webapp/scripts/yui/utilities2.7.0.js"/>
+                    <file
+                        name="webapp/scripts/yui/yahoo-dom-event2.7.0.js"/>
+                    <file name="webapp/scripts/yui/yui-combined2.7.0.js"/>
+                    <file name="webapp/scripts/yui/yui-skin.css"/>
+                </folder>
+                <file name="webapp/scripts/fundocs.js"/>
+                <file name="webapp/scripts/main.js"/>
+                <file name="webapp/scripts/prototype.js"/>
+            </folder>
+            <folder name="styles">
+                <folder name="syntax">
+                    <file name="webapp/styles/syntax/help.png"/>
+                    <file name="webapp/styles/syntax/magnifier.png"/>
+                    <file
+                        name="webapp/styles/syntax/page_white_code.png"/>
+                    <file
+                        name="webapp/styles/syntax/page_white_copy.png"/>
+                    <file name="webapp/styles/syntax/printer.png"/>
+                    <file name="webapp/styles/syntax/shCore.css"/>
+                    <file name="webapp/styles/syntax/shThemeDefault.css"/>
+                    <file name="webapp/styles/syntax/shThemeDjango.css"/>
+                    <file name="webapp/styles/syntax/shThemeEmacs.css"/>
+                    <file
+                        name="webapp/styles/syntax/shThemeFadeToGrey.css"/>
+                    <file
+                        name="webapp/styles/syntax/shThemeMidnight.css"/>
+                    <file name="webapp/styles/syntax/shThemeRDark.css"/>
+                    <file name="webapp/styles/syntax/TestPages.css"/>
+                    <file name="webapp/styles/syntax/wrapping.png"/>
+                </folder>
+                <file name="webapp/styles/curvycorners.js"/>
+                <file name="webapp/styles/default-style.css"/>
+                <file name="webapp/styles/default-style2.css"/>
+                <file name="webapp/styles/niftyCorners.css"/>
+                <file name="webapp/styles/niftycube.js"/>
+                <file name="webapp/styles/roadmap.css"/>
+            </folder>
+            <folder name="stylesheets">
+                <folder name="sitemap">
+                    <file
+                        name="webapp/stylesheets/sitemap/simple-sitemap2html.xsl"
+                    />
+                </folder>
+                <folder name="system">
+                    <folder name="scripts">
+                        <file
+                            name="webapp/stylesheets/system/scripts/main.js"
+                        />
+                    </folder>
+                    <file
+                        name="webapp/stylesheets/system/directory2html.xslt"/>
+                    <file
+                        name="webapp/stylesheets/system/error2html.xslt"/>
+                    <file
+                        name="webapp/stylesheets/system/linkstatus2html.xslt"/>
+                    <file name="webapp/stylesheets/system/main.css"/>
+                    <file
+                        name="webapp/stylesheets/system/sitemap2html.xslt"/>
+                    <file
+                        name="webapp/stylesheets/system/status2html.xslt"/>
+                    <file name="webapp/stylesheets/system/xml2html.xslt"/>
+                    <file
+                        name="webapp/stylesheets/system/xmlform2html.xslt"
+                    />
+                </folder>
+                <file name="webapp/stylesheets/changes.xsl"/>
+                <file name="webapp/stylesheets/db2html.xsl"/>
+                <file name="webapp/stylesheets/db2xhtml.xsl"/>
+                <file name="webapp/stylesheets/doc2html-2.xsl"/>
+                <file name="webapp/stylesheets/facts.xsl"/>
+                <file name="webapp/stylesheets/fragment-extractor.xsl"/>
+                <file name="webapp/stylesheets/query.xsl"/>
+                <file name="webapp/stylesheets/roadmap.xsl"/>
+                <file name="webapp/stylesheets/shakes.xsl"/>
+                <file name="webapp/stylesheets/simple-samples2html.xsl"/>
+                <file name="webapp/stylesheets/simple-sql2html.xsl"/>
+                <file name="webapp/stylesheets/simple-xml2html.xsl"/>
+                <file name="webapp/stylesheets/xml2html.xsl"/>
+                <file name="webapp/stylesheets/xmlsource.xsl"/>
+            </folder>
+            <folder name="xforms">
+                <folder name="tasks">
+                    <file name="webapp/xforms/tasks/maskBG.png"/>
+                    <file name="webapp/xforms/tasks/todo.css"/>
+                    <file name="webapp/xforms/tasks/todo.xql"/>
+                    <file name="webapp/xforms/tasks/todo-list.xml"/>
+                    <file name="webapp/xforms/tasks/todo-projects.xml"/>
+                </folder>
+                <folder name="xsltforms">
+                    <file name="webapp/xforms/xsltforms/dump.php"/>
+                    <file name="webapp/xforms/xsltforms/echo.php"/>
+                    <file name="webapp/xforms/xsltforms/focus.gif"/>
+                    <file name="webapp/xforms/xsltforms/icon_error.gif"/>
+                    <file name="webapp/xforms/xsltforms/icon_file.gif"/>
+                    <file name="webapp/xforms/xsltforms/icon_folder.gif"/>
+                    <file name="webapp/xforms/xsltforms/icon_help.gif"/>
+                    <file name="webapp/xforms/xsltforms/icon_hint.gif"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_en_UK.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_es.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_fr.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_gl.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_nb_NO.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_nn_NO.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages_ru.properties"/>
+                    <file
+                        name="webapp/xforms/xsltforms/messages.properties"/>
+                    <file name="webapp/xforms/xsltforms/tab.png"/>
+                    <file
+                        name="webapp/xforms/xsltforms/thBackground.png"/>
+                    <file name="webapp/xforms/xsltforms/Thumbs.db"/>
+                    <file
+                        name="webapp/xforms/xsltforms/titleBackground.png"/>
+                    <file name="webapp/xforms/xsltforms/xsltforms.css"/>
+                    <file name="webapp/xforms/xsltforms/xsltforms.js"/>
+                    <file name="webapp/xforms/xsltforms/xsltforms.xsl"/>
+                </folder>
+                <file name="webapp/xforms/address.xml"/>
+                <file name="webapp/xforms/balance.xml"/>
+                <file name="webapp/xforms/bind.xml"/>
+                <file name="webapp/xforms/bookmarks.xml"/>
+                <file name="webapp/xforms/button.xml"/>
+                <file name="webapp/xforms/calculator.xml"/>
+                <file name="webapp/xforms/checkbox.xml"/>
+                <file name="webapp/xforms/controller.xql"/>
+                <file name="webapp/xforms/counties.xml"/>
+                <file name="webapp/xforms/date.xml"/>
+                <file name="webapp/xforms/deep-copy.xml"/>
+                <file name="webapp/xforms/examples.xml"/>
+                <file name="webapp/xforms/first-field.xml"/>
+                <file name="webapp/xforms/hello.xml"/>
+                <file name="webapp/xforms/incremental.xml"/>
+                <file name="webapp/xforms/index.htm"/>
+                <file name="webapp/xforms/input.xml"/>
+                <file name="webapp/xforms/input-width.xml"/>
+                <file name="webapp/xforms/post-handler.xq"/>
+                <file name="webapp/xforms/run.xql"/>
+                <file name="webapp/xforms/secret.xml"/>
+                <file name="webapp/xforms/select.xml"/>
+                <file name="webapp/xforms/select1.xml"/>
+                <file name="webapp/xforms/select1-drop.xml"/>
+                <file name="webapp/xforms/select-from-file.xml"/>
+                <file name="webapp/xforms/select-from-file%20copy.xml"/>
+                <file name="webapp/xforms/select-model.xml"/>
+                <file name="webapp/xforms/select-multi-col.xml"/>
+                <file name="webapp/xforms/sidebar.xml"/>
+                <file name="webapp/xforms/spreadsheet.xml"/>
+                <file name="webapp/xforms/textarea.css"/>
+                <file name="webapp/xforms/textarea.xml"/>
+                <file name="webapp/xforms/textarea-styled.xml"/>
+                <file name="webapp/xforms/xf.xml"/>
+                <file name="webapp/xforms/xforms.xml"/>
+                <file name="webapp/xforms/XMLSchemaTypeCode.xml"/>
+                <file name="webapp/xforms/xpath.xml"/>
+            </folder>
+            <folder name="xproc">
+                <folder name="examples">
+                    <file
+                        name="webapp/xproc/examples/complex-pipeline.xproc"/>
+                    <file name="webapp/xproc/examples/hello.xproc"/>
+                    <file name="webapp/xproc/examples/perror.xproc"/>
+                    <file
+                        name="webapp/xproc/examples/pescape-markup.xproc"/>
+                    <file name="webapp/xproc/examples/pfor-each.xproc"/>
+                    <file
+                        name="webapp/xproc/examples/phttp-request.xproc"/>
+                    <file
+                        name="webapp/xproc/examples/phttp-request2.xproc"/>
+                    <file name="webapp/xproc/examples/pxquery.xproc"/>
+                    <file name="webapp/xproc/examples/pxquery2.xproc"/>
+                    <file
+                        name="webapp/xproc/examples/simple-pipeline.xproc"/>
+                    <file name="webapp/xproc/examples/stylesheet.xml"/>
+                    <file name="webapp/xproc/examples/test.xml"/>
+                    <file name="webapp/xproc/examples/test1.xml"/>
+                    <file name="webapp/xproc/examples/twitter.xproc"/>
+                    <file name="webapp/xproc/examples/twitter-view.xql"/>
+                    <file
+                        name="webapp/xproc/examples/xslt-identity.xproc"
+                    />
+                </folder>
+                <folder name="pipelines">
+                    <file name="webapp/xproc/pipelines/helloworld.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/padd-attribute.xml"/>
+                    <file name="webapp/xproc/pipelines/pchoose.xml"/>
+                    <file name="webapp/xproc/pipelines/pcount.xml"/>
+                    <file name="webapp/xproc/pipelines/pdelete.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pdirectory-list.xml"/>
+                    <file name="webapp/xproc/pipelines/perror.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pescape-markup.xml"/>
+                    <file name="webapp/xproc/pipelines/pfor-each.xml"/>
+                    <file name="webapp/xproc/pipelines/pgroup.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/phttp-request.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/phttp-request2.xml"/>
+                    <file name="webapp/xproc/pipelines/pinsert.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/plabel-elements.xml"/>
+                    <file name="webapp/xproc/pipelines/pload.xml"/>
+                    <file name="webapp/xproc/pipelines/ppack.xml"/>
+                    <file name="webapp/xproc/pipelines/prename.xml"/>
+                    <file name="webapp/xproc/pipelines/preplace.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pset-attributes.xml"/>
+                    <file name="webapp/xproc/pipelines/pstore.xml"/>
+                    <file name="webapp/xproc/pipelines/pstore2.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pstring-replace.xml"/>
+                    <file name="webapp/xproc/pipelines/punwrap.xml"/>
+                    <file name="webapp/xproc/pipelines/puuid.xml"/>
+                    <file name="webapp/xproc/pipelines/pwrap.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pwrap-sequence.xml"/>
+                    <file name="webapp/xproc/pipelines/pxinclude.xm"/>
+                    <file name="webapp/xproc/pipelines/pxquery.xml"/>
+                    <file name="webapp/xproc/pipelines/pxquery2.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pxsl-formatter.xml"/>
+                    <file
+                        name="webapp/xproc/pipelines/pxsl-formatter2.xml"/>
+                    <file name="webapp/xproc/pipelines/pxslt.xml"/>
+                </folder>
+                <folder name="resource">
+                    <folder name="image">
+                        <file
+                            name="webapp/xproc/resource/image/processflow.gif"/>
+                        <file
+                            name="webapp/xproc/resource/image/xproc_complex_pipeline.gif"
+                        />
+                    </folder>
+                </folder>
+                <folder name="result"/>
+                <folder name="unit-test">
+                    <file name="webapp/xproc/unit-test/regression.xql"/>
+                    <file
+                        name="webapp/xproc/unit-test/submit-test-report.xml"/>
+                    <file name="webapp/xproc/unit-test/test-result.xsl"/>
+                    <file name="webapp/xproc/unit-test/test-runner.xml"/>
+                    <file name="webapp/xproc/unit-test/testrunner.xql"/>
+                    <file name="webapp/xproc/unit-test/test-runner1.xml"/>
+                    <file name="webapp/xproc/unit-test/test-runner2.xml"
+                    />
+                </folder>
+                <folder name="xml">
+                    <file name="webapp/xproc/xml/test.xml"/>
+                </folder>
+                <folder name="xslt">
+                    <file name="webapp/xproc/xslt/existdoc2pdf.xsl"/>
+                    <file name="webapp/xproc/xslt/stylesheet.xsl"/>
+                </folder>
+                <file name="webapp/xproc/components-xproc-steps.xml"/>
+                <file name="webapp/xproc/controller.xql"/>
+                <file name="webapp/xproc/core-xproc-steps.xml"/>
+                <file name="webapp/xproc/examples.xml"/>
+                <file name="webapp/xproc/extension-xproc-steps.xml"/>
+                <file name="webapp/xproc/functions-xproc-steps.xml"/>
+                <file name="webapp/xproc/optional-xproc-steps.xml"/>
+                <file name="webapp/xproc/run.xql"/>
+                <file name="webapp/xproc/sidebar.xml"/>
+                <file name="webapp/xproc/standard-xproc-steps.xml"/>
+                <file name="webapp/xproc/xproc.xml"/>
+            </folder>
+            <folder name="xqts">
+                <folder name="images">
+                    <file name="webapp/xqts/images/lm.gif"/>
+                    <file name="webapp/xqts/images/lmh.gif"/>
+                    <file name="webapp/xqts/images/ln.gif"/>
+                    <file name="webapp/xqts/images/loading.gif"/>
+                    <file name="webapp/xqts/images/lp.gif"/>
+                    <file name="webapp/xqts/images/lph.gif"/>
+                    <file name="webapp/xqts/images/tm.gif"/>
+                    <file name="webapp/xqts/images/tmh.gif"/>
+                    <file name="webapp/xqts/images/tn.gif"/>
+                    <file name="webapp/xqts/images/tp.gif"/>
+                    <file name="webapp/xqts/images/tph.gif"/>
+                    <file name="webapp/xqts/images/vline.gif"/>
+                </folder>
+                <folder name="scripts">
+                    <file name="webapp/xqts/scripts/connection.js"/>
+                    <file name="webapp/xqts/scripts/container.js"/>
+                    <file name="webapp/xqts/scripts/dom.js"/>
+                    <file name="webapp/xqts/scripts/event.js"/>
+                    <file name="webapp/xqts/scripts/report.js"/>
+                    <file name="webapp/xqts/scripts/shBrushXml.js"/>
+                    <file name="webapp/xqts/scripts/shBrushXQuery.js"/>
+                    <file name="webapp/xqts/scripts/shCore.js"/>
+                    <file name="webapp/xqts/scripts/treeview.js"/>
+                    <file name="webapp/xqts/scripts/yahoo.js"/>
+                </folder>
+                <folder name="styles">
+                    <file name="webapp/xqts/styles/container.css"/>
+                    <file name="webapp/xqts/styles/report.css"/>
+                    <file
+                        name="webapp/xqts/styles/SyntaxHighlighter.css"/>
+                    <file name="webapp/xqts/styles/tableft1.gif"/>
+                    <file name="webapp/xqts/styles/tabright1.gif"/>
+                    <file name="webapp/xqts/styles/tree.css"/>
+                    <file name="webapp/xqts/styles/xml2html.css"/>
+                </folder>
+                <folder name="stylesheets">
+                    <file
+                        name="webapp/xqts/stylesheets/xml-highlight.xsl"
+                    />
+                </folder>
+                <file name="webapp/xqts/build.xml"/>
+                <file name="webapp/xqts/collectresults.xql"/>
+                <file name="webapp/xqts/config.xml"/>
+                <file name="webapp/xqts/config.xml.tmpl"/>
+                <file name="webapp/xqts/hacked-tests.xml"/>
+                <file name="webapp/xqts/progress.xql"/>
+                <file name="webapp/xqts/report.xql"/>
+                <file name="webapp/xqts/skip.xml"/>
+                <file name="webapp/xqts/xqts.xconf"/>
+                <file name="webapp/xqts/xqts.xql"/>
+            </folder>
+            <folder name="xquery">
+                <folder name="resources">
+                    <file
+                        name="webapp/xquery/resources/javanet_button_90.gif"/>
+                    <file name="webapp/xquery/resources/plus.gif"/>
+                    <file name="webapp/xquery/resources/powered.gif"/>
+                </folder>
+                <folder name="scripts">
+                    <folder name="syntax">
+                        <file
+                            name="webapp/xquery/scripts/syntax/sh-min.js"
+                        />
+                    </folder>
+                    <file name="webapp/xquery/scripts/fundocs.js"/>
+                    <file name="webapp/xquery/scripts/svnlog.js"/>
+                </folder>
+                <folder name="styles">
+                    <file name="webapp/xquery/styles/acronyms.css"/>
+                    <file name="webapp/xquery/styles/default-style.css"/>
+                    <file name="webapp/xquery/styles/docsearch.css"/>
+                    <file name="webapp/xquery/styles/functions.css"/>
+                    <file name="webapp/xquery/styles/fundocs.css"/>
+                    <file name="webapp/xquery/styles/niftyCorners.css"/>
+                    <file name="webapp/xquery/styles/niftycube.js"/>
+                    <file name="webapp/xquery/styles/svn.css"/>
+                    <file name="webapp/xquery/styles/xquery.css"/>
+                </folder>
+                <folder name="stylesheets">
+                    <folder name=".svn">
+                        <folder name="prop-base">
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/prop-base/acronyms.xsl.svn-base"/>
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/prop-base/detailed.xsl.svn-base"/>
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/prop-base/functions.xsl.svn-base"/>
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/prop-base/overview.xsl.svn-base"
+                            />
+                        </folder>
+                        <folder name="props"/>
+                        <folder name="text-base">
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/text-base/acronyms.xsl.svn-base"/>
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/text-base/detailed.xsl.svn-base"/>
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/text-base/functions.xsl.svn-base"/>
+                            <file
+                                name="webapp/xquery/stylesheets/.svn/text-base/overview.xsl.svn-base"
+                            />
+                        </folder>
+                        <folder name="tmp">
+                            <folder name="prop-base"/>
+                            <folder name="props"/>
+                            <folder name="text-base"/>
+                        </folder>
+                        <file
+                            name="webapp/xquery/stylesheets/.svn/all-wcprops"/>
+                        <file
+                            name="webapp/xquery/stylesheets/.svn/entries"
+                        />
+                    </folder>
+                    <file name="webapp/xquery/stylesheets/detailed.xsl"/>
+                    <file name="webapp/xquery/stylesheets/functions.xsl"/>
+                    <file name="webapp/xquery/stylesheets/overview.xsl"
+                    />
+                </folder>
+                <file name="webapp/xquery/acronyms.xql"/>
+                <file name="webapp/xquery/biblio.xml"/>
+                <file name="webapp/xquery/biblio.xql"/>
+                <file name="webapp/xquery/call.xql"/>
+                <file name="webapp/xquery/controller.xql"/>
+                <file name="webapp/xquery/docs.xql"/>
+                <file name="webapp/xquery/docsetup.xql"/>
+                <file name="webapp/xquery/error.css"/>
+                <file name="webapp/xquery/exist-articles.xql"/>
+                <file name="webapp/xquery/fibo.xql"/>
+                <file name="webapp/xquery/functions.xql"/>
+                <file name="webapp/xquery/functions.xsl"/>
+                <file name="webapp/xquery/guess.xql"/>
+                <file name="webapp/xquery/header.xml"/>
+                <file name="webapp/xquery/hello.xql"/>
+                <file name="webapp/xquery/hello-plural.xql"/>
+                <file name="webapp/xquery/hello-plural-db.xql"/>
+                <file name="webapp/xquery/httpclient-test.xql"/>
+                <file name="webapp/xquery/json-test.js"/>
+                <file name="webapp/xquery/json-test.xql"/>
+                <file name="webapp/xquery/login.css"/>
+                <file name="webapp/xquery/login.xql"/>
+                <file name="webapp/xquery/logo.jpg"/>
+                <file name="webapp/xquery/parameters.xq"/>
+                <file name="webapp/xquery/search.xql"/>
+                <file name="webapp/xquery/session.xql"/>
+                <file name="webapp/xquery/sidebar.xml"/>
+                <file name="webapp/xquery/sitemap.xmap"/>
+                <file name="webapp/xquery/svnlog.xql"/>
+                <file name="webapp/xquery/table.xql"/>
+                <file name="webapp/xquery/transform.xql"/>
+                <file name="webapp/xquery/twitter.xql"/>
+                <file name="webapp/xquery/twitter-view.xql"/>
+                <file name="webapp/xquery/watchdog.gif"/>
+            </folder>
+            <file name="webapp/acknowledge.xml"/>
+            <file name="webapp/ant-tasks.xml"/>
+            <file name="webapp/atompub.xml"/>
+            <file name="webapp/backup.xml"/>
+            <file name="webapp/building.xml"/>
+            <file name="webapp/client.xml"/>
+            <file name="webapp/cluster.xml"/>
+            <file name="webapp/configuration.xml"/>
+            <file name="webapp/controller.xql"/>
+            <file name="webapp/credits.xml"/>
+            <file name="webapp/deployment.xml"/>
+            <file name="webapp/devguide_indexes.xml"/>
+            <file name="webapp/devguide_rest.xml"/>
+            <file name="webapp/devguide_soap.xml"/>
+            <file name="webapp/devguide_xmldb.xml"/>
+            <file name="webapp/devguide_xmlrpc.xml"/>
+            <file name="webapp/devguide_xquery.xml"/>
+            <file name="webapp/devguide.xml"/>
+            <file name="webapp/documentation.xml"/>
+            <file name="webapp/download.xml"/>
+            <file name="webapp/eclipse.xml"/>
+            <file name="webapp/examples.xml"/>
+            <file name="webapp/extensions.xml"/>
+            <file name="webapp/facts.xml"/>
+            <file name="webapp/feed.xql"/>
+            <file name="webapp/header.xml"/>
+            <file name="webapp/index.xml"/>
+            <file name="webapp/indexing.xml"/>
+            <file name="webapp/jmx.xml"/>
+            <file name="webapp/journal.xml"/>
+            <file name="webapp/kwic.xql"/>
+            <file name="webapp/ldap-security.xml"/>
+            <file name="webapp/lucene.xml"/>
+            <file name="webapp/quickstart.xml"/>
+            <file name="webapp/roadmap.xml"/>
+            <file name="webapp/scheduler.xml"/>
+            <file name="webapp/security.xml"/>
+            <file name="webapp/sidebar.xml"/>
+            <file name="webapp/sitemap.xmap"/>
+            <file name="webapp/triggers.xml"/>
+            <file name="webapp/tuning.xml"/>
+            <file name="webapp/update_ext.xml"/>
+            <file name="webapp/validation.xml"/>
+            <file name="webapp/webdav.xml"/>
+            <file name="webapp/xacml.xml"/>
+            <file name="webapp/xacml-dev.xml"/>
+            <file name="webapp/xacml-features.xml"/>
+            <file name="webapp/xacml-intro.xml"/>
+            <file name="webapp/xacml-usage.xml"/>
+            <file name="webapp/xinclude.xml"/>
+            <file name="webapp/xmlprague06.xml"/>
+            <file name="webapp/xquery.xml"/>
+        </folder>
+    </projectTree>
+</project>
