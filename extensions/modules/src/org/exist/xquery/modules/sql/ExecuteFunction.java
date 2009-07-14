@@ -22,6 +22,7 @@
 
 package org.exist.xquery.modules.sql;
 
+import org.apache.log4j.Logger;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.PrintStream;
@@ -41,6 +42,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -63,13 +65,16 @@ import org.w3c.dom.Node;
  */
 public class ExecuteFunction extends BasicFunction 
 {
+	private static final Logger logger = Logger.getLogger(ExecuteFunction.class);
+	
 	public final static FunctionSignature[] signatures = { new FunctionSignature(
 			new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ),
-				"Executes a SQL statement $b against a SQL db using the connection indicated by the connection handle in $a. $c indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)",
+				"Executes a SQL statement against a SQL db using the connection " +
+				"indicated by the connection handle.",
 				new SequenceType[] {
-						new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ),
-						new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
-						new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) },
+						new FunctionParameterSequenceType( "handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "connection handle" ),
+						new FunctionParameterSequenceType( "sql-statement", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
+						new FunctionParameterSequenceType( "make-node-from-column-name", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)" ) },
 				new SequenceType( Type.NODE, Cardinality.ZERO_OR_ONE ) 
 			) };
 
@@ -99,6 +104,7 @@ public class ExecuteFunction extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + SQLModule.PREFIX + ":" + getName().getLocalName());
 		// was a connection and SQL statement specified?
 		if( args[0].isEmpty() || args[1].isEmpty() ) {
 			return( Sequence.EMPTY_SEQUENCE );
@@ -233,6 +239,7 @@ public class ExecuteFunction extends BasicFunction
 			}
 			builder.endDocument();
 			
+			logger.info("Exiting " + SQLModule.PREFIX + ":" + getName().getLocalName());
 			
 			// return the XML result set
 			return(node);

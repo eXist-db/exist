@@ -27,6 +27,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -34,6 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -46,6 +48,7 @@ import org.exist.xquery.value.Type;
  * Get a connection to a SQL Database
  * 
  * @author Adam Retter <adam@exist-db.org>
+ * @author Loren Cahlander
  * @serial 2008-05-29
  * @version 1.21
  * 
@@ -54,49 +57,44 @@ import org.exist.xquery.value.Type;
  */
 public class GetConnectionFunction extends BasicFunction {
 
+	private static final Logger logger = Logger.getLogger(GetConnectionFunction.class);
+	
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("get-connection", SQLModule.NAMESPACE_URI,
 							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a and a JDBC URL in $b. Returns an xs:long representing the connection handle.",
+					"Open's a connection to a SQL Database. Expects a JDBC Driver class name and a JDBC URL. Returns an xs:long representing the connection handle.",
 					new SequenceType[] {
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE) },
-					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)),
+							new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+							new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "JDBC URL") 
+					},
+					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")),
 
 			new FunctionSignature(
 					new QName("get-connection", SQLModule.NAMESPACE_URI,
 							SQLModule.PREFIX),
 					"Open's a connection to a SQL Database. Expects "
-							+ "a JDBC Driver class name in $a and a JDBC URL in $b."
-							+ " Additional JDBC properties may be set in $c in the"
+							+ "a JDBC Driver class name and a JDBC URL."
+							+ " Additional JDBC properties may be set in the"
 							+ " form <properties><property name=\"\" value=\"\"/></properties>. "
 							+ "Returns an xs:long representing the connection handle.",
 					new SequenceType[] {
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.ELEMENT,
-									Cardinality.ZERO_OR_ONE) },
-					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)),
+							new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+							new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "JDBC URL"),
+							new FunctionParameterSequenceType("properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "")
+					},
+					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")),
 
 			new FunctionSignature(
 					new QName("get-connection", SQLModule.NAMESPACE_URI,
 							SQLModule.PREFIX),
 					"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a, a JDBC URL in $b, a username in $c and a password in $d. Returns an xs:long representing the connection handle.",
 					new SequenceType[] {
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE) },
-					new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)) };
+							new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+							new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "JDBC URL"),
+							new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+							new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "") },
+					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")) };
 
 	/**
 	 * GetConnectionFunction Constructor
@@ -124,6 +122,9 @@ public class GetConnectionFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		
+		logger.info("Entering " + SQLModule.PREFIX + ":" + getName().getLocalName());
+		
 		// was a db driver and url specified?
 		if (args[0].isEmpty() || args[1].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
@@ -153,6 +154,8 @@ public class GetConnectionFunction extends BasicFunction {
 				// try and get the connection
 				con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
 			}
+
+			logger.info("Exiting " + SQLModule.PREFIX + ":" + getName().getLocalName());
 
 			// store the connection and return the uid handle of the connection
 			return new IntegerValue(SQLModule.storeConnection(context, con));
