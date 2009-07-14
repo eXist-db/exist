@@ -152,28 +152,8 @@ public class Validation extends BasicFunction  {
         InputStream is = null;
         ValidationReport report = null;
 
-        try {
-            // Get inputstream of XML instance document
-            if (args[0].getItemType() == Type.ANY_URI || args[0].getItemType() == Type.STRING) {
-                // anyURI provided
-                String url = args[0].getStringValue();
-
-                // Fix URL
-                if (url.startsWith("/")) {
-                    url = "xmldb:exist://" + url;
-                }
-
-                is = new URL(url).openStream();
-
-            } else if (args[0].getItemType() == Type.ELEMENT || args[0].getItemType() == Type.DOCUMENT) {
-                // Node provided
-                is = new NodeInputStream(context, args[0].iterate()); // new NodeInputStream()
-
-            } else {
-                LOG.error("Wrong item type " + Type.getTypeName(args[0].getItemType()));
-                throw new XPathException(this, "wrong item type " + Type.getTypeName(args[0].getItemType()));
-            }
-
+        try { // args[0]
+            is = Shared.getInputStream(args[0], context);
 
             if(args.length == 1) {
                 // Validate using system catalog
@@ -181,11 +161,7 @@ public class Validation extends BasicFunction  {
 
             } else {
                 // Validate using resource speciefied in second parameter
-                String url=args[1].getStringValue();
-
-                if(url.startsWith("/")) {
-                    url="xmldb:exist://" + url;
-                }
+                String url=Shared.getUrl(args[1]);
 
                 report=validator.validate(is, url);
             }
@@ -218,83 +194,11 @@ public class Validation extends BasicFunction  {
             result.add(new BooleanValue(report.isValid()));
             return result;
 
-        } else if (isCalledAs("validate-report") || isCalledAs("jing-report")) {
+        } else  /* isCalledAs("validate-report") || isCalledAs("jing-report") */{
             MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = writeReport(report, builder);
+            NodeImpl result = Shared.writeReport(report, builder);
             return result;
 
         }
-        
-
-        // Oops
-        LOG.error("invoked with wrong function name");
-        throw new XPathException(this, "unknown function");
-    }
-
-    private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
-
-        // start root element
-        int nodeNr = builder.startElement("", "report", "report", null);
-
-        // validation status: valid or invalid
-        builder.startElement("", "status", "status", null);
-        if (report.isValid()) {
-            builder.characters("valid");
-        } else {
-            builder.characters("invalid");
-        }
-        builder.endElement();
-
-        // namespace when available
-        if (report.getNamespaceUri() != null) {
-            builder.startElement("", "namespace", "namespace", null);
-            builder.characters(report.getNamespaceUri());
-            builder.endElement();
-        }
-
-        // validation duration
-        builder.startElement("", "time", "time", null);
-        builder.characters("" + report.getValidationDuration());
-        builder.endElement();
-
-        // print exceptions if any
-        if (report.getThrowable() != null) {
-            builder.startElement("", "exception", "exception", null);
-            builder.characters("" + report.getThrowable().getMessage());
-            builder.endElement();
-        }
-
-        // reusable attributes
-        AttributesImpl attribs = new AttributesImpl();
-
-        // iterate validation report items, write message
-        List cr = report.getValidationReportItemList();
-        for (Iterator iter = cr.iterator(); iter.hasNext();) {
-            ValidationReportItem vri = (ValidationReportItem) iter.next();
-
-            // construct attributes
-            attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
-            attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
-            attribs.addAttribute("", "column", "column", "CDATA", Integer.toString(vri.getColumnNumber()));
-
-            if (vri.getRepeat() > 1) {
-                attribs.addAttribute("", "repeat", "repeat", "CDATA", Integer.toString(vri.getRepeat()));
-            }
-
-            // write message
-            builder.startElement("", "message", "message", attribs);
-            builder.characters(vri.getMessage());
-            builder.endElement();
-
-            // Reuse attributes
-            attribs.clear();
-        }
-
-        // finish root element
-        builder.endElement();
-
-        // return result
-        return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
-
     }
 }

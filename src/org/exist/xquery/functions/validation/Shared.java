@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.validation;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -38,6 +40,8 @@ import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
@@ -54,7 +58,15 @@ public class Shared {
 
         InputStream is = null;
 
-        if (s.getItemType() == Type.ANY_URI) {
+        if (s.getItemType() == Type.JAVA_OBJECT) {
+            Item item = s.itemAt(0);
+            Object obj = ((JavaObjectValue) item).getObject();
+            if (!(obj instanceof File)) {
+                throw new XPathException("Passed java object should be a File");
+            }
+            is = new FileInputStream((File)obj);
+
+        } else if (s.getItemType() == Type.ANY_URI) {
             // anyURI provided
             String url = s.getStringValue();
 
