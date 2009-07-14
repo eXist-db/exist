@@ -62,20 +62,30 @@
                      password="${exist.password}"
                      createdirectories="true"
                      subcollections="true"
-                     overwrite="false"
+                     overwrite="true"
                      destdir="antunit"/>
 
          <available file="antunit/logo.jpg" property="binary.present"/>
          <available file="antunit/test.xml" property="xml.present"/>
 
          <au:assertEquals message="binary file was not extracted" expected="true"
-                               actual="${binary.present}" casesensitive="false"/>
+                              actual="${binary.present}" casesensitive="false"/>
 
          <au:assertEquals message="xml file was not extracted" expected="true"
                                actual="${xml.present}" casesensitive="false"/>
 
     </target>
 
+    <target name="test_createdirectories1_XMLDBExtract" description="check that createdirectories works with single resource">
+
+      <xdb:extract uri="${test.coll}/antunit"
+            resource="logo.jpg"
+            user="${exist.user}"
+            password="${exist.password}"
+            overwrite="true"
+            createdirectories="true"
+            destfile="antunit/newdir/logo.jpg"/>
+     </target>
 
      <target name="test_overwritedirs_XMLDBExtract" description="repeat extract dir/file test to test overwritedirs property">
 
@@ -83,6 +93,7 @@
                      user="${exist.user}"
                      password="${exist.password}"
                      overwrite="true"
+                     subcollections="true"
                      createdirectories="true"
                      destdir="antunit"/>
 
@@ -99,7 +110,6 @@
 
     <target name="test_binary_XMLDBExtract" description="test extraction of XML into files and collections">
 
-        <!-- destfile attribute is actually file //-->
         <xdb:extract uri="${test.coll}/antunit"  user="${exist.user}" password="${exist.password}"  type="binary" resource="logo.jpg" destfile="test-logo.jpg"/>
 
         <au:assertFileExists file="test-logo.jpg"/>
