@@ -21,8 +21,8 @@
  */
 package org.exist.validation;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import org.junit.*;
+import static org.junit.Assert.*;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
 import org.exist.storage.DBBroker;
-import org.exist.xquery.XPathException;
+import org.exist.xmldb.DatabaseInstanceManager;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -46,169 +46,167 @@ import org.xmldb.api.modules.XPathQueryService;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ValidationFunctions_Node_Test extends TestCase {
-    
+public class ValidationFunctions_Node_Test {
+
     private final static Logger logger = Logger.getLogger(ValidationFunctions_Node_Test.class);
-    
     private static XPathQueryService service;
     private static Collection root = null;
     private static Database database = null;
-    
-    public static void main(String[] args) throws XPathException {
-        TestRunner.run(ValidationFunctions_XSD_Test.class);
-    }
-    
-    public ValidationFunctions_Node_Test(String arg0) {
-        super(arg0);
-    }
-    
-    public static void initLog4J(){
+
+    public static void initLog4J() {
         Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
-        Appender appender=new ConsoleAppender(layout);
-        BasicConfigurator.configure(appender);       
+        Appender appender = new ConsoleAppender(layout);
+        BasicConfigurator.configure(appender);
     }
-    
-    public void testsetUp() throws Exception {
-        
+
+    @BeforeClass
+    public static void start() throws Exception {
+
         // initialize driver
-        System.out.println(this.getName());
         initLog4J();
-        logger.info(this.getName());
-        
+        logger.info("start");
+
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-        service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
+        service = (XPathQueryService) root.getService("XQueryService", "1.0");
     }
-    
+
     // ===========================================================
-    
     private void clearGrammarCache() {
         logger.info("Clearing grammar cache");
         ResourceSet result = null;
         try {
             result = service.query("validation:clear-grammar-cache()");
-            
+
         } catch (Exception e) {
             logger.error(e);
             e.printStackTrace();
             fail(e.getMessage());
         }
-        
+
     }
 
-      
-    public void testStoredNode() {
-        
-        System.out.println(this.getName());
-        logger.info(this.getName());
-        
+    @Test
+    public void storedNode() {
+
+        logger.info("storedNode");
+
         clearGrammarCache();
-        
+
         String query = null;
         ResourceSet result = null;
         String r = null;
-        
+
         try {
             logger.info("Test1");
-            query = "let $doc := doc('/db/validation/addressbook_valid.xml') "+
-            "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
-            "return $result";
+            query = "let $doc := doc('/db/validation/addressbook_valid.xml') " +
+                    "let $result := validation:validate( $doc, " +
+                    " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) " +
+                    "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
-            assertEquals( "valid document as node", "true", r );
-            
+            assertEquals("valid document as node", "true", r);
+
             clearGrammarCache();
-            
+
         } catch (Exception e) {
             logger.error(e);
             e.printStackTrace();
             fail(e.getMessage());
         }
-        
+
         try {
             logger.info("Test2");
-            
-            query = "let $doc := doc('/db/validation/addressbook_invalid.xml') "+
-            "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
-            "return $result";
+
+            query = "let $doc := doc('/db/validation/addressbook_invalid.xml') " +
+                    "let $result := validation:validate( $doc, " +
+                    " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) " +
+                    "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
-            assertEquals( "invalid document as node", "false", r );
-            
+            assertEquals("invalid document as node", "false", r);
+
             clearGrammarCache();
-            
+
         } catch (Exception e) {
             logger.error(e);
             e.printStackTrace();
             fail(e.getMessage());
         }
     }
-  
-    
-    public void testConstructedNode() {
-        
-        System.out.println(this.getName());
-        logger.info(this.getName());
-        
+
+    @Test
+    public void constructedNode() {
+
+        logger.info("constructedNode");
+
         clearGrammarCache();
-        
+
         String query = null;
         ResourceSet result = null;
         String r = null;
-        
+
         try {
             logger.info("Test1");
-            
-            query = "let $doc := "+
-            "<addressBook xmlns=\"http://jmvanel.free.fr/xsd/addressBook\">"+
-            "<owner> <cname>John Punin</cname> <email>puninj@cs.rpi.edu</email> </owner>"+
-            "<person> <cname>Harrison Ford</cname> <email>hford@famous.org</email> </person>"+
-            "<person> <cname>Julia Roberts</cname> <email>jr@pw.com</email> </person>"+
-            "</addressBook> " +
-            "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
-            "return $result";
+
+            query = "let $doc := " +
+                    "<addressBook xmlns=\"http://jmvanel.free.fr/xsd/addressBook\">" +
+                    "<owner> <cname>John Punin</cname> <email>puninj@cs.rpi.edu</email> </owner>" +
+                    "<person> <cname>Harrison Ford</cname> <email>hford@famous.org</email> </person>" +
+                    "<person> <cname>Julia Roberts</cname> <email>jr@pw.com</email> </person>" +
+                    "</addressBook> " +
+                    "let $result := validation:validate( $doc, " +
+                    " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) " +
+                    "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
-            assertEquals( "valid document as node", "true", r );
-            
+            assertEquals("valid document as node", "true", r);
+
             clearGrammarCache();
-            
+
         } catch (Exception e) {
             logger.error(e);
             e.printStackTrace();
             fail(e.getMessage());
         }
-        
+
         try {
             logger.info("Test2");
-            
-            query = "let $doc := "+
-            "<addressBook xmlns=\"http://jmvanel.free.fr/xsd/addressBook\">"+
-            "<owner1> <cname>John Punin</cname> <email>puninj@cs.rpi.edu</email> </owner1>"+
-            "<person> <cname>Harrison Ford</cname> <email>hford@famous.org</email> </person>"+
-            "<person> <cname>Julia Roberts</cname> <email>jr@pw.com</email> </person>"+
-            "</addressBook> " +
-            "let $result := validation:validate( $doc, "+
-            " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) "+
-            "return $result";
+
+            query = "let $doc := " +
+                    "<addressBook xmlns=\"http://jmvanel.free.fr/xsd/addressBook\">" +
+                    "<owner1> <cname>John Punin</cname> <email>puninj@cs.rpi.edu</email> </owner1>" +
+                    "<person> <cname>Harrison Ford</cname> <email>hford@famous.org</email> </person>" +
+                    "<person> <cname>Julia Roberts</cname> <email>jr@pw.com</email> </person>" +
+                    "</addressBook> " +
+                    "let $result := validation:validate( $doc, " +
+                    " xs:anyURI('/db/validation/xsd/addressbook.xsd') ) " +
+                    "return $result";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
-            assertEquals( "invalid document as node", "false", r );
-            
+            assertEquals("invalid document as node", "false", r);
+
             clearGrammarCache();
-            
+
         } catch (Exception e) {
             logger.error(e);
             e.printStackTrace();
             fail(e.getMessage());
         }
     }
-    
-    
+
+    @AfterClass
+    public static void shutdown() throws Exception {
+
+        logger.info("shutdown");
+
+        DatabaseManager.deregisterDatabase(database);
+        DatabaseInstanceManager dim =
+                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
+
+    }
 }
