@@ -117,6 +117,7 @@ public class Get extends AbstractWebDAVMethod {
             DocumentMetadata metadata = resource.getMetadata();
             response.setContentType(metadata.getMimeType());
             response.addDateHeader("Last-Modified", metadata.getLastModified());
+			response.addDateHeader("Created", metadata.getCreated());
             
 //            response.setContentLength(resource.getContentLength());
             ServletOutputStream os = response.getOutputStream();
@@ -204,6 +205,7 @@ public class Get extends AbstractWebDAVMethod {
             response.setContentType("text/html; charset=UTF-8");
             response.setContentLength(contentData.length);
             response.addDateHeader("Last-Modified", collection.getCreationTime());
+			response.addDateHeader("Created", collection.getCreationTime());
             
             ServletOutputStream os = response.getOutputStream();
             os.write(contentData);

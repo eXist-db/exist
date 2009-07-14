@@ -21,6 +21,33 @@
  */
 package org.exist.http;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -82,32 +109,6 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerConfigurationException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * 
@@ -487,6 +488,7 @@ public class RESTServer {
 							"Permission to read resource " + path + " denied");
 				}
 				response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
+	            response.addDateHeader("Last-Modified", col.getCreationTime());
 				response.addDateHeader("Created", col.getCreationTime());
 			}
 		}
@@ -1196,7 +1198,9 @@ public class RESTServer {
 			throw new PermissionDeniedException("Not allowed to read resource");
 		}
 
-        response.addDateHeader("Last-Modified", resource.getMetadata().getLastModified());
+		DocumentMetadata metadata = resource.getMetadata();
+        response.addDateHeader("Last-Modified", metadata.getLastModified());
+		response.addDateHeader("Created", metadata.getCreated());
 		if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary resource
 
@@ -1411,6 +1415,8 @@ public class RESTServer {
 
 		response.setContentType(MimeType.XML_TYPE.getName() + "; charset="
 				+ encoding);
+        response.addDateHeader("Last-Modified", collection.getCreationTime());
+		response.addDateHeader("Created", collection.getCreationTime());
 
 		OutputStreamWriter writer = new OutputStreamWriter(response
 				.getOutputStream(), encoding);
