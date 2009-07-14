@@ -61,6 +61,7 @@ public class Head extends AbstractWebDAVMethod {
 			if(collection != null) {
                 response.setContentLength(0);
                 response.addDateHeader("Last-Modified", collection.getCreationTime());
+                response.addDateHeader("Created", collection.getCreationTime());
 				return;
 			}
 			//TODO : release collection lock here ?
@@ -78,6 +79,7 @@ public class Head extends AbstractWebDAVMethod {
 			response.setContentType(metadata.getMimeType());
 			response.setContentLength(resource.getContentLength());
 			response.addDateHeader("Last-Modified", metadata.getLastModified());
+			response.addDateHeader("Created", metadata.getCreated());
 		} catch (EXistException e) {
 			throw new ServletException(e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
