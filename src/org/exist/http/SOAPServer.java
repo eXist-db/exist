@@ -86,6 +86,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.xquery.value.Type;
+import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1584,8 +1585,7 @@ public class SOAPServer
         	 * TODO: the code in this try statement (apart from the WSDLFilter use) was mostly extracted from
         	 * transform:stream-transform(), it would be better to be able to share that code somehow
         	 */
-        	
-	        SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+	        SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool());
 			TemplatesHandler templatesHandler = factory.newTemplatesHandler();
 			templatesHandler.startDocument();
 			Serializer serializer = broker.getSerializer();
