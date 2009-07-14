@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.EXistException;
+import org.exist.fulltext.FTIndex;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -35,11 +36,7 @@ import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.util.GlobToRegex;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -77,6 +74,8 @@ public class ExtNear extends ExtFulltext {
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        long start = System.currentTimeMillis();
+        
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
         
@@ -117,6 +116,9 @@ public class ExtNear extends ExtFulltext {
             preselectResult = (NodeSet) (hasWildcards ? patternMatch(context, terms, preselectResult) : 
                                 exactMatch(context, terms, preselectResult));
         }
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceIndexUsage(context, FTIndex.ID, this,
+                PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
         return preselectResult;
     }
 

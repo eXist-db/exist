@@ -321,7 +321,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
         }
         if (context.getProfiler().traceFunctions())
-            context.getProfiler().traceIndexUsage(context, this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
+            context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
         return preselectResult == null ? NodeSet.EMPTY_SET : preselectResult;
     }
 
@@ -470,7 +471,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 			}
 		}
         if (context.getProfiler().traceFunctions())
-            context.getProfiler().traceIndexUsage(context, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
+            context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
 		return result;
     }
 
@@ -518,7 +520,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		    }
 		}
         if (context.getProfiler().traceFunctions())
-            context.getProfiler().traceIndexUsage(context, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
+            context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
 		return result;
 	}
 
@@ -715,7 +718,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		        }
             }
             if (context.getProfiler().traceFunctions())
-                context.getProfiler().traceIndexUsage(context, this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
+                context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                    PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
         	return result;
 		} else {
 	    	if (LOG.isTraceEnabled())

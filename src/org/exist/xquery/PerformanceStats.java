@@ -35,6 +35,8 @@ import java.io.PrintWriter;
 
 public class PerformanceStats {
 
+    public final static String RANGE_IDX_TYPE = "range";
+
     public final static String XML_NAMESPACE = "http://exist-db.org/xquery/profiling";
     public final static String XML_PREFIX = "stats";
 
@@ -48,13 +50,15 @@ public class PerformanceStats {
     private static class IndexStats {
 
         String source;
+        String indexType;
         int line;
         int column;
         int mode = 0;
         int usageCount = 1;
         long executionTime = 0;
 
-        private IndexStats(String source, int line, int column, int mode) {
+        private IndexStats(String indexType, String source, int line, int column, int mode) {
+            this.indexType = indexType;
             this.source = source;
             this.line = line;
             this.column = column;
@@ -67,13 +71,13 @@ public class PerformanceStats {
         }
 
         public int hashCode() {
-            return source.hashCode() + line + column + mode;
+            return indexType.hashCode() + source.hashCode() + line + column + mode;
         }
 
         public boolean equals(Object obj) {
             IndexStats other = (IndexStats) obj;
-            return other.source.equals(source) && other.line == line && other.column == column &&
-                other.mode == mode;
+            return other.indexType.equals(indexType) && other.source.equals(source) &&
+                other.line == line && other.column == column && other.mode == mode;
         }
     }
 
@@ -183,8 +187,8 @@ public class PerformanceStats {
         }
     }
 
-    public void recordIndexUse(Expression expression, String source, int mode, long elapsed) {
-        IndexStats newStats = new IndexStats(source, expression.getLine(), expression.getColumn(), mode);
+    public void recordIndexUse(Expression expression, String indexName, String source, int mode, long elapsed) {
+        IndexStats newStats = new IndexStats(indexName, source, expression.getLine(), expression.getColumn(), mode);
         IndexStats stats = indexStats.get(newStats);
         if (stats == null) {
             newStats.executionTime = elapsed;
@@ -277,6 +281,7 @@ public class PerformanceStats {
         }
         for (IndexStats stats: indexStats.values()) {
             attrs.clear();
+            attrs.addAttribute("", "type", "type", "CDATA", stats.indexType);
             attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" +
                 stats.column + "]");
             attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));

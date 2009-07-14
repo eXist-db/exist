@@ -114,6 +114,7 @@ declare function prof:indexes($trace as element(), $sort as xs:string) as elemen
         		        Source
         	        </a>
                 </th>
+                <th class="trace-calls">Index</th>
                 <th class="trace-calls">Optimization</th>
         		<th class="trace-calls">
         		    <a href="{session:encode-url(request:get-uri())}?panel=trace&amp;sort=calls">
@@ -181,6 +182,7 @@ declare function prof:display-indexes($trace as element(), $sort as xs:string) a
             return
                 <tr>
                     <td>{prof:truncate-source(replace($index/@source, "^.*/([^/]+)$", "$1"))}</td>
+                    <td class="trace-calls">{$index/@type/string()}</td>
                     <td class="trace-calls">{$optimization}</td>
                     <td class="trace-calls">{$index/@calls/string()}</td>
                     <td class="trace-elapsed">{$index/@elapsed/string()}</td>
