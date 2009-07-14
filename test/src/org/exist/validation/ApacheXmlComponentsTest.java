@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,45 +22,28 @@
 
 package org.exist.validation;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  *  Class for testing XML Parser and XML Transformer configuration.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ApacheXmlComponentsTest extends TestCase {
-    
-    public ApacheXmlComponentsTest(String testName) {
-        super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ApacheXmlComponentsTest.class);
-        
-        return suite;
-    }
-    
-    protected void tearDown() {
-        System.out.println("tearDown");
-    }
-    
-    protected void setUp() {
-        System.out.println("setUp");
-    }
+public class ApacheXmlComponentsTest  {
     
     
-    public void testParserVersion() {
+    @Test
+    public void parserVersion() {
         StringBuffer xmlLibMessage = new StringBuffer();
         
         boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
         
         assertTrue(xmlLibMessage.toString(), validParser);
     }
-    
-    public void testTransformerVersion() {
+
+    @Test
+    public void transformerVersion() {
         StringBuffer xmlLibMessage = new StringBuffer();
         
         boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);

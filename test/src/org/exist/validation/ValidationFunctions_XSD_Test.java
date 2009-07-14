@@ -21,8 +21,8 @@
  */
 package org.exist.validation;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import org.junit.*;
+import static org.junit.Assert.*;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
@@ -47,7 +47,7 @@ import org.xmldb.api.modules.XPathQueryService;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ValidationFunctions_XSD_Test extends TestCase {
+public class ValidationFunctions_XSD_Test {
     
     
     private final static Logger logger = Logger.getLogger(ValidationFunctions_XSD_Test.class);
@@ -57,28 +57,20 @@ public class ValidationFunctions_XSD_Test extends TestCase {
     private static Collection root = null;
     private static Database database = null;
     
-    public static void main(String[] args) throws XPathException {
-        TestRunner.run(ValidationFunctions_XSD_Test.class);
-    }
-    
-    public ValidationFunctions_XSD_Test(String arg0) {
-        super(arg0);
-    }
     
     public static void initLog4J(){
         Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
         Appender appender=new ConsoleAppender(layout);
         BasicConfigurator.configure(appender);       
     }
-    
-    public void testsetUp() throws Exception {
+
+    @BeforeClass
+    public static void setUp() throws Exception {
         
         // initialize driver
-        System.out.println(this.getName());
-        
         initLog4J();
         
-        logger.info(this.getName());
+        logger.info("setUp");
         
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
@@ -103,11 +95,11 @@ public class ValidationFunctions_XSD_Test extends TestCase {
         }
         
     }
-    
+
+    @Test
     public void testXSD_NotInSystemCatalog() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("start");
         
         clearGrammarCache();
         
@@ -129,11 +121,11 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             fail(e.getMessage());
         }
     }
-    
+
+    @Test
     public void testXSD_SpecifiedCatalog() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("start");
         
         clearGrammarCache();
         
@@ -180,11 +172,11 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             fail(e.getMessage());
         }
     }
-    
+
+    @Test
     public void testXSD_SpecifiedGrammar() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("start");
         
         clearGrammarCache();
         
@@ -216,11 +208,11 @@ public class ValidationFunctions_XSD_Test extends TestCase {
             fail(e.getMessage());
         }
     }
-    
+
+    @Test
     public void testXSD_SearchedGrammar() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("start");
         
         clearGrammarCache();
         
@@ -274,11 +266,10 @@ public class ValidationFunctions_XSD_Test extends TestCase {
     
     // DTDs
     
-    
-    public void testtearDown() throws Exception {
-        
-        System.out.println(this.getName());
-        logger.info(this.getName());
+    @AfterClass
+    public static void stop() throws Exception {
+
+        logger.info("stop");
         
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =

@@ -21,15 +21,14 @@
  */
 package org.exist.validation;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import org.junit.*;
+import static org.junit.Assert.*;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xquery.XPathException;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -43,27 +42,23 @@ import org.xmldb.api.modules.XPathQueryService;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ValidationFunctions_DTD_Test extends TestCase {
+public class ValidationFunctions_DTD_Test {
     
     private final static Logger logger = Logger.getLogger(ValidationFunctions_DTD_Test.class);
     
     private static XPathQueryService service;
     private static Collection root = null;
     private static Database database = null;
-    
-    public static void main(String[] args) throws XPathException {
-        TestRunner.run(ValidationFunctions_XSD_Test.class);
-    }
-    
-    public ValidationFunctions_DTD_Test(String arg0) {
-        super(arg0);
-    }
-    
-    public void testsetUp() throws Exception {
-        
-        System.out.println(this.getName());
+
+    @BeforeClass
+    public static void init(){
         BasicConfigurator.configure();
-        logger.info(this.getName());
+    }
+
+    @Before
+    public void setUp() throws Exception {
+      
+        logger.info("setUp");
         
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
@@ -89,11 +84,11 @@ public class ValidationFunctions_DTD_Test extends TestCase {
     }
 
     // ===========================================================
-    
-    public void testValidateUsingSystemCatalog() {
+
+    @Test
+    public void validateUsingSystemCatalog() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("validateUsingSystemCatalog");
         
         ResourceSet result = null;
         String r = null;
@@ -112,11 +107,10 @@ public class ValidationFunctions_DTD_Test extends TestCase {
         }
     }
     
-
-    public void testSpecifiedCatalog() {
+    @Test
+    public void specifiedCatalog() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("specifiedCatalog");
         
         clearGrammarCache();
         
@@ -163,11 +157,11 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             fail(e.getMessage());
         }
     }
-    
-    public void testSpecifiedGrammar() {
+
+    @Test
+    public void specifiedGrammar() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("specifiedGrammar");
         
         clearGrammarCache();
         
@@ -199,11 +193,11 @@ public class ValidationFunctions_DTD_Test extends TestCase {
             fail(e.getMessage());
         }
     }
-    
-    public void testSearchedGrammar() {
+
+    @Test
+    public void searchedGrammar() {
         
-        System.out.println(this.getName());
-        logger.info(this.getName());
+        logger.info("searchedGrammar");
         
         clearGrammarCache();
         
@@ -256,11 +250,10 @@ public class ValidationFunctions_DTD_Test extends TestCase {
     }
     
     
-    
-    public void testtearDown() throws Exception {
-        
-        System.out.println(this.getName());
-        logger.info(this.getName());
+    @AfterClass
+    public static void shutdown() throws Exception {
+
+        logger.info("shutdown");
         
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =

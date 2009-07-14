@@ -32,6 +32,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.service.ValidationService;
 
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,6 +43,9 @@ import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XPathQueryService;
 
 
 /**
@@ -53,16 +58,10 @@ public class ValidationServiceTest  {
     private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private static Collection rootCollection = null;
-    private static ValidationService service = null;
-    
-//    public ValidationServiceTest(String testName) {
-//        super(testName);
-//    }
-//    
-//    public static Test suite() {
-//        TestSuite suite = new TestSuite(ValidationServiceTest.class);
-//        return suite;
-//    }
+    private static ValidationService validationService = null;
+    private static XPathQueryService service;
+    private static Database database = null;
+
     
     public static void initLog4J(){
         Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
@@ -74,19 +73,18 @@ public class ValidationServiceTest  {
 	public static void init() {
         initLog4J();
         
-    }
-    
-    @Before
-    public void setUp() {
         try {
             System.out.println(">>> setUp");
             Class cl = Class.forName(DRIVER);
-            Database database = (Database) cl.newInstance();
+             database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             rootCollection = DatabaseManager.getCollection(URI, "admin", null);
             Assert.assertNotNull("Could not connect to database.");
-            service = getValidationService();
+            validationService = getValidationService();
+
+            service = (XPathQueryService) rootCollection.getService( "XQueryService", "1.0" );
+            
             System.out.println("<<<\n");
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,7 +92,7 @@ public class ValidationServiceTest  {
         }
     }
     
-    private ValidationService getValidationService() {
+    private static ValidationService getValidationService() {
         try {
             return (ValidationService) rootCollection.getService("ValidationService", "1.0");
         } catch (Exception e) {
@@ -103,12 +101,19 @@ public class ValidationServiceTest  {
         }
         return null;
     }
+
+    // ===========================================================
+    @Before
+    public void clearGrammarCache() throws XMLDBException {
+        System.out.println("Clearing grammar cache");
+        ResourceSet result = service.query("validation:clear-grammar-cache()");
+    }
     
     @Test
     public void testGetName() {
         System.out.println("testGetName");
         try {
-            Assert.assertEquals("ValidationService check", service.getName(),  "ValidationService" );
+            Assert.assertEquals("ValidationService check", validationService.getName(),  "ValidationService" );
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -119,7 +124,7 @@ public class ValidationServiceTest  {
     public void testGetVersion() {
         System.out.println("testGetVersion");
         try {
-            Assert.assertEquals("ValidationService check", service.getVersion(),   "1.0" );
+            Assert.assertEquals("ValidationService check", validationService.getVersion(),   "1.0" );
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -130,10 +135,10 @@ public class ValidationServiceTest  {
     public void testXsdValidDocument() {
         System.out.println("testXsdValidDocument");
         try {
-            Assert.assertFalse( "system catalog", service.validateResource("/db/validation/addressbook_valid.xml") );
-            Assert.assertTrue( "specified catalog", service.validateResource("/db/validation/addressbook_valid.xml",
+            Assert.assertFalse( "system catalog", validationService.validateResource("/db/validation/addressbook_valid.xml") );
+            Assert.assertTrue( "specified catalog", validationService.validateResource("/db/validation/addressbook_valid.xml",
                 "/db/validation/xsd/catalog.xml") );
-            Assert.assertTrue( "specified grammar", service.validateResource("/db/validation/addressbook_valid.xml",
+            Assert.assertTrue( "specified grammar", validationService.validateResource("/db/validation/addressbook_valid.xml",
                 "/db/validation/xsd/addressbook.xsd") );
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,10 +150,10 @@ public class ValidationServiceTest  {
     public void testXsdInvalidDocument() {
         System.out.println("testXsdInvalidDocument");
         try {
-            Assert.assertFalse( "system catalog", service.validateResource("/db/validation/addressbook_invalid.xml") );
-            Assert.assertFalse( "specified catalog", service.validateResource("/db/validation/addressbook_invalid.xml",
+            Assert.assertFalse( "system catalog", validationService.validateResource("/db/validation/addressbook_invalid.xml") );
+            Assert.assertFalse( "specified catalog", validationService.validateResource("/db/validation/addressbook_invalid.xml",
                 "/db/validation/xsd/catalog.xml") );
-            Assert.assertFalse( "specified grammar", service.validateResource("/db/validation/addressbook_invalid.xml",
+            Assert.assertFalse( "specified grammar", validationService.validateResource("/db/validation/addressbook_invalid.xml",
                 "/db/validation/xsd/addressbook.xsd") );
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,7 +165,7 @@ public class ValidationServiceTest  {
     public void testNonexistingDocument() {
         System.out.println("testNonexistingDocument");
         try {
-            Assert.assertFalse( "non existing document", service.validateResource(DBBroker.ROOT_COLLECTION + "/foobar.xml") );
+            Assert.assertFalse( "non existing document", validationService.validateResource(DBBroker.ROOT_COLLECTION + "/foobar.xml") );
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -171,8 +176,8 @@ public class ValidationServiceTest  {
     public void testDtdValidDocument() {
         System.out.println("testDtdValidDocument");
         try {
-            Assert.assertFalse( "system catalog", service.validateResource("/db/validation/hamlet_valid.xml") );
-            Assert.assertTrue( "specified catalog", service.validateResource("/db/validation/hamlet_valid.xml",
+            Assert.assertFalse( "system catalog", validationService.validateResource("/db/validation/hamlet_valid.xml") );
+            Assert.assertTrue( "specified catalog", validationService.validateResource("/db/validation/hamlet_valid.xml",
                 "/db/validation/dtd/catalog.xml") );
 //            Assert.assertTrue( "specified grammar", service.validateResource("/db/validation/hamlet_valid.xml",
 //                "/db/validation/dtd/hamlet.dtd") );
@@ -186,7 +191,7 @@ public class ValidationServiceTest  {
     public void testDtdValidDocument2() {
         System.out.println("testDtdValidDocument");
         try {
-            Assert.assertTrue( "specified grammar", service.validateResource("/db/validation/hamlet_valid.xml",
+            Assert.assertTrue( "specified grammar", validationService.validateResource("/db/validation/hamlet_valid.xml",
                 "/db/validation/dtd/hamlet.dtd") );
         } catch (Exception e) {
             e.printStackTrace();
@@ -198,9 +203,9 @@ public class ValidationServiceTest  {
     public void testDtdInvalidDocument() {
         System.out.println("testDtdInvalidDocument");
         try {
-            Assert.assertFalse( "system catalog", service.validateResource("/db/grammar/hamlet_invalid.xml") );
+            Assert.assertFalse( "system catalog", validationService.validateResource("/db/grammar/hamlet_invalid.xml") );
             
-            Assert.assertFalse( "specified catalog", service.validateResource("/db/validation/hamlet_invalid.xml",
+            Assert.assertFalse( "specified catalog", validationService.validateResource("/db/validation/hamlet_invalid.xml",
                 "/db/validation/dtd/catalog.xml") );
             
 //            Assert.assertFalse( "specified grammar", service.validateResource("/db/validation/hamlet_invalid.xml",
@@ -215,9 +220,9 @@ public class ValidationServiceTest  {
     public void testNoDoctype() {
         System.out.println("testNoDoctype");
         try {
-            Assert.assertFalse( "system catalog", service.validateResource("/db/validation/hamlet_nodoctype.xml") );
+            Assert.assertFalse( "system catalog", validationService.validateResource("/db/validation/hamlet_nodoctype.xml") );
             
-            Assert.assertFalse( "specified catalog", service.validateResource("/db/validation/hamlet_nodoctype.xml",
+            Assert.assertFalse( "specified catalog", validationService.validateResource("/db/validation/hamlet_nodoctype.xml",
                 "/db/validation/dtd/catalog.xml") );
             
 //            Assert.assertFalse( "specified grammar", service.validateResource("/db/validation/hamlet_nodoctype.xml",
@@ -233,9 +238,9 @@ public class ValidationServiceTest  {
    public void testWrongDoctype() {
         System.out.println("testWrongDoctype");
         try {
-            Assert.assertFalse( "system catalog", service.validateResource("/db/validation/hamlet_wrongdoctype.xml") );
+            Assert.assertFalse( "system catalog", validationService.validateResource("/db/validation/hamlet_wrongdoctype.xml") );
             
-            Assert.assertFalse( "specified catalog", service.validateResource("/db/validation/hamlet_wrongdoctype.xml",
+            Assert.assertFalse( "specified catalog", validationService.validateResource("/db/validation/hamlet_wrongdoctype.xml",
                 "/db/validation/dtd/catalog.xml") );
             
 //            Assert.assertFalse( "specified grammar", service.validateResource("/db/validation/hamlet_wrongdoctype.xml",
@@ -251,5 +256,17 @@ public class ValidationServiceTest  {
                 Assert.fail(e.getMessage());
             }
         } 
+    }
+
+       @AfterClass
+    public static void shutdown() throws Exception {
+
+        System.out.println("shutdown");
+
+        DatabaseManager.deregisterDatabase(database);
+        DatabaseInstanceManager dim =
+            (DatabaseInstanceManager) rootCollection.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
+
     }
 }

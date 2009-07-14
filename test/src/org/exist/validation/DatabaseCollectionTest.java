@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,9 +21,8 @@
  */
 package org.exist.validation;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.*;
+import static org.junit.Assert.*;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -38,23 +37,15 @@ import org.xmldb.api.modules.CollectionManagementService;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class DatabaseCollectionTest  extends TestCase {
+public class DatabaseCollectionTest {
     
     private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private Collection rootCollection = null;
     
     private static Database database =null;
-    
-    public DatabaseCollectionTest(String testName) {
-        super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(DatabaseCollectionTest.class);
-        return suite;
-    }
-    
+
+    @Before
     public void setUp() {
         try {
             System.out.println(">>> setUp");
@@ -70,8 +61,9 @@ public class DatabaseCollectionTest  extends TestCase {
             fail(e.getMessage());
         }
     }
-    
-    protected void tearDown() throws Exception {
+
+    @After
+    public void tearDown() throws Exception {
         
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =
@@ -84,9 +76,9 @@ public class DatabaseCollectionTest  extends TestCase {
     }
     
     
-    
+    @Test
     public void testCreateCollections() {
-        System.out.println(this.getName());
+        System.out.println("testCreateCollections");
         try {
             Collection root = DatabaseManager.getCollection(URI, "guest", "guest");
             CollectionManagementService service =

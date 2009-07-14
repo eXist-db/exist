@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,7 +19,6 @@
  *
  * $Id: CollectionConfigurationValidationModeTest.java 6709 2007-10-12 20:58:52Z dizzzz $
  */
-
 package org.exist.validation;
 
 import org.apache.log4j.Appender;
@@ -31,6 +30,7 @@ import org.apache.log4j.PatternLayout;
 
 import org.exist.storage.DBBroker;
 
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -57,9 +57,7 @@ import static org.junit.Assert.*;
 public class CollectionConfigurationTest {
 
     String invalidConfig = "<invalid/>";
-
     private static final Logger LOG = Logger.getLogger(CollectionConfigurationValidationModeTest.class);
-    
     private static XPathQueryService xpqservice;
     private static Collection root = null;
     private static Database database = null;
@@ -67,44 +65,43 @@ public class CollectionConfigurationTest {
 
     public CollectionConfigurationTest() {
     }
-    
-    public static void initLog4J(){
+
+    public static void initLog4J() {
         Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
-        Appender appender=new ConsoleAppender(layout);
-        BasicConfigurator.configure(appender);       
+        Appender appender = new ConsoleAppender(layout);
+        BasicConfigurator.configure(appender);
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {       
+    public static void setUpClass() throws Exception {
         initLog4J();
         startDatabase();
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        // empty
+        DatabaseManager.deregisterDatabase(database);
+        DatabaseInstanceManager dim =
+                (DatabaseInstanceManager) root.getService(
+                "DatabaseInstanceManager", "1.0");
+        dim.shutdown();
+        database = null;
+
+        System.out.println("tearDown PASSED");
     }
 
-    @Before
-    public void setUp() throws Exception {
-        // empty
-    }
 
-    @After
-    public void tearDown() throws Exception {
-        // empty
-    }
-    
     // =============
-    private static void startDatabase() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException{
+    
+    private static void startDatabase() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-        xpqservice = (XPathQueryService) root.getService( "XQueryService", "1.0" );
+        xpqservice = (XPathQueryService) root.getService("XQueryService", "1.0");
         cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-        
+
     }
 
     private void createCollection(String collection) throws XMLDBException {
@@ -129,10 +126,9 @@ public class CollectionConfigurationTest {
         String r = (String) result.getResource(0).getContent();
         assertEquals("Store doc", collection + "/" + name, r);
     }
-    
+
     // ==========
-
-
+    
     @Test
     public void insertInvalidCollectionXconf() {
 
@@ -153,6 +149,4 @@ public class CollectionConfigurationTest {
         }
 
     }
-
-
 }
