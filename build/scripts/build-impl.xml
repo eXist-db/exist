@@ -488,12 +488,12 @@
 
         <delete failonerror="no" dir="${dist}"/>
 
-        <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
-        <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
-        <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
-        <ant antfile="build.xml" dir="extensions/fluent" target="clean"/>
-		<ant antfile="build.xml" dir="extensions/versioning" target="clean"/>
-        <ant antfile="xprocxq.xml" dir="extensions" target="clean"/>
+        <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
+        <ant antfile="xprocxq.xml" dir="extensions" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
 
