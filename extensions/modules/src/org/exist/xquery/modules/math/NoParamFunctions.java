@@ -19,6 +19,7 @@
  */
 package org.exist.xquery.modules.math;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -39,7 +40,9 @@ import org.exist.xquery.value.Type;
  */
 public class NoParamFunctions extends BasicFunction {
     
-    public final static FunctionSignature signature[] = {
+	private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
+
+	public final static FunctionSignature signature[] = {
         new FunctionSignature(
                 new QName("e", MathModule.NAMESPACE_URI),
                 "Returns base of the natural logarithms, e.",
@@ -75,7 +78,10 @@ public class NoParamFunctions extends BasicFunction {
          * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
+
+    	logger.info("Entering " + MathModule.PREFIX + ":" + getName().getLocalName());
+
+    	if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null){
@@ -104,6 +110,8 @@ public class NoParamFunctions extends BasicFunction {
             context.getProfiler().end(this, "", result);
         }
         
+    	logger.info("Exiting " + MathModule.PREFIX + ":" + getName().getLocalName());
+
         return result;
     }
     
