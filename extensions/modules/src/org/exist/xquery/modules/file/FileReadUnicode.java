@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 
 import org.exist.xquery.BasicFunction;
@@ -33,6 +34,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -45,23 +47,25 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FileReadUnicode extends BasicFunction {
+
+	private final static Logger logger = Logger.getLogger(FileReadUnicode.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of file. $a is a string representing a URL, eg file://etc. Unicode BOM (Byte Order Marker) will be stripped off if found",
+			"Read content of file.  Unicode BOM (Byte Order Marker) will be stripped off if found",
 			new SequenceType[] {				
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "URL to the file, e.g. file://etc." )
 				},				
-			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) ),
+			new FunctionParameterSequenceType( "result", Type.STRING, Cardinality.ZERO_OR_ONE, "The contents of the file" ) ),
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of file. $a is a string representing a URL, eg file://etc. with the encoding specified in $b. Unicode BOM (Byte Order Marker) will be stripped off if found",
+			"Read content of file.  Unicode BOM (Byte Order Marker) will be stripped off if found",
 			new SequenceType[] {
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "URL to the file, e.g. file://etc." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
 				},
-			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) )
+				new FunctionParameterSequenceType( "result", Type.STRING, Cardinality.ZERO_OR_ONE, "The contents of the file" ) )
 		};
 	
 	/**
@@ -78,6 +82,8 @@ public class FileReadUnicode extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
+
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
 		
@@ -111,6 +117,7 @@ public class FileReadUnicode extends BasicFunction {
 		
 		//TODO : return an *Item* built with sw.toString()
 		
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( new StringValue( sw.toString() ) );
 	}
 }

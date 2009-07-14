@@ -23,6 +23,7 @@ package org.exist.xquery.modules.file;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,24 +31,28 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
  * @author Andrzej Taramina
+ * @author Loren Cahlander
  *
  */
 public class FileIsReadable extends BasicFunction {
+
+	private static final Logger logger = Logger.getLogger(FileIsReadable.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "is-readable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if file $a is readable",
+			"Tests if file is readable",
 			new SequenceType[] {				
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
 				},				
-			new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) )
+			new FunctionParameterSequenceType( "is-readable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "File can be read" ) )
 		};
 	
 	/**
@@ -64,6 +69,7 @@ public class FileIsReadable extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		Sequence readable 	= BooleanValue.FALSE;
 		String path 		= args[0].itemAt(0).getStringValue();
 		File file   		= new File( path );
@@ -72,6 +78,7 @@ public class FileIsReadable extends BasicFunction {
 			readable = BooleanValue.TRUE;
 		}
 		
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( readable ); 
 	}
 }

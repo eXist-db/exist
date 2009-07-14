@@ -23,6 +23,7 @@ package org.exist.xquery.modules.file;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,24 +31,28 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
  * @author Andrzej Taramina
+ * @author Loren Cahlander
  *
  */
 public class FileIsWriteable extends BasicFunction {
+
+	private final static Logger logger = Logger.getLogger(FileIsWriteable.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "is-writeable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if file $a is writeable",
 			new SequenceType[] {				
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
 				},				
-			new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) )
+			new FunctionParameterSequenceType( "is-writeable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Has write permissions" ) )
 		};
 	
 	/**
@@ -64,6 +69,7 @@ public class FileIsWriteable extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		Sequence writeable 	= BooleanValue.FALSE;
 		String path 		= args[0].itemAt(0).getStringValue();
 		File file   		= new File( path );
@@ -72,6 +78,7 @@ public class FileIsWriteable extends BasicFunction {
 			writeable = BooleanValue.TRUE;
 		}
 		
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( writeable ); 
 	}
 }

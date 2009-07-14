@@ -23,6 +23,7 @@ package org.exist.xquery.modules.file;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.DirectoryScanner;
@@ -53,6 +54,8 @@ import org.exist.xquery.value.Type;
  */
 
 public class DirectoryListFunction extends BasicFunction {	
+	
+	private final static Logger logger = Logger.getLogger(DirectoryListFunction.class);
 	
 	final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
 	final static String PREFIX = FileModule.PREFIX;
@@ -104,10 +107,12 @@ public class DirectoryListFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
+		
 		File baseDir = new File( args[0].getStringValue() );
 		Sequence patterns = args[1];
 		
-		LOG.debug("Listing matching files in directory: " + baseDir);
+		logger.info("Listing matching files in directory: " + baseDir);
 		
 		Sequence xmlResponse = null;
 		
@@ -122,10 +127,10 @@ public class DirectoryListFunction extends BasicFunction {
 			File[] files 	= DirectoryScanner.scanDir( baseDir, pattern );
 			String relDir 	= null;
 			
-			LOG.debug("Found: " + files.length);
+			logger.info("Found: " + files.length);
 			
 			for (int j = 0; j < files.length; j++) {
-				LOG.debug("Found: " + files[j].getAbsolutePath());
+				logger.info("Found: " + files[j].getAbsolutePath());
 				
 				String relPath = files[j].toString().substring(baseDir.toString().length() + 1);
 				
@@ -155,6 +160,8 @@ public class DirectoryListFunction extends BasicFunction {
 		
 		xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
 		
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
+
 		return(xmlResponse);
 	}
 	

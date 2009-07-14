@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -45,6 +46,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -54,14 +56,15 @@ import org.xml.sax.SAXException;
 
 public class SerializeToFile extends BasicFunction 
 {
-    private final static String FN_SERIALIZE_LN = "serialize";
+	private final static Logger logger = Logger.getLogger(SerializeToFile.class);
+
+	private final static String FN_SERIALIZE_LN = "serialize";
     private final static String FN_SERIALIZE_BINARY_LN = "serialize-binary";
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( FN_SERIALIZE_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Writes the node set passed in parameter $a into a file on the file system. The " +
-			"full path to the file is specified in parameter $b. $c contains a " +
+			"Writes the node set into a file on the file system. $parameters contains a " +
 			"sequence of zero or more serialization parameters specified as key=value pairs. The " +
 			"serialization options are the same as those recognized by \"declare option exist:serialize\". " +
 			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
@@ -69,22 +72,21 @@ public class SerializeToFile extends BasicFunction
 			"specified file can not be created or is not writable, true on success. The empty " +
 			"sequence is returned if the argument sequence is empty.",
 			new SequenceType[] { 
-				new SequenceType( Type.NODE, Cardinality.ZERO_OR_MORE ),
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.STRING, Cardinality.ZERO_OR_MORE )
+				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "" ),
+				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "full path to the file" ),
+				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "serialization parameters specified as key-value pairs" )
                         },
-			new SequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE )
+			new FunctionParameterSequenceType( "result", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "True for success." )
                 ),
                 new FunctionSignature(
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Writes binary data in parameter $a into a file on the file system. The " +
-			"full path to the file is specified in parameter $b. False is returned if the " +
+			"Writes binary data into a file on the file system. False is returned if the " +
 			"specified file can not be created or is not writable, true on success.",
 			new SequenceType[]{
-				new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "full path to the file")
                         },
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+			new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "")
                 )
         };
 	
@@ -96,8 +98,11 @@ public class SerializeToFile extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-            if(args[0].isEmpty())
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
+		
+            if(args[0].isEmpty()) {
                 return Sequence.EMPTY_SEQUENCE;
+            }
 
 
             //check the file output path
@@ -106,13 +111,13 @@ public class SerializeToFile extends BasicFunction
 
             if(file.isDirectory())
             {
-                LOG.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
+                logger.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
                 return BooleanValue.FALSE;
             }
 
             if(file.exists() && !file.canWrite())
             {
-                LOG.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
+                logger.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
                 return BooleanValue.FALSE;
             }
 

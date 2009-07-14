@@ -23,6 +23,7 @@ package org.exist.xquery.modules.file;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -40,14 +42,16 @@ import org.exist.xquery.value.Type;
  */
 public class FileExists extends BasicFunction { 
 	
+	private final static Logger logger = Logger.getLogger(FileExists.class);
+	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if file $a exists",
+			"Tests if file exists",
 			new SequenceType[] {				
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
 				},				
-			new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) )
+			new FunctionParameterSequenceType( "exists", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "True if the file exists" ) )
 		};
 	
 	/**
@@ -64,6 +68,7 @@ public class FileExists extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		Sequence exists = BooleanValue.FALSE;
 		String path 	= args[0].itemAt(0).getStringValue();
 		File file   	= new File( path );
@@ -72,6 +77,7 @@ public class FileExists extends BasicFunction {
 			exists = BooleanValue.TRUE;
 		}
 		
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( exists );
 	}
 }
