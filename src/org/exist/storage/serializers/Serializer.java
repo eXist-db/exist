@@ -78,6 +78,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -208,7 +209,7 @@ public abstract class Serializer implements XMLReader {
     
     public Serializer(DBBroker broker, Configuration config) {
 		this.broker = broker;
-		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+		factory = TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool());
 		xinclude = new XIncludeFilter(this);
         customMatchListeners = new CustomMatchListenerFactory(broker, config);
 		receiver = xinclude;
