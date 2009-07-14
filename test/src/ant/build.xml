@@ -60,6 +60,6 @@
 
     </target>
 
-    <target name="run" depends="teardown,setup, alltests,teardown"/>
+    <target name="run" depends="teardown,setup,alltests,teardown"/>
 
 </project>

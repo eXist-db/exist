@@ -197,10 +197,13 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
       *
       */
     private void writeXMLResource(XMLResource res, File dest) throws IOException, XMLDBException {
+        if (createdirectories) {
+            File parentDir= new File(dest.getParent());
+            parentDir.mkdirs();
+        }
         if ((dest != null ) || (dest != null && overwrite == true) ) {
             Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
-
             SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             Writer writer = null;
@@ -212,6 +215,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 File file = new File(dest, fname);
                 writer = new OutputStreamWriter(new FileOutputStream(file), encoding);
             } else {
+
                 writer = new OutputStreamWriter(new FileOutputStream(dest), encoding);
             }
             log("Writing resource " + res.getId() + " to destination " + dest.getAbsolutePath(), Project.MSG_DEBUG);
@@ -236,19 +240,25 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
       */
     private void writeBinaryResource(Resource res, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException {
 
-
-        if ((dest != null && !dest.exists()) || (dest!=null || overwrite == true)) {
+        if (createdirectories) {
+            File parentDir= new File(dest.getParent());
+            parentDir.mkdirs();
+        }
+          
+        if ((dest != null && !dest.exists()) || (dest!=null && overwrite == true) ) {
 
              if (dest.isDirectory()) {
+
                 String fname = res.getId();
                 if (!fname.endsWith("." + type)) {
                     fname += "" ;
                 }
                 dest = new File(dest, fname);
+
              }
                  FileOutputStream os;
                  os = new FileOutputStream(dest);
-                 ((ExtendedResource)res).getContentIntoAStream(os);
+               ((ExtendedResource)res).getContentIntoAStream(os);
 
         } else {
             String msg = "Destination binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
