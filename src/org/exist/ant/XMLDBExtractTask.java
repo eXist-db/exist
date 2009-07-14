@@ -187,8 +187,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             writeXMLResource((XMLResource) res, dest);
         } else if (res instanceof ExtendedResource){
             writeBinaryResource(res, dest);
-        } else {
-        }
+        } 
     }
 
 
@@ -199,7 +198,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     private void writeXMLResource(XMLResource res, File dest) throws IOException, XMLDBException {
         if (createdirectories) {
             File parentDir= new File(dest.getParent());
-            parentDir.mkdirs();
+            if(!parentDir.exists()){
+                parentDir.mkdirs();
+            }
         }
         if ((dest != null ) || (dest != null && overwrite == true) ) {
             Properties outputProperties = new Properties();
@@ -242,7 +243,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
 
         if (createdirectories) {
             File parentDir= new File(dest.getParent());
-            parentDir.mkdirs();
+            if(!parentDir.exists()){
+                parentDir.mkdirs();
+            }
         }
           
         if ((dest != null && !dest.exists()) || (dest!=null && overwrite == true) ) {

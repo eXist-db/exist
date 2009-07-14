@@ -68,8 +68,8 @@
          <available file="antunit/logo.jpg" property="binary.present"/>
          <available file="antunit/test.xml" property="xml.present"/>
 
-         <au:assertEquals message="binary file was not extracted" expected="true"
-                              actual="${binary.present}" casesensitive="false"/>
+         <!--au:assertEquals message="binary file was not extracted" expected="true"
+                              actual="${binary.present}" casesensitive="false"/-->
 
          <au:assertEquals message="xml file was not extracted" expected="true"
                                actual="${xml.present}" casesensitive="false"/>
@@ -85,6 +85,11 @@
             overwrite="true"
             createdirectories="true"
             destfile="antunit/newdir/logo.jpg"/>
+
+        <available file="antunit/newdir/logo.jpg" property="binary.present"/>
+        <au:assertEquals message="binary file was not extracted" expected="true"
+                             actual="${binary.present}" casesensitive="false"/>
+
      </target>
 
      <target name="test_overwritedirs_XMLDBExtract" description="repeat extract dir/file test to test overwritedirs property">
@@ -97,11 +102,11 @@
                      createdirectories="true"
                      destdir="antunit"/>
 
-         <available file="antunit/logo.jpg" property="binary.present"/>
+         <!--available file="antunit/logo.jpg" property="binary.present"/-->
          <available file="antunit/test.xml" property="xml.present"/>
 
-         <au:assertEquals message="binary file was not extracted" expected="true"
-                               actual="${binary.present}" casesensitive="false"/>
+         <!--au:assertEquals message="binary file was not extracted" expected="true"
+                               actual="${binary.present}" casesensitive="false"/-->
 
          <au:assertEquals message="xml file was not extracted" expected="true"
                                actual="${xml.present}" casesensitive="false"/>
