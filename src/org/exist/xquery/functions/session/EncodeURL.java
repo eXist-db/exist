@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.BasicFunction;
@@ -40,10 +41,13 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author wolf
+ * @author Wolfgang Meier
+ * @author Loren Cahlander
  */
 public class EncodeURL extends BasicFunction {
 
+	private static final Logger logger = Logger.getLogger(EncodeURL.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("encode-url", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
@@ -75,23 +79,29 @@ public class EncodeURL extends BasicFunction {
 		Sequence contextSequence)
 		throws XPathException {
 		
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+		
 		ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
 			
 		// request object is read from global variable $response
 		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
-		if(var == null || var.getValue() == null)
+		if(var == null || var.getValue() == null) {
 			throw new XPathException(this, "No request object found in the current XQuery context.");
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
+		}
+		if(var.getValue().getItemType() != Type.JAVA_OBJECT) {
 			throw new XPathException(this, "Variable $response is not bound to an Java object.");
+		}
 		
 		// get parameters
 		String url = args[0].getStringValue();
 		
 		JavaObjectValue value = (JavaObjectValue)
 			var.getValue().itemAt(0);
-		if(value.getObject() instanceof ResponseWrapper)
+		if(value.getObject() instanceof ResponseWrapper) {
+			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return new AnyURIValue(((ResponseWrapper)value.getObject()).encodeURL(url));
-		else
+		} else {
 			throw new XPathException(this, "Variable $response is not bound to a Response object.");
+		}
 	}
 }

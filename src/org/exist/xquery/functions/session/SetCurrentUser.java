@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
@@ -43,10 +44,13 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * @author wolf
+ * @author Wolfgang Meier
+ * @author Loren Cahlander
  */
 public class SetCurrentUser extends BasicFunction {
 
+	private static final Logger logger = Logger.getLogger(SetCurrentUser.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-current-user", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
@@ -79,6 +83,8 @@ public class SetCurrentUser extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $session

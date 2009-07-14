@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
@@ -32,6 +33,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -40,16 +42,18 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author Loren Cahlander
  */
 public class RemoveAttribute extends Function {
 
+	private static final Logger logger = Logger.getLogger(RemoveAttribute.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("remove-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Removes the attribute with the supplied name from the current session",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
@@ -61,6 +65,9 @@ public class RemoveAttribute extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+		
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -86,6 +93,7 @@ public class RemoveAttribute extends Function {
 			((SessionWrapper)session.getObject()).removeAttribute(attrib);
 		else
 			throw new XPathException(this, "Type error: variable $session is not bound to a session object");
+		logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }

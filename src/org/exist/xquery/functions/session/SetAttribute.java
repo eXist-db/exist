@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
@@ -32,6 +33,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -39,17 +41,20 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author wolf
+ * @author Wolfgang Meier
+ * @author Loren Cahlander
  */
 public class SetAttribute extends Function 
 {
+	private static final Logger logger = Logger.getLogger(SetAttribute.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "set-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
 			"Stores a value in the current session using the supplied attribute name. If no session exists, then one will be created.",
 			new SequenceType[] {
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
+				new FunctionParameterSequenceType( "attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
+				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "Value to be stored in the session by the attribute name" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 	
@@ -64,6 +69,8 @@ public class SetAttribute extends Function
 	 */
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+		
 		JavaObjectValue session;
 		
         if( context.getProfiler().isEnabled() ) {
@@ -103,6 +110,7 @@ public class SetAttribute extends Function
 			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
 		}
 
+		logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

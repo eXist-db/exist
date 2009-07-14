@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,9 +37,11 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author Loren Cahlander
  */
 public class GetExists extends BasicFunction 
 {
+	private static final Logger logger = Logger.getLogger(GetExists.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -63,6 +66,7 @@ public class GetExists extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		BooleanValue exists = BooleanValue.TRUE;
 		
 		SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
@@ -74,6 +78,7 @@ public class GetExists extends BasicFunction
 			exists = BooleanValue.FALSE;
 		} 
 			
+		logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		return( exists );
 	}
 	

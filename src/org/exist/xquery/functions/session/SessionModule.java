@@ -37,6 +37,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author Loren Cahlander
  */
 public class SessionModule extends AbstractInternalModule 
 {
@@ -46,9 +47,11 @@ public class SessionModule extends AbstractInternalModule
 	
 	public static final FunctionDef[] functions = {
 		new FunctionDef( Create.signature, Create.class ),
+		new FunctionDef( Clear.signature, Clear.class ),
 		new FunctionDef( EncodeURL.signature, EncodeURL.class ),
 		new FunctionDef( GetID.signature, GetID.class ),
 		new FunctionDef( GetAttribute.signature, GetAttribute.class ),
+		new FunctionDef( RemoveAttribute.signature, RemoveAttribute.class ),
 		new FunctionDef( GetAttributeNames.signature, GetAttributeNames.class ),
 		new FunctionDef( Invalidate.signature, Invalidate.class ),
 		new FunctionDef( SetAttribute.signature, SetAttribute.class) ,
