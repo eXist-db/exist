@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 
 import org.exist.xquery.BasicFunction;
@@ -34,6 +35,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -43,26 +45,28 @@ import org.exist.xquery.value.Type;
  * @author Pierrick Brihaye
  * @author Dizzzz
  * @author Andrzej Taramina
- *
+ * @author Loren Cahlander
  */
 public class FileRead extends BasicFunction {
+
+	private final static Logger logger = Logger.getLogger(FileRead.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of file. $a is a string representing a URL, eg file://etc. ",
+			"Read content of file.",
 			new SequenceType[] {				
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." )
 				},				
-			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) ),
+			new FunctionParameterSequenceType( "contents", Type.STRING, Cardinality.ZERO_OR_ONE, "contents" ) ),
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of file. $a is a string representing a URL, eg file://etc with the encoding specified in $b.",
+			"Read content of file.",
 			new SequenceType[] {
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "encoding" )
 				},
-			new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE ) )
+				new FunctionParameterSequenceType( "contents", Type.STRING, Cardinality.ZERO_OR_ONE, "contents" ) )
 		};
 	
 	/**
@@ -79,6 +83,7 @@ public class FileRead extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
 		
@@ -110,6 +115,8 @@ public class FileRead extends BasicFunction {
 			throw( new XPathException( this, e.getMessage() ) );	
 		}
 		
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
+
 		//TODO : return an *Item* built with sw.toString()
 		
 		return( new StringValue( sw.toString() ) );

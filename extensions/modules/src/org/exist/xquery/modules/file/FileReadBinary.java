@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,6 +37,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -45,15 +47,17 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FileReadBinary extends BasicFunction {
+
+	private static final Logger logger = Logger.getLogger(FileReadBinary.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-binary", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of a binary file. $a is a string representing a URL, eg file://etc. ",
+			"Read content of a binary file.",
 			new SequenceType[] {				
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." )
 				},				
-			new SequenceType( Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE ) )
+			new FunctionParameterSequenceType( "contents", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "contents" ) )
 		};
 	
 	/**
@@ -70,6 +74,7 @@ public class FileReadBinary extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		String arg 		= args[0].itemAt(0).getStringValue();
 		byte[] buffer;
 		
@@ -95,6 +100,7 @@ public class FileReadBinary extends BasicFunction {
 			throw( new XPathException( this, e.getMessage() ) );
 		}
 
+		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( new Base64Binary( buffer ) );
 	}
 }
