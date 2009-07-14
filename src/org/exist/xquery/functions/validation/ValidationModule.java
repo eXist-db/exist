@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -46,9 +46,8 @@ public class ValidationModule extends AbstractInternalModule {
 
 //       new FunctionDef(Jaxv.signatures[0], Jaxv.class),
 //       new FunctionDef(Jaxv.signatures[1], Jaxv.class),
-
-//        new FunctionDef(Jing.signatures[0], Jing.class),
-//        new FunctionDef(Jing.signatures[1], Jing.class),
+//       new FunctionDef(Jing.signatures[0], Jing.class),
+//       new FunctionDef(Jing.signatures[1], Jing.class),
     };
     
     public final static QName EXCEPTION_QNAME =

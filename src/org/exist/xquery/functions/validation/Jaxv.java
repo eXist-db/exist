@@ -50,6 +50,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -67,7 +68,7 @@ public class Jaxv extends BasicFunction  {
     
     private static final String extendedFunctionTxt=
         "Validate document specified by $a using grammar $b. " +
-        "Heavily relies on javax.xml.validation.Validator";
+        "Based on functionality provided by javax.xml.validation.Validator";
         
 
     private final BrokerPool brokerPool;
@@ -79,8 +80,10 @@ public class Jaxv extends BasicFunction  {
                 new QName("jaxv", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt,
                 new SequenceType[]{
-                    new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                            "Location of XML Schema (.xsd) document.")
                 },
                 new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
             ),
@@ -90,8 +93,10 @@ public class Jaxv extends BasicFunction  {
                 new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt+" A simple report is returned.",
                 new SequenceType[]{
-                   new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                   new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                            "Location of XML Schema (.xsd) document.")
                    },
                 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
             )
@@ -120,36 +125,15 @@ public class Jaxv extends BasicFunction  {
         ValidationReport report = new ValidationReport();
 
         try {
-            // Get inputstream of XML instance document
-            if (args[0].getItemType() == Type.ANY_URI) {
-                // anyURI provided
-                String url = args[0].getStringValue();
-
-                // Fix URL
-                if (url.startsWith("/")) {
-                    url = "xmldb:exist://" + url;
-                }
-
-                is = new URL(url).openStream();
-
-            } else if (args[0].getItemType() == Type.ELEMENT || args[0].getItemType() == Type.DOCUMENT) {
-                // Node provided
-                is = new NodeInputStream(context, args[0].iterate()); // new NodeInputStream()
-
-            } else {
-                LOG.error("Wrong item type " + Type.getTypeName(args[0].getItemType()));
-                throw new XPathException(this, "wrong item type " + Type.getTypeName(args[0].getItemType()));
-            }
-
+            // Get inputstream for instance document
+            is=Shared.getInputStream(args[0], context);
 
             // Validate using resource speciefied in second parameter
-            String grammarUrl = args[1].getStringValue();
+            String grammarUrl = Shared.getUrl(args[1]);
 
-            if (grammarUrl.startsWith("/")) {
-                grammarUrl = "xmldb:exist://" + grammarUrl;
+            if(!grammarUrl.endsWith(".xsd")){
+                throw new XPathException("Only XML schemas (.xsd) are supported.");
             }
-
-            // TODO add check .xsd extension
 
             // Prepare
             String schemaLang = XMLConstants.W3C_XML_SCHEMA_NS_URI;
@@ -181,7 +165,7 @@ public class Jaxv extends BasicFunction  {
 
         } catch (Throwable ex) {
             LOG.error(ex);
-            throw new XPathException(this, "exception", ex);
+            throw new XPathException(this, "Exception: "+ex.getMessage(), ex);
 
         } finally {
             report.stop();
@@ -201,85 +185,12 @@ public class Jaxv extends BasicFunction  {
             result.add(new BooleanValue(report.isValid()));
             return result;
 
-        } else if (isCalledAs("jaxv-report")) {
+        } else /* isCalledAs("jaxv-report") */ {
             MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = writeReport(report, builder);
+            NodeImpl result = Shared.writeReport(report, builder);
             return result;
-
-        } else {
-            /// oops handle
-        }
-
-
-        // Oops
-        LOG.error("invoked with wrong function name");
-        throw new XPathException(this, "unknown function");
+        } 
     }
 
-    private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
-
-        // start root element
-        int nodeNr = builder.startElement("", "report", "report", null);
-
-        // validation status: valid or invalid
-        builder.startElement("", "status", "status", null);
-        if (report.isValid()) {
-            builder.characters("valid");
-        } else {
-            builder.characters("invalid");
-        }
-        builder.endElement();
-
-        // namespace when available
-        if (report.getNamespaceUri() != null) {
-            builder.startElement("", "namespace", "namespace", null);
-            builder.characters(report.getNamespaceUri());
-            builder.endElement();
-        }
-
-        // validation duration
-        builder.startElement("", "time", "time", null);
-        builder.characters("" + report.getValidationDuration());
-        builder.endElement();
-
-        // print exceptions if any
-        if (report.getThrowable() != null) {
-            builder.startElement("", "exception", "exception", null);
-            builder.characters("" + report.getThrowable().getMessage());
-            builder.endElement();
-        }
-
-        // reusable attributes
-        AttributesImpl attribs = new AttributesImpl();
-
-        // iterate validation report items, write message
-        List cr = report.getValidationReportItemList();
-        for (Iterator iter = cr.iterator(); iter.hasNext();) {
-            ValidationReportItem vri = (ValidationReportItem) iter.next();
-
-            // construct attributes
-            attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
-            attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
-            attribs.addAttribute("", "column", "column", "CDATA", Integer.toString(vri.getColumnNumber()));
-
-            if (vri.getRepeat() > 1) {
-                attribs.addAttribute("", "repeat", "repeat", "CDATA", Integer.toString(vri.getRepeat()));
-            }
-
-            // write message
-            builder.startElement("", "message", "message", attribs);
-            builder.characters(vri.getMessage());
-            builder.endElement();
-
-            // Reuse attributes
-            attribs.clear();
-        }
-
-        // finish root element
-        builder.endElement();
-
-        // return result
-        return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
-
-    }
+    
 }
