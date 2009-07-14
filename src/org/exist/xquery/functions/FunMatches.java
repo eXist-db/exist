@@ -31,25 +31,8 @@ import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Atomize;
-import org.exist.xquery.BasicExpressionVisitor;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.GeneralComparison;
-import org.exist.xquery.IndexUseReporter;
-import org.exist.xquery.LocationStep;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Optimizable;
 import org.exist.xquery.pragmas.Optimize;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
@@ -175,6 +158,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        long start = System.currentTimeMillis();
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
         
@@ -197,6 +181,9 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         } catch (EXistException e) {
             throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
         }
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
         return preselectResult;
     }
 
@@ -248,6 +235,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        long start = System.currentTimeMillis();
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -274,10 +262,16 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                 if (context.isProfilingEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");
                 result = evalWithIndex(contextSequence, contextItem, input);
+                if (context.getProfiler().traceFunctions())
+                    context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                        PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
             } else {
                 if (context.isProfilingEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");
                 result = evalGeneric(contextSequence, contextItem, input);
+                if (context.getProfiler().traceFunctions())
+                    context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
+                        PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
             }
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);

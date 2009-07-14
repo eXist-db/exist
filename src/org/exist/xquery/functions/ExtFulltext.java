@@ -21,6 +21,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.EXistException;
+import org.exist.fulltext.FTIndex;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
@@ -31,22 +32,7 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicExpressionVisitor;
-import org.exist.xquery.CachedResult;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.ExpressionVisitor;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocationStep;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Optimizable;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -161,7 +147,8 @@ public class ExtFulltext extends Function implements Optimizable {
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
-        
+
+        long start = System.currentTimeMillis();
         // get the search terms
         String arg = searchTerm.eval(contextSequence).getStringValue();
         String[] terms;
@@ -185,6 +172,9 @@ public class ExtFulltext extends Function implements Optimizable {
         } else {
             preselectResult = NodeSet.EMPTY_SET;
         }
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceIndexUsage(context, FTIndex.ID, this,
+                PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
         return preselectResult;
     }
 
@@ -197,6 +187,8 @@ public class ExtFulltext extends Function implements Optimizable {
         if (preselectResult != null && preselectResult.isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
+        long start = System.currentTimeMillis();
+        
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 
@@ -222,6 +214,10 @@ public class ExtFulltext extends Function implements Optimizable {
                         : path.eval(contextSequence).toNodeSet();
                 String arg = searchTerm.eval(contextSequence).getStringValue();
                 result = evalQuery(arg, nodes).toNodeSet();
+
+                if (context.getProfiler().traceFunctions())
+                    context.getProfiler().traceIndexUsage(context, FTIndex.ID, this,
+                        PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
             } else {
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
                 result = path.eval(contextSequence).toNodeSet();
@@ -247,6 +243,9 @@ public class ExtFulltext extends Function implements Optimizable {
 				temp = evalQuery(arg, nodes);
 				result.addAll(temp);
 			}
+            if (context.getProfiler().traceFunctions())
+                context.getProfiler().traceIndexUsage(context, FTIndex.ID, this,
+                    PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
 		}
         preselectResult = null;
         return result;

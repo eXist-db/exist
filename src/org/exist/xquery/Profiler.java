@@ -156,8 +156,8 @@ public class Profiler {
                 elapsed);
     }
 
-    public final void traceIndexUsage(XQueryContext context, Expression expression, int mode, long elapsed) {
-        stats.recordIndexUse(expression, context.getSourceKey(), mode, elapsed);
+    public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, int mode, long elapsed) {
+        stats.recordIndexUse(expression, indexType, context.getSourceKey(), mode, elapsed);
     }
 
     private void save() {
