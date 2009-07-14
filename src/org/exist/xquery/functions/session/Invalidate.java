@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.BasicFunction;
@@ -42,6 +43,8 @@ import org.exist.xquery.value.Type;
  */
 public class Invalidate extends BasicFunction {
 
+	private static final Logger logger = Logger.getLogger(Invalidate.class);
+	
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("invalidate", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
@@ -69,6 +72,8 @@ public class Invalidate extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
+    	logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+    	
         SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
         // session object is read from global variable $session
 		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
@@ -76,6 +81,7 @@ public class Invalidate extends BasicFunction {
 			//Always called as "invalidate") because the translation is made at compile time			
 			if (!isCalledAs("invalidate"))
 				throw new XPathException(this, SessionModule.SESSION_VAR + " not set");
+	    	logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
@@ -84,6 +90,7 @@ public class Invalidate extends BasicFunction {
 		if(value.getObject() instanceof SessionWrapper) {
 			SessionWrapper session = (SessionWrapper)value.getObject();
 			session.invalidate();
+	    	logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		} else
 			throw new XPathException(this, SessionModule.SESSION_VAR + " is not bound to a session object");

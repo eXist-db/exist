@@ -24,6 +24,7 @@ package org.exist.xquery.functions.session;
 
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.BasicFunction;
@@ -39,8 +40,11 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author Loren Cahlander
  */
 public class Clear extends BasicFunction {
+	
+	private static final Logger logger = Logger.getLogger(Clear.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -64,6 +68,8 @@ public class Clear extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+		
 		SessionModule myModule = (SessionModule) context.getModule(SessionModule.NAMESPACE_URI);
 
 		//session object is read from global variable $session
@@ -82,6 +88,7 @@ public class Clear extends BasicFunction {
 				String attribName = (String) e.nextElement();
 				sessionWrapper.removeAttribute(attribName);
 			}
+			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else

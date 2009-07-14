@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
@@ -43,9 +44,11 @@ import org.exist.xquery.value.Type;
  * if there is no session.
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Loren Cahlander
  */
 public class GetID extends Function
 {
+	private static final Logger logger = Logger.getLogger(GetID.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("get-id", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
@@ -72,6 +75,7 @@ public class GetID extends Function
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		/* session object is read from global variable $session */
@@ -85,13 +89,14 @@ public class GetID extends Function
 		if(session.getObject() instanceof SessionWrapper)
 		{
 			String id = ((SessionWrapper)session.getObject()).getId();
+			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			if (id == null)
 				return Sequence.EMPTY_SEQUENCE;
 			return(new StringValue(id));
 		}
 		else
 		{
-			throw new XPathException(this, "Type error: variable $request is not bound to a request object");
+			throw new XPathException(this, "Type error: variable $session is not bound to a session object");
 		}
 	}
 }

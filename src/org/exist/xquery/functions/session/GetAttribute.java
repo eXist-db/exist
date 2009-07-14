@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
@@ -43,10 +44,13 @@ import org.exist.xquery.value.Type;
  * Returns an attribute stored in the current session or an empty sequence
  * if the attribute does not exist.
  * 
- * @author wolf
+ * @author Wolfgang Meier
+ * @author Loren Cahlander
  */
 public class GetAttribute extends Function 
 {
+	private static final Logger logger = Logger.getLogger(GetAttribute.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "get-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
@@ -78,6 +82,8 @@ public class GetAttribute extends Function
 	 */
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
+		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
+		
 		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		// session object is read from global variable $session
@@ -85,6 +91,7 @@ public class GetAttribute extends Function
 		
 		if( var == null || var.getValue() == null ) {
 			// throw( new XPathException( this, "Session not set" ) );
+			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 		
@@ -100,6 +107,7 @@ public class GetAttribute extends Function
 		if( session.getObject() instanceof SessionWrapper ) {
 			try {
 				Object o = ( (SessionWrapper)session.getObject() ).getAttribute( attribName );
+				logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 				if( o == null ) {
 					return( Sequence.EMPTY_SEQUENCE );
 				}
@@ -116,6 +124,7 @@ public class GetAttribute extends Function
 				//log.error(ise.getStackTrace());	
 				//throw new XPathException(this, "Session has an IllegalStateException for getAttribute() - " + ise.getStackTrace() + System.getProperty("line.separator") + System.getProperty("line.separator") + "Did you perhaps call session:invalidate() previously?");
 
+				logger.error("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName(), ise);
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else {
