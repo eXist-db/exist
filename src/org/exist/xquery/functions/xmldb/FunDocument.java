@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: ExtDocument.java 6320 2007-08-01 18:01:06Z ellefj $
+ *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
 

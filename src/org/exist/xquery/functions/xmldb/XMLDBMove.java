@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id: XMLDBRemove.java 3309 2006-04-26 14:02:17Z chrisgeorg $
+ *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
 
