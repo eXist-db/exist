@@ -22,6 +22,7 @@
 
 package org.exist.xquery.modules.image;
 
+import org.apache.log4j.Logger;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
@@ -47,6 +48,7 @@ import org.exist.xquery.value.Type;
  * Scale's an Image
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Loren Cahlander
  * @serial 2007-01-16
  * @version 1.0
  *
@@ -54,6 +56,8 @@ import org.exist.xquery.value.Type;
  */
 public class ScaleFunction extends BasicFunction
 {
+	private static final Logger logger = Logger.getLogger(ScaleFunction.class);
+	
 	private final static int MAXHEIGHT = 100;
 	private final static int MAXWIDTH = 100;
 
@@ -91,9 +95,13 @@ public class ScaleFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
+		
 		//was an image and a mime-type speficifed
-		if(args[0].isEmpty() || args[2].isEmpty())
+		if(args[0].isEmpty() || args[2].isEmpty()) {
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
+		}
 		
 		//get the maximum dimensions to scale to
 		int maxHeight = MAXHEIGHT;
@@ -120,7 +128,8 @@ public class ScaleFunction extends BasicFunction
 		
 			if(image == null)
 			{
-				LOG.error("Unable to read image data!");
+				logger.error("Unable to read image data!");
+				logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 	        	return Sequence.EMPTY_SEQUENCE;
 			}
 			
@@ -131,6 +140,8 @@ public class ScaleFunction extends BasicFunction
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(bImage, formatName, os);
 			
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
+
 			//return the new scaled image data
 			return new Base64Binary(os.toByteArray());
 		}

@@ -1,5 +1,6 @@
 package org.exist.xquery.modules.image;
 
+import org.apache.log4j.Logger;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
@@ -28,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -43,6 +45,8 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetThumbnailsFunction extends BasicFunction {
 
+	private static final Logger logger = Logger.getLogger(GetThumbnailsFunction.class);
+	
 	private final static int MAXTHUMBHEIGHT = 100;
 
 	private final static int MAXTHUMBWIDTH = 100;
@@ -54,16 +58,14 @@ public class GetThumbnailsFunction extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("thumbnail", ImageModule.NAMESPACE_URI,
 					ImageModule.PREFIX),
-			"Get or generate thumbnails from the given database collection $a"
-					+ "$b point to a location where the thumbnails should be created, $b can be a local path, with the prefix 'xmldb:' a absolute path within the database or with 'rel:' path relative to the given collection at $a."
-					+ "You can leave $b empty then the default is 'rel:/thumbs'. $c specifies the dimension of the thumbnails, if empty then the default values are 'maxheight = 100' and 'maxwidth = 100', the first value of $c is 'maxheight' and the second 'maxwidth'. $d is the prefix (if any) for the thumbnails",
+			"Get or generate thumbnails from the given database collection",
 			new SequenceType[] {
-					new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
+					new FunctionParameterSequenceType("collection", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to the collection"),
+					new FunctionParameterSequenceType("thumbnail-location", Type.ANY_URI, Cardinality.ZERO_OR_ONE, "point to a location where the thumbnails should be created, this can be a local path, with the prefix 'xmldb:' a absolute path within the database or with 'rel:' path relative to the given $collection.  You can leave this empty then the default is 'rel:/thumbs'. "),
+					new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, "specifies the dimension of the thumbnails, if empty then the default values are 'maxheight = 100' and 'maxwidth = 100', the first value is 'maxheight' and the second 'maxwidth'. "),
+					new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "the prefix (if any) for the thumbnails") },
 
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_MORE, "result"));
 
 	public GetThumbnailsFunction(XQueryContext context) {
 		super(context, signature);
@@ -77,11 +79,15 @@ public class GetThumbnailsFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		
+		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
+		
 		ValueSequence result = new ValueSequence();
 		// boolean isDatabasePath = false;
 		boolean isSaveToDataBase = false;
 
 		if (args[0].isEmpty()) {
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
@@ -144,6 +150,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 			pool = BrokerPool.getInstance();
 		} catch (Exception e) {
 			result.add(new StringValue(e.getMessage()));
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return result;
 		}
 		TransactionManager transact = pool.getTransactionManager();
@@ -176,6 +183,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 				.toXmldbURI());
 
 		if (allPictures == null) {
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
@@ -286,6 +294,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 		transact.getJournal().flushToLog(true);
 		dbbroker.closeDocument();
 
+		logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 		return result;
 
 	}

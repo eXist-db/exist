@@ -25,6 +25,7 @@ package org.exist.xquery.modules.image;
 import java.awt.Image;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -32,6 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -50,15 +52,17 @@ import org.exist.xquery.value.Type;
  */
 public class GetHeightFunction extends BasicFunction
 {   
+	private static final Logger logger = Logger.getLogger(GetHeightFunction.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-height", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the Height of the image passed in $a, returning an integer of the images Height in pixels or an empty sequence if $a is invalid.",
+			"Get's the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if $a is invalid.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data")
 			},
-			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("height", Type.INTEGER, Cardinality.ZERO_OR_ONE, "height in pixels"));
 
 	/**
 	 * GetHeightFunction Constructor
@@ -82,9 +86,13 @@ public class GetHeightFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
+		
 		//was an image speficifed
-		if (args[0].isEmpty())
+		if (args[0].isEmpty()) {
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+		}
 		
         //get the image
         Image image = null;
@@ -94,13 +102,15 @@ public class GetHeightFunction extends BasicFunction
         }
         catch(IOException ioe)
         {
-        	LOG.error("Unable to read image data!", ioe);
+        	logger.error("Unable to read image data!", ioe);
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	return Sequence.EMPTY_SEQUENCE;
         }
         
         if(image == null)
         {
-        	LOG.error("Unable to read image data!");
+        	logger.error("Unable to read image data!");
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	return Sequence.EMPTY_SEQUENCE;
         }
         
@@ -111,11 +121,13 @@ public class GetHeightFunction extends BasicFunction
         if(iHeight == -1)
         {
         	//no, log the error
-        	LOG.error("Unable to read image data!");
+        	logger.error("Unable to read image data!");
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	return Sequence.EMPTY_SEQUENCE; 
         }
         else
         {
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	//return the Height of the image
         	return new IntegerValue(iHeight);	
         }
