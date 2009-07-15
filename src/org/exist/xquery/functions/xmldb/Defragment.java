@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.dom.NodeSet;
@@ -33,7 +35,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import org.apache.log4j.Logger;
 
 public class Defragment extends BasicFunction {
     private static final Logger logger = Logger.getLogger(Defragment.class);

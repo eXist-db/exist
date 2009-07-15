@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- * $Id: XMLDBGetCurrentUser.java 2436 2006-09-27 16:01:15 +0000 (Wed, 27 Sep 2006) deliriumsky $
+ * $Id$
  */
 package org.exist.xquery.functions.xmldb;
 
