@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,18 +21,22 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.xquery.*;
-import org.exist.xquery.update.Modification;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.IntegerValue;
+import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.dom.NodeSet;
 import org.exist.dom.DocumentSet;
-import org.exist.EXistException;
+import org.exist.xquery.*;
+import org.exist.xquery.update.Modification;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+
+import org.apache.log4j.Logger;
 
 public class Defragment extends BasicFunction {
+    private static final Logger logger = Logger.getLogger(Defragment.class);
 
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
@@ -46,8 +50,8 @@ public class Defragment extends BasicFunction {
                     "references to this document will become invalid, in particular, variables pointing to " +
                     "some nodes in the doc.",
                     new SequenceType[] {
-                            new SequenceType(Type.NODE, Cardinality.ONE_OR_MORE),
-                            new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "nodes from ducuments to defragment"),
+			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE, "min number of fragmented pages required before defragmenting")
                     },
                     new SequenceType(Type.ITEM, Cardinality.EMPTY)),
             new FunctionSignature(
@@ -59,7 +63,7 @@ public class Defragment extends BasicFunction {
                     "references to this document will become invalid, in particular, variables pointing to " +
                     "some nodes in the doc.",
                     new SequenceType[] {
-                            new SequenceType(Type.NODE, Cardinality.ONE_OR_MORE),
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "nodes from ducuments to defragment"),
                     },
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
@@ -69,6 +73,8 @@ public class Defragment extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
         int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
         NodeSet nodes = args[0].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
@@ -77,6 +83,7 @@ public class Defragment extends BasicFunction {
         } catch (EXistException e) {
             throw new XPathException("An error occurred while defragmenting documents: " + e.getMessage(), e);
         }
+	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }
