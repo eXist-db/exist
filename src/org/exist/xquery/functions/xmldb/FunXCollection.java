@@ -37,6 +37,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author wolf
+ * @author ljo
  */
 public class FunXCollection extends ExtCollection {
     private static final Logger logger = Logger.getLogger(FunXCollection.class);
