@@ -82,13 +82,26 @@
             resource="logo.jpg"
             user="${exist.user}"
             password="${exist.password}"
-            overwrite="true"
+            overwrite="false"
             createdirectories="true"
             destfile="antunit/newdir/logo.jpg"/>
 
         <available file="antunit/newdir/logo.jpg" property="binary.present"/>
         <au:assertEquals message="binary file was not extracted" expected="true"
                              actual="${binary.present}" casesensitive="false"/>
+
+     </target>
+
+     <target name="test_createdirectories2_XMLDBExtract" description="check that overwrite works with single resource">
+
+      <xdb:extract uri="${test.coll}/antunit"
+            resource="logo.jpg"
+            user="${exist.user}"
+            password="${exist.password}"
+            overwrite="true"
+            createdirectories="true"
+            destfile="antunit/newdir/logo.jpg"/>
+
 
      </target>
 
