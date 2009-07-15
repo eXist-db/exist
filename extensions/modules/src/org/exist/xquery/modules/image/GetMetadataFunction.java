@@ -31,6 +31,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -41,6 +42,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -55,6 +57,7 @@ import org.xml.sax.SAXException;
  * Get's the metadata of an Image
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Loren Cahlander
  * @serial 2007-02-27
  * @version 1.0
  *
@@ -62,16 +65,18 @@ import org.xml.sax.SAXException;
  */
 public class GetMetadataFunction extends BasicFunction
 {   
+	private static final Logger logger = Logger.getLogger(GetMetadataFunction.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-metadata", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the metadta of the image passed in $a, returning the images XML metadata. When $b is true() metadata of the images native format is returned, otherwise common java ImageIO metadata is returned.",
+			"Get's the metadta of the image passed in, returning the images XML metadata.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data"),
+				new FunctionParameterSequenceType("native-format", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "When true() metadata of the images native format is returned, otherwise common java ImageIO metadata is returned.")
 			},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("metadata", Type.NODE, Cardinality.ZERO_OR_ONE, "The image metadata"));
 
 	/**
 	 * GetMetadataFunction Constructor
@@ -95,9 +100,13 @@ public class GetMetadataFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
+		
 		//was an image and format speficifed
-		if (args[0].isEmpty() || args[1].isEmpty())
+		if (args[0].isEmpty() || args[1].isEmpty()) {
+			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+		}
         
         //get the images raw binary data
 		byte[] imgData = ImageModule.getImageData((Base64Binary)args[0].itemAt(0));
@@ -132,8 +141,10 @@ public class GetMetadataFunction extends BasicFunction
 				}
 				
 				//check we have the metadata
-				if(nMetadata == null)
+				if(nMetadata == null) {
+					logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 					return Sequence.EMPTY_SEQUENCE;
+				}
 				
 				
 				//return the metadata
@@ -147,6 +158,7 @@ public class GetMetadataFunction extends BasicFunction
 					streamer.serialize(nMetadata);
 					Document docMetadata = receiver.getDocument();
                     
+					logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 					return (NodeValue)docMetadata;
 				}
 				catch(SAXException se)
@@ -164,6 +176,7 @@ public class GetMetadataFunction extends BasicFunction
 			throw new XPathException(this, ioe.getMessage(), ioe);
 		}
 		
+		logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }
