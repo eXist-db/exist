@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
+import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
@@ -35,6 +36,8 @@ import java.util.Properties;
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class Compare extends Function {
+	
+	private static final Logger logger = Logger.getLogger(Compare.class);
 
     private final static Properties OUTPUT_PROPERTIES = new Properties();
     static {
@@ -47,9 +50,9 @@ public class Compare extends Function {
 					XmlDiffModule.PREFIX),
 			"Returns the differences between XML documents",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+					new FunctionParameterSequenceType("xml1", Type.NODE, Cardinality.ZERO_OR_MORE, ""),
+					new FunctionParameterSequenceType("xml2", Type.NODE, Cardinality.ZERO_OR_MORE, "") },
+			new FunctionParameterSequenceType("is-equal", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "returns true what $xml1 and $xml2 are equal"));
 
 	public Compare(XQueryContext context) {
 		super(context, signature);
@@ -63,6 +66,8 @@ public class Compare extends Function {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
+		logger.info("Entering " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
+		
 		if (context.getProfiler().isEnabled()) {
 			context.getProfiler().start(this);
 			context.getProfiler().message(this, Profiler.DEPENDENCIES,
@@ -84,10 +89,14 @@ public class Compare extends Function {
 		Sequence s2 = arg2.eval(contextSequence, contextItem);
 		context.popDocumentContext();
 		
-		if (s1.isEmpty())
+		if (s1.isEmpty()) {
+			logger.info("Exiting " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 			return BooleanValue.valueOf(s2.isEmpty());
-		else if (s2.isEmpty())
+		}
+		else if (s2.isEmpty()) {
+			logger.info("Exiting " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 			return BooleanValue.valueOf(s1.isEmpty());
+		}
 
 		Sequence result = null;
         StringBuffer v1 = new StringBuffer();
@@ -110,7 +119,7 @@ public class Compare extends Function {
 			Diff d = new Diff(v1.toString(), v2.toString());
             boolean identical = d.identical();
             if (!identical) {
-                LOG.warn("Diff result: " + d.toString());
+                logger.warn("Diff result: " + d.toString());
             }
             result = new BooleanValue(identical);
         } catch (Exception e) {
@@ -121,6 +130,7 @@ public class Compare extends Function {
 		if (context.getProfiler().isEnabled())
 			context.getProfiler().end(this, "", result);
 
+		logger.info("Exiting " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 		return result;
 	}
 	
