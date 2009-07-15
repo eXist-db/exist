@@ -51,6 +51,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
@@ -75,6 +76,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -93,6 +95,8 @@ import org.xml.sax.SAXException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class Transform extends BasicFunction {
+	
+	private static final Logger logger = Logger.getLogger(Transform.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -109,10 +113,11 @@ public class Transform extends BasicFunction {
             "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
             "if the XSL processor reports a warning or error.",
 			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, ""),
+				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "")
+				},
+			new FunctionParameterSequenceType("result", Type.NODE, Cardinality.ZERO_OR_ONE, "result")),
         new FunctionSignature(
 			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
 			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
@@ -129,11 +134,11 @@ public class Transform extends BasicFunction {
             "options in the same way as if they " +
             "were passed to \"declare option exist:serialize\" expression.",
 			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, ""),
+				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, ""),
+                new FunctionParameterSequenceType("serailization-options", Type.STRING, Cardinality.EXACTLY_ONE, "")},
+			new FunctionParameterSequenceType("result", Type.NODE, Cardinality.ZERO_OR_ONE, "result")),
         new FunctionSignature(
             new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
             "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
@@ -141,9 +146,10 @@ public class Transform extends BasicFunction {
             "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, ""),
+				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "")
+            },
             new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
             new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
@@ -152,10 +158,10 @@ public class Transform extends BasicFunction {
             "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, ""),
+				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, ""),
+                new FunctionParameterSequenceType("serailization-options", Type.STRING, Cardinality.EXACTLY_ONE, "")},
             new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
@@ -176,8 +182,13 @@ public class Transform extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		if(args[0].isEmpty())
+		
+		logger.info("Entering " + TransformModule.PREFIX + ":" + getName().getLocalName());
+		
+		if(args[0].isEmpty()) {
+			logger.info("Exiting " + TransformModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
+		}
 		Item inputNode = args[0].itemAt(0);
 		Item stylesheetItem = args[1].itemAt(0);
 		
@@ -194,7 +205,7 @@ public class Transform extends BasicFunction {
                 String[] pair = Option.parseKeyValuePair(contents[i]);
                 if (pair == null)
                     throw new XPathException(this, "Found invalid serialization option: " + pair);
-                LOG.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }
         } else
@@ -241,6 +252,7 @@ public class Transform extends BasicFunction {
                 next = next.getNextSibling();
             }
     		context.popDocumentContext();
+    		logger.info("Exiting " + TransformModule.PREFIX + ":" + getName().getLocalName());
     		return seq;
         }
         else
@@ -304,6 +316,7 @@ public class Transform extends BasicFunction {
             } catch (IOException e) {
                 throw new XPathException(this, "IO exception while transforming node: " + e.getMessage(), e);
             }
+    		logger.info("Exiting " + TransformModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
 	}
