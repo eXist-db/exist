@@ -35,6 +35,7 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
+import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
@@ -45,6 +46,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -59,42 +61,41 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class RenderFunction extends BasicFunction {
+	
+	private static final Logger logger = Logger.getLogger(RenderFunction.class);
+	
 	public final static FunctionSignature signatures[] = {
 
 			new FunctionSignature(
 					new QName("render", XSLFOModule.NAMESPACE_URI,
 							XSLFOModule.PREFIX),
-					"Renders a given XSL-FO document. $a is the XSL-FO node, $b is the required mime-type, $c is parameters to the transformation. "
-							+ "Returns an xs:base64binary of the result."
+					"Renders a given XSL-FO document. "
+							+ "Returns an xs:base64binary of the result. "
 							+ "Parameters are specified with the structure: "
 							+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
 							+ "</parameters>. "
 							+ "Recognised rendering parameters are: author, title, keywords and dpi.",
 					new SequenceType[] {
-							new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-					new SequenceType(Type.BASE64_BINARY,
-							Cardinality.ZERO_OR_ONE)),
+							new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
+							new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+							new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform") },
+					new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")),
 
 			new FunctionSignature(
 					new QName("render", XSLFOModule.NAMESPACE_URI,
 							XSLFOModule.PREFIX),
-					"Renders a given XSL-FO document. $a is the XSL-FO node, $b is the required mime-type, $c is parameters to the transformation, $d is an Apache FOP Configuration file."
-							+ "Returns an xs:base64binary of the result."
+					"Renders a given XSL-FO document. "
+							+ "Returns an xs:base64binary of the result. "
 							+ "Parameters are specified with the structure: "
 							+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
 							+ "</parameters>. "
 							+ "Recognised rendering parameters are: author, title, keywords and dpi.",
 					new SequenceType[] {
-							new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-							new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-					new SequenceType(Type.BASE64_BINARY,
-							Cardinality.ZERO_OR_ONE)) };
+						new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
+						new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+						new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
+						new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "Apache FOP Configuration file") },
+					new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")) };
 
 	/**
 	 * Constructor for RenderFunction, which returns a new instance of this
@@ -118,11 +119,16 @@ public class RenderFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		
+		logger.info("Entering " + XSLFOModule.PREFIX + ":" + getName().getLocalName());
+		
 		// gather input XSL-FO document
 		// if no input document (empty), return empty result as we need data to
 		// process
-		if (args[0].isEmpty())
+		if (args[0].isEmpty()) {
+			logger.info("Exiting " + XSLFOModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
+		}
 		Item inputNode = args[0].itemAt(0);
 
 		// get mime-type
@@ -179,6 +185,8 @@ public class RenderFunction extends BasicFunction {
 			dh.startDocument();
 			inputNode.toSAX(context.getBroker(), dh, new Properties());
 			dh.endDocument();
+
+			logger.info("Exiting " + XSLFOModule.PREFIX + ":" + getName().getLocalName());
 
 			// return the result
 			return new Base64Binary(baos.toByteArray());
