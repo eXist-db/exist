@@ -9,12 +9,14 @@ package org.exist.xquery.functions.util;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -22,9 +24,12 @@ import org.exist.xquery.value.Type;
 
 /**
  * Libary function to retrieve the value of a system property.
- * @author wolf
+ * @author Wolfgang Meier
+ * @author Loren Cahlander
  */
 public class SystemProperty extends BasicFunction {
+
+	private static final Logger logger = Logger.getLogger(SystemProperty.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -32,7 +37,7 @@ public class SystemProperty extends BasicFunction {
 			"Returns the value of a system property. Similar to the corresponding XSLT function. " +
 			"Predefined properties are: vendor, vendor-url, product-name, product-version, product-build, and all Java " +
 			"system properties.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
+			new SequenceType[] { new FunctionParameterSequenceType("property-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the system property to retrieve the value of.") },
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
 	/**
@@ -48,6 +53,8 @@ public class SystemProperty extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
 	{ 
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		Properties sysProperties = new Properties();
 		try
 		{
@@ -55,13 +62,14 @@ public class SystemProperty extends BasicFunction {
 		}
 		catch (IOException e)
 		{
-			LOG.debug("Unable to load system.properties from class loader");
+			logger.debug("Unable to load system.properties from class loader");
 		}
 		
 		String key = args[0].getStringValue();
 		String value = sysProperties.getProperty(key);
 		if(value == null)
 			value = System.getProperty(key);
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(value);
 	}
 }

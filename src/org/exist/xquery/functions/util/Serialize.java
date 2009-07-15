@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
@@ -45,6 +46,7 @@ import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -55,10 +57,11 @@ import org.xml.sax.SAXException;
 
 public class Serialize extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
+	protected static final Logger logger = Logger.getLogger(Serialize.class);
+
+	public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "DEPRECATED.  Use the file:serialize() function in the file extension module instead! " +
             "Writes the node set passed in parameter $a into a file on the file system. The " +
             "full path to the file is specified in parameter $b. $c contains a " +
             "sequence of zero or more serialization parameters specified as key=value pairs. The " +
@@ -72,20 +75,21 @@ public class Serialize extends BasicFunction {
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+            new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
+            "Use the file:serialize() function in the file extension module instead!"
         ),
         new FunctionSignature(
                 new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                "Returns the Serialized node set passed in parameter $a. $b contains a " +
+                "Returns the Serialized node set passed in parameter $node-set. $parameters contains a " +
                 "sequence of zero or more serialization parameters specified as key=value pairs. The " +
                 "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
                 "The function does NOT automatically inherit the serialization options of the XQuery it is " +
                 "called from.",
                 new SequenceType[] { 
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "node set to serialize"),
+                    new FunctionParameterSequenceType("parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "sequence of zero or more serialization parameters")
                 },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the serialized node set.")
         )
     };
         
@@ -97,8 +101,11 @@ public class Serialize extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-        if(args[0].isEmpty())
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+        if(args[0].isEmpty()) {
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         
         
         Properties outputProperties = null;
@@ -106,17 +113,20 @@ public class Serialize extends BasicFunction {
         
         if(args.length == 3)
         {
+        	// TODO: Remove this conditional in eXist 2.0 since the function has been deprecated.
         	/** serialize to disk **/
         	
 	        // check the file output path
 	        String path = args[1].itemAt(0).getStringValue();
 	        File file = new File(path);
 	        if (file.isDirectory()) {
-	            LOG.debug("Output file is a directory: " + file.getAbsolutePath());
+	            logger.debug("Output file is a directory: " + file.getAbsolutePath());
+	        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	            return BooleanValue.FALSE;
 	        }
 	        if (file.exists() && !file.canWrite()) {
-	            LOG.debug("Cannot write to file " + file.getAbsolutePath());
+	            logger.debug("Cannot write to file " + file.getAbsolutePath());
+	        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	            return BooleanValue.FALSE;
 	        }
 	        
@@ -136,6 +146,7 @@ public class Serialize extends BasicFunction {
 	        //do the serialization
 	        serialize(args[0].iterate(), outputProperties, os);
 	    
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	        return BooleanValue.TRUE;
         }
         else
@@ -154,6 +165,7 @@ public class Serialize extends BasicFunction {
         	try
         	{
         		String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         		return new StringValue(new String(((ByteArrayOutputStream)os).toByteArray(), encoding));
         	}
         	catch(UnsupportedEncodingException e)

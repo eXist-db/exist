@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.util.LockException;
 import org.exist.xquery.Function;
@@ -34,7 +35,9 @@ import org.exist.xquery.value.Sequence;
 
 public abstract class LockFunction extends Function {
 
-    protected final boolean exclusive;
+	protected static final Logger logger = Logger.getLogger(LockFunction.class);
+
+	protected final boolean exclusive;
     
     protected LockFunction(XQueryContext context, FunctionSignature signature, boolean exclusive) {
         super(context, signature);
@@ -46,6 +49,8 @@ public abstract class LockFunction extends Function {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         Sequence docsArg = getArgument(0).eval(contextSequence, contextItem);
         DocumentSet docs = docsArg.getDocumentSet();
         try {
@@ -55,6 +60,7 @@ public abstract class LockFunction extends Function {
             throw new XPathException(this, "Could not lock document set", e);
         } finally {
             docs.unlock(exclusive);
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         }
     }
     

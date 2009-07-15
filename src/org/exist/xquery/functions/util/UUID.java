@@ -22,6 +22,7 @@
 
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.UUIDGenerator;
 import org.exist.xquery.Cardinality;
@@ -37,9 +38,12 @@ import org.exist.xquery.value.Type;
 /**
  *
  * @author wessels
+ * @author Loren Cahlander
  */
 public class UUID extends Function {
-    
+
+	private static final Logger logger = Logger.getLogger(UUID.class);
+	
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -56,14 +60,18 @@ public class UUID extends Function {
          */
     public Sequence eval(Sequence contextSequence, Item contextItem)
     throws XPathException {
-        
+
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         String uuid = UUIDGenerator.getUUID();
         
         if(uuid==null) {
             throw new XPathException(this, "Could not create UUID.");
         }
         
-        return new StringValue(uuid);
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
+
+    	return new StringValue(uuid);
     }
     
 }

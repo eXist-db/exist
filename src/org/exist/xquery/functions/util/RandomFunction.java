@@ -23,6 +23,7 @@ package org.exist.xquery.functions.util;
 
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -37,20 +39,22 @@ import org.exist.xquery.value.Type;
 
 public class RandomFunction extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(RandomFunction.class);
+	
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a random number between 0.0 and 1.0",
             null,
-            new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)),
+            new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The random number between 0.0 and 1.0")),
         
         new FunctionSignature(
                 new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                "Returns a random number between 0 and $a",
+                "Returns a random number between 0 and $max",
                 new SequenceType[] {
-    					new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+    					new FunctionParameterSequenceType("max", Type.INTEGER, Cardinality.EXACTLY_ONE, "The maximum value for the random number.")
     			},
-                new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE))
+                new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.EXACTLY_ONE, "The  random number between 0 and $max"))
     };
     
     public RandomFunction(XQueryContext context, FunctionSignature signature)
@@ -60,16 +64,21 @@ public class RandomFunction extends BasicFunction
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	Random rndGen = new Random();
     	
     	if(getArgumentCount() == 0)
     	{
-    		return new DoubleValue(rndGen.nextDouble());
+    		DoubleValue result = new DoubleValue(rndGen.nextDouble());
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
+			return result;
     	}
     	else
     	{
     		IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
-    		return new IntegerValue(rndGen.nextInt(upper.getInt()));
+    		IntegerValue result = new IntegerValue(rndGen.nextInt(upper.getInt()));
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
+			return result;
     		
     	}
     }
