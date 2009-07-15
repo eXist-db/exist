@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.Indexable;
@@ -42,6 +43,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
@@ -50,18 +52,19 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author J.M. Vanel
+ * @author Loren Cahlander
  */
 public class QNameIndexLookup extends Function {
+	
+	protected static final Logger logger = Logger.getLogger(QNameIndexLookup.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Can be used to query existing qname indexes defined on a set of nodes. " +
-            "The qname is specified in the first argument. " +
-            "The second argument specifies a comparison value. ",
+			"Can be used to query existing qname indexes defined on a set of nodes. ",
 			new SequenceType[] {
-					new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+					new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "the QName"),
+					new FunctionParameterSequenceType("comparison-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "") },
+			new FunctionParameterSequenceType("result", Type.NODE, Cardinality.ZERO_OR_MORE, "result"));
 
 	public QNameIndexLookup(XQueryContext context) {
 		super(context, signature);
@@ -106,6 +109,9 @@ public class QNameIndexLookup extends Function {
     }
     
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    	
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         if (contextSequence == null || contextSequence.isEmpty()) {
             // if the context sequence is empty, we create a default context 
             RootNode rootNode = new RootNode(context);
@@ -143,6 +149,7 @@ public class QNameIndexLookup extends Function {
             	Type.getTypeName(comparisonCriterium.getType());
         	throw new XPathException(this, message);
         }
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
 }
