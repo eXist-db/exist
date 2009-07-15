@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -44,6 +46,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -60,19 +63,22 @@ import java.util.List;
  * @author wolf
  */
 public class FunDocument extends Function {
+    private static final Logger logger = Logger.getLogger(FunDocument.class);
+ 
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Returns the documents specified in the input sequence. " +  
-            "The arguments are either document pathes like '" +
+            "The arguments are either document paths like '" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
 			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml'. " +  
             "If the input sequence is empty, " +
             "the function will load all documents in the database.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
+			    new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of paths or uris of the documents")
+			},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true);
 
@@ -98,95 +104,107 @@ public class FunDocument extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-	    DocumentSet docs = null;
-	    Sequence result = null;
-	    // check if the loaded documents should remain locked
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+	throws XPathException {
+	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+	
+	DocumentSet docs = null;
+	Sequence result = null;
+	// check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         boolean cacheIsValid = false;
-	    if (getArgumentCount() == 0) {
+	if (getArgumentCount() == 0) {
             // TODO: disabled cache for now as it may cause concurrency issues
             // better use compile-time inspection and maybe a pragma to mark those
             // sections in the query that can be safely cached
-//	        if(cached != null) {
-//	            result = cached;
-//	            docs = cachedDocs;
-//	        } else {
-                MutableDocumentSet mdocs = new DefaultDocumentSet();
-		        context.getBroker().getAllXMLResources(mdocs);
-                docs = mdocs;
-//	        }
+	    //	        if(cached != null) {
+	    //	            result = cached;
+	    //	            docs = cachedDocs;
+	    //	        } else {
+	    MutableDocumentSet mdocs = new DefaultDocumentSet();
+	    context.getBroker().getAllXMLResources(mdocs);
+	    docs = mdocs;
+	    //	        }
+	} else {
+	    List args = getParameterValues(contextSequence, contextItem);
+	    if(cachedArgs != null)
+		cacheIsValid = compareArguments(cachedArgs, args);
+	    if(cacheIsValid) {
+		result = cached;
+		docs = cachedDocs;
 	    } else {
-		    List args = getParameterValues(contextSequence, contextItem);
-			if(cachedArgs != null)
-			    cacheIsValid = compareArguments(cachedArgs, args);
-			if(cacheIsValid) {
-			    result = cached;
-			    docs = cachedDocs;
-			} else {
                 MutableDocumentSet mdocs = new DefaultDocumentSet();
-				for(int i = 0; i < args.size(); i++) {
-					try {
-						String next = (String)args.get(i);
-						XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
-						if(nextUri.getCollectionPath().length() == 0) {
-							throw new XPathException(this, "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
-						}
-	                    if(nextUri.numSegments()==1) {                     
-	                    	nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
-	                    }
-						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
-						if(doc == null) { 
-							if (context.isRaiseErrorOnFailedRetrieval()) {
-			    				throw new XPathException(this, "FODC0002: can not access '" + nextUri + "'");
-			    			}						
-						}else {
-						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
-							    throw new XPathException(this, "Insufficient privileges to read resource " + next);
-							mdocs.add(doc);
-						}
-			        } catch (XPathException e) { //From AnyURIValue constructor
+		for(int i = 0; i < args.size(); i++) {
+		    try {
+			String next = (String)args.get(i);
+			XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
+			if(nextUri.getCollectionPath().length() == 0) {
+			    throw new XPathException(this, "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
+			}
+			if(nextUri.numSegments()==1) {                     
+			    nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
+			}
+			DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
+			if(doc == null) { 
+			    if (context.isRaiseErrorOnFailedRetrieval()) {
+				throw new XPathException(this, "FODC0002: can not access '" + nextUri + "'");
+			    }						
+			}else {
+			    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
+				throw new XPathException(this, "Insufficient privileges to read resource " + next);
+			    mdocs.add(doc);
+			}
+		    } catch (XPathException e) { //From AnyURIValue constructor
                         e.setLocation(line, column);
-			            throw e;
-			        } catch (PermissionDeniedException e) {
-						throw new XPathException(this, "Permission denied: unable to load document " + (String)args.get(i));
-					}
-				}
+			logger.error("From AnyURIValue constructor:", e);
+			logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
+			throw e;
+		    } catch (PermissionDeniedException e) {
+			logger.error("Permission denied", e);
+			logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
+			throw new XPathException(this, "Permission denied: unable to load document " + (String) args.get(i));
+		    }
+		}
                 docs = mdocs;
                 cachedArgs = args;
-			}
 	    }
-	    try {
+	}
+	try {
             if(!cacheIsValid)
                 // wait for pending updates
                 docs.lock(context.getBroker(), lockOnLoad, true);
-	        // wait for pending updates
-			if(result == null) {
-			    result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
+	    // wait for pending updates
+	    if(result == null) {
+		result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
                 DocumentImpl doc;
-				for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
+		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
                     doc = (DocumentImpl) i.next();
-					result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
+		    result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
                     if(lockOnLoad) {
                         context.addLockedDocument(doc);
                     }
-				}
-			}
-	    } catch (LockException e) {
+		}
+	    }
+	} catch (LockException e) {
+	    logger.error("Could not acquire lock on document set", e);
+	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
             throw new XPathException(this, "Could not acquire lock on document set.");
         } finally {
             if(!(cacheIsValid || lockOnLoad))
                 // release all locks
                 docs.unlock(lockOnLoad);
-	    }
-		cached = result;
-		cachedDocs = docs;
-		registerUpdateListener();
-		return result;
+	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	}
+	cached = result;
+	cachedDocs = docs;
+	registerUpdateListener();
+
+	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+	return result;
+    }
 	
 	private List getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
         List args = new ArrayList(getArgumentCount() + 10);
@@ -232,7 +250,7 @@ public class FunDocument extends Function {
                 }
 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getLine() + ": " + FunDocument.this.toString());
+		    logger.debug("UpdateListener: Line: " + getLine() + ": " + FunDocument.this.toString());
                 }
             };
             context.registerUpdateListener(listener);
