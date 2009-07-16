@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
@@ -38,38 +39,41 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class BinaryDoc extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(BinaryDoc.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("binary-doc", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Retrieves the binary resource identified by $a and returns its contents as a " +
+            "Retrieves the binary resource and returns its contents as a " +
             "value of type xs:base64Binary. An empty sequence is returned if the resource " +
-            "could not be found or $a was empty.",
+            "could not be found or $binary-resource was empty.",
             new SequenceType[] {
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the binary resource")
             },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+            new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary document")
         ),
         new FunctionSignature(
             new QName("binary-doc-available", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Checks if the binary resource identified by $a is available.",
             new SequenceType[] {
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the binary resource")
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "returns true() if the binary document is available")
         ),
         new FunctionSignature(
             new QName("is-binary-doc", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Checks if the resource identified by $a is a binary resource.",
             new SequenceType[] {
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the binary resource")
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "returns true() if the resource is a binary document")
         )
     };
     
@@ -80,10 +84,14 @@ public class BinaryDoc extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         Sequence defaultReturn = (isCalledAs("binary-doc") ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE);
 
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return defaultReturn;
+        }
 
         String path = args[0].getStringValue();
         DocumentImpl doc = null;
@@ -91,10 +99,12 @@ public class BinaryDoc extends BasicFunction {
             doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             if(doc == null)
             {
+            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return defaultReturn;
             }
             else if(doc.getResourceType() != DocumentImpl.BINARY_FILE)
             {
+            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return defaultReturn;
             }
             else if(isCalledAs("binary-doc"))
@@ -104,17 +114,22 @@ public class BinaryDoc extends BasicFunction {
                 byte[] data = new byte[(int)context.getBroker().getBinaryResourceSize(bin)];
                 is.read(data);
                 is.close();
+            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new Base64Binary(data);
             }
             else
             {
+            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return BooleanValue.TRUE;
             }
         } catch (URISyntaxException e) {
+        	logger.error("Invalid resource URI", e);
             throw new XPathException(this, "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
+        	logger.info(path + ": permission denied to read resource", e);
             throw new XPathException(this, path + ": permission denied to read resource");
         } catch (IOException e) {
+        	logger.error(path + ": I/O error while reading resource", e);
             throw new XPathException(this, path + ": I/O error while reading resource",e);
         } finally {
             if (doc != null)
