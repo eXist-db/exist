@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 
 import java.net.URISyntaxException;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -35,6 +36,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -47,6 +49,8 @@ import org.exist.xquery.value.Type;
  *
  */
 public class DocumentNameOrId extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(DocumentNameOrId.class);
 
 	//TODO: should this return a uri?
 	public final static FunctionSignature docNameSignature =
@@ -56,9 +60,9 @@ public class DocumentNameOrId extends BasicFunction {
             "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
             "does not belong to a stored document, the empty sequence is returned.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+					new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "a node or a string path pointing to a resource in the database.")
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("document-name", Type.STRING, Cardinality.ZERO_OR_ONE, "the name of the document"));
 	
 	public final static FunctionSignature docIdSignature =
 		new FunctionSignature(
@@ -67,9 +71,9 @@ public class DocumentNameOrId extends BasicFunction {
             "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
             "does not belong to a stored document, the empty sequence is returned.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "a node or a string path pointing to a resource in the database.")
 			},
-			new SequenceType(Type.INT, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("document-id", Type.INT, Cardinality.ZERO_OR_ONE, "the id of the document"));
 	
 	public DocumentNameOrId(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -80,6 +84,8 @@ public class DocumentNameOrId extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
         DocumentImpl doc = null;
         if (Type.subTypeOf(args[0].getItemType(), Type.NODE)) {
             NodeValue node = (NodeValue) args[0].itemAt(0);
@@ -100,11 +106,15 @@ public class DocumentNameOrId extends BasicFunction {
             }
         }
         if (doc != null) {
-            if ("document-name".equals(getSignature().getName().getLocalName()))
+            if ("document-name".equals(getSignature().getName().getLocalName())) {
+        		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new StringValue(doc.getFileURI().toString());
-            else
+            } else {
+        		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new IntegerValue(doc.getDocId(), Type.INT);
+            }
         }
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 

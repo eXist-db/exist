@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -33,6 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -45,6 +47,8 @@ import org.xml.sax.helpers.AttributesImpl;
  * @author wolf
  */
 public class DescribeFunction extends Function {
+	
+	protected static final Logger logger = Logger.getLogger(DescribeFunction.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -52,9 +56,9 @@ public class DescribeFunction extends Function {
 			"Describes a built-in function. Returns an element describing the " +
 			"function signature.",
 			new SequenceType[] {
-				new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
+				new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.EXACTLY_ONE, "the name of the function to get the signature of"),
 			},
-			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("signature", Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"));
 			
 	public DescribeFunction(XQueryContext context) {
 		super(context, signature);
@@ -67,6 +71,8 @@ public class DescribeFunction extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
 		String uri = qname.getNamespaceURI();
@@ -93,6 +99,7 @@ public class DescribeFunction extends Function {
 			}
 		}
 		builder.endElement();
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
 	}
 

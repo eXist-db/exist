@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 
 import java.net.URISyntaxException;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xmldb.XmldbURI;
@@ -32,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -47,6 +49,8 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class CollectionName extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(CollectionName.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -56,9 +60,9 @@ public class CollectionName extends BasicFunction {
             "If the argument is a string, it is interpreted as path to a resource and the function returns the " +
             "computed parent collection path for this resource.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)
+					new FunctionParameterSequenceType("node-or-path-string", Type.ITEM, Cardinality.ZERO_OR_ONE, "A document node or a path string.  ")
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("collection-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The name of the collection."));
 	
 	public CollectionName(XQueryContext context) {
 		super(context, signature);
@@ -69,8 +73,13 @@ public class CollectionName extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-	    if(args[0].isEmpty())
+		
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
+	    if(args[0].isEmpty()) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	        return Sequence.EMPTY_SEQUENCE;
+	    }
 		Item item = args[0].itemAt(0);
 		if(item.getType() == Type.JAVA_OBJECT) {
 			Object o = ((JavaObjectValue) item).getObject();
@@ -78,6 +87,7 @@ public class CollectionName extends BasicFunction {
                 throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");
             Collection collection = (Collection)o;
             try {
+    			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(collection.getName());
 			} catch (XMLDBException e) {
 				throw new XPathException(this, "Failed to retrieve collection name", e);
@@ -86,6 +96,7 @@ public class CollectionName extends BasicFunction {
             String path = item.getStringValue();
             try {
                 XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
+    			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new StringValue(uri.toString());
             } catch (URISyntaxException e) {
                 throw new XPathException(this, "Illegal URI for resource path: " + path);
@@ -95,12 +106,14 @@ public class CollectionName extends BasicFunction {
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				NodeProxy p = (NodeProxy) node;
 				//TODO: use xmldbUri
+				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(p.getDocument().getCollection().getURI().toString());	
 			}
 		} else
 			throw new XPathException(this, "First argument to util:collection-name should be either " +
 				"a Java object of type org.xmldb.api.base.Collection or a node; got: " + 
 				Type.getTypeName(item.getType()));
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

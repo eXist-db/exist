@@ -25,6 +25,7 @@ package org.exist.xquery.functions.util;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -33,6 +34,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -42,25 +44,30 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 public class DeepCopyFunction extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(DeepCopyFunction.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("deep-copy", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Performs a Deep Clone of the Parameter $a",
+			"Performs a Deep Clone of the passed in item.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
+				new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.ZERO_OR_ONE, "item to be cloned"),
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("clone", Type.ITEM, Cardinality.ZERO_OR_ONE, "the item clone"));
 
 	public DeepCopyFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);			
 	}
  
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        
-        if (args[0].isEmpty())
+
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+        if (args[0].isEmpty()) {
+    		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         
         Item a = args[0].itemAt(0);
         
@@ -73,11 +80,12 @@ public class DeepCopyFunction extends BasicFunction {
             a.toSAX(context.getBroker(), receiver, props);
             
         } catch (SAXException e) {
-            throw new XPathException(this, "Cannot Deep-copy Item $a");
+            throw new XPathException(this, "Cannot Deep-copy Item");
         }
         
         builder.endDocument();
         
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return (NodeValue)receiver.getDocument().getDocumentElement();
     }
 }
