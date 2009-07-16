@@ -23,6 +23,7 @@ package org.exist.xquery.functions.util;
 
 import java.io.StringReader;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
@@ -35,6 +36,7 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.EmptySequence;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -45,6 +47,8 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 public class Compile extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(Compile.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -52,9 +56,9 @@ public class Compile extends BasicFunction {
 			"Dynamically evaluates the XPath/XQuery expression specified in $a within " +
 			"the current instance of the query engine.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("expression", Type.STRING, Cardinality.EXACTLY_ONE, "XPath/XQuery expression.")
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "result"));
 	
 	public Compile(XQueryContext context) {
 		super(context, signature);
@@ -62,12 +66,16 @@ public class Compile extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		// get the query expression
 		String expr = args[0].getStringValue();
-		if ("".equals(expr.trim()))
+		if ("".equals(expr.trim())) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		  return new EmptySequence();
+		}
 		context.pushNamespaceContext();
-		LOG.debug("eval: " + expr);
+		logger.debug("eval: " + expr);
 		// TODO(pkaminsk2): why replicate XQuery.compile here?
 		XQueryLexer lexer = new XQueryLexer(context, new StringReader(expr));
 		XQueryParser parser = new XQueryParser(lexer);
@@ -76,7 +84,7 @@ public class Compile extends BasicFunction {
 		try {
 		    parser.xpath();
 			if(parser.foundErrors()) {
-				LOG.debug(parser.getErrorMessage());
+				logger.debug(parser.getErrorMessage());
 				throw new XPathException(this, "error found while executing expression: " +
 					parser.getErrorMessage());
 			}
@@ -90,16 +98,21 @@ public class Compile extends BasicFunction {
 			}
 			path.analyze(new AnalyzeContextInfo());
 		} catch (RecognitionException e) {			
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.toString());
 		} catch (TokenStreamException e) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.toString());
 		} catch (XPathException e) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.toString());
 		} catch (Exception e) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.getMessage());
 		} finally {
 			context.popNamespaceContext();
 		}
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
