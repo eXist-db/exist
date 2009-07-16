@@ -1,25 +1,24 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
-
 package org.exist.xquery.functions.xmldb;
 
 import java.util.Arrays;
@@ -29,9 +28,7 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
- *
- *  Some modifications Copyright (C) 2004 Luigi P. Bai
- *  finder@users.sf.net
+ * @author Luigi P. Bai, finder@users.sf.net, 2004
  */
 public class XMLDBModule extends AbstractInternalModule {
     
@@ -83,8 +80,8 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBDeleteUser.signature, XMLDBDeleteUser.class),
         new FunctionDef(XMLDBChmodCollection.signature, XMLDBChmodCollection.class),
         new FunctionDef(XMLDBChmodResource.signature, XMLDBChmodResource.class),
-        new FunctionDef(XMLDBCollectionExists.signatures[0], XMLDBCollectionExists.class),
-        new FunctionDef(XMLDBCollectionExists.signatures[1], XMLDBCollectionExists.class),
+        new FunctionDef(XMLDBCollectionAvailable.signatures[0], XMLDBCollectionAvailable.class),
+        new FunctionDef(XMLDBCollectionAvailable.signatures[1], XMLDBCollectionAvailable.class),
         new FunctionDef(XMLDBPermissionsToString.signature, XMLDBPermissionsToString.class),
         new FunctionDef(XMLDBIsAdmin.signature, XMLDBIsAdmin.class),
         new FunctionDef(XMLDBURIFunctions.signatures[0], XMLDBURIFunctions.class),
