@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -29,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.LocalVariable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -41,6 +43,8 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class CatchFunction extends Function {
+	
+	protected static final Logger logger = Logger.getLogger(CatchFunction.class);
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -50,11 +54,11 @@ public class CatchFunction extends Function {
 			"$b, the function checks the name of the exception and calls $c if it matches one of " +
 			"the fully qualified Java class names specified in $a.  A value of \"*\" in $a will catch all java exceptions",
 			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+					new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
+					new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "These code blocks will be put inside of a the try part of the try-catch statement."),
+					new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "These code blocks will called if the catch matches one of the $java-classnames")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+			new FunctionParameterSequenceType("results", Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"));
     
     /**
      * @param context
@@ -67,20 +71,23 @@ public class CatchFunction extends Function {
      * @see org.exist.xquery.Function#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
         try {
             context.pushDocumentContext();
             LocalVariable mark = context.markLocalVariables(false);
             try {
+            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return getArgument(1).eval(contextSequence, contextItem);
             } finally {
                 context.popDocumentContext();
                 context.popLocalVariables(mark);
             }
         } catch(Exception e) {
-        	LOG.debug("Caught exception in util:catch: " + e.getMessage());
+        	logger.debug("Caught exception in util:catch: " + e.getMessage());
             if (!(e instanceof XPathException)) {
-                LOG.warn("Exception: " + e.getMessage(), e);
+                logger.warn("Exception: " + e.getMessage(), e);
 			}
 //            context.popDocumentContext();
             context.getWatchDog().reset();
@@ -95,11 +102,12 @@ public class CatchFunction extends Function {
 					}
 					
                     if( exClassName.equals( "*" ) || exClass.getName().equals( e.getClass().getName() ) || exClass.isInstance(e) ) {
-                        LOG.debug("Calling exception handler to process " + e.getClass().getName());
+                        logger.debug("Calling exception handler to process " + e.getClass().getName());
                         UtilModule myModule =
                 			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         myModule.declareVariable(UtilModule.EXCEPTION_QNAME, new StringValue(e.getClass().getName()));
                         myModule.declareVariable(UtilModule.EXCEPTION_MESSAGE_QNAME, new StringValue(e.getMessage()));
+                    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (Exception e2) {

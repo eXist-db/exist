@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -34,6 +35,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,6 +49,8 @@ import org.exist.xquery.value.ValueSequence;
  * @author wolf
  */
 public class BuiltinFunctions extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(BuiltinFunctions.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -54,14 +58,14 @@ public class BuiltinFunctions extends BasicFunction {
 				"Returns a sequence containing the QNames of all functions " +
 				"declared in the module identified by the specified namespace URI. " +
 				"An error is raised if no module is found for the specified URI.",
-				new SequenceType[] { new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)),
+				new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the namespace URI of the function module") },
+				new FunctionParameterSequenceType("function-names", Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 		new FunctionSignature(
 			new QName("registered-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a sequence containing the QNames of all functions " +
 			"currently known to the system, including functions in imported and built-in modules.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE))
+			new FunctionParameterSequenceType("function-names", Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 	};
 
 	public BuiltinFunctions(XQueryContext context, FunctionSignature signature) {
@@ -73,6 +77,9 @@ public class BuiltinFunctions extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args,	Sequence contextSequence)
 		throws XPathException {
+		
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		ValueSequence resultSeq = new ValueSequence();
 		if(getSignature().getArgumentCount() == 1) {
 			String uri = args[0].getStringValue();
@@ -92,6 +99,7 @@ public class BuiltinFunctions extends BasicFunction {
 				resultSeq.add(new QNameValue(context, sig.getName()));
 			}
 		}
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return resultSeq;
 	}
 

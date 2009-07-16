@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
@@ -32,6 +33,7 @@ import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -42,6 +44,8 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class CallFunction extends Function {
+	
+	protected static final Logger logger = Logger.getLogger(CallFunction.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(
@@ -50,10 +54,10 @@ public class CallFunction extends Function {
             "to be called is passed as the first argument. All remaining arguments are " +
             "forwarded to the called function.",
             new SequenceType[] {
-                new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to ba called"),
+                new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "the parameters to be passed into the function")
             },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+            new FunctionParameterSequenceType("results", Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the function called"),
             true
         );
     
@@ -69,6 +73,9 @@ public class CallFunction extends Function {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
+    	
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         Sequence arg0 = getArgument(0).eval(contextSequence, contextItem);
         if(arg0.getCardinality() != Cardinality.EXACTLY_ONE)
             throw new XPathException(this, "Expected exactly one item for first argument");
@@ -86,6 +93,7 @@ public class CallFunction extends Function {
         call.setArguments(params);
         call.analyze(new AnalyzeContextInfo(this, 0));
         // Evaluate the function
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return call.eval(contextSequence);
     }
 }
