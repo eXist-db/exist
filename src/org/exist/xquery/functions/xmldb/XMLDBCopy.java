@@ -1,25 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
+
+import org.apache.log4j.Logger;
 
 import java.net.URISyntaxException;
 import org.exist.dom.QName;
@@ -30,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -42,26 +45,26 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
-
+    private static final Logger logger = Logger.getLogger(XMLDBCopy.class);
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-        new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-        "Copy a collection $a to the collection $b. The collections can be specified either as " +
-        "a simple collection path or an XMLDB URI.",
-        new SequenceType[]{
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-        new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			      "Copy a collection $source-collection-uri to the collection $target-collection-uri. The collections can be specified either as " +
+			      "a simple collection path or an XMLDB URI.",
+			      new SequenceType[]{
+				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source collection-uri"),
+				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection-uri")},
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
-        new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-        "Copy a resource $c from the collection specified in $a to collection in $b. " +
-        "The collections can be either specified as a simple collection path " +
-        "or an XMLDB URI.",
-        new SequenceType[]{
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-        new SequenceType(Type.ITEM, Cardinality.EMPTY))
+			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			      "Copy a resource $resource from the collection specified in $source-collection-uri to collection in $target-collection-uri. " +
+			      "The collections can be either specified as a simple collection path " +
+			      "or an XMLDB URI.",
+			      new SequenceType[]{
+				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source collection-uri"),
+				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection-uri"),
+			      new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource to copy")},
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
     public XMLDBCopy(XQueryContext context, FunctionSignature signature) {
@@ -71,18 +74,25 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
-    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
+	throws XPathException {
+	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
         XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
         if (getSignature().getArgumentCount() == 3) {
             XmldbURI doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI();
             try {
                 Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {
+		    logger.error("Resource " + doc + " not found");
+		    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
                 CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
                 service.copyResource(doc, destination, null);
             } catch (XMLDBException e) {
+		logger.error("XMLDB exception caught: ", e);
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
             }
             
@@ -93,12 +103,18 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
                 service.copy(XmldbURI.xmldbUriFor(collection.getName()), destination, null);
 
             } catch (XMLDBException e) {
+		logger.error("Cannot copy collection: ", e);
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 throw new XPathException(this, "Cannot copy collection: " + e.getMessage(), e);
 
             } catch (URISyntaxException e) {
-                throw new XPathException(this, "URI exception: " + e.getMessage(), e);
+		logger.error("URI exception: ", e);
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+		throw new XPathException(this, "URI exception: " + e.getMessage(), e);
             }
         }
+
+	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }
