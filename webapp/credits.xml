@@ -7,6 +7,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Credits</title>
+        <date>July 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
