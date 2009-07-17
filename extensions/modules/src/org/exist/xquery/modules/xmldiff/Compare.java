@@ -50,10 +50,10 @@ public class Compare extends Function {
     public final static FunctionSignature signature = new FunctionSignature(
 			new QName("compare", XmlDiffModule.NAMESPACE_URI,
 					XmlDiffModule.PREFIX),
-			"Returns the differences between XML documents",
+			"Returns true() if the two node sets $node-set-1 and $node-set-2 are equal, otherwise false()",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("xml1", Type.NODE, Cardinality.ZERO_OR_MORE, ""),
-					new FunctionParameterSequenceType("xml2", Type.NODE, Cardinality.ZERO_OR_MORE, "") },
+					new FunctionParameterSequenceType("node-set-1", Type.NODE, Cardinality.ZERO_OR_MORE, "the first node set"),
+					new FunctionParameterSequenceType("node-set-2", Type.NODE, Cardinality.ZERO_OR_MORE, "the second node set") },
 			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
 
 	public Compare(XQueryContext context) {
