@@ -255,7 +255,7 @@ else
 declare function naming:fixup($xproc as item(),$stdin){
 
 let $pipeline := $xproc/p:*[name(.) = "p:pipeline" or name(.) ="p:declare-step"]
-let $steps := <p:declare-step name="{$pipeline/@name}">
+let $steps := <p:declare-step >
                <ext:pre name="!{$pipeline/@name}">
             {
             if ($pipeline/p:input[@primary='true']) then
