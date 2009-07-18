@@ -14,6 +14,8 @@ declare namespace c="http://www.w3.org/ns/xproc-step";
 declare namespace err="http://www.w3.org/ns/xproc-error";
 declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
 
+declare namespace file="http://exist-db.org/util";
+
 (: Module Imports :)
 import module namespace const = "http://xproc.net/xproc/const";
 import module namespace u = "http://xproc.net/xproc/util";
