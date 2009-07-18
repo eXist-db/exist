@@ -32,6 +32,8 @@ declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_an
 declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 4);
 declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
 declare variable $xproc:try :=util:function(xs:QName("xproc:try"), 5);
+declare variable $xproc:catch :=util:function(xs:QName("xproc:catch"), 5);
+
 declare variable $xproc:group :=util:function(xs:QName("xproc:group"), 5);
 declare variable $xproc:for-each :=util:function(xs:QName("xproc:for-each"), 5);
 declare variable $xproc:viewport :=util:function(xs:QName("xproc:viewport"), 4);
@@ -110,7 +112,20 @@ declare function xproc:try($primary,$secondary,$options,$currentstep,$outputs) {
 	let $v := u:get-primary($primary)
 	let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
 	return
-        util:catch('java.lang.Exception',(u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/p:catch}</p:declare-step>,$v,(),$outputs)/.)[last()]/node(), 'need to implement p:catch')
+
+        util:catch('*',
+            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
+                {$currentstep/p:group}</p:declare-step>,$v,(),$outputs)/.)[last()]/node(),
+            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
+                {$currentstep/p:catch}</p:declare-step>,$v,(),$outputs)/.)[last()]/node())
+};
+(: -------------------------------------------------------------------------- :)
+declare function xproc:catch($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
+	let $v := u:get-primary($primary)
+	let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
+	return
+		(u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/*}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
 };
 
 
