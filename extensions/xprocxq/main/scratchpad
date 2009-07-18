@@ -2,6 +2,9 @@
 current
 ----------------------------------------
 
+migrate directory-list from file and put into xprocxq.jar
+
+
 * declare-step/pipeline need declared name attribute
 
 * sequence issue with input to choose
@@ -96,7 +99,9 @@ components
 	p:serialisation
 	p:log
 	p:pipeinfo
+
 	
+
 --------------------------------------------------------------------------------
 
 
