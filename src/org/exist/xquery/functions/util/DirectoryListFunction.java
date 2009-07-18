@@ -67,7 +67,7 @@ public class DirectoryListFunction extends BasicFunction {
 	{
 		new FunctionSignature(
 			new QName("directory-list", NAMESPACE_URI, PREFIX),
-			"List all files, including their file size and modification time, found in a directory. Files are located in the server's " +
+			"DO NOT USE! -- temporary only List all files, including their file size and modification time, found in a directory. Files are located in the server's " +
 			"file system, using file patterns. " +
 			"The first argument is the directory in the file system where the files are located." +
 			"The second argument is the file pattern. File pattern matching is based " +
