@@ -1,0 +1,65 @@
+<?xml-stylesheet type="text/xsl" href="/style/testcase.xsl"?>
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error"
+	ignore-whitespace-differences="true">	
+<t:title>Test try/catch #004</t:title>
+    <t:description>Test nested try/catch</t:description>
+
+<t:input port='source'>
+<doc/>
+</t:input>
+
+<t:pipeline>
+<p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
+		name="main">
+<p:input port="source"/>
+<p:output port="result"/>
+    <p:try name="try">
+      <p:group>
+        <p:output port="result"/>
+
+        <p:try name="try-nested">
+            <p:group>
+                <p:compare fail-if-not-equal="true">
+                    <p:input port="alternate">
+                        <p:inline><doc1/></p:inline>
+                    </p:input>
+                </p:compare>
+                <p:identity>
+                    <p:input port="source">
+                        <p:inline>
+                            p:compare succeeded
+                        </p:inline>
+                    </p:input>
+                </p:identity>
+            </p:group>
+              <p:catch>
+                <p:output port="result"/>
+                <p:identity>
+                  <p:input port="source">
+                    <p:inline><p>p:compare failed at the nested level</p></p:inline>
+                  </p:input>
+                </p:identity>
+              </p:catch>
+        </p:try>
+      </p:group>
+      <p:catch>
+        <p:output port="result"/>
+        <p:identity>
+          <p:input port="source">
+            <p:inline><p>p:compare failed at the top level</p></p:inline>
+          </p:input>
+        </p:identity>
+      </p:catch>
+    </p:try>
+</p:declare-step>
+</t:pipeline>
+
+<t:output port='result'>
+    <p>p:compare failed at the nested level</p>
+</t:output>
+
+</t:test>
+
