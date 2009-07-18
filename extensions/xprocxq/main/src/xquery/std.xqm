@@ -14,6 +14,9 @@ declare namespace err="http://www.w3.org/ns/xproc-error";
 declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
 declare namespace xproc = "http://xproc.net/xproc";
 
+declare namespace t = "http://xproc.org/ns/testsuite";
+
+(: TODO - remove saxon namespace :)
 declare namespace saxon = "http://dummy.org";
 
 (: Module Imports :)
@@ -112,7 +115,7 @@ else
 (: -------------------------------------------------------------------------- :)
 declare function std:compare($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
-let $alternate := u:get-secondary('alternate',$secondary)
+let $alternate : = u:get-secondary('alternate',$secondary)
 let $strict := xs:boolean(u:get-option('xproc:strict',$options,$v)) (: ext attribute xproc:strict:)
 let $fail-if-not-equal := xs:boolean(u:get-option('fail-if-not-equal',$options,$v))
 
@@ -147,7 +150,6 @@ let $v := u:get-primary($primary)
 let $limit := xs:integer(u:get-option('limit',$options,$v))
 let $count := count($v)
 return
-
     if (empty($limit) or $limit eq 0 or $count lt $limit ) then
 		u:outputResultElement($count)
     else
