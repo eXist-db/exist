@@ -165,11 +165,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                     } else {
                         subdir = childCols[i];
                     }
-                    if (!dir.exists() && createdirectories ) {
+                    if (!dir.exists() && createdirectories == true ) {
                         dir.mkdirs();
                     }
                     extractResources(col, subdir);
-                    if (subcollections) {
+                    if (subcollections == true) {
                         extractSubCollections(col, subdir);
                     }
                 }
@@ -196,13 +196,13 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
       *
       */
     private void writeXMLResource(XMLResource res, File dest) throws IOException, XMLDBException {
-        if (createdirectories) {
+        if (createdirectories == true) {
             File parentDir= new File(dest.getParent());
             if(!parentDir.exists()){
                 parentDir.mkdirs();
             }
         }
-        if ((dest != null ) || (dest != null && overwrite == true) ) {
+        if (dest != null  || overwrite == true ) {
             Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -241,14 +241,14 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
       */
     private void writeBinaryResource(Resource res, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException {
 
-        if (createdirectories) {
+        if (createdirectories == true) {
             File parentDir= new File(dest.getParent());
             if(!parentDir.exists()){
                 parentDir.mkdirs();
             }
         }
-          
-        if ((dest != null && !dest.exists()) || (dest!=null && overwrite == true) ) {
+                     //dest != null && ( !dest.exists() || 
+        if (dest != null  || overwrite == true) {
 
              if (dest.isDirectory()) {
 
@@ -261,10 +261,12 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
              }
                  FileOutputStream os;
                  os = new FileOutputStream(dest);
+
                ((ExtendedResource)res).getContentIntoAStream(os);
 
+
         } else {
-            String msg = "Destination binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
+            String msg = "Dest binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
                     "overwrite property to overwrite file.";
             if (failonerror)
                 throw new BuildException(msg);
