@@ -55,9 +55,9 @@ let $runtime-debug := request:get-parameter("dbg", ())
     <test file="{$file/@name}">
         {
         if (contains($path,request:get-parameter("debug", ()))) then
-           xproc:run($pipeline,$stdin,$runtime-debug)
+           xproc:run($pipeline,u:serialize($stdin,$const:ESCAPE_SERIALIZE),$runtime-debug)
         else
-            util:catch('java.lang.Exception', xproc:run($pipeline,$stdin,$runtime-debug), 'test crashed')
+            util:catch('*', xproc:run($pipeline,$stdin,$runtime-debug), 'test crashed')
          }
      </test>
 return

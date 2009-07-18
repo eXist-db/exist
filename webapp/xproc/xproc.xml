@@ -72,20 +72,10 @@ return
 			</programlisting>
          <a href="examples/hello.xqy" target="_example">run xproc from xquery</a>
 </example>
-
-<para> The result of running this should resemble:</para>
-<example>
-			<title>Result</title>
-			<programlisting>
-			<markup>
-				<![CDATA[
-http://127.0.0.1:8080/exist/rest/examples/helloworld.xq
-]]>
-			</markup>
-			</programlisting>
-                     </example>
-
-The result in your browser should be
+ <para>
+ list and define all xproc entry functions
+ </para>
+<para> The result of running this xquery should resemble:</para>
 			<example>
 			<title>Result</title>
 			<programlisting>
@@ -507,8 +497,7 @@ The result in your browser should be
 			</para>
             <note>
                 <para>Currently this set of tests will return results lower then expected as the test runner
-                is undergoing development. You will need to enable eXist-db File extension module
-                to run the testrunner.</para>
+                is undergoing development.</para>
             </note>
 
 		</section>
