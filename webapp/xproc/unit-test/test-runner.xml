@@ -18,7 +18,7 @@
             <p:pipe step="test-pipeline" port="pipeline"/>
         </p:input>
         <p:with-option name="dflag" select="'0'"/>
-    </ext:xproc>
+    </ext:xproc> 
     <p:compare>
         <p:input port="source">
             <p:pipe port="result" step="test"/>
