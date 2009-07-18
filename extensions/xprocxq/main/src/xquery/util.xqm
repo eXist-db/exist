@@ -203,6 +203,7 @@ if($secondary/xproc:input[@port=$name]//t:document) then
     return
         document{$child}
 else
+
     for $child in $secondary/xproc:input[@port=$name]/*
     return
         document{$child}
@@ -211,13 +212,12 @@ else
 (: -------------------------------------------------------------------------- :)
 declare function u:get-primary($primary){
 (: -------------------------------------------------------------------------- :)
-
 if($primary//t:document) then
 	for $child in $primary/t:document/*
 	return
 		    document{$child}
-
 else
+
 	for $child in $primary/*
 	return
 		    document{$child}

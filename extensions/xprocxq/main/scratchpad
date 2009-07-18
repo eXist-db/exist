@@ -2,9 +2,6 @@
 current
 ----------------------------------------
 
-migrate directory-list from file and put into xprocxq.jar
-
-
 * declare-step/pipeline need declared name attribute
 
 * sequence issue with input to choose
@@ -34,11 +31,7 @@ to each function
 
 * sequences need rationalization and sanitization
 
-* p:try in evalstep ?
-
 * create namespace module to manage namespace fixups 
-
-* testsuite represents sequences as t:document in count-001.xml in testing suite ?
 
 * target main eXist scenarios
 	- form handler
@@ -57,7 +50,6 @@ Parameters, unlike options and variables, have names that can be computed at run
 ------------------------------
 complex/container steps
 ------------------------------
-	p:try/catch
 	p:viewport - treewalker and then apply ext:eval-step to node
 
 ------------------------------
