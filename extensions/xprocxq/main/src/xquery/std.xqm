@@ -244,7 +244,8 @@ let $href := $v/c:request/@href
 let $method := $v/c:request/@method
 let $content-type := $v/c:request/c:body/@content-type
 let $body := $v/c:request/c:body
-let $status-only := ''
+let $status-only := $v/c:request/@status-only
+let $detailed := $v/c:request/@detailed
 let $username := ''
 let $password := ''
 let $auth-method := ''
@@ -258,7 +259,7 @@ let $response :=
 		for $header in $v/c:request/c:header
 		return
 			<http:header name="" value=""/>,
-	
+
 		if (empty($body)) then () 
 		else
 	      <http:body content-type="{$content-type}">
@@ -268,14 +269,21 @@ let $response :=
 	   </http:request>
 	)
 return
+
+if (not($detailed)) then
+      $response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]
+else
 	<c:response status="{$response/@status}">{
-	for $header in $response/http:header
+	for $header in $response//http:header
 	return
 		<c:header name="{$header/@name}" value="{$header/@value}"/>,
-		<c:body>{$response/*[not(name(.) eq 'http:response')][not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]}</c:body>
+
+     if (not($status-only)) then
+		<c:body>{$response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]}</c:body>
+     else
+        ()
 	}
 	</c:response>
-
 
 };
 
