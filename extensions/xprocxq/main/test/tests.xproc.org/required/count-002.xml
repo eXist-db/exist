@@ -23,7 +23,7 @@
 </input>
 
 <pipeline>
-  <p:declare-step>
+  <p:declare-step name="count-test-002">
     <p:input port="source" sequence="true"/>
     <p:output port="result"/>
 
