@@ -2,6 +2,7 @@ xquery version "1.0" encoding "UTF-8";
 
 declare namespace t="http://xproc.org/ns/testsuite";
 declare namespace c="http://www.w3.org/ns/xproc-step";
+declare namespace file="http://exist-db.org/xquery/util";
 
 import module namespace const = "http://xproc.net/xproc/const";
 import module namespace xproc = "http://xproc.net/xproc";
@@ -15,7 +16,7 @@ let $type :=  request:get-parameter("type", ())
 let $dir := concat('/Users/jimfuller/Source/Thirdparty/eXist/extensions/xprocxq/main/test/tests.xproc.org/',$type)
 let $file :=  request:get-parameter("file", ())
 let $files := file:directory-list($dir,$file)
-let $result := for $file in $files/file:file[not(contains(@name,$not))]
+let $result := for $file in $files/*:file[not(contains(@name,$not))]
 
 let $path := concat('file://',$dir,string($file/@name))
 

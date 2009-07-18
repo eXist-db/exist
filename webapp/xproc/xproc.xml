@@ -34,6 +34,75 @@
 		</para>
     </section>
 
+     <section>
+        <title>Using XProc in eXist</title>
+        <para>
+The following XQuery file is an example of how to run xprocxq from within eXist.
+             </para>
+<example>
+			<title>Example of Running XProc from XQuery</title>
+			<programlisting>
+			<markup>
+				<![CDATA[
+
+xquery version "1.0" encoding "UTF-8";
+
+(: for now you need to declare these namespaces :)
+import module namespace const = "http://xproc.net/xproc/const";
+import module namespace xproc = "http://xproc.net/xproc";
+import module namespace u = "http://xproc.net/xproc/util";
+
+(: define standard input source binding :)
+let $stdin :=document{<test>Hello World</test>}
+
+(: the xproc pipeline :)
+let $pipeline :=document{
+                    <p:pipeline name="pipeline"
+                                xmlns:p="http://www.w3.org/ns/xproc">
+                        <p:identity/>
+                    </p:pipeline>
+                }
+
+return
+(: the xproc entry function :)
+     xproc:run($pipeline,$stdin)
+
+]]>
+			</markup>
+			</programlisting>
+         <a href="examples/hello.xqy" target="_example">run xproc from xquery</a>
+</example>
+
+<para> The result of running this should resemble:</para>
+<example>
+			<title>Result</title>
+			<programlisting>
+			<markup>
+				<![CDATA[
+http://127.0.0.1:8080/exist/rest/examples/helloworld.xq
+]]>
+			</markup>
+			</programlisting>
+                     </example>
+
+The result in your browser should be
+			<example>
+			<title>Result</title>
+			<programlisting>
+			<markup>
+				<![CDATA[
+<test>Hello World</test>
+]]>
+			</markup>
+			</programlisting>
+            </example>
+
+         <para>
+             
+
+         </para>
+    </section>
+
     <section>
         <title>Learning XProc</title>
 		<para>At their simplest, XProc pipelines contain steps, each of which accept zero or more XML documents as their input and produce zero or more XML documents as output.</para>
