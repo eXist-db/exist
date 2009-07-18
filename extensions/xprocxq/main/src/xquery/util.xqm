@@ -97,18 +97,18 @@ declare function u:type($stepname as xs:string,$is_declare-step) as xs:string {
 
 
 (: -------------------------------------------------------------------------- :)
-declare function u:assert($booleanexp as item(), $why as xs:string)  {
-if(not($booleanexp) and boolean($u:NDEBUG)) then 
-    u:dynamicError('err:XC0020',$why)
+declare function u:trace($value as item()*, $what as xs:string)  {
+if(boolean($u:NDEBUG)) then
+    trace($value,$what)
 else
     ()
 };
 
 
 (: -------------------------------------------------------------------------- :)
-declare function u:trace($value as item()*, $what as xs:string)  {
-if(boolean($u:NDEBUG)) then
-    trace($value,$what)
+declare function u:assert($booleanexp as item(), $why as xs:string)  {
+if(not($booleanexp) and boolean($u:NDEBUG)) then 
+    u:dynamicError('err:XC0020',$why)
 else
     ()
 };
@@ -197,16 +197,30 @@ return
 
 (: -------------------------------------------------------------------------- :)
 declare function u:get-secondary($name as xs:string,$secondary){
-for $child in $secondary/xproc:input[@port=$name]/*
-return
-	document{$child}
+(: -------------------------------------------------------------------------- :)
+if($secondary/xproc:input[@port=$name]//t:document) then
+    for $child in $secondary/xproc:input[@port=$name]/t:document/*
+    return
+        document{$child}
+else
+    for $child in $secondary/xproc:input[@port=$name]/*
+    return
+        document{$child}
 };
 
 (: -------------------------------------------------------------------------- :)
 declare function u:get-primary($primary){
+(: -------------------------------------------------------------------------- :)
+
+if($primary//t:document) then
+	for $child in $primary/t:document/*
+	return
+		    document{$child}
+
+else
 	for $child in $primary/*
 	return
-		document{$child}
+		    document{$child}
 };
 
 (: -------------------------------------------------------------------------- :)
