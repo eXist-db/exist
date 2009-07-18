@@ -87,53 +87,49 @@
 	<example>
 	<title>Complex Pipeline - p:choose and p:for-each</title>
 	<programlisting>
-	<markup>
-		<![CDATA[
-		<p:pipeline xmlns:p="http://www.w3.org/ns/xproc"
-                                     xmlns:c="http://www.w3.org/ns/xproc-step"
-                           name="pipeline">
+	<markup><![CDATA[<p:pipeline xmlns:p="http://www.w3.org/ns/xproc" xmlns:c="http://www.w3.org/ns/xproc-step" name="pipeline">
 
 <p:compare name="compare">                       (: compare test step :)
-   <p:input port="alternate">
-       <p:document href="/db/xproc/test.xml"/> (: example of using p:document :)
-   </p:input>
+<p:input port="alternate">
+   <p:document href="/db/xproc/test.xml"/> (: example of using p:document :)
+</p:input>
 </p:compare>
 
 <p:choose name="mychoosestep">
-       <p:when test=".//c:result[.='false']">      (: note the eXist specific path convention with root :)
-           <p:identity>
-               <p:input port="source">
-                   <p:inline>
-                       <p>This pipeline failed.</p>
-                   </p:inline>
-               </p:input>
-           </p:identity>
-       </p:when>
-       <p:when test=".//c:result[.='true']">  (: success :)
+   <p:when test=".//c:result[.='false']">      (: note the eXist specific path convention with root :)
        <p:identity>
            <p:input port="source">
                <p:inline>
-                   <p>This pipeline successfully processed.</p>
+                   <p>This pipeline failed.</p>
                </p:inline>
            </p:input>
        </p:identity>
-       </p:when>
-       <p:otherwise>
-           <p:identity>
-               <p:input port="source">
-                   <p:inline>
-                       <p>This pipeline failed.</p>
-                   </p:inline>
-               </p:input>
-           </p:identity>
-       </p:otherwise>
-   </p:choose>
+   </p:when>
+   <p:when test=".//c:result[.='true']">  (: success :)
+   <p:identity>
+       <p:input port="source">
+           <p:inline>
+               <p>This pipeline successfully processed.</p>
+           </p:inline>
+       </p:input>
+   </p:identity>
+   </p:when>
+   <p:otherwise>
+       <p:identity>
+           <p:input port="source">
+               <p:inline>
+                   <p>This pipeline failed.</p>
+               </p:inline>
+           </p:input>
+       </p:identity>
+   </p:otherwise>
+</p:choose>
 
-    <p:identity>        (: need to explicitly define p:step to get multi container step output :)
-        <p:input port="source">
-            <p:step port="result" step="mychoosestep"/>
-        </p:input>
-    </p:identity>
+<p:identity>   (: currently need to define p:step to get multi container step output :)
+    <p:input port="source">
+        <p:step port="result" step="mychoosestep"/>
+    </p:input>
+</p:identity>
 
 
 </p:pipeline>
@@ -155,42 +151,8 @@
 		</ul>
 		Steps can have other input or output ports defined that work with non-XML documents, but only XML documents (as in XML infoset) can flow between primary input and output ports.
 	</para>
-	<para>
-		I used all three kinds of XProc steps in this example. Step types are represented as rectangles in the workflow diagram below.
-	</para>
-	
-	<graphic fileref="resource/image/xproc_complex_pipeline.gif"/>
-	
-	
-	<para>
-		The largest rectangle represents the whole &lt;p:pipeline&gt;, which can itself be invoked as a step. Because it contains a sub-pipeline, it is a <a href="">compound</a> step.</para>
-	<para>
-		The &lt;p:choose&gt; step has two sub-pipelines, which makes it a <a href="">multi-container</a> step. It chooses which sub-pipeline to follow based on the evaluation of a &lt;p:when&gt; XPath expression.
-	</para>
-	<para>
-		The &lt;p:for-each&gt; step contains a single sub-pipeline consisting of one step, so it's also <a href="">compound</a> step.
-	</para>
-	<para>
-		Most of XProc steps are <a href="" target="_spec">atomic</a> steps. These steps apply a specific operation to an XML document, examples of which are &lt;p:xinclude&gt;, &lt;p:validate-&gt;, &lt;p:string-replace&gt;, and &lt;p:wrap&gt;.
-	</para>
-	
 
-	<section>
-		<title><a href='components-xproc-steps.xml'>XProc Components</a></title>
-		<para>
-			<ul>
-				<li>input and output ports: </li>
-				<li>p:pipe, p:inline, p:document, p:data and p:empty: </li>
-				<li>p:log: </li>
-				<li>p:serialization: </li>
-				<li>p:log: </li>
-				<li>variables,options and parameters: </li>
-				<li>p:declare-step: </li>
-				<li>p:library and p:import: </li>
 
-			</ul>
-		</para>
-	</section>
 
 	
 		<section>
@@ -207,6 +169,23 @@
 			</para>
 		</section>
 
+
+      	<section>
+		<title><a href='components-xproc-steps.xml'>XProc Components</a></title>
+		<para>
+			<ul>
+				<li>input and output ports: </li>
+				<li>p:pipe, p:inline, p:document, p:data and p:empty: </li>
+				<li>p:log: </li>
+				<li>p:serialization: </li>
+				<li>p:log: </li>
+				<li>variables,options and parameters: </li>
+				<li>p:declare-step: </li>
+				<li>p:library and p:import: </li>
+
+			</ul>
+		</para>
+	</section>
 
 		<section>
 			<title><a href='standard-xproc-steps.xml'>Standard Steps</a></title>
@@ -459,7 +438,8 @@
 			</para>
             <note>
                 <para>Currently this set of tests will return results lower then expected as the test runner
-                is undergoing development.</para>
+                is undergoing development. You will need to enable eXist-db File extension module
+                to run the testrunner.</para>
             </note>
 
 		</section>
@@ -530,7 +510,7 @@
 		</section>
 
 			<section>
-				<title>Historical XProc links</title>
+				<title>XProc links</title>
 			<ul>
 			<li><a href="http://www.w3.org/TR/2002/NOTE-xml-pipeline-20020228/" target="_resource">XML Pipeline Definition Language Version 1.0: W3C Note 28 February 2002</a>: Read the note submitted by Sun Microsystems, Alis Technologies, Arbortext, Cisco Systems, Fujitsu, Markup Technology, and Oracle.</li>
 

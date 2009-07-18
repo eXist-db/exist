@@ -52,12 +52,23 @@
                 </tr>
                 <tr>
                     <td>
+                        <a href="examples/pdirectory-list.xproc" target="_example">pdirectory-list.xproc</a>
+                    </td>
+                    <td>p:directory step example on eXist directory.</td>
+                </tr>
+                <tr>
+                    <td>
                         <a href="examples/simple-pipeline.xproc?stdin=/db/xproc/examples/test.xml" target="_example">xslt transformation</a>
                     </td>
                     <td>Apply xslt transformation to input supplied as a url paramater.</td>                    
                 </tr>
 
             </tbody>
+
         </table>
+
+        <note>
+	      <para>Files with the .xproc extension are identified by webapp/xproc/controller.xql and then processed by webapp/xproc/run.xql with xprocxq.</para>
+	    </note>
     </section>
 </article>
