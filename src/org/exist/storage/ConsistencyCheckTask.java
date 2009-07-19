@@ -21,14 +21,6 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
-import org.exist.EXistException;
-import org.exist.backup.ConsistencyCheck;
-import org.exist.backup.ErrorReport;
-import org.exist.backup.SystemExport;
-import org.exist.management.AgentFactory;
-import org.exist.util.Configuration;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,6 +31,16 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.backup.ConsistencyCheck;
+import org.exist.backup.ErrorReport;
+import org.exist.backup.SystemExport;
+import org.exist.management.Agent;
+import org.exist.management.AgentFactory;
+import org.exist.management.TaskStatus;
+import org.exist.util.Configuration;
 
 public class ConsistencyCheckTask implements SystemTask {
 
@@ -55,7 +57,7 @@ public class ConsistencyCheckTask implements SystemTask {
         exportDir = properties.getProperty("output", "export");
         File dir = new File(exportDir);
         if (!dir.isAbsolute())
-            dir = new File((String)config.getProperty(BrokerPool.PROPERTY_DATA_DIR), exportDir);
+            dir = new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR), exportDir);
         dir.mkdirs();
         exportDir = dir.getAbsolutePath();
 
@@ -77,16 +79,24 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     public void execute(DBBroker broker) throws EXistException {
+        final Agent agentInstance = AgentFactory.getInstance();
+        final BrokerPool brokerPool = broker.getBrokerPool();
+        TaskStatus endStatus = new TaskStatus(TaskStatus.STOPPED_OK);
+
+        agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.INIT));
+
         if (paused) {
             if (LOG.isDebugEnabled())
                 LOG.debug("Consistency check is paused.");
+            agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.PAUSED));
             return;
         }
         long start = System.currentTimeMillis();
         PrintWriter report = null;
         try {
             boolean doBackup = createBackup;
-            // TODO: don't use the direct access feature for now. needs more testing
+            // TODO: don't use the direct access feature for now. needs more
+            // testing
             List errors = null;
             if (!incremental || incrementalCheck) {
                 if (LOG.isDebugEnabled())
@@ -95,8 +105,12 @@ public class ConsistencyCheckTask implements SystemTask {
                 CheckCallback cb = new CheckCallback(report);
 
                 ConsistencyCheck check = new ConsistencyCheck(broker, false);
+                agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.RUNNING_CHECK));
                 errors = check.checkAll(cb);
                 if (!errors.isEmpty()) {
+                    endStatus.setStatus(TaskStatus.STOPPED_ERROR);
+                    endStatus.setReason(errors);
+
                     if (LOG.isDebugEnabled())
                         LOG.debug("Errors found: " + errors.size());
                     doBackup = true;
@@ -106,19 +120,20 @@ public class ConsistencyCheckTask implements SystemTask {
                         paused = true;
                     }
                 }
-                AgentFactory.getInstance().updateErrors(broker.getBrokerPool(), errors, start);
             }
             if (doBackup) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Starting backup...");
                 SystemExport sysexport = new SystemExport(broker, null, false);
                 File exportFile = sysexport.export(exportDir, incremental, maxInc, true, errors);
+                agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.RUNNING_BACKUP));
                 if (LOG.isDebugEnabled())
                     LOG.debug("Created backup to file: " + exportFile.getAbsolutePath());
             }
         } finally {
             if (report != null)
                 report.close();
+            agentInstance.changeStatus(brokerPool, endStatus);
         }
     }
 
@@ -126,10 +141,11 @@ public class ConsistencyCheckTask implements SystemTask {
         for (int i = 0; i < errors.size(); i++) {
             ErrorReport error = (ErrorReport) errors.get(i);
             switch (error.getErrcode()) {
-                // the following errors are considered fatal: export the db and stop the task
-                case ErrorReport.CHILD_COLLECTION :
-                case ErrorReport.RESOURCE_ACCESS_FAILED :
-                    return true;
+            // the following errors are considered fatal: export the db and
+                // stop the task
+            case ErrorReport.CHILD_COLLECTION:
+            case ErrorReport.RESOURCE_ACCESS_FAILED:
+                return true;
             }
         }
         // no fatal errors
@@ -161,6 +177,14 @@ public class ConsistencyCheckTask implements SystemTask {
         }
 
         public void startDocument(String name, int current, int count) {
+            if ((current % 1000 == 0) || (current == count)) {
+                log.write("  DOCUMENT: ");
+                log.write(Integer.valueOf(current).toString());
+                log.write(" of ");
+                log.write(Integer.valueOf(count).toString());
+                log.write('\n');
+                log.flush();
+            }
         }
 
         public void startCollection(String path) {
@@ -170,12 +194,14 @@ public class ConsistencyCheckTask implements SystemTask {
             log.write("COLLECTION: ");
             log.write(path);
             log.write('\n');
+            log.flush();
         }
 
         public void error(ErrorReport error) {
             log.write("----------------------------------------------\n");
             log.write(error.toString());
             log.write('\n');
+            log.flush();
         }
 
         public void error(String message, Throwable exception) {
@@ -184,6 +210,7 @@ public class ConsistencyCheckTask implements SystemTask {
             log.write(message);
             log.write('\n');
             exception.printStackTrace(log);
+            log.flush();
         }
     }
 }

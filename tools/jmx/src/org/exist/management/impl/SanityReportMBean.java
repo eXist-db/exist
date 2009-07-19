@@ -21,18 +21,23 @@
  */
 package org.exist.management.impl;
 
-import javax.management.openmbean.TabularData;
 import java.util.Date;
+
+import javax.management.openmbean.TabularData;
 
 public interface SanityReportMBean {
 
+    public Date getLastCheckStart();
+
     public Date getLastCheckEnd();
 
-    public Date getLastCheckStart();
+    public String getLastActionInfo();
+
+    public Date getActualCheckStart();
 
     public String getStatus();
 
     public TabularData getErrors();
 
-    public void triggerCheck();
+    public void triggerCheck(String output, String backup, String incremental);
 }

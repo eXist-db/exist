@@ -21,12 +21,10 @@
  */
 package org.exist.management.impl;
 
-import org.apache.log4j.Logger;
-import org.exist.EXistException;
-import org.exist.backup.ErrorReport;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.ConsistencyCheckTask;
-import org.exist.storage.SystemTask;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 import javax.management.AttributeChangeNotification;
 import javax.management.MBeanNotificationInfo;
@@ -40,37 +38,44 @@ import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.backup.ErrorReport;
+import org.exist.management.TaskStatus;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.ConsistencyCheckTask;
+import org.exist.storage.SystemTask;
 
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
 
     private final static Logger LOG = Logger.getLogger(SanityReport.class.getName());
-    
+
     public final static String STATUS_OK = "OK";
     public final static String STATUS_FAIL = "FAIL";
-    
+
     private static String[] itemNames = { "errcode", "description" };
-    private static String[] itemDescriptions = {
-            "Error code",
-            "Description of the error"
-    };
+    private static String[] itemDescriptions = { "Error code", "Description of the error" };
     private static String[] indexNames = { "errcode" };
 
     private static List NO_ERRORS = new LinkedList();
-    
+
     private int seqNum = 0;
+
+    private Date actualCheckStart = null;
 
     private Date lastCheckStart = null;
 
     private Date lastCheckEnd = null;
 
-    private String status = STATUS_OK;
-    
+    private String lastActionInfo = "nothing done";
+
+    private String output = "";
+
+    private TaskStatus taskstatus = new TaskStatus(TaskStatus.NEVER_RUN);
+
     private List errors = NO_ERRORS;
-    
+
     private BrokerPool pool;
 
     public SanityReport(BrokerPool pool) {
@@ -78,14 +83,11 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     public MBeanNotificationInfo[] getNotificationInfo() {
-        String[] types = new String[] {
-            AttributeChangeNotification.ATTRIBUTE_CHANGE
-        };
+        String[] types = new String[] { AttributeChangeNotification.ATTRIBUTE_CHANGE };
         String name = AttributeChangeNotification.class.getName();
         String description = "The status attribute of this MBean has changed";
-        MBeanNotificationInfo info =
-            new MBeanNotificationInfo(types, name, description);
-        return new MBeanNotificationInfo[] {info};
+        MBeanNotificationInfo info = new MBeanNotificationInfo(types, name, description);
+        return new MBeanNotificationInfo[] { info };
     }
 
     public Date getLastCheckEnd() {
@@ -95,17 +97,25 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     public Date getLastCheckStart() {
         return lastCheckStart;
     }
-    
+
+    public Date getActualCheckStart() {
+        return actualCheckStart;
+    }
+
     public String getStatus() {
-        return status;
+        return taskstatus.getStatusString();
+    }
+
+    public String getLastActionInfo() {
+        return lastActionInfo;
     }
 
     public TabularData getErrors() {
         OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
-            infoType = new CompositeType("errorInfo", "Provides information on a consistency check error",
-                        itemNames, itemDescriptions, itemTypes);
+            infoType = new CompositeType("errorInfo", "Provides information on a consistency check error", itemNames,
+                    itemDescriptions, itemTypes);
             TabularType tabularType = new TabularType("errorList", "List of consistency check errors", infoType, indexNames);
             TabularDataSupport data = new TabularDataSupport(tabularType);
             for (int i = 0; i < errors.size(); i++) {
@@ -120,32 +130,97 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         }
     }
 
-    public void triggerCheck() {
+    public void triggerCheck(String output, String backup, String incremental) {
         try {
+            this.output = output;
             SystemTask task = new ConsistencyCheckTask();
-            Properties properties = new Properties();
+            Properties properties = parseParameter(output, backup, incremental);
             task.configure(pool.getConfiguration(), properties);
             pool.triggerSystemTask(task);
-        } catch (EXistException e) {
-            LOG.warn("Failed to trigger db sanity check: " + e.getMessage(), e);
+        } catch (EXistException existException) {
+            taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
+            taskstatus.setReason(existException.toString());
+            changeStatus(taskstatus);
+            taskstatus.setStatusChangeTime();
+            taskstatus.setReason(existException.toString());
+            LOG.warn("Failed to trigger db sanity check: " + existException.getMessage(), existException);
         }
     }
 
-    protected void updateErrors(List errorList, long startTime) {
-        long endTime = System.currentTimeMillis();
-        String oldStatus = this.status;
-        if (errorList == null || errorList.isEmpty()) {
-            this.status = STATUS_OK;
-            this.errors = NO_ERRORS;
-        } else {
-            this.errors = errorList;
-            this.status = STATUS_FAIL;
+    private Properties parseParameter(String output, String backup, String incremental) {
+        Properties properties = new Properties();
+        final boolean doBackup = backup.equalsIgnoreCase("YES");
+        if (backup != null && (doBackup) || backup.equalsIgnoreCase("no")) {
+            properties.put("backup", backup);
         }
-        this.lastCheckStart = new Date(startTime);
-        this.lastCheckEnd = new Date(endTime);
-        Notification event = new AttributeChangeNotification(this, seqNum++, endTime, "Consistency errors found",
-                "status", "String", oldStatus, this.status);
-        event.setUserData(this.status);
-        sendNotification(event);
+        if (incremental != null && (incremental.equalsIgnoreCase("YES") || incremental.equalsIgnoreCase("no"))) {
+            properties.put("incremental", incremental);
+        }
+        if (output != null) {
+            properties.put("output", output);
+        } else {
+            properties.put("backup", "no");
+        }
+        return properties;
+    }
+
+    protected void updateErrors(List errorList) {
+        try {
+            if (errorList == null || errorList.isEmpty()) {
+                taskstatus.setStatus(TaskStatus.STOPPED_OK);
+                this.errors = NO_ERRORS;
+            } else {
+                this.errors = errorList;
+                taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+
+    }
+
+    protected void changeStatus(TaskStatus status) {
+        status.setStatusChangeTime();
+        switch (status.getStatus()) {
+        case TaskStatus.INIT:
+            actualCheckStart = status.getStatusChangeTime();
+            break;
+        case TaskStatus.STOPPED_ERROR:
+        case TaskStatus.STOPPED_OK:
+            lastCheckStart = actualCheckStart;
+            actualCheckStart = null;
+            lastCheckEnd = status.getStatusChangeTime();
+            if (status.getReason() != null) {
+                this.errors = (List) status.getReason();
+            }
+            lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
+            break;
+        default:
+            break;
+        }
+        TaskStatus oldState = taskstatus;
+        try {
+            taskstatus = status;
+            Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
+                    "Status change", "status", "String", oldState.toString(), taskstatus.toString());
+            event.setUserData(taskstatus.getCompositeData());
+            sendNotification(event);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    protected void updateStatus(int percentage) {
+        try {
+            int oldPercentage = taskstatus.getPercentage();
+            taskstatus.setPercentage(percentage);
+            Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
+                    "Work percentage change", "status", "int", String.valueOf(oldPercentage), String.valueOf(taskstatus
+                            .getPercentage()));
+            event.setUserData(taskstatus.getCompositeData());
+            sendNotification(event);
+        } catch (Exception e) {
+            // ignore
+        }
     }
 }

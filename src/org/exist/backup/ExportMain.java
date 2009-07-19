@@ -21,6 +21,9 @@
  */
 package org.exist.backup;
 
+import java.io.File;
+import java.util.List;
+
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
@@ -32,13 +35,10 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
-import java.io.File;
-import java.util.List;
-
 public class ExportMain {
 
-    //  command-line options
-	private final static int HELP_OPT = 'h';
+    // command-line options
+    private final static int HELP_OPT = 'h';
     private final static int EXPORT_OPT = 'x';
     private final static int OUTPUT_DIR_OPT = 'd';
     private final static int CONFIG_OPT = 'c';
@@ -46,21 +46,18 @@ public class ExportMain {
     private final static int DIRECT_ACCESS_OPT = 'D';
 
     private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
-        new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            HELP_OPT, "print help on command line options and exit." ),
-        new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED,
-            OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
-        new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED,
-            CONFIG_OPT, "the database configuration (conf.xml) file to use " +
-                "for launching the db." ),
-        new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-                DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " +
-                    "index structures"),
-        new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            EXPORT_OPT, "export database contents while preserving as much data as possible" ),
-        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-            INCREMENTAL_OPT, "create incremental backup (use with --export|-x)")
-    };
+            new CLOptionDescriptor("help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT,
+                    "print help on command line options and exit."),
+            new CLOptionDescriptor("dir", CLOptionDescriptor.ARGUMENT_REQUIRED, OUTPUT_DIR_OPT,
+                    "the directory to which all output will be written."),
+            new CLOptionDescriptor("config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT,
+                    "the database configuration (conf.xml) file to use " + "for launching the db."),
+            new CLOptionDescriptor("direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT,
+                    "use an (even more) direct access to the db, bypassing some " + "index structures"),
+            new CLOptionDescriptor("export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT,
+                    "export database contents while preserving as much data as possible"),
+            new CLOptionDescriptor("incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT,
+                    "create incremental backup (use with --export|-x)") };
 
     protected static BrokerPool startDB(String configFile) {
         try {
@@ -80,9 +77,9 @@ public class ExportMain {
     }
 
     public static void main(String[] args) {
-        CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
-        if(optParser.getErrorString() != null) {
-            System.err.println( "ERROR: " + optParser.getErrorString());
+        CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
+        if (optParser.getErrorString() != null) {
+            System.err.println("ERROR: " + optParser.getErrorString());
             return;
         }
         boolean export = false;
@@ -94,29 +91,29 @@ public class ExportMain {
         List opt = optParser.getArguments();
         int size = opt.size();
         CLOption option;
-        for(int i = 0; i < size; i++) {
-            option = (CLOption)opt.get(i);
-            switch(option.getId()) {
-                case HELP_OPT :
-                    System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
-                    System.out.println(CLUtil.describeOptions(OPTIONS).toString());
-                    System.exit(0);
-                    break;
-                case OUTPUT_DIR_OPT :
-                    exportTarget = option.getArgument();
-                    break;
-                case DIRECT_ACCESS_OPT :
-                    direct = true;
-                    break;
-                case CONFIG_OPT :
-                    dbConfig = option.getArgument();
-                    break;
-                case EXPORT_OPT :
-                    export = true;
-                    break;
-                case INCREMENTAL_OPT :
-                    incremental = true;
-                    break;
+        for (int i = 0; i < size; i++) {
+            option = (CLOption) opt.get(i);
+            switch (option.getId()) {
+            case HELP_OPT:
+                System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
+                System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+                System.exit(0);
+                break;
+            case OUTPUT_DIR_OPT:
+                exportTarget = option.getArgument();
+                break;
+            case DIRECT_ACCESS_OPT:
+                direct = true;
+                break;
+            case CONFIG_OPT:
+                dbConfig = option.getArgument();
+                break;
+            case EXPORT_OPT:
+                export = true;
+                break;
+            case INCREMENTAL_OPT:
+                incremental = true;
+                break;
             }
         }
 
@@ -171,7 +168,7 @@ public class ExportMain {
 
     private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
 
-        public void startDocument(String path) {
+        public void startDocument(String name, int current, int count) {
         }
 
         public void startCollection(String path) {
