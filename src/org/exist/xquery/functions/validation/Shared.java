@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id: ValidationModule.java 9184 2009-06-23 18:02:14Z dizzzz $
+ *  $Id$
  */
 package org.exist.xquery.functions.validation;
 
@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -44,6 +45,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.xml.sax.InputSource;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -54,9 +56,21 @@ public class Shared {
 
     private final static Logger LOG = Logger.getLogger(Shared.class);
 
+    /**
+     *  Get input stream for specified resource.
+     */
     public static InputStream getInputStream(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+        StreamSource streamSource = getStreamSource(s, context);
+        return streamSource.getInputStream();
+    }
 
-        InputStream is = null;
+    /**
+     *  Get stream source for specified resource, containing InputStream and 
+     * location. Used by @see Jaxv.
+     */
+    public static StreamSource getStreamSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+
+        StreamSource streamSource = new StreamSource();
 
         if (s.getItemType() == Type.JAVA_OBJECT) {
             Item item = s.itemAt(0);
@@ -64,7 +78,12 @@ public class Shared {
             if (!(obj instanceof File)) {
                 throw new XPathException("Passed java object should be a File");
             }
-            is = new FileInputStream((File)obj);
+
+            File inputFile = (File) obj;
+            InputStream is = new FileInputStream(inputFile);
+            streamSource.setInputStream(is);
+            streamSource.setSystemId(inputFile.toURI().toURL().toString());
+
 
         } else if (s.getItemType() == Type.ANY_URI) {
             // anyURI provided
@@ -75,18 +94,37 @@ public class Shared {
                 url = "xmldb:exist://" + url;
             }
 
-            is = new URL(url).openStream();
+            InputStream is = new URL(url).openStream();
+            streamSource.setInputStream(is);
+            streamSource.setSystemId(url);
 
         } else if (s.getItemType() == Type.ELEMENT || s.getItemType() == Type.DOCUMENT) {
             // Node provided
-            is = new NodeInputStream(context, s.iterate()); // new NodeInputStream()
+            InputStream is = new NodeInputStream(context, s.iterate()); // new NodeInputStream()
+            streamSource.setInputStream(is);
 
         } else {
             LOG.error("Wrong item type " + Type.getTypeName(s.getItemType()));
             throw new XPathException("wrong item type " + Type.getTypeName(s.getItemType()));
         }
 
-        return is;
+        return streamSource;
+    }
+
+    /**
+     *  Get input source for specified resource, containing inputStream and 
+     * location. Used by @see Jing.
+     */
+    public static InputSource getInputSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+
+        StreamSource streamSource = getStreamSource(s, context);
+
+        InputSource inputSource = new InputSource();
+        inputSource.setByteStream(streamSource.getInputStream());
+        inputSource.setSystemId(streamSource.getSystemId());
+
+        return inputSource;
+
     }
 
     public static String getUrl(Sequence s) throws XPathException {

@@ -24,9 +24,6 @@ package org.exist.xquery.functions.validation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
 
 
 import javax.xml.XMLConstants;
@@ -34,16 +31,14 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
-import org.exist.validation.ValidationReportItem;
 
-import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -55,7 +50,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -82,7 +76,7 @@ public class Jaxv extends BasicFunction  {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "Location of XML Schema (.xsd) document.")
                 },
                 new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
@@ -95,7 +89,7 @@ public class Jaxv extends BasicFunction  {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "Location of XML Schema (.xsd) document.")
                    },
                 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -125,13 +119,16 @@ public class Jaxv extends BasicFunction  {
         ValidationReport report = new ValidationReport();
 
         try {
+            report.start();
+            
             // Get inputstream for instance document
             is=Shared.getInputStream(args[0], context);
 
             // Validate using resource speciefied in second parameter
-            String grammarUrl = Shared.getUrl(args[1]);
-
-            if(!grammarUrl.endsWith(".xsd")){
+            StreamSource grammar = Shared.getStreamSource(args[1], context);
+           
+            String grammarUrl = grammar.getSystemId();
+            if(grammarUrl != null && !grammarUrl.endsWith(".xsd")){
                 throw new XPathException("Only XML schemas (.xsd) are supported.");
             }
 
@@ -140,15 +137,14 @@ public class Jaxv extends BasicFunction  {
             SchemaFactory factory = SchemaFactory.newInstance(schemaLang);
 
             // Create grammar
-            StreamSource grammar = new StreamSource(grammarUrl);
+            
             Schema schema = factory.newSchema(grammar);
  
             // Setup validator
             Validator validator = schema.newValidator();
             validator.setErrorHandler(report);
 
-            // TODO add external resolver
-            report.start();
+            // TODO add external resolver          
 
             // Perform validation
             StreamSource instance = new StreamSource(is);
@@ -157,7 +153,8 @@ public class Jaxv extends BasicFunction  {
 
         } catch (MalformedURLException ex) {
             LOG.error(ex);
-            throw new XPathException(this, "Invalid resource URI", ex);
+            //throw new XPathException(this, "Invalid resource URI", ex);
+            report.setException(ex);
 
         } catch (ExistIOException ex) {
             LOG.error(ex.getCause());
