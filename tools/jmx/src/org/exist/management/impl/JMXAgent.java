@@ -21,10 +21,10 @@
  */
 package org.exist.management.impl;
 
-import org.apache.log4j.Logger;
-import org.exist.management.Agent;
-import org.exist.storage.BrokerPool;
-import org.exist.util.DatabaseConfigurationException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -34,15 +34,16 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+
+import org.apache.log4j.Logger;
+import org.exist.management.Agent;
+import org.exist.management.TaskStatus;
+import org.exist.storage.BrokerPool;
+import org.exist.util.DatabaseConfigurationException;
 
 /**
- * Real implementation of interface {@link org.exist.management.Agent}
- * which registers MBeans with the MBeanServer.
+ * Real implementation of interface {@link org.exist.management.Agent} which
+ * registers MBeans with the MBeanServer.
  */
 public class JMXAgent implements Agent {
 
@@ -59,7 +60,7 @@ public class JMXAgent implements Agent {
     private MBeanServer server;
     private Map registeredMBeans = new HashMap();
     private Map beanInstances = new HashMap();
-    
+
     public JMXAgent() {
         if (LOG.isDebugEnabled())
             LOG.debug("Creating the JMX MBeanServer.");
@@ -70,13 +71,16 @@ public class JMXAgent implements Agent {
         else
             server = MBeanServerFactory.createMBeanServer();
 
-//        try {
-//            JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://127.0.0.1:9999/server");
-//            JMXConnectorServer cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, server);
-//            cs.start();
-//        } catch (IOException e) {
-//            LOG.warn("ERROR: failed to initialize JMX connector: " + e.getMessage(), e);
-//        }
+        // try {
+        // JMXServiceURL url = new
+        // JMXServiceURL("service:jmx:rmi:///jndi/rmi://127.0.0.1:9999/server");
+        // JMXConnectorServer cs =
+        // JMXConnectorServerFactory.newJMXConnectorServer(url, null, server);
+        // cs.start();
+        // } catch (IOException e) {
+        // LOG.warn("ERROR: failed to initialize JMX connector: " +
+        // e.getMessage(), e);
+        // }
         registerSystemMBeans();
     }
 
@@ -95,10 +99,10 @@ public class JMXAgent implements Agent {
         try {
             addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=Database",
                     new org.exist.management.impl.Database(instance));
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ".tasks:type=SanityReport",
-                    new SanityReport(instance));
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=ProcessReport",
-                    new ProcessReport(instance));
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ".tasks:type=SanityReport", new SanityReport(
+                    instance));
+            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=ProcessReport", new ProcessReport(
+                    instance));
 
         } catch (DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
@@ -156,12 +160,23 @@ public class JMXAgent implements Agent {
         }
     }
 
-    public synchronized void updateErrors(BrokerPool instance, List errorList, long startTime) {
+    public synchronized void changeStatus(BrokerPool instance, TaskStatus actualStatus) {
         try {
             ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
             SanityReport report = (SanityReport) beanInstances.get(name);
-			if (report != null)
-            	report.updateErrors(errorList, startTime);
+            if (report != null)
+                report.changeStatus(actualStatus);
+        } catch (MalformedObjectNameException e) {
+            LOG.warn("Problem calling mbean: " + e.getMessage(), e);
+        }
+    }
+
+    public synchronized void updateStatus(BrokerPool instance, int percentage) {
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
+            SanityReport report = (SanityReport) beanInstances.get(name);
+            if (report != null)
+                report.updateStatus(percentage);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Problem calling mbean: " + e.getMessage(), e);
         }
