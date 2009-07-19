@@ -31,13 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.transform.stream.StreamSource;
+
 import org.apache.log4j.Logger;
+
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.ValidationReportItem;
-
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -45,12 +46,14 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
+ *  Shared methods for validation functions.
  *
- * @author wessels
+ * @author dizzzz
  */
 public class Shared {
 
@@ -73,6 +76,7 @@ public class Shared {
         StreamSource streamSource = new StreamSource();
 
         if (s.getItemType() == Type.JAVA_OBJECT) {
+            LOG.debug("Streaming Java object");
             Item item = s.itemAt(0);
             Object obj = ((JavaObjectValue) item).getObject();
             if (!(obj instanceof File)) {
@@ -86,6 +90,8 @@ public class Shared {
 
 
         } else if (s.getItemType() == Type.ANY_URI) {
+            LOG.debug("Streaming xs:anyURI");
+
             // anyURI provided
             String url = s.getStringValue();
 
@@ -99,6 +105,8 @@ public class Shared {
             streamSource.setSystemId(url);
 
         } else if (s.getItemType() == Type.ELEMENT || s.getItemType() == Type.DOCUMENT) {
+            LOG.debug("Streaming element or document node");
+
             // Node provided
             InputStream is = new NodeInputStream(context, s.iterate()); // new NodeInputStream()
             streamSource.setInputStream(is);
@@ -127,7 +135,17 @@ public class Shared {
 
     }
 
+    /**
+     *  Get URL value of parameter.
+     */
     public static String getUrl(Sequence s) throws XPathException {
+
+        if (s.getItemType() != Type.ANY_URI
+                && s.getItemType() != Type.STRING) {
+           throw new  XPathException("Parameter should be of type xs:anyURI" +
+                   " or string");
+        }
+        
         String url = s.getStringValue();
 
         if (url.startsWith("/")) {
@@ -137,6 +155,9 @@ public class Shared {
         return url;
     }
 
+    /**
+     * Create validation report.
+     */
     static public NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
 
         // start root element
