@@ -51,20 +51,22 @@ public class FileRead extends BasicFunction {
 	public final static FunctionSignature deprecated[] = {
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Read content of file $a. DEPRECATED: Moved to the file extension module.  See file:read()",
+			"Read content of file $a.",
 			new SequenceType[] {				
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 				},				
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+			"Moved to the file extension module.  See file:read()"
 			),
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Read content of file $a with the encoding specified in $b. DEPRECATED: Moved to the file extension module.  See file:read()",
+			"Read content of file $a with the encoding specified in $b.",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+			"Moved to the file extension module.  See file:read()"
 			)
 		};
 	

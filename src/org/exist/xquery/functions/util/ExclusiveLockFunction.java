@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -38,10 +39,10 @@ public class ExclusiveLockFunction extends LockFunction {
 			"Then evaluates the expressions in the second argument $b and releases the acquired locks after" +
 			"their completion.",
 			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+				new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "All nodes whose owning documents will have exclusive locks set."),
+				new FunctionParameterSequenceType("expression", Type.ITEM, Cardinality.ZERO_OR_MORE, "The expression(s) that are to be evaluated before the acquired locks are released.")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+			new FunctionParameterSequenceType("results", Type.ITEM, Cardinality.ZERO_OR_MORE, "The results of the evaluated expression(s)"));
     
     public ExclusiveLockFunction(XQueryContext context) {
         super(context, signature, true);
