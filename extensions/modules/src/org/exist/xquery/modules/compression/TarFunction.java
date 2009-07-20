@@ -24,6 +24,7 @@ package org.exist.xquery.modules.compression;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
 
@@ -34,69 +35,67 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 /**
  * Compresses a sequence of resources and/or collections into a Tar file
  * 
  * @author Adam Retter <adam@exist-db.org>
  * @version 1.0
  */
-public class TarFunction extends AbstractCompressFunction {
+public class TarFunction extends AbstractCompressFunction
+{
+    private final static QName TAR_FUNCTION_NAME = new QName("tar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
+    private final static String TAR_FUNCTION_DESCRIPTION = "Tars nodes, resources and collections.";
 
-	public final static FunctionSignature signatures[] = {
-			new FunctionSignature(
-					new QName("tar", CompressionModule.NAMESPACE_URI,
-							CompressionModule.PREFIX),
-							"Tar's resources and/or collections. $a is a sequence of URI's and/or entries, if a URI points to a collection"
-							+ "then the collection, its resources and sub-collections are tarred recursively. "
-							+ "Entry is a XML fragment that can contain xml or binary content. "
-							+ "More detailed for entry look compression:untar($a, $b). "
-							+ "$b indicates whether to use the collection hierarchy in the tar file.",
-					new SequenceType[] {
-							new SequenceType(Type.ANY_TYPE,
-									Cardinality.ONE_OR_MORE),
-							new SequenceType(Type.BOOLEAN,
-									Cardinality.EXACTLY_ONE) },
-					new SequenceType(Type.BASE64_BINARY,
-							Cardinality.ZERO_OR_MORE)),
-			new FunctionSignature(
-					new QName("tar", CompressionModule.NAMESPACE_URI,
-							CompressionModule.PREFIX),
-							"Tar's resources and/or collections. $a is a sequence of URI's and/or entries, if a URI points to a collection"
-							+ "then the collection, its resources and sub-collections are tarred recursively. "
-							+ "Entry is a XML fragment that can contain xml or binary content. "
-							+ "More detailed for entry look compression:untar($a, $b). "
-							+ "$b indicates whether to use the collection hierarchy in the tar file."
-							+ "$c is removed from the beginning of each file path.",
-					new SequenceType[] {
-							new SequenceType(Type.ANY_TYPE,
-									Cardinality.ONE_OR_MORE),
-							new SequenceType(Type.BOOLEAN,
-									Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING,
-									Cardinality.EXACTLY_ONE) },
-					new SequenceType(Type.BASE64_BINARY,
-							Cardinality.ZERO_OR_MORE)) };
 
-	public TarFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public final static FunctionSignature signatures[] = {
 
-	protected void closeEntry(Object os) throws IOException {
-		((TarOutputStream) os).closeEntry();
-	}
+        new FunctionSignature(
+            TAR_FUNCTION_NAME,
+            TAR_FUNCTION_DESCRIPTION,
+            new SequenceType[] {
+               SOURCES_PARAM,
+               COLLECTION_HIERARCHY_PARAM,
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)
+        ),
 
-	protected Object newEntry(String name) {
-		return new TarEntry(name);
-	}
+        new FunctionSignature(
+            TAR_FUNCTION_NAME,
+            TAR_FUNCTION_DESCRIPTION,
+            new SequenceType[] {
+                SOURCES_PARAM,
+                COLLECTION_HIERARCHY_PARAM,
+                STRIP_PREFIX_PARAM
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
+    };
 
-	protected void putEntry(Object os, Object entry) throws IOException {
-		((TarOutputStream) os).putNextEntry((TarEntry) entry);
-	}
+    public TarFunction(XQueryContext context, FunctionSignature signature)
+    {
+        super(context, signature);
+    }
 
-	protected OutputStream stream(ByteArrayOutputStream baos) {
-		return new TarOutputStream(baos);
-	}
-	
+    @Override
+    protected void closeEntry(Object os) throws IOException
+    {
+            ((TarOutputStream) os).closeEntry();
+    }
+
+    @Override
+    protected Object newEntry(String name)
+    {
+            return new TarEntry(name);
+    }
+
+    @Override
+    protected void putEntry(Object os, Object entry) throws IOException
+    {
+            ((TarOutputStream) os).putNextEntry((TarEntry) entry);
+    }
+
+    @Override
+    protected OutputStream stream(ByteArrayOutputStream baos)
+    {
+            return new TarOutputStream(baos);
+    }	
 }

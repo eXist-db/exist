@@ -32,36 +32,39 @@ import org.exist.xquery.FunctionDef;
  */
 public class CompressionModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
 
-	public final static String PREFIX = "compression";
+    public final static String PREFIX = "compression";
 
-	private final static FunctionDef[] functions = {
-            new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
-            new FunctionDef(ZipFunction.signatures[1], ZipFunction.class),
-            new FunctionDef(UnZipFunction.signatures[0], UnZipFunction.class),
+    private final static FunctionDef[] functions = {
+        new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
+        new FunctionDef(ZipFunction.signatures[1], ZipFunction.class),
+        new FunctionDef(UnZipFunction.signatures[0], UnZipFunction.class),
 
-            new FunctionDef(GZipFunction.signatures[0], GZipFunction.class),
-            new FunctionDef(UnGZipFunction.signatures[0], UnGZipFunction.class),
+        new FunctionDef(GZipFunction.signatures[0], GZipFunction.class),
+        new FunctionDef(UnGZipFunction.signatures[0], UnGZipFunction.class),
 
-            new FunctionDef(TarFunction.signatures[0], TarFunction.class),
-            new FunctionDef(TarFunction.signatures[1], TarFunction.class),
-            new FunctionDef(UnTarFunction.signatures[0], UnTarFunction.class)
-        };
+        new FunctionDef(TarFunction.signatures[0], TarFunction.class),
+        new FunctionDef(TarFunction.signatures[1], TarFunction.class),
+        new FunctionDef(UnTarFunction.signatures[0], UnTarFunction.class)
+    };
 
-	public CompressionModule() {
-		super(functions);
-	}
+    public CompressionModule() {
+        super(functions);
+    }
 
-	public String getNamespaceURI() {
-		return NAMESPACE_URI;
-	}
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
 
-	public String getDefaultPrefix() {
-		return PREFIX;
-	}
+    @Override
+    public String getDefaultPrefix() {
+        return PREFIX;
+    }
 
-	public String getDescription() {
-		return "Compression and De-Compression functions";
-	}
+    @Override
+    public String getDescription() {
+        return "Compression and De-Compression functions";
+    }
 }
