@@ -88,12 +88,11 @@ public class StoreFromFile extends AbstractAction {
                 prevDir = relDir;
             }
             if (col.getResource(files[j].getName()) == null || overwrite) {
-                //TODO  : these probably need to be encoded
+                //TODO  : these probably need to be encoded and check mime via MimeTable
                 Resource resource =
                         col.createResource(files[j].getName(), resourceType);
                 resource.setContent(files[j]);
-                if("BinaryResource".equals(resourceType))
-                    ((EXistResource)resource).setMimeType(mimeType);
+                ((EXistResource)resource).setMimeType(mimeType);
                 LOG.debug("Storing " + col.getName() + "/" + resource.getId());
                 col.storeResource(resource);
             }
