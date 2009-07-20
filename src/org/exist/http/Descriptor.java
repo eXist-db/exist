@@ -74,7 +74,7 @@ public class Descriptor implements ErrorHandler
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
     private boolean requestsFiltered = false;
-	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
+	private String allowSourceList[] = null; 	//Array of xql files to allow source to be viewed 
 	private String mapList[][] = null;	 				//Array of Mappings
 	  
 	/**
@@ -200,7 +200,7 @@ public class Descriptor implements ErrorHandler
     	NodeList nlXQuery = allowsourcexqueries.getElementsByTagName("xquery");
     	
     	//Setup the hashmap to hold the xquery elements
-    	allowSourceXQueryList = new String[nlXQuery.getLength()];
+    	allowSourceList = new String[nlXQuery.getLength()];
     	
     	Element elem = null; //temporary holds xquery elements
     	
@@ -220,7 +220,7 @@ public class Descriptor implements ErrorHandler
                     SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
 
             //store the path
-            allowSourceXQueryList[i] = path;
+            allowSourceList[i] = path;
         }
     }
     
@@ -292,18 +292,18 @@ public class Descriptor implements ErrorHandler
 	 * @param path		The path of the XQuery (e.g. /db/MyCollection/query.xql)
 	 * @return			The boolean value true or false indicating whether it is permissible to show the source
 	 */
-    public boolean allowSourceXQuery(String path)
+    public boolean allowSource(String path)
     {
-    	if(allowSourceXQueryList != null)
+    	if(allowSourceList != null)
     	{
     		//Iterate through the xqueries that source viewing is allowed for
-        	for(int i = 0; i < allowSourceXQueryList.length; i++)
+        	for(int i = 0; i < allowSourceList.length; i++)
         	{
                         // DWES: this helps a lot. quickfix not the final solution
                         path=path.replace('\\','/');
                         
         		//does the path match the <allow-source><xquery path=""/></allow-source> path
-        		if((allowSourceXQueryList[i].equals(path)) || (path.indexOf(allowSourceXQueryList[i]) > -1))
+        		if((allowSourceList[i].equals(path)) || (path.indexOf(allowSourceList[i]) > -1))
         		{
         			//yes, return true
         			return(true);
