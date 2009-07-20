@@ -101,6 +101,7 @@ import org.exist.security.PermissionFactory;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.util.SingleInstanceConfiguration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -380,6 +381,12 @@ public class ClientFrame extends JFrame
                         result = (XMLResource) collection.createResource(
                                 URIUtils.urlEncodeUtf8(nameres), XMLResource.RESOURCE_TYPE);
                         result.setContent(Messages.getString("ClientFrame.39")); //$NON-NLS-1$
+                        String mimeType = MimeType.XML_TYPE.getName();
+            		    MimeType mime = MimeTable.getInstance().getContentTypeFor(nameres);
+                        if (mime != null) {
+                            mimeType = mime.getName();
+                        }
+                        ((EXistResource)result).setMimeType(mimeType);
                         collection.storeResource(result);
                         collection.close();
                         client.reloadCollection();
