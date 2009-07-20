@@ -1,24 +1,23 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
+ *  Copyright (C) 2001-09 The eXist Project
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
  */
 package org.exist.xquery.modules.datetime;
 
@@ -40,51 +39,53 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
+ * @version 1.1
  */
-public class DateForFunction extends BasicFunction {
+public class DateForFunction extends BasicFunction
+{
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
+        "Returns the date for a given set of parameters. $c The week in the month of interest.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "The year of the date."),
+            new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "The month of the date, where 1 = January and 12 = December."),
+            new FunctionParameterSequenceType("week-in-month", Type.INTEGER, Cardinality.EXACTLY_ONE, "The week in the month of the date, where 1 = first week and 4 or 5 = last week."),
+            new FunctionParameterSequenceType("day-in-week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day in the week of the month of the date, where 1 = Sunday and 7 = Saturday.")
+        },
+        new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE)
+    );
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the date for a given set of parameters.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "the year of interest"),
-				new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "the month of interest (1 = January, 12 = December)"),
-				new FunctionParameterSequenceType("week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The week in the month of interest (1 = first week, 4 or 5 = last week)"),
-				new FunctionParameterSequenceType("weekday", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day in the week of interest (1 = Sunday, 7 = Saturday)"),
-			},
-			new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date generated from the parameters."));
+    public DateForFunction(XQueryContext context)
+    {
+        super(context, signature);
+    }
 
-	public DateForFunction(XQueryContext context)
-	{
-		super(context, signature);
-	}
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+    {
+        int yearOfInterest = ((IntegerValue)args[0].itemAt(0)).getInt();
+        int monthOfInterest = ((IntegerValue)args[1].itemAt(0)).getInt();
+        int weekInMonth = ((IntegerValue)args[2].itemAt(0)).getInt();
+        int dayInWeek = ((IntegerValue)args[3].itemAt(0)).getInt();
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{	
-		int yearOfInterest = ((IntegerValue)args[0].itemAt(0)).getInt();
-		int monthOfInterest = ((IntegerValue)args[1].itemAt(0)).getInt();
-		int weekInMonth = ((IntegerValue)args[2].itemAt(0)).getInt();
-		int dayInWeek = ((IntegerValue)args[3].itemAt(0)).getInt();
-		
-		//check bounds of supplied parameters
-		if(monthOfInterest < 1 || monthOfInterest > 12)
-			throw new XPathException(this, "The month of interest must be between 1 and 12");
-		
-		if(weekInMonth < 1 || weekInMonth > 5)
-			throw new XPathException(this, "The week in the month of interest must be between 1 and 5");
-		
-		if(dayInWeek < 1 || dayInWeek > 7)
-			throw new XPathException(this, "The day in the week of interest must be between 1 and 7");
-		
-		//create date
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.set(Calendar.YEAR, yearOfInterest);
-		cal.set(Calendar.MONTH, monthOfInterest - 1);
-		cal.set(Calendar.WEEK_OF_MONTH, weekInMonth);
-		cal.set(Calendar.DAY_OF_WEEK, dayInWeek);
-		
-		return new DateValue(TimeUtils.getInstance().newXMLGregorianCalendar(cal));
-	}
+        //check bounds of supplied parameters
+        if(monthOfInterest < 1 || monthOfInterest > 12)
+            throw new XPathException(this, "The month of interest must be between 1 and 12");
+
+        if(weekInMonth < 1 || weekInMonth > 5)
+            throw new XPathException(this, "The week in the month of interest must be between 1 and 5");
+
+        if(dayInWeek < 1 || dayInWeek > 7)
+            throw new XPathException(this, "The day in the week of interest must be between 1 and 7");
+
+        //create date
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.set(Calendar.YEAR, yearOfInterest);
+        cal.set(Calendar.MONTH, monthOfInterest - 1);
+        cal.set(Calendar.WEEK_OF_MONTH, weekInMonth);
+        cal.set(Calendar.DAY_OF_WEEK, dayInWeek);
+
+        return new DateValue(TimeUtils.getInstance().newXMLGregorianCalendar(cal));
+    }
 }

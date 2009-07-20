@@ -1,23 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2006-2008 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-09 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
  */
 package org.exist.xquery.modules.datetime;
 
@@ -38,35 +38,37 @@ import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 
 /**
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  */
-public class FormatTimeFunction extends BasicFunction {
+public class FormatTimeFunction extends BasicFunction
+{
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("format-time", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
+        "Formats a time using a pattern.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("time", Type.TIME, Cardinality.EXACTLY_ONE, "The time to format."),
+            new FunctionParameterSequenceType("format-pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern to use for formatting the time. See java.util.SimpleDateFormat for pattern details.")
+        },
+        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+    );
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("format-time", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns a xs:string of the xs:time formatted according to the template specification as in java.text.SimpleDateFormat.",
-			new SequenceType[] { 
-				new FunctionParameterSequenceType("time", Type.TIME, Cardinality.EXACTLY_ONE, "The time to to be formatted."),
-				new FunctionParameterSequenceType("simple-date-format", Type.STRING, Cardinality.EXACTLY_ONE, "Format string according to the Java java.text.SimpleDateFormat class")
-			},
-			new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "The formatted date string"));
 
-	public FormatTimeFunction(XQueryContext context)
-	{
-		super(context, signature);
-	}
+    public FormatTimeFunction(XQueryContext context)
+    {
+        super(context, signature);
+    }
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{	
-		TimeValue t = (TimeValue)args[0].itemAt(0);
-		String timeFormat = args[1].itemAt(0).toString();
-		
-		SimpleDateFormat sdf = new SimpleDateFormat(timeFormat);
-		
-		GregorianCalendar cal = t.calendar.toGregorianCalendar();
-		String formattedDate = sdf.format(cal.getTime());
-		
-		return new StringValue(formattedDate);
-	}
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+    {
+        TimeValue t = (TimeValue)args[0].itemAt(0);
+        String timeFormat = args[1].itemAt(0).toString();
+
+        SimpleDateFormat sdf = new SimpleDateFormat(timeFormat);
+
+        GregorianCalendar cal = t.calendar.toGregorianCalendar();
+        String formattedDate = sdf.format(cal.getTime());
+
+        return new StringValue(formattedDate);
+    }
 }
