@@ -45,19 +45,17 @@ import org.apache.excalibur.source.SourceUtil;
 import org.apache.excalibur.source.SourceValidity;
 import org.apache.excalibur.source.impl.validity.TimeStampValidity;
 import org.apache.excalibur.xml.sax.XMLizable;
-
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.ExtendedResource;
-
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -729,17 +727,27 @@ public class XMLDBSource extends AbstractLogEnabled
                 name = this.resName;
             }
 
+            String mimeType;
+            
             Resource resource;
             if (binary) {
                 resource = collection.createResource(name, BinaryResource.RESOURCE_TYPE);
                 resource.setContent(baos.toByteArray());
+                mimeType = MimeType.BINARY_TYPE.getName();
             } else {
                 resource = collection.createResource(name, XMLResource.RESOURCE_TYPE);
                 // FIXME: potential encoding problems here, as we don't know the one use in the stream
                 // frederic.glorieux@ajlsm.com : Yes, it is, here a quick hack, default encoding for XML=UTF-8
                 resource.setContent(new String(baos.toByteArray(), encoding) );
+                mimeType = MimeType.XML_TYPE.getName();
             }
-
+            
+		    MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
+            if (mime != null) {
+                mimeType = mime.getName();
+            }
+                
+            ((EXistResource)resource).setMimeType(mimeType);
             collection.storeResource(resource);
 
             getLogger().debug("Written to resource " + resName);
