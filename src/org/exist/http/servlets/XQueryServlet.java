@@ -283,7 +283,7 @@ public class XQueryServlet extends HttpServlet {
                 
                 //check are we allowed to show the xquery source - descriptor.xml
 //                System.out.println("path="+path);
-                if(descriptor.allowSourceXQuery(path)) {
+                if(descriptor.allowSource(path)) {
                     //Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
                     response.setContentType("text/plain;charset=" + formEncoding);
