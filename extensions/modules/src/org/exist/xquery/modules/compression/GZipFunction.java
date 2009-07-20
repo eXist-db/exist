@@ -24,6 +24,8 @@ package org.exist.xquery.modules.compression;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -31,52 +33,60 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 
 /**
  * Compression into a GZip file
  * 
  * @author Adam Retter <adam@exist-db.org>
- * @version 1.0
+ * @version 1.1
  */
-public class GZipFunction extends BasicFunction {
+public class GZipFunction extends BasicFunction
+{
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("gzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "GZip's data",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The data to GZip")
+            },
+            new SequenceType(
+            Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+        )
+    };
 
-	public final static FunctionSignature signatures[] = { new FunctionSignature(
-			new QName("gzip", CompressionModule.NAMESPACE_URI,
-					CompressionModule.PREFIX),
-			"GZip's the data provided in $a.",
-			new SequenceType[] { new SequenceType(Type.BASE64_BINARY,
-					Cardinality.EXACTLY_ONE) }, new SequenceType(
-					Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)) };
 
-	public GZipFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public GZipFunction(XQueryContext context, FunctionSignature signature)
+    {
+        super(context, signature);
+    }
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+    {
+        // is there some data to GZip?
+        if(args[0].isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
 
-		// is there some data to GZip?
-		if (args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
+        Base64Binary bin = (Base64Binary) args[0].itemAt(0);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		Base64Binary bin = (Base64Binary) args[0].itemAt(0);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // gzip the data
+        try
+        {
+            GZIPOutputStream gzos = new GZIPOutputStream(baos);
+            gzos.write(bin.getBinaryData());
+            gzos.close();
 
-		// gzip the data
-		try {
-			GZIPOutputStream gzos = new GZIPOutputStream(baos);
-			gzos.write(bin.getBinaryData());
-			gzos.close();
-			return new Base64Binary(baos.toByteArray());
-		} catch (IOException ioe) {
-			throw new XPathException(this, ioe.getMessage());
-		}
-	}
+            return new Base64Binary(baos.toByteArray());
+        }
+        catch(IOException ioe)
+        {
+            throw new XPathException(this, ioe.getMessage());
+        }
+    }
 }

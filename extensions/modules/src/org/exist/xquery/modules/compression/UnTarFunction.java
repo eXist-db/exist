@@ -27,7 +27,6 @@ import java.io.IOException;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
 import org.exist.dom.QName;
-import org.exist.memtree.InMemoryNodeSet;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -38,8 +37,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * Extracts files and folders from a Tar file
