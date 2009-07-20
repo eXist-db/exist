@@ -396,7 +396,7 @@ public class RESTServer {
 
 				// check are we allowed to show the xquery source -
 				// descriptor.xml
-				if ((null != descriptor) && descriptor.allowSourceXQuery(path)) {
+				if ((null != descriptor) && descriptor.allowSource(path)) {
 					// TODO: change writeResourceAs to use a serializer
 					// that will serialize xquery to syntax coloured
 					// xhtml, replace the asMimeType parameter with a
