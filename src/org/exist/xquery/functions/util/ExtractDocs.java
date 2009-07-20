@@ -7,6 +7,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -26,6 +27,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class ExtractDocs extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(ExtractDocs.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(
@@ -34,9 +37,9 @@ public class ExtractDocs extends BasicFunction {
             "The module is identified through its module namespace URI, which is passed as an argument. " +
             "The function returns a module documentation in XQDoc format.",
 			new SequenceType[] {
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.EXACTLY_ONE, "namespace URI of the function module")
             },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("xqdocs", Type.NODE, Cardinality.ZERO_OR_ONE, "xqdocs for the function module"));
 
     private final String XQDOC_NS = "http://www.xqdoc.org/1.0";
 
@@ -45,15 +48,21 @@ public class ExtractDocs extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         String moduleURI = args[0].getStringValue();
         Module module = context.getModule(moduleURI);
-        if (module == null)
+        if (module == null) {
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         MemTreeBuilder builder = context.getDocumentBuilder();
         int nodeNr = builder.startElement(XQDOC_NS, "xqdoc", "xqdoc", null);
         module(module, builder);
         functions(module, builder);
         builder.endElement();
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
     }
 

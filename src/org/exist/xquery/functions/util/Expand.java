@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.InMemoryNodeSet;
@@ -33,6 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -43,6 +45,8 @@ import org.xml.sax.SAXException;
 import java.util.Properties;
 
 public class Expand extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(Expand.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -51,9 +55,9 @@ public class Expand extends BasicFunction {
             "serialization options. By default, full-text match terms will be " +
             "tagged with &lt;exist:match&gt; and XIncludes will be expanded.",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE, "The node(s) to create in-memory copies of.")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
+            new FunctionParameterSequenceType("results", Type.NODE, Cardinality.ZERO_OR_MORE, "results")),
         new FunctionSignature(
             new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Creates an in-memory copy of the passed node set, using the specified " +
@@ -62,10 +66,10 @@ public class Expand extends BasicFunction {
             "parameters can be set in the second argument, which accepts the same parameters " +
             "as the exist:serialize option.",
             new SequenceType[]{
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE, "The node(s) to create in-memory copies of."),
+                new FunctionParameterSequenceType("serialization-parameters", Type.STRING, Cardinality.EXACTLY_ONE, "")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
+            new FunctionParameterSequenceType("results", Type.NODE, Cardinality.ZERO_OR_MORE, "results"))
     };
 
     public Expand(XQueryContext context, FunctionSignature signature) {
@@ -73,8 +77,13 @@ public class Expand extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (args[0].isEmpty())
+
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+        
+    	if (args[0].isEmpty()) {
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+    	}
 
         // apply serialization options set on the XQuery context
         Properties serializeOptions = new Properties();
@@ -87,7 +96,7 @@ public class Expand extends BasicFunction {
                 String[] pair = Option.parseKeyValuePair(contents[i]);
                 if (pair == null)
                     throw new XPathException(this, "Found invalid serialization option: " + pair);
-                LOG.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                logger.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }
         } else
@@ -104,6 +113,7 @@ public class Expand extends BasicFunction {
                 next.toSAX(context.getBroker(), receiver, serializeOptions);
                 result.add(builder.getDocument().getNode(nodeNr + 1));
             }
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return result;
         } catch (SAXException e) {
             throw new XPathException(this, e.getMessage());
