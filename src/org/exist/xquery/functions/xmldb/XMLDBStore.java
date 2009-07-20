@@ -153,7 +153,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			} else {
 				if(binary) {
 					resource = collection.createResource(docName, "BinaryResource");
-                    ((EXistResource)resource).setMimeType(mimeType);
                 } else
 					resource = collection.createResource(docName, "XMLResource");
 				if(Type.subTypeOf(item.getType(), Type.STRING)) {
@@ -175,6 +174,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					}
 				} else
 					throw new XPathException(this, "Data should be either a node or a string");
+                ((EXistResource)resource).setMimeType(mimeType);
 				collection.storeResource(resource);
 			}
 		} catch (XMLDBException e) {
@@ -244,9 +244,9 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				Resource resource;
 				if(binary) {
 					resource = collection.createResource(docName, "BinaryResource");
-                    ((EXistResource)resource).setMimeType(mimeType);
                 } else
 					resource = collection.createResource(docName, "XMLResource");
+                ((EXistResource)resource).setMimeType(mimeType);
 				resource.setContent(file);
 				collection.storeResource(resource);
 				return resource;
