@@ -165,12 +165,11 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                         prevDir = relDir;
                     }
 
-                    //TODO  : these probably need to be encoded
+                    //TODO  : these probably need to be encoded and checked for right mime type
                     Resource resource = col.createResource(files[j].getName(), resourceType);
                     resource.setContent(files[j]);
 
-                    if("BinaryResource".equals(resourceType))
-                        ((EXistResource)resource).setMimeType(mimeType);
+                    ((EXistResource)resource).setMimeType(mimeType);
 
                     col.storeResource(resource);
 
