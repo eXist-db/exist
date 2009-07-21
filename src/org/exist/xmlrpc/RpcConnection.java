@@ -1856,7 +1856,7 @@ public class RpcConnection implements RpcAPI {
 	            source = new InputSource(is);
 	            info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
 	            MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
-	            if (mime != null){
+	            if (mime != null && mime.isXMLType()){
 	            	info.getDocument().getMetadata().setMimeType(mime.getName());
 	            }
 	            if (created != null)
