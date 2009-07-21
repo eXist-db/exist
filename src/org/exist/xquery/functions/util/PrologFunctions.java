@@ -1,45 +1,46 @@
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class PrologFunctions extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(PrologFunctions.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("import-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Dynamically imports an XQuery module into the current context. The namespace " +
-			"URI of the module is specified in argument $a, $b is the prefix that will be assigned " +
-			"to that namespace, $c is the location of the module. The parameters have the same " +
+			"Dynamically imports an XQuery module into the current context. The parameters have the same " +
 			"meaning as in an 'import module ...' expression in the query prolog.",
 			new SequenceType[] {
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("module-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The namespace URI of the module"),
+				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "prefix to be assigned to the namespace"),
+				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "location of the module")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 		new FunctionSignature(
 			new QName("declare-namespace", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Dynamically declares a namespace/prefix mapping for the current context. The " +
-			"prefix is specified in $a, the namespace URI in $b.",
+			"Dynamically declares a namespace/prefix mapping for the current context.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "prefix to be assigned to the namespace"),
+				new FunctionParameterSequenceType("namespace-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 		new FunctionSignature(
 			new QName("declare-option", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically declares a serialization option as with 'declare option'.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("option", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 	};
@@ -50,12 +51,15 @@ public class PrologFunctions extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		if (isCalledAs("declare-namespace"))
 			declareNamespace(args);
 		else if (isCalledAs("declare-option"))
 			declareOption(args);
 		else
 			importModule(args);
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
