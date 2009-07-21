@@ -68,7 +68,6 @@ public class DateTimeModule extends AbstractInternalModule
         return PREFIX;
     }
 
-    @Override
     public String getDescription()
     {
         return "A module for performing date and time operations";
