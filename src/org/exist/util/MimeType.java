@@ -42,6 +42,8 @@ public class MimeType {
         new MimeType("application/xslt+xml", XML);
     public final static MimeType XQUERY_TYPE =
         new MimeType("application/xquery", BINARY);
+    public final static MimeType XPROC_TYPE =
+        new MimeType("application/xml+xproc", XML);
     public final static MimeType CSS_TYPE =
         new MimeType("text/css", BINARY);
     public final static MimeType HTML_TYPE =
