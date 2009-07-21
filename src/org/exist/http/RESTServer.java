@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2008 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -114,6 +114,9 @@ import org.xml.sax.helpers.XMLFilterImpl;
 /**
  * 
  * @author wolf
+ * @author ljo
+ * @author adam
+ * @author gev
  * 
  */
 
@@ -327,12 +330,7 @@ public class RESTServer {
 			String xproc_mime_type = MimeType.XPROC_TYPE.getName();
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-			if (null != resource 
-					&& !(xquery_mime_type.equals(resource.getMetadata().getMimeType()) 
-							&& resource.getResourceType() == DocumentImpl.BINARY_FILE) //not a xquery
-					&& !(xproc_mime_type.equals(resource.getMetadata().getMimeType()) 
-							&& resource.getResourceType() == DocumentImpl.XML_FILE) //not a xproc
-			    ) { 
+			if (null != resource && !isExecutableType(resource)) { 
 				// return regular resource that is not an xquery and not is xproc
 				writeResourceAs(resource, broker, stylesheet, encoding, null,
 						outputProperties, request, response);
@@ -368,12 +366,7 @@ public class RESTServer {
 					break;
 
 				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
-				if (null != resource
-						&& (resource.getResourceType() == DocumentImpl.BINARY_FILE
-						    && xquery_mime_type.equals(resource.getMetadata().getMimeType())) ||
-						    resource.getResourceType() == DocumentImpl.XML_FILE
-						    && xproc_mime_type.equals(resource.getMetadata().getMimeType())
-						    ) {
+				if (null != resource && isExecutableType(resource)) {
 					break; 
 
 				} else if (null != resource) {
@@ -406,12 +399,12 @@ public class RESTServer {
 					// method for specifying the serializer, or split
 					// the code into two methods. - deliriumsky
 
-					if (xquery_mime_type.equals(resource.getMetadata().getMimeType())){
+					if (xquery_mime_type.equals(resource.getMetadata().getMimeType())) {
 						// Show the source of the XQuery
 						writeResourceAs(resource, broker, stylesheet, encoding,
 								MimeType.TEXT_TYPE.getName(), outputProperties,
 								request, response);
-					} else {
+					} else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
 						// Show the source of the XProc
 						writeResourceAs(resource, broker, stylesheet, encoding,
 								MimeType.XML_TYPE.getName(), outputProperties,
@@ -436,7 +429,7 @@ public class RESTServer {
 						// Execute the XQuery
 						executeXQuery(broker, resource, request, response,
 								outputProperties, servletPath.toString(), pathInfo);
-					} else {
+					} else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
 						// Execute the XProc
 						executeXProc(broker, resource, request, response,
 								outputProperties, servletPath.toString(), pathInfo);
@@ -1706,4 +1699,17 @@ public class RESTServer {
 			}
 		}
 	}
+
+    private boolean isExecutableType(DocumentImpl resource) {
+	if (resource != null 
+	    && (MimeType.XQUERY_TYPE.getName().equals(resource.getMetadata().getMimeType()) // a xquery
+		|| MimeType.XPROC_TYPE.getName().equals(resource.getMetadata().getMimeType()))//a xproc
+	    )
+	    return true;
+	else
+	    return false;
+	    
+    }
+
+
 }
