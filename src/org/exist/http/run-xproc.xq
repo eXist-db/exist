@@ -1,16 +1,14 @@
 xquery version "1.0";
 
-import module namespace xproc = "http://xproc.net/xproc"; 
+import module namespace const = "http://xproc.net/xproc/const";
+import module namespace xproc = "http://xproc.net/xproc";
+import module namespace u = "http://xproc.net/xproc/util";
 
-(:
-declare variable $stdin as item()? external;
-declare variable $debug as xs:integer external;
-:)
+declare variable $pipeline external;
+declare variable $stdin    external;
+declare variable $debug    external;
 
-declare variable $stdin := ();
-declare variable $debug := 0;
-
-xproc:run(/*, $stdin, $debug)
+xproc:run(doc($pipeline), doc($stdin), $debug)
 
 
 

@@ -70,6 +70,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.source.URLSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -119,7 +120,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 public class RESTServer {
 
 	protected final static Logger LOG = Logger.getLogger(RESTServer.class);
-
+	
 	// Should we not obey the instance's defaults? /ljo
 	protected final static Properties defaultProperties = new Properties();
 
@@ -323,16 +324,16 @@ public class RESTServer {
 		try {
 			// check if path leads to an XQuery resource
 			String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
+			String xproc_mime_type = MimeType.XPROC_TYPE.getName();
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-			if (null != resource
-					&& (!xquery_mime_type.equals(resource.getMetadata()
-							.getMimeType()) || // not xquery mime time
-					(resource.getResourceType() != DocumentImpl.BINARY_FILE))) { // not
-				// a
-				// binary
-				// file
-				// return regular resource that is not an xquery
+			if (null != resource 
+					&& !(xquery_mime_type.equals(resource.getMetadata().getMimeType()) 
+							&& resource.getResourceType() == DocumentImpl.BINARY_FILE) //not a xquery
+					&& !(xproc_mime_type.equals(resource.getMetadata().getMimeType()) 
+							&& resource.getResourceType() == DocumentImpl.XML_FILE) //not a xproc
+			    ) { 
+				// return regular resource that is not an xquery and not is xproc
 				writeResourceAs(resource, broker, stylesheet, encoding, null,
 						outputProperties, request, response);
 				return;
@@ -359,7 +360,7 @@ public class RESTServer {
 			XmldbURI servletPath = pathUri;
 
 			// if resource is still null, work up the url path to find an
-			// xquery resource
+			// xquery or xproc resource
 			while (null == resource) {
 				// traverse up the path looking for xquery objects
 				servletPath = servletPath.removeLastSegment();
@@ -368,10 +369,12 @@ public class RESTServer {
 
 				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
 				if (null != resource
-						&& resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata()
-								.getMimeType())) {
-					break; // found a binary file with mime-type xquery
+						&& (resource.getResourceType() == DocumentImpl.BINARY_FILE
+						    && xquery_mime_type.equals(resource.getMetadata().getMimeType())) ||
+						    resource.getResourceType() == DocumentImpl.XML_FILE
+						    && xproc_mime_type.equals(resource.getMetadata().getMimeType())
+						    ) {
+					break; 
 
 				} else if (null != resource) {
 					// not an xquery resource. This means we have a path
@@ -386,10 +389,10 @@ public class RESTServer {
 				throw new NotFoundException("Document " + path + " not found");
 			}
 
-			// found an XQuery resource, fixup request values
+			// found an XQuery or XProc resource, fixup request values
 			String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
 
-			// Should we display the source of the XQuery or execute it
+			// Should we display the source of the XQuery or XProc or execute it
 			Descriptor descriptor = Descriptor.getDescriptorSingleton();
 			if (source) {
 				// show the source
@@ -403,10 +406,17 @@ public class RESTServer {
 					// method for specifying the serializer, or split
 					// the code into two methods. - deliriumsky
 
-					// Show the source of the XQuery
-					writeResourceAs(resource, broker, stylesheet, encoding,
-							MimeType.TEXT_TYPE.getName(), outputProperties,
-							request, response);
+					if (xquery_mime_type.equals(resource.getMetadata().getMimeType())){
+						// Show the source of the XQuery
+						writeResourceAs(resource, broker, stylesheet, encoding,
+								MimeType.TEXT_TYPE.getName(), outputProperties,
+								request, response);
+					} else {
+						// Show the source of the XProc
+						writeResourceAs(resource, broker, stylesheet, encoding,
+								MimeType.XML_TYPE.getName(), outputProperties,
+								request, response);
+					}
 				} else {
 					// we are not allowed to show the source - query not
 					// allowed in descriptor.xml
@@ -420,10 +430,17 @@ public class RESTServer {
 											+ " denied. Must be explicitly defined in descriptor.xml");
 					return;
 				}
-			} else { // Execute the XQuery
+			} else { 
 				try {
-					executeXQuery(broker, resource, request, response,
-							outputProperties, servletPath.toString(), pathInfo);
+					if (xquery_mime_type.equals(resource.getMetadata().getMimeType())){
+						// Execute the XQuery
+						executeXQuery(broker, resource, request, response,
+								outputProperties, servletPath.toString(), pathInfo);
+					} else {
+						// Execute the XProc
+						executeXProc(broker, resource, request, response,
+								outputProperties, servletPath.toString(), pathInfo);
+					}
 				} catch (XPathException e) {
 					if (LOG.isDebugEnabled())
 						LOG.debug(e.getMessage(), e);
@@ -530,6 +547,7 @@ public class RESTServer {
 			// check if path leads to an XQuery resource.
 			// if yes, the resource is loaded and the XQuery executed.
 			String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
+			String xproc_mime_type = MimeType.XPROC_TYPE.getName();
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
 			XmldbURI servletPath = pathUri;
@@ -544,14 +562,16 @@ public class RESTServer {
 
 				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
 				if (null != resource
-						&& resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata()
-								.getMimeType())) {
-					break; // found a binary file with mime-type xquery
+						&& (resource.getResourceType() == DocumentImpl.BINARY_FILE
+							&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
+							resource.getResourceType() == DocumentImpl.XML_FILE
+							&& xproc_mime_type.equals(resource.getMetadata().getMimeType()))
+							) {
+					break; // found a binary file with mime-type xquery or XML file with mime-type xproc
 
 				} else if (null != resource) {
-					// not an xquery resource. This means we have a path
-					// that cannot contain an xquery object even if we keep
+					// not an xquery or xproc resource. This means we have a path
+					// that cannot contain an xquery or xproc object even if we keep
 					// moving up the path, so bail out now
 					resource.getUpdateLock().release(Lock.READ_LOCK);
 					resource = null;
@@ -561,16 +581,23 @@ public class RESTServer {
 
 			if (resource != null) {
 				if (resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata()
-								.getMimeType())) {
+						&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
+					resource.getResourceType() == DocumentImpl.XML_FILE
+						&& xproc_mime_type.equals(resource.getMetadata().getMimeType())
+						) {
 
 					// found an XQuery resource, fixup request values
-					String pathInfo = pathUri.trimFromBeginning(servletPath)
-							.toString();
+					String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
 					try {
-						executeXQuery(broker, resource, request, response,
-								outputProperties, servletPath.toString(),
-								pathInfo.toString());
+						if (xquery_mime_type.equals(resource.getMetadata().getMimeType())){
+							// Execute the XQuery
+							executeXQuery(broker, resource, request, response,
+									outputProperties, servletPath.toString(), pathInfo);
+						} else {
+							// Execute the XProc
+							executeXProc(broker, resource, request, response,
+									outputProperties, servletPath.toString(), pathInfo);
+						}
 					} catch (XPathException e) {
 						if (MimeType.XML_TYPE.getName().equals(mimeType)) {
 							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,
@@ -1178,13 +1205,63 @@ public class RESTServer {
 		
 		try {
 			Sequence result = xquery.execute(compiled, null, outputProperties);
-			writeResults(response, broker, result, -1, 1, outputProperties,
-					false);
+			writeResults(response, broker, result, -1, 1, outputProperties, false);
 		} finally {
 			pool.returnCompiledXQuery(source, compiled);
 		}
 	}
 
+	/**
+	 * Directly execute an XProc stored as a XML document in the database.
+	 */
+	private void executeXProc(DBBroker broker, DocumentImpl resource,
+			HttpServletRequest request, HttpServletResponse response,
+			Properties outputProperties, String servletPath, String pathInfo)
+			throws XPathException, BadRequestException {
+		URLSource source = new URLSource(this.getClass().getResource("run-xproc.xq"));
+		XQuery xquery = broker.getXQueryService();
+		XQueryPool pool = xquery.getXQueryPool();
+		XQueryContext context;
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+		if (compiled == null) {
+			context = xquery.newContext(AccessContext.REST);
+		} else {
+			context = compiled.getContext();
+		}
+		
+		context.declareVariable("pipeline", resource.getURI().toString());
+		
+		String stdin = request.getParameter("stdin");
+		context.declareVariable("stdin", stdin == null ? "" : stdin);
+		
+		String debug = request.getParameter("debug");
+		context.declareVariable("debug",  debug == null ? "0" : debug);
+		
+		// TODO: don't hardcode this?
+		context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(
+				resource.getCollection().getURI()).toString());
+		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
+				.getCollection().getURI() });
+		HttpRequestWrapper reqw = declareVariables(context, request, response);
+		reqw.setServletPath(servletPath);
+		reqw.setPathInfo(pathInfo);
+		if (compiled == null) {
+			try {
+				compiled = xquery.compile(context, source);
+			} catch (IOException e) {
+				throw new BadRequestException("Failed to read query from "
+						+ source.getURL(), e);
+			}
+		}
+		
+		try {
+			Sequence result = xquery.execute(compiled, null, outputProperties);
+			writeResults(response, broker, result, -1, 1, outputProperties, false);
+		} finally {
+			pool.returnCompiledXQuery(source, compiled);
+		}
+	}
+		
 	// writes out a resource, uses asMimeType as the specified mime-type or if
 	// null uses the type of the resource
 	private void writeResourceAs(DocumentImpl resource, DBBroker broker,
