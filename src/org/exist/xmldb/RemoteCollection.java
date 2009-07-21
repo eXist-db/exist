@@ -513,8 +513,8 @@ public class RemoteCollection implements CollectionImpl {
 		params.add(new Integer(1));
 
 		if (res.dateCreated != null) {
-			params.add(res.dateCreated );
-			params.add(res.dateModified );
+			params.add((Date)res.dateCreated );
+			params.add((Date)res.dateModified );
 		}
 
 		try {
