@@ -275,6 +275,11 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
+        <copy todir="${build.classes}/org/exist/http">
+            <fileset dir="${src}/org/exist/http">
+                <include name="**.xq"/>
+            </fileset>
+        </copy>
         <copy todir="${build.classes}/org/exist/security/xacml/policies">
             <fileset dir="${src}/org/exist/security/xacml/policies">
                 <include name="*.xml"/>
