@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.MessageDigester;
 import org.exist.xquery.BasicFunction;
@@ -29,6 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -41,25 +43,25 @@ import org.exist.xquery.value.Type;
  * @author dizzzz@exist-db.org
  */
 public class Hash extends BasicFunction {
+	protected static final Logger logger = Logger.getLogger(Hash.class);
+	
+	private static final FunctionParameterSequenceType message = new FunctionParameterSequenceType("message", Type.ITEM, Cardinality.EXACTLY_ONE, "The string to generate the hashcode from");
+	private static final FunctionParameterSequenceType algorithm = new FunctionParameterSequenceType("algorithm", Type.STRING, Cardinality.EXACTLY_ONE, "The algorithm used to generate the hashcode");
+	private static final FunctionParameterSequenceType base64flag = new FunctionParameterSequenceType("base64flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "specifies whether to return the result as Base64 encoded");
+	private static final FunctionParameterSequenceType result = new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the hashcode");
+	
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
                     new QName("hash", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Calculate an hashcode from string $a using alghorithm $b.",
-                    new SequenceType[]{
-                            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    },
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)),
+                    "Calculates a hashcode from a string based on a specified algorithm.",
+                    new SequenceType[]{ message, algorithm },
+                    result),
 
             new FunctionSignature(
                     new QName("hash", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Calculate an hashcode from string $a using alghorithm $b. $c specifies whether to return result Base64 encoded",
-                    new SequenceType[]{
-                            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-                    },
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE))
+                    "Calculates a hashcode from a string based on a specified algorithm.",
+                    new SequenceType[]{ message, algorithm, base64flag },
+                    result)
     };
 
     public Hash(XQueryContext context, FunctionSignature signature) {
@@ -70,6 +72,9 @@ public class Hash extends BasicFunction {
       * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
       */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         boolean base64 = false;
 
         String message = args[0].itemAt(0).getStringValue();
@@ -87,6 +92,7 @@ public class Hash extends BasicFunction {
             throw new XPathException(ex.getMessage());
         }
 
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return (new StringValue(md));
     }
 
