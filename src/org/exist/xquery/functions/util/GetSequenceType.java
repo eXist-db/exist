@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2009 The eXist team
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -21,27 +21,31 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 public class GetSequenceType extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(GetSequenceType.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-sequence-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the string representation of the type of sequence $a.",
+			"Returns the string representation of the type of sequence.",
 			new SequenceType[] {
-				new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+				new FunctionParameterSequenceType("sequence-type", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "a type of sequence")
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the string representation of the type of sequence"));
 	
 	public GetSequenceType(XQueryContext context) {
 		super(context, signature);
@@ -49,8 +53,12 @@ public class GetSequenceType extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {		
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		Sequence seq = args[0];
-		return new StringValue(Type.getTypeName(seq.getItemType()));
+		StringValue stringValue = new StringValue(Type.getTypeName(seq.getItemType()));
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		return stringValue;
 	}
 
 }

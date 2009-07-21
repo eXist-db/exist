@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.BasicFunction;
@@ -41,6 +42,8 @@ import org.exist.security.MessageDigester;
  */
 public class MD5 extends BasicFunction 
 {
+	protected static final Logger logger = Logger.getLogger(MD5.class);
+	
 	public final static FunctionSignature deprecated[] = {
 		new FunctionSignature(
 			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
@@ -74,6 +77,8 @@ public class MD5 extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence  ) throws XPathException 
 	{
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		boolean base64 = false;
 		
 		String arg = args[0].itemAt( 0 ).getStringValue();
@@ -84,6 +89,7 @@ public class MD5 extends BasicFunction
 		
 		String md = MessageDigester.md5( arg, base64 );
 		
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return( new StringValue( md ) );
 	}
 

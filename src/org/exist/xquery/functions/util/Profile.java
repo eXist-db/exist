@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -28,22 +29,25 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class Profile extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(Profile.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("enable-profiling", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Enable profiling output within the query. The profiling starts with this function call and will " +
-            "end with a call to 'disable-profiling'. Argument $a specifies the verbosity. All " +
+            "end with a call to 'disable-profiling'. Argument $verbosity specifies the verbosity. All " +
             "other profiling options can be configured via the 'declare option exist:profiling ...' in the " +
             "query prolog.",
             new SequenceType[] {
-                new SequenceType(Type.INT, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("verbosity", Type.INT, Cardinality.EXACTLY_ONE, "the verbosity of the profiling"),
             },
             new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
@@ -59,6 +63,8 @@ public class Profile extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         Profiler profiler = context.getProfiler();
         if (isCalledAs("enable-profiling")) {
             int verbosity = ((IntegerValue)args[0].itemAt(0)).getInt();
@@ -67,6 +73,7 @@ public class Profile extends BasicFunction {
         } else {
             profiler.setEnabled(false);
         }
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 

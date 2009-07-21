@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.NodeImpl;
@@ -30,6 +31,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -41,6 +43,8 @@ import org.exist.xquery.value.Type;
  *
  */
 public class NodeId extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(NodeId.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -48,9 +52,9 @@ public class NodeId extends BasicFunction {
 			"Returns the internal node-id of a node. The internal node-id uniquely identifies " +
 			"a node within its document. It is encoded as a long number.",
 			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+				new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "the node to get the internal node-id from"),
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "the internal node-id"));
 	
 	/**
 	 * @param context
@@ -64,6 +68,8 @@ public class NodeId extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		NodeValue docNode =(NodeValue) args[0].itemAt(0);
                 org.exist.numbering.NodeId nodeId;
 		if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
@@ -71,6 +77,7 @@ public class NodeId extends BasicFunction {
                 } else {
                     nodeId = ((NodeProxy)docNode).getNodeId();
                 }
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return new StringValue(nodeId.toString());
 	}
 }

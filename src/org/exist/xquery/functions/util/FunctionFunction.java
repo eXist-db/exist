@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
@@ -31,6 +32,11 @@ import org.exist.xquery.value.*;
  * @author wolf
  */
 public class FunctionFunction extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(FunctionFunction.class);
+	protected static final FunctionParameterSequenceType functionName = new FunctionParameterSequenceType("name", Type.QNAME, Cardinality.EXACTLY_ONE, "the name of the function");
+	protected static final FunctionParameterSequenceType arity = new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "the arity of the function");
+	protected static final FunctionParameterSequenceType result = new FunctionParameterSequenceType("result", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "reference to the XQuery function");
 
     public final static FunctionSignature signature =
         new FunctionSignature(
@@ -39,15 +45,12 @@ public class FunctionFunction extends BasicFunction {
             "This allows for higher-order functions to be implemented in XQuery. A higher-order " +
             "function is a function that takes another function as argument. " +
             "The first argument represents the name of the function, which should be" +
-            "a valid QName. The second argument is the arity of the function. If no" +
+            "a valid QName. The second argument is the arity (number of parameters) of the function. If no" +
             "function can be found that matches the name and arity, an error is thrown. " +
             "Please note: due to the special character of util:function, the arguments to this function " +
             "have to be literals or need to be resolvable at compile time at least.",
-            new SequenceType[] {
-                new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
-            },
-            new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE)
+            new SequenceType[] { functionName, arity },
+            result
         );
     
     private FunctionCall resolvedFunction = null;
@@ -73,9 +76,12 @@ public class FunctionFunction extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
     	String funcName = args[0].getStringValue();
     	int arity = ((NumericValue) args[1].itemAt(0)).getInt();
     	this.resolvedFunction = lookupFunction(funcName, arity);
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return new FunctionReference(resolvedFunction);
     }
 

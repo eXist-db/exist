@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -31,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -41,14 +43,16 @@ import org.exist.xquery.value.Type;
  * 
  */
 public class IndexType extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(IndexType.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("index-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Returns the range index type for a set of nodes or an empty sequence if no index is defined. ", 
                 new SequenceType[] {
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) 
+                    new FunctionParameterSequenceType("set-of-nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "") 
                     },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+            new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "result"));
 
     /**
      * @param context
@@ -70,6 +74,8 @@ public class IndexType extends BasicFunction {
      *      org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -94,8 +100,7 @@ public class IndexType extends BasicFunction {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
 
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
-
     }
-
 }

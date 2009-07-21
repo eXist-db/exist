@@ -1,10 +1,12 @@
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.xquery.*;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -19,6 +21,12 @@ import java.io.IOException;
 import java.io.StringReader;
 
 public class Parse extends BasicFunction {
+	
+	protected static final FunctionParameterSequenceType RESULT_TYPE = new FunctionParameterSequenceType( "result", Type.NODE, Cardinality.ZERO_OR_MORE, "the XML fragment parsed from the string" );
+
+	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to be parsed" );
+
+	protected static final Logger logger = Logger.getLogger(Parse.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -26,10 +34,8 @@ public class Parse extends BasicFunction {
             "Parses the passed string value into an XML fragment. The string has to be " +
             "well-formed XML. An empty sequence is returned if the argument is an " +
             "empty string or sequence.",
-            new SequenceType[] {
-                new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE )
-            },
-            new SequenceType( Type.NODE, Cardinality.ZERO_OR_MORE )
+            new SequenceType[] { TO_BE_PARSED_PARAMETER },
+            RESULT_TYPE
         ),
         new FunctionSignature(
             new QName( "parse-html", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -37,10 +43,8 @@ public class Parse extends BasicFunction {
             "well-formed XML. It will be passed through the Neko HTML parser to make it well-formed. " +
             "An empty sequence is returned if the argument is an " +
             "empty string or sequence.",
-            new SequenceType[] {
-                new SequenceType( Type.STRING, Cardinality.ZERO_OR_ONE )
-            },
-            new SequenceType( Type.NODE, Cardinality.ZERO_OR_MORE )
+            new SequenceType[] { TO_BE_PARSED_PARAMETER },
+            RESULT_TYPE
         )
     };
 
@@ -49,11 +53,17 @@ public class Parse extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (args[0].getItemCount() == 0)
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
+        if (args[0].getItemCount() == 0) {
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         String xmlContent = args[0].itemAt(0).getStringValue();
-        if (xmlContent.length() == 0)
+        if (xmlContent.length() == 0) {
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         StringReader reader = new StringReader(xmlContent);
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -83,6 +93,7 @@ public class Parse extends BasicFunction {
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
 
+        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return (DocumentImpl) adapter.getDocument();
         } catch (ParserConfigurationException e) {
             throw new XPathException(this, "Error while constructing XML parser: " + e.getMessage(), e);
