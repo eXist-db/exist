@@ -63,7 +63,6 @@ public class CompressionModule extends AbstractInternalModule {
         return PREFIX;
     }
 
-    @Override
     public String getDescription() {
         return "Compression and De-Compression functions";
     }
