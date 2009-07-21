@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -9,14 +10,16 @@ import org.w3c.dom.Node;
 
 public class NodeXPath extends Function
 {
+	protected static final Logger logger = Logger.getLogger(NodeXPath.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("node-xpath", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the XPath for a Node.",
 			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+				new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "the node to retrieve the XPath to"),
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("xpath-expression", Type.STRING, Cardinality.ZERO_OR_ONE, "the XPath expression of the node"));
 	
 	public NodeXPath(XQueryContext context)
 	{
@@ -25,16 +28,22 @@ public class NodeXPath extends Function
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if(seq.isEmpty())
+		if(seq.isEmpty()) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
+		}
 		
 		NodeValue nv = (NodeValue)seq.itemAt(0);
 		Node n = nv.getNode();
 
 		//if at the document level just return /
-		if(n.getNodeType() == Node.DOCUMENT_NODE)
+		if(n.getNodeType() == Node.DOCUMENT_NODE) {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return new StringValue("/");
+		}
 		
 		/* walk up the node hierarchy
 		 * - node names become path names 
@@ -49,6 +58,7 @@ public class NodeXPath extends Function
 			}
 		}
 		
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return new StringValue(buf.toString());
 	}
 	

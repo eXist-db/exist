@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -24,6 +24,7 @@ package org.exist.xquery.functions.util;
 
 import java.net.URLDecoder;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -31,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -40,28 +42,30 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter (adam.retter@devon.gov.uk)
  */
 public class FunUnEscapeURI extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(FunUnEscapeURI.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("unescape-uri", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns an un-escaped URL escaped string identified by $a with the encoding scheme indicated by the string $b (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
+			"Returns an un-escaped URL escaped string with the encoding scheme (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
 			new SequenceType[]
 			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("escaped-string", Type.STRING, Cardinality.EXACTLY_ONE, "The escaped string to be un-escaped"),
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "the encoding scheme to use in the un-escaping of the string")
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"));
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
 			new QName("unescape-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns an un-escaped URL escaped string identified by $a with the encoding scheme indicated by the string $b (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
+			"Returns an un-escaped URL escaped string with the encoding scheme (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
 			new SequenceType[]
 			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("escaped-string", Type.STRING, Cardinality.EXACTLY_ONE, "The escaped string to be un-escaped"),
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "the encoding scheme to use in the un-escaping of the string")
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"),
 			"Moved to the util module. See util:unescape-uri.");
 	
 	/**
@@ -77,6 +81,7 @@ public class FunUnEscapeURI extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		try
 		{
 			return new StringValue(URLDecoder.decode(args[0].getStringValue(), args[1].getStringValue()));
@@ -84,6 +89,9 @@ public class FunUnEscapeURI extends BasicFunction {
 		catch(java.io.UnsupportedEncodingException e)
 		{
 			throw new XPathException(this, "Unsupported Encoding Scheme: " + e.getMessage(), e);
+		}
+		finally {
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		}
 	}
 	

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2006 The eXist Team
+ *  Copyright (C) 2006-2009 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -25,6 +25,7 @@ package org.exist.xquery.functions.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -40,6 +41,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,28 +51,24 @@ import org.exist.xquery.value.Type;
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 public class IndexKeyOccurrences extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(IndexKeyOccurrences.class);
+	protected static final FunctionParameterSequenceType nodeParam = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes whose content is indexed");
+	protected static final FunctionParameterSequenceType valueParam = new FunctionParameterSequenceType("value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "the indexed value to search for");
+	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "the index in which the search is made");
+	protected static final FunctionParameterSequenceType result = new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.ZERO_OR_ONE, "the number of occurrences for the indexed value");
 
 	public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 				new QName("index-key-occurrences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Return the number of occurrences for an indexed value. " +
-	            "The first argument specifies the nodes whose content is indexed. " +
-	            "The second argument specifies the value. ",
-				new SequenceType[] {
-						new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-						new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
-				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)),
+				"Return the number of occurrences for an indexed value.",
+				new SequenceType[] { nodeParam, valueParam },
+				result),
 		new FunctionSignature(
 				new QName("index-key-occurrences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Return the number of occurrences for an indexed value. " +
-	            "The first argument specifies the nodes whose content is indexed. " +
-	            "The second argument specifies the value. " +
-	            "The third argument specifies the index in which the search is made",
-				new SequenceType[] {
-						new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-						new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
-						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
-				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE))			
+				"Return the number of occurrences for an indexed value.",
+				new SequenceType[] { nodeParam, valueParam, indexParam },
+				result)			
 	};
 
 	public IndexKeyOccurrences(XQueryContext context, FunctionSignature signature) {
@@ -78,6 +76,9 @@ public class IndexKeyOccurrences extends BasicFunction {
 	}
     
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	
+    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+    	
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -122,6 +123,7 @@ public class IndexKeyOccurrences extends BasicFunction {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
 
+    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
 }

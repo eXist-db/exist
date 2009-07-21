@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.*;
@@ -33,14 +34,16 @@ import java.util.Iterator;
  * @author wolf
  */
 public class FunDoctype extends Function {
+	
+	protected static final Logger logger = Logger.getLogger(FunDoctype.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doctype", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the document nodes of the documents whose DOCTYPE is given by $a.",
+			"Returns the document nodes of the documents with the given DOCTYPE(s).",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+				 new FunctionParameterSequenceType("doctype", Type.STRING, Cardinality.ONE_OR_MORE, "The DOCTYPE of the documents to find")},
+			new FunctionParameterSequenceType("results", Type.NODE, Cardinality.ZERO_OR_MORE, "The document nodes"),
 			true);
 
 	/**
@@ -54,6 +57,9 @@ public class FunDoctype extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -80,6 +86,7 @@ public class FunDoctype extends Function {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
         
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
 	}
 

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-09 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -32,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,6 +44,8 @@ import org.exist.xquery.value.Type;
  *
  */
 public class GetNodeById extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(GetNodeById.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -53,10 +57,10 @@ public class GetNodeById extends BasicFunction {
 			"not check if the passed id does really point to an existing node. It just returns " +
 			"a pointer, which may thus be invalid.",
 			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "the document whose node is to be retrieved by its id"),
+				new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "the internal node id")
 			},
-			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("result", Type.NODE, Cardinality.EXACTLY_ONE, "the node"));
 	
 	/**
 	 * @param context
@@ -70,13 +74,17 @@ public class GetNodeById extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
         String id = args[1].itemAt(0).getStringValue();
         NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
         NodeValue docNode = (NodeValue) args[0].itemAt(0);
         if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+    		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return ((NodeImpl) docNode).getDocument().getNodeById(nodeId);
         } else {
             DocumentImpl doc = ((NodeProxy)docNode).getDocument();
+    		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return new NodeProxy(doc, nodeId);
         }
 	}

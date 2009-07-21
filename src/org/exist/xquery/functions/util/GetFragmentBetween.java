@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
@@ -39,6 +40,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,6 +60,8 @@ import org.w3c.dom.NodeList;
  * http://www.mpiwg-berlin.mpg.de, jwillenborg@mpiwg-berlin.mpg.de 
  */
 public class GetFragmentBetween extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(GetFragmentBetween.class);
 
   public final static FunctionSignature signature =
     new FunctionSignature(
@@ -70,11 +74,11 @@ public class GetFragmentBetween extends BasicFunction {
         "Example call of the function for getting the fragment between two page breaks: " +
         "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true())" ,
         new SequenceType[] { 
-                             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                             new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+                             new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.ZERO_OR_ONE, "the first node/milestone element"),
+                             new FunctionParameterSequenceType("ending-node", Type.NODE, Cardinality.ZERO_OR_ONE, "the second node/milestone element"),
+                             new FunctionParameterSequenceType("add-open-close-tags", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "open and closing tags before and after the two node/milestones are appended.")
                            },
-        new SequenceType(Type.STRING, Cardinality.ONE));
+        new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ONE, "a string containing the fragments between the two node/milestone elements."));
 
   public GetFragmentBetween(XQueryContext context) {
     super(context, signature);
@@ -88,6 +92,7 @@ public class GetFragmentBetween extends BasicFunction {
    * @throws XPathException
    */
   public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+	  logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     Sequence ms1 = args[0];
     Sequence ms2 = args[1];
     if (ms1.isEmpty()) {
@@ -120,6 +125,7 @@ public class GetFragmentBetween extends BasicFunction {
     StringValue strValFragment = new StringValue(fragment.toString());
     ValueSequence resultFragment = new ValueSequence();
     resultFragment.add(strValFragment);
+	  logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
     return resultFragment;
   }
 

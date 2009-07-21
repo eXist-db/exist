@@ -1,13 +1,30 @@
 /*
- * Created on 15.10.2004
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2004-09 The eXist Team
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery.functions.util;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -16,6 +33,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -26,6 +44,10 @@ import org.exist.xquery.value.ValueSequence;
  * @author wolf
  */
 public class ModuleInfo extends BasicFunction {
+	
+	protected static final FunctionParameterSequenceType NAMESPACE_URI_PARAMETER = new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the namespace URI of the module");
+
+	protected static final Logger logger = Logger.getLogger(ModuleInfo.class);
 
 	public final static FunctionSignature registeredModulesSig =
 		new FunctionSignature(
@@ -39,14 +61,14 @@ public class ModuleInfo extends BasicFunction {
 		new FunctionSignature(
 			new QName("is-module-registered", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a Boolean value if the module identified by the namespace URI is registered.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
+			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a short description of the module identified by the namespace URI.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
+			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 	
 	/**
@@ -62,15 +84,19 @@ public class ModuleInfo extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		if("get-module-description".equals(getSignature().getName().getLocalName())) {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
 			if(module == null)
 				throw new XPathException(this, "No module found matching namespace URI: " + uri);
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return new StringValue(module.getDescription());
 		} else if ("is-module-registered".equals(getSignature().getName().getLocalName())) {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return new BooleanValue(module != null);
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
@@ -78,6 +104,7 @@ public class ModuleInfo extends BasicFunction {
 				Module module = (Module)i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));
 			}
+			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return resultSeq;
 		}
 	}

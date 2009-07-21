@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-2009 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -31,6 +31,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -46,43 +47,35 @@ import org.xml.sax.SAXException;
  */
 public class LogFunction extends BasicFunction 
 {
+	protected static final FunctionParameterSequenceType PRIORITY_PARAMETER = new FunctionParameterSequenceType( "priority", Type.STRING, Cardinality.EXACTLY_ONE, "the logging priority: 'error', 'warn', 'debug', 'info', 'trace'");
+	protected static final FunctionParameterSequenceType LOGGER_NAME_PARAMETER = new FunctionParameterSequenceType( "logger-name", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the logger, eg: my.app.log" );
+	protected static final FunctionParameterSequenceType MESSAGE_PARAMETER = new FunctionParameterSequenceType( "message", Type.ITEM, Cardinality.ZERO_OR_MORE, "the message to log" );
+
+	protected static final Logger logger = Logger.getLogger(LogFunction.class);
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "log", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-			"Logs the message specified in $b to the current logger. $a indicates " +
-			"the log priority, e.g. 'debug' or 'warn'.",
-			new SequenceType[] {
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE) ,
-				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
-				},
+			"Logs the message to the current logger.",
+			new SequenceType[] { PRIORITY_PARAMETER , MESSAGE_PARAMETER },
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			),
 		new FunctionSignature(
 			new QName( "log-system-out", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-			"Logs the message specified in $b to System.out.",
-			new SequenceType[] {
-				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
-				},
+			"Logs the message to System.out.",
+			new SequenceType[] { MESSAGE_PARAMETER },
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			),
 		new FunctionSignature(
 			new QName( "log-system-err", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-			"Logs the message specified in $b to System.err.",
-			new SequenceType[] {
-				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )
-				},
+			"Logs the message to System.err.",
+			new SequenceType[] { MESSAGE_PARAMETER },
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			),
 		new FunctionSignature(
 			new QName( "log-app", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-			"Logs the message specified in $c to the logger named in $b. $a indicates " +
-			"the log priority, e.g. 'debug' or 'warn'. $b specifies the name of the logger, eg: my.app.log",
-			new SequenceType[] {
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE )			
-				},
+			"Logs the message to the named logger",
+			new SequenceType[] { PRIORITY_PARAMETER, LOGGER_NAME_PARAMETER, MESSAGE_PARAMETER },
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)
 		};
@@ -97,21 +90,26 @@ public class LogFunction extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+		
 		SequenceIterator i;
 		
 		if( isCalledAs( "log" ) ) {
 			i = args[1].unorderedIterator();
 			if( args[1].isEmpty() ) {
+				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else if( isCalledAs( "log-app" ) ) {
 			i = args[2].unorderedIterator();
 			if( args[2].isEmpty() ) {
+				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else {
 			i = args[0].unorderedIterator();
 			if( args[0].isEmpty() ) {
+				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		}
@@ -141,15 +139,15 @@ public class LogFunction extends BasicFunction
 		if( isCalledAs( "log" ) ) {
 			String priority = args[0].getStringValue();			
 			if( priority.equalsIgnoreCase( "error" ) ) {
-				LOG.error( buf );
+				logger.error( buf );
 			} else if( priority.equalsIgnoreCase( "warn" ) ) {
-				LOG.warn( buf );
+				logger.warn( buf );
 			} else if( priority.equalsIgnoreCase( "info" ) ) {
-				LOG.info( buf );
+				logger.info( buf );
 			} else if( priority.equalsIgnoreCase( "trace" ) ) {
-				LOG.trace( buf );
+				logger.trace( buf );
 			} else {
-				LOG.debug( buf );
+				logger.debug( buf );
 			}
 		} else if( isCalledAs( "log-system-out" ) ) {
 			System.out.println(buf);
@@ -178,6 +176,7 @@ public class LogFunction extends BasicFunction
 			
 		}
 		
+		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }
