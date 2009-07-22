@@ -116,16 +116,38 @@ public class DescribeFunction extends Function {
 		builder.startElement("", "signature", "signature", attribs);
 		builder.characters(signature.toString());
 		builder.endElement();
+
 		if(signature.getDescription() != null) {
 			builder.startElement("", "description", "description", attribs);
-			builder.characters(signature.getDescription());
+
+            StringBuilder description = new StringBuilder();
+            description.append(signature.getDescription());
+			
+            SequenceType argumentTypes[] = signature.getArgumentTypes();
+            if(argumentTypes != null){
+                description.append("\n");
+                for (SequenceType one : argumentTypes) {
+                    if (one instanceof FunctionParameterSequenceType) {
+                        FunctionParameterSequenceType fp = (FunctionParameterSequenceType) one;
+                        description.append("\"$");
+                        description.append(fp.getAttributeName());
+                        description.append("\": ");
+                        description.append(fp.getDescription());
+                        description.append("\n");
+                    }
+                }
+            }
+            
+            builder.characters(description.toString());
 			builder.endElement();
 		}
+        
 		if (signature.getDeprecated() != null) {
 			builder.startElement("", "deprecated", "deprecated", attribs);
 			builder.characters(signature.getDeprecated());
 			builder.endElement();
 		}
+        
 		builder.endElement();
 	}
 
