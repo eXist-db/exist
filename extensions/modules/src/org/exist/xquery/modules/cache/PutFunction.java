@@ -53,7 +53,7 @@ public class PutFunction extends CacheBasicFunction {
 					new FunctionParameterSequenceType("key", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The key to the object within the cache"), 
 					new FunctionParameterSequenceType("value", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "The object to store within the cache") 
 				}, 
-		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+		        new FunctionParameterSequenceType("previous-value", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "the previous value associated with the key")
 			) 
 	};
 

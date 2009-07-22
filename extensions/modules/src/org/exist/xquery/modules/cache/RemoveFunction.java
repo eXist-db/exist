@@ -52,7 +52,7 @@ public class RemoveFunction extends CacheBasicFunction {
 					new FunctionParameterSequenceType("cache-value", Type.ITEM, Cardinality.ONE, "Either the Java cache object or the name of the cache"), 
 					new FunctionParameterSequenceType("key", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The key to the object within the cache") 
 				}, 
-		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+		        new FunctionParameterSequenceType("value", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "the value that was associated with the key")
 			)
 	};
 
