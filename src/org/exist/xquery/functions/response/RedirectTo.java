@@ -24,6 +24,7 @@ package org.exist.xquery.functions.response;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.BasicFunction;
@@ -33,6 +34,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,13 +44,15 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class RedirectTo extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(RedirectTo.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("redirect-to", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
 			"Sends a HTTP redirect response (302) to the client. Note: this is not supported by the Cocooon " +
 			"generator. Use a sitemap redirect instead.",
-			new SequenceType[] { new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE) },
+			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
 	public final static FunctionSignature deprecated =
@@ -56,7 +60,7 @@ public class RedirectTo extends BasicFunction {
 			new QName("redirect-to", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Sends a HTTP redirect response (302) to the client. Note: this is not supported by the Cocooon " +
 			"generator. Use a sitemap redirect instead.",
-			new SequenceType[] { new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE) },
+			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY),
 			"Moved to 'response' module.");
 
@@ -72,6 +76,8 @@ public class RedirectTo extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
+		
 		ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
 		
 		String redirectURI = args[0].getStringValue();
@@ -91,6 +97,7 @@ public class RedirectTo extends BasicFunction {
 			}
 		else
 			throw new XPathException(this, "Variable response is not bound to a response object.");
+		logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	

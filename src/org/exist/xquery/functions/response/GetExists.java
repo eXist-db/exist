@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.response;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,6 +31,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -39,13 +41,14 @@ import org.exist.xquery.value.Type;
  */
 public class GetExists extends BasicFunction 
 {
+	protected static final Logger logger = Logger.getLogger(GetExists.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "exists", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX ),
 			"Returns whether a response object exists.",
 			null,
-			new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) );
+			new FunctionParameterSequenceType( "result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the response object exists" ) );
 
 	/**
 	 * @param context
@@ -63,6 +66,7 @@ public class GetExists extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		BooleanValue exists = BooleanValue.TRUE;
 		
 		ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
@@ -74,6 +78,7 @@ public class GetExists extends BasicFunction
 			exists = BooleanValue.FALSE;
 		} 
 			
+		logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		return( exists );
 	}
 	
