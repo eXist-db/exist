@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -29,9 +29,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -48,7 +48,7 @@ public class GetMemory extends BasicFunction
 			new QName("get-memory-max", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the maximum amount of memory eXist may use.",
 			FunctionSignature.NO_ARGS,
-			new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
+			new FunctionParameterSequenceType("result", Type.LONG, Cardinality.EXACTLY_ONE, "the size of memory")
 		);
 	
 	public final static FunctionSignature getMemoryTotal =
@@ -56,7 +56,7 @@ public class GetMemory extends BasicFunction
 			new QName("get-memory-total", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the total amount of memory in use by eXist.",
 			FunctionSignature.NO_ARGS,
-			new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
+			new FunctionParameterSequenceType("result", Type.LONG, Cardinality.EXACTLY_ONE, "the size of memory")
 		);
 	
 	public final static FunctionSignature getMemoryFree =
@@ -64,7 +64,7 @@ public class GetMemory extends BasicFunction
 				new QName("get-memory-free", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 				"Returns the amount of free memory available to eXist.",
 				FunctionSignature.NO_ARGS,
-				new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("result", Type.LONG, Cardinality.EXACTLY_ONE, "the size of memory")
 		);
 
 	public GetMemory(XQueryContext context, FunctionSignature signature)

@@ -2,6 +2,8 @@ package org.exist.xquery.functions.util;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -69,6 +71,7 @@ public class ExtractDocs extends BasicFunction {
 	private void functions(Module module, MemTreeBuilder builder) {
 		builder.startElement(XQDOC_NS, "functions", "functions", null);
 		FunctionSignature[] functions = module.listFunctions();
+		Arrays.sort(functions, new FunctionSignatureComparator());
 		for (int i = 0; i < functions.length; i++) {
 			FunctionSignature function = functions[i];
 			builder.startElement(XQDOC_NS, "function", "function", null);
@@ -158,4 +161,16 @@ public class ExtractDocs extends BasicFunction {
         builder.characters(value == null ? "" : value);
         builder.endElement();
     }
+}
+
+//////////////////////////////////////////////////FunctionSignatureComparator
+//To sort directories before funcSigs, then alphabetically.
+class FunctionSignatureComparator implements Comparator<FunctionSignature> {
+
+ // Comparator interface requires defining compare method.
+ public int compare(FunctionSignature funcSiga, FunctionSignature funcSigb) {
+     //... Sort directories before funcSigs,
+     //    otherwise alphabetical ignoring case.
+     return funcSiga.toString().compareToIgnoreCase(funcSigb.toString());
+ }
 }

@@ -54,8 +54,8 @@ public class ListBackups extends BasicFunction {
                 new QName("list", BackupModule.NAMESPACE_URI, BackupModule.PREFIX),
                 "Returns an XML fragment listing all eXist backups found in a specific " +
                 "backup directory. The directory is passed in the argument.",
-                new SequenceType[] { new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "Directory name to show list of backus on.") },
-                new SequenceType(Type.NODE, Cardinality.ONE_OR_MORE)
+                new SequenceType[] { new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "Directory name to show list of backups on.") },
+                new FunctionParameterSequenceType("listing", Type.NODE, Cardinality.ONE_OR_MORE, "an XML fragment listing eXist backups")
             );
 
     public final static QName DIRECTORY_ELEMENT = new QName("directory", Namespaces.EXIST_NS, "");

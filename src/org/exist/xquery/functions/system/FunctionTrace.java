@@ -38,7 +38,7 @@ public class FunctionTrace extends BasicFunction {
                 new QName( "trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Returns function call statistics gathered by the trace log.",
                 null,
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("call-statistics", Type.NODE, Cardinality.EXACTLY_ONE, "the call statistics gathered by the trace")
         ),
         new FunctionSignature(
                 new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
@@ -65,6 +65,7 @@ public class FunctionTrace extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalName());
         if (isCalledAs("clear-trace")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":clear-trace XQuery function");
             context.getBroker().getBrokerPool().getPerformanceStats().clear();
@@ -76,6 +77,7 @@ public class FunctionTrace extends BasicFunction {
 
         } else if (isCalledAs("tracing-enabled")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":tracing-enalbed XQuery function");
+        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.valueOf(context.getBroker().getBrokerPool().getPerformanceStats().isEnabled());
             
         } else {
@@ -86,8 +88,10 @@ public class FunctionTrace extends BasicFunction {
             BrokerPool brokerPool = context.getBroker().getBrokerPool();
             brokerPool.getPerformanceStats().toXML(builder);
             builder.endDocument();
+        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
             return (NodeValue)builder.getDocument().getDocumentElement();
         }
+    	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }
