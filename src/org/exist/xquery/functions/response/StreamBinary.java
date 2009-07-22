@@ -25,6 +25,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.BasicFunction;
@@ -35,27 +36,28 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class StreamBinary extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(StreamBinary.class);
+	protected static final FunctionParameterSequenceType BINARY_DATA_PARAM = new FunctionParameterSequenceType("binary-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "the binary data to stream");
+	protected static final FunctionParameterSequenceType CONTENT_TYPE_PARAM = new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "the ContentType HTTP header value");
+	protected static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "the filename.  If no filename is given, then the current request name is used");
 
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("stream-binary", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-            "Streams the binary data passed in $a to the current servlet response output stream. The ContentType " +
-            "HTTP header is set to the value given in $b. The filename is set to the value given in $c, if no filename is specified then" +
-            "that of the current request is used." +
+            "Streams the binary data to the current servlet response output stream. The ContentType " +
+            "HTTP header is set to the value given in $content-type." +
             "This function only works within a servlet context, not within " +
             "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog " +
             "will not be passed.",
-            new SequenceType[] {
-                new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-            },
+            new SequenceType[] { BINARY_DATA_PARAM, CONTENT_TYPE_PARAM, FILENAME_PARAM },
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
             true
         );
@@ -63,14 +65,12 @@ public class StreamBinary extends BasicFunction {
     public final static FunctionSignature deprecated =
         new FunctionSignature(
             new QName("stream-binary", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-            "Streams the binary data passed in $a to the current servlet response output stream. The ContentType " +
-            "HTTP header is set to the value given in $b. This function only works within a servlet context, not within " +
+            "Streams the binary data to the current servlet response output stream. The ContentType " +
+            "HTTP header is set to the value given in $content-type." +
+            "This function only works within a servlet context, not within " +
             "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog " +
             "will not be passed.",
-            new SequenceType[] {
-                new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
+            new SequenceType[] { BINARY_DATA_PARAM, CONTENT_TYPE_PARAM },
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
             true,
             "Renamed to response:stream-binary."
@@ -82,8 +82,11 @@ public class StreamBinary extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if(args[0].isEmpty() || args[1].isEmpty())
+    	logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
+        if(args[0].isEmpty() || args[1].isEmpty()) {
+        	logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         Base64Binary binary = (Base64Binary) args[0].itemAt(0);
         String contentType = args[1].getStringValue();
         String filename = null;
@@ -119,6 +122,7 @@ public class StreamBinary extends BasicFunction {
         } catch (IOException e) {
             throw new XPathException(this, "IO exception while streaming data: " + e.getMessage(), e);
         }
+    	logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 
