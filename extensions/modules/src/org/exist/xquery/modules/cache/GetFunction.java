@@ -47,12 +47,12 @@ public class GetFunction extends CacheBasicFunction {
     public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 				new QName("get", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-				"Get data from global cache $a by key $b",
+				"Get data from identified global cache by key",
 				new SequenceType[] { 
-					new FunctionParameterSequenceType("cache-value", Type.ITEM, Cardinality.ONE, "Either the Java cache object or the name of the cache"), 
+					new FunctionParameterSequenceType("cache-identity", Type.ITEM, Cardinality.ONE, "Either the Java cache object or the name of the cache"), 
 					new FunctionParameterSequenceType("key", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The key to the object within the cache") 
 				}, 
-		        new SequenceType(Type.ANY_TYPE, Cardinality.ZERO_OR_MORE)
+		        new FunctionParameterSequenceType("value", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "the value that is associated with the key")
 			) 
 	};
 
