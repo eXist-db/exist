@@ -81,6 +81,7 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                                     <div class="f-description">
                                         <div>{$match/xqdoc:comment/xqdoc:description/text()}</div>
                                         { xqdoc:print-parameters($match/xqdoc:comment) }
+                                        { xqdoc:print-return($match/xqdoc:comment) }
                                     </div>{
 			                       if (string-length($match/xqdoc:comment/xqdoc:deprecated/text()) > 0)
 			                       then
@@ -111,6 +112,15 @@ declare function xqdoc:print-parameters($comment as element(xqdoc:comment)) {
                     </tr>
             }
             </table>
+        else
+            ()
+};
+
+declare function xqdoc:print-return($comment as element(xqdoc:comment)) {
+    let $returning := $comment/xqdoc:return
+    return
+        if (string-length($returning/text())) then
+            <div class="f-return">Returning {$returning/text()}</div>
         else
             ()
 };
