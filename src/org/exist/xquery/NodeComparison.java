@@ -150,7 +150,7 @@ public class NodeComparison extends BinaryOp {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append(getLeft().toString());
     	result.append(' ').append(Constants.OPS[relation]).append(' ');
     	result.append(getRight().toString());

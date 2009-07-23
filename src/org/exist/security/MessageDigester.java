@@ -77,7 +77,7 @@ public class MessageDigester {
     }
 
 
-    private static void byteToHex( StringBuffer buf, byte b ) {
+    private static void byteToHex( StringBuilder buf, byte b ) {
         int n = b;
         if ( n < 0 ) {
             n = 256 + n;
@@ -90,7 +90,7 @@ public class MessageDigester {
 
 
     public static String byteArrayToHex( byte[] b ) {
-        StringBuffer buf = new StringBuffer( b.length * 2 );
+        StringBuilder buf = new StringBuilder( b.length * 2 );
         for ( int i = 0; i < b.length; i++ ) {
             byteToHex( buf, b[i] );
         }

@@ -103,7 +103,7 @@ public class InstanceOfExpression extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append(expression);
     	result.append(" instance of ");
     	result.append(type.toString());

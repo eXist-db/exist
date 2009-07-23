@@ -117,7 +117,7 @@ public abstract class URLRewrite {
     }
 
     protected static String normalizePath(String path) {
-        StringBuffer sb = new StringBuffer(path.length());
+        StringBuilder sb = new StringBuilder(path.length());
         for (int i = 0; i < path.length(); i++) {
             char c = path.charAt(i);
             if (c == '/') {

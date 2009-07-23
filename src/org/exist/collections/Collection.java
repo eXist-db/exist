@@ -1806,7 +1806,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     }
     
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
         buf.append("[");
         for(Iterator i = documents.keySet().iterator(); i.hasNext(); ) {

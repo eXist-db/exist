@@ -363,7 +363,7 @@ public class LetExpr extends BindingExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("let ");        
     	result.append("$").append(varName);
         result.append(" := ");

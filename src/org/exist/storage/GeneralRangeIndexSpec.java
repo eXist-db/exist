@@ -69,7 +69,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     }
     
     public String toString() {
-		StringBuffer result = new StringBuffer("General range index\n");
+		StringBuilder result = new StringBuilder("General range index\n");
 		result.append("\ttype : ").append(Type.getTypeName(this.type)).append('\n');
 		result.append("\tpath : ").append(path.toString()).append('\n');
 		result.append("\thas full text index : ").append(hasFulltextIndex(this.type)).append('\n');

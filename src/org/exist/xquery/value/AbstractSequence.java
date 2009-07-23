@@ -96,7 +96,7 @@ public abstract class AbstractSequence implements Sequence {
 	
 	public String toString() {
     	try {
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			buf.append("(");
 			boolean gotOne = false;
 			for(SequenceIterator i = iterate(); i.hasNext(); ) {

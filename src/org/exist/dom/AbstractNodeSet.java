@@ -691,7 +691,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     }
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("NodeSet(");
         for (int i = 0 ; i < getLength() ; i++) {
             if(i > 0)

@@ -58,7 +58,7 @@ public class DLN extends DLNBase implements NodeId {
      */
     public DLN(String s) {
         bits = new byte[1];
-        StringBuffer buf = new StringBuffer(16);
+        StringBuilder buf = new StringBuilder(16);
         boolean subValue = false;
         for (int p = 0; p < s.length(); p++) {
             char ch = s.charAt(p);

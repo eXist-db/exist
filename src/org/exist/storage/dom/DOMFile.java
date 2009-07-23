@@ -1017,7 +1017,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     public String debugPageContents(DOMPage page) {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("Page " + page.getPageNum() + ": ");
 	short count = 0;
 	final int dlen = page.getPageHeader().getDataLength();
@@ -1414,7 +1414,7 @@ public class DOMFile extends BTree implements Lockable {
 	super.printStatistics();
 	NumberFormat nf = NumberFormat.getPercentInstance();
 	NumberFormat nf2 = NumberFormat.getInstance();
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append(getFile().getName()).append(" DATA ");
         buf.append("Buffers occupation : ");
         if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
@@ -1886,7 +1886,7 @@ public class DOMFile extends BTree implements Lockable {
     public void removeAll(Txn transaction, long p) {
 	if (!lock.isLockedForWrite())
 	    LOG.warn("the file doesn't own a write lock");
-	//		 StringBuffer debug = new StringBuffer();
+	//		 StringBuilder debug = new StringBuilder();
 	//		 debug.append("Removed pages: ");
 	long pnum = StorageAddress.pageFromPointer(p);
 	if (Page.NO_PAGE == pnum)
@@ -1922,7 +1922,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     public String debugPages(DocumentImpl doc, boolean showPageContents) {
-	StringBuffer buf = new StringBuffer();
+	StringBuilder buf = new StringBuilder();
 	buf.append("Pages used by ").append(doc.getURI());
 	buf.append("; docId ").append(doc.getDocId()).append(':');
 	long pnum = StorageAddress.pageFromPointer(((StoredNode) doc

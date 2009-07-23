@@ -235,7 +235,7 @@ public class MemTreeBuilder {
                 if (doc.references[p].getNodeType() == Node.TEXT_NODE) {
                     // found a text node reference. create a new char sequence containing
                     // the concatenated text of both nodes
-                    StringBuffer s = new StringBuffer(doc.references[p].getStringValue());
+                    StringBuilder s = new StringBuilder(doc.references[p].getStringValue());
                     s.append(ch, start, len);
                     doc.replaceReferenceNode(lastNode, s);
                     return lastNode;

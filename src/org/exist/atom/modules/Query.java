@@ -197,7 +197,7 @@ public class Query extends AtomModuleBase implements Atom {
 
          CompiledXQuery compiledQuery = null;
          try {
-            StringBuffer builder = new StringBuffer();
+            StringBuilder builder = new StringBuilder();
             Reader r = new InputStreamReader(request.getInputStream(),charset);
             char [] buffer = new char[4096];
             int len;

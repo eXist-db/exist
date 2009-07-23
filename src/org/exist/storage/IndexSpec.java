@@ -218,7 +218,7 @@ public class IndexSpec {
     }
     
     public String toString() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (ftSpec != null)
 			result.append(ftSpec.toString()).append('\n');
 		if(specs!= null) {

@@ -163,7 +163,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         }
         
         public String toString() {
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
             result.append("Empty#").append(super.toString());
             return result.toString();
         }          

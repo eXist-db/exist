@@ -127,7 +127,7 @@ public class XmlLibraryChecker {
      *  Perform checks on parsers, transformers and resolvers.
      */
     public static void check() {
-        StringBuffer message 				= new StringBuffer();
+        StringBuilder message 				= new StringBuilder();
 		boolean		 invalidVersionFound	= false;
 
         if( hasValidClassVersion( "Parser", validParsers, message ) ) {
@@ -138,7 +138,7 @@ public class XmlLibraryChecker {
 			invalidVersionFound	= true;
         }
 
-        message = new StringBuffer();
+        message = new StringBuilder();
         if( hasValidClassVersion( "Transformer", validTransformers, message ) ) {
             logger.info( message.toString() );
         } else {
@@ -147,7 +147,7 @@ public class XmlLibraryChecker {
 			invalidVersionFound	= true;
         }
 
-        message = new StringBuffer();
+        message = new StringBuilder();
         if( hasValidClassVersion( "Resolver", validResolvers, message ) ) {
             logger.info( message.toString() );
         } else {
@@ -176,7 +176,7 @@ public class XmlLibraryChecker {
      * @return TRUE if valid class has been found, otherwise FALSE.
      */
     public static boolean hasValidClassVersion(String type, 
-                        ClassVersion[] validClasses, StringBuffer message) {
+                        ClassVersion[] validClasses, StringBuilder message) {
 
         String sep = System.getProperty("line.separator");
 
@@ -218,7 +218,7 @@ public class XmlLibraryChecker {
      * @return boolean true indicates a valid Parser was found, false otherwise
      */
     public static boolean hasValidParser() {
-        return hasValidParser(new StringBuffer());
+        return hasValidParser(new StringBuilder());
     }
 
     /**
@@ -229,7 +229,7 @@ public class XmlLibraryChecker {
      * 
      * @return boolean true indicates a valid Parser was found, false otherwise
      */
-    public static boolean hasValidParser(StringBuffer message) {
+    public static boolean hasValidParser(StringBuilder message) {
         return hasValidClassVersion("Parser", validParsers, message);
     }
 
@@ -240,7 +240,7 @@ public class XmlLibraryChecker {
      *         false otherwise
      */
     public static boolean hasValidTransformer() {
-        return hasValidTransformer(new StringBuffer());
+        return hasValidTransformer(new StringBuilder());
     }
 
     /**
@@ -252,7 +252,7 @@ public class XmlLibraryChecker {
      * @return boolean true indicates a valid Transformer was found, 
      *         false otherwise
      */
-    public static boolean hasValidTransformer(StringBuffer message) {
+    public static boolean hasValidTransformer(StringBuilder message) {
         return hasValidClassVersion("Transformer", validTransformers, message);
     }
 

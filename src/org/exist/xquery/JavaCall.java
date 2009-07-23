@@ -80,7 +80,7 @@ public class JavaCall extends Function {
 		name = qname.getLocalName();
 		// convert hyphens into camelCase
 		if (name.indexOf('-') > 0) {
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			boolean afterHyphen = false;
 			char ch;
 			for (int i = 0; i < name.length(); i++) {

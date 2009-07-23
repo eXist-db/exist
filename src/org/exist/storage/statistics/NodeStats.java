@@ -152,12 +152,12 @@ class NodeStats {
         }
     }
 
-    protected void dump(StringBuffer currentPath, List paths) {
-        StringBuffer newPath;
+    protected void dump(StringBuilder currentPath, List paths) {
+        StringBuilder newPath;
         if (qname == null)
             newPath = currentPath;
         else {
-            newPath = new StringBuffer(currentPath);
+            newPath = new StringBuilder(currentPath);
             if (newPath.length() > 0)
                 newPath.append(" -> ");
             newPath.append(qname);

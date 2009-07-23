@@ -132,7 +132,7 @@ public class FreeList {
 	}
 	
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		FreeSpace next = header;
 		while(next != null) {
 			buf.append("[").append(next.page).append(", ");

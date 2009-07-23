@@ -121,7 +121,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             if(valueSeq.isEmpty())
             value = "";
             else {
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
                     Item next = i.nextItem();
                     buf.append(next.getStringValue());
@@ -166,7 +166,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("attribute ");
         //TODO : remove curly braces if Qname
         result.append("{");  

@@ -92,7 +92,7 @@ public class WebDAVUtil {
     }
     
     public static String getElementContent(Node node) {
-        StringBuffer content = new StringBuffer();
+        StringBuilder content = new StringBuilder();
         node = node.getFirstChild();
         while(node != null) {
             if(node.getNodeType() == Node.TEXT_NODE)

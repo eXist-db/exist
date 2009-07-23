@@ -115,7 +115,7 @@ public class LogFunction extends BasicFunction
 		}
 		
 		// add line of the log statement
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("(Line: ");
 		buf.append(this.getLine());
 		buf.append(") ");

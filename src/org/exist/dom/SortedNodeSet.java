@@ -234,7 +234,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 			this.proxy = proxy;
 			try {
 				Sequence seq = expr.eval(proxy);
-				StringBuffer buf = new StringBuffer();
+				StringBuilder buf = new StringBuilder();
 				OrderedLinkedList strings = new OrderedLinkedList();
 				Item item;
 				for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {

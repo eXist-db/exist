@@ -81,7 +81,7 @@ public class NamespaceConstructor extends NodeConstructor {
         if(uriSeq.isEmpty())
             value = "";
         else {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for(SequenceIterator i = uriSeq.iterate(); i.hasNext(); ) {
                 context.proceed(this, builder);
                 Item next = i.nextItem();
@@ -112,7 +112,7 @@ public class NamespaceConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("namespace ").append(prefix);
     	result.append("{");
     	result.append(uri.toString());

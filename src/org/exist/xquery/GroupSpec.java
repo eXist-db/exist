@@ -58,7 +58,7 @@ public class GroupSpec {
     } 
      
     public String toString() { 
-        StringBuffer buf = new StringBuffer(); 
+        StringBuilder buf = new StringBuilder();
         buf.append(ExpressionDumper.dump(expression)); 
         return buf.toString(); 
     } 

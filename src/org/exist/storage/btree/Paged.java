@@ -1166,7 +1166,7 @@ public abstract class Paged {
             "8", "9", "a", "b", "c", "d", "e", "f"};
 	
 	public static String hexDump(byte[] data) {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("\r\n");
 		int columns = 0;
 		for(int i = 0; i < data.length; i++, columns++) {
@@ -1180,7 +1180,7 @@ public abstract class Paged {
 		return buf.toString();
 	}
 	
-	private static void byteToHex( StringBuffer buf, byte b ) {
+	private static void byteToHex( StringBuilder buf, byte b ) {
         int n = b;
         if ( n < 0 ) {
             n = 256 + n;

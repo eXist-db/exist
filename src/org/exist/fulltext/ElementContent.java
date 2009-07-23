@@ -78,7 +78,7 @@ public class ElementContent {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         TextSpan span = getFirst();
         while (span != null) {
             buf.append(span.getContent()).append('|');

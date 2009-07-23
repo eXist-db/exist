@@ -141,7 +141,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
      *@return    Description of the Return Value
      */
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append( "<?" );
         buf.append( target );
         buf.append( " " );

@@ -96,7 +96,7 @@ public class ValueOccurrences {
 	}
 	
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		try {
 			buf.append("Value: '" + value.getStringValue() +"'");
 		} catch (XPathException e) {

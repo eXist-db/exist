@@ -102,7 +102,7 @@ public class Except extends CombiningExpression {
     }
    
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append(left.toString());
     	result.append(" except ");
     	result.append(right.toString());

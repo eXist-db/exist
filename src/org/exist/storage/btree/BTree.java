@@ -2328,7 +2328,7 @@ public class BTree extends Paged {
 
 	public void printStatistics() {
 		NumberFormat nf = NumberFormat.getPercentInstance();
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append(getFile().getName()).append(" INDEX ");
         buf.append("Buffers occupation : ");
         if (cache.getBuffers() == 0 && cache.getUsedBuffers() == 0)

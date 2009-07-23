@@ -75,7 +75,7 @@ public class Validator {
         config = brokerPool.getConfiguration();
 
         // Check xerces version        
-        StringBuffer xmlLibMessage = new StringBuffer();
+        StringBuilder xmlLibMessage = new StringBuilder();
         if(!XmlLibraryChecker.hasValidParser(xmlLibMessage)){
             logger.error(xmlLibMessage);
         }

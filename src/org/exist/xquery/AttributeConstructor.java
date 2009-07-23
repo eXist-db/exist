@@ -87,7 +87,7 @@ public class AttributeConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		Object next;
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			next = i.next();
@@ -104,7 +104,7 @@ public class AttributeConstructor extends NodeConstructor {
 		return result;
 	}
 
-	private void evalEnclosedExpr(Sequence seq, StringBuffer buf) throws XPathException {
+	private void evalEnclosedExpr(Sequence seq, StringBuilder buf) throws XPathException {
 		Item item;
 		AtomicValue atomic;
 		for(SequenceIterator i = seq.iterate(); i.hasNext();) {
@@ -150,7 +150,7 @@ public class AttributeConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("attribute ");
         //TODO : remove curly braces if Qname
         result.append("{"); 

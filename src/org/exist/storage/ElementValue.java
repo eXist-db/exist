@@ -97,7 +97,7 @@ public class ElementValue extends Value {
 	}
 	
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("Collection id : " + ByteConversion.byteToInt(data, OFFSET_COLLECTION_ID));
 		if (len > OFFSET_COLLECTION_ID) {
 		buf.append(" Type : " + type[data[OFFSET_TYPE]]);

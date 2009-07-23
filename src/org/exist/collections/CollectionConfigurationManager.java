@@ -392,7 +392,7 @@ public class CollectionConfigurationManager {
     }
 
     private void debugCache() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (Iterator i = configurations.keySet().iterator(); i.hasNext(); ) {
             buf.append(i.next()).append(' ');
         }

@@ -254,7 +254,7 @@ public class AttrImpl extends NamedNode implements Attr {
     } 
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append( ' ' );
         buf.append( nodeName );
         buf.append( "=\"" );
@@ -265,7 +265,7 @@ public class AttrImpl extends NamedNode implements Attr {
 
     public String toString( boolean top ) {
         if ( top ) {
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
             result.append( "<exist:attribute " );
             result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
             result.append( "exist:id=\"" );

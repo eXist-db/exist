@@ -126,7 +126,7 @@ public class StringValue extends AtomicValue {
 	 */
 	public String getStringValue(boolean bmpCheck) {
         if (bmpCheck) {
-            StringBuffer buf = new StringBuffer(value.length());
+            StringBuilder buf = new StringBuilder(value.length());
             char ch;
             for (int i = 0; i < value.length(); i++) {
                 ch = value.charAt(i);
@@ -383,7 +383,7 @@ public class StringValue extends AtomicValue {
 	public final static String normalizeWhitespace(CharSequence seq) {
         if (seq == null)
             return "";
-        StringBuffer copy = new StringBuffer(seq.length());
+        StringBuilder copy = new StringBuilder(seq.length());
 		char ch;
 		for (int i = 0; i < seq.length(); i++) {
 			ch = seq.charAt(i);
@@ -426,7 +426,7 @@ public class StringValue extends AtomicValue {
 		    return in.toString();
 		
 		// start to collapse whitespace
-		StringBuffer sb = new StringBuffer(in.length());
+		StringBuilder sb = new StringBuilder(in.length());
 		sb.append(in.subSequence(0, i + 1).toString());
 		boolean inWhitespace = true;
 		for (; i < in.length(); i++) {
@@ -472,15 +472,15 @@ public class StringValue extends AtomicValue {
 	public final static String expand(CharSequence seq) throws XPathException {
         if (seq == null)
             return "";
-        StringBuffer buf = new StringBuffer(seq.length());
-	    StringBuffer entityRef = null;
+        StringBuilder buf = new StringBuilder(seq.length());
+	    StringBuilder entityRef = null;
 	    char ch;
 	    for (int i = 0; i < seq.length(); i++) {
 	        ch = seq.charAt(i);
 	        switch (ch) {
 	            case '&' :
 	                if (entityRef == null)
-	                    entityRef = new StringBuffer();
+	                    entityRef = new StringBuilder();
 	                else
 	                    entityRef.setLength(0);
 	                if ((i+1)==seq.length()) {

@@ -96,7 +96,7 @@ public class PIConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("processing-instruction {");
     	result.append(target.toString());
     	result.append("} {");        

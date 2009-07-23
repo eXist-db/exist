@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 
 package org.exist.xmldb;
@@ -491,7 +491,7 @@ public class XmldbURI implements Comparable {
 	public static String recoverPseudoURIs(String pseudoURI) throws URISyntaxException {		
 		Pattern p = Pattern.compile("/");
 		String[] parts = p.split(pseudoURI);
-		StringBuffer newURIString = new StringBuffer(parts[0]);
+		StringBuilder newURIString = new StringBuilder(parts[0]);
 		for (int i = 1 ; i <parts.length; i ++) { 
             newURIString.append("/");
 			if (!"".equals(parts[i])) {
@@ -763,7 +763,7 @@ public class XmldbURI implements Comparable {
      */
     //TODO : changes // into /  */
     public String makeAbsolute(String name) {
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
         for (int i = 0; i < name.length(); i++)
             //TODO : use dedicated function in XmldbURI
             if (name.charAt(i) == '/'
@@ -792,7 +792,7 @@ public class XmldbURI implements Comparable {
      */
     //TODO : changes // into /  */
     public final static String normalizeCollectionName(String name) {
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
         for (int i = 0; i < name.length(); i++)
             //TODO : use dedicated function in XmldbURI
             if (name.charAt(i) == '/'

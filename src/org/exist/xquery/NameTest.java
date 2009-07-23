@@ -102,7 +102,7 @@ public class NameTest extends TypeTest {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         if(nodeName.getLocalName() == null)
             result.append(nodeName.getPrefix() + ":*");
         else

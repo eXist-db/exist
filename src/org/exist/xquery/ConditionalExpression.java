@@ -133,7 +133,7 @@ public class ConditionalExpression extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("if ( ");
     	result.append(testExpr.toString());       
     	result.append(" ) then ");        

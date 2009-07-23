@@ -454,7 +454,7 @@ public class ForExpr extends BindingExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("for ");           
         result.append("$").append(varName);
         if(positionalVariable != null)

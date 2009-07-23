@@ -339,7 +339,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
     
     public String toString() { 
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	Expression next = null;
         if (steps.size() == 0)
         	result.append("()");

@@ -96,7 +96,7 @@ public class FileSource extends AbstractSource {
 		try {
 			Reader reader = new InputStreamReader(is, encoding);
 			char[] chars = new char[1024];
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			int read;
 			while((read = reader.read(chars)) > -1)
 				buf.append(chars, 0, read);

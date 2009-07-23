@@ -1049,9 +1049,9 @@ public class ElementImpl extends NamedNode implements Element {
      *
      */
     public String toString(boolean top, TreeSet namespaces) {
-        StringBuffer buf = new StringBuffer();
-        StringBuffer attributes = new StringBuffer();
-        StringBuffer children = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
+        StringBuilder attributes = new StringBuilder();
+        StringBuilder children = new StringBuilder();
         buf.append('<');
         buf.append(nodeName);
         //Remove false to have a verbose output
@@ -1564,7 +1564,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     private String escapeXml(Node child) {
         final String str = ((Attr) child).getValue();
-        StringBuffer buffer = null;
+        StringBuilder buffer = null;
         String entity = null;
         char ch;
 
@@ -1589,7 +1589,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
             if (buffer == null) {
                 if (entity != null) {
-                    buffer = new StringBuffer(str.length() + 20);
+                    buffer = new StringBuilder(str.length() + 20);
                     buffer.append(str.substring(0, i));
                     buffer.append(entity);
                 }

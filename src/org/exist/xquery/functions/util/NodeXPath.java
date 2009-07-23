@@ -49,7 +49,7 @@ public class NodeXPath extends Function
 		 * - node names become path names 
 		 * - attributes become predicates
 		 */
-        StringBuffer buf = new StringBuffer(nodeToXPath(n));
+        StringBuilder buf = new StringBuilder(nodeToXPath(n));
 		while((n = n.getParentNode()) != null)
 		{
 			if(n.getNodeType() == Node.ELEMENT_NODE)
@@ -67,11 +67,11 @@ public class NodeXPath extends Function
 	 * The nodes attribute's become predicates
 	 * 
 	 * @param n The Node to generate an XPath for
-	 * @return StringBuffer containing the XPath
+	 * @return StringBuilder containing the XPath
 	 */
-	public StringBuffer nodeToXPath(Node n)
+	public StringBuilder nodeToXPath(Node n)
 	{
-		StringBuffer xpath = new StringBuffer("/" + getFullNodeName(n));
+		StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
 		
 		NamedNodeMap attrs = n.getAttributes();
 		for(int i = 0; i < attrs.getLength(); i++)

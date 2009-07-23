@@ -220,7 +220,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
         sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
         sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");

@@ -88,7 +88,7 @@ public class HTTPUtils {
 	}
     
     public static String printStackTraceHTML(Throwable e) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         StackTraceElement[] trace = e.getStackTrace();
         buf.append("<table id=\"javatrace\">");
         buf.append("<caption>Java Stack Trace:</caption>");
