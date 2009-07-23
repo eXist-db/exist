@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.response;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Cardinality;
@@ -32,6 +33,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -48,12 +50,14 @@ import org.exist.xquery.value.Type;
  */
 public class SetStatusCode extends Function {
 
+	protected static final Logger logger = Logger.getLogger(SetStatusCode.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-status-code", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP server status code on the HTTP Response. $a is the response code.",
+			"Set's a HTTP server status code on the HTTP Response.",
 			new SequenceType[] {
-				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("code", Type.INTEGER, Cardinality.EXACTLY_ONE, "the status code")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
@@ -65,7 +69,10 @@ public class SetStatusCode extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
+
+		logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
+
+		if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
@@ -93,6 +100,7 @@ public class SetStatusCode extends Function {
 		else
 			throw new XPathException(this, "Type error: variable $response is not bound to a response object");
 			
+		logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }

@@ -26,6 +26,7 @@ import java.util.Date;
 
 import javax.xml.datatype.Duration;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Cardinality;
@@ -38,6 +39,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -53,24 +55,22 @@ import org.exist.xquery.value.Type;
  */
 public class SetCookie extends Function {
 	
+	protected static final Logger logger = Logger.getLogger(SetCookie.class);
+	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "the cookie name");
+	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "the cookie value");
+	protected static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.EXACTLY_ONE, "the xs:duration of the cookie");
+	protected static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("name", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "is the cookie to be secure (eg. only transferred using HTTPS)");
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value.",
-			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-				},
+			"Set's a HTTP Cookie on the HTTP Response.",
+			new SequenceType[] { NAME_PARAM, VALUE_PARAM },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 		new FunctionSignature(
 			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value, and $c is the maxAge as xs:duration of the cookie, and optionally, $d is whether the cookie should be secure (eg. only transferred using HTTPS)",
-			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE )
-				},
+			"Set's a HTTP Cookie on the HTTP Response.",
+			new SequenceType[] { NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)) 
 		};
 	
@@ -82,6 +82,9 @@ public class SetCookie extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		
+		logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
+
 		if (context.getProfiler().isEnabled()) {
 			context.getProfiler().start(this);       
 			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -133,6 +136,7 @@ public class SetCookie extends Function {
 		} else {
 			throw new XPathException(this, "Type error: variable $response is not bound to a response object");
 		}
+		logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }
