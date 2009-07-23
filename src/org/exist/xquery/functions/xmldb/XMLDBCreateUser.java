@@ -1,26 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  Modifications Copyright (C) 2004 Luigi P. Bai
- *  finder@users.sf.net
- *  Licensed as below under the LGPL.
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -47,6 +42,8 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf
+ * @author Luigi P. Bai, finder@users.sf.net, 2004
+ *
  */
 public class XMLDBCreateUser extends BasicFunction {
 	
@@ -55,10 +52,12 @@ public class XMLDBCreateUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new user in the database.",
+			"Create a new user in the database. You must have appropriate permissions to do this. $user-id is the username, $password is the password, " +
+			"$groups is the sequence of group memberships, " + 
+			"$home-collection is the home collection.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
+					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password"),
                     new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "group memberships"),
 					new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "the home collection for the user")
             },
@@ -96,25 +95,32 @@ public class XMLDBCreateUser extends BasicFunction {
             userObj.addGroup(groups.itemAt(x).getStringValue());
         
         if(!"".equals(args[3].getStringValue())) {
-        try {
+	    try {
         	userObj.setHome(new AnyURIValue(args[3].getStringValue()).toXmldbURI());
-        } catch(XPathException e) {
-        	throw new XPathException(this,"Invalid home collection URI",e);
-        }
-		}
+	    } catch(XPathException e) {
+		logger.error("Invalid home collection-uri for user " + user);
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+		
+        	throw new XPathException(this,"Invalid home collection URI", e);
+	    }
+	}
         Collection collection = null;
-		try {
+	try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			ums.addUser(userObj);
+	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+	    ums.addUser(userObj);
 			
-		} catch (XMLDBException xe) {
-			throw new XPathException(this, "Failed to create new user " + user, xe);
+	} catch (XMLDBException xe) {
+	    logger.error("Failed to create user: " + user);
+	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
+	    throw new XPathException(this, "Failed to create new user " + user, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
-		}
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-        return Sequence.EMPTY_SEQUENCE;
+	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	}
+	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+        return Sequence.EMPTY_SEQUENCE;
+    }
 }
