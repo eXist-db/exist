@@ -13,7 +13,6 @@ declare namespace c="http://www.w3.org/ns/xproc-step";
 declare namespace err="http://www.w3.org/ns/xproc-error";
 declare namespace comp="http://xproc.net/xproc/comp";
 declare namespace xproc = "http://xproc.net/xproc";
-declare namespace validate ="http://exist-db.org/xquery/validation";
 
 (: Module Imports :)
 import module namespace u = "http://xproc.net/xproc/util";
@@ -38,11 +37,13 @@ declare variable $opt:xsl-formatter :=util:function(xs:QName("opt:xsl-formatter"
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:exec($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
     u:outputResultElement(<test3/>)
 };
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:hash($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $version := u:get-option('version',$options,$v)
@@ -52,8 +53,10 @@ return
 	$v
 };
 
+
 (: -------------------------------------------------------------------------- :)
 declare function opt:uuid($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $matchresult := u:evalXPATH(string($match), $v)
@@ -66,48 +69,82 @@ return
 
 };
 
+
 (: -------------------------------------------------------------------------- :)
 declare function opt:www-form-urldecode($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 return
 	$v
 };
+
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:www-form-urlencode($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 return
 	$v
 };
 
+
 (: -------------------------------------------------------------------------- :)
 declare function opt:validate-with-xml-schema($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
-let $xproc:schema := u:get-option('schema',$options,$v)
+let $schema := u:get-secondary('schema',$secondary)
 return
-	u:outputResultElement(validation:validate($v, xs:anyURI(string($xproc:schema))))
+
+    if(validation:jing($v,element {node-name($schema/node())}
+          {$schema/@*,
+    $schema/*/*
+    })) then
+        $v
+    else
+	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
+
 };
+
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:validate-with-schematron($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $schema := u:get-secondary('schema',$secondary)
 return
-	validation:validate($v, $schema)
+
+    if(validation:jing($v,element {node-name($schema/node())}
+          {$schema/@*,
+    $schema/*/*
+    })) then
+        $v
+    else
+	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
+
 };
+
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:validate-with-relax-ng($primary,$secondary,$options) {
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $schema := u:get-secondary('schema',$secondary)
 return
-	validation:validate($v, $schema)
+
+    if(validation:jing($v,element {node-name($schema/node())}
+          {$schema/@*,
+    $schema/*/*
+    })) then
+        $v
+    else
+	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
+
 };
 
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:xsl-formatter($primary,$secondary,$options) {
-
+(: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $href-uri := u:get-option('href',$options,$v)
 let $name := tokenize($href-uri, "/")[last()]
@@ -137,7 +174,7 @@ return
 
 (: -------------------------------------------------------------------------- :)
 declare function opt:xquery($primary,$secondary,$options) {
-
+(: -------------------------------------------------------------------------- :)
 u:assert(exists(u:get-secondary('query',$secondary)/c:query),'p:input query is required'),
 (:TODO: need to sort out multiple c:query elements and implied cdata sections :)
 	let $v := u:get-primary($primary)
@@ -147,9 +184,13 @@ u:assert(exists(u:get-secondary('query',$secondary)/c:query),'p:input query is r
 		else
 			$xquery/node()
 
-    let $result := u:xquery($query,$v)
+    (: TODO - change to u:xquery :)
+    let $result := u:evalXPATH($query,$v)
         return
+            $result
+            (:
             u:outputResultElement($result)
+            :)
 };
 
 
