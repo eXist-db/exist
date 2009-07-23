@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001, 2009 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.ExtendedDOMSerializer;
@@ -46,6 +47,7 @@ import java.util.Properties;
  */
 public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 {
+	protected static final Logger logger = Logger.getLogger(XMLDBXUpdate.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("update", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -57,9 +59,9 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 					+ "document conforming to the XUpdate specification. "
 					+ "The function returns the number of modifications caused by the XUpdate.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "the collection as a simple collection path or an XMLDB URI"),
+					new FunctionParameterSequenceType("modifications", Type.NODE, Cardinality.EXACTLY_ONE, "the XUpdate modifications to be processed")},
+			new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.EXACTLY_ONE, "the number of modifications caused by the XUpdate"));
 
 	public XMLDBXUpdate(XQueryContext context) {
 		super(context, signature);
@@ -70,6 +72,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 	 */
 	public Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering evalWithCollection().");
 		NodeValue data = (NodeValue) args[1].itemAt(0);
 		StringWriter writer = new StringWriter();
 		Properties properties = new Properties();
@@ -81,7 +84,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		}
 		catch(TransformerException e)
 		{
-			LOG.debug("Exception while serializing XUpdate document", e);
+			logger.debug("Exception while serializing XUpdate document", e);
 			throw new XPathException(this, "Exception while serializing XUpdate document: " + e.getMessage(), e);
 		}
 		String xupdate = writer.toString();
@@ -90,7 +93,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		try
 		{
 			XUpdateQueryService service = (XUpdateQueryService)c.getService("XUpdateQueryService", "1.0");
-			LOG.debug("Processing XUpdate request: " + xupdate);
+			logger.debug("Processing XUpdate request: " + xupdate);
 			modifications = service.update(xupdate);
 		}
 		catch(XMLDBException e)
@@ -99,6 +102,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		}
 		
 		context.getRootExpression().resetState(false);
+		logger.info("Exiting evalWithCollection().");
 		return new IntegerValue(modifications);
 	}
 }

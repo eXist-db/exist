@@ -48,7 +48,7 @@ public class FunXCollection extends ExtCollection {
             "found in sub-collections of the specified collections.",
             new SequenceType[] {
 		new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ONE_OR_MORE, "the set of collection paths to operate on")},
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+            new FunctionParameterSequenceType("collections", Type.NODE, Cardinality.ZERO_OR_MORE, "the collections from the specified collection paths"));
 				
 	/**
 	 * @param context

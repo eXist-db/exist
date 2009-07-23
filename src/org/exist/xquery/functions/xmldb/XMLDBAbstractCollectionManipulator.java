@@ -27,6 +27,7 @@ package org.exist.xquery.functions.xmldb;
 
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
@@ -44,6 +45,9 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(XMLDBAbstractCollectionManipulator.class);
+	
 	private final boolean errorIfAbsent;
 	
 	private int paramNumber = 0;  //collecton will be passed as parameter number 0 by default  
@@ -74,6 +78,8 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         
         if (0 == args.length)
             throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");
@@ -86,24 +92,26 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         if(Type.subTypeOf(item.getType(), Type.NODE))
         {
         	NodeValue node = (NodeValue)item;
-        	LOG.debug("Found node");
+        	logger.debug("Found node");
         	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE)
         	{
         		org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
-        		LOG.debug("Found node");
+        		logger.debug("Found node");
         		try
         		{
         			//TODO: use xmldbURI
 					collection = createLocalCollection(internalCol.getURI().toString());
-					LOG.debug("Loaded collection " + collection.getName());
+					logger.debug("Loaded collection " + collection.getName());
 				}
         		catch(XMLDBException e)
         		{
 					throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);
 				}
         	}
-        	else
+        	else {
+        		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         		return Sequence.EMPTY_SEQUENCE;
+        	}
         }
         
         if(collection == null)
@@ -173,6 +181,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         		}
             }
         }
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return s;
 	}
 

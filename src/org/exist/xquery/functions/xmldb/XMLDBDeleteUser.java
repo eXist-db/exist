@@ -26,6 +26,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
@@ -36,6 +37,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -46,13 +48,15 @@ import org.xmldb.api.base.XMLDBException;
  * @author wolf
  */
 public class XMLDBDeleteUser extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(XMLDBDeleteUser.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("delete-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
 			"Deletes an existing user in the database. Requires username. Does not delete the user's home collection.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the user account to delete"),
             },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
@@ -71,6 +75,8 @@ public class XMLDBDeleteUser extends BasicFunction {
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
+		
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
         String user = args[0].getStringValue();
         
@@ -87,6 +93,7 @@ public class XMLDBDeleteUser extends BasicFunction {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 		}
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
 	}
     

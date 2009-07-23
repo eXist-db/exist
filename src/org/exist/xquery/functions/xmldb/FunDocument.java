@@ -79,8 +79,8 @@ public class FunDocument extends Function {
 			new SequenceType[] {
 			    new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of paths or uris of the documents")
 			},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-			true);
+			new FunctionParameterSequenceType("documents", Type.NODE, Cardinality.ZERO_OR_MORE, "the documents"),
+			true, "See the standard doc() function");
 
 	private List cachedArgs = null;
 	private Sequence cached = null;

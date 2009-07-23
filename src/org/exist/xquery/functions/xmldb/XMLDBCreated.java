@@ -23,6 +23,7 @@ package org.exist.xquery.functions.xmldb;
 
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
@@ -31,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -43,27 +45,30 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
+	
+	protected static final Logger logger = Logger.getLogger(XMLDBCreated.class);
+	protected static final FunctionParameterSequenceType RESOURCE_PARAM = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.EXACTLY_ONE, "resource name");
+	protected static final FunctionParameterSequenceType COLLECTION_PARAM = new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "collection path");
+	protected static final FunctionParameterSequenceType COLLECTION_2_PARAM = new FunctionParameterSequenceType("collection", Type.ITEM, Cardinality.EXACTLY_ONE, "a simple collection path or an XMLDB URI");
+
+	protected static final FunctionParameterSequenceType DATETIME_RETURN = new FunctionParameterSequenceType("timestamp", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the timestamp");
+	protected static final FunctionParameterSequenceType OPTIONAL_DATETIME_RETURN = new FunctionParameterSequenceType("timestamp", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the timestamp");
 
 	public final static FunctionSignature createdSignatures[] = {
         new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the creation date of a resource $b in the collection specified by $a. " +
+			"Returns the creation date of a resource in the specified collection. " +
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
-			new SequenceType[] {
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+			new SequenceType[] { RESOURCE_PARAM, COLLECTION_PARAM },
+			DATETIME_RETURN
         ),
 		new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the creation date of a collection $a. The collection can be passed as a simple collection "
+			"Returns the creation date of a collection. The collection can be passed as a simple collection "
 			+ "path or an XMLDB URI.",
-			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+			new SequenceType[] { COLLECTION_PARAM },
+			DATETIME_RETURN
         )
     };
 	
@@ -73,11 +78,8 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 			"Returns the last-modification date of a resource, whose name is " +
 			"specified by $b, in the collection specified by $a. The collection " +
 			"can be passed as a simple collection path or an XMLDB URI.",
-			new SequenceType[] {
-                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
+			new SequenceType[] { COLLECTION_2_PARAM, RESOURCE_PARAM },
+			OPTIONAL_DATETIME_RETURN
         );
 	
 	public XMLDBCreated(XQueryContext context, FunctionSignature signature) {
@@ -89,6 +91,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		try {
 			Date date;
 			if(getSignature().getArgumentCount() == 1) {
@@ -97,6 +100,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 Resource resource = collection.getResource(args[1].getStringValue());
                 
                 if(resource==null){
+            		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                     return Sequence.EMPTY_SEQUENCE;
                 }
                 
@@ -105,6 +109,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 else
                 	date = ((EXistResource)resource).getCreationTime();
             }
+    		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			return new DateTimeValue(date);
 		} catch(XMLDBException e) {
 			throw new XPathException(this, "Failed to retrieve creation date: " + e.getMessage(), e);

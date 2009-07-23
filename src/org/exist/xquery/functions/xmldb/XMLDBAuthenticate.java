@@ -68,7 +68,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 				    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
 				    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password")
 				},
-				new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" )
 			);
 	
     public final static FunctionSignature loginSignatures[] = {
@@ -89,7 +89,7 @@ public class XMLDBAuthenticate extends BasicFunction {
                 new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "password")
 			},
-            new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" )
 		),
 	
 		new FunctionSignature(
@@ -109,7 +109,7 @@ public class XMLDBAuthenticate extends BasicFunction {
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password"),
 		new FunctionParameterSequenceType("create-session", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "wether to create the seession or not on successful authentication, default false()")
 			},
-            new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" )
 		)
 	};
     

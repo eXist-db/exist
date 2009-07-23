@@ -51,7 +51,7 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
 			      "with the same name as $collection-path, otherwise false().",
 			      new SequenceType[] {
 				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path")},
-			      new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+			      new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists"),
 			      true,
 			      "Use " + XMLDBModule.PREFIX + ":collection-available() instead."),
 	//Just to mimic doc-available()
@@ -61,7 +61,7 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
 			      "with the same name as $collection-path, otherwise false().",
 			      new SequenceType[] {
 				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path")},
-			      new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE))
+			      new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists and is available"))
     };
 		
 
