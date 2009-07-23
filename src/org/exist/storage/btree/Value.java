@@ -290,7 +290,7 @@ public class Value implements Comparable {
     }
     
     public String dump() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < len; i++) {
             buf.append(Integer.toString(data[pos + i] & 0xFF));
             buf.append(' ');

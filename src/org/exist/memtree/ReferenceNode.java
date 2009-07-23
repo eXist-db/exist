@@ -45,7 +45,7 @@ public class ReferenceNode extends NodeImpl {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer(); 
+    	StringBuilder result = new StringBuilder();
     	result.append("reference[ ");    
     	result.append(getReference().getNode().toString());   
     	result.append(" ]");  

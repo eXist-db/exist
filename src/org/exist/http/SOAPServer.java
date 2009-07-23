@@ -303,7 +303,7 @@ public class SOAPServer
 	private void processParameterValue(StringBuffer param,Node nParamSeqItem,String prefix,String postfix,int isAtomic) throws XPathException
 	{
 		boolean justOnce = false;
-		StringBuffer whiteContent = new StringBuffer();
+		StringBuilder whiteContent = new StringBuilder();
 		
 		try
 		{

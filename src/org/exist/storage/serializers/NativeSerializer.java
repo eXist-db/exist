@@ -292,12 +292,12 @@ public class NativeSerializer extends Serializer {
     private final String processAttribute(String data, NodeId nodeId, Match match) {
         if (match == null) return data;
         // prepare a regular expression to mark match-terms
-        StringBuffer expr = null;
+        StringBuilder expr = null;
         Match next = match;
         while (next != null) {
             if (next.getNodeId().equals(nodeId)) {
                 if (expr == null) {
-                    expr = new StringBuffer();
+                    expr = new StringBuilder();
                     expr.append("\\b(");
                 }
                 if (expr.length() > 5) expr.append('|');

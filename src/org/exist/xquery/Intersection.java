@@ -100,7 +100,7 @@ public class Intersection extends CombiningExpression {
     }
     
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(left.toString());
         result.append(" intersect ");
         result.append(right.toString());

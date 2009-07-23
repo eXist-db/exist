@@ -126,7 +126,7 @@ public class CommentImpl extends NodeImpl implements Comment {
 	}    
 
 	public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("in-memory#");
     	result.append("comment {");      	
     	result.append(getData());        

@@ -407,7 +407,7 @@ public class BFile extends BTree {
     public void printStatistics() {
         super.printStatistics();
         NumberFormat nf = NumberFormat.getPercentInstance();
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(getFile().getName()).append(" DATA ");        
         buf.append("Buffers occupation : ");
         if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
@@ -2625,7 +2625,7 @@ public class BFile extends BTree {
         }
         
         private String printContents() {
-        	StringBuffer buf = new StringBuffer();
+        	StringBuilder buf = new StringBuilder();
         	for(short i = 0; i < offsets.length; i++) {
                 if (offsets[i] > -1) {
                     buf.append('[').append(i).append(", ").append(offsets[i]);

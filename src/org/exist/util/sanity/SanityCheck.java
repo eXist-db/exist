@@ -77,7 +77,7 @@ public class SanityCheck {
         StackTraceElement elements[] = new Exception("Trace").getStackTrace();
         if (level > elements.length)
             level = elements.length;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 1; i < level; i++) {
             buf.append('\n');
             buf.append(elements[i].toString());

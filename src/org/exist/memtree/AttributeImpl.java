@@ -196,7 +196,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	}    
 	
 	public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("in-memory#");
     	result.append("attribute {");
     	result.append(getQName().getStringValue());

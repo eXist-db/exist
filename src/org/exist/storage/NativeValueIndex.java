@@ -757,7 +757,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     	// the same sequence. Otherwise, we have to scan the whole index.
         StringValue startTerm = null;
         if (expr.startsWith("^") && caseSensitiveQuery == caseSensitive) {
-        	StringBuffer term = new StringBuffer();
+        	StringBuilder term = new StringBuilder();
     		for (int j = 1; j < expr.length(); j++)
     			if (Character.isLetterOrDigit(expr.charAt(j)))
     				term.append(expr.charAt(j));

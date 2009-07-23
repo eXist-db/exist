@@ -418,7 +418,7 @@ public abstract class Function extends PathExpr {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append(getName());
     	result.append('(');
     	boolean moreThanOne = false;

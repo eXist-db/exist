@@ -497,14 +497,14 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
     private String getStringValueSlow() {
         int level = document.treeLevel[nodeNumber];
-        StringBuffer buf = null;
+        StringBuilder buf = null;
         int next = nodeNumber + 1;
         while (next < document.size && document.treeLevel[next] > level) {
             switch (document.nodeKind[next]) {
                 case Node.TEXT_NODE :
                 case Node.CDATA_SECTION_NODE :
                     if (buf == null)
-                        buf = new StringBuffer();
+                        buf = new StringBuilder();
                     buf.append(
                             document.characters,
                             document.alpha[next],
@@ -512,7 +512,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
                     break;
                 case REFERENCE_NODE :
                     if (buf == null)
-                        buf = new StringBuffer();
+                        buf = new StringBuilder();
                     buf.append(document.references[document.alpha[next]].getStringValue());
                     break;
             }

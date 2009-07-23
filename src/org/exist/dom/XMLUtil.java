@@ -59,7 +59,7 @@ public class XMLUtil {
 	}
 
 	public final static String encodeAttrMarkup(String str) {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		char ch;
 		for (int i = 0; i < str.length(); i++)
 			switch (ch = str.charAt(i)) {
@@ -96,7 +96,7 @@ public class XMLUtil {
 	}
 
 	public final static String decodeAttrMarkup(String str) {
-		StringBuffer out = new StringBuffer(str.length());
+		StringBuilder out = new StringBuilder(str.length());
 		char ch;
 		String ent;
 		int p;
@@ -126,7 +126,7 @@ public class XMLUtil {
 	public final static String getEncoding(String xmlDecl) {
 		if (xmlDecl == null)
 			return null;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		int p0 = xmlDecl.indexOf("encoding");
 		if (p0 == Constants.STRING_NOT_FOUND)
 			return null;

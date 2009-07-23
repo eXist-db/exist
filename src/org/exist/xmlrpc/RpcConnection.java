@@ -499,7 +499,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>String</code> value
      */
     protected String formatErrorMsg(String type, String message) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("<exist:result xmlns:exist=\""+ Namespaces.EXIST_NS + "\" ");
         buf.append("hitCount=\"0\">");
         buf.append('<');
@@ -2216,7 +2216,7 @@ public class RpcConnection implements RpcAPI {
     protected String printAll(DBBroker broker, Sequence resultSet, int howmany,
             int start, HashMap properties, long queryTime) throws Exception {
         if (resultSet.isEmpty()) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             String opt = (String) properties.get(OutputKeys.OMIT_XML_DECLARATION);
             if (opt == null || opt.equalsIgnoreCase("no"))
                 buf.append("<?xml version=\"1.0\"?>\n");

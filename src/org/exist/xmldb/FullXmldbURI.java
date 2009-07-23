@@ -58,7 +58,7 @@ public class FullXmldbURI extends XmldbURI {
 			}
 			//Eventually rewrite wrappedURI *without* user info
 			if (userInfo != null) {
-				StringBuffer recomputed = new StringBuffer();//XMLDB_URI_PREFIX);                
+				StringBuilder recomputed = new StringBuilder();//XMLDB_URI_PREFIX);
 				recomputed.append(wrappedURI.getScheme());
 				recomputed.append("://");
 				recomputed.append(wrappedURI.getHost());
@@ -123,7 +123,7 @@ public class FullXmldbURI extends XmldbURI {
 	 */
 	protected void recomputeURI() throws URISyntaxException {
 		URI oldWrappedURI = wrappedURI;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		if (getInstanceName() != null)	
 			buf.append(getInstanceName()).append("://");
         //No userInfo

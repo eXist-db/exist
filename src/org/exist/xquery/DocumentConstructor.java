@@ -87,7 +87,7 @@ public class DocumentConstructor extends NodeConstructor {
         try {        
 	        if(!contentSeq.isEmpty()) {
 		        
-		        StringBuffer buf = null;
+		        StringBuilder buf = null;
 		        SequenceIterator i = contentSeq.iterate();
 		        Item next = i.nextItem();
 		        while(next != null) {
@@ -101,7 +101,7 @@ public class DocumentConstructor extends NodeConstructor {
 					// following atomic values and seperate them by a space. 
 					if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
 					    if(buf == null)
-					        buf = new StringBuffer();
+					        buf = new StringBuilder();
 						else if (buf.length() > 0)
 							buf.append(' ');
 						buf.append(next.getStringValue());
@@ -157,7 +157,7 @@ public class DocumentConstructor extends NodeConstructor {
 						}
 					} else {					
 					    if(buf == null)
-					        buf = new StringBuffer();
+					        buf = new StringBuilder();
 						//else if (buf.length() > 0)
 						//	buf.append(' ');
 						buf.append(next.getStringValue());						
@@ -201,7 +201,7 @@ public class DocumentConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("document {");
     	//TODO : is this the required syntax ?
     	result.append(content.toString());       

@@ -554,7 +554,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // the same sequence. Otherwise, we have to scan the whole index.
         CharSequence start = "";
         if (matchAll) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             for (int i = 0; i < expr.length(); i++) {
                 if (Character.isLetterOrDigit(expr.charAt(i)))
                     buf.append(expr.charAt(i));

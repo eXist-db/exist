@@ -30,7 +30,7 @@ public class RegexTranslator {
     private final int length;
     private char curChar;
     private boolean eos = false;
-    private final StringBuffer result = new StringBuffer();
+    private final StringBuilder result = new StringBuilder();
 
     static private final String categories = "LMNPZSC";
     static private final CharClass[] categoryCharClasses = new CharClass[categories.length()];
@@ -532,7 +532,7 @@ public class RegexTranslator {
     }
 
     private String parseQuantExact() throws RegexSyntaxException {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         do {
             if ("0123456789".indexOf(curChar) == Constants.STRING_NOT_FOUND)
                 throw makeException("expected digit");
@@ -606,7 +606,7 @@ public class RegexTranslator {
             return containsNonBmp;
         }
 
-        final void output(StringBuffer buf) {
+        final void output(StringBuilder buf) {
             switch (containsNonBmp) {
             case NONE:
                 if (containsBmp == NONE)
@@ -695,7 +695,7 @@ public class RegexTranslator {
         }
 
         static String highSurrogateRanges(List ranges) {
-            StringBuffer highRanges = new StringBuffer();
+            StringBuilder highRanges = new StringBuilder();
             for (int i = 0, len = ranges.size(); i < len; i++) {
                 Range r = (Range)ranges.get(i);
                 char min1 = XMLChar.highSurrogate(r.getMin());
@@ -715,7 +715,7 @@ public class RegexTranslator {
         }
 
         static String lowSurrogateRanges(List ranges) {
-            StringBuffer lowRanges = new StringBuffer();
+            StringBuilder lowRanges = new StringBuilder();
             for (int i = 0, len = ranges.size(); i < len; i++) {
                 Range r = (Range)ranges.get(i);
                 char min1 = XMLChar.highSurrogate(r.getMin());
@@ -744,9 +744,9 @@ public class RegexTranslator {
             return lowRanges.toString();
         }
 
-        abstract void outputBmp(StringBuffer buf);
+        abstract void outputBmp(StringBuilder buf);
 
-        abstract void outputComplementBmp(StringBuffer buf);
+        abstract void outputComplementBmp(StringBuilder buf);
 
         int singleChar() {
             return -1;
@@ -787,14 +787,14 @@ public class RegexTranslator {
             super(containsBmp, containsNonBmp);
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             buf.append('[');
             inClassOutputBmp(buf);
             buf.append(']');
         }
 
         // must not call if containsBmp == ALL
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             if (getContainsBmp() == NONE)
                 buf.append("[\u0000-\uFFFF]");
             else {
@@ -804,7 +804,7 @@ public class RegexTranslator {
             }
         }
 
-        abstract void inClassOutputBmp(StringBuffer buf);
+        abstract void inClassOutputBmp(StringBuilder buf);
     }
 
     static class SingleChar extends SimpleCharClass {
@@ -819,11 +819,11 @@ public class RegexTranslator {
             return c;
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             inClassOutputBmp(buf);
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             if (isJavaMetaChar(c))
                 buf.append('\\');
             buf.append(c);
@@ -839,7 +839,7 @@ public class RegexTranslator {
             this.c = c;
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             throw new RuntimeException("BMP output botch");
         }
 
@@ -863,7 +863,7 @@ public class RegexTranslator {
             return instance;
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             throw new RuntimeException("BMP output botch");
         }
 
@@ -881,7 +881,7 @@ public class RegexTranslator {
             this.upper = upper;
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             if (lower >= NONBMP_MIN)
                 throw new RuntimeException("BMP output botch");
             if (isJavaMetaChar((char)lower))
@@ -910,17 +910,17 @@ public class RegexTranslator {
             this.name = name;
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             inClassOutputBmp(buf);
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             buf.append("\\p{");
             buf.append(name);
             buf.append('}');
         }
 
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             buf.append("\\P{");
             buf.append(name);
             buf.append('}');
@@ -940,7 +940,7 @@ public class RegexTranslator {
             this.cc2 = cc2;
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             buf.append('[');
             cc1.outputBmp(buf);
             buf.append("&&");
@@ -948,7 +948,7 @@ public class RegexTranslator {
             buf.append(']');
         }
 
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             buf.append('[');
             cc1.outputComplementBmp(buf);
             cc2.outputBmp(buf);
@@ -1015,7 +1015,7 @@ public class RegexTranslator {
             this.members = members;
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             buf.append('[');
             for (int i = 0, len = members.size(); i < len; i++) {
                 CharClass cc = (CharClass)members.get(i);
@@ -1029,7 +1029,7 @@ public class RegexTranslator {
             buf.append(']');
         }
 
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             boolean first = true;
             int len = members.size();
             for (int i = 0; i < len; i++) {
@@ -1090,15 +1090,15 @@ public class RegexTranslator {
             this.i = i;
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             inClassOutputBmp(buf);
         }
 
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             inClassOutputBmp(buf);
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             buf.append('\\');
             buf.append(i);
         }
@@ -1112,15 +1112,15 @@ public class RegexTranslator {
             this.ch = ch;
         }
         
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             inClassOutputBmp(buf);
         }
 
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             inClassOutputBmp(buf);
         }
 
-        void inClassOutputBmp(StringBuffer buf) {
+        void inClassOutputBmp(StringBuilder buf) {
             buf.append('\\');
             buf.append(ch);
         }
@@ -1206,11 +1206,11 @@ public class RegexTranslator {
             this.cc = cc;
         }
 
-        void outputBmp(StringBuffer buf) {
+        void outputBmp(StringBuilder buf) {
             cc.outputComplementBmp(buf);
         }
 
-        void outputComplementBmp(StringBuffer buf) {
+        void outputComplementBmp(StringBuilder buf) {
             cc.outputBmp(buf);
         }
 

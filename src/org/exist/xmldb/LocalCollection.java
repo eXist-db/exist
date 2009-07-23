@@ -825,7 +825,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     //You probably will have to call this methed from this cast :
     //((org.exist.xmldb.CollectionImpl)collection).getURI()
     public XmldbURI getURI() {
-        StringBuffer accessor = new StringBuffer(XmldbURI.XMLDB_URI_PREFIX);
+        StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
         //TODO : get the name from client
         accessor.append("exist");
         accessor.append("://");

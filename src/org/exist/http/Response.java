@@ -101,7 +101,7 @@ public class Response {
 	
 	public void write(DataOutputStream os) throws IOException {
 		byte[] contentData = content == null ? (binaryContent != null ? binaryContent : null) : content.getBytes(encoding);
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("HTTP/1.0 ");
 		buf.append(Integer.toString(code));
 		if(statusDesc != null) {

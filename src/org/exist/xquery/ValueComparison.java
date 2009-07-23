@@ -187,7 +187,7 @@ public class ValueComparison extends GeneralComparison {
     }
     
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(getLeft().toString());
         result.append(" ").append(Constants.VOPS[relation]).append(" ");
         result.append(getRight().toString());

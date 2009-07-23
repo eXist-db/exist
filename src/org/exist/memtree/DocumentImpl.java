@@ -1353,7 +1353,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 	}    
 
 	public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("in-memory#");
     	result.append("document {");
         if (size != 1) {

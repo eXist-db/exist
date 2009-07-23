@@ -99,7 +99,7 @@ public class Atomize extends AbstractExpression {
     }
     
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("atomize[");
         result.append(expression.toString());
         result.append("]");

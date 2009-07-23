@@ -84,7 +84,7 @@ public class TextConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("text {");
     	result.append(text.toString());
         result.append("}");

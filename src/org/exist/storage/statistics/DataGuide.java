@@ -91,9 +91,9 @@ public class DataGuide {
 
     public String toString() {
         List paths = new ArrayList();
-        root.dump(new StringBuffer(), paths);
+        root.dump(new StringBuilder(), paths);
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < paths.size(); i++) {
             buf.append(paths.get(i));
             buf.append('\n');

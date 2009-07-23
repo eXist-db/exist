@@ -150,7 +150,7 @@ public class AnalyzeContextInfo {
     }
     
     public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("ID: ").append(contextId);
 		buf.append(" Type: ").append(Type.getTypeName(staticType)).append(" Flags: ");
 		if ((flags & Expression.SINGLE_STEP_EXECUTION) > 0)

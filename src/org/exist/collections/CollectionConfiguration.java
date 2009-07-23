@@ -398,7 +398,7 @@ public class CollectionConfiguration {
     }
 	
 	public String toString() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (indexSpec != null)
 			result.append(indexSpec.toString()).append('\n');		
 		for (int i = 0 ; i < triggers.length; i++) {

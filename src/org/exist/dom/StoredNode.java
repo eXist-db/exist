@@ -434,7 +434,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     }
 
     public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append(nodeId.toString());
 		buf.append('\t');
 		buf.append(getQName());

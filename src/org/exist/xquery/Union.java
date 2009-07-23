@@ -92,7 +92,7 @@ public class Union extends CombiningExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append(left.toString());
     	result.append(" union ");
     	result.append(right.toString());

@@ -904,7 +904,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final int collectionId = document.getCollection().getId();
         final Value ref = new ElementValue(collectionId);
         final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-        final StringBuffer msg = new StringBuffer();    
+        final StringBuilder msg = new StringBuilder();
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);

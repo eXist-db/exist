@@ -668,7 +668,7 @@ public class RESTServer {
 								&& child.getNamespaceURI().equals(
 										Namespaces.EXIST_NS)) {
 							if (child.getLocalName().equals("text")) {
-								StringBuffer buf = new StringBuffer();
+								StringBuilder buf = new StringBuilder();
 								Node next = child.getFirstChild();
 								while (next != null) {
 									if (next.getNodeType() == Node.TEXT_NODE

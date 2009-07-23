@@ -65,7 +65,7 @@ public class Profiler {
     
     private Stack stack = new Stack();
     
-    private final StringBuffer buf = new StringBuffer(64);
+    private final StringBuilder buf = new StringBuilder(64);
     
     private boolean enabled = false;
     
@@ -378,7 +378,7 @@ public class Profiler {
     //TODO : find a way to preview "abstract" sequences
     // never used locally
     private String sequencePreview(Sequence sequence) {
-        StringBuffer truncation = new StringBuffer();         
+        StringBuilder truncation = new StringBuilder();
         if (sequence.isEmpty())
             truncation.append(sequence.toString());
         else if (sequence.hasOne()) {

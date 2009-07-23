@@ -154,7 +154,7 @@ public class Variable {
     }
     
 	public String toString() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append("$" + qname.getStringValue());
 		result.append(" as ");
 		result.append(Type.getTypeName(getType()));		

@@ -475,7 +475,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     }
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("AVLTree#").append(super.toString());
         return result.toString();
     }

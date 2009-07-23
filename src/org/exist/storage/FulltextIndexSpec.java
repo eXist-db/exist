@@ -297,7 +297,7 @@ public class FulltextIndexSpec {
     }
       
       public String toString() {
-    	  StringBuffer result = new StringBuffer("Full-text index\n");
+    	  StringBuilder result = new StringBuilder("Full-text index\n");
     	  result.append("\tincludeByDefault : ").append(includeByDefault).append('\n');
     	  result.append("\tincludeAttributes : ").append(includeAttributes).append('\n');
     	  result.append("\tincludeAlphaNum : ").append(includeAlphaNum).append('\n');

@@ -78,7 +78,7 @@ public class EnclosedExpr extends PathExpr {
 		try {
 			SequenceIterator i = result.iterate();
 			Item next = i.nextItem();			
-			StringBuffer buf = null;
+			StringBuilder buf = null;
             boolean allowAttribs = true;
             while (next != null) {
 			    context.proceed(this, builder);
@@ -86,7 +86,7 @@ public class EnclosedExpr extends PathExpr {
 				// following atomic values and seperate them by a space. 
 				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
 				    if(buf == null)
-				        buf = new StringBuffer();
+				        buf = new StringBuilder();
 					else if (buf.length() > 0)
 						buf.append(' ');
 					buf.append(next.getStringValue());
@@ -136,7 +136,7 @@ public class EnclosedExpr extends PathExpr {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("{");    	
     	result.append(super.toString());        
     	result.append("}");

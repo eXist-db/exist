@@ -60,7 +60,7 @@ public class Dependency {
             return "UNKNOWN";
         if (dependencies == NO_DEPENDENCY) 
             return "NO_DEPENDENCY";
-		StringBuffer result = new StringBuffer();	
+		StringBuilder result = new StringBuilder();
         result.append("[");        
         if ((dependencies & CONTEXT_SET) != 0) 
             result.append("CONTEXT_SET | ");

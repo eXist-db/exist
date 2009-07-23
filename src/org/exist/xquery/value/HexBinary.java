@@ -81,7 +81,7 @@ public class HexBinary extends BinaryValue {
 
     public String getStringValue() throws XPathException {
         String digits = "0123456789ABCDEF";
-        StringBuffer sb = new StringBuffer(data.length * 2);
+        StringBuilder sb = new StringBuilder(data.length * 2);
         for (int i=0; i<data.length; i++) {
             sb.append(digits.charAt((data[i]>>4)&0xf));
             sb.append(digits.charAt(data[i]&0xf));

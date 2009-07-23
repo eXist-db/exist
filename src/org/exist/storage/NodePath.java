@@ -149,7 +149,7 @@ public class NodePath {
     }
     
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(int i = 0; i < pos; i++) {
         	buf.append("/");
             if (components[i].getNameType() == ElementValue.ATTRIBUTE)

@@ -65,7 +65,7 @@ public class BackupDirectory {
         int counter = 0;
         File file;
         do {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append(incremental ? PREFIX_INC_BACKUP_FILE : PREFIX_FULL_BACKUP_FILE);
             buf.append(DATE_FORMAT.format(new Date()));
             if (counter++ > 0)

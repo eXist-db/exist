@@ -667,7 +667,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @return a <code>String</code> value
      */
     public String debugParts() {
-    	StringBuffer buf = new StringBuffer();
+    	StringBuilder buf = new StringBuilder();
     	for (int i = 0; i < partCount; i++) {
     		buf.append(documentIds[i]);
     		buf.append(' ');
@@ -937,7 +937,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @return a <code>String</code> value
      */
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("ExtArrayTree#").append(super.toString());
         return result.toString();
     }

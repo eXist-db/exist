@@ -138,7 +138,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
         sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
         sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
@@ -148,7 +148,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
     }
 
     private String getXisDetails(XMLInputSource xis){
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xis.getPublicId()).append("' ");
         sb.append("SystemId='").append(xis.getSystemId()).append("' ");
         sb.append("BaseSystemId='").append(xis.getBaseSystemId()).append("' ");

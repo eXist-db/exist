@@ -116,7 +116,7 @@ public class XQExpression implements javax.xml.xquery.XQExpression {
 	{
 		try
 		{
-			StringBuffer bufQuery = new StringBuffer();
+			StringBuilder bufQuery = new StringBuilder();
 			
 			while(query.ready())
 			{	

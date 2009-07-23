@@ -154,7 +154,7 @@ public abstract class Step extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
         if ( axis != Constants.UNKNOWN_AXIS)
         	result.append( Constants.AXISSPECIFIERS[axis] );
         result.append( "::" );

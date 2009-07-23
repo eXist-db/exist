@@ -2581,7 +2581,7 @@ public class NativeBroker extends DBBroker {
             	StoredNode node = (StoredNode) nodes.item(i);
                 Iterator iterator = getNodeIterator(node);
                 iterator.next();
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
 //                Pass buf to the following method to get a dump of all node ids in the document
                 if (!checkNodeTree(iterator, node, buf)) {
                     LOG.debug("node tree: " + buf.toString());
@@ -2935,7 +2935,7 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.index();
     }
     
-    private boolean checkNodeTree(Iterator iterator, StoredNode node, StringBuffer buf) {
+    private boolean checkNodeTree(Iterator iterator, StoredNode node, StringBuilder buf) {
         if (buf != null) {
             if (buf.length() > 0)
                 buf.append(", ");

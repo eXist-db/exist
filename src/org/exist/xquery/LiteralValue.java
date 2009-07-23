@@ -82,7 +82,7 @@ public class LiteralValue extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
         if(Type.subTypeOf(value.getType(), Type.STRING)) {
         	result.append("\"");
         	result.append(value.toString());

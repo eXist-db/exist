@@ -104,7 +104,7 @@ public class XPathException extends Exception {
 	 * @see java.lang.Throwable#getMessage()
 	 */
 	public String getMessage() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 		if(message == null)
 			message = "";
 		buf.append(message);
@@ -137,7 +137,7 @@ public class XPathException extends Exception {
     }
     
     public String getMessageAsHTML() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         if(message == null)
             message = "";
 		message = message.replaceAll("\r?\n", "<br/>");
@@ -177,7 +177,7 @@ public class XPathException extends Exception {
         }
         
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append(function).append(" [");
             buf.append(line).append(":");
             buf.append(column).append(']');

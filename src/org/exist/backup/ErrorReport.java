@@ -80,7 +80,7 @@ public class ErrorReport {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(ERRCODES[code]).append(":\n");
         if (message != null)
             sb.append(message);

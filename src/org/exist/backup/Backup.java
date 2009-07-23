@@ -96,7 +96,7 @@ public class Backup {
 	}
 
 	public static String encode(String enco) {
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		char t;
 		for (int y=0; y < enco.length(); y++) {
 			t= enco.charAt(y);
@@ -127,7 +127,7 @@ public class Backup {
 	
 	
 	public static String decode(String enco) {
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		String temp="";
 		char t;
 		for (int y=0; y < enco.length(); y++) {

@@ -226,7 +226,7 @@ public abstract class Match implements Comparable {
 	}
 
     public String toString() {
-        StringBuffer buf = new StringBuffer(matchTerm);
+        StringBuilder buf = new StringBuilder(matchTerm);
         for (int i = 0; i < currentOffset; i++) {
             buf.append(" [");
             buf.append(offsets[i]).append(':').append(lengths[i]);

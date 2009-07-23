@@ -661,7 +661,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     
     public String toString() {
 		try {
-			StringBuffer result = new StringBuffer();
+			StringBuilder result = new StringBuilder();
 			result.append("(");
 			boolean moreThanOne = false;
 			for (SequenceIterator i = iterate(); i.hasNext(); ) {

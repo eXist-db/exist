@@ -60,7 +60,7 @@ public class ContextItem {
     }
     
     public String toString() {
-        StringBuffer buf = new StringBuffer(); 
+        StringBuilder buf = new StringBuilder();
         buf.append(node);        
         if (nextDirect != null)
             buf.append("/" + nextDirect);

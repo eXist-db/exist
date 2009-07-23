@@ -516,7 +516,7 @@ public class DLNBase {
     }
     
     public String debug() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(toString());
         buf.append(" = ");
         buf.append(toBitString());
@@ -527,7 +527,7 @@ public class DLNBase {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int offset = 0;
         while (offset <= bitIndex) {
             if (offset > 0) { 
@@ -544,7 +544,7 @@ public class DLNBase {
     }
 
     public String toBitString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int len = bits.length;
         for (int i = 0; i < len; i++) {
             buf.append(toBitString(bits[i]));

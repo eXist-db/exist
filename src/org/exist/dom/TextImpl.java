@@ -144,7 +144,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     public String toString( boolean top ) {
         if ( top ) {
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
             result.append( "<exist:text " );
             result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
             result.append( "exist:id=\"" );

@@ -266,7 +266,7 @@ public class FileLock {
     }
 
     protected String message(String message, Exception e) {
-	StringBuffer str = new StringBuffer(message);
+	StringBuilder str = new StringBuilder(message);
 	str.append(' ').append(lockFile.getAbsolutePath());
 	if (e != null)
 	    str.append(": ").append(e.getMessage());
