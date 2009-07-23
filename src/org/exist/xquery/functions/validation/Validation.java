@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,27 +17,21 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
+ * $Id$
  */
 package org.exist.xquery.functions.validation;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
 
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
-import org.exist.validation.ValidationReportItem;
 import org.exist.validation.Validator;
-import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -49,7 +43,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *   xQuery function for validation of XML instance documents

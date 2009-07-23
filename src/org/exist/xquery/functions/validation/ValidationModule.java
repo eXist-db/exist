@@ -19,6 +19,7 @@
  *
  *  $Id$
  */
+
 package org.exist.xquery.functions.validation;
 
 import org.exist.dom.QName;
