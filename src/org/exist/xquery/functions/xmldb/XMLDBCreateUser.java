@@ -26,6 +26,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
@@ -37,6 +38,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -47,17 +49,18 @@ import org.xmldb.api.base.XMLDBException;
  * @author wolf
  */
 public class XMLDBCreateUser extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new user in the database. Arguments are: username, password, group memberships and " +
-			"home collection.",
+			"Create a new user in the database.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                    new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "group memberships"),
+					new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "the home collection for the user")
             },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
@@ -76,12 +79,14 @@ public class XMLDBCreateUser extends BasicFunction {
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
+		
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
         String user = args[0].getStringValue();
         String pass = args[1].getStringValue();
         User userObj = new User(user, pass);
         
-        LOG.info("Attempting to create user "+user);
+        logger.info("Attempting to create user "+user);
         
         // changed by wolf: the first group is always the primary group, so we don't need
         // an additional argument
@@ -109,6 +114,7 @@ public class XMLDBCreateUser extends BasicFunction {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 		}
+		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
 	}
 }

@@ -55,7 +55,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			new SequenceType[]{
 			    new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection uri"),
 			    new FunctionParameterSequenceType("new-collection", Type.STRING, Cardinality.EXACTLY_ONE, "the new collection to create")},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection"));
 
     /**
      * @param context

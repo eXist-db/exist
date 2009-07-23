@@ -23,11 +23,13 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -39,15 +41,17 @@ import org.xmldb.api.base.XMLDBException;
 
 
 public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
+	
+	protected static final Logger logger = Logger.getLogger(XMLDBGetChildResources.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-child-resources", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns all child resources in the specified collection.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+					new FunctionParameterSequenceType("collection", Type.ITEM, Cardinality.EXACTLY_ONE, "the specified collection")
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new FunctionParameterSequenceType("resources", Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of resource names"));
 	
 	public XMLDBGetChildResources(XQueryContext context) {
 		super(context, signature);
@@ -56,12 +60,14 @@ public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
 	//TODO decode names?
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		ValueSequence result = new ValueSequence();
 		try {
 			String[] collections = collection.listResources();
 			for(int i = 0; i < collections.length; i++) {
 				result.add(new StringValue(collections[i]));
 			}
+			logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			return result;
 		} catch (XMLDBException e) {
 			throw new XPathException(this, "Failed to retrieve child resources", e);
