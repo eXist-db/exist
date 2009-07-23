@@ -35,7 +35,7 @@ public class ApacheXmlComponentsTest  {
     
     @Test
     public void parserVersion() {
-        StringBuffer xmlLibMessage = new StringBuffer();
+        StringBuilder xmlLibMessage = new StringBuilder();
         
         boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
         
@@ -44,7 +44,7 @@ public class ApacheXmlComponentsTest  {
 
     @Test
     public void transformerVersion() {
-        StringBuffer xmlLibMessage = new StringBuffer();
+        StringBuilder xmlLibMessage = new StringBuilder();
         
         boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
         
