@@ -21,28 +21,31 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Properties;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -52,32 +55,34 @@ import java.util.Properties;
  */
 public class POSTFunction extends BaseHTTPClientFunction
 {
-    public final static FunctionSignature signatures[] = {
+	protected static final Logger logger = Logger.getLogger(POSTFunction.class);
+
+	public final static FunctionSignature signatures[] = {
         new FunctionSignature(
 	        new QName( "post", NAMESPACE_URI, PREFIX ),
-	        "Performs a HTTP POST request. $a is the URL, $b is the POST payload/content. If $b is an XML Node it will be serialized, any other type will be atomized into a string. $c determines if cookies persist for the query lifetime. $d defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
+	        "Performs a HTTP POST request."
 	        + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>"
 	        + " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
 	        new SequenceType[] {
-	            new SequenceType( Type.ANY_URI, Cardinality.EXACTLY_ONE ),
-	            new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
-	            new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ),
-	            new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
+	        	URI_PARAM,
+	            POST_CONTENT_PARAM,
+	            PERSIST_PARAM,
+	            REQUEST_HEADER_PARAM
 	            },
-	        new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+	            XML_BODY_RETURN 
         ),
         new FunctionSignature(
 	        new QName( "post-form", NAMESPACE_URI, PREFIX ),
-	        "Performs a HTTP POST request for a form. $a is the URL, $b is the form data in the format <httpclient:fields><httpclient:field name=\"\" value=\"\"/>...</httpclient:fields>. If the field values in $b will be suitably URLEncoded and sent with the mime type application/x-www-form-urlencoded. $c determines if cookies persist for the query lifetime. $d defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
+	        "Performs a HTTP POST request for a form."
 	        + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>"
 	        + " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
 	        new SequenceType[] {
-	            new SequenceType( Type.ANY_URI, Cardinality.EXACTLY_ONE),
-	            new SequenceType( Type.ELEMENT, Cardinality.EXACTLY_ONE ),
-	            new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ),
-	            new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
+	        	URI_PARAM,
+	            POST_FORM_PARAM,
+	            PERSIST_PARAM,
+	            REQUEST_HEADER_PARAM
 	            },
-	        new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE )
+	            XML_BODY_RETURN 
         )
     };
     
@@ -90,11 +95,13 @@ public class POSTFunction extends BaseHTTPClientFunction
     
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+		logger.info("Entering " + PREFIX + ":" + getName().getLocalName());
         Sequence response = null;
         
         // must be a URL
         if(args[0].isEmpty())
         {
+    		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
             return(Sequence.EMPTY_SEQUENCE);
         }
         
@@ -172,6 +179,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         }
         else
         {
+    		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
         	return(Sequence.EMPTY_SEQUENCE);
         }
         
@@ -197,6 +205,7 @@ public class POSTFunction extends BaseHTTPClientFunction
             post.releaseConnection();
         }
         
+		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
         return(response);
     }
     

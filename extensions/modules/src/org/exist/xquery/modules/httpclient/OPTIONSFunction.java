@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.httpclient;
 
 import org.apache.commons.httpclient.methods.OptionsMethod;
+import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -43,17 +44,15 @@ import java.io.IOException;
  */
 public class OPTIONSFunction extends BaseHTTPClientFunction {
     
-    public final static FunctionSignature signature =
+	protected static final Logger logger = Logger.getLogger(OPTIONSFunction.class);
+
+	public final static FunctionSignature signature =
         new FunctionSignature(
         new QName( "options", NAMESPACE_URI, PREFIX ),
-        "Performs a HTTP OPTIONS request. $a is the URL, $b determines if cookies persist for the query lifetime. $c defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
+        "Performs a HTTP OPTIONS request."
         + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response  xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers></httpclient:response>",
-        new SequenceType[] {
-            new SequenceType( Type.ANY_URI, Cardinality.EXACTLY_ONE ),
-            new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ),
-            new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
-            },
-        new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ) 
+        new SequenceType[] { URI_PARAM, PERSIST_PARAM, REQUEST_HEADER_PARAM },
+        XML_BODY_RETURN 
         );
     
     
@@ -65,10 +64,12 @@ public class OPTIONSFunction extends BaseHTTPClientFunction {
     
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
+		logger.info("Entering " + PREFIX + ":" + getName().getLocalName());
         Sequence    response = null;
         
         // must be a URL
         if( args[0].isEmpty() ) {
+    		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
             return( Sequence.EMPTY_SEQUENCE );
         }
         
@@ -96,6 +97,7 @@ public class OPTIONSFunction extends BaseHTTPClientFunction {
             options.releaseConnection();
         }
         
+		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
         return( response );
     }
 }
