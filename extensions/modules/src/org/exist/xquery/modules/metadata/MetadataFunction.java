@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.modules.metadata;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -35,6 +36,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -45,6 +47,8 @@ import java.util.Iterator;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class MetadataFunction extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(MetadataFunction.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -52,7 +56,8 @@ public class MetadataFunction extends BasicFunction {
 			"Retrieves metadata for the dynamic context." +
 			"If the context item is undefined an error is raised.",
 			null,
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the metadata documents"),
+			"an orphaned experiment.  This will be removed in the next release after 1.4.");
 
 	public MetadataFunction(XQueryContext context) {
 		super(context, signature);
@@ -60,6 +65,8 @@ public class MetadataFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + MetadataModule.PREFIX + ":" + getName().getLocalName());
+		
 		//must be a context to act on
 		if(contextSequence == null)
 		{
@@ -117,6 +124,7 @@ public class MetadataFunction extends BasicFunction {
 			}
 		}
 		
+		logger.info("Exiting " + MetadataModule.PREFIX + ":" + getName().getLocalName());
 		return metadataDocuments;
 	}
 }
