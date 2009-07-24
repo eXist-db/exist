@@ -5,6 +5,9 @@
 	<property name="dist" location="dist"/>
 	<loadfile property="release" srcFile="VERSION"/>
 	<property name="release-dest" location=".."/>
+    
+    <property name="top.dir" value="../../.."/>
+    <property file="${top.dir}/build.properties"/>
 
 
     <!-- ===================================================== -->
@@ -61,6 +64,8 @@
     <target name="clean">
         <delete dir="dist" quiet="true" failonerror="false"/>
         <mkdir dir="dist"/>
+        
+        <delete file="${top.dir}/${lib.extensions}/xprocxq.jar" failonerror="false"/>
     </target>
 
 </project>
