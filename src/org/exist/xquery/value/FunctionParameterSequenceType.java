@@ -9,10 +9,9 @@ package org.exist.xquery.value;
  * @version 1.3
  *
  */
-public class FunctionParameterSequenceType extends SequenceType {
+public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
 	
 	private String attributeName = null;
-	private String description = null;
 
 	/**
 	 * @param attributeName	The name of the parameter in the <strong>FunctionSignature</strong>.
@@ -22,9 +21,8 @@ public class FunctionParameterSequenceType extends SequenceType {
 	 * @see FunctionSignature, Type, Cardinality
 	 */
 	public FunctionParameterSequenceType(String attributeName, int primaryType, int cardinality, String description) {
-		super(primaryType, cardinality);
+		super(primaryType, cardinality, description);
 		this.attributeName = attributeName;
-		this.description = description;
 	}
 
 	/**
@@ -40,20 +38,5 @@ public class FunctionParameterSequenceType extends SequenceType {
 	public void setAttributeName(String attributeName) {
 		this.attributeName = attributeName;
 	}
-
-	/**
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * @param description the description to set
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	
 }
