@@ -324,7 +324,7 @@ public class EXistServlet extends HttpServlet {
 			}
 		} catch (BadRequestException e) {
             if (response.isCommitted())
-                throw new ServletException(e.getMessage(), e);
+                throw new ServletException(e.getMessage());
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
 		} catch (PermissionDeniedException e) {
@@ -339,12 +339,12 @@ public class EXistServlet extends HttpServlet {
 
 		} catch (NotFoundException e) {
             if (response.isCommitted())
-                throw new ServletException(e.getMessage(), e);
+                throw new ServletException(e.getMessage());
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
 		} catch (EXistException e) {
             if (response.isCommitted())
-                throw new ServletException(e.getMessage(), e);
+                throw new ServletException(e.getMessage(),e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     e.getMessage());
 
