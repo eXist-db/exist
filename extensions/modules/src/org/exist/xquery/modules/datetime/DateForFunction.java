@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.datetime;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -29,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -39,53 +41,57 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
- * @version 1.1
+ * @author Adam Retter <adam.retter@devon.gov.uk>
  */
-public class DateForFunction extends BasicFunction
-{
-    public final static FunctionSignature signature = new FunctionSignature(
-        new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-        "Returns the date for a given set of parameters. $c The week in the month of interest.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "The year of the date."),
-            new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "The month of the date, where 1 = January and 12 = December."),
-            new FunctionParameterSequenceType("week-in-month", Type.INTEGER, Cardinality.EXACTLY_ONE, "The week in the month of the date, where 1 = first week and 4 or 5 = last week."),
-            new FunctionParameterSequenceType("day-in-week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day in the week of the month of the date, where 1 = Sunday and 7 = Saturday.")
-        },
-        new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE)
-    );
+public class DateForFunction extends BasicFunction {
 
-    public DateForFunction(XQueryContext context)
-    {
-        super(context, signature);
-    }
+	protected static final Logger logger = Logger.getLogger(DateForFunction.class);
 
-    @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-    {
-        int yearOfInterest = ((IntegerValue)args[0].itemAt(0)).getInt();
-        int monthOfInterest = ((IntegerValue)args[1].itemAt(0)).getInt();
-        int weekInMonth = ((IntegerValue)args[2].itemAt(0)).getInt();
-        int dayInWeek = ((IntegerValue)args[3].itemAt(0)).getInt();
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
+			"Returns the date for a given set of parameters.",
+			new SequenceType[] {
+				new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "the year of interest"),
+				new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "the month of interest (1 = January, 12 = December)"),
+				new FunctionParameterSequenceType("week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The week in the month of interest (1 = first week, 4 or 5 = last week)"),
+				new FunctionParameterSequenceType("weekday", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day in the week of interest (1 = Sunday, 7 = Saturday)"),
+			},
+			new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "The date generated from the parameters."));
 
-        //check bounds of supplied parameters
-        if(monthOfInterest < 1 || monthOfInterest > 12)
-            throw new XPathException(this, "The month of interest must be between 1 and 12");
+	public DateForFunction(XQueryContext context)
+	{
+		super(context, signature);
+	}
 
-        if(weekInMonth < 1 || weekInMonth > 5)
-            throw new XPathException(this, "The week in the month of interest must be between 1 and 5");
+	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+	{	
+        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
-        if(dayInWeek < 1 || dayInWeek > 7)
-            throw new XPathException(this, "The day in the week of interest must be between 1 and 7");
+		int yearOfInterest = ((IntegerValue)args[0].itemAt(0)).getInt();
+		int monthOfInterest = ((IntegerValue)args[1].itemAt(0)).getInt();
+		int weekInMonth = ((IntegerValue)args[2].itemAt(0)).getInt();
+		int dayInWeek = ((IntegerValue)args[3].itemAt(0)).getInt();
+		
+		//check bounds of supplied parameters
+		if(monthOfInterest < 1 || monthOfInterest > 12)
+			throw new XPathException(this, "The month of interest must be between 1 and 12");
+		
+		if(weekInMonth < 1 || weekInMonth > 5)
+			throw new XPathException(this, "The week in the month of interest must be between 1 and 5");
+		
+		if(dayInWeek < 1 || dayInWeek > 7)
+			throw new XPathException(this, "The day in the week of interest must be between 1 and 7");
+		
+		//create date
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.set(Calendar.YEAR, yearOfInterest);
+		cal.set(Calendar.MONTH, monthOfInterest - 1);
+		cal.set(Calendar.WEEK_OF_MONTH, weekInMonth);
+		cal.set(Calendar.DAY_OF_WEEK, dayInWeek);
+		
+        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
-        //create date
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.set(Calendar.YEAR, yearOfInterest);
-        cal.set(Calendar.MONTH, monthOfInterest - 1);
-        cal.set(Calendar.WEEK_OF_MONTH, weekInMonth);
-        cal.set(Calendar.DAY_OF_WEEK, dayInWeek);
-
-        return new DateValue(TimeUtils.getInstance().newXMLGregorianCalendar(cal));
-    }
+		return new DateValue(TimeUtils.getInstance().newXMLGregorianCalendar(cal));
+	}
 }

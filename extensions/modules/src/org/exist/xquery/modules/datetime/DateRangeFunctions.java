@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.datetime;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,6 +31,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AbstractDateTimeValue;
 import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -43,7 +45,9 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class DateRangeFunctions extends BasicFunction {
 
-    public final static FunctionSignature signature[] = {
+	protected static final Logger logger = Logger.getLogger(DateRangeFunctions.class);
+
+	public final static FunctionSignature signature[] = {
         new FunctionSignature(
             new QName("datetime-range", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
             "Generates a range of xs:dateTime values, incremented cumulatively by a fixed duration from a start xs:dateTime",
@@ -52,7 +56,7 @@ public class DateRangeFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
-            new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_MORE, "The range(s)")
         ),
 
         new FunctionSignature(
@@ -63,7 +67,7 @@ public class DateRangeFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
-            new SequenceType(Type.DATE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_MORE, "The range(s)")
         ),
 
         new FunctionSignature(
@@ -74,7 +78,7 @@ public class DateRangeFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
-            new SequenceType(Type.TIME, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_MORE, "The range(s)")
         )
     };
 
@@ -87,6 +91,8 @@ public class DateRangeFunctions extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
+
         Item item = (Item)args[0].itemAt(0);
 
         if(!(item instanceof AbstractDateTimeValue))
@@ -106,6 +112,8 @@ public class DateRangeFunctions extends BasicFunction {
           result.add(d1);
           d1 = (AbstractDateTimeValue)d1.plus(diff);
         }
+
+        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
         return result;
     }

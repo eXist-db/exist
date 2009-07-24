@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.datetime;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -29,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -43,6 +45,7 @@ import java.util.GregorianCalendar;
  */
 public class DaysInMonthFunction extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(DaysInMonthFunction.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("days-in-month", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
@@ -50,7 +53,7 @@ public class DaysInMonthFunction extends BasicFunction
         new SequenceType[] {
             new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date for extracting the number of days in the month component.")
         },
-        new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of days in the given month.")
     );
 
     public DaysInMonthFunction(XQueryContext context)
@@ -61,9 +64,13 @@ public class DaysInMonthFunction extends BasicFunction
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
+
         DateValue d = (DateValue)args[0].itemAt(0);
         GregorianCalendar cal = d.calendar.toGregorianCalendar();
         int days = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
+
         return new IntegerValue(days);
     }
 }

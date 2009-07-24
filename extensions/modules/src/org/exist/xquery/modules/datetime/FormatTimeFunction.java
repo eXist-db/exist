@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.datetime;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -28,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.TimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,15 +44,17 @@ import java.util.GregorianCalendar;
  */
 public class FormatTimeFunction extends BasicFunction
 {
-    public final static FunctionSignature signature = new FunctionSignature(
-        new QName("format-time", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-        "Formats a time using a pattern.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("time", Type.TIME, Cardinality.EXACTLY_ONE, "The time to format."),
-            new FunctionParameterSequenceType("format-pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern to use for formatting the time. See java.util.SimpleDateFormat for pattern details.")
-        },
-        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-    );
+	protected static final Logger logger = Logger.getLogger(FormatTimeFunction.class);
+
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+                new QName("format-time", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
+                "Returns a xs:string of the xs:time formatted according to the template specification as in java.text.SimpleDateFormat.",
+                new SequenceType[] { 
+                        new FunctionParameterSequenceType("time", Type.TIME, Cardinality.EXACTLY_ONE, "The time to to be formatted."),
+                        new FunctionParameterSequenceType("simple-date-format", Type.STRING, Cardinality.EXACTLY_ONE, "Format string according to the Java java.text.SimpleDateFormat class")
+                },      
+                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "The formatted time string"));
 
 
     public FormatTimeFunction(XQueryContext context)
@@ -61,6 +65,8 @@ public class FormatTimeFunction extends BasicFunction
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
+
         TimeValue t = (TimeValue)args[0].itemAt(0);
         String timeFormat = args[1].itemAt(0).toString();
 
@@ -68,6 +74,8 @@ public class FormatTimeFunction extends BasicFunction
 
         GregorianCalendar cal = t.calendar.toGregorianCalendar();
         String formattedDate = sdf.format(cal.getTime());
+
+        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
         return new StringValue(formattedDate);
     }
