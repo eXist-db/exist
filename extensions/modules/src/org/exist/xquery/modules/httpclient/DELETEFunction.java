@@ -21,19 +21,17 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import org.apache.commons.httpclient.methods.DeleteMethod;
+import java.io.IOException;
 
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import java.io.IOException;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
@@ -43,18 +41,16 @@ import java.io.IOException;
  */
 public class DELETEFunction extends BaseHTTPClientFunction {
     
-    public final static FunctionSignature signature =
+	protected static final Logger logger = Logger.getLogger(DELETEFunction.class);
+
+	public final static FunctionSignature signature =
         new FunctionSignature(
         new QName( "delete", NAMESPACE_URI, PREFIX ),
-        "Performs a HTTP DELETE request. $a is the URL, $b determines if cookies persist for the query lifetime. $c defines any HTTP Request Headers to set in the form <headers><header name=\"\" value=\"\"/></headers>."
+        "Performs a HTTP DELETE request."
         + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>"
         + " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
-        new SequenceType[] {
-            new SequenceType( Type.ANY_URI, Cardinality.EXACTLY_ONE ),
-            new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ),
-            new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
-            },
-        new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ) 
+        new SequenceType[] { URI_PARAM, PERSIST_PARAM, REQUEST_HEADER_PARAM },
+        XML_BODY_RETURN 
         );
     
     
@@ -66,10 +62,12 @@ public class DELETEFunction extends BaseHTTPClientFunction {
     
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
+		logger.info("Entering " + PREFIX + ":" + getName().getLocalName());
         Sequence    response = null;
         
         // must be a URL
         if( args[0].isEmpty() ) {
+    		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
             return( Sequence.EMPTY_SEQUENCE );
         }
         
@@ -97,6 +95,7 @@ public class DELETEFunction extends BaseHTTPClientFunction {
             delete.releaseConnection();
         }
         
+		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
         return( response );
     }
 }

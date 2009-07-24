@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -40,7 +41,9 @@ import org.exist.xquery.value.Type;
 
 public class ClearPersistentCookiesFunction extends BaseHTTPClientFunction {
     
-    public final static FunctionSignature signature =
+	protected static final Logger logger = Logger.getLogger(ClearPersistentCookiesFunction.class);
+
+	public final static FunctionSignature signature =
         new FunctionSignature(
         new QName( "clear-persistent-cookies", NAMESPACE_URI, PREFIX ),
         "Clears any persistent cookies.",
@@ -55,8 +58,10 @@ public class ClearPersistentCookiesFunction extends BaseHTTPClientFunction {
     
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
+		logger.info("Entering " + PREFIX + ":" + getName().getLocalName());
         context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES, null );
         
+		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
         return( Sequence.EMPTY_SEQUENCE );
     }
     

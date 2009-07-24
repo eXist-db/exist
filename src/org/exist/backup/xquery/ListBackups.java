@@ -35,6 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -55,7 +56,7 @@ public class ListBackups extends BasicFunction {
                 "Returns an XML fragment listing all eXist backups found in a specific " +
                 "backup directory. The directory is passed in the argument.",
                 new SequenceType[] { new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "Directory name to show list of backups on.") },
-                new FunctionParameterSequenceType("listing", Type.NODE, Cardinality.ONE_OR_MORE, "an XML fragment listing eXist backups")
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ONE_OR_MORE, "an XML fragment listing eXist backups")
             );
 
     public final static QName DIRECTORY_ELEMENT = new QName("directory", Namespaces.EXIST_NS, "");

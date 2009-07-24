@@ -35,6 +35,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,7 +59,7 @@ public class DescribeFunction extends Function {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.EXACTLY_ONE, "the name of the function to get the signature of"),
 			},
-			new FunctionParameterSequenceType("signature", Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"));
 			
 	public DescribeFunction(XQueryContext context) {
 		super(context, signature);
