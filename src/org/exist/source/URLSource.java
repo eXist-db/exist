@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
@@ -132,6 +133,11 @@ public class URLSource extends AbstractSource {
                 is = connection.getInputStream();
             connection = null;
             return is;
+            
+        } catch (ConnectException e){
+            LOG.warn("Unable to connect to URL: " + e.getMessage());
+            throw e;
+
         } catch (IOException e) {
             LOG.warn("URL could not be opened: " + e.getMessage(), e);
             throw e;
