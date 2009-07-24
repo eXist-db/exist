@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.datetime;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -28,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -38,13 +40,15 @@ import org.exist.xquery.value.Type;
  */
 public class TimeFromDateTimeFunction extends BasicFunction
 {
-    public final static FunctionSignature signature = new FunctionSignature(
+	protected static final Logger logger = Logger.getLogger(TimeFromDateTimeFunction.class);
+
+	public final static FunctionSignature signature = new FunctionSignature(
         new QName("time-from-dateTime", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
         "Returns the xs:time portion of an xs:dateTime.",
         new SequenceType[] {
             new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The dateTime to extract the time from.")
         },
-        new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE)
+        new FunctionReturnSequenceType(Type.TIME, Cardinality.EXACTLY_ONE, "The time extracted from the date-time")
     );
 
 
@@ -56,6 +60,10 @@ public class TimeFromDateTimeFunction extends BasicFunction
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
+
+        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
+
         return args[0].itemAt(0).convertTo(Type.TIME);
     }
 }
