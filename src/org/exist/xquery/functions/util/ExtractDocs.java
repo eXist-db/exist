@@ -20,6 +20,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -41,7 +42,7 @@ public class ExtractDocs extends BasicFunction {
 			new SequenceType[] {
                     new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.EXACTLY_ONE, "namespace URI of the function module")
             },
-			new FunctionParameterSequenceType("xqdocs", Type.NODE, Cardinality.ZERO_OR_ONE, "xqdocs for the function module"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "xqdocs for the function module"));
 
     private final String XQDOC_NS = "http://www.xqdoc.org/1.0";
 
@@ -116,8 +117,8 @@ public class ExtractDocs extends BasicFunction {
 				simpleElement(builder, "param", "overloaded");
 			}
 			SequenceType returnValue = function.getReturnType();
-			if (returnValue instanceof FunctionParameterSequenceType) {
-				simpleElement(builder, "return", ((FunctionParameterSequenceType) returnValue).getDescription());
+			if (returnValue instanceof FunctionReturnSequenceType) {
+				simpleElement(builder, "return", ((FunctionReturnSequenceType) returnValue).getDescription());
 			}
 
 			String deprecated = function.getDeprecated();
