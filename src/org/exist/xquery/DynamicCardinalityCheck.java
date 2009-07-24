@@ -102,7 +102,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
         result.append("dynamic-cardinality-check("); 
         result.append("\"" + Cardinality.getDescription(requiredCardinality) + "\"");
         result.append(", "); 

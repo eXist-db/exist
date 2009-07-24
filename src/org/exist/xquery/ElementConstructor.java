@@ -310,7 +310,7 @@ public class ElementConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("element ");
         //TODO : remove curly braces if Qname
         result.append("{");    

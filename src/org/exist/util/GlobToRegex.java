@@ -131,9 +131,9 @@ public class GlobToRegex {
     public static String globToRegexp(CharSequence pattern) {
         boolean inCharSet, starCannotMatchNull = false, questionMatchesZero;
         int ch;
-        StringBuffer buffer;
+        StringBuilder buffer;
 
-        buffer = new StringBuffer(2 * pattern.length());
+        buffer = new StringBuilder(2 * pattern.length());
         inCharSet = false;
 
         char c;

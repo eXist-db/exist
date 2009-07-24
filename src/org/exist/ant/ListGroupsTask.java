@@ -33,7 +33,7 @@ public class ListGroupsTask extends UserTask
       String[] groups = service.getGroups();
       if (groups != null)
       {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < groups.length; i++)
         {
           buf.append(groups[i]);

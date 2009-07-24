@@ -65,7 +65,7 @@ public class Version {
      * @return string representation of this version
      */
     public String toString() {
-        StringBuffer sb = new StringBuffer(10);
+        StringBuilder sb = new StringBuilder(10);
         sb.append(_version);
         sb.append('.');
         sb.append(_revision);

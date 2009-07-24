@@ -338,7 +338,7 @@ public class QueryDialog extends JFrame {
 					"Error", JOptionPane.ERROR_MESSAGE);
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
-				StringBuffer buf = new StringBuffer();
+				StringBuilder buf = new StringBuilder();
 				String line;
 				while((line = reader.readLine()) != null) {
 					buf.append(line);
@@ -484,7 +484,7 @@ public class QueryDialog extends JFrame {
 				progress.setMaximum(howmany);
 				int j= 0;
 				int select=-1;
-				StringBuffer contents = new StringBuffer();
+				StringBuilder contents = new StringBuilder();
 				for (ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
 					resource= (XMLResource) i.nextResource();
 					progress.setValue(j);

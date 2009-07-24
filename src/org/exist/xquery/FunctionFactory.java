@@ -223,7 +223,7 @@ public class FunctionFactory {
 							throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() + "() " +
 								" is not defined in module namespace: " + qname.getNamespaceURI());
 						else {
-							StringBuffer buf = new StringBuffer();
+							StringBuilder buf = new StringBuilder();
                             buf.append("Unexpectedly received ");
                             buf.append(params.size() + " parameter(s) in call to function ");
                             buf.append("'" + qname.getStringValue() +  "()'. ");

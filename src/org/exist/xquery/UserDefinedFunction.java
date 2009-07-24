@@ -158,7 +158,7 @@ public class UserDefinedFunction extends Function {
      */
     public String toString() {
         FunctionSignature signature = getSignature();
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(signature.getName());
         buf.append('(');
         for(int i = 0; i < signature.getArgumentTypes().length; i++) {

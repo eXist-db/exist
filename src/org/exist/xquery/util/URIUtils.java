@@ -184,7 +184,7 @@ public class URIUtils {
 	 */
 	public static String urlEncodePartsUtf8(String url) {
 		String[] split = url.split("/",-1);
-		StringBuffer ret = new StringBuffer(url.length());
+		StringBuilder ret = new StringBuilder(url.length());
 		for(int i=0;i<split.length;i++) {
 			ret.append(urlEncodeUtf8(split[i]));
 			if(i<split.length-1) {

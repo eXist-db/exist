@@ -736,9 +736,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     private CharSequence getRegexp(String expr) {
         switch (truncation) {
             case Constants.TRUNC_LEFT :
-                return new StringBuffer().append(expr).append('$');
+                return new StringBuilder().append(expr).append('$');
             case Constants.TRUNC_RIGHT :
-                return new StringBuffer().append('^').append(expr);
+                return new StringBuilder().append('^').append(expr);
             default :
                 return expr;
         }
@@ -865,7 +865,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
     public String toString() {
-    	StringBuffer result = new StringBuffer();    	
+    	StringBuilder result = new StringBuilder();    	
     	if (truncation == Constants.TRUNC_BOTH) {    		
     		result.append("contains").append('(');
     		result.append(getLeft().toString());

@@ -461,9 +461,9 @@ public class InteractiveClient {
                     for (int i = 0; i < resources.length; i++)
                         messageln(resources[i]);
                 } else {
-                    StringBuffer buf;
+                    StringBuilder buf;
                     for (int i = 0; i < resources.length; i++) {
-                        buf = new StringBuffer();
+                        buf = new StringBuilder();
                         int k = 0;
                         for (int j = 0; i < resources.length && j < 5; i++, j++) {
                             buf.append(resources[i] + '\t');
@@ -586,7 +586,7 @@ public class InteractiveClient {
                 try {
                     BufferedReader reader = new BufferedReader(new FileReader(
                             args[1]));
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     String nextLine;
                     while ((nextLine = reader.readLine()) != null) {
                         buf.append(nextLine);
@@ -2187,7 +2187,7 @@ public class InteractiveClient {
             if (cOpt.optionQueryFile != null) {
                 BufferedReader reader = new BufferedReader(new FileReader(
                         cOpt.optionQueryFile));
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
                     buf.append(line);
@@ -2200,7 +2200,7 @@ public class InteractiveClient {
                 try {
                     BufferedReader stdin = new BufferedReader(
                             new InputStreamReader(System.in));
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = stdin.readLine()) != null)
                         buf.append(line + '\n');
@@ -2492,7 +2492,7 @@ public class InteractiveClient {
             NodeList nodes = doc.getElementsByTagName("query");
             for (int i = 0; i < nodes.getLength(); i++) {
                 Element query = (Element) nodes.item(i);
-                StringBuffer value = new StringBuffer();
+                StringBuilder value = new StringBuilder();
                 Node next = query.getFirstChild();
                 while (next != null) {
                     value.append(next.getNodeValue());
@@ -2720,7 +2720,7 @@ public class InteractiveClient {
     }
     
     private static String formatString(String s1, String s2, int width) {
-        StringBuffer buf = new StringBuffer(width);
+        StringBuilder buf = new StringBuilder(width);
         if (s1.length() > width)
             s1 = s1.substring(0, width - 1);
         buf.append(s1);
@@ -2732,7 +2732,7 @@ public class InteractiveClient {
     }
     
     private static String formatString(String[] args, int[] sizes) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
             if (sizes[i] < 0) {
                 buf.append(args[i]);

@@ -79,7 +79,7 @@ public class Classpath {
     
     public String toString()
     {
-        StringBuffer cp = new StringBuffer(1024);
+        StringBuilder cp = new StringBuilder(1024);
         int cnt = _elements.size();
         if (cnt >= 1) {
             cp.append( ((File)(_elements.elementAt(0))).getPath() );

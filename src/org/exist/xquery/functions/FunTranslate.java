@@ -89,7 +89,7 @@ public class FunTranslate extends Function {
             ValueSequence transStr = FunStringToCodepoints.getCodePoints(getArgument(2).eval(contextSequence).getStringValue());
     		int p;
     		IntegerValue ch;
-    		StringBuffer buf = new StringBuffer(arg.getItemCount());
+    		StringBuilder buf = new StringBuilder(arg.getItemCount());
     		for(int i = 0; i < arg.getItemCount(); i++) {
     			ch = (IntegerValue) arg.itemAt(i);
     			p = FunStringToCodepoints.indexOf(mapStr, ch);

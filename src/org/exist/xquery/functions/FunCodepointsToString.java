@@ -68,7 +68,7 @@ public class FunCodepointsToString extends BasicFunction {
 		if (args[0].isEmpty())
 			result = StringValue.EMPTY_STRING;
         else {
-    		StringBuffer buf = new StringBuffer();    		
+    		StringBuilder buf = new StringBuilder();    		
     		for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 long next = ((NumericValue)i.nextItem()).getLong();
     			if (next < 0 || next > Integer.MAX_VALUE || !XMLChar.isValid((int)next)) {

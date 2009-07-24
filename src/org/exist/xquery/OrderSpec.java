@@ -76,7 +76,7 @@ public class OrderSpec {
 	}
 	
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append(ExpressionDumper.dump(expression));
 		buf.append(' ');
 		buf.append((modifiers & DESCENDING_ORDER) == 0 ? "ascending" : "descending");

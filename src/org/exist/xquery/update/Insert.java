@@ -226,7 +226,7 @@ public class Insert extends Modification {
 	}
 	
 	public String toString() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append("update insert ");        
 		result.append(value.toString());        
         switch (mode) {

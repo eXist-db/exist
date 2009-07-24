@@ -164,7 +164,7 @@ public class FilteredExpression extends AbstractExpression {
     }
     
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(expression.toString());
         for (Iterator i = predicates.iterator(); i.hasNext();) {
         	result.append(((Expression)i.next()).toString());

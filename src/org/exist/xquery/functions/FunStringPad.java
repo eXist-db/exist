@@ -86,7 +86,7 @@ public class FunStringPad extends Function {
             if(count == 0)
                 result = StringValue.EMPTY_STRING;
             else {
-        		StringBuffer buf = new StringBuffer(str.length() * count);
+        		StringBuilder buf = new StringBuilder(str.length() * count);
         		for(int i = 0; i < count; i++)
         			buf.append(str);
                 result = new StringValue(buf.toString());

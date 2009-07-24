@@ -108,7 +108,7 @@ public class LongLinkedList {
     }
     
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		ListItem next = first;
 		while( next != null ) {
 			buf.append(next.l).append(' ');

@@ -34,7 +34,7 @@ public class ListUsersTask extends UserTask
       User[] users = service.getUsers();
       if (users != null)
       {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < users.length; i++)
         {
           buf.append(users[i].getName());

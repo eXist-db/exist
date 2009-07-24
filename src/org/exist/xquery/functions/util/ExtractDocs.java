@@ -133,7 +133,7 @@ public class ExtractDocs extends BasicFunction {
     
     private String parameterText(SequenceType parameter, int index) {
         char var = 'a';
-    	StringBuffer buf = new StringBuffer("$");
+    	StringBuilder buf = new StringBuilder("$");
         if (parameter != null && parameter instanceof FunctionParameterSequenceType) {
         	FunctionParameterSequenceType funcType = (FunctionParameterSequenceType)parameter;
         	buf.append(funcType.getAttributeName());
