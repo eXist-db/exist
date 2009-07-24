@@ -36,6 +36,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -58,7 +59,7 @@ public class FileRead extends BasicFunction {
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." )
 				},				
-			new FunctionParameterSequenceType( "contents", Type.STRING, Cardinality.ZERO_OR_ONE, "contents" ) ),
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) ),
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Read content of file.",
@@ -66,7 +67,7 @@ public class FileRead extends BasicFunction {
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." ),
 				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "encoding" )
 				},
-				new FunctionParameterSequenceType( "contents", Type.STRING, Cardinality.ZERO_OR_ONE, "contents" ) )
+				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};
 	
 	/**

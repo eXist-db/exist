@@ -38,6 +38,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -57,7 +58,7 @@ public class FileReadBinary extends BasicFunction {
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." )
 				},				
-			new FunctionParameterSequenceType( "contents", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "contents" ) )
+			new FunctionReturnSequenceType( Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};
 	
 	/**

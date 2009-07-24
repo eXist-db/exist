@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -50,9 +51,9 @@ public class FileIsReadable extends BasicFunction {
 			new QName( "is-readable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if file is readable",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
 				},				
-			new FunctionParameterSequenceType( "is-readable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "File can be read" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if file can be read" ) )
 		};
 	
 	/**
