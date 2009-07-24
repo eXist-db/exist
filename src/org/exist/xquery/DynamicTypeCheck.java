@@ -161,7 +161,7 @@ public class DynamicTypeCheck extends AbstractExpression {
     }
     
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("dynamic-type-check");   
         result.append("["); 
         result.append(Type.getTypeName(requiredType));

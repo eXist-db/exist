@@ -96,7 +96,7 @@ public class DynamicTextConstructor extends NodeConstructor {
                 //TODO : how to avoid this ?
                 builder.startDocument();
                 context.proceed(this, builder);
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
                     Item next = i.nextItem();
@@ -135,7 +135,7 @@ public class DynamicTextConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("text {");        
     	result.append(content.toString());        
     	result.append("}");

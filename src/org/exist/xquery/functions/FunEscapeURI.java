@@ -96,7 +96,7 @@ public class FunEscapeURI extends BasicFunction {
      */
     public static String escape(CharSequence s, boolean escapeReserved) {
         //TODO : use dedidated URIUtils... -pb
-        StringBuffer sb = new StringBuffer(s.length());
+        StringBuilder sb = new StringBuilder(s.length());
         for (int i=0; i<s.length(); i++) {
             char c = s.charAt(i);
             if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9')) {
@@ -122,7 +122,7 @@ public class FunEscapeURI extends BasicFunction {
 
     private static final String hex = "0123456789ABCDEF";
 
-    private static void escapeChar(char c, char c2, StringBuffer sb) {
+    private static void escapeChar(char c, char c2, StringBuilder sb) {
         byte[] array = new byte[4];
         int used = UTF8.getUTF8Encoding(c, c2, array);
         for (int b=0; b<used; b++) {

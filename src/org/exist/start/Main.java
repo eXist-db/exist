@@ -285,7 +285,7 @@ public class Main {
         // to the classpath but they could not be found.
         if (invalidJars.size() > 0) {
             Iterator it = invalidJars.iterator();
-            StringBuffer nonexistentJars = new StringBuffer();
+            StringBuilder nonexistentJars = new StringBuilder();
             while (it.hasNext()) {
                 String invalidJar = (String) it.next();
                 nonexistentJars.append("    " + invalidJar + "\n");

@@ -718,7 +718,7 @@ public class CollectionXConf
 	//produces a string of XML describing the collection.xconf
 	private String toXMLString()
 	{
-		StringBuffer xconf = new StringBuffer();
+		StringBuilder xconf = new StringBuilder();
 		
 		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\"");
 		if(customNamespaces != null)
@@ -1010,7 +1010,7 @@ public class CollectionXConf
 		//produces a collection.xconf suitable string of XML describing the fulltext index
 		protected String toXMLString()
 		{
-			StringBuffer fulltext = new StringBuffer();
+			StringBuilder fulltext = new StringBuilder();
 			
 			fulltext.append("<fulltext default=\"");
 			fulltext.append(defaultAll ? "all" : "none");
@@ -1100,7 +1100,7 @@ public class CollectionXConf
         //produces a collection.xconf suitable string of XML describing the range index
 		protected String toXMLString()
 		{
-			StringBuffer range = new StringBuffer();
+			StringBuilder range = new StringBuilder();
 
             if (TYPE_PATH.equals(type))
                 range.append("<create path=\"");
@@ -1245,7 +1245,7 @@ public class CollectionXConf
 		//produces a collection.xconf suitable string of XML describing the trigger
 		protected String toXMLString()
 		{
-			StringBuffer trigger = new StringBuffer();
+			StringBuilder trigger = new StringBuilder();
 			
 			if(!triggerClass.equals(""))
 			{

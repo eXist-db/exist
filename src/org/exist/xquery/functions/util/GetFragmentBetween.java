@@ -110,7 +110,7 @@ public class GetFragmentBetween extends BasicFunction {
       pathCompletion = seqPathCompletion.effectiveBooleanValue();
     }
     // fetch the fragment between the two milestones
-    StringBuffer fragment = getFragmentBetween(ms1Node, ms2Node);
+    StringBuilder fragment = getFragmentBetween(ms1Node, ms2Node);
     if (pathCompletion) {
       String msFromPathName = getNodeXPath(ms1Node.getParentNode());
       String openElementsOfMsFrom = pathName2XmlTags(msFromPathName, "open");    
@@ -136,7 +136,7 @@ public class GetFragmentBetween extends BasicFunction {
    * @return fragment between the two nodes
    * @throws XPathException
    */
-  private StringBuffer getFragmentBetween(Node node1, Node node2) throws XPathException {
+  private StringBuilder getFragmentBetween(Node node1, Node node2) throws XPathException {
     StoredNode storedNode1 = (StoredNode) node1;
     StoredNode storedNode2 = (StoredNode) node2;
     String node1NodeId = storedNode1.getNodeId().toString();
@@ -146,7 +146,7 @@ public class GetFragmentBetween extends BasicFunction {
     DocumentImpl docImpl = (DocumentImpl) node1.getOwnerDocument();
     BrokerPool brokerPool = null;
     DBBroker dbBroker = null;
-    StringBuffer resultFragment = new StringBuffer("");
+    StringBuilder resultFragment = new StringBuilder("");
     String actualNodeId = "-2";
     boolean getFragmentMode = false;
     try {
@@ -288,7 +288,7 @@ public class GetFragmentBetween extends BasicFunction {
   }
 
   private String escape(String inputStr) {
-    StringBuffer resultStrBuf = new StringBuffer();
+    StringBuilder resultStrBuf = new StringBuilder();
     for (int i = 0; i < inputStr.length(); i++) {
       char ch = inputStr.charAt(i);
       switch (ch) {
@@ -363,7 +363,7 @@ public class GetFragmentBetween extends BasicFunction {
      * - node names become path names 
      * - attributes become predicates
      */
-    StringBuffer buf = new StringBuffer(nodeToXPath(n));
+    StringBuilder buf = new StringBuilder(nodeToXPath(n));
     while((n = n.getParentNode()) != null) {
       if(n.getNodeType() == Node.ELEMENT_NODE) {
         buf.insert(0, nodeToXPath(n));
@@ -377,10 +377,10 @@ public class GetFragmentBetween extends BasicFunction {
    * The nodes attribute's become predicates
    * 
    * @param n The Node to generate an XPath for
-   * @return StringBuffer containing the XPath
+   * @return StringBuilder containing the XPath
    */
-  private StringBuffer nodeToXPath(Node n) {
-    StringBuffer xpath = new StringBuffer("/" + getFullNodeName(n));
+  private StringBuilder nodeToXPath(Node n) {
+    StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
     NamedNodeMap attrs = n.getAttributes();
     for(int i = 0; i < attrs.getLength(); i++) {
       Node attr = attrs.item(i);

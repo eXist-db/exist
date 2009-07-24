@@ -65,7 +65,7 @@ public class XMLDBListTask extends AbstractXMLDBTask
     		  log(msg,Project.MSG_ERR);
       }
         
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       if (collections)
       {
         String[] cols = base.listChildCollections();

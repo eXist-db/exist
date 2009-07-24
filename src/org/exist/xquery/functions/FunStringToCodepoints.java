@@ -127,7 +127,7 @@ public class FunStringToCodepoints extends BasicFunction {
      */
     public static String subSequence(final ValueSequence seq, final int start) 
         throws XPathException {
-        StringBuffer substring = new StringBuffer(seq.getItemCount());
+        StringBuilder substring = new StringBuilder(seq.getItemCount());
         int ch;
         try {
             for (int i = start >= 0 ? start : 0; i < seq.getItemCount(); i++) {
@@ -156,7 +156,7 @@ public class FunStringToCodepoints extends BasicFunction {
      */
     public static String subSequence(final ValueSequence seq, final int start, final int end) 
         throws XPathException {
-        StringBuffer substring = new StringBuffer(seq.getItemCount());
+        StringBuilder substring = new StringBuilder(seq.getItemCount());
         int ch;
         IntegerValue next;
         if (seq.getItemCount() < end) {
@@ -187,7 +187,7 @@ public class FunStringToCodepoints extends BasicFunction {
      */
     public static String codePointToString(final IntegerValue value) 
         throws XPathException {
-        StringBuffer string = new StringBuffer(2);
+        StringBuilder string = new StringBuilder(2);
         try {
             int intValue = value.getInt();
             if (XMLChar.isSupplemental(intValue)) {

@@ -311,7 +311,7 @@ public class ExtPhrase extends ExtFulltext {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("phrase(");
         buf.append(path);
         buf.append(", ");

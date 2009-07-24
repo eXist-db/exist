@@ -204,7 +204,7 @@ public class Rename extends Modification {
 	}
 	
 	public String toString() {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		result.append("update rename ");		
 		result.append(select.toString());		
 		result.append(" as ");		

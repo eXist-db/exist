@@ -167,7 +167,7 @@ public class QuantifiedExpression extends BindingExpression {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append(mode == SOME ? "some" : "every");
     	result.append(" $").append(varName).append(" in");
     	result.append(" ");

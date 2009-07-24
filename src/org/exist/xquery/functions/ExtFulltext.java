@@ -288,7 +288,7 @@ public class ExtFulltext extends Function implements Optimizable {
 	}
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(path.toString());
         if (type == Constants.FULLTEXT_AND)
             result.append(" &= ");

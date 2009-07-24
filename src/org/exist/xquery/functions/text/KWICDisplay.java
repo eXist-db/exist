@@ -137,7 +137,7 @@ public class KWICDisplay extends BasicFunction {
 
     private final Sequence processText(MemTreeBuilder builder, Sequence nodes, int width, 
             FunctionCall callback, FunctionCall resultCallback, Sequence extraArgs) throws XPathException {
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         NodeValue node;
         List offsets = null;
         NodeProxy firstProxy = null;
@@ -333,7 +333,7 @@ public class KWICDisplay extends BasicFunction {
             return result;
     }
     
-    private final static int truncateStart(StringBuffer buf, int start, int end) {
+    private final static int truncateStart(StringBuilder buf, int start, int end) {
         if (start > 0 && !Character.isLetterOrDigit(buf.charAt(start - 1)))
             return start;
         while (start < end && Character.isLetterOrDigit(buf.charAt(start))) {

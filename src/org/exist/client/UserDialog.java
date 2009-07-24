@@ -494,7 +494,7 @@ class UserDialog extends JFrame {
 				case 1 :
 					return users[rowIndex].getName();
 				case 2 :
-					StringBuffer buf = new StringBuffer();
+					StringBuilder buf = new StringBuilder();
 					String[] groups = users[rowIndex].getGroups();
 					for (int i = 0; i < groups.length; i++) {
 						buf.append(groups[i]);

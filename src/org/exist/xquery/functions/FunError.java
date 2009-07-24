@@ -102,7 +102,7 @@ public class FunError extends BasicFunction {
 	}
 	
 	private String serializeErrorObject(Sequence seq) throws XPathException {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		for(SequenceIterator i = seq.unorderedIterator(); i.hasNext(); ) {
 			Item next = i.nextItem();
 			if (Type.subTypeOf(next.getType(), Type.NODE)) {

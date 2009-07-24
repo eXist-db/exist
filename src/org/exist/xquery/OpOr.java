@@ -109,7 +109,7 @@ public class OpOr extends LogicalOp {
     public String toString() {
         if (getLength() == 0)
             return "";
-        StringBuffer result = new StringBuffer("(");
+        StringBuilder result = new StringBuilder("(");
         result.append(getExpression(0).toString());
         for (int i = 1; i < getLength(); i++) {
         	result.append(") or (");

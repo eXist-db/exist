@@ -295,7 +295,7 @@ public class ExtNear extends ExtFulltext {
     }
     
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("near(");
         buf.append(path);
         buf.append(", ");

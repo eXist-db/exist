@@ -79,7 +79,7 @@ public class FunStringJoin extends BasicFunction {
 		String sep = args[1].getStringValue();
 		if(sep.length() == 0)
 			sep = null;
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		Item next;
 		boolean gotOne = false;
 		for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {

@@ -101,7 +101,7 @@ public class FunNormalizeSpace extends Function {
         if (value == null)
             result = StringValue.EMPTY_STRING;
         else {            
-    		StringBuffer buf = new StringBuffer();
+    		StringBuilder buf = new StringBuilder();
     		if (value.length() > 0) {
     			StringTokenizer tok = new StringTokenizer(value);
     			while (tok.hasMoreTokens()) {
