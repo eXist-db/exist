@@ -47,6 +47,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -68,25 +69,22 @@ public class SerializeToFile extends BasicFunction
 			"sequence of zero or more serialization parameters specified as key=value pairs. The " +
 			"serialization options are the same as those recognized by \"declare option exist:serialize\". " +
 			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
-			"called from. False is returned if the " +
-			"specified file can not be created or is not writable, true on success. The empty " +
-			"sequence is returned if the argument sequence is empty.",
+			"called from.",
 			new SequenceType[] { 
 				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "" ),
 				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "full path to the file" ),
 				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "serialization parameters specified as key-value pairs" )
                         },
-			new FunctionParameterSequenceType( "result", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "True for success." )
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
                 ),
                 new FunctionSignature(
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Writes binary data into a file on the file system. False is returned if the " +
-			"specified file can not be created or is not writable, true on success.",
+			"Writes binary data into a file on the file system.",
 			new SequenceType[]{
 				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, ""),
 				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "full path to the file")
                         },
-			new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "")
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
                 )
         };
 	
@@ -101,6 +99,7 @@ public class SerializeToFile extends BasicFunction
 		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		
             if(args[0].isEmpty()) {
+        		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
                 return Sequence.EMPTY_SEQUENCE;
             }
 
@@ -112,12 +111,14 @@ public class SerializeToFile extends BasicFunction
             if(file.isDirectory())
             {
                 logger.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
+        		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
                 return BooleanValue.FALSE;
             }
 
             if(file.exists() && !file.canWrite())
             {
                 logger.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
+        		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
                 return BooleanValue.FALSE;
             }
 
@@ -138,6 +139,7 @@ public class SerializeToFile extends BasicFunction
                 throw new XPathException(this, "Unknown function name");
             }
 
+    		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.TRUE;
 	}
 	

@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -47,11 +48,11 @@ public class FileDelete extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "delete", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Delete a file. Returns true if successful, false otherwise",
+			"Delete a file.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
 				},				
-			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
 		};
 	
 	/**

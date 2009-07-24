@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -50,9 +51,9 @@ public class FileIsDirectory extends BasicFunction {
 			new QName( "is-directory", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if file is a directory",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
 				},				
-			new FunctionParameterSequenceType( "is-directory", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "file is a directory" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the file is a directory" ) )
 		};
 	
 	/**

@@ -35,6 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -57,7 +58,7 @@ public class FileReadUnicode extends BasicFunction {
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "URL to the file, e.g. file://etc." )
 				},				
-			new FunctionParameterSequenceType( "result", Type.STRING, Cardinality.ZERO_OR_ONE, "The contents of the file" ) ),
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) ),
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Read content of file.  Unicode BOM (Byte Order Marker) will be stripped off if found",
@@ -65,7 +66,7 @@ public class FileReadUnicode extends BasicFunction {
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "URL to the file, e.g. file://etc." ),
 				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
 				},
-				new FunctionParameterSequenceType( "result", Type.STRING, Cardinality.ZERO_OR_ONE, "The contents of the file" ) )
+				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) )
 		};
 	
 	/**

@@ -33,6 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -71,14 +72,13 @@ public class DirectoryListFunction extends BasicFunction {
 			"The second argument is the file pattern. File pattern matching is based " +
 			"on code from Apache's Ant, thus following the same conventions. For example: " +
 			"*.xml matches any file ending with .xml in the current directory, **/*.xml matches files " +
-			"in any directory below the current one. " +
-			"The function returns a node fragment that shows all matching filenames, including their file size and modification time, and the subdirectory they were found in",
+			"in any directory below the current one. ",
 			new SequenceType[]
 			{
 			    new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "the base directory"),
 			    new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "the file glob pattern")
 				},
-			new SequenceType( Type.NODE, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching filenames, including their file size and modification time, and the subdirectory they were found in" )
 			)
 		};
 	

@@ -49,9 +49,9 @@ public class FileExists extends BasicFunction {
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if file exists",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "file", Type.ITEM, Cardinality.EXACTLY_ONE, "" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
 				},				
-			new FunctionParameterSequenceType( "exists", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "True if the file exists" ) )
+			new FunctionParameterSequenceType( "exists", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the file exists" ) )
 		};
 	
 	/**
