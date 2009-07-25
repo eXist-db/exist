@@ -37,6 +37,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -70,7 +71,7 @@ public class ScaleFunction extends BasicFunction
 				new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, null),
 				new FunctionParameterSequenceType("mimeType", Type.STRING, Cardinality.EXACTLY_ONE, "the mime-type of the image")
 			},
-			new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "The scaled image or an empty sequence if $image is invalid"));
+			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the scaled image or an empty sequence if $image is invalid"));
 
 	
 	/**

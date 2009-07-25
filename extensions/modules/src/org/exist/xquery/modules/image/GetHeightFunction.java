@@ -34,6 +34,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -62,7 +63,7 @@ public class GetHeightFunction extends BasicFunction
 			{
 				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data")
 			},
-			new FunctionParameterSequenceType("height", Type.INTEGER, Cardinality.ZERO_OR_ONE, "height in pixels"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the height in pixels"));
 
 	/**
 	 * GetHeightFunction Constructor

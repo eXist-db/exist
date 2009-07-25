@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -65,7 +66,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 					new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, "specifies the dimension of the thumbnails, if empty then the default values are 'maxheight = 100' and 'maxwidth = 100', the first value is 'maxheight' and the second 'maxwidth'. "),
 					new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "the prefix (if any) for the thumbnails") },
 
-			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_MORE, "result"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the result"));
 
 	public GetThumbnailsFunction(XQueryContext context) {
 		super(context, signature);
