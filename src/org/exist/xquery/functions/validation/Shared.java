@@ -188,13 +188,26 @@ public class Shared {
         if (report.getThrowable() != null) {
             builder.startElement("", "exception", "exception", null);
 
-            builder.startElement("", "message", "exception", null);
-            builder.characters("" + report.getThrowable().getMessage());
-            builder.endElement();
-            
-            builder.startElement("", "stacktrace", "stacktrace", null);
-            builder.characters("" + report.getStackTrace());
-            builder.endElement();
+            String className = report.getThrowable().getClass().getName();
+            if (className != null) {
+                builder.startElement("", "class", "class", null);
+                builder.characters(className);
+                builder.endElement();
+            }
+
+            String message = report.getThrowable().getMessage();
+            if (message != null) {
+                builder.startElement("", "message", "exception", null);
+                builder.characters(message);
+                builder.endElement();
+            }
+
+            String stacktrace = report.getStackTrace();
+            if (stacktrace != null) {
+                builder.startElement("", "stacktrace", "stacktrace", null);
+                builder.characters(stacktrace);
+                builder.endElement();
+            }
 
             builder.endElement();
         }
