@@ -212,13 +212,16 @@ public class ValidationReport implements ErrorHandler {
         return namespaceUri;
     }
 
-    public String getStackTrace(){
+    public String getStackTrace() {
+
+        if (throwed == null) {
+            return null;
+        }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        if(throwed !=null){
-            PrintStream ps = new PrintStream(baos);
-            throwed.printStackTrace(ps);
-        }
+        PrintStream ps = new PrintStream(baos);
+        throwed.printStackTrace(ps);
+
         return baos.toString();
     }
 }
