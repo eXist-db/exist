@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.Cardinality;
@@ -45,13 +46,15 @@ import org.exist.xquery.value.Type;
  */
 public class SetAttribute extends Function {
 	
+	protected static final Logger logger = Logger.getLogger(SetAttribute.class);
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "set-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Stores a value in the current request using the supplied attribute name.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
-				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "" )
+				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "attribute name" ),
+				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "attribute value" )
 				},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		);
@@ -66,6 +69,8 @@ public class SetAttribute extends Function {
 	 */
 	public Sequence eval (Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		if( context.getProfiler().isEnabled() ) {
 			context.getProfiler().start( this );       
 			context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
@@ -104,6 +109,8 @@ public class SetAttribute extends Function {
 			throw(  new XPathException( this, "Type error: variable $request is not bound to a request object" ) );
 		}
 
+		logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

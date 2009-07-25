@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
@@ -32,20 +33,22 @@ import org.exist.xquery.value.*;
  */
 public class GetContextPath extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetContextPath.class);
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("get-context-path", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the context path of the current request, i.e. the portion of the request URI that " +
             "indicates the context of the request.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the context path of the current request")),
         new FunctionSignature(
 			new QName("get-servlet-path", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the servlet path of the current request, i.e. the portion of the request URI that " +
             "points to the servlet which is handling the request.\n"+
 			"For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /some/path/myfile.xq when myfile.xq is executed.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE))
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the servlet path of the current request"))
     };
 
     /**
@@ -60,6 +63,8 @@ public class GetContextPath extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $request
@@ -71,6 +76,7 @@ public class GetContextPath extends BasicFunction {
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
             if (isCalledAs("get-context-path"))
                 return new StringValue(((RequestWrapper) value.getObject()).getContextPath());
             else

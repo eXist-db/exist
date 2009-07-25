@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -30,9 +31,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -41,13 +42,15 @@ import org.exist.xquery.value.Type;
  */
 public class GetPathInfo extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetPathInfo.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-path-info", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns any extra path information associated with the URL the client sent when it made this request.\n" +
 			"For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /extra/path when myfile.xq is executed.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "request path information"));
 
 	/**
 	 * @param context
@@ -61,6 +64,8 @@ public class GetPathInfo extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $request
@@ -73,6 +78,7 @@ public class GetPathInfo extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
             String path = ((RequestWrapper) value.getObject()).getPathInfo();
+    		logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
             return new StringValue(path == null ? "" : path);
         } else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");

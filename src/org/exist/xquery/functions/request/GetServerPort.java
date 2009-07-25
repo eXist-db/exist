@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -30,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -41,12 +43,14 @@ import org.exist.xquery.value.Type;
  */
 public class GetServerPort extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetServerPort.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-server-port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the server port of the current request.",
 			null,
-			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the server port of the current request"));
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -68,6 +72,8 @@ public class GetServerPort extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $request
@@ -78,9 +84,10 @@ public class GetServerPort extends BasicFunction {
 			throw new XPathException(this, "Variable $request is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper)
+		if (value.getObject() instanceof RequestWrapper) {
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return new IntegerValue(((RequestWrapper) value.getObject()).getServerPort());
-		else
+		} else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
 	}
 	

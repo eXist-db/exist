@@ -37,6 +37,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -60,7 +61,7 @@ public class SetCurrentUser extends BasicFunction {
 				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "the user name"),
 				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if valid user"));
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -71,7 +72,7 @@ public class SetCurrentUser extends BasicFunction {
 				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "the user name"),
 				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if valid user"),
 			"Moved to session module. See session:set-current-user.");
 	
 	public SetCurrentUser(XQueryContext context) {

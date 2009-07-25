@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -32,6 +33,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,6 +44,8 @@ import org.exist.xquery.value.Type;
  */
 public class GetParameter extends BasicFunction {
 	
+	protected static final Logger logger = Logger.getLogger(GetParameter.class);
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName(
@@ -55,7 +59,7 @@ public class GetParameter extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
 				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value")),
 	
 		new FunctionSignature(
 			new QName(
@@ -71,7 +75,7 @@ public class GetParameter extends BasicFunction {
 				new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
 				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
 				new FunctionParameterSequenceType( "failonerror", Type.BOOLEAN, Cardinality.ZERO_OR_MORE, "" )},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE))
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value"))
 		
 	};
 	
@@ -88,7 +92,7 @@ public class GetParameter extends BasicFunction {
 		new SequenceType[] {
 			new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
 			new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
-		new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
+		new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value"),
 		"Renamed to request:get-parameter.");
 	
 	public GetParameter(XQueryContext context, FunctionSignature signature) {
@@ -101,6 +105,8 @@ public class GetParameter extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 		
@@ -116,6 +122,7 @@ public class GetParameter extends BasicFunction {
 			if( failOnError ) {
 				throw new XPathException(this, "Variable $request is not bound to an Java object.");
 			} else {
+				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return args[1];
 			}
 		}
@@ -126,6 +133,7 @@ public class GetParameter extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if (values == null || values.length == 0) {
 				return args[1];
 			}
@@ -138,6 +146,7 @@ public class GetParameter extends BasicFunction {
 			if( failOnError ) {
 				throw new XPathException(this, "Variable $request is not bound to a Request object.");
 			} else {
+				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return args[1];				
 			}
 		}

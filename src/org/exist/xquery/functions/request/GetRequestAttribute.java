@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -32,6 +33,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,6 +44,8 @@ import org.exist.xquery.value.Type;
  */
 public class GetRequestAttribute extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetRequestAttribute.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
@@ -50,7 +54,7 @@ public class GetRequestAttribute extends BasicFunction {
 			new SequenceType[] {
                     new FunctionParameterSequenceType("attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "Name of the attribute")
             },
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the string value of the requested attribute"));
 
 	/**
 	 * @param context
@@ -64,6 +68,8 @@ public class GetRequestAttribute extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
         String name = args[0].getStringValue();
         RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
@@ -77,6 +83,7 @@ public class GetRequestAttribute extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			Object attrib = ((RequestWrapper) value.getObject()).getAttribute(name);
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
             return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
         } else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
