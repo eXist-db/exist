@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.ParseException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
@@ -12,7 +13,6 @@ import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Atomize;
 import org.exist.xquery.BasicExpressionVisitor;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -31,16 +31,18 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
 public class Query extends Function implements Optimizable {
+	
+	protected static final Logger logger = Logger.getLogger(Query.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("query", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "",
+            "INSERT DESCRIPTION HERE",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE, "node"),
+                new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.EXACTLY_ONE, "item")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionParameterSequenceType("result", Type.NODE, Cardinality.ZERO_OR_MORE, "result")
         );
 
     private LocationStep contextStep = null;
@@ -137,6 +139,9 @@ public class Query extends Function implements Optimizable {
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    	
+    	logger.info("Entering " + LuceneModule.PREFIX + ":" + getName().getLocalName());
+    	
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
 
@@ -173,6 +178,7 @@ public class Query extends Function implements Optimizable {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
+    	logger.info("Exiting " + LuceneModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
 
