@@ -186,8 +186,12 @@ public class Shared {
 
         // print exceptions if any
         if (report.getThrowable() != null) {
-            builder.startElement("", "exception", "exception", null);
+            builder.startElement("", "exception-message", "exception-exception", null);
             builder.characters("" + report.getThrowable().getMessage());
+            builder.endElement();
+            
+            builder.startElement("", "exception-stacktrace", "exception-stacktrace", null);
+            builder.characters("" + report.getStackTrace());
             builder.endElement();
         }
 
