@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -34,6 +35,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -58,23 +61,25 @@ import javax.mail.Store;
  */
 public class MailStoreFunctions extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(MailStoreFunctions.class);
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "get-mail-store", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Open's a mail store. $a is a mail session handle. Host/User/Password/Protocol values will be obtained from the session. Returns an xs:long representing the store handle.",
+			"Open's a mail store. Host/User/Password/Protocol values will be obtained from the session.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "mail-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "JavaMail session handle retrieved from mail:get-mail-session()" )
 			},
-			new SequenceType( Type.LONG, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the store handle." )
 			),
 	
 		new FunctionSignature(
 			new QName( "close-mail-store", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Closes's a mail store. $a is a mail store handle.",
+			"Closes's a mail store.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "mail store handle retrieved from mail:get-mail-store()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)
@@ -102,10 +107,16 @@ public class MailStoreFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
+		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
+
 		if( isCalledAs( "get-mail-store" ) ) {
-			return( getMailStore( args, contextSequence ) );
+			Sequence mailStore = getMailStore( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return mailStore;
 		} else if( isCalledAs( "close-mail-store" ) ) {
-			return( closeMailStore( args, contextSequence ) );
+			Sequence closeMailStore = closeMailStore( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return closeMailStore;
 		}
 	
 		throw( new XPathException( this, "Invalid function name" ) );

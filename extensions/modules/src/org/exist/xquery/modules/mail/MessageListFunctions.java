@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -42,6 +43,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -77,20 +80,22 @@ import org.w3c.dom.NodeList;
  */
 public class MessageListFunctions extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(MessageListFunctions.class);
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "get-message-list", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Returns a message list of all messages in a folder. $a is a mail folder handle. Returns an xs:long representing the message list handle.",
+			"Returns a message list of all messages in a folder.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" )
 			},
-			new SequenceType( Type.LONG, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the message list handle." )
 			),
 		
 		new FunctionSignature(
 			new QName( "search-message-list", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Searches messages in a folder. $a is a mail folder handle. $b is an xml fragment defining the search terms. Returns an xs:long representing the message list handle. " +
+			"Searches messages in a folder. " +
 			"Search terms are of the form <searchTerm type=\"xxx\">...</searchTerm>.  Valid types include: not, and, or, from, subject, body, recipient, header, flag, sent, received. " +
 			"<searchTerm type=\"not\"> requires a single nested child search term. <searchTerm type=\"and\"> and <searchTerm type=\"or\"> must have one or more nested child search terms. " +
 			"<searchTerm type=\"from\" pattern=\"pat\">, <searchTerm type=\"subject\" pattern=\"pat\"> and <searchTerm type=\"body\" pattern=\"pat\">  require a pattern attribute and will search for a substring that matches the pattern. " +
@@ -101,29 +106,29 @@ public class MessageListFunctions extends BasicFunction
 			"The format string should conform to Java SimpleDateFormat specifications and the date string must conform to the specified format string.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.ELEMENT, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" ),
+				new FunctionParameterSequenceType( "search-parameters", Type.ELEMENT, Cardinality.EXACTLY_ONE, "an xml fragment defining the search terms" )
 			},
-			new SequenceType( Type.LONG, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the message list handle." )
 			),
 		
 		new FunctionSignature(
 			new QName( "get-message-list-as-xml", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Returns a message list of all messages in a folder as xml. $a is a message list handle. $b is a boolean specifying whether to include message headers. If there are no messages in the list, an empty sequence will be returned",
+			"Returns a message list of all messages in a folder as XML.  If there are no messages in the list, an empty sequence will be returned",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "message list handle retrieved from mail:get-message-list() or mail:search-message-list()" ),
+				new FunctionParameterSequenceType( "include-headers", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean specifying whether to include message headers" )
 			},
-			new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE, "the list of all messages in a folder as XML" )
 			),
 		
 		new FunctionSignature(
 			new QName( "close-message-list", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Closes's a message list. $a is a message list handle.",
+			"Closes's a message list.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)
@@ -169,14 +174,24 @@ public class MessageListFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
+		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
+	
 		if( isCalledAs( "get-message-list" ) ) {
-			return( getMessageList( args, contextSequence ) );
+			Sequence messageList = getMessageList( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return messageList;
 		} else if( isCalledAs( "search-message-list" ) ) {
-			return( searchMessageList( args, contextSequence ) );
+			Sequence searchMessageList = searchMessageList( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return searchMessageList;
 		} else if( isCalledAs( "get-message-list-as-xml" ) ) {
-			return( getMessageListAsXML( args, contextSequence ) );
+			Sequence messageListAsXML = getMessageListAsXML( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return messageListAsXML;
 		} else if( isCalledAs( "close-message-list" ) ) {
-			return( closeMessageList( args, contextSequence ) );
+			Sequence closeMessageList = closeMessageList( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return closeMessageList;
 		} 
 			
 		throw( new XPathException( this, "Invalid function name" ) );	
