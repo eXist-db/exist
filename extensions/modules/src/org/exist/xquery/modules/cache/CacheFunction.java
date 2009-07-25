@@ -51,7 +51,7 @@ public class CacheFunction extends BasicFunction {
 				new SequenceType[] { 
 					new FunctionParameterSequenceType("name", Type.STRING, Cardinality.ONE, "The name of the cache to create") 
 				}, 
-		        new FunctionParameterSequenceType("java-object", Type.JAVA_OBJECT, Cardinality.ONE, "The Java cache object created with the given name.")
+		        new FunctionParameterSequenceType("java-object", Type.JAVA_OBJECT, Cardinality.ONE, "the Java cache object created with the given name.")
 			) 
 	};
 

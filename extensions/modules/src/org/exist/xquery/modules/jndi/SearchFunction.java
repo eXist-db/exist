@@ -32,6 +32,7 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
@@ -39,6 +40,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -60,6 +63,7 @@ import org.exist.xquery.value.Type;
 
 public class SearchFunction extends BasicFunction 
 {
+	protected static final Logger logger = Logger.getLogger(SearchFunction.class);
 	
 	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 
@@ -69,29 +73,24 @@ public class SearchFunction extends BasicFunction
 			
 			new FunctionSignature(
 					new QName( "search", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
-							"Searches a JNDI Directory by attributes. $a is the directory context handle from a jndi:get-dir-context() call. $b is the DN. Expects "
-							+ " search attributes to be set in $c in the"
-							+ " form <attributes><attribute name=\"\" value=\"\"/></attributes>. "
-							+ "Search results are returned in DSML format",
+							"Searches a JNDI Directory by attributes.",
 					new SequenceType[] {
-							new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ), 
-							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ), 
-							new SequenceType( Type.ELEMENT, Cardinality.EXACTLY_ONE ) 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
+						new FunctionParameterSequenceType( "search-attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "search attributes in the form <attributes><attribute name=\"\" value=\"\"/></attributes>." ) 
 					},
-					new SequenceType( Type.NODE, Cardinality.ZERO_OR_ONE ) ),
+					new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the search results in DSML format" ) ),
 			
 			new FunctionSignature(
 					new QName( "search", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
-							"Searches a JNDI Directory by filter. $a is the directory context handle from a jndi:get-dir-context() call. "
-							+ "$b is the DN. $c is the filter string. $d is the scope, which has a value of 'object', 'onelevel' or 'subtree'."
-							+ "Search results are returned in DSML format",
+							"Searches a JNDI Directory by filter.",
 					new SequenceType[] {
-							new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ), 
-							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ), 
-							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
-							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ) 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
+						new FunctionParameterSequenceType( "filter", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
+						new FunctionParameterSequenceType( "scope", Type.STRING, Cardinality.EXACTLY_ONE, "the scope, which has a value of 'object', 'onelevel' or 'subtree'" ) 
 					},
-					new SequenceType( Type.NODE, Cardinality.ZERO_OR_ONE ) )
+					new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the search results in DSML format" ) )
 			};
 
 	/**
@@ -120,6 +119,8 @@ public class SearchFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
+		
 		Sequence    xmlResult     = Sequence.EMPTY_SEQUENCE;
 		
 		// Was context handle or DN specified?
@@ -133,7 +134,7 @@ public class SearchFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					LOG.error( "jndi:search() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error( "jndi:search() - Invalid JNDI context handle provided: " + ctxID );
 				} else {
 					NamingEnumeration results = null;
 					
@@ -162,14 +163,15 @@ public class SearchFunction extends BasicFunction
 				}
 			}
 			catch( NameNotFoundException nf ) {
-				LOG.warn( "jndi:search() Not found for dn [" + dn + "]" );
+				logger.warn( "jndi:search() Not found for dn [" + dn + "]", nf );
 			}
 			catch( NamingException ne ) {
-				LOG.error( "jndi:search() Search failed for dn [" + dn + "]: " + ne );
+				logger.error( "jndi:search() Search failed for dn [" + dn + "]: ", ne );
 				throw( new XPathException( this, "jndi:search() Search failed for dn [" + dn + "]: " + ne ) );
 			}
 		}
 		
+		logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 		return( xmlResult );
 	}
 

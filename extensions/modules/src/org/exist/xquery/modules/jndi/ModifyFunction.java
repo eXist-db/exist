@@ -31,12 +31,14 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -61,6 +63,7 @@ import org.w3c.dom.NodeList;
 
 public class ModifyFunction extends BasicFunction 
 {
+	protected static final Logger logger = Logger.getLogger(ModifyFunction.class);
 	
 	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 
@@ -70,14 +73,13 @@ public class ModifyFunction extends BasicFunction
 			
 			new FunctionSignature(
 					new QName( "modify", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
-							"Modify a JNDI Directory entry. $a is the directory context handle from a jndi:get-dir-context() call. $b is the DN. Expects "
-							+ " entry attributes to be set in $c in the"
-							+ " form <attributes><attribute name=\"\" value=\"\" operation=\"add | replace | remove\"/></attributes>. "
-							+ " You can also optionally specify ordered=\"true\" for an attribute.",
+							"Modify a JNDI Directory entry.",
 					new SequenceType[] {
-							new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ), 
-							new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ), 
-							new SequenceType( Type.ELEMENT, Cardinality.EXACTLY_ONE ) 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
+						new FunctionParameterSequenceType( "attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "entry attributes to be set in the"
+							+ " form <attributes><attribute name=\"\" value=\"\" operation=\"add | replace | remove\"/></attributes>. "
+							+ " You can also optionally specify ordered=\"true\" for an attribute." ) 
 					},
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};
@@ -108,6 +110,8 @@ public class ModifyFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
+
 		// Was context handle or DN specified?
 		if( !( args[0].isEmpty() ) && !( args[1].isEmpty() ) ) {
 			
@@ -119,7 +123,7 @@ public class ModifyFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					LOG.error( "jndi:modify() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error( "jndi:modify() - Invalid JNDI context handle provided: " + ctxID );
 				} else {	
 					ModificationItem[] items = parseAttributes( args[ 2 ] );
 					
@@ -129,11 +133,12 @@ public class ModifyFunction extends BasicFunction
 				}
 			}
 			catch( NamingException ne ) {
-				LOG.error( "jndi:modify() Modify failed for dn [" + dn + "]: " + ne );
+				logger.error( "jndi:modify() Modify failed for dn [" + dn + "]: ", ne );
 				throw( new XPathException( this, "jndi:modify() Modify failed for dn [" + dn + "]: " + ne ) );
 			}
 		}
 		
+		logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 	
@@ -179,7 +184,7 @@ public class ModifyFunction extends BasicFunction
 						}
 						
 						if( opCode == 0 ) {
-							LOG.error( "jndi:modify() - Invalid operation code: [" + op + "]" );
+							logger.error( "jndi:modify() - Invalid operation code: [" + op + "]" );
 							throw( new XPathException( this, "jndi:modify() - Invalid operation code: [" + op + "]" ) );
 						}
 						
@@ -209,7 +214,7 @@ public class ModifyFunction extends BasicFunction
 							items.add( new ModificationItem( opCode, new BasicAttribute( name, value, ordered != null && ordered.equalsIgnoreCase( "true" ) ) ) );
 						}
 					} else {
-						LOG.warn( "Name, value or operation attribute missing for attribute" );
+						logger.warn( "Name, value or operation attribute missing for attribute" );
 					}
 				}
 			}

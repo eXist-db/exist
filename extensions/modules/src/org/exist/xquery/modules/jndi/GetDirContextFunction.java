@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,6 +37,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -57,18 +60,17 @@ import org.exist.xquery.value.Type;
 
 public class GetDirContextFunction extends BasicFunction 
 {
+	protected static final Logger logger = Logger.getLogger(GetDirContextFunction.class);
+
 	public final static FunctionSignature[] signatures = {
 			
 			new FunctionSignature(
 					new QName( "get-dir-context", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
-					"Open's a JNDI Directory Context. Expects "
-							+ " JNDI Directory Context environment properties to be set in $a in the"
-							+ " form <properties><property name=\"\" value=\"\"/></properties>. "
-							+ "Returns an xs:long representing the directory context handle.",
+					"Open's a JNDI Directory Context.",
 					new SequenceType[] {
-							new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE ) 
+							new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "JNDI Directory Context environment properties to be set in the form <properties><property name=\"\" value=\"\"/></properties>." ) 
 					},
-					new SequenceType( Type.LONG, Cardinality.ZERO_OR_ONE ) )
+					new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "the directory context handle" ) )
 			};
 
 	/**
@@ -98,8 +100,11 @@ public class GetDirContextFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
+
 		// Were properties specified
 		if( args[0].isEmpty() ) {
+			logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 
@@ -112,10 +117,11 @@ public class GetDirContextFunction extends BasicFunction
 
 			// store the JNDI Directory Context and return the uid handle of the context
 			
+			logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 			return( new IntegerValue( JNDIModule.storeJNDIContext( context, dirCtx ) ) );
 		}
 		catch( NamingException ne ) {
-			LOG.error( "jndi:get-dir-context() Cannot get JNDI directory context: " + ne );
+			logger.error( "jndi:get-dir-context() Cannot get JNDI directory context: ", ne );
 			throw( new XPathException( this, "jndi:get-dir-context() Cannot get JNDI directory context: " + ne ) );
 		}
 	}
