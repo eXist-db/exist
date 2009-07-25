@@ -24,6 +24,7 @@ package org.exist.xquery.functions.request;
 
 import javax.servlet.http.Cookie;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -32,9 +33,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -44,15 +45,17 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetCookieNames extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetCookieNames.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
 				"get-cookie-names",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
-			"Returns the names of all Cookie's in the request",
+			"Returns the names of all Cookies in the request",
 			FunctionSignature.NO_ARGS,
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of the names of all Cookies in the request"));
 
 	public GetCookieNames(XQueryContext context) {
 		super(context, signature);
@@ -64,13 +67,16 @@ public class GetCookieNames extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
+		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
+		}
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper)
@@ -87,9 +93,11 @@ public class GetCookieNames extends BasicFunction {
 						names.add(new StringValue(cookies[c].getName()));
 					}
 					
+					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return names;
 				}
 			}
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else

@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.functions.request;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +30,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -45,10 +45,10 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
@@ -62,6 +62,8 @@ import org.xml.sax.XMLReader;
  */
 public class GetData extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetData.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
@@ -70,7 +72,7 @@ public class GetData extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns the content of a POST request.If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
 			null,
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request"));
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -80,7 +82,7 @@ public class GetData extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns the content of a POST request. If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
 			null,
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request"),
 			"Renamed to get-data.");
 	
 	public GetData(XQueryContext context) {
@@ -92,6 +94,8 @@ public class GetData extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
 	{
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
@@ -152,6 +156,7 @@ public class GetData extends BasicFunction {
 						if(!mimeType.isXMLType())
 						{
 							//binary data
+							logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 							return new Base64Binary(bufRequestData);
 						}
 					}
@@ -173,6 +178,7 @@ public class GetData extends BasicFunction {
 					reader.setContentHandler(receiver);
 					reader.parse(src);
 					Document doc = receiver.getDocument();
+					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return (NodeValue)doc.getDocumentElement();
 				}
 				catch(ParserConfigurationException e)
@@ -201,6 +207,7 @@ public class GetData extends BasicFunction {
 				try
 				{
 					String s = new String(bufRequestData, encoding);
+					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return new StringValue(s);
 				}
 				catch (IOException e)
@@ -211,6 +218,7 @@ public class GetData extends BasicFunction {
 			else
 			{
 				//no post data
+				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return Sequence.EMPTY_SEQUENCE;
 			}
 		}

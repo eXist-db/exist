@@ -31,8 +31,8 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -48,7 +48,7 @@ public class GetExists extends BasicFunction
 			new QName( "exists", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
 			"Returns whether a session object exists.",
 			null,
-			new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE ) );
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the session object exists" ) );
 
 	/**
 	 * @param context

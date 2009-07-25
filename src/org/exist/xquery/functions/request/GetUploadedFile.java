@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.BufferedInputStream;
@@ -41,6 +42,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -50,6 +52,8 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class GetUploadedFile extends BasicFunction {
+
+	protected static final Logger logger = Logger.getLogger(GetUploadedFile.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -72,7 +76,7 @@ public class GetUploadedFile extends BasicFunction {
 				new SequenceType[] {
 					new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 				},
-				new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+				new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the base64 encoded data from the uploaded file")
 		)
 		
 	};
@@ -86,6 +90,8 @@ public class GetUploadedFile extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -124,6 +130,7 @@ public class GetUploadedFile extends BasicFunction {
 						baos.write(buf, 0, read);
 					}
 					
+					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return new Base64Binary(baos.toByteArray());
 					
 				}
@@ -152,6 +159,7 @@ public class GetUploadedFile extends BasicFunction {
 			}
 			else
 			{
+				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return new JavaObjectValue(file);
 			}
 		}

@@ -24,6 +24,7 @@ package org.exist.xquery.functions.request;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -34,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -43,6 +45,8 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter <adam.retter@exist-db.org>
  */
 public class GetUploadedFileSize extends BasicFunction {
+
+	protected static final Logger logger = Logger.getLogger(GetUploadedFileSize.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -54,7 +58,7 @@ public class GetUploadedFileSize extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
-			new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the size of the uploaded file"));
 	
 	public GetUploadedFileSize(XQueryContext context) {
 		super(context, signature);
@@ -65,6 +69,8 @@ public class GetUploadedFileSize extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -82,6 +88,7 @@ public class GetUploadedFileSize extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper) {
 			RequestWrapper request = (RequestWrapper)value.getObject();
 			File file = request.getFileUploadParam(uploadParamName);
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if(file == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}

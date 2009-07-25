@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -30,9 +31,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -43,15 +44,14 @@ import org.exist.xquery.value.Type;
  */
 public class GetQueryString extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetQueryString.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName(
-				"get-query-string",
-				RequestModule.NAMESPACE_URI,
-				RequestModule.PREFIX),
+			new QName("get-query-string", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the full query string passed to the servlet (without the initial question mark).",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "query string"));
 
 	public GetQueryString(XQueryContext context)
 	{
@@ -64,6 +64,8 @@ public class GetQueryString extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -77,6 +79,7 @@ public class GetQueryString extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper)
 		{
 			String queryString = ((RequestWrapper) value.getObject()).getQueryString();
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if(queryString != null)
 			{
 				return new StringValue(queryString);

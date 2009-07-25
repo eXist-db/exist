@@ -33,9 +33,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -48,13 +48,10 @@ public class Clear extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName(
-				"clear",
-				SessionModule.NAMESPACE_URI,
-				SessionModule.PREFIX),
+			new QName("clear", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Removes all attributes from the current HTTP session. Does NOT invalidate the session.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "empty sequence"));
 
 	/**
 	 * @param context

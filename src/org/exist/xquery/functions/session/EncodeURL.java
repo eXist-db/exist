@@ -35,6 +35,7 @@ import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -55,7 +56,7 @@ public class EncodeURL extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "")
 			},
-			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the encoded URL"));
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -64,7 +65,7 @@ public class EncodeURL extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "")
 			},
-			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the encoded URL"),
 			"Moved to the 'session' module. See session:encode-url.");
 	
 	public EncodeURL(XQueryContext context) {

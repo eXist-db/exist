@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -31,6 +32,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -42,6 +44,8 @@ import org.exist.xquery.value.Type;
  */
 public class GetUploadedFileName extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetUploadedFileName.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-uploaded-file-name", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
@@ -52,7 +56,7 @@ public class GetUploadedFileName extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the file anme of the uploaded file"));
 	
 	public GetUploadedFileName(XQueryContext context) {
 		super(context, signature);
@@ -63,6 +67,8 @@ public class GetUploadedFileName extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -80,6 +86,7 @@ public class GetUploadedFileName extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper) {
 			RequestWrapper request = (RequestWrapper)value.getObject();
 			String fname = request.getUploadedFileName(uploadParamName);
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if(fname == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}

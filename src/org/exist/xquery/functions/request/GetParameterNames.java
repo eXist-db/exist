@@ -24,6 +24,7 @@ package org.exist.xquery.functions.request;
 
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
@@ -32,9 +33,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -44,6 +45,8 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetParameterNames extends BasicFunction {
 
+	protected static final Logger logger = Logger.getLogger(GetParameterNames.class);
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
@@ -52,7 +55,7 @@ public class GetParameterNames extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns a sequence containing the names of all parameters passed in the current request",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "sequence containing the names of all parameters"));
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -62,7 +65,7 @@ public class GetParameterNames extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns a sequence containing the names of all parameters passed in the current request",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "sequence containing the names of all parameters"));
 	
 	/**
 	 * @param context
@@ -76,6 +79,8 @@ public class GetParameterNames extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
+		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -95,6 +100,7 @@ public class GetParameterNames extends BasicFunction {
 				String param = (String) e.nextElement();
 				result.add(new StringValue(param));
 			}
+			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return result;
 		} else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
