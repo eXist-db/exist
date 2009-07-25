@@ -115,7 +115,7 @@ public class ValidationReport implements ErrorHandler {
     }
     
     
-    public void setException(Exception ex){
+    public void setException(Throwable ex){
         this.throwed=ex;
     }
     
