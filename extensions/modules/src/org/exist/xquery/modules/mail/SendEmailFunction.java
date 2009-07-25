@@ -44,6 +44,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -78,6 +79,8 @@ import org.w3c.dom.Node;
  */
 public class SendEmailFunction extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(SendEmailFunction.class);
+	
 	// This function has been deprecated, in favour of using the JavaMail version.
     
     private String charset;
@@ -93,7 +96,7 @@ public class SendEmailFunction extends BasicFunction
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
-			"Deprecated. Use the new JavaMail-based send function instead. This function will be removed at some point in the future."
+			"Use the new JavaMail-based send function instead. This function will be removed at some point in the future."
 			);
 
 	/**
@@ -118,6 +121,8 @@ public class SendEmailFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
+		
 		try
 		{	
 			//get the charset parameter, default to UTF-8
@@ -139,6 +144,7 @@ public class SendEmailFunction extends BasicFunction
 				//SMTP
 				if(SendSMTP(theMail, args[1].getStringValue()))
 				{
+					logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 					return(BooleanValue.TRUE);
 				}
 			}
@@ -147,10 +153,12 @@ public class SendEmailFunction extends BasicFunction
 				//Sendmail
 				if(SendSendmail(theMail))
 				{
+					logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 					return(BooleanValue.TRUE);
 				}
 			}
 			
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			//Failed to send email
 			return(BooleanValue.FALSE);
 		}

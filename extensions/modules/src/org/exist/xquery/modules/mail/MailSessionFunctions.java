@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -34,6 +35,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -56,15 +59,17 @@ import javax.mail.Session;
  */
 public class MailSessionFunctions extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(MailSessionFunctions.class);
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "get-mail-session", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Open's a mail session. $a defines optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>.. Returns an xs:long representing the session handle.",
+			"Open's a JavaMail session.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE )
+				new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>." )
 			},
-			new SequenceType( Type.LONG, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the session handle." )
 			)
 		};
 
@@ -90,6 +95,7 @@ public class MailSessionFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
+		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
 		Properties props = new Properties();
 		
 		if( args.length == 1 ) {
@@ -101,6 +107,8 @@ public class MailSessionFunctions extends BasicFunction
 		
 		// store the session and return the handle of the session
 			
-		return( new IntegerValue( MailModule.storeSession( context, session ) ) );
+		IntegerValue integerValue = new IntegerValue( MailModule.storeSession( context, session ) );
+		logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+		return integerValue;
 	}
 }

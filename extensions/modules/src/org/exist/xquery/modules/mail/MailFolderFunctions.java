@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -34,6 +35,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -59,25 +62,27 @@ import javax.mail.Store;
  */
 public class MailFolderFunctions extends BasicFunction
 {
+	protected static final Logger logger = Logger.getLogger(MailFolderFunctions.class);
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "get-mail-folder", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Open's a mail folder. $a is a mail store handle. $b is the name of the folder to open as a string. Returns an xs:long representing the folder handle.",
+			"Open's a mail folder.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "mail store handle retrieved from mail:get-mail-store()" ),
+				new FunctionParameterSequenceType( "foldername", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the folder to open" )
 			},
-			new SequenceType( Type.LONG, Cardinality.ZERO_OR_ONE )
+			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the folder handle." )
 			),
 	
 		new FunctionSignature(
 			new QName( "close-mail-folder", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Closes's a mail folder. $a is a mail folder handle. $b is a boolean that specifies whether to expunge the folder on close.",
+			"Closes's a mail folder.",
 			new SequenceType[]
 			{
-				new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" ),
+				new FunctionParameterSequenceType( "expunge", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean that specifies whether to expunge the folder on close." )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)
@@ -105,10 +110,15 @@ public class MailFolderFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
+		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
 		if( isCalledAs( "get-mail-folder" ) ) {
-			return( getMailFolder( args, contextSequence ) );
+			Sequence mailFolder = getMailFolder( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return mailFolder;
 		} else if( isCalledAs( "close-mail-folder" ) ) {
-			return( closeMailFolder( args, contextSequence ) );
+			Sequence closeMailFolder = closeMailFolder( args, contextSequence );
+			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
+			return closeMailFolder;
 		} 
 			
 		throw( new XPathException( this, "Invalid function name" ) );	
