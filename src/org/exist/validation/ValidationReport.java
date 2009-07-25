@@ -21,12 +21,14 @@
  */
 package org.exist.validation;
 
+import java.io.PrintStream;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Report containing all validation info (errors, warnings).
@@ -208,5 +210,15 @@ public class ValidationReport implements ErrorHandler {
     
     public String getNamespaceUri(){
         return namespaceUri;
+    }
+
+    public String getStackTrace(){
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        if(throwed !=null){
+            PrintStream ps = new PrintStream(baos);
+            throwed.printStackTrace(ps);
+        }
+        return baos.toString();
     }
 }
