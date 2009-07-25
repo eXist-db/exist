@@ -153,17 +153,16 @@ public class Jing extends BasicFunction  {
             driver.validate(instance);
             
         } catch (MalformedURLException ex) {
-            LOG.error(ex);
-            //throw new XPathException(this, "Invalid resource URI", ex);
+            LOG.error(ex.getMessage());
             report.setException(ex);
 
         } catch (ExistIOException ex) {
             LOG.error(ex.getCause());
-            throw new XPathException(this, "eXistIOexception", ex.getCause());
+            report.setException(ex);
 
         } catch (Throwable ex) {
             LOG.error(ex);
-            throw new XPathException(this, "Exception: "+ex.getMessage());
+            report.setException(ex);
 
         } finally {
             // Force release stream
