@@ -34,6 +34,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -63,7 +64,7 @@ public class GetWidthFunction extends BasicFunction
 			{
 				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "the image data")
 			},
-			new FunctionParameterSequenceType("width", Type.INTEGER, Cardinality.ZERO_OR_ONE, "width in pixels"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the width in pixels"));
 
 	/**
 	 * GetWidthFunction Constructor

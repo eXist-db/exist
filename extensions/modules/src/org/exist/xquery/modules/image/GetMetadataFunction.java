@@ -43,6 +43,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -76,7 +77,7 @@ public class GetMetadataFunction extends BasicFunction
 				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data"),
 				new FunctionParameterSequenceType("native-format", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "When true() metadata of the images native format is returned, otherwise common java ImageIO metadata is returned.")
 			},
-			new FunctionParameterSequenceType("metadata", Type.NODE, Cardinality.ZERO_OR_ONE, "The image metadata"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the image metadata"));
 
 	/**
 	 * GetMetadataFunction Constructor
