@@ -1,22 +1,6 @@
-package org.exist.xquery.modules.lucene;
-
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.FloatValue;
-import org.exist.dom.QName;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.Match;
-import org.exist.indexing.lucene.LuceneIndex;
-import org.exist.indexing.lucene.LuceneIndexWorker;/*
+/*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -35,17 +19,38 @@ import org.exist.indexing.lucene.LuceneIndexWorker;/*
  *
  * \$Id\$
  */
+package org.exist.xquery.modules.lucene;
+
+import org.apache.log4j.Logger;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.FloatValue;
+import org.exist.dom.QName;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.Match;
+import org.exist.indexing.lucene.LuceneIndex;
+import org.exist.indexing.lucene.LuceneIndexWorker;
 
 public class Score extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(Score.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("score", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "",
+            "INSERT DESCRIPTION HERE",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, null)
             },
-            new SequenceType(Type.FLOAT, Cardinality.ZERO_OR_MORE)
+            new FunctionParameterSequenceType("result", Type.FLOAT, Cardinality.ZERO_OR_MORE, "the score")
         );
 
     public Score(XQueryContext context) {
@@ -53,9 +58,13 @@ public class Score extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	logger.info("Entering " + LuceneModule.PREFIX + ":" + getName().getLocalName());
+    	
         NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
-        if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE)
+        if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+        	logger.info("Exiting " + LuceneModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
+        }
         NodeProxy proxy = (NodeProxy) nodeValue;
         Match match = proxy.getMatches();
         float score = 0.0f;
@@ -66,6 +75,7 @@ public class Score extends BasicFunction {
             }
             match = match.getNextMatch();
         }
+    	logger.info("Exiting " + LuceneModule.PREFIX + ":" + getName().getLocalName());
         return new FloatValue(score);
     }
 }
