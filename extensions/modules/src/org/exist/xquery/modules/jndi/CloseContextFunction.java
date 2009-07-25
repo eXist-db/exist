@@ -23,12 +23,14 @@
 package org.exist.xquery.modules.jndi;
 
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,13 +51,15 @@ import org.exist.xquery.value.Type;
 
 public class CloseContextFunction extends BasicFunction 
 {
+	protected static final Logger logger = Logger.getLogger(CloseContextFunction.class);
+
 	public final static FunctionSignature[] signatures = {
 			
 			new FunctionSignature(
 					new QName( "close-context", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
-					"Closes a JNDI Context indicated by the context handle in $a",
+					"Closes a JNDI Context",
 					new SequenceType[] {
-							new SequenceType( Type.INTEGER, Cardinality.EXACTLY_ONE ) 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" )
 					},
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};
@@ -87,8 +91,11 @@ public class CloseContextFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
+
 		// Was a Dir Context handle specified
 		if( args[0].isEmpty() ) {
+			logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 
@@ -96,6 +103,7 @@ public class CloseContextFunction extends BasicFunction
 			
 		JNDIModule.closeJNDIContext( context, ctxID );
 		
+		logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

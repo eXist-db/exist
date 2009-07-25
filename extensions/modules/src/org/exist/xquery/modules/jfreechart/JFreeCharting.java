@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 
 import org.exist.validation.internal.node.NodeInputStream;
@@ -36,6 +37,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.response.ResponseModule;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,6 +60,8 @@ import org.exist.xquery.value.NodeValue;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class JFreeCharting extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(JFreeCharting.class);
 
     private static final String function1Txt =
             "Render chart using JFreechart. Check documentation on " +
@@ -89,7 +93,7 @@ public class JFreeCharting extends BasicFunction {
                 new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE, "JFreechart " +
                         "XML formatted CategoryDataset or PieDataset."),
             },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the generated PNG image file")
         ),
 
         new FunctionSignature(
@@ -111,9 +115,12 @@ public class JFreeCharting extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    	
+    	logger.info("Entering " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
 
         //was an image and a mime-type speficifed
 		if(args[1].isEmpty() || args[2].isEmpty()){
+	    	logger.info("Exiting " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -145,6 +152,7 @@ public class JFreeCharting extends BasicFunction {
             // Render output
             if(isCalledAs("render")){
                 byte[] image=writePNG(config, chart);
+            	logger.info("Exiting " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
                 return new Base64Binary(image);
 
             } else {
@@ -158,6 +166,7 @@ public class JFreeCharting extends BasicFunction {
             throw new XPathException(this, ex.getMessage());
         }
 
+    	logger.info("Exiting " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 
