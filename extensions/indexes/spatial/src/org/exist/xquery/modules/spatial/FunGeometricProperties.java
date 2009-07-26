@@ -90,7 +90,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getMaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal X of geometry $a",
+    		"Returns the maximal X of geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType(paramNameGeometry, Type.NODE, Cardinality.ZERO_OR_ONE, paramNameGeometryDesc)
             },
