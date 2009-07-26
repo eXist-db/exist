@@ -2,12 +2,13 @@ xquery version "1.0" encoding "UTF-8";
 
 declare namespace t="http://xproc.org/ns/testsuite";
 declare namespace c="http://www.w3.org/ns/xproc-step";
-declare namespace file="http://exist-db.org/xquery/util";
 
 import module namespace const = "http://xproc.net/xproc/const";
 import module namespace xproc = "http://xproc.net/xproc";
 import module namespace u = "http://xproc.net/xproc/util";
 import module namespace naming = "http://xproc.net/xproc/naming";
+
+declare namespace file="http://exist-db.org/xquery/util";
 
 declare option exist:serialize "method=html media-type=text/html omit-xml-declaration=yes indent=yes";
 
@@ -55,7 +56,7 @@ let $runtime-debug := request:get-parameter("dbg", ())
     <test file="{$file/@name}">
         {
         if (contains($path,request:get-parameter("debug", ()))) then
-           xproc:run($pipeline,u:serialize($stdin,$const:ESCAPE_SERIALIZE),$runtime-debug)
+           xproc:run($pipeline,$stdin,$runtime-debug)
         else
             util:catch('*', xproc:run($pipeline,$stdin,$runtime-debug), 'test crashed')
          }
