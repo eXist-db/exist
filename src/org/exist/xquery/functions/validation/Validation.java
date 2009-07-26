@@ -74,7 +74,8 @@ public class Validation extends BasicFunction  {
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            new FunctionParameterSequenceType("result",Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                Shared.simplereportText)
         ),
         
         
@@ -91,7 +92,8 @@ public class Validation extends BasicFunction  {
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.simplereportText)
         ),
         
         new FunctionSignature(
@@ -102,7 +104,8 @@ public class Validation extends BasicFunction  {
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
-            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.xmlreportText)
         ),
         
         new FunctionSignature(
@@ -118,7 +121,8 @@ public class Validation extends BasicFunction  {
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
             },
-            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.xmlreportText)
         )
                         
     };

@@ -79,7 +79,8 @@ public class Jaxv extends BasicFunction  {
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "Location of XML Schema (.xsd) document.")
                 },
-                new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    Shared.simplereportText)
             ),
         
         
@@ -92,7 +93,8 @@ public class Jaxv extends BasicFunction  {
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "Location of XML Schema (.xsd) document.")
                    },
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.xmlreportText)
             )
                         
     };
