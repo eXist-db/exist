@@ -144,11 +144,11 @@ public class DescribeFunction extends Function {
 
             SequenceType returnType = signature.getReturnType();
             if(returnType != null){             
-                if (returnType instanceof FunctionParameterSequenceType) {
+                if (returnType instanceof FunctionReturnSequenceType) {
                     description.append("\n");
                     description.append("Result:\n");
-                    FunctionParameterSequenceType fp
-                                = (FunctionParameterSequenceType) returnType;
+                    FunctionReturnSequenceType fp
+                                = (FunctionReturnSequenceType) returnType;
                         description.append(fp.getDescription());
                         description.append("\n");
                 }
