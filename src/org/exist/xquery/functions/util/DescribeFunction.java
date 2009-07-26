@@ -123,22 +123,33 @@ public class DescribeFunction extends Function {
 
             StringBuilder description = new StringBuilder();
             description.append(signature.getDescription());
-			
+
+            description.append("\n\n");
+            
             SequenceType argumentTypes[] = signature.getArgumentTypes();
             
-            if(argumentTypes != null){
-                description.append("\n\n");
-                description.append("Parameters:\n");
+            if(argumentTypes != null && argumentTypes.length>0){
+
+                StringBuilder args = new StringBuilder();
+                int noArgs=0;
+                
                 for (SequenceType argumentType : argumentTypes) {
                     if (argumentType instanceof FunctionParameterSequenceType) {
+                        noArgs++;
                         FunctionParameterSequenceType fp
                                 = (FunctionParameterSequenceType) argumentType;
-                        description.append("$");
-                        description.append(fp.getAttributeName());
-                        description.append(" : ");
-                        description.append(fp.getDescription());
-                        description.append("\n");
+                        args.append("$");
+                        args.append(fp.getAttributeName());
+                        args.append(" : ");
+                        args.append(fp.getDescription());
+                        args.append("\n");
                     }
+                }
+
+                // only add if there were good arguments
+                if(noArgs>0){
+                    description.append("Parameters:\n");
+                    description.append(args);
                 }
             }
 
