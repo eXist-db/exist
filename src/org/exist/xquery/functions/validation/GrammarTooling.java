@@ -48,6 +48,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -72,6 +73,18 @@ public class GrammarTooling extends BasicFunction  {
     private static final String TYPE_XSD=Namespaces.SCHEMA_NS;
     
     private final Configuration config;
+
+
+    public final static String cacheReport="<report>\n"+
+            "\t<grammar type=\"...\">\n" +
+            "\t\t<Namespace>....\n" +
+            "\t\t<BaseSystemId>...\n" +
+            "\t\t<LiteralSystemId>...\n" +
+            "\t\t<ExpandedSystemId>....\n" +
+            "\t</grammar>\n" +
+            "\t...\n" +
+            "\t...\n" +
+            "</report>\n";
     
     // Setup function signature
     public final static FunctionSignature signatures[] = {
@@ -88,7 +101,8 @@ public class GrammarTooling extends BasicFunction  {
             ValidationModule.PREFIX),
             "Show all cached grammars.",
             null,
-            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                "XML document formatted as\n"+cacheReport)
         ),
             
         new FunctionSignature(
@@ -100,7 +114,8 @@ public class GrammarTooling extends BasicFunction  {
                 new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.ZERO_OR_MORE,
                         "Reference to grammar.")
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
+             "Sequence of namespaces of preparsed grammars.")
         ),
             
             
