@@ -30,6 +30,7 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,7 +50,7 @@ public class UUID extends Function {
             new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Generate a Universally Unique Identifier string.",
             FunctionSignature.NO_ARGS,
-            new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string"));
     
     public UUID(XQueryContext context) {
         super(context, signature);

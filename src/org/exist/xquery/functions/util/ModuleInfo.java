@@ -34,6 +34,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -55,21 +56,21 @@ public class ModuleInfo extends BasicFunction {
 			"Returns a sequence containing the namespace URIs of all modules " +
 			"currently known to the system, including built in and imported modules.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "a sequence of all of the active function modules namespace URIs"));
 	
 	public final static FunctionSignature registeredModuleSig =
 		new FunctionSignature(
 			new QName("is-module-registered", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a Boolean value if the module identified by the namespace URI is registered.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is registered as an active function module"));
 	
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a short description of the module identified by the namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the description of the active function module identified by the namespace URI"));
 	
 	/**
 	 * @param context
