@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
@@ -85,7 +86,7 @@ public class XMLDBCreateUser extends BasicFunction {
         String pass = args[1].getStringValue();
         User userObj = new User(user, pass);
         
-        logger.info("Attempting to create user "+user);
+        logger.info("Attempting to create user " + user);
         
         // changed by wolf: the first group is always the primary group, so we don't need
         // an additional argument

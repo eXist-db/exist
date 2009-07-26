@@ -38,6 +38,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -58,7 +59,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 
 	public final static FunctionSignature authenticateSignature =
 			new FunctionSignature(
-				new QName( "authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX ),
+				new QName("authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Check if a user is registered as database user. The function simply tries to " +
 				"read the database collection specified in the first parameter $collection, using the " +
 				"supplied username in $user-id and password in $password. " +
@@ -68,13 +69,13 @@ public class XMLDBAuthenticate extends BasicFunction {
 				    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
 				    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password")
 				},
-				new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" )
+				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
 			);
 	
     public final static FunctionSignature loginSignatures[] = {
 		
         new FunctionSignature(
-            new QName( "login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX ),
+            new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Check if a user is registered as database user and change the user identity for the " +
             "current XQuery script. The function simply tries to " +
             "read the database collection specified in the first parameter $collection, using the " +
@@ -89,11 +90,11 @@ public class XMLDBAuthenticate extends BasicFunction {
                 new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "password")
 			},
-			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" )
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
 		),
 	
 		new FunctionSignature(
-            new QName( "login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX ),
+            new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Check if a user is registered as database user and change the user identity for the " +
             "current XQuery script. The function simply tries to " +
             "read the database collection specified in the first parameter $collection, using the " +
@@ -109,7 +110,7 @@ public class XMLDBAuthenticate extends BasicFunction {
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password"),
 		new FunctionParameterSequenceType("create-session", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "wether to create the seession or not on successful authentication, default false()")
 			},
-			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "success" )
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
 		)
 	};
     

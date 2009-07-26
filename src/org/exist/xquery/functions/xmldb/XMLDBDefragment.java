@@ -29,6 +29,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.*;
 import org.exist.xquery.update.Modification;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -36,8 +37,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 
-public class Defragment extends BasicFunction {
-    private static final Logger logger = Logger.getLogger(Defragment.class);
+public class XMLDBDefragment extends BasicFunction {
+    private static final Logger logger = Logger.getLogger(XMLDBDefragment.class);
 
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
@@ -54,7 +55,7 @@ public class Defragment extends BasicFunction {
 			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "nodes from ducuments to defragment"),
 			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE, "min number of fragmented pages required before defragmenting")
                     },
-                    new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")),
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Start a defragmentation run on each document for which a node is passed in the first argument. " +
@@ -66,13 +67,15 @@ public class Defragment extends BasicFunction {
                     new SequenceType[] {
 			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "nodes from ducuments to defragment"),
                     },
-                    new SequenceType(Type.ITEM, Cardinality.EMPTY))
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"))
     };
 
-    public Defragment(XQueryContext context, FunctionSignature signature) {
+    public XMLDBDefragment(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
-
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 

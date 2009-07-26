@@ -89,11 +89,11 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBURIFunctions.signatures[2], XMLDBURIFunctions.class),
         new FunctionDef(XMLDBURIFunctions.signatures[3], XMLDBURIFunctions.class),
         new FunctionDef(XMLDBGetMimeType.signature, XMLDBGetMimeType.class),
-        new FunctionDef(FunDocument.signature, FunDocument.class),
+        new FunctionDef(XMLDBDocument.signature, XMLDBDocument.class),
         new FunctionDef(FunXCollection.signature, FunXCollection.class),
         new FunctionDef(XMLDBReindex.signature, XMLDBReindex.class),
-        new FunctionDef(Defragment.signatures[0], Defragment.class),
-        new FunctionDef(Defragment.signatures[1], Defragment.class)
+        new FunctionDef(XMLDBDefragment.signatures[0], XMLDBDefragment.class),
+        new FunctionDef(XMLDBDefragment.signatures[1], XMLDBDefragment.class)
     };
 
     static {

@@ -35,6 +35,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -60,7 +61,7 @@ public class XMLDBChangeUser extends BasicFunction {
 										new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "the set of groups ths user is member of"),
 										new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "the home collection of the user")
 									    },
-									    new SequenceType(Type.ITEM, Cardinality.EMPTY));
+									    new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
 	
     public XMLDBChangeUser(XQueryContext context) {
 	super(context, signature);
