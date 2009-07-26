@@ -24,6 +24,8 @@
  */
 package org.exist.xquery.modules.spatial;        
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
@@ -36,6 +38,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -46,81 +49,81 @@ import org.w3c.dom.Element;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
-	
-	boolean hasUsedIndex = false;
+    protected static final Logger logger = Logger.getLogger(FunSpatialSearch.class);
+    boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("equals", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which is equal to geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which is equal to geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
 		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which is equal to geometry $geometry")
         ),
         new FunctionSignature(
             new QName("disjoint", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which is disjoint with geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which is disjoint with geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
 		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which is disjoint with geometry $geometry")
         ),
         new FunctionSignature(
             new QName("intersects", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which instersects with geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which instersects with geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
 		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which instersects with geometry $geometry")
         ),
         new FunctionSignature(
             new QName("touches", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which touches geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which touches geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
 		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which touches geometry $geometry")
         ),
         new FunctionSignature(
             new QName("crosses", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which crosses geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which crosses geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
 		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which touches geometry $geometry")
         ),
         new FunctionSignature(
             new QName("within", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which is within geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which is within geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
 		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which is within geometry $geometry")
         ),
         new FunctionSignature(
             new QName("contains", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which contains geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which contains geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
                     new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which contains geometry $geometry")
         ),
         new FunctionSignature(
             new QName("overlaps", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the nodes in $a that contain a geometry which overlaps geometry $b",
+            "Returns the nodes in $nodes that contain a geometry which overlaps geometry $geometry",
             new SequenceType[]{
 		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
                     new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which overlaps geometry $geometry")
         )                
 	};    
    
@@ -132,8 +135,12 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Sequence result = null;
     	Sequence nodes = args[0];
-        if (nodes.isEmpty())
+	logger.info("Entering " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+
+        if (nodes.isEmpty()) {
+	    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
             result = Sequence.EMPTY_SEQUENCE;
+	}
         else if (args[1].isEmpty())
         	//TODO : to be discussed. We could also return an empty sequence here        	
         	result = nodes;
@@ -141,8 +148,11 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
         	try {
 	        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)        	
 		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
-		        if (indexWorker == null)
-		        	throw new XPathException("Unable to find a spatial index worker");
+		        if (indexWorker == null) {
+			    logger.error("Unable to find a spatial index worker");
+			    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+			    throw new XPathException("Unable to find a spatial index worker");
+			}
 		        Geometry EPSG4326_geometry = null;
 		        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
 				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
@@ -153,8 +163,11 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        	Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);	            
 		        	EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
 		        }
-	        	if (EPSG4326_geometry == null) 
-	        		throw new XPathException("Unable to get a geometry from the node");
+	        	if (EPSG4326_geometry == null) {
+			    logger.error("Unable to get a geometry from the node");
+			    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+			    throw new XPathException("Unable to get a geometry from the node");
+			} 
 		        int spatialOp = SpatialOperator.UNKNOWN;
 		        if (isCalledAs("equals"))
 		        	spatialOp = SpatialOperator.EQUALS;
@@ -176,9 +189,12 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
 		        hasUsedIndex = true;	        	
         	} catch (SpatialIndexException e) {
-        		throw new XPathException(e);
+		    logger.error(e.getMessage());
+		    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+		    throw new XPathException(e);
         	}
         }
+	logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
     

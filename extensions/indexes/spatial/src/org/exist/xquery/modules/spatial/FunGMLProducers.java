@@ -24,6 +24,8 @@
  */
 package org.exist.xquery.modules.spatial;        
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
@@ -38,6 +40,7 @@ import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
@@ -52,52 +55,52 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 
 public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
-	
-	boolean hasUsedIndex = false;
+    protected static final Logger logger = Logger.getLogger(FunGMLProducers.class);
+    boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
             new QName("transform", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of geometry $a with the SRS $b",
+            "Returns the GML representation of geometry $geometry with the SRS $srs",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
             	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "srs")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of geometry $geometry with the SRS $srs")
         ),
     	new FunctionSignature(
             new QName("WKTtoGML", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of WKT $a with the SRS $b",
+            "Returns the GML representation of WKT $wkt with the SRS $srs",
             new SequenceType[]{
             	new FunctionParameterSequenceType("wkt", Type.STRING, Cardinality.ZERO_OR_ONE, "wkt"),
             	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "srs")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of WKT $wkt with the SRS $srs")
         ),
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of a buffer around geometry $a having width $b in its CRS. " +
+            "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by 8 segments per circle quadrant.",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
             	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "width")
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
         ),
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of a buffer around geometry $a having width $b in its CRS. " +
+            "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by $c segments per circle quadrant.",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
             	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "width"),
             	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "segments")
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
         ),
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of a buffer around geometry $a having width $b in its CRS. " +
+            "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by $c segments per circle quadrant. The fourth argument denotes the line end style (round, butt or square) as an integer constant.",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
@@ -105,67 +108,67 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "segments"),
             	new FunctionParameterSequenceType("line-end-style", Type.INTEGER, Cardinality.EXACTLY_ONE, "line-end-style")
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
         ),
     	new FunctionSignature(
             new QName("getBbox", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the bounding box of geometry $a.",
+            "Returns the GML representation of the bounding box of geometry $geometry.",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the bounding box of geometry $geometry.")
         ),         
     	new FunctionSignature(
             new QName("convexHull", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the convex hull of geometry $a.",
+            "Returns the GML representation of the convex hull of geometry $geometry.",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the convex hull of geometry $geometry.")
         ), 
     	new FunctionSignature(
             new QName("boundary", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the boundary of geometry $a.",
+            "Returns the GML representation of the boundary of geometry $geometry.",
             new SequenceType[]{
             	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the boundary of geometry $geometry.")
         ), 
     	new FunctionSignature(
             new QName("intersection", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the intersection of geometry $a and geometry $b in the SRS of $a.",
+            "Returns the GML representation of the intersection of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the intersection of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ), 
     	new FunctionSignature(
             new QName("union", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the union of geometry $a and geometry $b in the SRS of $a.",
+            "Returns the GML representation of the union of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the union of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ), 
     	new FunctionSignature(
             new QName("difference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the difference of geometry $a and geometry $b in the SRS of $a.",
+            "Returns the GML representation of the difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ), 
     	new FunctionSignature(
             new QName("symetricDifference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the symetric difference of geometry $a and geometry $b in the SRS of $a.",
+            "Returns the GML representation of the symetric difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the symetric difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ) 
    	};
     
@@ -173,13 +176,18 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		super(context, signature);
 	}
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+	throws XPathException {
     	Sequence result = null; 
+	logger.info("Entering " + SpatialModule.PREFIX + ":" + getName().getLocalName());
     	try {
         	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
 	        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
-	        if (indexWorker == null)
-	        	throw new XPathException("Unable to find a spatial index worker");
+	        if (indexWorker == null) {
+		    logger.error("Unable to find a spatial index worker");
+		    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+		    throw new XPathException("Unable to find a spatial index worker");
+		}
 	        Geometry geometry = null;	        
 	        String targetSRS = null;
 	        if (isCalledAs("transform")) {
@@ -199,8 +207,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		sourceSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
 		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		        	}		        	
-		        	if (geometry == null) 
-		        		throw new XPathException("Unable to get a geometry from the node");
+		        	if (geometry == null) {
+				    logger.error("Unable to get a geometry from the node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+				    throw new XPathException("Unable to get a geometry from the node");
+				}
 		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
 		        	
 		        	geometry = indexWorker.transformGeometry(geometry, sourceSRS, targetSRS);
@@ -212,12 +223,17 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	String wkt = args[0].itemAt(0).getStringValue();
 			        WKTReader wktReader = new WKTReader();
 			        try {			        	
-			        	geometry = wktReader.read(wkt);			        	
+			        	geometry = wktReader.read(wkt);
 			        } catch (ParseException e) {
-			        	throw new XPathException(e);	
+				    logger.error(e.getMessage());
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+				    throw new XPathException(e);	
 			        }
-		        	if (geometry == null) 
-		        		throw new XPathException("Unable to get a geometry from the node");
+		        	if (geometry == null) {
+				    logger.error("Unable to get a geometry from the node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+				    throw new XPathException("Unable to get a geometry from the node");
+				}
 		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
 	        	}
 	        } else if (isCalledAs("buffer")) {
@@ -236,8 +252,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 			        	targetSRS =  ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
 		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		        	}
-		        	if (geometry == null) 
-		        		throw new XPathException("Unable to get a geometry from the node");
+		        	if (geometry == null) { 
+				    logger.error("Unable to get a geometry from the node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+				    throw new XPathException("Unable to get a geometry from the node");
+				}
 		        	
 		        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
 		        	int quadrantSegments = 8;	
@@ -253,7 +272,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 			        		//OK
 			        		break;
 			        	default:
-			        		throw new XPathException("Invalid line end style");	
+					    {
+						logger.error("Invalid line end style");
+						logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+						throw new XPathException("Invalid line end style");
+					    }
 		        	}		        	
 	        		geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);		        	
 	        	}
@@ -273,8 +296,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
 		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);		            	
 		        	}
-		        	if (geometry == null) 
-		        		throw new XPathException("Unable to get a geometry from the node");
+		        	if (geometry == null) {
+				    logger.error("Unable to get a geometry from the node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+				    throw new XPathException("Unable to get a geometry from the node");
+				}
 		        	
 		        	geometry = geometry.getEnvelope();
 	        	}	        	
@@ -294,8 +320,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
 		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		        	}
-		        	if (geometry == null) 
-		        		throw new XPathException("Unable to get a geometry from the node");
+		        	if (geometry == null) { 
+				    logger.error("Unable to get a geometry from the node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+				    throw new XPathException("Unable to get a geometry from the node");
+				}
 		        	
 		        	geometry = geometry.convexHull();
 	        	}
@@ -315,8 +344,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        		targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
 		        		geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
 		        	}
-		        	if (geometry == null) 
-		        		throw new XPathException("Unable to get a geometry from the node");
+		        	if (geometry == null) {
+				    logger.error("Unable to get a geometry from the node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+				    throw new XPathException("Unable to get a geometry from the node");
+				}
 		        	
 		        	geometry = geometry.getBoundary();		        	
 	        	}
@@ -356,10 +388,19 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		            	geometry2 = indexWorker.streamNodeToGeometry(context, geometryNode2);	            	
 		        	}
 		        	
-		        	if (geometry1 == null) 
-		        		throw new XPathException("Unable to get a geometry from the first node");
-		        	if (geometry2 == null) 
-		        		throw new XPathException("Unable to get a geometry from the second node");		        	
+		        	if (geometry1 == null) { 
+				    logger.error("Unable to get a geometry from the first node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+
+				    throw new XPathException("Unable to get a geometry from the first node");
+				}
+		        	if (geometry2 == null) { 
+				    logger.error("Unable to get a geometry from the second node");
+				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+
+				    throw new XPathException("Unable to get a geometry from the second node");
+				}
+
 		        	
 		        	//Transform the second geometry in the SRS of the first one if necessary
 					if (!srsName1.equalsIgnoreCase(srsName2)) {
@@ -382,8 +423,12 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 	        
 	        if (result == null) {	        
 		        String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
-		        if (gmlPrefix == null) 
-		        	throw new XPathException("'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");	
+		        if (gmlPrefix == null) {
+			    logger.error("namespace is not defined:" + SpatialModule.PREFIX);
+			    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+
+			    throw new XPathException("'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");
+			}
 		
 	     		context.pushDocumentContext();
 				try {
@@ -395,8 +440,13 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        }
 	        }
     	} catch (SpatialIndexException e) {
-    		throw new XPathException(e);
-    	}        
+	    logger.error(e.getMessage());
+	    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
+	    
+	    throw new XPathException(e);
+    	}
+
+	logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
         return result;
     }
     
