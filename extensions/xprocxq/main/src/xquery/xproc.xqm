@@ -35,10 +35,9 @@
  declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
  declare variable $xproc:try :=util:function(xs:QName("xproc:try"), 5);
  declare variable $xproc:catch :=util:function(xs:QName("xproc:catch"), 5);
-
  declare variable $xproc:group :=util:function(xs:QName("xproc:group"), 5);
  declare variable $xproc:for-each :=util:function(xs:QName("xproc:for-each"), 5);
- declare variable $xproc:viewport :=util:function(xs:QName("xproc:viewport"), 4);
+ declare variable $xproc:viewport :=util:function(xs:QName("xproc:viewport"), 5);
  declare variable $xproc:library :=util:function(xs:QName("xproc:library"), 4);
  declare variable $xproc:pipeline :=util:function(xs:QName("xproc:pipeline"), 4);
  (: -------------------------------------------------------------------------- :)
@@ -80,9 +79,49 @@
  };
 
 
+
+declare function xproc:replace-matching-elements($element as element(),$select,$defaultname,$currentstep,$outputs) as element() {
+   element {node-name($element)}
+      {$element/@*,
+          for $child in $element/node()
+              return
+              if ($child instance of element())
+                then
+            		if ($child intersect $select) then
+                          (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/*}</p:declare-step>,$child,(),$outputs)/.)[last()]/node()
+    			    else
+                        xproc:replace-matching-elements($child,$select,$defaultname,$currentstep,$outputs)
+                else
+                    $child
+      }
+};
+
+
  (: -------------------------------------------------------------------------- :)
- declare function xproc:viewport($primary,$secondary,$options,$step) {
-    <test3/>
+ declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outputs) {
+     let $v := u:get-primary($primary)
+
+     let $match := string($currentstep/@match[1])
+
+     (: let $query := if (contains($match,'/')) then
+                    $match
+                  else
+                    concat('.//',$match)
+     let $matchresult := u:evalXPATH($match, $v)
+:)
+     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
+     return
+
+     $match
+     (:
+        for $child in $v/*
+        return
+            xproc:replace-matching-elements($child,
+                                            $matchresult,
+                                            $defaultname,
+                                            $currentstep,
+                                            $outputs)
+    :)
  };
 
 
@@ -170,7 +209,6 @@
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run-step($primary,$secondary,$options,$step,$outputs) {
  (: -------------------------------------------------------------------------- :)
-
     let $v := u:get-primary($primary)
     let $pipeline := u:get-secondary('pipeline',$secondary)
     let $bindings := u:get-secondary('bindings',$secondary)
@@ -517,14 +555,15 @@
             $primaryinput/* (: prev step is an atomic step output:)
      }
 
-     let $select := string($currentstep/p:input[@primary='true']/@select)
+    let $select := string($currentstep/p:input[@primary='true']/@select)
     let $selectval := if ($select eq '/' or $select eq '') then
                         $primaryresult
                      else
                         u:evalXPATH(string($select),$primaryresult)
         return
 
-             if (empty($selectval)) then                u:dynamicError('err:XD0016',concat(string($pipeline/*[@name=$step]/p:input[@primary='true'][@select]/@select)," did not select anything at ",$step," ",name($pipeline/*[@name=$step])))
+             if (empty($selectval)) then
+                u:dynamicError('err:XD0016',concat(string($pipeline/*[@name=$step]/p:input[@primary='true'][@select]/@select)," did not select anything at ",$step," ",name($pipeline/*[@name=$step])))
              else
                  $selectval
  };
