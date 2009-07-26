@@ -65,7 +65,7 @@ public class Jing extends BasicFunction  {
     
     private static final String extendedFunctionTxt=
         "Validate document using Jing. " +
-        "Based on functionality provided by  com.thaiopensource.validate.ValidationDriver";
+        "Based on functionality provided by com.thaiopensource.validate.ValidationDriver";
         
 
     private final BrokerPool brokerPool;
@@ -90,7 +90,7 @@ public class Jing extends BasicFunction  {
         
         new FunctionSignature(
                 new QName("jing-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt+" A simple report is returned.",
+                extendedFunctionTxt+" An xml report is returned.",
                 new SequenceType[]{
                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
