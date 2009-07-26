@@ -33,6 +33,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -54,7 +55,7 @@ public class SystemTime extends Function
             "Contrary to fn:current-time, this function is not stable, i.e. the returned xs:time will change " +
             "during the evaluation time of a query and can be used to measure time differences.",
             null,
-            new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE )
+            new FunctionReturnSequenceType(Type.TIME, Cardinality.EXACTLY_ONE, "the current xs:time (with timezone)" )
 		),
 	
 		 new FunctionSignature(
@@ -63,7 +64,7 @@ public class SystemTime extends Function
             "Contrary to fn:current-date, this function is not stable, i.e. the returned xs:date will change " +
             "during the evaluation time of a query and can be used to measure time differences.",
             null,
-            new SequenceType( Type.DATE, Cardinality.EXACTLY_ONE ) 
+            new FunctionReturnSequenceType( Type.DATE, Cardinality.EXACTLY_ONE, "the current xs:date (with timezone)" ) 
 		),
 			
 		new FunctionSignature(
@@ -72,7 +73,7 @@ public class SystemTime extends Function
             "Contrary to fn:current-dateTime, this function is not stable, i.e. the returned xs:dateTime will change " +
             "during the evaluation time of a query and can be used to measure time differences.",
             null,
-            new SequenceType( Type.DATE_TIME, Cardinality.EXACTLY_ONE )
+            new FunctionReturnSequenceType( Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the current xs:dateTime (with timezone)" )
 		)
 	};
 

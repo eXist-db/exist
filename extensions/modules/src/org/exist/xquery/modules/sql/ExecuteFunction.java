@@ -43,6 +43,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -75,7 +76,7 @@ public class ExecuteFunction extends BasicFunction
 						new FunctionParameterSequenceType( "handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "connection handle" ),
 						new FunctionParameterSequenceType( "sql-statement", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
 						new FunctionParameterSequenceType( "make-node-from-column-name", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)" ) },
-				new SequenceType( Type.NODE, Cardinality.ZERO_OR_ONE ) 
+				new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the results" ) 
 			) };
 
 	/**

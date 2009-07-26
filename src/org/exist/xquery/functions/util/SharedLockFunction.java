@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -39,14 +40,14 @@ public class SharedLockFunction extends LockFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("shared-lock", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Puts a shared lock on the owner documents of all nodes in the first argument $a. " +
-			"Then evaluates the expressions in the second argument $b and releases the acquired locks after" +
+			"Puts a shared lock on the owner documents of all nodes in the first argument $nodes. " +
+			"Then evaluates the expressions in the second argument $expression and releases the acquired locks after" +
 			"their completion.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "all nodes that the shared lock will be placed on their owning documents."),
 				new FunctionParameterSequenceType("expression", Type.ITEM, Cardinality.ZERO_OR_MORE, "The expression to be evaluated before the acquired locks are released.")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluation of the expression(s)"));
     
     public SharedLockFunction(XQueryContext context) {
         super(context, signature, false);

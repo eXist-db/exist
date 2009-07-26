@@ -29,8 +29,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -47,19 +47,19 @@ public class NoParamFunctions extends BasicFunction {
                 new QName("e", MathModule.NAMESPACE_URI),
                 "Returns base of the natural logarithms, e.",
                 null,
-                new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of e")
                 ),
         new FunctionSignature(
                 new QName("pi", MathModule.NAMESPACE_URI),
                 "Returns the value of pi.",
                 null,
-                new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
                 ),
         new FunctionSignature(
                 new QName("random", MathModule.NAMESPACE_URI),
                 "Returns a value greater than or equal to 0.0 and less than 1.0.",
                 null,
-                new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "a random value")
                 )
     };
     
