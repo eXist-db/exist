@@ -125,18 +125,34 @@ public class DescribeFunction extends Function {
             description.append(signature.getDescription());
 			
             SequenceType argumentTypes[] = signature.getArgumentTypes();
+            
             if(argumentTypes != null){
-                description.append("\n");
-                for (SequenceType one : argumentTypes) {
-                    if (one instanceof FunctionParameterSequenceType) {
-                        FunctionParameterSequenceType fp = (FunctionParameterSequenceType) one;
-                        description.append("\"$");
+                description.append("\n\n");
+                description.append("Parameters:\n");
+                for (SequenceType argumentType : argumentTypes) {
+                    if (argumentType instanceof FunctionParameterSequenceType) {
+                        FunctionParameterSequenceType fp
+                                = (FunctionParameterSequenceType) argumentType;
+                        description.append("$");
                         description.append(fp.getAttributeName());
-                        description.append("\": ");
+                        description.append(" : ");
                         description.append(fp.getDescription());
                         description.append("\n");
                     }
                 }
+            }
+
+            SequenceType returnType = signature.getReturnType();
+            if(returnType != null){             
+                if (returnType instanceof FunctionParameterSequenceType) {
+                    description.append("\n");
+                    description.append("Result:\n");
+                    FunctionParameterSequenceType fp
+                                = (FunctionParameterSequenceType) returnType;
+                        description.append(fp.getDescription());
+                        description.append("\n");
+                }
+
             }
             
             builder.characters(description.toString());
