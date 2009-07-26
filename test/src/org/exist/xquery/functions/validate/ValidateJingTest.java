@@ -90,4 +90,56 @@ public class ValidateJingTest {
     }
 
 
+
+    @Test
+    public void testValidateRNGwithJing() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "let $v := <doc>\n" +
+                    "\t<title>Title</title>\n" +
+                    "\t<p>Some paragraph.</p>\n" +
+                    "      </doc>\n" +
+                    "let $schema := <grammar xmlns=\"http://relaxng.org/ns/structure/1.0\">\n" +
+                    "  <start>\n" +
+                    "    <ref name=\"doc\"/>\n" +
+                    "  </start>\n" +
+                    "  <define name=\"doc\">\n" +
+                    "    <element name=\"doc\">\n" +
+                    "      <optional>\n" +
+                    "        <ref name=\"title\"/>\n" +
+                    "      </optional>\n" +
+                    "      <zeroOrMore>\n" +
+                    "        <ref name=\"p\"/>\n" +
+                    "      </zeroOrMore>\n" +
+                    "    </element>\n" +
+                    "  </define>\n" +
+                    "  <define name=\"title\">\n" +
+                    "    <element name=\"title\">\n" +
+                    "      <text/>\n" +
+                    "    </element>\n" +
+                    "  </define>\n" +
+                    "  <define name=\"p\">\n" +
+                    "    <element name=\"p\">\n" +
+                    "      <text/>\n" +
+                    "    </element>\n" +
+                    "  </define>\n" +
+                    "</grammar>\n" +
+
+                    "return\n" +
+                    "\n" +
+                    "\tvalidation:jing($v,$schema)";
+
+            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            assertEquals("true", r);
+        } catch (XMLDBException e) {
+            System.out.println("testValidateRNGwithJing(): " + e);
+            fail(e.getMessage());
+        }
+
+    }
+
+
 }
