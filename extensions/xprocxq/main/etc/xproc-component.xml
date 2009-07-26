@@ -31,7 +31,11 @@
         <p:output port="result" primary="true" select="/"/>
 	</xproc:element>
 
-    <xproc:element type="p:viewport" xproc:step="true"/>
+    <xproc:element type="p:viewport" xproc:step="true" xproc:support="true">
+        <p:input port="source" primary="true" select="/"/>
+        <p:output port="result" primary="true" select="/"/>
+        <p:option name="match" required="true"/>
+    </xproc:element>
     
     <xproc:element type="p:try" xproc:step="true" xproc:support="true"/>
     <xproc:element type="p:catch" xproc:step="true" xproc:support="true"/>
