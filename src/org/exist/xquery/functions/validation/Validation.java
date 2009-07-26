@@ -39,6 +39,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -74,7 +75,7 @@ public class Validation extends BasicFunction  {
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
-            new FunctionParameterSequenceType("result",Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 Shared.simplereportText)
         ),
         
@@ -92,7 +93,7 @@ public class Validation extends BasicFunction  {
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
             },
-            new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
         ),
         
@@ -104,7 +105,7 @@ public class Validation extends BasicFunction  {
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
-            new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
         ),
         
@@ -121,7 +122,7 @@ public class Validation extends BasicFunction  {
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
             },
-            new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
         )
                         
