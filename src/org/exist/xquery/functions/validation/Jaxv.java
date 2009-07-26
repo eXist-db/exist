@@ -87,7 +87,7 @@ public class Jaxv extends BasicFunction  {
         
         new FunctionSignature(
                 new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt+" A simple report is returned.",
+                extendedFunctionTxt+" An xml report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
