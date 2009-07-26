@@ -267,11 +267,37 @@ declare function u:function($func,$arity){
 
 
 (: -------------------------------------------------------------------------- :)
+declare function u:xquery($query,$xml){
+let $static-content := <static-context>
+						<default-context>{$xml}</default-context>
+						</static-context>
+    let $result := util:eval-with-context($query,$static-content,false())
+    return
+        $result
+};
+
+
+(: -------------------------------------------------------------------------- :)
+declare function u:xquery($exp as xs:string){
+    let $result := util:eval($exp)
+    return
+        $result
+};
+
+
+(: -------------------------------------------------------------------------- :)
+declare function u:xslt($xslt,$xml){
+	transform:transform(document{$xml},$xslt, ())
+};
+
+(: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($qry as xs:string, $xml){
 
+(:
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
+:)
 
 if(empty($qry) or $qry eq '/') then
 	$xml
@@ -297,9 +323,11 @@ else
 (: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($xpathstring, $xml, $namespaces){
 
+(:
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
+:)
 
 
 if(empty($xpathstring) or $xpathstring eq '/') then
@@ -375,6 +403,7 @@ element {node-name($element)}
 															
    }
 };
+
 
 
 declare function u:treewalker-add-attribute($element as element(),$match,$attrName,$attrValue) as element() {
@@ -709,30 +738,6 @@ for $namespace at $pos in $namespaces
             else
                 concat('declare default element namespace "',$namespace,'";')
 } ;
-
-(: -------------------------------------------------------------------------- :)
-declare function u:xquery($query,$xml){
-let $static-content := <static-context>
-						<default-context>{$xml}</default-context>
-						</static-context>
-    let $result := util:eval-with-context($query,$static-content,false())
-    return
-        $result
-};
-
-
-(: -------------------------------------------------------------------------- :)
-declare function u:xquery($exp as xs:string){
-    let $result := util:eval($exp)
-    return
-        $result
-};
-
-
-(: -------------------------------------------------------------------------- :)
-declare function u:xslt($xslt,$xml){
-	transform:transform(document{$xml},$xslt, ())
-};
 
 
 (: -------------------------------------------------------------------------- :)
