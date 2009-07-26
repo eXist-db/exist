@@ -59,6 +59,21 @@ public class Shared {
 
     private final static Logger LOG = Logger.getLogger(Shared.class);
 
+    public final static String simplereportText = "Returns true() if the " +
+            "document is valid and no single problem occured, false() for " +
+            "all other situations. Check corresponding report function " +
+            "for details.";
+    
+    public final static String xmlreportText = "Validation report formatted as\n<report>\n" +
+            "\t<status>valid</status>\n" + "\t<namespace>...\n" + "\t<time>...\n" +
+            "\t<exception>\n" +
+            "\t\t<class>...\n" + "\t\t<message>...\n" + "\t\t<stacktrace>...\n" +
+            "\t</exception>\n" +
+            "\t<message level=\"\" line=\"\"> column=\"\" repeat=\"\">...\n" +
+            "\t....\n" +
+            "\t....\n" +
+            "</report>";
+
     /**
      *  Get input stream for specified resource.
      */
@@ -140,12 +155,11 @@ public class Shared {
      */
     public static String getUrl(Sequence s) throws XPathException {
 
-        if (s.getItemType() != Type.ANY_URI
-                && s.getItemType() != Type.STRING) {
-           throw new  XPathException("Parameter should be of type xs:anyURI" +
-                   " or string");
+        if (s.getItemType() != Type.ANY_URI && s.getItemType() != Type.STRING) {
+            throw new XPathException("Parameter should be of type xs:anyURI" +
+                    " or string");
         }
-        
+
         String url = s.getStringValue();
 
         if (url.startsWith("/")) {
@@ -179,8 +193,12 @@ public class Shared {
             builder.endElement();
         }
 
+
         // validation duration
-        builder.startElement("", "time", "time", null);
+        AttributesImpl durationAttribs = new AttributesImpl();
+        durationAttribs.addAttribute("", "unit", "unit", "CDATA", "msec");
+
+        builder.startElement("", "duration", "duration", durationAttribs);
         builder.characters("" + report.getValidationDuration());
         builder.endElement();
 
@@ -197,7 +215,7 @@ public class Shared {
 
             String message = report.getThrowable().getMessage();
             if (message != null) {
-                builder.startElement("", "message", "exception", null);
+                builder.startElement("", "message", "message", null);
                 builder.characters(message);
                 builder.endElement();
             }

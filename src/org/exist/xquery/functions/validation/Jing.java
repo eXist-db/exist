@@ -82,7 +82,8 @@ public class Jing extends BasicFunction  {
                             "Supported grammar documents extensions are \".xsd\" "+
                             "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
                 },
-                new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    Shared.simplereportText)
             ),
         
         
@@ -96,7 +97,8 @@ public class Jing extends BasicFunction  {
                             "Supported grammar documents extensions are \".xsd\" "+
                             "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
                    },
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("result",Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.xmlreportText)
             )
                         
     };
