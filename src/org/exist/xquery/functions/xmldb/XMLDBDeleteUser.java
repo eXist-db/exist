@@ -33,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -56,7 +57,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 			new SequenceType[]{
 					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the user account to delete"),
             },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
 
 	/**
 	 * @param context

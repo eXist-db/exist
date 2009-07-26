@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -54,7 +55,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 			      new SequenceType[]{
 				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source collection-uri"),
 				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection-uri")},
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+			      new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")),
         new FunctionSignature(
 			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			      "Copy a resource $resource from the collection specified in $source-collection-uri to collection in $target-collection-uri. " +
@@ -64,7 +65,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source collection-uri"),
 				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection-uri"),
 			      new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource to copy")},
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY))
+			      new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"))
     };
 
     public XMLDBCopy(XQueryContext context, FunctionSignature signature) {

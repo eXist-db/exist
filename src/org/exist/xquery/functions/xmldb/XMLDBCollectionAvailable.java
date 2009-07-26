@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -51,7 +52,7 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
 			      "with the same name as $collection-path, otherwise false().",
 			      new SequenceType[] {
 				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path")},
-			      new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists"),
+			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists, false() otherwise"),
 			      true,
 			      "Use " + XMLDBModule.PREFIX + ":collection-available() instead."),
 	//Just to mimic doc-available()
@@ -61,7 +62,7 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
 			      "with the same name as $collection-path, otherwise false().",
 			      new SequenceType[] {
 				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path")},
-			      new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists and is available"))
+			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists and is available, false() otherwise"))
     };
 		
 
