@@ -10,8 +10,6 @@ current
 
 * pipelines need name attribute, should default to xproc:defaultname
 
-* steps need name attribute, should default to xproc:defaultname
-
 * add primary input to evaluation in u:xquery, instead of passing
 to each function
 
@@ -73,9 +71,6 @@ optional steps
 ------------------------------
 	p:exec - anywhere in eXist a util:exec function ?
 	p:hash - easy
-	p:validate-with-relax-ng - deps on Dannes
-	p:validate-with-schematron - deps on Dannes
-	p:validate-with-xml-schema - deps on Dannes
 	p:www-form-urldecode - easy
 	p:www-form-urlencode - easy
 

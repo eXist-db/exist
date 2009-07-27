@@ -31,7 +31,7 @@
       <p:option name="undeclare-prefixes"/>
       <p:option name="version" select="'1.0'"/>
    </p:declare-step>
-   <p:declare-step type="p:hash" xml:id="hash" xmlns:xproc="http://xproc.net/xproc">
+   <p:declare-step type="p:hash" xml:id="hash" xmlns:xproc="http://xproc.net/xproc" xproc:support="true">
       <p:input port="source" primary="true" select="/"/>
       <p:output port="result" primary="true" select="/"/>
       <p:input port="parameters" kind="parameter" select="/"/>
