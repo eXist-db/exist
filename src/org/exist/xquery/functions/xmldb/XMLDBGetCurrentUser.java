@@ -23,12 +23,14 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,7 +50,7 @@ public class XMLDBGetCurrentUser extends BasicFunction
 			new QName("get-current-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the current user from the context of the xquery.",
 			null,
-			new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "the username of the current user")
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the username of the current user")
 		);
 	
 	public XMLDBGetCurrentUser(XQueryContext context, FunctionSignature signature)

@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -55,7 +56,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			new SequenceType[]{
 			    new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection uri"),
 			    new FunctionParameterSequenceType("new-collection", Type.STRING, Cardinality.EXACTLY_ONE, "the new collection to create")},
-			new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection if created, otherwise the empty sequence"));
 
     /**
      * @param context
