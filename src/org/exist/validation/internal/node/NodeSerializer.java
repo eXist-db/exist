@@ -45,7 +45,7 @@ public class NodeSerializer {
     
     private final static Logger LOG = Logger.getLogger(NodeSerializer.class);
       
-    public static void serialize(XQueryContext context, SequenceIterator siNode, 
+    public static void serialize(Serializer serializer, SequenceIterator siNode,
         Properties outputProperties, OutputStream os) throws IOException {
         
         LOG.debug("Serializing started.");
@@ -54,7 +54,7 @@ public class NodeSerializer {
             String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
             Writer writer = new OutputStreamWriter(os, encoding);
             sax.setOutput(writer, outputProperties);
-            Serializer serializer = context.getBroker().getSerializer();
+
             serializer.reset();
             serializer.setProperties(outputProperties);
             serializer.setReceiver(sax);

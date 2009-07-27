@@ -49,6 +49,7 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 
 import org.exist.http.servlets.ResponseWrapper;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -133,7 +134,8 @@ public class JFreeCharting extends BasicFunction {
             config.parse(((NodeValue)args[1].itemAt(0)).getNode());
 
             // Get datastream
-            InputStream is = new NodeInputStream(context, args[2].iterate());
+            Serializer serializer=context.getBroker().getSerializer();
+            InputStream is = new NodeInputStream(serializer, args[2].iterate());
             
             // get chart
             JFreeChart chart = null;

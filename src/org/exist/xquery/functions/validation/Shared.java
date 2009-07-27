@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.storage.serializers.Serializer;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
@@ -123,7 +124,8 @@ public class Shared {
             logger.debug("Streaming element or document node");
 
             // Node provided
-            InputStream is = new NodeInputStream(context, s.iterate()); // new NodeInputStream()
+            Serializer serializer=context.getBroker().getSerializer();
+            InputStream is = new NodeInputStream(serializer, s.iterate()); // new NodeInputStream()
             streamSource.setInputStream(is);
 
         } else {
