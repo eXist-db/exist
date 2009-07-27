@@ -46,11 +46,15 @@ declare function opt:hash($primary,$secondary,$options) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $version := u:get-option('version',$options,$v)
 let $algorithm := u:get-option('algorithm',$options,$v)
-let $value := u:get-option('value',$options,$v)
+let $query := if (contains($match,'/')) then
+				$match
+			  else
+				concat('//',$match)
+let $matchresult := u:evalXPATH($query, $v)
+let $replacement := u:hash($matchresult,$algorithm)
 return
-	$v
+	u:replace-matching-elements($v/*,$matchresult,$replacement)
 };
 
 
@@ -67,7 +71,6 @@ let $matchresult := u:evalXPATH($query, $v)
 let $replacement := u:uuid()
 return
 	u:replace-matching-elements($v/*,$matchresult,$replacement)
-
 };
 
 
@@ -75,8 +78,16 @@ return
 declare function opt:www-form-urldecode($primary,$secondary,$options) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
+let $value := u:get-option('value',$options,$v)
+let $params := tokenize($value,'&amp;')
 return
-	$v
+       <c:param-set xmlns:c="http://www.w3.org/ns/xproc-step">
+        {
+        for $child in $params
+        return
+            <c:param name="{substring-before($child,'=')}" value="{substring-after($child,'=')}"/>
+        }
+       </c:param-set>
 };
 
 

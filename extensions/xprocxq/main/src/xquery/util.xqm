@@ -137,6 +137,10 @@ declare function u:uuid()  {
 	util:uuid()
 };
 
+(: -------------------------------------------------------------------------- :)
+declare function u:hash($data,$algorithm)  {
+	util:hash($data,$algorithm)
+};
 
 (: -------------------------------------------------------------------------- :)
 declare function u:unparsed-data($uri as xs:string, $mediatype as xs:string)  {
