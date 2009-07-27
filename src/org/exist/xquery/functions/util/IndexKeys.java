@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -41,54 +42,45 @@ import java.util.*;
  * 
  */
 public class IndexKeys extends BasicFunction {
+	
+	protected static final Logger logger = Logger.getLogger(IndexKeys.class);
 
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
                 new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Can be used to query existing range indexes defined on a set of nodes. " +
                 "All index keys defined for the given node set are reported to a callback function. " +
-                "The function will check for indexes defined on path as well as indexes defined by QName. " +
-                "The node set is specified in the first argument. The second argument specifies a start " +
-                "value. Only index keys of the same type but being greater than $b will be reported for non-string" +
-                "types. For string types, only keys starting with the given prefix are reported. " +
-                "The third arguments is a function reference as created by the util:function function. " +
+                "The function will check for indexes defined on path as well as indexes defined by QName. ",
+                new SequenceType[] {
+                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, null),
+                    new FunctionParameterSequenceType("start-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported."),
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a function reference as created by the util:function function. " +
                 "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
                 "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
-                "c) the current position of the key in the whole list of keys returned. " +
-                "The fourth argument is the maximum number of returned keys", 
-                new SequenceType[] {
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
+                "c) the current position of the key in the whole list of keys returned."),
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "the maximum number of returned keys")
                  },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
     	new FunctionSignature(
                 new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Can be used to query existing range indexes defined on a set of nodes. " +
                 "All index keys defined for the given node set are reported to a callback function. " +
-                "The function will check for indexes defined on path as well as indexes defined by QName. " +
-                "The node set is specified in the first argument. The second argument specifies a start " +
-                "value. Only index keys of the same type but being greater than $b will be reported for non-string" +
-                "types. For string types, only keys starting with the given prefix are reported. " +
-                "The third arguments is a function reference as created by the util:function function. " +
+                "The function will check for indexes defined on path as well as indexes defined by QName. ",
+                new SequenceType[] {
+                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, null),
+                    new FunctionParameterSequenceType("start-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported."),
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a function reference as created by the util:function function. " +
                 "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
                 "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
-                "c) the current position of the key in the whole list of keys returned. " +
-                "The fourth argument is the maximum number of returned keys" +
-                "The fifth argument specifies the index in which the search is made", 
-                new SequenceType[] {
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                "c) the current position of the key in the whole list of keys returned."),
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "the maximum number of returned keys"),
+                    new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "the index in which the search is made")
                 },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE))      
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference"))      
     };
 
     /**
@@ -125,7 +117,7 @@ public class IndexKeys extends BasicFunction {
         	if (indexWorker instanceof OrderedValuesIndex)
         		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
         	else
-        		LOG.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
+        		logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
         	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
         	//TODO : add an extra argument to pass the END_VALUE ?
 	        int len = (occur.length > max ? max : occur.length);
@@ -179,8 +171,7 @@ public class IndexKeys extends BasicFunction {
 		        data.clear();
 		    }
         }
-        if (LOG.isDebugEnabled())
-        	LOG.debug("Returning: " + result.getItemCount());
+    	logger.debug("Returning: " + result.getItemCount());
         return result;
     }
 
