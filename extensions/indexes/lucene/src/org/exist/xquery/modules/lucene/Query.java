@@ -37,12 +37,21 @@ public class Query extends Function implements Optimizable {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("query", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "INSERT DESCRIPTION HERE",
+            "Query the node set in $nodes using a Lucene full text index which is defined " +
+            "on those nodes. Parameter $query specifies the query, either as a query string " +
+            "based on Lucene's default query syntax or as an XML fragment. The context of the " +
+            "Lucene query is determined by the given input node set in $nodes. The Lucene indexes should " +
+            "be defined on the nodes in $nodes. Indexes on descendant nodes are not used. If no index " +
+            "is available on a node, nothing will be found." +
+            "See http://exist-db.org/lucene.html#N1029E",
             new SequenceType[] {
-                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE, "node"),
-                new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.EXACTLY_ONE, "item")
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "node"),
+                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE, "item")
             },
-            new FunctionParameterSequenceType("result", Type.NODE, Cardinality.ZERO_OR_MORE, "result")
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the input node set matching the query. match highlighting information " +
+                "will be available for all returned nodes. Lucene's match score can be retrieved via " +
+                "the ft:score function.")
         );
 
     private LocationStep contextStep = null;
