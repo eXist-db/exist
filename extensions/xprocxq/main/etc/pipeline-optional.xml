@@ -36,7 +36,7 @@
       <p:output port="result" primary="true" select="/"/>
       <p:input port="parameters" kind="parameter" select="/"/>
       <p:option name="value" required="true"/>
-      <p:option name="algorithm" required="true"/>
+      <p:option name="algorithm" required="true" select="'md5'"/>
       <p:option name="version"/>
       <p:option name="match" required="true"/>
    </p:declare-step>
@@ -53,21 +53,21 @@
       <p:option name="dtd-compatibility" select="'false'"/>
       <p:option name="assert-valid" select="'true'"/>
    </p:declare-step>
-   <p:declare-step type="p:validate-with-schematron" xml:id="validate-with-schematron"  xproc:support="true">
+   <p:declare-step type="p:validate-with-schematron" xml:id="validate-with-schematron" xproc:support="true">
       <p:input port="source" primary="true" select="/"/>
       <p:input port="schema" primary="false" select="/"/>
       <p:output port="result" primary="true" select="/"/>
       <p:output port="report" sequence="true" select="/"/>
       <p:option name="assert-valid" select="'true'"/>
    </p:declare-step>
-   <p:declare-step type="p:validate-with-xml-schema" xml:id="validate-with-xml-schema"  xproc:support="true">
+   <p:declare-step type="p:validate-with-xml-schema" xml:id="validate-with-xml-schema" xproc:support="true">
       <p:input port="source" primary="true" select="/"/>
       <p:input port="schema" primary="false" sequence="true" select="/"/>
       <p:output port="result" primary="true" select="/"/>
       <p:option name="assert-valid" select="'true'"/>
       <p:option name="mode" select="'strict'"/>
    </p:declare-step>
-   <p:declare-step type="p:www-form-urldecode" xml:id="www-form-urldecode">
+   <p:declare-step type="p:www-form-urldecode" xml:id="www-form-urldecode" xproc:support="true">
       <p:output port="result" primary="true" select="/"/>
       <p:option name="value" required="true"/>
    </p:declare-step>
