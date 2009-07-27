@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
+
+import org.apache.log4j.Logger;
 
 import java.io.File;
 
@@ -33,6 +34,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -48,7 +50,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author wolf
  */
 public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
-
+	protected static final Logger logger = Logger.getLogger(XMLDBLoadFromPattern.class);
     private final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 
     private final static String FUNCTION_DESCRIPTION = "Store new resources into the database. Resources are read from the server's " +
@@ -72,7 +74,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     PARAM_FS_DIRECTORY,
                     PARAM_FS_PATTERN
                 },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "document paths")
         ),
         new FunctionSignature(
                 FUNCTION_NAME,
@@ -83,7 +85,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     PARAM_FS_PATTERN,
                     PARAM_MIME_TYPE
                 },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "document paths")
         ),
         new FunctionSignature(
                 FUNCTION_NAME,
@@ -95,7 +97,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     PARAM_MIME_TYPE,
                     new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.")
                 },
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "document paths")
         )
     };
 
@@ -106,17 +108,18 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         /* (non-Javadoc)
          * @see org.exist.xquery.functions.xmldb.XMLDBAbstractCollectionManipulator#evalWithCollection(org.xmldb.api.base.Collection, org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
          */
-    protected Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException
-    {
+    protected Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
+        throws XPathException {
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         File baseDir = new File(args[1].getStringValue());
-        LOG.debug("Loading files from directory: " + baseDir);
+        logger.debug("Loading files from directory: " + baseDir);
 
         //determine resource type - xml or binary?
         String mimeType = MimeType.XML_TYPE.getName();
         String resourceType = "XMLResource";
         if(getSignature().getArgumentCount() > 3) {
             mimeType = args[3].getStringValue();
-	    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
+            MimeType mime = MimeTable.getInstance().getContentType(mimeType);
 	    
             if(mime != null && !mime.isXMLType())
                 resourceType = "BinaryResource";
@@ -136,31 +139,25 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
             //get the files to store
             String pattern = i.nextItem().getStringValue();
             File[] files = DirectoryScanner.scanDir(baseDir, pattern);
-            LOG.debug("Found: " + files.length);
+            logger.debug("Found: " + files.length);
             
             Collection col = collection;
             String relDir, prevDir = null;
             
-            for(int j = 0; j < files.length; j++)
-            {
-                try
-                {
-                    LOG.debug(files[j].getAbsolutePath());
+            for(int j = 0; j < files.length; j++) {
+                try {
+                    logger.debug(files[j].getAbsolutePath());
                     String relPath = files[j].toString().substring(baseDir.toString().length());
                     int p = relPath.lastIndexOf(File.separatorChar);
 					
-                    if(p >= 0)
-                    {
+                    if(p >= 0) {
                         relDir = relPath.substring(0, p);
                         relDir = relDir.replace(File.separatorChar, '/');
-                    }
-                    else
-                    {
+                    } else {
                         relDir = relPath;
                     }
 					
-                    if(keepDirStructure && (prevDir == null || (!relDir.equals(prevDir))))
-                    {
+                    if(keepDirStructure && (prevDir == null || (!relDir.equals(prevDir)))) {
                         col = createCollectionPath(collection, relDir);
                         prevDir = relDir;
                     }
@@ -169,19 +166,19 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     Resource resource = col.createResource(files[j].getName(), resourceType);
                     resource.setContent(files[j]);
 
-                    ((EXistResource)resource).setMimeType(mimeType);
+                    ((EXistResource) resource).setMimeType(mimeType);
 
                     col.storeResource(resource);
 
                     //TODO : use dedicated function in XmldbURI
                     stored.add(new StringValue(col.getName() + "/" + resource.getId()));
-                }
-                catch(XMLDBException e)
-                {
-                    LOG.warn("Could not store file " + files[j].getAbsolutePath() + ": " + e.getMessage(), e);
+                } catch(XMLDBException e) {
+                    logger.error("Could not store file " + files[j].getAbsolutePath() + ": " + e.getMessage());
+                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 }
             }
         }
+        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return stored;
     }
 }

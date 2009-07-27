@@ -1,28 +1,29 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2006-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id
+ *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
 
 import java.net.URISyntaxException;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -32,6 +33,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -41,39 +44,39 @@ import org.exist.xquery.value.Type;
  * @author cgeorg
  */
 public class XMLDBURIFunctions extends BasicFunction {
-	
+	protected static final Logger logger = Logger.getLogger(XMLDBURIFunctions.class);	
 	public final static FunctionSignature signatures[] = new FunctionSignature[] {
 		new FunctionSignature(
 				new QName("encode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Encodes the string provided in $a such that it will be a valid collection or resource path.  Provides similar functionality to java's URLEncoder.encode() function, with some enhancements",
+				"Encodes the string provided in $string such that it will be a valid collection or resource path.  Provides similar functionality to java's URLEncoder.encode() function, with some enhancements",
 				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new FunctionParameterSequenceType("string", Type.STRING, Cardinality.EXACTLY_ONE, "the string"),
 				},
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "url-encoded string")
 		),
 		new FunctionSignature(
 				new QName("encode-uri", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Encodes the string provided in $a such that it will be a valid collection or resource path.  Provides similar functionality to java's URLEncoder.encode() function, with some enhancements.  Returns an xs:anyURI object representing a valid XmldbURI",
+				"Encodes the string provided in $string such that it will be a valid collection or resource path.  Provides similar functionality to java's URLEncoder.encode() function, with some enhancements.  Returns an xs:anyURI object representing a valid XmldbURI",
 				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new FunctionParameterSequenceType("string", Type.STRING, Cardinality.EXACTLY_ONE, "the string"),
 				},
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+				new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "XmldbURI encoded from $string")
 		),
 		new FunctionSignature(
 				new QName("decode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Decodes the string provided in $a such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
+				"Decodes the string provided in $string such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
 				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+					new FunctionParameterSequenceType("string",Type.STRING, Cardinality.EXACTLY_ONE, "the string"),
 				},
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "url-encoded string")
 		),
 		new FunctionSignature(
 				new QName("decode-uri", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Decodes the URI provided in $a such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
+				"Decodes the URI provided in $uri such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
 				new SequenceType[] {
-					new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+					new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "the uri"),
 				},
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "decoded string from $uri")
 		)
 	};
 	
@@ -89,8 +92,9 @@ public class XMLDBURIFunctions extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
+        throws XPathException {
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		try {
 			if(isCalledAs("encode")) {
 				return new StringValue(URIUtils.urlEncodePartsUtf8(args[0].getStringValue()));
@@ -100,8 +104,11 @@ public class XMLDBURIFunctions extends BasicFunction {
 				return new StringValue(URIUtils.urlDecodeUtf8(args[0].getStringValue()));
 			}
 		} catch(URISyntaxException e) {
+            logger.error(e.getMessage());
 			throw new XPathException(this, "URI Syntax Exception: " + e.getMessage(), e);
-		}
+		} finally {
+            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+        }
 	}
 	
 }
