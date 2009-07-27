@@ -76,7 +76,7 @@ public class GrammarTooling extends BasicFunction  {
 
 
     public final static String cacheReport="<report>\n"+
-            "\t<grammar type=\"...\">\n" +
+            "\t<grammar type=\"...\"\n" +
             "\t\t<Namespace>....\n" +
             "\t\t<BaseSystemId>...\n" +
             "\t\t<LiteralSystemId>...\n" +
