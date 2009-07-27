@@ -17,6 +17,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -38,7 +39,7 @@ public class SystemProperty extends BasicFunction {
 			"Predefined properties are: vendor, vendor-url, product-name, product-version, product-build, and all Java " +
 			"system properties.",
 			new SequenceType[] { new FunctionParameterSequenceType("property-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the system property to retrieve the value of.") },
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the value of the named system property"));
 	
 	/**
 	 * @param context
