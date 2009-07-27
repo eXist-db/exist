@@ -468,6 +468,10 @@ declare function u:replace-matching-elements($element as element(),$select,$repl
                 then
             		if ($child intersect $select) then
 	    	    		$replace
+	    	    	else if ($child/text() eq $select ) then
+	    	    	    element {node-name($child)}{
+                            $replace
+ 	    	    	    }
     			    else
                         u:replace-matching-elements($child,$select,$replace)
                 else
