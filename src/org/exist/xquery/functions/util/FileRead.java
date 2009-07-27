@@ -56,7 +56,7 @@ public class FileRead extends BasicFunction {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 				},				
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-			"Moved to the file extension module.  See file:read()"
+			"Moved to the file extension module.  See file:read() in the file extension module"
 			),
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -66,7 +66,7 @@ public class FileRead extends BasicFunction {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 				},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-			"Moved to the file extension module.  See file:read()"
+			"Moved to the file extension module.  See file:read() in the file extension module"
 			)
 		};
 	
