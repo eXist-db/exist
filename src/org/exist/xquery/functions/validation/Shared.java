@@ -57,7 +57,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class Shared {
 
-    private final static Logger LOG = Logger.getLogger(Shared.class);
+    private final static Logger logger = Logger.getLogger(Shared.class);
 
     public final static String simplereportText = "Returns true() if the " +
             "document is valid and no single problem occured, false() for " +
@@ -69,7 +69,7 @@ public class Shared {
             "\t<exception>\n" +
             "\t\t<class>...\n" + "\t\t<message>...\n" + "\t\t<stacktrace>...\n" +
             "\t</exception>\n" +
-            "\t<message level=\"\" line=\"\"> column=\"\" repeat=\"\">...\n" +
+            "\t<message level=\"\" line=\"\" column=\"\" repeat=\"\">...</message>\n" +
             "\t....\n" +
             "\t....\n" +
             "</report>";
@@ -91,7 +91,7 @@ public class Shared {
         StreamSource streamSource = new StreamSource();
 
         if (s.getItemType() == Type.JAVA_OBJECT) {
-            LOG.debug("Streaming Java object");
+            logger.debug("Streaming Java object");
             Item item = s.itemAt(0);
             Object obj = ((JavaObjectValue) item).getObject();
             if (!(obj instanceof File)) {
@@ -105,7 +105,7 @@ public class Shared {
 
 
         } else if (s.getItemType() == Type.ANY_URI) {
-            LOG.debug("Streaming xs:anyURI");
+            logger.debug("Streaming xs:anyURI");
 
             // anyURI provided
             String url = s.getStringValue();
@@ -120,14 +120,14 @@ public class Shared {
             streamSource.setSystemId(url);
 
         } else if (s.getItemType() == Type.ELEMENT || s.getItemType() == Type.DOCUMENT) {
-            LOG.debug("Streaming element or document node");
+            logger.debug("Streaming element or document node");
 
             // Node provided
             InputStream is = new NodeInputStream(context, s.iterate()); // new NodeInputStream()
             streamSource.setInputStream(is);
 
         } else {
-            LOG.error("Wrong item type " + Type.getTypeName(s.getItemType()));
+            logger.error("Wrong item type " + Type.getTypeName(s.getItemType()));
             throw new XPathException("wrong item type " + Type.getTypeName(s.getItemType()));
         }
 
