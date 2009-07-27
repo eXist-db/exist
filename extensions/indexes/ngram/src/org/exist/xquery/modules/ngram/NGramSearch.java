@@ -7,10 +7,7 @@ import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,30 +17,51 @@ public class NGramSearch extends Function implements Optimizable {
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("contains", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "",
+            "Similar to the standard XQuery fn:contains function, but based on the NGram index. " +
+            "Searches the given $queryString in the index defined on the input node set $nodes. " +
+            "The string may appear at any position within the node content. String comparison " +
+            "is case insensitive.",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "the input node set to search"),
+                new FunctionParameterSequenceType("queryString", Type.STRING, Cardinality.ZERO_OR_ONE,
+                    "the exact string to search for")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "set of nodes from the input node set $nodes containing the query string " +
+                "or the empty sequence")
         ),
         new FunctionSignature(
             new QName("ends-with", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "",
+            "Similar to the standard XQuery fn:ends-with function, but based on the NGram index. " +
+            "Searches the given $queryString in the index defined on the input node set $nodes. " +
+            "The string has to appear at the end of the node's content. String comparison " +
+            "is case insensitive.",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "the input node set to search"),
+                new FunctionParameterSequenceType("queryString", Type.STRING, Cardinality.ZERO_OR_ONE,
+                    "the exact string to search for")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "set of nodes from the input node set $nodes ending with the query string " +
+                "or the empty sequence")
         ),
         new FunctionSignature(
             new QName("starts-with", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "",
+            "Similar to the standard XQuery fn:starts-with function, but based on the NGram index. " +
+            "Searches the given $queryString in the index defined on the input node set $nodes. " +
+            "The string may appear at any position within the node content. String comparison " +
+            "is case insensitive.",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "the input node set to search"),
+                new FunctionParameterSequenceType("queryString", Type.STRING, Cardinality.ZERO_OR_ONE,
+                    "the exact string to search for")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "set of nodes from the input node set $nodes starting with the query string " +
+                "or the empty sequence")
         )
     };
 
