@@ -19,7 +19,7 @@ let $file :=  request:get-parameter("file", ())
 let $files := file:directory-list($dir,$file)
 let $result := for $file in $files/*:file[not(contains(@name,$not))]
 
-let $path := concat('file://',$dir,string($file/@name))
+let $path := concat('file://',$dir,$file/@name)
 
 let $stdin1 :=doc($path)/t:test
 

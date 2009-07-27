@@ -16,8 +16,6 @@ declare namespace xproc = "http://xproc.net/xproc";
 
 declare namespace t = "http://xproc.org/ns/testsuite";
 
-(: TODO - remove saxon namespace :)
-declare namespace saxon = "http://dummy.org";
 
 (: Module Imports :)
 import module namespace u = "http://xproc.net/xproc/util";

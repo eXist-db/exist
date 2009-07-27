@@ -27,9 +27,9 @@ declare variable $opt:hash := util:function(xs:QName("opt:hash"), 3);
 declare variable $opt:uuid := util:function(xs:QName("opt:uuid"), 3);
 declare variable $opt:www-form-urldecode := util:function(xs:QName("opt:www-form-urldecode"), 3);
 declare variable $opt:www-form-urlencode := util:function(xs:QName("opt:www-form-urlencode"), 3);
-declare variable $opt:validate-with-xml-schema := util:function(xs:QName("opt:validate-with-xml-schema"), 3);
-declare variable $opt:validate-with-schematron := util:function(xs:QName("opt:validate-with-schematron"), 3);
-declare variable $opt:validate-with-relax-ng := util:function(xs:QName("opt:validate-with-relax-ng"), 3);
+declare variable $opt:validate-with-xml-schema := util:function(xs:QName("opt:validate"), 3);
+declare variable $opt:validate-with-schematron := util:function(xs:QName("opt:validate"), 3);
+declare variable $opt:validate-with-relax-ng := util:function(xs:QName("opt:validate"), 3);
 declare variable $opt:xquery := util:function(xs:QName("opt:xquery"), 3);
 declare variable $opt:xsl-formatter :=util:function(xs:QName("opt:xsl-formatter"), 3);
 
@@ -89,56 +89,22 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:validate-with-xml-schema($primary,$secondary,$options) {
+declare function opt:validate($primary,$secondary,$options) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $schema := u:get-secondary('schema',$secondary)
-return
-
-    if(validation:jing($v,element {node-name($schema/node())}
+let $assert-valid := u:get-option('assert-valid',$options,$v)
+let $validation-result :=  validation:jing($v,element {node-name($schema/node())}
           {$schema/@*,
     $schema/*/*
-    })) then
+    })
+return
+    if($assert-valid eq 'false' ) then
+        $v
+    else if ($assert-valid eq 'true' and xs:boolean($validation-result)) then
         $v
     else
 	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
-
-};
-
-
-(: -------------------------------------------------------------------------- :)
-declare function opt:validate-with-schematron($primary,$secondary,$options) {
-(: -------------------------------------------------------------------------- :)
-let $v := u:get-primary($primary)
-let $schema := u:get-secondary('schema',$secondary)
-return
-
-    if(validation:jing($v,element {node-name($schema/node())}
-          {$schema/@*,
-    $schema/*/*
-    })) then
-        $v
-    else
-	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
-
-};
-
-
-(: -------------------------------------------------------------------------- :)
-declare function opt:validate-with-relax-ng($primary,$secondary,$options) {
-(: -------------------------------------------------------------------------- :)
-let $v := u:get-primary($primary)
-let $schema := u:get-secondary('schema',$secondary)
-return
-
-    if(validation:jing($v,element {node-name($schema/node())}
-          {$schema/@*,
-    $schema/*/*
-    })) then
-        $v
-    else
-	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
-
 };
 
 

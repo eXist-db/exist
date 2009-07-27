@@ -21,7 +21,7 @@ to each function
 
 * migrate errors from string to QName
 
-* make error reporting look nicer and try to get some semblance of line number reporting correct
+* make error reporting look nicer and try to get some kind of line number reporting correct
 
 * declare-steps needs refactoring in parsing and execution
 
