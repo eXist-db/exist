@@ -1,30 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  Modifications Copyright (C) 2004 Luigi P. Bai
- *  finder@users.sf.net
- *  Licensed as below under the LGPL.
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.security.User;
@@ -38,6 +35,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -48,28 +47,30 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * Various functions to get information about users.
- * 
- * @author wolf
+ * /**
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Luigi P. Bai, finder@users.sf.net, 2004
+ *
  */
 public class XMLDBUserAccess extends BasicFunction {
-
+	protected static final Logger logger = Logger.getLogger(XMLDBUserAccess.class);
 	public final static FunctionSignature fnExistsUser = new FunctionSignature(
 			new QName("exists-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
 			"Returns true if user exists. Requires username.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
             },
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user exists, false() otherwise"));
 	
 	public final static FunctionSignature fnUserGroups = new FunctionSignature(
 			new QName("get-user-groups", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
 			"Receives the sequence of groups the specified user is a member of.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
             },
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "group memberships"));
 	
 	//TODO: let users know about signature change from string to any_uri
 	public final static FunctionSignature fnUserHome = new FunctionSignature(
@@ -78,9 +79,9 @@ public class XMLDBUserAccess extends BasicFunction {
 			"Returns the home collection of the specified user or the empty sequence " +
 			"if no home collection is assigned to the user.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
             },
-			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "home collection of user"));
 
 	/**
 	 * @param context
@@ -98,7 +99,7 @@ public class XMLDBUserAccess extends BasicFunction {
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
-
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         String userName = args[0].getStringValue();
         
         Collection collection = null;
@@ -110,8 +111,10 @@ public class XMLDBUserAccess extends BasicFunction {
 			if(isCalledAs("exists-user"))
 				return null == user ? BooleanValue.FALSE : BooleanValue.TRUE;
 			
-			if(user == null)
-				throw new XPathException(this, "User not found: " + userName);
+			if(user == null) {
+                logger.error("User not found: " + userName);
+                throw new XPathException(this, "User not found: " + userName);
+            }
 			if(isCalledAs("get-user-groups")) {
 				ValueSequence groups = new ValueSequence();
 				String[] gl = user.getGroups();
@@ -124,11 +127,13 @@ public class XMLDBUserAccess extends BasicFunction {
 				XmldbURI home = user.getHome();
 				return null == home ? Sequence.EMPTY_SEQUENCE : new AnyURIValue(home);
 			}
-		} catch (XMLDBException xe) {
-			throw new XPathException(this, "Failed to query user " + userName, xe);
+		} catch (XMLDBException e) {
+            logger.error(e.getMessage());
+			throw new XPathException(this, "Failed to query user " + userName, e);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 		}
 	}
     

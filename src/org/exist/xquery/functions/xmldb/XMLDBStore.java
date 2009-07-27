@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -32,6 +31,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -42,6 +43,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -59,7 +62,7 @@ import org.xmldb.api.modules.XMLResource;
  * @author wolf
  */
 public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
-
+	protected static final Logger logger = Logger.getLogger(XMLDBStore.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -67,36 +70,36 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"argument denotes the collection where the resource should be stored. " +
 			"The collection can be either specified as a simple collection path or " +
 			"an XMLDB URI. The second argument is the name of the new " +
-			"resource. The third argument is either a node, an xs:string, a Java file object or an xs:anyURI. " +
+			"resource. The third argument, $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
 			"from that URI. The functions returns the path to the new document as an xs:string or " + 
 			" - if the document could not be stored - the empty sequence.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+				new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
+				new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "the resource-name"),
+				new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "the contents")},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "path to new resource")),
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Store a new resource into the database. The first " +
 			"argument denotes the collection where the resource should be stored. " +
 			"The collection can be either specified as a simple collection path or " +
 			"an XMLDB URI. The second argument is the name of the new " +
-			"resource. The third argument is either a node, an xs:string, a Java file object or an xs:anyURI. " +
+			"resource. The third argument, $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
-			"from that URI. The final argument $d is used to specify a mime-type.  If the mime-type " +
-			"is something other than 'text/xml' or 'application/xml', the resource will be stored as " +
+			"from that URI. The final argument $mime-type is used to specify a mime-type.  If the mime-type " +
+			"is not a xml based type, the resource will be stored as " +
 			"a binary resource. The functions returns the path to the new document as an xs:string or " +
 			"- if the document could not be stored - the empty sequence.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
+				new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "the resource-name"),
+				new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "the contents"),
+				new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "the mime-type")
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "path to new resource"))
 	};
 
 	/**
@@ -113,6 +116,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence args[],
 		Sequence contextSequence)
 		throws XPathException {
+		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		String docName = args[1].isEmpty() ? null : args[1].getStringValue();
 		if(docName != null && docName.length() == 0)
 			docName = null;
@@ -140,14 +144,19 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		try {
 			if(Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
 				Object obj = ((JavaObjectValue)item).getObject();
-				if(!(obj instanceof File))
+				if(!(obj instanceof File)) {
+                    logger.error("Passed java object should be a File");
+                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					throw new XPathException(this, "Passed java object should be a File");
+                }
 				resource = loadFromFile(collection, (File)obj, docName, binary, mimeType);
 			} else if(Type.subTypeOf(item.getType(), Type.ANY_URI)) {
 				try {
 					URI uri = new URI(item.getStringValue());
 					resource = loadFromURI(collection, uri, docName, binary, mimeType);
 				} catch (URISyntaxException e) {
+                    logger.error("Invalid URI: " + item.getStringValue());
+                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
 				}
 			} else {
@@ -172,30 +181,44 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 						item.toSAX(context.getBroker(), handler, null);
 						handler.endDocument();
 					}
-				} else
+				} else {
+                    logger.error("Data should be either a node or a string");
+                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					throw new XPathException(this, "Data should be either a node or a string");
-                ((EXistResource)resource).setMimeType(mimeType);
+                }
+
+                ((EXistResource) resource).setMimeType(mimeType);
 				collection.storeResource(resource);
 			}
 		} catch (XMLDBException e) {
+            logger.error(e.getMessage());
+            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			throw new XPathException(this,
 				"XMLDB reported an exception while storing document" + e,
 				e);
 		} catch (SAXException e) {
+            logger.error(e.getMessage());
+            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			throw new XPathException(this,
 				"SAX reported an exception while storing document",
 				e);
 		}
-		if (resource == null)
+		if (resource == null) {
+            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
-		else
+        } else {
 			try {
                 //TODO : use dedicated function in XmldbURI
+                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(collection.getName() + "/" + resource.getId());
 			} catch (XMLDBException e) {
+                logger.error(e.getMessage());
+                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				throw new XPathException(this, "XMLDB reported an exception while retrieving the " +
 						"stored document", e);
 			}
+
+        }
 	}
 	
 	private Resource loadFromURI(Collection collection, URI uri, String docName, boolean binary, String mimeType) 
