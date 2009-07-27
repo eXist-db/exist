@@ -12,6 +12,8 @@ import org.exist.xquery.XPathException;
 
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
@@ -25,17 +27,18 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ValidateJingTest {
 
-    private XPathQueryService service;
-    private Collection root = null;
-    private Database database = null;
+    private static Class cl = null;
+    private static XPathQueryService service;
+    private static Collection root = null;
+    private static Database database = null;
 
     public ValidateJingTest() {
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         // initialize driver
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
@@ -43,13 +46,11 @@ public class ValidateJingTest {
         service = (XPathQueryService) root.getService("XQueryService", "1.0");
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
-        service = null;
-        root = null;
     }
 
     @Test
