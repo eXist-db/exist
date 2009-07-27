@@ -250,38 +250,42 @@ let $auth-method := ''
 let $send-authorization := ''
 let $override-content-type := ''
 let $follow-redirect := ''
-let $response :=
-	http:send-request(
-	   <http:request href="{$href}" method="{$method}">{
-	
+let $http-request := <http:request href="{$href}" method="{$method}">{
+
 		for $header in $v/c:request/c:header
 		return
-			<http:header name="" value=""/>,
+			<http:header name="{$header/@name}" value="{$header/@value}"/>,
 
-		if (empty($body)) then () 
+		if (empty($body)) then
+		    ()
 		else
 	      <http:body content-type="{$content-type}">
 	         {$body}
 	      </http:body>
 	}
 	   </http:request>
-	)
-return
+let $raw-response := http:send-request( $http-request)
+let $response-headers := for $header in $raw-response//http:header
+        return
+            <c:header name="{$header/@name}" value="{$header/@value}"/>
 
-if (not($detailed)) then
-      $response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]
-else
-	<c:response status="{$response/@status}">{
-	for $header in $response//http:header
-	return
-		<c:header name="{$header/@name}" value="{$header/@value}"/>,
-
-     if (not($status-only)) then
-		<c:body>{$response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]}</c:body>
-     else
+let $response-body := if ($status-only) then
         ()
-	}
-	</c:response>
+     else if ($detailed) then
+		<c:body>{$raw-response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]}</c:body>
+     else
+		$raw-response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]
+
+return
+    if (name($v/node()) ne 'c:request') then
+            u:dynamicError('err:XC0040',"source port must contain c:request element")
+    else if ($detailed) then
+      <c:response status="{$raw-response/@status}">
+        {$response-headers}
+        {$response-body}
+      </c:response>
+    else
+        $response-body
 
 };
 
