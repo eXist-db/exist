@@ -33,6 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,7 +59,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 			    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection"),
 			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resuource")
 			},
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "creation date")
         ),
 		new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -67,7 +68,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 			new SequenceType[] {
 			    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection")
 			},
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "creation date")
         )
     };
 	
@@ -81,7 +82,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 			    new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "the collection"),
 			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
 			},
-			new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "last-modification date")
         );
 	
 	public XMLDBCreated(XQueryContext context, FunctionSignature signature) {
