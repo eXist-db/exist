@@ -20,7 +20,7 @@ public class NGramSearch extends Function implements Optimizable {
             "Similar to the standard XQuery fn:contains function, but based on the NGram index. " +
             "Searches the given $queryString in the index defined on the input node set $nodes. " +
             "The string may appear at any position within the node content. String comparison " +
-            "is case insensitive.",
+            "is case insensitive. Nodes need to have an ngram index to be searched.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "the input node set to search"),
@@ -36,7 +36,7 @@ public class NGramSearch extends Function implements Optimizable {
             "Similar to the standard XQuery fn:ends-with function, but based on the NGram index. " +
             "Searches the given $queryString in the index defined on the input node set $nodes. " +
             "The string has to appear at the end of the node's content. String comparison " +
-            "is case insensitive.",
+            "is case insensitive. Nodes need to have an ngram index to be searched.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "the input node set to search"),
@@ -52,7 +52,7 @@ public class NGramSearch extends Function implements Optimizable {
             "Similar to the standard XQuery fn:starts-with function, but based on the NGram index. " +
             "Searches the given $queryString in the index defined on the input node set $nodes. " +
             "The string may appear at any position within the node content. String comparison " +
-            "is case insensitive.",
+            "is case insensitive. Nodes need to have an ngram index to be searched.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "the input node set to search"),
