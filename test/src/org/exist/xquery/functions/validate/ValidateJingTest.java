@@ -1,8 +1,7 @@
 package org.exist.xquery.functions.validate;
 
-import org.exist.dom.NodeSet;
-import org.junit.After;
-import org.junit.Before;
+
+import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -10,10 +9,10 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import org.junit.Ignore;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
@@ -37,6 +36,8 @@ public class ValidateJingTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
+        BasicConfigurator.configure();
+
         // initialize driver
         cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
@@ -225,5 +226,29 @@ public class ValidateJingTest {
             fail(e.getMessage());
         }
 
+    }
+
+    /* Hint:
+     * 14013 [main] DEBUG org.exist.xquery.XQuery  - Compilation took 31 ms
+     * 14013 [main] DEBUG org.exist.xquery.functions.validation.Shared  - Streaming element or document node
+     * 14029 [main] ERROR org.exist.xquery.PathExpr  - org.exist.storage.io.ExistIOException: A problem ocurred while serializing the node set: null
+     * 14029 [main] DEBUG org.exist.xquery.XQuery  - Execution took 16 ms
+     * 14029 [main] DEBUG org.exist.xquery.XQuery  - mostRecentDocumentTime: 0
+     */
+    @Test @Ignore("Fails")
+    public void repeatTests(){
+        for(int i=0 ; i<100 ; i++){
+            try {
+                testValidateRNGwithJing();
+                testValidateRNGwithJing_invalid();
+                testValidateXSDwithJing();
+                testValidateXSDwithJing_invalid();
+
+            } catch (Exception ex) {
+                fail(ex.getMessage());
+                ex.printStackTrace();
+            }
+
+        }
     }
 }
