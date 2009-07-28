@@ -57,6 +57,7 @@ public class Profiler {
     /** For a full representation of the context sequence (TODO) */
     public static int SEQUENCE_DUMP = 8;
 
+    public static String CONFIG_PROPERTY_TRACELOG = "xquery.profiling.tracelog";
 
     /**
      * The logger where all output goes.
@@ -138,7 +139,8 @@ public class Profiler {
     }
 
     public final boolean isLogEnabled() {
-        return logEnabled;
+        Boolean globalProp = (Boolean) pool.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
+        return logEnabled || (globalProp != null && globalProp.booleanValue());
     }
 
     public final void setLogEnabled(boolean enabled) {
@@ -146,7 +148,7 @@ public class Profiler {
     }
     
     public final boolean traceFunctions() {
-        return stats.isEnabled() || logEnabled;
+        return stats.isEnabled() || isLogEnabled();
     }
     
     /**
@@ -165,7 +167,7 @@ public class Profiler {
     }
 
     public final void traceFunctionStart(Function function) {
-        if (logEnabled) {
+        if (isLogEnabled()) {
             log.trace(String.format("ENTER %-25s", function.getSignature().getName()));
         }
     }
@@ -179,7 +181,7 @@ public class Profiler {
                 source = function.getContext().getSourceKey();
             stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
         }
-        if (logEnabled) {
+        if (isLogEnabled()) {
             log.trace(String.format("EXIT  %-25s %10d ms", function.getSignature().getName(), elapsed));
         }
     }

@@ -85,7 +85,10 @@ public class FunctionTrace extends BasicFunction {
             boolean enable = args[0].effectiveBooleanValue();
             context.getBroker().getBrokerPool().getPerformanceStats().setEnabled(enable);
             if (getArgumentCount() == 2) {
-                context.getProfiler().setLogEnabled(args[1].effectiveBooleanValue());
+                if (args[1].effectiveBooleanValue())
+                    context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACELOG, Boolean.TRUE);
+                else
+                    context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACELOG, Boolean.FALSE);
             }
 
         } else if (isCalledAs("tracing-enabled")) {
