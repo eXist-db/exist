@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Team
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2007-2009 The eXist Project
+ * http://exist-db.org
  *
- *  http://exist-db.org
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -35,22 +34,29 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.DayTimeDurationValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.TimeValue;
 import org.exist.xquery.value.Type;
 
+/**
+ *
+ * @author perig
+ *
+ */
 public class FunDateTime extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 				new QName("dateTime", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
-				"Creates an xs:dateTime from an xs:date and an xs:time.",
+				"Creates an xs:dateTime from an xs:date, $date, and an xs:time, $time.",
 				new SequenceType[] {
-					new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE)
+					new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "the date as xs:date"),
+					new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "the time as xs:time")
 				},
-				new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
+				new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the combined date and time as xs:dateTime")
 			);
 	
 	public FunDateTime(XQueryContext context) {
