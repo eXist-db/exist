@@ -207,11 +207,11 @@ if($secondary/xproc:input[@port=$name]//t:document) then
     return
         document{$child}
 else
-
     for $child in $secondary/xproc:input[@port=$name]/*
     return
         document{$child}
 };
+
 
 (: -------------------------------------------------------------------------- :)
 declare function u:get-primary($primary){
@@ -297,11 +297,9 @@ declare function u:xslt($xslt,$xml){
 (: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($qry as xs:string, $xml){
 
-(:
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
-:)
 
 if(empty($qry) or $qry eq '/') then
 	$xml
@@ -327,11 +325,9 @@ else
 (: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($xpathstring, $xml, $namespaces){
 
-(:
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
-:)
 
 
 if(empty($xpathstring) or $xpathstring eq '/') then

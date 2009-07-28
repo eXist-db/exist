@@ -380,10 +380,15 @@ return
 (: -------------------------------------------------------------------------- :)
 declare function std:pack($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
-let $wrapper := u:get-option('wrapper',$options,$v)
 let $alternate := u:get-secondary('alternate',$secondary)
+let $wrapper := u:get-option('wrapper',$options,$v)
 return
-	element {$wrapper}{$v,$alternate}
+$alternate
+(:
+    for $child at $count in $v
+    return
+	    element {$wrapper}{$child,$alternate[$count]}
+:)
 };
 
 
