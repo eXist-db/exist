@@ -35,6 +35,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -52,36 +54,39 @@ public class RegexpFilter extends BasicFunction {
     // Setup function signature
     public final static FunctionSignature signatures[] = {new FunctionSignature(
             new QName("filter", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-            "Filter substrings that match the regular expression $b in text $a.",
+            "Filter substrings that match the regular expression in the text.",
             new SequenceType[]{
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "the text to filter"),
+                new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "the regular expression to perform against the text")
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the substrings")
     ),
 	new FunctionSignature(
 			new QName("groups", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-			"Tries to match the string in $a to the regular expression in $b. " +
+			"Tries to match the string in $text to the regular expression. " +
 			"Returns an empty sequence if the string does not match, or a sequence whose " +
 			"first item is the entire string, and whose following items are the matched groups.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "the text to filter"),
+                new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "the regular expression to perform against the text")
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "an empty sequence if the string does not match, or a sequence whose " +
+			"first item is the entire string, and whose following items are the matched groups.")
 		),
 		new FunctionSignature(
 			new QName("groups", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-			"Tries to match the string in $a to the regular expression in $b, using " +
-			"the flags specified in $c. Returns an empty sequence if the string does "+
+			"Tries to match the string in $text to the regular expression, using " +
+			"the flags specified. Returns an empty sequence if the string does "+
 			"not match, or a sequence whose first item is the entire string, and whose " +
 			"following items are the matched groups.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "the text to filter"),
+                new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "the regular expression to perform against the text"),
+				new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, ""),
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "an empty sequence if the string does "+
+			"not match, or a sequence whose first item is the entire string, and whose " +
+			"following items are the matched groups.")
 		)
     };
             

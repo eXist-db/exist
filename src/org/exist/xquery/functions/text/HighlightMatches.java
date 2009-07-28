@@ -37,6 +37,8 @@ import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -58,18 +60,18 @@ public class HighlightMatches extends BasicFunction {
             "and highlight matches to the user. However, this is not always possible, so Instead of using an XSLT " +
             "to post-process the serialized output, the " +
             "highlight-matches function provides direct access to the matching portions of the text within XQuery. " +
-            "The function takes a sequence of text nodes as first argument $a and a callback function (defined with " +
-            "util:function) as second parameter $b. $c may contain a sequence of additional values that will be passed " +
+            "The function takes a sequence of text nodes as first argument $source and a callback function (defined with " +
+            "util:function) as second parameter. $parameters may contain a sequence of additional values that will be passed " +
             "to the callback functions third parameter. Text nodes without matches will be returned as they are. However, " +
             "if the text contains a match marker, the matching character sequence is reported to the callback function, and the " +
             "result of the function call is inserted into the resulting node set where the matching sequence occurred. For example, " +
             "you can use this to mark all matching terms with a <span class=\"highlight\">abc</span>.",
             new SequenceType[]{
-                    new SequenceType(Type.TEXT, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                    new FunctionParameterSequenceType("source", Type.TEXT, Cardinality.ZERO_OR_MORE, "sequence of text nodes"),
+                    new FunctionParameterSequenceType("callback-function-ref", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a callback function (defined with util:function)"),
+                    new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "a sequence of additional values that will be passed to the callback functions third parameter.")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the source with the added highlights"));
     
     //private final static QName MATCH_ELEMENT = new QName("match", Serializer.EXIST_NS, "exist");
     
