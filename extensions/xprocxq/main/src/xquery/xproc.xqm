@@ -31,7 +31,7 @@
  declare variable $xproc:run-step := util:function(xs:QName("xproc:run-step"), 5);
  declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_and_eval"), 4);
  (: -------------------------------------------------------------------------- :)
- declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 4);
+ declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 5);
  declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
  declare variable $xproc:try :=util:function(xs:QName("xproc:try"), 5);
  declare variable $xproc:catch :=util:function(xs:QName("xproc:catch"), 5);
@@ -44,12 +44,12 @@
 
 
  (: ------------------------------------------------------------------------------------------ :)
-                                                                              (: XPROC COMPONENTS :)
+                                                                           (: XPROC COMPONENTS :)
  (: ------------------------------------------------------------------------------------------ :)
 
 
  (: -------------------------------------------------------------------------- :)
- declare function xproc:declare-step($primary,$secondary,$options,$step) {
+ declare function xproc:declare-step($primary,$secondary,$options,$currentstep,$outputs) {
  (: -------------------------------------------------------------------------- :)
     <test1/>
  };
