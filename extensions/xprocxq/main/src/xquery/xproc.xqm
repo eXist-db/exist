@@ -31,7 +31,7 @@
  declare variable $xproc:run-step := util:function(xs:QName("xproc:run-step"), 5);
  declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_and_eval"), 4);
  (: -------------------------------------------------------------------------- :)
- declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 5);
+ declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 4);
  declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
  declare variable $xproc:try :=util:function(xs:QName("xproc:try"), 5);
  declare variable $xproc:catch :=util:function(xs:QName("xproc:catch"), 5);
@@ -49,10 +49,11 @@
 
 
  (: -------------------------------------------------------------------------- :)
- declare function xproc:declare-step($primary,$secondary,$options,$currentstep,$outputs) {
+ declare function xproc:declare-step($primary,$secondary,$options,$step) {
  (: -------------------------------------------------------------------------- :)
     <test1/>
  };
+
 
 
  (: -------------------------------------------------------------------------- :)
@@ -576,34 +577,34 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
          for $input in $currentstep/p:input[@primary eq 'false']
              return
              <xproc:input port="{$input/@port}" select="{$input/@select}">
-     {
-         let $primaryresult := document{
-             for $child in $input/*
-             return
-                 xproc:resolve-port-binding($child,$result,$pipeline,$currentstep)
-                }
+             {
+                 let $primaryresult := document{
+                     for $child in $input/*
+                     return
+                         xproc:resolve-port-binding($child,$result,$pipeline,$currentstep)
+                        }
 
-         let $select := string(
-                    if (empty($input/@select)) then
-                         '/'
-                    else
-                         string($input/@select)
-                     )
+                 let $select := string(
+                            if (empty($input/@select)) then
+                                 '/'
+                            else
+                                 string($input/@select)
+                             )
 
-         let $selectval := if ($select eq '/') then
-                                $primaryresult
+                 let $selectval := if ($select eq '/') then
+                                        $primaryresult
+                                 else
+                                        let $namespaces :=   u:list-used-namespaces ($primaryresult)
+                                            return
+                                                u:evalXPATH(string($select),$primaryresult)
+                    return
+                         if (empty($selectval)) then
+
+         (: TODO: investigate empty bindings :)
+          u:dynamicError('err:XD0016',concat(string($pipeline/*[@name=$step]/p:input[@primary='true'][@select]/@select)," did not select anything at ",$step," ",name($pipeline/*[@name=$step])))
                          else
-                                let $namespaces :=   u:list-used-namespaces ($primaryresult)
-                                    return
-                                        u:evalXPATH(string($select),$primaryresult)
-            return
-                 if (empty($selectval)) then
-
- (: todo - investigate empty bindings :)
-  u:dynamicError('err:XD0016',concat(string($pipeline/*[@name=$step]/p:input[@primary='true'][@select]/@select)," did not select anything at ",$step," ",name($pipeline/*[@name=$step])))
-                 else
-                     $selectval
-     }
+                             $selectval
+             }
              </xproc:input>
 
      }</xproc:inputs>
@@ -648,7 +649,7 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
 
      return
          if(name($currentstep) = "p:declare-step") then
-            (: TODO - refactor p:pipeline and p:declare-step :)
+            (: TODO: refactor p:pipeline and p:declare-step :)
              ()
          else
             let $primaryinput:= <xproc:output step="{$step}"

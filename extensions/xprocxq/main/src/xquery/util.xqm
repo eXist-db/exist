@@ -202,6 +202,7 @@ return
 (: -------------------------------------------------------------------------- :)
 declare function u:get-secondary($name as xs:string,$secondary){
 (: -------------------------------------------------------------------------- :)
+
 if($secondary/xproc:input[@port=$name]//t:document) then
     for $child in $secondary/xproc:input[@port=$name]/t:document/*
     return

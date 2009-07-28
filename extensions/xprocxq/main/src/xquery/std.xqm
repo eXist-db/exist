@@ -138,7 +138,6 @@ else
                 u:stepError('err:XC0019','p:compare fail-if-not-equal option is enabled and documents were not equal')
         else
             u:outputResultElement($result)
-
 };
 
 
@@ -377,18 +376,17 @@ return
 };
 
 
+
 (: -------------------------------------------------------------------------- :)
 declare function std:pack($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $alternate := u:get-secondary('alternate',$secondary)
 let $wrapper := u:get-option('wrapper',$options,$v)
 return
-$alternate
-(:
+
     for $child at $count in $v
     return
 	    element {$wrapper}{$child,$alternate[$count]}
-:)
 };
 
 
