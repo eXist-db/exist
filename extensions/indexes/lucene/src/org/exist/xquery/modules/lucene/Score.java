@@ -27,12 +27,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.FloatValue;
+import org.exist.xquery.value.*;
 import org.exist.dom.QName;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.Match;
@@ -46,11 +41,16 @@ public class Score extends BasicFunction {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("score", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "INSERT DESCRIPTION HERE",
+            "Returns a computed relevance score for the given node. The score is the sum of all " +
+            "relevance scores provided by Lucene for the node and its descendants. In general, the score " +
+            "will be a number between 0.0 and 1.0 if the query had $node as context. If the query targeted " +
+            "multiple descendants of $node (e.g. 'title' and 'author' within a 'book'), the score will be the " +
+            "sum of all sub-scores and may thus be greater than 1.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, null)
             },
-            new FunctionParameterSequenceType("result", Type.FLOAT, Cardinality.ZERO_OR_MORE, "the score")
+            new FunctionReturnSequenceType(Type.FLOAT, Cardinality.ZERO_OR_MORE,
+                "sum of all relevance scores provided by Lucene for all matches below the given context node")
         );
 
     public Score(XQueryContext context) {
