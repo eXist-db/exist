@@ -32,6 +32,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -40,13 +42,13 @@ public class FilterNested extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
     	new QName("filter-nested", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-    		"Filters out all nodes in the node set $a, which do have descendant nodes in the same node set.  " +
+    		"Filters out all nodes in the node set, which do have descendant nodes in the same node set.  " +
             "This is useful if you do a combined query like //(a|b)[. &= $terms] and some 'b' nodes are nested " +
             "within 'a' nodes, but you only want to see the innermost matches, i.e. the 'b' nodes, not the 'a' nodes " +
             "containing 'b' nodes.",
             new SequenceType[]{
-    			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)},
-    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+    			new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "the node set")},
+    		new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a node set containing nodes that do not have descendent nodes."));
 
     public FilterNested(XQueryContext context) {
         super(context, signature);

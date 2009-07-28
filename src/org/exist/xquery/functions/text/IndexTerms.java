@@ -66,7 +66,7 @@ public class IndexTerms extends BasicFunction {
                     new FunctionParameterSequenceType("returnMax", Type.INT, Cardinality.EXACTLY_ONE,
                         "Maximum number of terms to report")
             },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the evaluation of the function reference")),
         new FunctionSignature(
             new QName("index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "This version of the index-terms function is to be used with indexes that were " +
@@ -85,7 +85,7 @@ public class IndexTerms extends BasicFunction {
                     new FunctionParameterSequenceType("returnMax", Type.INT, Cardinality.EXACTLY_ONE,
                         "Maximum number of terms to report")
             },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE))
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the evaluation of the function reference"))
     };
     
     public IndexTerms(XQueryContext context, FunctionSignature signature) {

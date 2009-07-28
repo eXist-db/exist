@@ -46,6 +46,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -61,68 +63,59 @@ import java.util.List;
  */
 public class MatchRegexp extends Function implements Optimizable {
 
+	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_MORE, "the node set that is to be searched for the keyword set");
+	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "the regular expressions to be matched against the fulltext index");
+	protected static final FunctionParameterSequenceType FLAGS_PARAM = new FunctionParameterSequenceType("flag", Type.STRING, Cardinality.EXACTLY_ONE, "With 'w' specified, the regular expression is matched against the entire keyword, i.e. 'explain.*' will match 'explained' , but not 'unexplained'.");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence of all of the matching nodes");
+	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("match-all", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"Tries to match each of the regular expression " +
-			"strings passed in $b against the keywords contained in " +
-			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+			"strings against the keywords contained in " +
+			"the fulltext index. The keywords found are then compared to the node set in $source. Every " +
 			"node containing ALL of the keywords is copied to the result sequence. By default, a keyword " +
             "is considered to match the pattern if any substring of the keyword matches. To change this behaviour, " +
             "use the 3-argument version of the function and specify flag 'w'. With 'w' specified, the regular expression " +
             "is matched against the entire keyword, i.e. 'explain.*' will match 'explained' , but not 'unexplained'.",
-			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
-            },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+			new SequenceType[] { SOURCE_PARAM, REGEX_PARAM },
+			RETURN_TYPE
 		),
         new FunctionSignature(
 			new QName("match-all", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"Tries to match each of the regular expression " +
-			"strings passed in $b against the keywords contained in " +
-			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+			"strings against the keywords contained in " +
+			"the fulltext index. The keywords found are then compared to the node set in $source. Every " +
 			"node containing ALL of the keywords is copied to the result sequence. By default, a keyword " +
             "is considered to match the pattern if any substring of the keyword matches. To change this behaviour, " +
             "use the 3-argument version of the function and specify flag 'w'. With 'w' specified, the regular expression " +
             "is matched against the entire keyword, i.e. 'explain.*' will match 'explained' , but not 'unexplained'.",
-			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+			new SequenceType[] { SOURCE_PARAM, REGEX_PARAM, FLAGS_PARAM },
+			RETURN_TYPE
 		),
         new FunctionSignature(
 			new QName("match-any", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"Tries to match each of the regular expression " +
-			"strings passed in $b against the keywords contained in " +
-			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+			"strings against the keywords contained in " +
+			"the fulltext index. The keywords found are then compared to the node set in $source. Every " +
 			"node containing ANY of the keywords is copied to the result sequence. By default, a keyword " +
             "is considered to match the pattern if any substring of the keyword matches. To change this behaviour, " +
             "use the 3-argument version of the function and specify flag 'w'. With 'w' specified, the regular expression " +
             "is matched against the entire keyword, i.e. 'explain.*' will match 'explained' , but not 'unexplained'.",
-			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
-            },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+			new SequenceType[] { SOURCE_PARAM, REGEX_PARAM },
+			RETURN_TYPE
 		),
         new FunctionSignature(
 			new QName("match-any", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"Tries to match each of the regular expression " +
-			"strings passed in $b against the keywords contained in " +
-			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+			"strings against the keywords contained in " +
+			"the fulltext index. The keywords found are then compared to the node set in $source. Every " +
 			"node containing ANY of the keywords is copied to the result sequence. By default, a keyword " +
             "is considered to match the pattern if any substring of the keyword matches. To change this behaviour, " +
             "use the 3-argument version of the function and specify flag 'w'. With 'w' specified, the regular expression " +
             "is matched against the entire keyword, i.e. 'explain.*' will match 'explained' , but not 'unexplained'.",
-			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+			new SequenceType[] { SOURCE_PARAM, REGEX_PARAM, FLAGS_PARAM },
+			RETURN_TYPE
 		)
     };
 

@@ -23,9 +23,9 @@
 package org.exist.xquery.modules.mail;
 
 
-import java.io.IOException;
-
 import java.util.Properties;
+
+import javax.mail.Session;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -41,10 +41,7 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Type;
-
-import javax.mail.Session;
 
 /**
  * eXist Mail Module Extension GetSession
@@ -67,7 +64,7 @@ public class MailSessionFunctions extends BasicFunction
 			"Open's a JavaMail session.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>." )
+				new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>.  The JavaMail properties are spelled out in Appendix A of the JavaMail specifications." )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the session handle." )
 			)

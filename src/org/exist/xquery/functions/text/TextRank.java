@@ -33,6 +33,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,8 +49,8 @@ public class TextRank extends BasicFunction {
 		new QName("text-rank", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 		"This is just a skeleton for a possible ranking function. Don't use this.",
 		new SequenceType[]{
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-		new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE));
+			new FunctionParameterSequenceType("text", Type.NODE, Cardinality.ZERO_OR_ONE, "the text to rank")},
+		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the ranking of the text"));
 	
 	public TextRank(XQueryContext context) {
 		super(context, signature);

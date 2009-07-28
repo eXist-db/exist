@@ -32,6 +32,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -48,10 +50,10 @@ public class MatchCount extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
     	new QName("match-count", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-    		"Counts the number of fulltext matches within the nodes and subnodes in $a.",
+    		"Counts the number of fulltext matches within the nodes and subnodes in $source.",
     		new SequenceType[]{
-    			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-    		new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE));
+    			new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_ONE, "the node and subnodes to do the fulltext match on")},
+    		new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the count"));
     
     /**
      * @param context

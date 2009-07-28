@@ -31,6 +31,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -48,8 +50,8 @@ public class Tokenize extends BasicFunction {
 			new QName("make-token", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"split a string into a token",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.ONE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+					new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ONE, "the string to tokenize")},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of tokens"));
 	
 	public Tokenize(XQueryContext context) {
 		super(context, signature);

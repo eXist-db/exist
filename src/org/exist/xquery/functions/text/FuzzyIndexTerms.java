@@ -30,6 +30,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -48,8 +50,8 @@ public class FuzzyIndexTerms extends BasicFunction {
             "a sequence of strings which are similar to the argument. Similarity is based on Levenshtein " +
             "distance. This function may not be useful in its current form and is subject to change.",
 			new SequenceType[]{
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+					new FunctionParameterSequenceType("term", Type.STRING, Cardinality.ZERO_OR_ONE, "")},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of strings which are similar to the argument $term"));
 	
 	public FuzzyIndexTerms(XQueryContext context) {
 		super(context, signature);

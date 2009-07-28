@@ -23,9 +23,9 @@
 package org.exist.xquery.modules.mail;
 
 
-import java.io.IOException;
-
-import java.util.Properties;
+import javax.mail.Folder;
+import javax.mail.MessagingException;
+import javax.mail.Store;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,20 +34,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Type;
-
-import javax.mail.MessagingException;
-import javax.mail.Folder;
-import javax.mail.Session;
-import javax.mail.Store;
 
 /**
  * eXist Mail Module Extension GetFolder

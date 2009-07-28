@@ -23,46 +23,48 @@
 package org.exist.xquery.modules.mail;
 
 
-import java.io.IOException;
-
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Properties;
+
+import javax.mail.Address;
+import javax.mail.FetchProfile;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Header;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.search.AndTerm;
+import javax.mail.search.BodyTerm;
+import javax.mail.search.ComparisonTerm;
+import javax.mail.search.FlagTerm;
+import javax.mail.search.FromStringTerm;
+import javax.mail.search.HeaderTerm;
+import javax.mail.search.NotTerm;
+import javax.mail.search.OrTerm;
+import javax.mail.search.ReceivedDateTerm;
+import javax.mail.search.RecipientStringTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SentDateTerm;
+import javax.mail.search.SubjectTerm;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Type;
-
-import javax.mail.Address;
-import javax.mail.FetchProfile;
-import javax.mail.Flags;
-import javax.mail.Header;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Folder;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.search.*;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
