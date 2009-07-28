@@ -449,14 +449,14 @@ declare function std:sink($primary,$secondary,$options) {
 declare function std:split-sequence($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $test := u:get-option('test',$options,$v)
+let $match := u:evalXPATH($test, $v)
 return
-	for $child in $v/*
-	let $prove := u:evalXPATH($test, $child)
-	return
-	    if ($prove) then
-	        <success/>
-	    else
-	        <failure/>
+    for $child at $count in $match
+    return
+        if($child) then
+            $v[$count]
+        else
+            ()
 };
 
 
