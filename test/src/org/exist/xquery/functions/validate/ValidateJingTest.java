@@ -1,7 +1,10 @@
 package org.exist.xquery.functions.validate;
 
-
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -26,6 +29,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ValidateJingTest {
 
+    private final static Logger LOG = Logger.getLogger(ValidateJingTest.class);
     private static Class cl = null;
     private static XPathQueryService service;
     private static Collection root = null;
@@ -36,7 +40,12 @@ public class ValidateJingTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        BasicConfigurator.configure();
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.removeAllAppenders(); // To avoid duplicate output
+        rootLogger.addAppender(new ConsoleAppender(new PatternLayout(
+                "%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n")));
+        rootLogger.setLevel(Level.DEBUG);
+
 
         // initialize driver
         cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -52,6 +61,7 @@ public class ValidateJingTest {
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
+        database = null;
     }
 
     @Test
@@ -163,7 +173,6 @@ public class ValidateJingTest {
                     "    </element>\n" +
                     "  </define>\n" +
                     "</grammar>\n" +
-
                     "return\n" +
                     "\n" +
                     "\tvalidation:jing($v,$schema)";
@@ -213,7 +222,6 @@ public class ValidateJingTest {
                     "    </element>\n" +
                     "  </define>\n" +
                     "</grammar>\n" +
-
                     "return\n" +
                     "\n" +
                     "\tvalidation:jing($v,$schema)";
@@ -228,17 +236,12 @@ public class ValidateJingTest {
 
     }
 
-    /* Hint:
-     * 14013 [main] DEBUG org.exist.xquery.XQuery  - Compilation took 31 ms
-     * 14013 [main] DEBUG org.exist.xquery.functions.validation.Shared  - Streaming element or document node
-     * 14029 [main] ERROR org.exist.xquery.PathExpr  - org.exist.storage.io.ExistIOException: A problem ocurred while serializing the node set: null
-     * 14029 [main] DEBUG org.exist.xquery.XQuery  - Execution took 16 ms
-     * 14029 [main] DEBUG org.exist.xquery.XQuery  - mostRecentDocumentTime: 0
-     */
-    @Test @Ignore("Fails")
-    public void repeatTests(){
-        for(int i=0 ; i<100 ; i++){
+    @Test
+    @Ignore("Looks good, but memory issue")
+    public void repeatTests() {
+        for (int i = 0; i < 1000; i++) {
             try {
+                System.out.println("nr=" + i);
                 testValidateRNGwithJing();
                 testValidateRNGwithJing_invalid();
                 testValidateXSDwithJing();

@@ -124,7 +124,7 @@ public class Shared {
             logger.debug("Streaming element or document node");
 
             // Node provided
-            Serializer serializer=context.getBroker().getSerializer();
+            Serializer serializer=context.getBroker().newSerializer();
             InputStream is = new NodeInputStream(serializer, s.iterate()); // new NodeInputStream()
             streamSource.setInputStream(is);
 
