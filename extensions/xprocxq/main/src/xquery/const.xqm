@@ -31,7 +31,7 @@ declare variable $const:DEFAULT_SERIALIZE := 'method=xml indent=yes';
 declare variable $const:TRACE_SERIALIZE := 'method=xml';
 declare variable $const:XINCLUDE_SERIALIZE := 'expand-xincludes=yes';
 declare variable $const:TEXT_SERIALIZE := 'method=text';
-declare variable $const:ESCAPE_SERIALIZE := 'method=xml';
+declare variable $const:ESCAPE_SERIALIZE := 'method=xml indent=no';
 
 
 (: -------------------------------------------------------------------------- :)
