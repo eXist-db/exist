@@ -1,4 +1,14 @@
 ----------------------------------------
+priority
+----------------------------------------
+
+    declare-step, library, import
+    options, variables, params
+    namespace handling
+    serialization
+    automating err related unit tests
+
+----------------------------------------
 current
 ----------------------------------------
 
@@ -61,7 +71,6 @@ Reuse
 standard steps
 ------------------------------
 	p:add-xml-base
-	p:split-sequence - easy
 	p:make-absolute-uris
 	p:namespace-rename
 	p:parameters
@@ -77,8 +86,14 @@ optional steps
 ------------------------------
 extension functions
 ------------------------------
-	p:step-available()
-
+    string/boolean p:system-property(string property)
+    boolean p:step-available(string step-type)
+    integer p:iteration-position()
+    integer p:iteration-size()
+    string p:base-uri()
+    string p:base-uri(Node node)
+    string p:resolve-uri(String relative)
+    string p:resolve-uri(String relative, String base)
 
 ------------------------------
 components
