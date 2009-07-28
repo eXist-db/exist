@@ -31,6 +31,7 @@ public class InternalFunctionCall extends Function
 		super(f.getContext(), f.getSignature());
 		this.function = f;
 	}
+
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
 		QName functionName = function.getName();
@@ -45,16 +46,25 @@ public class InternalFunctionCall extends Function
 		} catch (PermissionDeniedException pde) {
 			throw new XPathException(function, "Access to function '" + functionName + "'  denied.", pde);
 		}
-
+        long start = System.currentTimeMillis();
+        if (context.getProfiler().traceFunctions())
+            context.getProfiler().traceFunctionStart(this);
         try {
             return function.eval(contextSequence, contextItem);
         } catch (XPathException e) {
             if (e.getLine() == 0)
                 e.setLocation(line, column);
             throw e;
+        } finally {
+            if (context.getProfiler().traceFunctions())
+                context.getProfiler().traceFunctionEnd(this, System.currentTimeMillis() - start);
         }
     }
-	
+
+    public Function getFunction() {
+        return function;
+    }
+    
 	public int getArgumentCount()
 	{
 		return function.getArgumentCount();

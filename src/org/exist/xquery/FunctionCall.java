@@ -264,6 +264,8 @@ public class FunctionCall extends Function {
             context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
             try {
+                if (context.getProfiler().traceFunctions())
+                    context.getProfiler().traceFunctionStart(this);
                 long start = System.currentTimeMillis();
     			Sequence returnSeq = expression.eval(contextSequence, contextItem);
     			while (returnSeq instanceof DeferredFunctionCall &&

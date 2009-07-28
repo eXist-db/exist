@@ -17,12 +17,15 @@ declare function prof:main() as element()
 declare function prof:display-page() as element() {
     let $action := request:get-parameter("action", ())
     let $tab := number(request:get-parameter("tab", 1))
+    let $tracelog := request:get-parameter("tracelog", "off") = "on"
     let $log := util:log("DEBUG", ("TAB: ", $tab))
     let $result :=
         if ($action eq "Clear") then
             system:clear-trace()
-        else if ($action eq "Enable") then
-            system:enable-tracing(true())
+        else if ($action = "Enable") then
+            system:enable-tracing(true(), $tracelog)
+        else if ($action = "refresh") then
+            system:enable-tracing(system:tracing-enabled(), $tracelog)
         else if ($action eq "Disable") then
             system:enable-tracing(false())
         else
@@ -213,6 +216,7 @@ declare function prof:sort($function as element(), $sort as xs:string) {
 
 declare function prof:display-form($trace as element(), $sort as xs:string) {
     let $label := if (system:tracing-enabled()) then 'Disable' else 'Enable'
+    let $tracelog := request:get-parameter('tracelog', '') eq 'on'
     return
         <form name="f-trace" action="{session:encode-url(request:get-uri())}" method="GET">
             <div class="inner-panel">
@@ -220,6 +224,12 @@ declare function prof:display-form($trace as element(), $sort as xs:string) {
                 <button type="submit" name="action" value="Clear">Clear</button>
                 <button id="trace-refresh" type="submit" name="action" 
                     value="refresh">Refresh</button>
+                {
+                    if ($tracelog) then
+                        <input type="checkbox" name="tracelog" checked="checked"/> 
+                    else
+                        <input type="checkbox" name="tracelog"/>
+                } Write additional info to log
                 <input type="hidden" name="panel" value="trace"/>
                 <input type="hidden" name="sort" value="{$sort}"/>
                 <input type="hidden" name="tab" value="0"/>
