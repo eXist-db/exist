@@ -68,6 +68,8 @@ public class Profiler {
     private final StringBuilder buf = new StringBuilder(64);
     
     private boolean enabled = false;
+
+    private boolean logEnabled = false;
     
     private int verbosity = 0; 
 
@@ -101,7 +103,10 @@ public class Profiler {
             if (params != null) {
                 if (params[0].equals("trace")) {
                     stats.setEnabled(true);
-
+                    
+                } else if (params[0].equals("tracelog")) {
+                    logEnabled = params[1].equals("yes");
+                
                 } else if (params[0].equals("logger")) {
                     log = Logger.getLogger(params[1]);
                 
@@ -132,8 +137,16 @@ public class Profiler {
         return enabled;
     }
 
+    public final boolean isLogEnabled() {
+        return logEnabled;
+    }
+
+    public final void setLogEnabled(boolean enabled) {
+        logEnabled = enabled;
+    }
+    
     public final boolean traceFunctions() {
-        return stats.isEnabled();
+        return stats.isEnabled() || logEnabled;
     }
     
     /**
@@ -151,9 +164,24 @@ public class Profiler {
         stats.recordQuery(context.getSourceKey(), (System.currentTimeMillis() - queryStart));
     }
 
-    public final void traceFunctionEnd(FunctionCall function, long elapsed) {
-        stats.recordFunctionCall(function.getSignature().getName(), function.getContext().getSourceKey(),
-                elapsed);
+    public final void traceFunctionStart(Function function) {
+        if (logEnabled) {
+            log.trace(String.format("ENTER %-25s", function.getSignature().getName()));
+        }
+    }
+
+    public final void traceFunctionEnd(Function function, long elapsed) {
+        if (stats.isEnabled()) {
+            String source;
+            if (function instanceof InternalFunctionCall)
+                source = ((InternalFunctionCall) function).getFunction().getClass().getName();
+            else
+                source = function.getContext().getSourceKey();
+            stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
+        }
+        if (logEnabled) {
+            log.trace(String.format("EXIT  %-25s %10d ms", function.getSignature().getName(), elapsed));
+        }
     }
 
     public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, int mode, long elapsed) {

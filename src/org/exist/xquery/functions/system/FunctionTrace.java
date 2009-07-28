@@ -47,6 +47,16 @@ public class FunctionTrace extends BasicFunction {
                 new SequenceType(Type.ITEM, Cardinality.EMPTY)
         ),
         new FunctionSignature(
+                new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
+                "Enable function tracing on the database instance.",
+                new SequenceType[] {
+                    new FunctionParameterSequenceType("enable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "boolean flag to enable/disable function tracing"),
+                    new FunctionParameterSequenceType("tracelog", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                        "boolean flag: if set to true, entering/exiting a function will be logged to the logger 'xquery.profiling'")
+                },
+                new SequenceType(Type.ITEM, Cardinality.EMPTY)
+        ),
+        new FunctionSignature(
                 new QName( "tracing-enabled", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Returns true if function tracing is currently enabled on the database instance.",
                 null,
@@ -74,6 +84,9 @@ public class FunctionTrace extends BasicFunction {
         	logger.info("Entering the " + SystemModule.PREFIX + ":enable-tracing XQuery function");
             boolean enable = args[0].effectiveBooleanValue();
             context.getBroker().getBrokerPool().getPerformanceStats().setEnabled(enable);
+            if (getArgumentCount() == 2) {
+                context.getProfiler().setLogEnabled(args[1].effectiveBooleanValue());
+            }
 
         } else if (isCalledAs("tracing-enabled")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":tracing-enalbed XQuery function");
