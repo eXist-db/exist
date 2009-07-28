@@ -57,7 +57,8 @@ public class NodeSerializer {
 
             serializer.reset();
             serializer.setProperties(outputProperties);
-            serializer.setReceiver(sax);
+            serializer.setSAXHandlers(sax, sax);
+
             
             sax.startDocument();
             
