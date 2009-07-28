@@ -110,7 +110,7 @@
     <!-- Section: CATEGORIES -->
     
     <category name="xquery.profiling" additivity="false">
-        <priority value="debug"/>
+        <priority value="trace"/>
         <appender-ref ref="exist.profiling"/>
     </category>
     
