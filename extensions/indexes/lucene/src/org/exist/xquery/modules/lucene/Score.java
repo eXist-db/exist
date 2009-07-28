@@ -47,7 +47,8 @@ public class Score extends BasicFunction {
             "multiple descendants of $node (e.g. 'title' and 'author' within a 'book'), the score will be the " +
             "sum of all sub-scores and may thus be greater than 1.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, null)
+                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
+                    "the context node")
             },
             new FunctionReturnSequenceType(Type.FLOAT, Cardinality.ZERO_OR_MORE,
                 "sum of all relevance scores provided by Lucene for all matches below the given context node")
