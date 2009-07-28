@@ -2719,7 +2719,7 @@ public class XQueryTest extends XMLTestCase {
     }
 
     // http://sourceforge.net/support/tracker.php?aid=1884403
-    public void bugtestAtomization_1884403() {
+    public void testAtomization_1884403() {
 
         try {
             String query = "declare namespace tst = \"tt\"; " +
