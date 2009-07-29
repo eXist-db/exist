@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.collections.Collection;
 import org.exist.dom.DefaultDocumentSet;
@@ -46,6 +47,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -60,7 +63,7 @@ import java.util.List;
  * @author wolf
  */
 public class ExtCollection extends Function {
-
+	protected static final Logger logger = Logger.getLogger(ExtCollection.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection", Function.BUILTIN_FUNCTION_NS),
@@ -73,8 +76,8 @@ public class ExtCollection extends Function {
 			"Documents contained in subcollections are also included.",
 			new SequenceType[] {
 				//Different from the offical specs
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ZERO_OR_MORE, "the collection-uris for which to include the documents")},
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes contained in or under the given collections"),
 			true);
 
 	private boolean includeSubCollections = false;
@@ -141,6 +144,7 @@ public class ExtCollection extends Function {
 				    Collection coll = context.getBroker().getCollection(uri);            
 				    if(coll == null) {
 				    	if (context.isRaiseErrorOnFailedRetrieval()) {
+                            logger.error("FODC0002: can not access collection '" + uri + "'");
 		    				throw new XPathException(this, "FODC0002: can not access collection '" + uri + "'");
 		    			}					    	
 				    } else {
@@ -154,6 +158,7 @@ public class ExtCollection extends Function {
             }
         } catch (XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
+            logger.error("FODC0002: can not access collection '" + e.getMessage() + "'");
             throw new XPathException(this, "FODC0002: " + e.getMessage(), e);
         }
         // iterate through all docs and create the node set
@@ -171,7 +176,7 @@ public class ExtCollection extends Function {
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
 		    } catch (LockException e) {
-                LOG.info("Could not acquire lock on document " + doc.getURI());
+                logger.error("Could not acquire lock on document " + doc.getURI());
             } finally {
                 if (lockAcquired)
                     dlock.release(Lock.READ_LOCK);
