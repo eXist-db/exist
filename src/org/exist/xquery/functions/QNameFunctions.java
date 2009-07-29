@@ -32,6 +32,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,32 +49,32 @@ public class QNameFunctions extends BasicFunction {
 	public final static FunctionSignature prefixFromQName =
 		new FunctionSignature(
 				new QName("prefix-from-QName", Function.BUILTIN_FUNCTION_NS),
-				"Returns an xs:NCName representing the prefix of $a. If $a is the empty " +
+				"Returns an xs:NCName representing the prefix of $arg. If $arg is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
-					new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE)
+					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName")
 				},
-				new SequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE));
+				new FunctionReturnSequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE, "the prefix"));
 	
 	public final static FunctionSignature localNameFromQName =
 		new FunctionSignature(
 				new QName("local-name-from-QName", Function.BUILTIN_FUNCTION_NS),
-				"Returns an xs:NCName representing the local part of $a. If $a is the empty " +
+				"Returns an xs:NCName representing the local part of $arg. If $arg is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
-					new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE)
+					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName")
 				},
-				new SequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE));
+				new FunctionReturnSequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE, "the local name"));
 	
 	public final static FunctionSignature namespaceURIFromQName =
 		new FunctionSignature(
 				new QName("namespace-uri-from-QName", Function.BUILTIN_FUNCTION_NS),
-				"Returns the namespace URI for $a. If $a is the empty " +
+				"Returns the namespace URI for $arg. If $arg is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
-					new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE)
+					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName")
 				},
-				new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
+				new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the namespace URI"));
 	
 	/**
 	 * @param context
