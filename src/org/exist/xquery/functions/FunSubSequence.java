@@ -27,6 +27,8 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -49,11 +51,10 @@ public class FunSubSequence extends Function {
                             + "including the number of items indicated by the value of the optional third"
                             + "argument. If the third argument is missing, all items up to the end of the "
                             + "sequence are included.", new SequenceType[] {
-                            new SequenceType(Type.ITEM,
-                                    Cardinality.ZERO_OR_MORE),
-                            new SequenceType(Type.DOUBLE,
-                                    Cardinality.EXACTLY_ONE) },
-                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
+                            new FunctionParameterSequenceType("sourceSeq", Type.ITEM, Cardinality.ZERO_OR_MORE, "the source sequence"),
+                            new FunctionParameterSequenceType("startingLoc", Type.DOUBLE, Cardinality.EXACTLY_ONE, "the starting position in the $sourceSeq")
+                            },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the subsequence")),
             new FunctionSignature(
                     new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
                     "Returns a subsequence of the values in the first argument sequence, "
@@ -61,13 +62,11 @@ public class FunSubSequence extends Function {
                             + "including the number of items indicated by the value of the optional third"
                             + "argument. If the third argument is missing, all items up to the end of the "
                             + "sequence are included.", new SequenceType[] {
-                            new SequenceType(Type.ITEM,
-                                    Cardinality.ZERO_OR_MORE),
-                            new SequenceType(Type.DOUBLE,
-                                    Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.DOUBLE,
-                                    Cardinality.EXACTLY_ONE) },
-                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)) };
+                        new FunctionParameterSequenceType("sourceSeq", Type.ITEM, Cardinality.ZERO_OR_MORE, "the source sequence"),
+                        new FunctionParameterSequenceType("startingLoc", Type.DOUBLE, Cardinality.EXACTLY_ONE, "the starting position in the $sourceSeq"),
+                        new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "the length of the subsequence")
+                        },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the subsequence")) };
 
     /**
      * @param context

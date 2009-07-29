@@ -28,6 +28,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -43,14 +45,21 @@ public class FunStrLength extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("string-length", Function.BUILTIN_FUNCTION_NS),
+				"Returns an xs:integer equal to the length in characters of the value of $arg.\n" +
+				"If the value of $arg is the empty sequence, the xs:integer 0 is returned.\n" +
+				"If no argument is supplied, $arg defaults to the string value (calculated using fn:string()) of the context item (.). If no argument is supplied or if the argument is the context item and the context item is undefined an error is raised",
 				new SequenceType[0],
-				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+				new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the length in characters")
 		),
 		new FunctionSignature(
 			new QName("string-length", Function.BUILTIN_FUNCTION_NS),
+			"Returns an xs:integer equal to the length in characters of the value of $arg.\n" +
+			"If the value of $arg is the empty sequence, the xs:integer 0 is returned.\n" +
+			"If no argument is supplied, $arg defaults to the string value (calculated using fn:string()) of the context item (.). If no argument is supplied or if the argument is the context item and the context item is undefined an error is raised",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string")
+			},
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the length in characters")
 		)
 	};
 			
