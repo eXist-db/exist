@@ -19,10 +19,6 @@
                         <String xml:space="preserve">localhost</String>
                     </entry>
                     <entry>
-                        <String xml:space="preserve">xquery.size.limit.sequence.view</String>
-                        <Integer xml:space="preserve">2</Integer>
-                    </entry>
-                    <entry>
                         <String xml:space="preserve">xquery.wrap.result</String>
                         <Boolean xml:space="preserve">false</Boolean>
                     </entry>
@@ -157,6 +153,11 @@
             <file name="installer/shortcutSpec.xml"/>
             <file name="installer/UnixShortcutSpec.xml"/>
             <file name="installer/userInput.xml"/>
+        </folder>
+        <folder name="lib">
+            <file name="src/org/exist/xquery/lib/json.xq"/>
+            <file name="src/org/exist/xquery/lib/kwic.xql"/>
+            <file name="src/org/exist/xquery/lib/sequences.xq"/>
         </folder>
         <folder name="misc">
             <file name="backup.properties"/>
