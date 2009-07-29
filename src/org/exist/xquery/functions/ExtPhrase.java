@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2009 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -52,7 +53,7 @@ import org.exist.xquery.value.Sequence;
  *@author     Bruno Chatel <bcha@chadocs.com> (March 30, 2005)
  */
 public class ExtPhrase extends ExtFulltext {
-
+    private static final Logger logger = Logger.getLogger(ExtPhrase.class);
 	/**
 	 * 
 	 * @param context
@@ -71,6 +72,7 @@ public class ExtPhrase extends ExtFulltext {
         try {
 			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
+            logger.error(e.getMessage());
 			throw new XPathException(this, e.getMessage(), e);
 		}
 		NodeSet hits = processQuery(terms, nodes);
@@ -197,8 +199,7 @@ public class ExtPhrase extends ExtFulltext {
                         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 matchers[i] = patterns[i].matcher("");
             } catch (PatternSyntaxException e) {
-                //TODO : error ? -pb
-                LOG.warn("malformed pattern", e);
+                logger.error("malformed pattern" + e.getMessage());
                 return Sequence.EMPTY_SEQUENCE;
             }
         }

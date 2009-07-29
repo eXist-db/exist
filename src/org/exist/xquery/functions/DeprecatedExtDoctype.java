@@ -34,8 +34,8 @@ import java.util.Iterator;
 /**
  * @author wolf
  */
-public class ExtDoctype extends Function {
-	protected static final Logger logger = Logger.getLogger(ExtDoctype.class);
+public class DeprecatedExtDoctype extends Function {
+	protected static final Logger logger = Logger.getLogger(DeprecatedExtDoctype.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doctype", Function.BUILTIN_FUNCTION_NS),
@@ -45,13 +45,13 @@ public class ExtDoctype extends Function {
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes matching the DOCTYPE names"),
 			"This function is eXist-specific and deprecated. It should not be in the standard functions namespace. Please " +
-			"use util:doctype instead."
+			"use util:doctype() instead."
 		);
 
 	/**
 	 * @param context
 	 */
-	public ExtDoctype(XQueryContext context) {
+	public DeprecatedExtDoctype(XQueryContext context) {
 		super(context, signature);
 	}
 

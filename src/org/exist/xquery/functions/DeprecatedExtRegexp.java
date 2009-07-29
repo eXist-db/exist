@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
@@ -47,6 +48,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -60,20 +63,22 @@ import java.util.List;
 /**
  * @author wolf
  */
-public class ExtRegexp extends Function implements Optimizable {
+public class DeprecatedExtRegexp extends Function implements Optimizable {
+	protected static final Logger logger = Logger.getLogger(DeprecatedExtRegexp.class);
 
+	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "the node set that is to be searched for the keyword set");
+	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "the regular expressions to be matched against the fulltext index");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence of all of the matching nodes");
+	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("match-all", Function.BUILTIN_FUNCTION_NS),
 			"eXist-specific extension function. Tries to match each of the regular expression " +
-			"strings passed in $b and all following parameters against the keywords contained in " +
-			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+			"strings passed in $regular-expression and all following parameters against the keywords contained in " +
+			"the old fulltext index. The keywords found are then compared to the node set in $nodes. Every " +
 			"node containing all of the keywords is copied to the result sequence.",
-			new SequenceType[] {
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
-			},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+            new SequenceType[] { SOURCE_PARAM, REGEX_PARAM },
+			RETURN_TYPE,
 			true,
             "This function is eXist-specific and should not be in the standard functions namespace. Please " +
             "use text:match-all() instead."
@@ -88,19 +93,19 @@ public class ExtRegexp extends Function implements Optimizable {
     protected int axis = Constants.UNKNOWN_AXIS;
     protected NodeSet preselectResult = null;
 
-    public ExtRegexp(XQueryContext context) {
+    public DeprecatedExtRegexp(XQueryContext context) {
 		super(context, signature);
 	}
 
 	/**
 	 * @param type
 	 */
-	public ExtRegexp(XQueryContext context, int type) {
+	public DeprecatedExtRegexp(XQueryContext context, int type) {
 		super(context, signature);
 		this.type = type;
 	}
 
-	public ExtRegexp(XQueryContext context, int type, FunctionSignature signature) {
+	public DeprecatedExtRegexp(XQueryContext context, int type, FunctionSignature signature) {
 		super(context, signature);
 		this.type = type;
 	}
@@ -183,6 +188,10 @@ public class ExtRegexp extends Function implements Optimizable {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+        logger.error("Use of deprecated function fn:match-all()/fn:match-any(). " +
+                     "It will be removed soon. Please " +
+                     "use text:match-all() or text:match-any() instead.");
+
         // if we were optimizing and the preselect did not return anything,
         // we won't have any matches and can return
         if (preselectResult != null && preselectResult.isEmpty())
