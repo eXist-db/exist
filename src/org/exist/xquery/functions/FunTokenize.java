@@ -33,6 +33,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,24 +51,24 @@ public class FunTokenize extends FunMatches {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-			"This function breaks the input string $a into a sequence of strings, "
-				+ "treating any substring that matches pattern $b as a separator. The "
+			"This function breaks the input string $input into a sequence of strings, "
+				+ "treating any substring that matches pattern $pattern as a separator. The "
 				+ "separators themselves are not returned.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
+				new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string"),
+				new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "")},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
 		),
 		new FunctionSignature(
 			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-			"This function breaks the input string $a into a sequence of strings, "
-				+ "treating any substring that matches pattern $b as a separator. The "
-				+ "separators themselves are not returned.",
+			"This function breaks the input string $input into a sequence of strings, "
+			+ "treating any substring that matches pattern $pattern as a separator. The "
+			+ "separators themselves are not returned.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
+				new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string"),
+				new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "see http://www.w3.org/TR/xpath-functions/#flags")},
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
 		)
 	};
 
