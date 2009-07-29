@@ -1,0 +1,191 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xml:space="preserve"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>xqDoc -- Module</title><script language="JavaScript"><!--
+        function popUp(URL) {
+                 day = new Date();
+                 id = day.getTime();
+                 eval("page = window.open(URL, 'xqdoccode', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=600,height=400,left = 412,top = 334');")
+                 page.focus();
+        }
+      --></script><script language="JavaScript"><!--
+	    function litePopUp(str) {    
+  		  OpenWindow=window.open('', 'xqdoccode', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=600,height=400,left = 412,top = 334');
+  		  OpenWindow.document.write('<html xmlspace="preserve">');
+  		  OpenWindow.document.write('<head>');
+  		  OpenWindow.document.write('<title>xqDoc - Code Sample</title>');
+  		  OpenWindow.document.write('</head>');  		    		    		  
+  		  OpenWindow.document.write('<body xml:space="preserve">');
+  		  OpenWindow.document.write('<pre>');
+ 		  OpenWindow.document.write(str);
+ 		  OpenWindow.document.write('</pre>');
+  		  OpenWindow.document.write('</body>');
+  		  OpenWindow.document.write('</html>');
+  		  OpenWindow.document.close();
+  		  page.focus();
+        }
+      --></script><style><!--
+body		{
+		font: 80% Verdana;
+		}
+table		{
+		font-size: 100%;
+		}
+h1, h2, h3, h4, h5, h6
+		{
+		clear: both;
+		float: none;
+		}
+h1		{
+		font-size: 100%;
+		margin: 0em;
+		}
+h2		{
+		font-size: 180%;
+		margin-bottom: -1em;
+		margin-top: .3em;
+		}
+h3		{
+		font-size: 150%;
+		}	
+h4		{
+		font-size: 140%;
+		background-color: #ccf;
+		border-bottom: 1px solid #99f;
+		width: 100%;
+		}
+h5		{
+		margin: 1em 0em 0em 0em;
+		font-size: 120%;
+		}
+h6		{
+		margin: 0em 0em 0em 3em;
+		font-style: italic;
+		font: bold italic;
+		font-size: 100%;
+		}
+#variables, #methods, #methoddetail
+		{
+		padding-left: 3em;
+		margin-bottom: 1.4em;
+		clear: both;
+		float: none;
+		}
+#methods ul.method, #variables ul.method
+		{
+		margin: 1em 0em 0em;
+		}
+#methoddetail ul.method
+		{
+		margin: 0em;
+		}
+div.inexternal
+		{
+		padding-left: 2em;
+		margin-bottom: 1em;
+		}
+div.methoddetail p
+		{
+		float: none;
+		clear: both;
+		padding-left: 2em;
+		margin-bottom: 1em;
+		}
+div.methoddetail{
+		padding-bottom: 1em;
+		}
+div.methoddetail li
+		{
+		list-style-type: none;
+		font-weight: bold;
+		}
+div.methoddetail li li
+		{
+		list-style-type: circle;
+		font-weight: normal;
+		}
+div.methoddetail li ul
+		{
+		padding-bottom: 0.5em;
+		font-weight: normal;
+		}
+table.inexternal{
+		clear: both;
+		float: none;
+		width: 80%;
+		margin-left: 3em;
+		padding: 0em;
+		
+		}
+table.inexternal th
+		{
+		background-color:#dedede;
+		width: 50%;
+		}			
+td		{
+		vertical-align: top;
+		}
+div.description {
+		margin-top: .5em;
+		font-weight: normal;
+		padding-left: 1em;
+		}
+ul.method	{
+		clear: both;
+		float: none;
+		width: 90%;
+		list-style-type: none;
+		border-top: 1px solid #ccc;
+		}
+ul.method li.left
+		{
+		float: left;
+		clear: none;
+		width: 40%;
+		font-weight: bold;
+		margin-bottom: 2em;
+		}
+ul.method li.right
+		{
+		position: relative;
+            top: 0em;
+		float: left;
+            width: 55%;
+		margin-bottom: 2em;
+		padding-left: 2em;
+		}
+div.home 	{
+		width: 60%;
+		float: left;
+		margin-right: 1%;
+		border: 1px
+		}
+div.home h4	{
+		font-size: 120%;
+		background-color: #fff;
+		border-bottom: 1px solid #99f;
+		width: 100%;
+		margin-bottom: -1em;
+		}
+div.overview p {
+               width: 60%;
+               }
+     
+ --></style></head><body><h4>Module URI</h4><h1>http://exist-db.org/xquery/kwic</h1><h4>Module Description</h4><p>    KWIC module: formats query results to display <em xmlns:xqdoc="http://www.xqdoc.org/1.0">keywords in context</em> (KWIC). A configurable    amount of text is displayed to the left and right of a matching keyword (or phrase).        The module works with all indexes that support match highlighting (matches are tagged    with an &lt;exist:match&gt; element). This includes the old full text index, the new     Lucene-based full text index, as well as the NGram index.        The <b xmlns:xqdoc="http://www.xqdoc.org/1.0">kwic:summarize()</b> function represents the main entry point into the module.    To have more control over the text extraction context, you can also call     <b xmlns:xqdoc="http://www.xqdoc.org/1.0">kwic:get-summary()</b> instead. For example, the following snippet will only print the    first match within a given set of context nodes ($ancestor):        <pre xmlns:xqdoc="http://www.xqdoc.org/1.0">    let $matches := kwic:get-matches($hit)<br>    for $ancestor in $matches/ancestor::para | $matches/ancestor::title | $matches/ancestor::td<br>    return<br>        kwic:get-summary($ancestor, ($ancestor//exist:match)[1], $config)    </pre></p><ul></ul><h4>Variables</h4><div id="variables"><div><a name="$CHARS_SUMMARY"></a><ul class="method"><li class="left">$CHARS_SUMMARY</li><li class="right"></li></ul><ul></ul></div><div><a name="$CHARS_KWIC"></a><ul class="method"><li class="left">$CHARS_KWIC</li><li class="right"></li></ul><ul></ul></div></div>&nbsp; &nbsp;<h4>Function Summary</h4><div id="methods"><a name="methods"></a><ul class="method"><li class="left"><a href="#display-text">display-text</a><div class="description"></div></li><li class="right">( $text as text()?) as node()?<br><br></li></ul><ul class="method"><li class="left"><a href="#get-context">get-context</a><div class="description">	Retrieve the following and preceding text chunks for a given match.</div></li><li class="right">( $root as element() ,<br>&nbsp; $match as element(exist:match) ,<br>&nbsp; $mode as xs:string) as node()*<br><br></li></ul><ul class="method"><li class="left"><a href="#get-matches">get-matches</a><div class="description">    Return all matches within the specified element, $hit.</div></li><li class="right">( $hit as element()) as element(exist:match)*<br><br></li></ul><ul class="method"><li class="left"><a href="#get-summary">get-summary</a><div class="description">	Print a summary of the match in $node.</div></li><li class="right">( $root as node() ,<br>&nbsp; $node as element(exist:match) ,<br>&nbsp; $config as element(config)) as element()<br><br></li></ul><ul class="method"><li class="left"><a href="#string-length">string-length</a><div class="description">	Computes the total string length of the nodes in the argument sequence</div></li><li class="right">( $nodes as item()*) as xs:integer<br><br></li></ul><ul class="method"><li class="left"><a href="#substring">substring</a><div class="description">	Like fn:substring, but takes a node argument.</div></li><li class="right">( $node as node() ,<br>&nbsp; $start as xs:int ,<br>&nbsp; $count as xs:int) as item()?<br><br></li></ul><ul class="method"><li class="left"><a href="#summarize">summarize</a><div class="description">	Main function of the KWIC module: takes the passed element and returns an 	XHTML fragment containing a chunk of text before and after the first full text	match in the node.</div></li><li class="right">( $hit as element() ,<br>&nbsp; $config as element(config)) as element()*<br><br></li></ul><ul class="method"><li class="left"><a href="#truncate-following">truncate-following</a><div class="description">	Generate the right-hand context of the match.</div></li><li class="right">( $root as node() ,<br>&nbsp; $node as node()? ,<br>&nbsp; $truncated as item()* ,<br>&nbsp; $max as xs:int ,<br>&nbsp; $chars as xs:int)<br><br></li></ul><ul class="method"><li class="left"><a href="#truncate-previous">truncate-previous</a><div class="description">	Generate the left-hand context of the match.</div></li><li class="right">( $root as node() ,<br>&nbsp; $node as node()? ,<br>&nbsp; $truncated as item()* ,<br>&nbsp; $max as xs:int ,<br>&nbsp; $chars as xs:int)<br><br></li></ul></div>&nbsp;<h4>Function Detail</h4><div id="methoddetail"><div id="display-text" class="methoddetail"><h5><a name="display-text"></a>display-text</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:display-text($text as text()?) as node()?{<br/&gt;    if ($text/parent::exist:match) then<br/&gt;    %09&amp;lt;span class=&#34;hi&#34;&amp;gt;{$text}&amp;lt;/span&amp;gt;<br/&gt;    else<br/&gt;        $text<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $text as text()?) as node()?<br><br></li></ul><ul></ul></div>&nbsp;<div id="get-context" class="methoddetail"><h5><a name="get-context"></a>get-context</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:get-context($root as element(), $match as element(exist:match), $mode as xs:string) as node()*{<br/&gt;%09let $sibs :=<br/&gt;%09%09if ($mode eq &amp;apos;previous&amp;apos;) then <br/&gt;%09%09%09$match/preceding::text()<br/&gt;%09%09else<br/&gt;%09%09%09$match/text()/following::text()<br/&gt;%09for $sib in $sibs<br/&gt;%09where exists($root[.//$sib])<br/&gt;%09return<br/&gt;%09%09if ($sib/parent::exist:match) then<br/&gt;%09%09%09&amp;lt;span class=&#34;hi&#34;&amp;gt;{$sib}&amp;lt;/span&amp;gt;<br/&gt;%09%09else<br/&gt;%09%09%09$sib<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $root as element() ,<br>&nbsp; $match as element(exist:match) ,<br>&nbsp; $mode as xs:string) as node()*<br><br></li></ul><p>	Retrieve the following and preceding text chunks for a given match.</p><ul><li>Parameters:</li><ul><li>$match - the text node containing the match<br></li><li>$mode - the selection mode: either "previous" or "following"<br></li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://www.w3.org/2005/xpath-functions</td><td>exists</td></tr></table></div></div>&nbsp;<div id="get-matches" class="methoddetail"><h5><a name="get-matches"></a>get-matches</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:get-matches($hit as element()) as element(exist:match)*{<br/&gt;    let $expanded := util:expand($hit, &#34;expand-xincludes=no&#34;)<br/&gt;%09return $expanded//exist:match<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $hit as element()) as element(exist:match)*<br><br></li></ul><p>    Return all matches within the specified element, $hit. Matches are returned as    exist:match elements. The returned nodes are part of a new document whose    root element is a copy of the specified $hit element.    </p><ul><li>Parameters:</li><ul><li>$hit - an arbitrary XML element which has been selected by one of the full text operations or an ngram search.<br></li></ul></ul></div>&nbsp;<div id="get-summary" class="methoddetail"><h5><a name="get-summary"></a>get-summary</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:get-summary($root as node(), $node as element(exist:match), <br/&gt;%09$config as element(config)) as element(){<br/&gt;%09let $chars := xs:int($config/@width)<br/&gt;%09let $table := $config/@table = (&amp;apos;yes&amp;apos;, &amp;apos;true&amp;apos;)<br/&gt;%09let $prevTrunc := kwic:truncate-previous($root, $node, (), $chars, 0)<br/&gt;%09let $remain := <br/&gt;%09%09if (not($table)) then <br/&gt;%09%09%09$chars * 2 - kwic:string-length($prevTrunc)<br/&gt;%09%09else<br/&gt;%09%09%09$chars<br/&gt;%09let $followingTrunc := kwic:truncate-following($root, $node, (), $remain, 0)<br/&gt;%09return<br/&gt;%09%09if (not($table)) then<br/&gt;%09%09%09&amp;lt;p&amp;gt;<br/&gt;%09%09%09%09&amp;lt;span class=&#34;previous&#34;&amp;gt;{$prevTrunc}&amp;lt;/span&amp;gt;<br/&gt;%09%09%09%09{<br/&gt;%09%09%09%09%09if ($config/@link) then<br/&gt;%09%09%09%09%09%09&amp;lt;a class=&#34;hi&#34; href=&#34;{$config/@link}&#34;&amp;gt;{ $node/text() }&amp;lt;/a&amp;gt;<br/&gt;%09%09%09%09%09else<br/&gt;%09%09%09%09%09%09&amp;lt;span class=&#34;hi&#34;&amp;gt;{ $node/text() }&amp;lt;/span&amp;gt;<br/&gt;%09%09%09%09}<br/&gt;%09%09%09%09&amp;lt;span class=&#34;following&#34;&amp;gt;{$followingTrunc}&amp;lt;/span&amp;gt;<br/&gt;%09%09%09&amp;lt;/p&amp;gt;<br/&gt;%09%09else<br/&gt;%09%09%09&amp;lt;tr&amp;gt;<br/&gt;%09%09%09%09&amp;lt;td class=&#34;previous&#34;&amp;gt;{$prevTrunc}&amp;lt;/td&amp;gt;<br/&gt;%09%09%09%09&amp;lt;td class=&#34;hi&#34;&amp;gt;<br/&gt;%09%09%09%09{<br/&gt;%09%09%09%09%09if ($config/@link) then<br/&gt;%09%09%09%09%09%09&amp;lt;a href=&#34;{$config/@link}&#34;&amp;gt;{$node/text()}&amp;lt;/a&amp;gt;<br/&gt;%09%09%09%09%09else<br/&gt;%09%09%09%09%09%09$node/text()<br/&gt;%09%09%09%09}<br/&gt;%09%09%09%09&amp;lt;/td&amp;gt;<br/&gt;%09%09%09%09&amp;lt;td class=&#34;following&#34;&amp;gt;{$followingTrunc}&amp;lt;/td&amp;gt;<br/&gt;%09%09%09&amp;lt;/tr&amp;gt;<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $root as node() ,<br>&nbsp; $node as element(exist:match) ,<br>&nbsp; $config as element(config)) as element()<br><br></li></ul><p>	Print a summary of the match in $node. Output a predefined amount of text to	the left and the right of the match.</p><ul><li>Parameters:</li><ul><li>$root - root element which should be used as context for the match. It defines the boundaries for the text extraction. Text will be taken from this context.<br></li><li>$node - the exist:match element to process.<br></li><li>$config - configuration element which determines the behaviour of the function<br></li></ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://www.w3.org/2005/xpath-functions</td><td>not</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="3">http://exist-db.org/xquery/kwic</td><td><a href="#string-length">string-length</a></td></tr><tr><td><a href="#truncate-following">truncate-following</a></td></tr><tr><td><a href="#truncate-previous">truncate-previous</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/kwic</td><td><a href="#summarize">summarize</a></td></tr></table></div></div>&nbsp;<div id="string-length" class="methoddetail"><h5><a name="string-length"></a>string-length</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:string-length($nodes as item()*) as xs:integer{<br/&gt;%09if (exists($nodes)) then<br/&gt;%09%09sum(for $n in $nodes return string-length($n))<br/&gt;%09else<br/&gt;%09%090<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $nodes as item()*) as xs:integer<br><br></li></ul><p>	Computes the total string length of the nodes in the argument sequence</p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="3">http://www.w3.org/2005/xpath-functions</td><td>exists</td></tr><tr><td>string-length</td></tr><tr><td>sum</td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/kwic</td><td><a href="#get-summary">get-summary</a></td></tr></table></div></div>&nbsp;<div id="substring" class="methoddetail"><h5><a name="substring"></a>substring</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:substring($node as node(), $start as xs:int, $count as xs:int) as item()?{<br/&gt;%09let $str := substring($node, $start, $count)<br/&gt;%09return<br/&gt;%09%09if ($node instance of element()) then<br/&gt;%09%09%09element { node-name($node) } { $str }<br/&gt;%09%09else<br/&gt;%09%09%09$str<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $node as node() ,<br>&nbsp; $start as xs:int ,<br>&nbsp; $count as xs:int) as item()?<br><br></li></ul><p>	Like fn:substring, but takes a node argument. If the node is an element,	a new element is created with the same node-name as the old one and the	shortened text content.</p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>node-name</td></tr><tr><td>substring</td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/kwic</td><td><a href="#truncate-following">truncate-following</a></td></tr><tr><td><a href="#truncate-previous">truncate-previous</a></td></tr></table></div></div>&nbsp;<div id="summarize" class="methoddetail"><h5><a name="summarize"></a>summarize</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:summarize($hit as element(), $config as element(config))<br/&gt;as element()*{<br/&gt;    let $expanded := util:expand($hit, &#34;expand-xincludes=no&#34;)<br/&gt;%09for $match in $expanded//exist:match<br/&gt;%09return<br/&gt;%09%09kwic:get-summary($expanded, $match, $config)<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $hit as element() ,<br>&nbsp; $config as element(config)) as element()*<br><br></li></ul><p>	Main function of the KWIC module: takes the passed element and returns an 	XHTML fragment containing a chunk of text before and after the first full text	match in the node.	The optional config parameter is used to configure the behaviour of the function:		&lt;config width="character width" table="yes|no" link="URL to which the match is linked"/&gt;	By default, kwic:summarize returns an XHTML fragment with the following structure:	&lt;p xmlns="http://www.w3.org/1999/xhtml"&gt;		&lt;span class="previous"&gt;Text before match&lt;/span&gt;		&lt;a href="passed URL if any" class="hi"&gt;The highlighted term&lt;/a&gt;		&lt;span class="following"&gt;Text after match&lt;/span&gt;	&lt;/p&gt;	If table=yes is passed with the config element, a tr table row will be returned instead	of a span (using the same class names).</p><ul><li>Parameters:</li><ul><li>$hit - an arbitrary XML element which has been selected by one of the full text operations or an ngram search.<br></li><li>$config - configuration element to configure the behaviour of the function<br></li></ul></ul><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://exist-db.org/xquery/kwic</td><td><a href="#get-summary">get-summary</a></td></tr></table></div></div>&nbsp;<div id="truncate-following" class="methoddetail"><h5><a name="truncate-following"></a>truncate-following</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:truncate-following($root as node(), $node as node()?, $truncated as item()*, <br/&gt;%09$max as xs:int, $chars as xs:int){<br/&gt;%09if ($node) then<br/&gt;%09%09let $next := $node/following::text()[1]<br/&gt;%09%09return<br/&gt;%09%09%09if (empty($root//$next)) then<br/&gt;%09%09%09%09$truncated<br/&gt;%09%09%09else if ($chars + string-length($next) gt $max) then<br/&gt;%09%09%09%09let $remaining := $max - $chars<br/&gt;%09%09%09%09return<br/&gt;%09%09%09%09%09($truncated, kwic:substring($next, 1, $remaining), &#34;...&#34;)<br/&gt;%09%09%09else<br/&gt;%09%09%09%09kwic:truncate-following($root, $next, ($truncated, $next),<br/&gt;%09%09%09%09%09$max, $chars + string-length($next))<br/&gt;%09else<br/&gt;%09%09$truncated<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $root as node() ,<br>&nbsp; $node as node()? ,<br>&nbsp; $truncated as item()* ,<br>&nbsp; $max as xs:int ,<br>&nbsp; $chars as xs:int)<br><br></li></ul><p>	Generate the right-hand context of the match. Returns a sequence of nodes	and strings, whose total string length is less than or equal to $max characters.		Note: this function calls itself recursively until $nodes is empty or	the returned sequence has the desired total string length.</p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>empty</td></tr><tr><td>string-length</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/kwic</td><td><a href="#substring">substring</a></td></tr><tr><td><a href="#truncate-following">truncate-following</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/kwic</td><td><a href="#get-summary">get-summary</a></td></tr><tr><td><a href="#truncate-following">truncate-following</a></td></tr></table></div></div>&nbsp;<div id="truncate-previous" class="methoddetail"><h5><a name="truncate-previous"></a>truncate-previous</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function kwic:truncate-previous($root as node(), $node as node()?, $truncated as item()*, <br/&gt;%09$max as xs:int, $chars as xs:int){<br/&gt;%09if ($node) then<br/&gt;%09%09let $next := $node/preceding::text()[1]<br/&gt;%09%09return<br/&gt;%09%09%09if (empty($root//$next)) then<br/&gt;%09%09%09%09$truncated<br/&gt;%09%09%09else if ($chars + string-length($next) gt $max) then<br/&gt;%09%09%09%09let $remaining := $max - $chars<br/&gt;%09%09%09%09return<br/&gt;%09%09%09%09%09(&#34;...&#34;, kwic:substring($next, string-length($next) - $remaining, $remaining), $truncated)<br/&gt;%09%09%09else<br/&gt;%09%09%09%09kwic:truncate-previous($root, $next, ($next, $truncated),<br/&gt;%09%09%09%09%09$max, $chars + string-length($next))<br/&gt;%09else<br/&gt;%09%09$truncated<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $root as node() ,<br>&nbsp; $node as node()? ,<br>&nbsp; $truncated as item()* ,<br>&nbsp; $max as xs:int ,<br>&nbsp; $chars as xs:int)<br><br></li></ul><p>	Generate the left-hand context of the match. Returns a sequence of nodes	and strings, whose total string length is less than or equal to $max characters.	Note: this function calls itself recursively until $nodes is empty or	the returned sequence has the desired total string length.</p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.w3.org/2005/xpath-functions</td><td>empty</td></tr><tr><td>string-length</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/kwic</td><td><a href="#substring">substring</a></td></tr><tr><td><a href="#truncate-previous">truncate-previous</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://exist-db.org/xquery/kwic</td><td><a href="#get-summary">get-summary</a></td></tr><tr><td><a href="#truncate-previous">truncate-previous</a></td></tr></table></div></div>&nbsp;</div>&nbsp;<div align="left"><i>Created by xqDoc-Lite version 1.0 on Wed Jul 29 22:58:02 CEST 2009</i></div></body></html>
