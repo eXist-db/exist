@@ -27,6 +27,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -40,11 +42,11 @@ public class FuzzyMatchAny extends FuzzyMatchAll {
 			new QName("fuzzy-match-any", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"Fuzzy keyword search, which compares strings based on the Levenshtein distance " +
 			"(or edit distance). The function tries to match any of the keywords specified in the " +
-			"keyword string $b against the string value of each item in the sequence $a.",
+			"keyword string against the string value of each item in the sequence $source.",
 			new SequenceType[]{
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+				new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_MORE, ""),
+				new FunctionParameterSequenceType("keyword", Type.STRING, Cardinality.EXACTLY_ONE, "the keyword string")},
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the sequence of nodes that match the keywords"),
 			true);
 	
 	/**
