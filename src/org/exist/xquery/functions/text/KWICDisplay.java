@@ -37,6 +37,7 @@ import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -51,7 +52,13 @@ import org.xml.sax.SAXException;
 
 public class KWICDisplay extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
+	protected static final FunctionParameterSequenceType TEXT_ARG = new FunctionParameterSequenceType("text", Type.TEXT, Cardinality.ZERO_OR_MORE, "text nodes");
+	protected static final FunctionParameterSequenceType WIDTH_ARG = new FunctionParameterSequenceType("width", Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE, "");
+	protected static final FunctionParameterSequenceType CALLBACK_ARG = new FunctionParameterSequenceType("callback-function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "");
+    protected static final FunctionParameterSequenceType RESULT_CALLBACK_ARG = new FunctionParameterSequenceType("result-callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "");
+	protected static final FunctionParameterSequenceType PARAMETERS_ARG = new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "");
+
+	public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("kwic-display", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "This function takes a sequence of text nodes in $a, containing matches from a fulltext search. " +
@@ -71,12 +78,7 @@ public class KWICDisplay extends BasicFunction {
             "information on the match as a sequence of 4 integers: a) the number of the match if there's more than " +
             "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
             "string; c) the length of the match as reported by the index.",
-            new SequenceType[]{
-                    new SequenceType(Type.TEXT, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-            },
+            new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, PARAMETERS_ARG },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
         new FunctionSignature(
                 new QName("kwic-display", TextModule.NAMESPACE_URI, TextModule.PREFIX),
@@ -97,13 +99,7 @@ public class KWICDisplay extends BasicFunction {
                 "information on the match as a sequence of 4 integers: a) the number of the match if there's more than " +
                 "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
                 "string; c) the length of the match as reported by the index.",
-                new SequenceType[]{
-                        new SequenceType(Type.TEXT, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-                },
+                new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, RESULT_CALLBACK_ARG, PARAMETERS_ARG },
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
     };
     
