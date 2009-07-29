@@ -29,6 +29,8 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -46,15 +48,15 @@ public class FunTrace extends BasicFunction {
         new FunctionSignature(
             new QName("trace", Function.BUILTIN_FUNCTION_NS),
             "This function is intended to be used in debugging queries by "
-            +"providing a trace of their execution. The input $a is "
+            +"providing a trace of their execution. The input $value is "
             +"returned, unchanged, as the result of the function. "
-            +"In addition, the inputs $a, converted to an xs:string, "
-            +"and $b is directed to a trace data set in the eXist log files.",
+            +"In addition, the inputs $value, converted to an xs:string, "
+            +"and $label is directed to a trace data set in the eXist log files.",
             new SequenceType[] {
-                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
+                new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "")
             },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "$value")
         );
     
     public FunTrace(XQueryContext context) {

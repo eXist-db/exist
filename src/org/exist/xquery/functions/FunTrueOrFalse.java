@@ -29,8 +29,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class FunTrueOrFalse extends BasicFunction {
@@ -40,14 +40,14 @@ public class FunTrueOrFalse extends BasicFunction {
 				new QName("true", Function.BUILTIN_FUNCTION_NS),
                 "Always returns the boolean value true",
 				null,
-				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true"));
 	
 	public final static FunctionSignature fnFalse =
 		new FunctionSignature(
 			new QName("false", Function.BUILTIN_FUNCTION_NS),
             "Always returns the boolean value false",
 			null,
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "false"));
 				
 	public FunTrueOrFalse(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
