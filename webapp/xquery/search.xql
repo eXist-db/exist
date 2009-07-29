@@ -5,7 +5,7 @@ xquery version "1.0";
     ================================================ :)
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
-import module namespace kwic="http://exist-db.org/xquery/kwic" at "../kwic.xql";
+import module namespace kwic="http://exist-db.org/xquery/kwic";
 
 import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
 
