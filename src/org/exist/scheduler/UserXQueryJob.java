@@ -52,7 +52,7 @@ import java.util.Properties;
  * Class to represent a User's XQuery Job
  * Extends UserJob
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  */
 public class UserXQueryJob extends UserJob
 {
@@ -124,23 +124,28 @@ public class UserXQueryJob extends UserJob
 		if(pool == null || xqueryresource == null || user == null) {
 			abort("BrokerPool or XQueryResource or User was null!");
 		}
-		
+
+        DocumentImpl resource = null;
+        Source source = null;
+        XQueryPool xqPool = null;
+        CompiledXQuery compiled = null;
+
 		try {
 			//get the xquery
 			broker = pool.get(user);
 			XmldbURI pathUri = XmldbURI.create(xqueryresource);
-			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-			
-			if( resource != null ) {
-				Source source = new DBSource(broker, (BinaryDocument)resource, true);
+			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+
+            if(resource != null) {
+				source = new DBSource(broker, (BinaryDocument)resource, true);
 				
 				//execute the xquery
 				XQuery xquery = broker.getXQueryService();
-		        XQueryPool xqPool = xquery.getXQueryPool();
+		        xqPool = xquery.getXQueryPool();
 		        XQueryContext context;
 		        
 		        //try and get a pre-compiled query from the pool
-		        CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, source);
+		        compiled = xqPool.borrowCompiledXQuery(broker, source);
 		        if(compiled == null) {
 		            context = xquery.newContext(AccessContext.REST);
 		    	} else {
@@ -173,14 +178,9 @@ public class UserXQueryJob extends UserJob
 			        	context.declareVariable(bindingPrefix + ":" + name, new StringValue(value));
 			        }
 				}
+                
+                xquery.execute(compiled, null);
 
-                try {
-		            xquery.execute(compiled, null);
-		        }
-		        finally {
-		        	//return the compiled query to the pool
-		            xqPool.returnCompiledXQuery(source, compiled);
-		        }
 			} else {
 				LOG.warn( "XQuery User Job not found: " + xqueryresource + ", job not scheduled" );
 			}
@@ -195,8 +195,16 @@ public class UserXQueryJob extends UserJob
 			abort("XPathException in the Job: " + xpe.getMessage() + "!");
 		}
 		finally {
+
+            //return the compiled query to the pool
+            if(xqPool != null && source != null && compiled != null)
+                xqPool.returnCompiledXQuery(source, compiled);
+
+            //release the lock on the xquery resource
+            if(resource != null)
+                resource.getUpdateLock().release(Lock.READ_LOCK);
+
 	       	// Release the DBBroker
-				
 			if( pool != null && broker != null ) {
 				pool.release( broker );
 			}
