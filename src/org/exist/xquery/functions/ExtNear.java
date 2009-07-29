@@ -1,26 +1,27 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2005 Wolfgang M. Meier
- * wolfgang@exist-db.org
- * http://exist.sourceforge.net
+ * Copyright (C) 2002-2009 The eXist Project
+ * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
+ *  
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * $Id$
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -48,7 +49,7 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier <wolfgang@exist-db.org> (July 31, 2002)
  */
 public class ExtNear extends ExtFulltext {
-
+    private static final Logger logger = Logger.getLogger(ExtNear.class);
 	private int min_distance = 1;
 	private int max_distance = 1;
 	private Expression minDistance = null;
@@ -61,7 +62,8 @@ public class ExtNear extends ExtFulltext {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+	public void analyze(AnalyzeContextInfo contextInfo)
+        throws XPathException {
         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         super.analyze(newContextInfo);
 
@@ -73,7 +75,8 @@ public class ExtNear extends ExtFulltext {
         }
     }
 
-    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+    public NodeSet preSelect(Sequence contextSequence, boolean useContext)
+        throws XPathException {
         long start = System.currentTimeMillis();
         
         // the expression can be called multiple times, so we need to clear the previous preselectResult
@@ -92,6 +95,7 @@ public class ExtNear extends ExtFulltext {
         try {
 			terms = getSearchTerms(arg);
 		} catch (EXistException e) {
+            logger.error(e.getMessage());
 			throw new XPathException(this, e.getMessage(), e);
 		}
         // lookup the terms in the fulltext index. returns one node set for each term
@@ -122,7 +126,8 @@ public class ExtNear extends ExtFulltext {
         return preselectResult;
     }
 
-    public Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
+    public Sequence evalQuery(String searchArg, NodeSet nodes)
+        throws XPathException {
 		if (maxDistance != null) {
 			max_distance = ((IntegerValue) maxDistance.eval(nodes).convertTo(Type.INTEGER)).getInt();
 		}
@@ -133,6 +138,7 @@ public class ExtNear extends ExtFulltext {
 		try {
 			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
+            logger.error(e.getMessage());
 			throw new XPathException(this, e.getMessage(), e);
 		}
 		NodeSet hits = processQuery(terms, nodes);
@@ -215,8 +221,7 @@ public class ExtNear extends ExtFulltext {
                         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 				matchers[i] = patterns[i].matcher("");
 			} catch (PatternSyntaxException e) {
-                //TODO : error ? -pb
-				LOG.warn("malformed pattern", e);
+				logger.error("malformed pattern" + e.getMessage());
 				return Sequence.EMPTY_SEQUENCE;
 			}
         }

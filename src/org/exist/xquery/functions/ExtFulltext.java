@@ -1,24 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- * Copyright (C) 2001-04, Wolfgang M. Meier (wolfgang@exist-db.org)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.fulltext.FTIndex;
@@ -53,16 +56,15 @@ import java.util.List;
  * @author wolf
  */
 public class ExtFulltext extends Function implements Optimizable {
+    private static final Logger logger = Logger.getLogger(ExtFulltext.class);
 
-	public final static FunctionSignature signature =
+    public final static FunctionSignature signature =
 		new FunctionSignature(
-            //TODO : change this ! -pb
-			new QName("contains", Function.BUILTIN_FUNCTION_NS),
-			"",
+			new QName("builtin-old-ft-functions-and-operators", Function.BUILTIN_FUNCTION_NS),
+			"no-docs-extraction-for-builtin-old-ft-functions-and-operators",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
 		);
-
 	protected PathExpr path;
 	protected Expression searchTerm = null;
 	protected int type = Constants.FULLTEXT_AND;
@@ -155,6 +157,7 @@ public class ExtFulltext extends Function implements Optimizable {
         try {
 			terms = getSearchTerms(arg);
 		} catch (EXistException e) {
+            logger.error(e.getMessage());
 			throw new XPathException(this, e.getMessage(), e);
 		}
         // lookup the terms in the fulltext index. returns one node set for each term
@@ -279,6 +282,7 @@ public class ExtFulltext extends Function implements Optimizable {
         try {
 			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
+            logger.error(e.getMessage());
 			throw new XPathException(this, e.getMessage(), e);
 		}
 		NodeSet hits = processQuery(terms, nodes);
@@ -332,9 +336,12 @@ public class ExtFulltext extends Function implements Optimizable {
 		return (String[]) tokens.toArray(terms);
     }
 
-    protected NodeSet processQuery(String[] terms, NodeSet contextSet) throws XPathException {
-		if (terms == null)
+    protected NodeSet processQuery(String[] terms, NodeSet contextSet)
+        throws XPathException {
+		if (terms == null) {
+            logger.error("no search terms");
 			throw new RuntimeException("no search terms");
+        }
 		if(terms.length == 0)
 			return NodeSet.EMPTY_SET;
         NodeSet[] hits = getMatches(contextSet.getDocumentSet(), contextSet, NodeSet.ANCESTOR, contextQName, terms);

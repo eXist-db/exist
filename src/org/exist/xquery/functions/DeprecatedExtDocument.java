@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -44,6 +45,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -59,8 +62,8 @@ import java.util.List;
  * 
  * @author wolf
  */
-public class ExtDocument extends Function {
-
+public class DeprecatedExtDocument extends Function {
+	protected static final Logger logger = Logger.getLogger(DeprecatedExtDocument.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document", Function.BUILTIN_FUNCTION_NS),
@@ -74,8 +77,9 @@ public class ExtDocument extends Function {
             "If the input sequence is empty, " +
             "the function will load all documents in the database.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of paths or uris of the documents")
+			},
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the documents"),
 			true,
 			"Moved to the '" + XMLDBModule.NAMESPACE_URI + "' namespace since it conflicts with the XSLT 2.0 function.");
 
@@ -87,7 +91,7 @@ public class ExtDocument extends Function {
 	/**
 	 * @param context
 	 */
-	public ExtDocument(XQueryContext context) {
+	public DeprecatedExtDocument(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -107,6 +111,10 @@ public class ExtDocument extends Function {
 		throws XPathException {
 	    MutableDocumentSet docs = null;
 	    Sequence result = null;
+        logger.error("Use of deprecated function fn:document(). " +
+                     "It will be removed soon. Please " +
+                     "use xmldb:document() or fn:doc() instead.");
+
 	    // check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         boolean cacheIsValid = false;
@@ -221,7 +229,7 @@ public class ExtDocument extends Function {
                 }
 
                 public void unsubscribe() {
-                    ExtDocument.this.listener = null;
+                    DeprecatedExtDocument.this.listener = null;
                 }
 
                 public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
@@ -229,7 +237,7 @@ public class ExtDocument extends Function {
                 }
 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getLine() + ": " + ExtDocument.this.toString());                	
+                	logger.debug("UpdateListener: Line: " + getLine() + ": " + DeprecatedExtDocument.this.toString());                	
                 }
             };
             context.registerUpdateListener(listener);
