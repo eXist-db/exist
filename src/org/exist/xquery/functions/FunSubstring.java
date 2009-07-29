@@ -31,6 +31,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NumericValue;
@@ -51,22 +53,29 @@ public class FunSubstring extends Function {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
-				"Returns the portion of the value of $a beginning at the position indicated by the value of $b and continuing to the end of $a. The characters returned do not extend beyond the end of $a. If $b is zero or negative, only those characters in positions greater than zero are returned. If the value of $a is the empty sequence, the zero-length string is returned.",
+				"Returns the portion of the value of $sourceString beginning at the position indicated " +
+				"by the value of $startingLoc and continuing to the end of $sourceString. " +
+				"The characters returned do not extend beyond the end of $sourceString. If $startingLoc " +
+				"is zero or negative, only those characters in positions greater than zero are returned." +
+				"If the value of $sourceString is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
-					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+					 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, "the source string"),
+					 new FunctionParameterSequenceType("startingLoc", Type.DOUBLE, Cardinality.EXACTLY_ONE, "beginning position")
 				},
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")
 			),
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
-				"Returns the portion of the value of $a beginning at the position indicated by the value of $b and continuing for the number of characters indicated by the value of $c. The characters returned do not extend beyond the end of $a. If $b is zero or negative, only those characters in positions greater than zero are returned. If the value of $a is the empty sequence, the zero-length string is returned.",
+				"Returns the portion of the value of $sourceString beginning at the position indicated by the value of $startingLoc " +
+				"and continuing for the number of characters indicated by the value of $length. The characters returned do not extend " +
+				"beyond the end of $sourceString. If $startingLoc is zero or negative, only those characters in positions greater " +
+				"than zero are returned. If the value of $sourceString is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
-					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+					 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, "the source string"),
+					 new FunctionParameterSequenceType("startingLoc", Type.DOUBLE, Cardinality.EXACTLY_ONE, "beginning position"),
+					 new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "the number of characters in the substring")
 				},
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")
 			)
 	};
 				
