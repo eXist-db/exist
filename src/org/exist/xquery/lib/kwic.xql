@@ -1,3 +1,23 @@
+(:~
+    KWIC module: formats query results to display <em>keywords in context</em> (KWIC). A configurable
+    amount of text is displayed to the left and right of a matching keyword (or phrase).
+    
+    The module works with all indexes that support match highlighting (matches are tagged
+    with an &lt;exist:match&gt; element). This includes the old full text index, the new 
+    Lucene-based full text index, as well as the NGram index.
+    
+    The <b>kwic:summarize()</b> function represents the main entry point into the module.
+    To have more control over the text extraction context, you can also call 
+    <b>kwic:get-summary()</b> instead. For example, the following snippet will only print the
+    first match within a given set of context nodes ($ancestor):
+    
+    <pre>
+    let $matches := kwic:get-matches($hit)<br/>
+    for $ancestor in $matches/ancestor::para | $matches/ancestor::title | $matches/ancestor::td<br/>
+    return<br/>
+        kwic:get-summary($ancestor, ($ancestor//exist:match)[1], $config)
+    </pre>
+:)  
 module namespace kwic="http://exist-db.org/xquery/kwic";
 
 declare variable $kwic:CHARS_SUMMARY := 120;
@@ -55,7 +75,7 @@ declare function kwic:display-text($text as text()?) as node()? {
 declare function kwic:truncate-previous($root as node(), $node as node()?, $truncated as item()*, 
 	$max as xs:int, $chars as xs:int) {
 	if ($node) then
-		let $next := kwic:display-text($node/preceding::text()[1])
+		let $next := $node/preceding::text()[1]
 		return
 			if (empty($root//$next)) then
 				$truncated
@@ -80,7 +100,7 @@ declare function kwic:truncate-previous($root as node(), $node as node()?, $trun
 declare function kwic:truncate-following($root as node(), $node as node()?, $truncated as item()*, 
 	$max as xs:int, $chars as xs:int) {
 	if ($node) then
-		let $next := kwic:display-text($node/text()/following::text()[1])
+		let $next := $node/following::text()[1]
 		return
 			if (empty($root//$next)) then
 				$truncated
