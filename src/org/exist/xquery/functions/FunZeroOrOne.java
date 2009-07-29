@@ -30,6 +30,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,9 +50,9 @@ public class FunZeroOrOne extends Function {
 			"Returns the argument sequence if it contains zero or one items. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to be tested for cardinality")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "$arg"));
 				
 	/**
 	 * @param context
