@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -37,6 +37,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.EmptySequence;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
@@ -47,12 +49,27 @@ import org.w3c.dom.Node;
 
 public class FunResolveQName extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(new QName("resolve-QName",
-                                                                                      Function.BUILTIN_FUNCTION_NS), "Returns an xs:QName value (that is, an expanded-QName) by taking an "
-                                                                            + "xs:string that has the lexical form of an xs:QName (a string in the form "
-                                                                            + "\"prefix:local-name\" or \"local-name\") and resolving it using the in-scope "
-                                                                            + "namespaces for a given element.", new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-                                                                                                                                      new SequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE) }, new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
+    public final static FunctionSignature signature = 
+    	new FunctionSignature(new QName("resolve-QName", Function.BUILTIN_FUNCTION_NS), 
+    			"Returns an xs:QName value (that is, an expanded-QName) by taking an xs:string that has the lexical " +
+    			"form of an xs:QName (a string in the form \"prefix:local-name\" or \"local-name\") and resolving it " +
+    			"using the in-scope namespaces for a given element.\n\nIf $qname does not have the correct lexical " +
+    			"form for xs:QName an error is raised [err:FOCA0002].\n\nIf $qname is the empty sequence, returns " +
+    			"the empty sequence.\n\nMore specifically, the function searches the namespace bindings of " +
+    			"$element for a binding whose name matches the prefix of $qname, or the zero-length string if " +
+    			"it has no prefix, and constructs an expanded-QName whose local name is taken from the supplied " +
+    			"$qname, and whose namespace URI is taken from the string value of the namespace binding.\n\n" +
+    			"If the $qname has a prefix and if there is no namespace binding for $element that matches this " +
+    			"prefix, then an error is raised [err:FONS0004].\n\nIf the $qname has no prefix, and there is " +
+    			"no namespace binding for $element corresponding to the default (unnamed) namespace, then the " +
+    			"resulting expanded-QName has no namespace part.\n\nThe prefix (or absence of a prefix) in the " +
+    			"supplied $qname argument is retained in the returned expanded-QName.", 
+    			new SequenceType[] { 
+    				new FunctionParameterSequenceType("qname", Type.STRING, Cardinality.ZERO_OR_ONE, "the QName name"), 
+    				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "") 
+    			}, 
+    			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the QName")
+    	);
 
     public FunResolveQName(XQueryContext context) {
         super(context, signature);

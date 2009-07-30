@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xquery.functions;
 
 import org.exist.dom.ExtArrayNodeSet;
@@ -11,6 +32,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -27,13 +50,18 @@ public class FunRemove extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("remove", Function.BUILTIN_FUNCTION_NS),
-			"Returns a new sequence constructed from the value of the target sequence" +
-			"with the item at the position specified removed.",
+			"Returns a new sequence constructed from the value of $target with the item " +
+			"at the position specified by the value of $position removed.\n\nIf $position " +
+			"is less than 1 or greater than the number of items in $target, $target is returned. " +
+			"Otherwise, the value returned by the function consists of all items of $target " +
+			"whose index is less than $position, followed by all items of $target whose index " +
+			"is greater than $position. If $target is the empty sequence, the empty sequence " +
+			"is returned.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.INTEGER, Cardinality.ONE)
+					new FunctionParameterSequenceType("target", Type.ITEM, Cardinality.ZERO_OR_MORE, "the input sequence"),
+					new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.ONE, "the position of the value to be removed")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the new sequence"));
 
 
 
