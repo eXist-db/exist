@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.ExtCollection;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -47,8 +48,8 @@ public class FunXCollection extends ExtCollection {
             "Works like fn:collection(), but does not include documents " +
             "found in sub-collections of the specified collections.",
             new SequenceType[] {
-		new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ONE_OR_MORE, "the set of collection paths to operate on")},
-            new FunctionParameterSequenceType("collections", Type.NODE, Cardinality.ZERO_OR_MORE, "the collections from the specified collection paths"));
+		new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of collection paths to operate on")},
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collections"));
 				
 	/**
 	 * @param context
@@ -56,15 +57,4 @@ public class FunXCollection extends ExtCollection {
 	public FunXCollection(XQueryContext context) {
 		super(context, signature, false);
 	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-    public Sequence eval(Sequence contextSequence, Item contextItem) 
-    throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-	Sequence extColl = super.eval(contextSequence, contextItem);
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-	return extColl;
-    }
 }
