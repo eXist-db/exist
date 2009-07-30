@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -31,6 +31,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -49,13 +51,13 @@ public class FunStringJoin extends BasicFunction {
 		new FunctionSignature(
 				new QName("string-join", Function.BUILTIN_FUNCTION_NS),
 				"Returns a xs:string created by concatenating the members of the " +
-				"$a sequence using $b as a separator. If the value of $b is the zero-length " +
-				"string, then the members of $a are concatenated without a separator.",
+				"$arg sequence using $separator as a separator. If the value of the separator is the zero-length " +
+				"string, then the members of the sequence are concatenated without a separator.",
 				new SequenceType[] {
-						new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
-						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence to be joined to form the string"),
+						new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "the separator to be placed in the string between the elements of $arg")
 				},
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string"));
 	
 	/**
 	 *

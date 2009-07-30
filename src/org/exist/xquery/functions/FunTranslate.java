@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -46,13 +47,19 @@ public class FunTranslate extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("translate", Function.BUILTIN_FUNCTION_NS),
-			"Returns the value of $a modified so that every character in the value of $a " +
-			"that occurs at some position N in the value of $b has been replaced by " +
-			"the character that occurs at position N in the value of $c. If the value of $a is the empty sequence, the zero-length string is returned.",
+			"Returns the value of $arg modified so that every character in the value of $arg that occurs at some position N in the " +
+			"value of $mapString has been replaced by the character that occurs at position N in the value of $transString.\n\n" +
+			"If the value of $arg is the empty sequence, the zero-length string is returned.\n\n" +
+			"Every character in the value of $arg that does not appear in the value of $mapString is unchanged.\n\n" +
+			"Every character in the value of $arg that appears at some position M in the value of $mapString, where the value of " +
+			"$transString is less than M characters in length, is omitted from the returned value. If $mapString is the zero-length " +
+			"string $arg is returned.\n\nIf a character occurs more than once in $mapString, then the first occurrence determines " +
+			"the replacement character. If $transString is longer than $mapString, the excess characters are ignored.\n\n" +
+			"i.e. fn:translate(\"bar\",\"abc\",\"ABC\") returns \"BAr\"",
 			new SequenceType[] { 
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to be translated"),
+				new FunctionParameterSequenceType("mapString", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+				new FunctionParameterSequenceType("transString", Type.STRING, Cardinality.EXACTLY_ONE, "")
 			},
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 				
