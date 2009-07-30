@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2007 The eXist Project
+ * Copyright (C) 2000-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -33,6 +33,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,23 +42,42 @@ import org.exist.xquery.value.Type;
 
 public class FunResolveURI extends Function {
 	
+	protected static final String FUNCTION_DESCRIPTION = 
+		"The purpose of this function is to enable a relative URI " +
+		"to be resolved against an absolute URI.\n\nThe first form " +
+		"of this function resolves $relative against the value of " +
+		"the base-uri property from the static context. If the " +
+		"base-uri property is not initialized in the static context " +
+		"an error is raised [err:FONS0005].\n\n" +
+		"If $relative is a relative URI reference, it is resolved " +
+		"against $base, or the base-uri property from the static " +
+		"context, using an algorithm such as the ones described " +
+		"in [RFC 2396] or [RFC 3986], and the resulting absolute " +
+		"URI reference is returned. An error may be raised " +
+		"[err:FORG0009] in the resolution process.\n\n" +
+		"If $relative is an absolute URI reference, it is returned " +
+		"unchanged.\n\n" +
+		"If $relative or $base is not a valid xs:anyURI an error " +
+		"is raised [err:FORG0002].\n\n" +
+		"If $relative is the empty sequence, the empty sequence is returned.";
+	
+	protected static final FunctionParameterSequenceType RELATIVE_ARG = new FunctionParameterSequenceType("relative", Type.STRING, Cardinality.ZERO_OR_ONE, "The relative URI");
+	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.ONE, "The base URI");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the absolute URI");
+	
     public final static FunctionSignature signatures [] = {
     	new FunctionSignature(
     		      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
-    		      "The purpose of this function is to enable a relative URI $a to be resolved against the static context's base URI.",
-	      new SequenceType[] {
-	    	  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-	      },
-	      new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+    		      FUNCTION_DESCRIPTION,
+	      new SequenceType[] { RELATIVE_ARG },
+	      RETURN_TYPE
 	    ),
 	    new FunctionSignature (
 	  	      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
-		      "The purpose of this function is to enable a relative URI $a to be resolved against the absolute URI $b. If $a is the empty sequence, the empty sequence is returned.",
-		      new SequenceType[] {
-		    	  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-		    	  new SequenceType(Type.STRING, Cardinality.ONE)
-			  },
-		      new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)),
+		      FUNCTION_DESCRIPTION,
+		      new SequenceType[] { RELATIVE_ARG, BASE_ARG },
+		      RETURN_TYPE
+	  	 ),
 	};
 
     public FunResolveURI(XQueryContext context, FunctionSignature signature) {

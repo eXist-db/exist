@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
+ * Copyright (C) 2001-2009 The eXist team
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -29,6 +29,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -40,9 +42,27 @@ public class FunRound extends Function {
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("round", Function.BUILTIN_FUNCTION_NS),
-				"Returns the number with no fractional part that is closest to the value of $a. Always returns the number closest to +INF if there are two such numbers.",
-				new SequenceType[] { new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE) },
-				new SequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE)
+				"Returns the number with no fractional part that is closest " +
+				"to the argument. If there are two such numbers, then the one " +
+				"that is closest to positive infinity is returned. If type of " +
+				"$arg is one of the four numeric types xs:float, xs:double, " +
+				"xs:decimal or xs:integer the type of the result is the same " +
+				"as the type of $arg. If the type of $arg is a type derived " +
+				"from one of the numeric types, the result is an instance of " +
+				"the base numeric type.\n\n" +
+				"For xs:float and xs:double arguments, if the argument is " +
+				"positive infinity, then positive infinity is returned. " +
+				"If the argument is negative infinity, then negative infinity " +
+				"is returned. If the argument is positive zero, then positive " +
+				"zero is returned. If the argument is negative zero, then " +
+				"negative zero is returned. If the argument is less than zero, " +
+				"but greater than or equal to -0.5, then negative zero is returned. " +
+				"In the cases where positive zero or negative zero is returned, " +
+				"negative zero or positive zero may be returned as " +
+				"[XML Schema Part 2: Datatypes Second Edition] does not " +
+				"distinguish between the values positive zero and negative zero.",
+				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "the input number") },
+				new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE, "the rounded value")
 			);
 			
 	public FunRound(XQueryContext context) {

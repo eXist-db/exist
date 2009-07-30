@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -44,15 +46,19 @@ public class FunQName extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("QName", Function.BUILTIN_FUNCTION_NS),
-			"Returns an xs:QName with the namespace URI given in $a. If $a is the empty " +
-			"string or the empty sequence, it represents 'no namespace'. The prefix in $b " +
-			"is retained in the returned xs:QName value. The local name in the result is " +
-			"taken from the local part of $b",
+			"Returns an xs:QName with the namespace URI given in $paramURI. If $paramURI is " +
+			"the zero-length string or the empty sequence, it represents \"no namespace\"; in " +
+			"this case, if the value of $paramQName contains a colon (:), an error is " +
+			"raised [err:FOCA0002]. The prefix (or absence of a prefix) in $paramQName is " +
+			"retained in the returned xs:QName value. The local name in the result is " +
+			"taken from the local part of $paramQName.\n\nIf $paramQName does not have " +
+			"the correct lexical form for xs:QName an error is raised [err:FOCA0002].\n\n" +
+			"Note that unlike xs:QName this function does not require a xs:string literal as the argument.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("paramURI", Type.STRING, Cardinality.ZERO_OR_ONE, "namespace URI"),
+				new FunctionParameterSequenceType("paramQName", Type.STRING, Cardinality.EXACTLY_ONE, "the prefix")
 			},
-			new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "an xs:QName with the namespace URI given in $paramURI"));
 	
 	/**
 	 * @param context

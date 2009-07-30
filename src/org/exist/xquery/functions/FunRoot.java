@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -33,6 +33,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -44,21 +46,29 @@ import org.exist.xquery.value.ValueSequence;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunRoot extends Function {
+	
+	protected static final String FUNCTION_DESCRIPTION = 
+		"Returns the root of the tree to which $arg belongs. " +
+		"This will usually, but not necessarily, be a document node.\n\n" +
+		"If $arg is the empty sequence, the empty sequence is returned.\n\n" +
+		"If $arg is a document node, $arg is returned.\n\n" +
+		"If the function is called without an argument, the context " +
+		"item (.) is used as the default argument. The behavior of the " +
+		"function if the argument is omitted is exactly the same as " +
+		"if the context item had been passed as the argument.";
     
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
                 new QName("root", Function.BUILTIN_FUNCTION_NS),
-                "Returns the root of the tree to which the context node belongs. This will usually, "
-                + "but not necessarily, be a document node.",
+                FUNCTION_DESCRIPTION,
                 new SequenceType[0],
-                new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the root node of the tree to which the context node belongs")
                 ),
         new FunctionSignature(
                 new QName("root", Function.BUILTIN_FUNCTION_NS),
-                "Returns the root of the tree to which $arg belongs. This will usually, "
-                + "but not necessarily, be a document node.",
-                new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+                FUNCTION_DESCRIPTION,
+                new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "the input tree")},
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the root node of the tree")
                 )
     };
     

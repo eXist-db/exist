@@ -1,3 +1,23 @@
+/* eXist Open Source Native XML Database
+ * Copyright (C) 2000-2009,  The eXist team
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * 
+ * $Id$
+ */
+
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -8,6 +28,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -16,27 +38,49 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class FunRoundHalfToEven extends Function {
+	
+	protected static final String FUNCTION_DESCRIPTION = 
+		"The value returned is the nearest (that is, numerically closest) " +
+		"value to $arg that is a multiple of ten to the power of minus " +
+		"$precision. If two such values are equally near (e.g. if the " +
+		"fractional part in $arg is exactly .500...), the function returns " +
+		"the one whose least significant digit is even.\n\nIf the type of " +
+		"$arg is one of the four numeric types xs:float, xs:double, " +
+		"xs:decimal or xs:integer the type of the result is the same as " +
+		"the type of $arg. If the type of $arg is a type derived from one " +
+		"of the numeric types, the result is an instance of the " +
+		"base numeric type.\n\n" +
+		"The first signature of this function produces the same result " +
+		"as the second signature with $precision=0.\n\n" +
+		"For arguments of type xs:float and xs:double, if the argument is " +
+		"NaN, positive or negative zero, or positive or negative infinity, " +
+		"then the result is the same as the argument. In all other cases, " +
+		"the argument is cast to xs:decimal, the function is applied to this " +
+		"xs:decimal value, and the resulting xs:decimal is cast back to " +
+		"xs:float or xs:double as appropriate to form the function result. " +
+		"If the resulting xs:decimal value is zero, then positive or negative " +
+		"zero is returned according to the sign of the original argument.\n\n" +
+		"Note that the process of casting to xs:decimal " +
+		"may result in an error [err:FOCA0001].\n\n" +
+		"If $arg is of type xs:float or xs:double, rounding occurs on the " +
+		"value of the mantissa computed with exponent = 0.";
+	
+	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "the input number");
+	protected static final FunctionParameterSequenceType PRECISION_PARAM = new FunctionParameterSequenceType("precision", Type.NUMBER, Cardinality.ZERO_OR_ONE, "the precision factor");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE, "the rounded value");
 
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 					new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS),
-					"The first signature of this function produces the same " + 
-					"result as the second signature with $b=0.",
-					new SequenceType[] { 
-						new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE) }, 
-					new SequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE)),
+					FUNCTION_DESCRIPTION,
+					new SequenceType[] { ARG_PARAM }, 
+					RETURN_TYPE),
 			
 			new FunctionSignature(new QName("round-half-to-even",
 					Function.BUILTIN_FUNCTION_NS),
-					"The value returned is the nearest (that is, numerically closest) " +
-					"numeric to $a that is a multiple of ten to the power of minus "+
-					"$b. If two such values are equally near (e.g. if the "+
-					"fractional part in $a is exactly .500...), returns the one whose "+
-					"least significant digit is even.",
-					new SequenceType[] { 
-						new SequenceType( Type.NUMBER, Cardinality.ZERO_OR_ONE ),
-						new SequenceType( Type.NUMBER, Cardinality.ZERO_OR_ONE ) }, 
-						new SequenceType( Type.NUMBER, Cardinality.EXACTLY_ONE) ) 
+					FUNCTION_DESCRIPTION,
+					new SequenceType[] { ARG_PARAM, PRECISION_PARAM }, 
+					RETURN_TYPE ) 
 	};
 
 	public FunRoundHalfToEven(XQueryContext context,
