@@ -7,6 +7,8 @@
         xmlns:dc="http://purl.org/dc/elements/1.1/"
         version="1.0">
 
+    <xsl:param name="exist.version"/>
+    
   <!-- used by multi-form pages -->
     <xsl:param name="page"/>
 
@@ -65,7 +67,7 @@
 							<input type="submit" value="Search"/>
 						</form>
 					</div>
-                    <div id="version-info">Site based on <xsl:value-of select="header/version"/></div>
+                    <div id="version-info">Site based on: <xsl:value-of select="$exist.version"/></div>
                     <div id="navbar">
                         <xsl:apply-templates select="sidebar:sidebar/sidebar:toolbar"/>
                         <h1><xsl:value-of select="header/title"/></h1>
