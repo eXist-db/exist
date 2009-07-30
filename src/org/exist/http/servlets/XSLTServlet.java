@@ -135,7 +135,7 @@ public class XSLTServlet extends HttpServlet {
                 OutputStream bufferedOutputStream = new BufferedOutputStream(os);
                 StreamResult result = new StreamResult(bufferedOutputStream);
                 TransformerHandler handler = factory.newTransformerHandler(templates);
-                setParameters(request, handler.getTransformer());
+//                setParameters(request, handler.getTransformer());
                 handler.setResult(result);
                 String mediaType = handler.getTransformer().getOutputProperty("media-type");
                 String encoding = handler.getTransformer().getOutputProperty("encoding");
