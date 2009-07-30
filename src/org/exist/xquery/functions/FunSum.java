@@ -31,6 +31,8 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -47,24 +49,25 @@ public class FunSum extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
-			"Returns a value obtained by adding together the values in $a. If the " +
+			"Returns a value obtained by adding together the values in $arg. If the " +
 			"single-argument form of the function is used, then the value returned for " +
 			"an empty sequence is the xs:double value 0.0e0.",
 			new SequenceType[] {
-				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE)
+				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "a sequence of numbers to be summed up")},
+			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		),
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
-			"Returns a value obtained by adding together the values in $a. If the " +
+			"Returns a value obtained by adding together the values in $arg. If the " +
 			"single-argument form of the function is used, then the value returned for " +
 			"an empty sequence is the xs:double value 0.0e0. If the two-argument form " +
 			"is used, then the value returned for an empty sequence is the value of " +
-			"the $b argument.",
+			"the $default argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "a sequence of numbers to be summed up"),
+				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the default value if $arg is an empty sequence")
+				 },
+					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		)
 	};
 				

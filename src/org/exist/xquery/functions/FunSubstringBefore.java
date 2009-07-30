@@ -34,6 +34,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,30 +51,31 @@ public class FunSubstringBefore extends CollatingFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
-			"Returns the substring of the value of $a that precedes the first occurrence " +
-			"of a sequence of the value of $b. If the value of $a or $b is the empty " +
+			"Returns the substring of the value of $sourceString that precedes the first occurrence " +
+			"of a sequence of the value of $searchString. If the value of $sourceString or $searchString is the empty " +
 			"sequence it is interpreted as the zero-length string. If the value of " +
-			"$b is the zero-length string, the zero-length string is returned. " +
-			"If the value of $a does not contain a string that is equal to the value " +
-			"of $b, the zero-length string is returned.",
+			"$searchString is the zero-length string, the zero-length string is returned. " +
+			"If the value of $sourceString does not contain a string that is equal to the value " +
+			"of $searchString, the zero-length string is returned.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+				 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
+				 new FunctionParameterSequenceType("searchString", Type.STRING, Cardinality.ZERO_OR_ONE, "")
+				},
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")),
 		new FunctionSignature(
 				new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
-			"Returns the substring of the value of $a that precedes the first occurrence " +
-			"of a sequence of the value of $b in the collation $c. If the value of $a or $b is the empty " +
+			"Returns the substring of the value of $sourceString that precedes the first occurrence " +
+			"of a sequence of the value of $searchString in the collation $collation. If the value of $sourceString or $searchString is the empty " +
 			"sequence it is interpreted as the zero-length string. If the value of " +
-			"$b is the zero-length string, the zero-length string is returned. " +
-			"If the value of $a does not contain a string that is equal to the value " +
-			"of $b, the zero-length string is returned.",
+			"$searchString is the zero-length string, the zero-length string is returned. " +
+			"If the value of $sourceString does not contain a string that is equal to the value " +
+			"of $searchString, the zero-length string is returned.",
 				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+					 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
+					 new FunctionParameterSequenceType("searchString", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
+					 new FunctionParameterSequenceType("collator", Type.STRING, Cardinality.EXACTLY_ONE, "A collation is a specification of the manner in which character strings are compared and, by extension, ordered.")
 				},
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring"))
 	};
 
 	public FunSubstringBefore(XQueryContext context, FunctionSignature signature) {
