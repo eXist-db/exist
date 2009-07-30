@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -11,48 +32,64 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AbstractDateTimeValue;
 import org.exist.xquery.value.DayTimeDurationValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+/**
+ * Implements the xpath-functions for timezone adjustment 
+ *
+ * @author
+ *
+ */
 public class FunAdjustTimezone extends BasicFunction {
+    public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the date-time");
+    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "the date");
+    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "the time");
+    public final static FunctionParameterSequenceType DURATION_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the duration");
+
+    public final static FunctionReturnSequenceType DATE_TIME_01_RETURN = new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the adjusted date-time");
+    public final static FunctionReturnSequenceType DATE_01_RETURN = new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_ONE, "the adjusted date");
+    public final static FunctionReturnSequenceType TIME_01_RETURN = new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_ONE, "the adjusted time");
 
 	public final static FunctionSignature fnAdjustDateTimeToTimezone[] = {
 		new FunctionSignature(
 			new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Adjusts an xs:dateTime value to the implicit timezone of the current locale.",
 			new SequenceType[] { 
-					new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)
+                DATE_TIME_01_PARAM
 			},
-			new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE)),
+			DATE_TIME_01_RETURN),
 		new FunctionSignature(
 				new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
 				"Adjusts an xs:dateTime value to a specific timezone, or to no timezone at all. " +
-				"If $b is the empty sequence, returns an xs:dateTime without a timezone.",
-				new SequenceType[] { 
-						new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE),
-						new SequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE)
+				"If $duration is the empty sequence, returns an xs:dateTime without a timezone.",
+				new SequenceType[] {
+                    DATE_TIME_01_PARAM,
+                    DURATION_01_PARAM
 				},
-				new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE))
+				DATE_TIME_01_RETURN)
 	};
 
 	public final static FunctionSignature fnAdjustDateToTimezone[] = {
 		new FunctionSignature(
 			new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Adjusts an xs:date value to the implicit timezone of the current locale.",
-			new SequenceType[] { 
-					new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)
+			new SequenceType[] {
+                DATE_01_PARAM
 			},
-			new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)),
+			DATE_01_RETURN),
 		new FunctionSignature(
 				new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
 				"Adjusts an xs:date value to a specific timezone, or to no timezone at all. " +
-				"If $b is the empty sequence, returns an xs:date without a timezone.",
+				"If $duration is the empty sequence, returns an xs:date without a timezone.",
 				new SequenceType[] { 
-						new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE),
-						new SequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE)
+                    DATE_01_PARAM,
+                    DURATION_01_PARAM
 				},
-				new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE))
+				DATE_01_RETURN)
 	};
 	
 	public final static FunctionSignature fnAdjustTimeToTimezone[] = {
@@ -60,18 +97,18 @@ public class FunAdjustTimezone extends BasicFunction {
 			new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Adjusts an xs:time value to the implicit timezone of the current locale.",
 			new SequenceType[] { 
-					new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE)
+                TIME_01_PARAM
 			},
-			new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE)),
+			TIME_01_RETURN),
 		new FunctionSignature(
 				new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
 				"Adjusts an xs:time value to a specific timezone, or to no timezone at all. " +
-				"If $b is the empty sequence, returns an xs:time without a timezone.",
+				"If $duration is the empty sequence, returns an xs:time without a timezone.",
 				new SequenceType[] { 
-						new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE),
-						new SequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE)
+                    TIME_01_PARAM,
+                    DURATION_01_PARAM
 				},
-				new SequenceType(Type.TIME, Cardinality.ZERO_OR_ONE))
+				TIME_01_RETURN)
 	};
 
 	public FunAdjustTimezone(XQueryContext context, FunctionSignature signature) {
