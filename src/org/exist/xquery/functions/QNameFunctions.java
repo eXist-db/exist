@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-09 The eXist Team
  *
  *  http://exist-db.org
  *  

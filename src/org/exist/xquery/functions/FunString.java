@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2006 The eXist team
+ * Copyright (C) 2000-2009 The eXist team
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -29,6 +29,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,16 +49,16 @@ public class FunString extends Function {
 			"Returns the value of the context item as xs:string. " +
 			"If the context item is undefined, an error is raised.",
 			new SequenceType[0],
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the value of the context item as an xs:string")
 		),
 		new FunctionSignature(
 			new QName("string", Function.BUILTIN_FUNCTION_NS),
-			"Returns the value of $a as xs:string. " +
-			"If the value of $ is the empty sequence, the zero-length string is returned. " +
-			"If the context item of $a is undefined, an error is raised.",
+			"Returns the value of $arg as xs:string. " +
+			"If the value of $arg is the empty sequence, the zero-length string is returned. " +
+			"If the context item of $arg is undefined, an error is raised.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_ONE, "any sequence to get the vaule of as an xs:string")},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the value of $arg as an xs:string")
 		)
 	};
 

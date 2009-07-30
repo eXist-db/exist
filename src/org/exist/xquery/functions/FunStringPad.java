@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -30,6 +30,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -49,10 +51,10 @@ public class FunStringPad extends Function {
 			"concatenated together without any separators. The number of copies is specified " +
 			"by the second argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				 new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to be replecated"),
+				 new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE, "the number of copies of $arg to be returned")
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the replecated string"));
 			
 	/**
 	 * @param context

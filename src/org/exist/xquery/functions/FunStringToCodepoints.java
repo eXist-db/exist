@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-09 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -33,6 +33,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -44,12 +46,12 @@ public class FunStringToCodepoints extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 				new QName("string-to-codepoints", Function.BUILTIN_FUNCTION_NS),
-				"Returns the sequence of code points that constitute an xs:string. If $a is a zero-length " +
+				"Returns the sequence of unicode code points that constitute an xs:string. If $arg is a zero-length " +
 				"string or the empty sequence, the empty sequence is returned.",
 				new SequenceType[] {
-						new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string"),
 				},
-				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE));
+				new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE, "the sequence of code points"));
 	
 	public FunStringToCodepoints(XQueryContext context) {
 		super(context, signature);
