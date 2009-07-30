@@ -79,7 +79,7 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                                     <h3>{$match/xqdoc:name/text()}</h3>
                                     <div class="f-signature">{$match/xqdoc:signature/text()}</div>
                                     <div class="f-description">
-                                        <div>{$match/xqdoc:comment/xqdoc:description/text()}</div>
+                                    	{ xqdoc:print-description($match/xqdoc:comment) }
                                         { xqdoc:print-parameters($match/xqdoc:comment) }
                                         { xqdoc:print-return($match/xqdoc:comment) }
                                     </div>{
@@ -95,6 +95,12 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
         return <div class="query-result">{ $hideshowButtons, $return }</div>
     else
         ()
+};
+
+declare function xqdoc:print-description($comment as element(xqdoc:comment)) {
+    for $desc in tokenize($comment/xqdoc:description, "\n")
+    return
+    	<div class="f-description-para">{$desc}</div>
 };
 
 declare function xqdoc:print-parameters($comment as element(xqdoc:comment)) {

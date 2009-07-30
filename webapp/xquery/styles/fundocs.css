@@ -69,6 +69,10 @@
     text-align: justify;
 }
 
+.f-description-para {
+    margin-bottom: 8px;
+}
+
 #f-loading {
     visibility: hidden;
 }
