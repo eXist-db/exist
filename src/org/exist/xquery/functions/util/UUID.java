@@ -19,61 +19,76 @@
  *
  *  $Id$
  */
-
 package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.security.UUIDGenerator;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
+
 /**
- *
  * @author wessels
  * @author Loren Cahlander
  */
-public class UUID extends Function {
+public class UUID extends BasicFunction {
 
-	private static final Logger logger = Logger.getLogger(UUID.class);
-	
-    public final static FunctionSignature signature =
-            new FunctionSignature(
-            new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Generate a version 4 (random) Universally Unique Identifier string, e.g. " +
-            "154ad200-9c79-44f3-8cff-9780d91552a6",
-            FunctionSignature.NO_ARGS,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string"));
+    private static final Logger logger = Logger.getLogger(UUID.class);
     
-    public UUID(XQueryContext context) {
+    public final static FunctionSignature signatures[] = {
+            new FunctionSignature(
+                    new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Generate a version 4 (random) Universally Unique Identifier string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
+                    FunctionSignature.NO_ARGS,
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string")
+                ),
+
+            new FunctionSignature (
+                    new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Generate a version 3 Universally Unique Identifier string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
+                    new SequenceType[]{
+                        new FunctionParameterSequenceType("name", Type.ITEM, Cardinality.EXACTLY_ONE,
+                            "Input value for UUID calculation."),
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string")
+                )
+    };
+
+    public UUID(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
-    
-        /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-         */
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-    throws XPathException {
 
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-    	
-        String uuid = UUIDGenerator.getUUID();
-        
-        if(uuid==null) {
-            throw new XPathException(this, "Could not create UUID.");
+
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+        Sequence result = new ValueSequence();
+
+        // Check input parameters
+        if (args.length == 0) {
+            String uuid = UUIDGenerator.getUUIDversion4();
+            result.add(new StringValue(uuid));
+
+        } else if (args.length == 1) {
+            String parameter = args[0].getStringValue();
+            String uuid = UUIDGenerator.getUUIDversion3(parameter);
+            result.add(new StringValue(uuid));
+
+        } else {
+            throw new XPathException("Not supported nr of parameters");
         }
-        
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 
-    	return new StringValue(uuid);
+        return result;
     }
-    
 }
