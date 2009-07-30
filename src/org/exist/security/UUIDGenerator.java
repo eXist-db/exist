@@ -48,6 +48,23 @@ public class UUIDGenerator {
      */
     public static String getUUID(){
         
+        return getUUIDversion4();
+    }
+
+    /**
+     *  Return version 4 UUID code (random).
+     * @see http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29
+     */
+    public static String getUUIDversion4(){
         return UUID.randomUUID().toString();
+    }
+
+    /**
+     * Return version 3 UUID code (derived from value)
+     * @see http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29
+     * @param value Initialization value.
+     */
+    public static String getUUIDversion3(String value){
+        return UUID.nameUUIDFromBytes(value.getBytes()).toString();
     }
 }
