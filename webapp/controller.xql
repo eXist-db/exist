@@ -99,6 +99,8 @@ return
 					<forward servlet="XSLTServlet">
 						<set-attribute name="xslt.stylesheet"
 							value="{$stylesheet}"/>
+						<set-attribute name="exist.version"
+						    value="{system:get-version()}-rev{system:get-revision()}-{system:get-build()}"/>
 					</forward>
 				</view>
 				<cache-control cache="yes"/>

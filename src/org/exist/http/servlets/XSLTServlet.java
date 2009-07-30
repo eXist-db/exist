@@ -24,9 +24,11 @@ package org.exist.http.servlets;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathUtil;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -74,6 +76,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Enumeration;
 import javax.servlet.ServletContext;
 
 public class XSLTServlet extends HttpServlet {
@@ -132,6 +135,7 @@ public class XSLTServlet extends HttpServlet {
                 OutputStream bufferedOutputStream = new BufferedOutputStream(os);
                 StreamResult result = new StreamResult(bufferedOutputStream);
                 TransformerHandler handler = factory.newTransformerHandler(templates);
+                setParameters(request, handler.getTransformer());
                 handler.setResult(result);
                 String mediaType = handler.getTransformer().getOutputProperty("media-type");
                 String encoding = handler.getTransformer().getOutputProperty("encoding");
@@ -210,6 +214,14 @@ public class XSLTServlet extends HttpServlet {
             cache.put(stylesheet, cached);
         }
         return cached.getTemplates(user);
+    }
+
+    private void setParameters(HttpServletRequest request, Transformer transformer) {
+        for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
+            String name = (String) e.nextElement();
+            Object value = request.getAttribute(name);
+            transformer.setParameter(name, value);
+        }
     }
 
     private class CachedStylesheet {
