@@ -26,6 +26,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.apache.lucene.search.*;
+import org.apache.lucene.search.regex.RegexQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.search.spans.SpanQuery;
@@ -75,6 +76,8 @@ public class XMLToQuery {
             query = nearQuery(field, root, analyzer);
         else if ("first".equals(localName))
             query = getSpanFirst(field, root, analyzer);
+        else if ("regex".equals(localName))
+            query = regexQuery(field, root);
         else
             throw new XPathException("Unknown element in lucene query expression: " + localName);
         setBoost(root, query);
@@ -251,6 +254,10 @@ public class XMLToQuery {
             }
         }
         return new FuzzyQuery(new Term(field, getText(node)), minSimilarity);
+    }
+
+    private Query regexQuery(String field, Element node) throws XPathException {
+        return new RegexQuery(new Term(field, getText(node)));
     }
 
     private Query booleanQuery(String field, Element node, Analyzer analyzer) throws XPathException {

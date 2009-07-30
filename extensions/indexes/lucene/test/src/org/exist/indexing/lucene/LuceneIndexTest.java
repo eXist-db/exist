@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.util.*;
 
 import org.exist.Indexer;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
@@ -500,6 +501,22 @@ public class LuceneIndexTest {
                 "       <fuzzy occur='must' min-similarity='0.5'>selee</fuzzy>" +
                 "       <wildcard occur='should'>bla*</wildcard>" +
                 "   </bool>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <regex>heit.*keit</regex>" +
+                "</query>");
+            seq = xquery.execute(compiled, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            context.declareVariable("q",
+                "<query>" +
+                "   <phrase><term>wunderbare</term><regex>heit.*keit</regex></phrase>" +
                 "</query>");
             seq = xquery.execute(compiled, null);
             assertNotNull(seq);
@@ -1337,7 +1354,7 @@ public class LuceneIndexTest {
 
     @AfterClass
     public static void stopDB() {
-//        TestUtils.cleanupDB();
+        TestUtils.cleanupDB();
         BrokerPool.stopAll(false);
         pool = null;
         root = null;
