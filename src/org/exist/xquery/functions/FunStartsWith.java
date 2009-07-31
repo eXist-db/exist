@@ -32,36 +32,50 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class FunStartsWith extends CollatingFunction {
+	
+	protected static final String FUNCTION_DESCRIPTION =
+		"Returns an xs:boolean indicating whether or not " +
+		"the value of $arg1 starts with a sequence of collation " +
+		"units that provides a minimal match to the collation " +
+		"units of $arg2 according to the collation that is used.\n\n" +
+		"Note:\n\n" +
+		"\"Minimal match\" is defined in [Unicode Collation Algorithm].\n\n" +
+		"If the value of $arg1 or $arg2 is the empty sequence, or " +
+		"contains only ignorable collation units, it is interpreted " +
+		"as the zero-length string.\n\nIf the value of $arg2 is the " +
+		"zero-length string, then the function returns true. If the " +
+		"value of $arg1 is the zero-length string and the value of " +
+		"$arg2 is not the zero-length string, then the function " +
+		"returns false.\n\n" +
+		"The collation used by the invocation of this function is " +
+		"determined according to the rules in 7.3.1 Collations. " +
+		"If the specified collation does not support collation " +
+		"units an error may be raised [err:FOCH0004].";
 
+	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("arg1", Type.STRING, Cardinality.ZERO_OR_ONE, "the input test string");
+	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("arg2", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to deterine if it is at the beginning of $arg1");
+	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if $arg2 is at the beginning of the string $arg1");
+	
     public final static FunctionSignature signatures[] = {
 	new FunctionSignature (
 			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
-			       "Returns true if the string value of $b is a prefix of the " +
-			       "string value of $a, false otherwise. If either $a or $b is the empty " +
-			       "sequence, the empty sequence is returned.",
-			       new SequenceType[] {
-				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-			       },
-			       new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)),
+			       FUNCTION_DESCRIPTION,
+			       new SequenceType[] { ARG1_PARAM, ARG2_PARAM },
+			       RETURN_TYPE),
 	new FunctionSignature (
 			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
-			       "Returns true if the string value of $b is a prefix of the " +
-			       "string value of $a using collation $c, " + " false otherwise. If " +
-			       "either $a or $b is the empty sequence, the empty sequence" +
-			       " is returned.",
-			       new SequenceType[] {
-				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				   new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			       },
-			       new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE))
+			       FUNCTION_DESCRIPTION,
+			       new SequenceType[] { ARG1_PARAM, ARG2_PARAM, COLLATION_PARAM },
+			       RETURN_TYPE)
     };
 					
     public FunStartsWith(XQueryContext context, FunctionSignature signature) {
