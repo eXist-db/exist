@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2007 The eXist team
- *  
+ * Copyright (C) 2007-2009 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -16,9 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- * $Id$
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -30,24 +30,25 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * Built-in function fn:last().
+ * Built-in function fn:default-collation().
  * 
- * @author wolf
+ * @author perig
  */
 public class FunDefaultCollation extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("default-collation", Function.BUILTIN_FUNCTION_NS),
-			"Returns the context's default collation.",
+			"Returns the context's default collation. E.g. http://www.w3.org/2005/xpath-functions/collation/codepoint",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "default collation from context"));
 
 	public FunDefaultCollation(XQueryContext context) {
 		super(context, signature);

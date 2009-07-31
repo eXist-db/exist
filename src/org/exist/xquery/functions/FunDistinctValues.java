@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
- *  
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -20,6 +21,8 @@
  */
 package org.exist.xquery.functions;
 
+import org.apache.log4j.Logger;
+
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.TreeSet;
@@ -35,6 +38,8 @@ import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -47,26 +52,29 @@ import org.exist.xquery.value.ValueSequence;
  * Implements the fn:distinct-values standard library function.
  * 
  * @author wolf
+ * @author perig
  */
 public class FunDistinctValues extends CollatingFunction {
-
+	protected static final Logger logger = Logger.getLogger(FunDistinctValues.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
-			"Returns a sequence where duplicate values of $a, based on value equality, " + 
+			"Returns a sequence where duplicate values of $atomic-values, based on value equality, " + 
 			"have been deleted.",
-			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+			new SequenceType[] {
+                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the atomic-values")
+            },
+			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "distinct-values sequence")
 		),
 		new FunctionSignature(
 				new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
-				"Returns a sequence where duplicate values of $a, based on value equality specified by collation $b, " + 
+				"Returns a sequence where duplicate values of $atomic-values, based on value equality specified by collation $collation-uri, " + 
 				"have been deleted.",
 				new SequenceType[] { 
-					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+					new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the atomic values"),
+					new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collation-uri")
 				},
-				new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+				new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "distinct-values sequence")
 		)		
 	};
 
@@ -165,6 +173,7 @@ public class FunDistinctValues extends CollatingFunction {
 				else
 					return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
 			} catch (XPathException e) {
+                logger.error("cannot compare values" + e.getMessage());
 				//throw new IllegalArgumentException("cannot compare values");
                 //Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct
                 return Constants.INFERIOR;
