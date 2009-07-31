@@ -1,27 +1,27 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-06 Wolfgang M. Meier
- * wolfgang@exist-db.org
- * http://exist.sourceforge.net
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
+ *  
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +39,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -50,19 +52,19 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FunConcat extends Function {
-	
+		protected static final Logger logger = Logger.getLogger(FunConcat.class);
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("concat", Function.BUILTIN_FUNCTION_NS),
-				"Accepts two or more xdt:anyAtomicType arguments and converts them " +
+				"Accepts two or more xdt:anyAtomicType arguments, $atomizable-values, and converts them " +
 				"to xs:string. Returns the xs:string that is the concatenation of the values " +
 				"of its arguments after conversion. If any of the arguments is the empty sequence, " +
 				"the argument is treated as the zero-length string.",
 				new SequenceType[] {
                     //More complicated : see below
-				    new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+				    new FunctionParameterSequenceType("atomizable-values", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the atomizable values")
 				},
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the concatenated values"),
 				true
 			);
 			
@@ -111,18 +113,20 @@ public class FunConcat extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
            
-		if(getArgumentCount() < 2)
+		if(getArgumentCount() < 2) {
+            logger.error("fn:concat() requires at least two arguments");
 			throw new XPathException (this, "concat requires at least two arguments");
+		}
         
-		StringBuilder concat = new StringBuilder();        
-		for (int i = 0; i < getArgumentCount(); i++) {			
+		StringBuilder concat = new StringBuilder();     
+		for (int i = 0; i < getArgumentCount(); i++) {
             concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
 		}
 		Sequence result = new StringValue(concat.toString());
 
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
         
-        return result;        
+        return result;  
 	}
 }

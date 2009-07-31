@@ -70,11 +70,7 @@ public class FunCompare extends CollatingFunction {
             "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal " +
             "to $string-2, 1 if $string-1 is superior to $string-2. " +
             "If either comparand is the empty sequence, the empty sequence is returned. " +
-            "The third argument $collation-uri is relative so you only need to " +
-            "specify the last part of a valid full collation-uri, e.g. " + 
-            "'?lang=sv-SE', " +
-            "'lang=sv-SE;strength=primary;decomposition=standard' "+
-            "or 'swedish'.",
+            THIRD_REL_COLLATION_ARG_EXAMPLE,
 			new SequenceType[] {
                 new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "the first string"),
                 new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "the second string"),
