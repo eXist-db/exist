@@ -67,7 +67,6 @@ public class GetUploadedFileName extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
@@ -86,7 +85,6 @@ public class GetUploadedFileName extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper) {
 			RequestWrapper request = (RequestWrapper)value.getObject();
 			String fname = request.getUploadedFileName(uploadParamName);
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if(fname == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}

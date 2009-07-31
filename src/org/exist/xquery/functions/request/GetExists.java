@@ -65,7 +65,6 @@ public class GetExists extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		BooleanValue exists = BooleanValue.TRUE;
 		
@@ -78,7 +77,6 @@ public class GetExists extends BasicFunction
 			exists = BooleanValue.FALSE;
 		} 
 			
-		logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		return( exists );
 	}
 	

@@ -63,8 +63,7 @@ public class GetContextPath extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
-		
+
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $request
@@ -76,7 +75,6 @@ public class GetContextPath extends BasicFunction {
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
             if (isCalledAs("get-context-path"))
                 return new StringValue(((RequestWrapper) value.getObject()).getContextPath());
             else

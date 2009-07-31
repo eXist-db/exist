@@ -80,8 +80,6 @@ public class EncodeURL extends BasicFunction {
 		Sequence contextSequence)
 		throws XPathException {
 		
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
-		
 		ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
 			
 		// request object is read from global variable $response
@@ -99,7 +97,6 @@ public class EncodeURL extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue)
 			var.getValue().itemAt(0);
 		if(value.getObject() instanceof ResponseWrapper) {
-			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return new AnyURIValue(((ResponseWrapper)value.getObject()).encodeURL(url));
 		} else {
 			throw new XPathException(this, "Variable $response is not bound to a Response object.");

@@ -90,7 +90,6 @@ public class GetUploadedFile extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
@@ -110,10 +109,10 @@ public class GetUploadedFile extends BasicFunction {
 			RequestWrapper request = (RequestWrapper)value.getObject();
 			File file = request.getFileUploadParam(uploadParamName);
 			if(file == null) {
-				LOG.debug("File param not found: " + uploadParamName);
+				logger.debug("File param not found: " + uploadParamName);
 				return Sequence.EMPTY_SEQUENCE;
 			} else
-				LOG.debug("Uploaded file: " + file.getAbsolutePath());
+				logger.debug("Uploaded file: " + file.getAbsolutePath());
 			
 			
 			if(isCalledAs("get-uploaded-file-data"))
@@ -130,7 +129,6 @@ public class GetUploadedFile extends BasicFunction {
 						baos.write(buf, 0, read);
 					}
 					
-					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return new Base64Binary(baos.toByteArray());
 					
 				}
@@ -152,14 +150,13 @@ public class GetUploadedFile extends BasicFunction {
 						}
 						catch (IOException ioe)
 						{
-							LOG.warn(ioe.getMessage(), ioe);
+							logger.warn(ioe.getMessage(), ioe);
 						}
 					}
 				}
 			}
 			else
 			{
-				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return new JavaObjectValue(file);
 			}
 		}

@@ -72,7 +72,6 @@ public class Invalidate extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-    	logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
     	
         SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
         // session object is read from global variable $session
@@ -81,7 +80,6 @@ public class Invalidate extends BasicFunction {
 			//Always called as "invalidate") because the translation is made at compile time			
 			if (!isCalledAs("invalidate"))
 				throw new XPathException(this, SessionModule.SESSION_VAR + " not set");
-	    	logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
@@ -90,7 +88,6 @@ public class Invalidate extends BasicFunction {
 		if(value.getObject() instanceof SessionWrapper) {
 			SessionWrapper session = (SessionWrapper)value.getObject();
 			session.invalidate();
-	    	logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		} else
 			throw new XPathException(this, SessionModule.SESSION_VAR + " is not bound to a session object");

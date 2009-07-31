@@ -78,7 +78,6 @@ public class GetAttributeNames extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		
 		SessionModule myModule = (SessionModule) context.getModule(SessionModule.NAMESPACE_URI);
 
@@ -99,7 +98,6 @@ public class GetAttributeNames extends BasicFunction {
 				String attribName = (String) e.nextElement();
 				result.add(new StringValue(attribName));
 			}
-			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return result;
 		}
 		else

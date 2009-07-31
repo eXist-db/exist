@@ -64,7 +64,6 @@ public class GetQueryString extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
@@ -79,7 +78,6 @@ public class GetQueryString extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper)
 		{
 			String queryString = ((RequestWrapper) value.getObject()).getQueryString();
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if(queryString != null)
 			{
 				return new StringValue(queryString);

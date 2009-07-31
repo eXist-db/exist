@@ -63,7 +63,6 @@ public class GetMethod extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
@@ -76,7 +75,6 @@ public class GetMethod extends BasicFunction {
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return new StringValue(((RequestWrapper) value.getObject()).getMethod());
 		} else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");

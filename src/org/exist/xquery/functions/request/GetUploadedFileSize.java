@@ -69,7 +69,6 @@ public class GetUploadedFileSize extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
@@ -88,7 +87,6 @@ public class GetUploadedFileSize extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper) {
 			RequestWrapper request = (RequestWrapper)value.getObject();
 			File file = request.getFileUploadParam(uploadParamName);
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if(file == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}

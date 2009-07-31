@@ -83,7 +83,6 @@ public class GetAttribute extends Function
 	 */
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		
 		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
@@ -92,7 +91,6 @@ public class GetAttribute extends Function
 		
 		if( var == null || var.getValue() == null ) {
 			// throw( new XPathException( this, "Session not set" ) );
-			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 		
@@ -108,7 +106,6 @@ public class GetAttribute extends Function
 		if( session.getObject() instanceof SessionWrapper ) {
 			try {
 				Object o = ( (SessionWrapper)session.getObject() ).getAttribute( attribName );
-				logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 				if( o == null ) {
 					return( Sequence.EMPTY_SEQUENCE );
 				}
@@ -125,7 +122,6 @@ public class GetAttribute extends Function
 				//log.error(ise.getStackTrace());	
 				//throw new XPathException(this, "Session has an IllegalStateException for getAttribute() - " + ise.getStackTrace() + System.getProperty("line.separator") + System.getProperty("line.separator") + "Did you perhaps call session:invalidate() previously?");
 
-				logger.error("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName(), ise);
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else {

@@ -70,14 +70,11 @@ public class GetCookieValue extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
-				
 		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
@@ -94,13 +91,11 @@ public class GetCookieValue extends BasicFunction {
 				{
 					if(cookies[c].getName().equals(cookieName))
 					{
-						logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 						return new StringValue(cookies[c].getValue());
 					}
 				}
 			}
 			
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else
