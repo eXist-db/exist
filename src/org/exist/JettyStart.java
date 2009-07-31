@@ -70,6 +70,14 @@ public class JettyStart {
 		
 		// configure database
 		System.out.println("Configuring eXist from " + SingleInstanceConfiguration.getPath());
+        System.out.println();
+        System.out.println("Running with Java "+
+                System.getProperty("java.version", "(unknown java.version)") + " [" +
+                System.getProperty("java.vendor", "(unknown java.vendor)") + " (" +
+                System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in " +
+                System.getProperty("java.home", "(unknown java.home)") +"]");
+        System.out.println();
+        
 		try {
 			// we register our own shutdown hook
 			BrokerPool.setRegisterShutdownHook(false);
@@ -108,15 +116,26 @@ public class JettyStart {
 			server.start();
 
             HttpListener[] listeners = server.getListeners();
-            if (listeners.length > 0)
-                port = listeners[0].getPort();
+
+            StringBuilder ports = new StringBuilder();
+
+            if (listeners.length > 0) {
+                for (HttpListener listener : listeners) {
+                    port = listener.getPort();
+                    ports.append(" "+port);
+                }
+                
+            } else {
+                ports.append(" "+port);
+            }
+
             HttpContext[] contexts = server.getContexts();
-            System.out.println("-----------------------------------------------------");
-            System.out.println("Server has started on port " + port + ". Configured contexts:");
+            System.out.println("----------------------------------------------------------------");
+            System.out.println("eXist-db has started on port" + ports + ". Configured contexts:");
             for (int i = 0; i < contexts.length; i++) {
                 System.out.println("http://localhost:" + port + contexts[i].getContextPath());                
             }
-            System.out.println("-----------------------------------------------------");
+            System.out.println("----------------------------------------------------------------");
             
             if (registerShutdownHook) {
 				// register a shutdown hook for the server
