@@ -81,14 +81,11 @@ public class GetThumbnailsFunction extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
-		
 		ValueSequence result = new ValueSequence();
 		// boolean isDatabasePath = false;
 		boolean isSaveToDataBase = false;
 
 		if (args[0].isEmpty()) {
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
@@ -151,7 +148,6 @@ public class GetThumbnailsFunction extends BasicFunction {
 			pool = BrokerPool.getInstance();
 		} catch (Exception e) {
 			result.add(new StringValue(e.getMessage()));
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return result;
 		}
 		TransactionManager transact = pool.getTransactionManager();
@@ -184,7 +180,6 @@ public class GetThumbnailsFunction extends BasicFunction {
 				.toXmldbURI());
 
 		if (allPictures == null) {
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
@@ -295,7 +290,6 @@ public class GetThumbnailsFunction extends BasicFunction {
 		transact.getJournal().flushToLog(true);
 		dbbroker.closeDocument();
 
-		logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 		return result;
 
 	}

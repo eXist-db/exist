@@ -96,10 +96,8 @@ public class SerializeToFile extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
-		
+	
             if(args[0].isEmpty()) {
-        		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
                 return Sequence.EMPTY_SEQUENCE;
             }
 
@@ -111,14 +109,12 @@ public class SerializeToFile extends BasicFunction
             if(file.isDirectory())
             {
                 logger.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
-        		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
                 return BooleanValue.FALSE;
             }
 
             if(file.exists() && !file.canWrite())
             {
                 logger.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
-        		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
                 return BooleanValue.FALSE;
             }
 
@@ -139,7 +135,6 @@ public class SerializeToFile extends BasicFunction
                 throw new XPathException(this, "Unknown function name");
             }
 
-    		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.TRUE;
 	}
 	

@@ -101,11 +101,8 @@ public class GetMetadataFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
-		
 		//was an image and format speficifed
 		if (args[0].isEmpty() || args[1].isEmpty()) {
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
 		}
         
@@ -143,7 +140,6 @@ public class GetMetadataFunction extends BasicFunction
 				
 				//check we have the metadata
 				if(nMetadata == null) {
-					logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 					return Sequence.EMPTY_SEQUENCE;
 				}
 				
@@ -159,7 +155,6 @@ public class GetMetadataFunction extends BasicFunction
 					streamer.serialize(nMetadata);
 					Document docMetadata = receiver.getDocument();
                     
-					logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 					return (NodeValue)docMetadata;
 				}
 				catch(SAXException se)
@@ -177,7 +172,6 @@ public class GetMetadataFunction extends BasicFunction
 			throw new XPathException(this, ioe.getMessage(), ioe);
 		}
 		
-		logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }

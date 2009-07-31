@@ -66,8 +66,6 @@ public class DateForFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{	
-        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
 		int yearOfInterest = ((IntegerValue)args[0].itemAt(0)).getInt();
 		int monthOfInterest = ((IntegerValue)args[1].itemAt(0)).getInt();
 		int weekInMonth = ((IntegerValue)args[2].itemAt(0)).getInt();
@@ -90,8 +88,6 @@ public class DateForFunction extends BasicFunction {
 		cal.set(Calendar.WEEK_OF_MONTH, weekInMonth);
 		cal.set(Calendar.DAY_OF_WEEK, dayInWeek);
 		
-        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
 		return new DateValue(TimeUtils.getInstance().newXMLGregorianCalendar(cal));
 	}
 }

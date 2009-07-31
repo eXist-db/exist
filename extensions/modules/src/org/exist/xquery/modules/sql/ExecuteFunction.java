@@ -105,7 +105,6 @@ public class ExecuteFunction extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + SQLModule.PREFIX + ":" + getName().getLocalName());
 		// was a connection and SQL statement specified?
 		if( args[0].isEmpty() || args[1].isEmpty() ) {
 			return( Sequence.EMPTY_SEQUENCE );
@@ -239,8 +238,6 @@ public class ExecuteFunction extends BasicFunction
 				count.setNodeValue(String.valueOf(iRow));
 			}
 			builder.endDocument();
-			
-			logger.info("Exiting " + SQLModule.PREFIX + ":" + getName().getLocalName());
 			
 			// return the XML result set
 			return(node);

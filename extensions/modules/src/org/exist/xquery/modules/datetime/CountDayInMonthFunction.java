@@ -65,8 +65,6 @@ public class CountDayInMonthFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{	
-        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
 		int dayOfInterest = ((IntegerValue)args[0].itemAt(0)).getInt();
 		DateValue d = (DateValue)args[1].itemAt(0);
 		
@@ -87,7 +85,6 @@ public class CountDayInMonthFunction extends BasicFunction {
 			cal.add(Calendar.DATE, 7);
 		}
 		
-        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 		return new IntegerValue(dayOfInterestCount);
 	}
 }

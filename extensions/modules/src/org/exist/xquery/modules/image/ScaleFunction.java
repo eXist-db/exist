@@ -96,11 +96,8 @@ public class ScaleFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
-		
 		//was an image and a mime-type speficifed
 		if(args[0].isEmpty() || args[2].isEmpty()) {
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		
@@ -130,7 +127,6 @@ public class ScaleFunction extends BasicFunction
 			if(image == null)
 			{
 				logger.error("Unable to read image data!");
-				logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
 	        	return Sequence.EMPTY_SEQUENCE;
 			}
 			
@@ -141,8 +137,6 @@ public class ScaleFunction extends BasicFunction
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(bImage, formatName, os);
 			
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
-
 			//return the new scaled image data
 			return new Base64Binary(os.toByteArray());
 		}

@@ -60,11 +60,9 @@ public class EchoFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + ExampleModule.NAMESPACE_URI + ":" + getName().getLocalName());
 
 		// is argument the empty sequence?
 		if (args[0].isEmpty()) {
-			logger.info("Exiting " + ExampleModule.NAMESPACE_URI + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		
@@ -74,7 +72,6 @@ public class EchoFunction extends BasicFunction {
 			String str = i.nextItem().getStringValue();
 			result.add(new StringValue("echo: " + str));
 		}
-		logger.info("Exiting " + ExampleModule.NAMESPACE_URI + ":" + getName().getLocalName());
 		return result;
 	}
 

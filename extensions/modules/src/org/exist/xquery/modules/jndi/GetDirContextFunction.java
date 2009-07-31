@@ -100,11 +100,8 @@ public class GetDirContextFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
-
 		// Were properties specified
 		if( args[0].isEmpty() ) {
-			logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 
@@ -117,7 +114,6 @@ public class GetDirContextFunction extends BasicFunction
 
 			// store the JNDI Directory Context and return the uid handle of the context
 			
-			logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 			return( new IntegerValue( JNDIModule.storeJNDIContext( context, dirCtx ) ) );
 		}
 		catch( NamingException ne ) {

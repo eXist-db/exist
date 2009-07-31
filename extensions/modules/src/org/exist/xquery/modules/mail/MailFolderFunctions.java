@@ -103,14 +103,11 @@ public class MailFolderFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
 		if( isCalledAs( "get-mail-folder" ) ) {
 			Sequence mailFolder = getMailFolder( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return mailFolder;
 		} else if( isCalledAs( "close-mail-folder" ) ) {
 			Sequence closeMailFolder = closeMailFolder( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return closeMailFolder;
 		} 
 			

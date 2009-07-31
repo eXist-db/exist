@@ -149,8 +149,6 @@ public class Query extends Function implements Optimizable {
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	
-    	logger.info("Entering " + LuceneModule.PREFIX + ":" + getName().getLocalName());
-    	
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
 
@@ -187,7 +185,6 @@ public class Query extends Function implements Optimizable {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
-    	logger.info("Exiting " + LuceneModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
 

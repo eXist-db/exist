@@ -176,23 +176,17 @@ public class MessageListFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
-	
 		if( isCalledAs( "get-message-list" ) ) {
 			Sequence messageList = getMessageList( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return messageList;
 		} else if( isCalledAs( "search-message-list" ) ) {
 			Sequence searchMessageList = searchMessageList( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return searchMessageList;
 		} else if( isCalledAs( "get-message-list-as-xml" ) ) {
 			Sequence messageListAsXML = getMessageListAsXML( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return messageListAsXML;
 		} else if( isCalledAs( "close-message-list" ) ) {
 			Sequence closeMessageList = closeMessageList( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return closeMessageList;
 		} 
 			

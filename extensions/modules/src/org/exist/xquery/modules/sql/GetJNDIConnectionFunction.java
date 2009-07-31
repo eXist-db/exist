@@ -102,11 +102,8 @@ public class GetJNDIConnectionFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		
-		logger.info("Entering " + SQLModule.PREFIX + ":" + getName().getLocalName());
-		
 		// was a JNDI name specified?
 		if (args[0].isEmpty()) {
-			logger.info("Exiting " + SQLModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
@@ -129,7 +126,6 @@ public class GetJNDIConnectionFunction extends BasicFunction {
 				con = ds.getConnection(jndiUser, jndiPassword);
 			}
 
-			logger.info("Exiting " + SQLModule.PREFIX + ":" + getName().getLocalName());
 			// store the connection and return the uid handle of the connection
 			return new IntegerValue(SQLModule.storeConnection(context, con));
 		} catch (Exception e) {

@@ -76,7 +76,6 @@ public class TwoParamFunctions extends BasicFunction {
      * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	logger.info("Entering " + MathModule.PREFIX + ":" + getName().getLocalName());
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -112,7 +111,6 @@ public class TwoParamFunctions extends BasicFunction {
             context.getProfiler().end(this, "", result);
         }
         
-    	logger.info("Exiting " + MathModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
     

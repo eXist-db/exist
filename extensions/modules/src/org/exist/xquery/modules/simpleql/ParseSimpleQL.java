@@ -58,14 +58,12 @@ public class ParseSimpleQL extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-    	logger.info("Entering " + SimpleQLModule.PREFIX + ":" + getName().getLocalName());
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         String query = args[0].getStringValue();
         SimpleQLLexer lexer = new SimpleQLLexer(new StringReader(query));
         SimpleQLParser parser = new SimpleQLParser(lexer);
         try {
-        	logger.info("Exiting " + SimpleQLModule.PREFIX + ":" + getName().getLocalName());
             return new StringValue(parser.expr());
         } catch (RecognitionException e) {
             throw new XPathException(this, "An error occurred while parsing the query expression: " + e.getMessage(), e);

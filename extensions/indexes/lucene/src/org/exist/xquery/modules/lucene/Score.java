@@ -59,11 +59,9 @@ public class Score extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	logger.info("Entering " + LuceneModule.PREFIX + ":" + getName().getLocalName());
     	
         NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
         if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-        	logger.info("Exiting " + LuceneModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         NodeProxy proxy = (NodeProxy) nodeValue;
@@ -76,7 +74,6 @@ public class Score extends BasicFunction {
             }
             match = match.getNextMatch();
         }
-    	logger.info("Exiting " + LuceneModule.PREFIX + ":" + getName().getLocalName());
         return new FloatValue(score);
     }
 }

@@ -119,8 +119,6 @@ public class SearchFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
-		
 		Sequence    xmlResult     = Sequence.EMPTY_SEQUENCE;
 		
 		// Was context handle or DN specified?
@@ -171,7 +169,6 @@ public class SearchFunction extends BasicFunction
 			}
 		}
 		
-		logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 		return( xmlResult );
 	}
 

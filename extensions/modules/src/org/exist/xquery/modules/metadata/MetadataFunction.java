@@ -65,8 +65,6 @@ public class MetadataFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + MetadataModule.PREFIX + ":" + getName().getLocalName());
-		
 		//must be a context to act on
 		if(contextSequence == null)
 		{
@@ -124,7 +122,6 @@ public class MetadataFunction extends BasicFunction {
 			}
 		}
 		
-		logger.info("Exiting " + MetadataModule.PREFIX + ":" + getName().getLocalName());
 		return metadataDocuments;
 	}
 }

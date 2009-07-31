@@ -92,7 +92,6 @@ public class MailSessionFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
 		Properties props = new Properties();
 		
 		if( args.length == 1 ) {
@@ -105,7 +104,6 @@ public class MailSessionFunctions extends BasicFunction
 		// store the session and return the handle of the session
 			
 		IntegerValue integerValue = new IntegerValue( MailModule.storeSession( context, session ) );
-		logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 		return integerValue;
 	}
 }

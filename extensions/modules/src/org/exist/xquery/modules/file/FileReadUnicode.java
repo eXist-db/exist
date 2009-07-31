@@ -83,8 +83,6 @@ public class FileReadUnicode extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
-
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
 		
@@ -118,7 +116,6 @@ public class FileReadUnicode extends BasicFunction {
 		
 		//TODO : return an *Item* built with sw.toString()
 		
-		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( new StringValue( sw.toString() ) );
 	}
 }

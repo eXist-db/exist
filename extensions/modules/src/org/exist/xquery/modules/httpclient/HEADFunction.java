@@ -66,12 +66,10 @@ public class HEADFunction extends BaseHTTPClientFunction {
     
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
-		logger.info("Entering " + PREFIX + ":" + getName().getLocalName());
         Sequence    response = null;
         
         // must be a URL
         if( args[0].isEmpty() ) {
-    		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
             return( Sequence.EMPTY_SEQUENCE );
         }
         
@@ -99,7 +97,6 @@ public class HEADFunction extends BaseHTTPClientFunction {
             head.releaseConnection();
         }
         
-		logger.info("Exiting " + PREFIX + ":" + getName().getLocalName());
         return( response );
     }
 }

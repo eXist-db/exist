@@ -121,8 +121,6 @@ public class SendEmailFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
-		
 		try
 		{	
 			//get the charset parameter, default to UTF-8
@@ -144,7 +142,6 @@ public class SendEmailFunction extends BasicFunction
 				//SMTP
 				if(SendSMTP(theMail, args[1].getStringValue()))
 				{
-					logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 					return(BooleanValue.TRUE);
 				}
 			}
@@ -153,12 +150,10 @@ public class SendEmailFunction extends BasicFunction
 				//Sendmail
 				if(SendSendmail(theMail))
 				{
-					logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 					return(BooleanValue.TRUE);
 				}
 			}
 			
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			//Failed to send email
 			return(BooleanValue.FALSE);
 		}

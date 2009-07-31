@@ -68,7 +68,6 @@ public class Compare extends Function {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
 	throws XPathException {
-	logger.info("Entering " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 		
 	if (context.getProfiler().isEnabled()) {
 	    context.getProfiler().start(this);
@@ -92,11 +91,9 @@ public class Compare extends Function {
 	context.popDocumentContext();
 		
 	if (s1.isEmpty()) {
-	    logger.info("Exiting " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 	    return BooleanValue.valueOf(s2.isEmpty());
 	}
 	else if (s2.isEmpty()) {
-	    logger.info("Exiting " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 	    return BooleanValue.valueOf(s1.isEmpty());
 	}
 
@@ -132,7 +129,6 @@ public class Compare extends Function {
 	if (context.getProfiler().isEnabled())
 	    context.getProfiler().end(this, "", result);
 
-	logger.info("Exiting " + XmlDiffModule.PREFIX + ":" + getName().getLocalName());
 	return result;
     }
 	

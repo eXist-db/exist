@@ -79,8 +79,6 @@ public class NoParamFunctions extends BasicFunction {
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-    	logger.info("Entering " + MathModule.PREFIX + ":" + getName().getLocalName());
-
     	if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -110,8 +108,6 @@ public class NoParamFunctions extends BasicFunction {
             context.getProfiler().end(this, "", result);
         }
         
-    	logger.info("Exiting " + MathModule.PREFIX + ":" + getName().getLocalName());
-
         return result;
     }
     
