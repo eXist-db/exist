@@ -94,7 +94,6 @@ public class GetData extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
 	{
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -156,7 +155,6 @@ public class GetData extends BasicFunction {
 						if(!mimeType.isXMLType())
 						{
 							//binary data
-							logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 							return new Base64Binary(bufRequestData);
 						}
 					}
@@ -178,7 +176,6 @@ public class GetData extends BasicFunction {
 					reader.setContentHandler(receiver);
 					reader.parse(src);
 					Document doc = receiver.getDocument();
-					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return (NodeValue)doc.getDocumentElement();
 				}
 				catch(ParserConfigurationException e)
@@ -207,7 +204,6 @@ public class GetData extends BasicFunction {
 				try
 				{
 					String s = new String(bufRequestData, encoding);
-					logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 					return new StringValue(s);
 				}
 				catch (IOException e)
@@ -218,7 +214,6 @@ public class GetData extends BasicFunction {
 			else
 			{
 				//no post data
-				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return Sequence.EMPTY_SEQUENCE;
 			}
 		}

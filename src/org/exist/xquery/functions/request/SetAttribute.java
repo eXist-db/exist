@@ -69,8 +69,6 @@ public class SetAttribute extends Function {
 	 */
 	public Sequence eval (Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
-		
 		if( context.getProfiler().isEnabled() ) {
 			context.getProfiler().start( this );       
 			context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
@@ -109,8 +107,6 @@ public class SetAttribute extends Function {
 			throw(  new XPathException( this, "Type error: variable $request is not bound to a request object" ) );
 		}
 
-		logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
-		
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

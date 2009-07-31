@@ -84,7 +84,6 @@ public class SetCurrentUser extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
@@ -120,7 +119,7 @@ public class SetCurrentUser extends BasicFunction {
 			}
 			else
 			{
-				LOG.warn("Could not validate user " + userName);
+				logger.warn("Could not validate user " + userName);
 				return BooleanValue.FALSE;
 			}
 		}

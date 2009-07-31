@@ -72,7 +72,6 @@ public class GetHeader extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule = (RequestModule) context
 				.getModule(RequestModule.NAMESPACE_URI);
@@ -91,7 +90,6 @@ public class GetHeader extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper) {
 			String headerValue = ((RequestWrapper) value.getObject())
 					.getHeader(param);
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if (headerValue == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			} else {

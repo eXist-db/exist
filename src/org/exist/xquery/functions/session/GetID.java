@@ -75,7 +75,6 @@ public class GetID extends Function
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		/* session object is read from global variable $session */
@@ -89,7 +88,6 @@ public class GetID extends Function
 		if(session.getObject() instanceof SessionWrapper)
 		{
 			String id = ((SessionWrapper)session.getObject()).getId();
-			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			if (id == null)
 				return Sequence.EMPTY_SEQUENCE;
 			return(new StringValue(id));

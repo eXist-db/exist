@@ -72,7 +72,6 @@ public class GetHeaderNames extends BasicFunction {
          */
         public Sequence eval(Sequence[] args, Sequence contextSequence)
                 throws XPathException {
-    		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
     		
                 RequestModule myModule =
                         (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
@@ -92,7 +91,6 @@ public class GetHeaderNames extends BasicFunction {
                                 String param = (String) e.nextElement();
                                 result.add(new StringValue(param));
                         }
-        				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
                         return result;
                 }
                 else

@@ -69,8 +69,7 @@ public class SetAttribute extends Function
 	 */
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
-		
+
 		JavaObjectValue session;
 		
         if( context.getProfiler().isEnabled() ) {
@@ -110,7 +109,6 @@ public class SetAttribute extends Function
 			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
 		}
 
-		logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

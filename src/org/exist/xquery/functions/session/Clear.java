@@ -65,7 +65,6 @@ public class Clear extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		
 		SessionModule myModule = (SessionModule) context.getModule(SessionModule.NAMESPACE_URI);
 
@@ -85,7 +84,6 @@ public class Clear extends BasicFunction {
 				String attribName = (String) e.nextElement();
 				sessionWrapper.removeAttribute(attribName);
 			}
-			logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else

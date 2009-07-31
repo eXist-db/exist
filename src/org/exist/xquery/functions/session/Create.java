@@ -71,10 +71,8 @@ public class Create extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		SessionModule.createSession( context, this );
 		
-		logger.info("Exiting " + SessionModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 	

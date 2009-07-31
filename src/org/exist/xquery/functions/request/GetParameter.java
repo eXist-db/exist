@@ -105,7 +105,6 @@ public class GetParameter extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + RequestModule.PREFIX + ":" + getName().getLocalName());
 		
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
@@ -122,7 +121,6 @@ public class GetParameter extends BasicFunction {
 			if( failOnError ) {
 				throw new XPathException(this, "Variable $request is not bound to an Java object.");
 			} else {
-				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return args[1];
 			}
 		}
@@ -133,7 +131,6 @@ public class GetParameter extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
-			logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 			if (values == null || values.length == 0) {
 				return args[1];
 			}
@@ -146,7 +143,6 @@ public class GetParameter extends BasicFunction {
 			if( failOnError ) {
 				throw new XPathException(this, "Variable $request is not bound to a Request object.");
 			} else {
-				logger.info("Exiting " + RequestModule.PREFIX + ":" + getName().getLocalName());
 				return args[1];				
 			}
 		}
