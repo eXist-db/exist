@@ -1,23 +1,24 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
@@ -32,6 +33,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -46,13 +49,13 @@ public class FunDocumentURI extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document-uri", Function.BUILTIN_FUNCTION_NS),
-			"Returns the absolute URI of the resource from which the document node $a " + 
+			"Returns the absolute URI of the resource from which the document node $document-node " + 
 			"was constructed, if none such URI exists returns the empty sequence. " +
-			"If $a is the empty sequence, returns the empty sequence.",
+			"If $document-node is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-				 new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("document-node", Type.NODE, Cardinality.ZERO_OR_ONE, "the document-node")
 			},
-			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "document-uri of $document-node"));
 			
 	/**
 	 * 
