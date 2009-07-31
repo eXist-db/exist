@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions;
 
+import org.apache.log4j.Logger;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -36,6 +38,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -47,28 +51,28 @@ import org.w3c.dom.Node;
  * @author wolf
  */
 public class FunBaseURI extends BasicFunction {
-
+	protected static final Logger logger = Logger.getLogger(FunBaseURI.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
             "Returns the value of the base-uri property for the context item.",
 			null,
-			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base-uri from the context item")
 		),
         new FunctionSignature(
             new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base-uri property for $a. If $a is the empty " +
+            "Returns the value of the base-uri property for $uri. If $uri is the empty " +
             "sequence, the empty sequence is returned.",
             new SequenceType[] {
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+                new FunctionParameterSequenceType("uri", Type.NODE, Cardinality.ZERO_OR_ONE, "the uri") },
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base-uri from $uri")
         ),
         new FunctionSignature(
             new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
             "Returns the value of the base-uri property from the static context. " +
             "If the base-uri property is undefined, the empty sequence is returned.",
             null,
-            new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base-uri from the static context")
         )
     };
 			
@@ -103,11 +107,15 @@ public class FunBaseURI extends BasicFunction {
             }
         } else {
             if (args.length == 0) {
-                if (contextSequence == null || contextSequence.isEmpty())
+                if (contextSequence == null || contextSequence.isEmpty()) {
+                    logger.error("err:XPDY0002: context sequence is empty and no argument specified");
                     throw new XPathException(this, "err:XPDY0002: context sequence is empty and no argument specified");
+                }
                 Item item = contextSequence.itemAt(0);
-                if (!Type.subTypeOf(item.getType(), Type.NODE))
+                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                    logger.error("err:XPTY0004: context item is not a node");
                     throw new XPathException(this, "err:XPTY0004: context item is not a node");
+                }
                 node = (NodeValue) item;
             } else {
                 if (args[0].isEmpty()) {
@@ -129,15 +137,16 @@ public class FunBaseURI extends BasicFunction {
                 //The base-uri property of the node is empty. 
                 //The parent property of the node is empty.
                 if (type == Node.PROCESSING_INSTRUCTION_NODE) {
-                	result = Sequence.EMPTY_SEQUENCE;                	
+                	result = Sequence.EMPTY_SEQUENCE;
                 } else if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE) {
-                	//Only elements, document nodes have a base-uri                
+                	//Only elements, document nodes have a base-uri
                     URI relativeURI;
                     URI baseURI;
                     try {
                         relativeURI = new URI(domNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
+                        logger.error(e.getMessage());
                         throw new XPathException(this, e.getMessage(), e);
                     }
                     if (!"".equals(relativeURI.toString())) {
@@ -161,10 +170,11 @@ public class FunBaseURI extends BasicFunction {
                     URI relativeURI;
                     URI baseURI;
                     try {
-                       org.exist.dom.NodeImpl baseNode = (org.exist.dom.NodeImpl)proxy.getNode();
+                       org.exist.dom.NodeImpl baseNode = (org.exist.dom.NodeImpl) proxy.getNode();
                         relativeURI = new URI(baseNode.getBaseURI());
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
+                        logger.error(e.getMessage());
                         throw new XPathException(this, e.getMessage(), e);
                     }
                     if (relativeURI.isAbsolute()) {
