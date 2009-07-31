@@ -69,7 +69,6 @@ public class GetRunningXQueries extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-    	logger.info("Entering " + SystemModule.PREFIX + ":get-scheduled-jobs");
 		if( !context.getUser().hasDbaRole() ) {
 			XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of running xqueries" );
         	logger.error("Invalid user " + SystemModule.PREFIX + ":get-scheduled-xqueries", xPathException);
@@ -82,7 +81,6 @@ public class GetRunningXQueries extends BasicFunction
 	
 	private Sequence getRunningXQueries()
 	{
-		logger.trace("Entering getRunningXQueries");
 		Sequence    xmlResponse     = null;
         
         MemTreeBuilder builder = context.getDocumentBuilder();
@@ -102,13 +100,11 @@ public class GetRunningXQueries extends BasicFunction
         
         xmlResponse = (NodeValue)builder.getDocument().getDocumentElement();
         
-		logger.trace("Exiting getRunningXQueries");
         return( xmlResponse );
 	}
 	
 	private void getRunningXQuery( MemTreeBuilder builder, XQueryContext context, XQueryWatchDog watchdog ) 
 	{
-		logger.trace("Entering getRunningXQuery");
 		builder.startElement( new QName( "xquery", NAMESPACE_URI, PREFIX ), null );
 		
 		builder.addAttribute( new QName( "id", null, null ), "" + context.hashCode() );
@@ -124,7 +120,6 @@ public class GetRunningXQueries extends BasicFunction
 		builder.endElement();
 		
 		builder.endElement();
-		logger.trace("Exiting getRunningXQuery");
 	}
 	
 }

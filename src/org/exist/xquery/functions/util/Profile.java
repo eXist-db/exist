@@ -63,7 +63,6 @@ public class Profile extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
         Profiler profiler = context.getProfiler();
         if (isCalledAs("enable-profiling")) {
@@ -73,7 +72,6 @@ public class Profile extends BasicFunction {
         } else {
             profiler.setEnabled(false);
         }
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 

@@ -102,10 +102,9 @@ public class FtIndexLookup extends Function {
     
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-    	logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalName());
+
         Sequence querySeq = getArgument(1).eval(contextSequence);
         if (querySeq.isEmpty()) {
-        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         String query = querySeq.itemAt(0).getStringValue();
@@ -130,7 +129,6 @@ public class FtIndexLookup extends Function {
                 result = result.deepIntersection(hits[k]);
         }
     	logger.debug("FOUND: " + result.getLength());
-    	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
     

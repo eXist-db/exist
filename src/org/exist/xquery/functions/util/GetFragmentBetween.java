@@ -92,7 +92,7 @@ public class GetFragmentBetween extends BasicFunction {
    * @throws XPathException
    */
   public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-	  logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
+
     Sequence ms1 = args[0];
     Sequence ms2 = args[1];
     if (ms1.isEmpty()) {
@@ -125,7 +125,6 @@ public class GetFragmentBetween extends BasicFunction {
     StringValue strValFragment = new StringValue(fragment.toString());
     ValueSequence resultFragment = new ValueSequence();
     resultFragment.add(strValFragment);
-	  logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
     return resultFragment;
   }
 

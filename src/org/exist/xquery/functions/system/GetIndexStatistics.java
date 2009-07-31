@@ -27,11 +27,9 @@ public class GetIndexStatistics extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalName());
         IndexStatistics index = (IndexStatistics) context.getBroker().getBrokerPool().
                 getIndexManager().getIndexById(IndexStatistics.ID);
         if (index == null) {
-        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
             // module may not be enabled
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -45,7 +43,6 @@ public class GetIndexStatistics extends BasicFunction {
             throw new XPathException(this, "Error caught while retrieving statistics: " + e.getMessage(), e);
         }
         DocumentImpl doc = (DocumentImpl) adapter.getDocument();
-    	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
         return (NodeImpl) doc.getFirstChild();
     }
 }

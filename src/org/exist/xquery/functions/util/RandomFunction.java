@@ -64,20 +64,17 @@ public class RandomFunction extends BasicFunction
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	Random rndGen = new Random();
     	
     	if(getArgumentCount() == 0)
     	{
     		DoubleValue result = new DoubleValue(rndGen.nextDouble());
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return result;
     	}
     	else
     	{
     		IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
     		IntegerValue result = new IntegerValue(rndGen.nextInt(upper.getInt()));
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return result;
     		
     	}

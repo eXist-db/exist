@@ -66,12 +66,10 @@ public class Compile extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		// get the query expression
 		String expr = args[0].getStringValue();
 		if ("".equals(expr.trim())) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		  return new EmptySequence();
 		}
 		context.pushNamespaceContext();
@@ -98,21 +96,16 @@ public class Compile extends BasicFunction {
 			}
 			path.analyze(new AnalyzeContextInfo());
 		} catch (RecognitionException e) {			
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.toString());
 		} catch (TokenStreamException e) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.toString());
 		} catch (XPathException e) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.toString());
 		} catch (Exception e) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName(), e);
 			return new StringValue(e.getMessage());
 		} finally {
 			context.popNamespaceContext();
 		}
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

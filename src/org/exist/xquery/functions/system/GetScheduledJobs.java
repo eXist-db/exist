@@ -44,7 +44,6 @@ public class GetScheduledJobs extends BasicFunction {
 
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-    	logger.info("Entering " + SystemModule.PREFIX + ":get-scheduled-jobs");
         if( !context.getUser().hasDbaRole() ) {
             XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of scheduled jobs" );
         	logger.error("Invalid user " + SystemModule.PREFIX + ":get-scheduled-jobs", xPathException);
@@ -82,7 +81,6 @@ public class GetScheduledJobs extends BasicFunction {
         builder.endElement();
         builder.endDocument();
 
-    	logger.info("Exiting " + SystemModule.PREFIX + ":get-scheduled-jobs");
         return( (NodeValue)builder.getDocument().getDocumentElement() );
     }
     

@@ -84,7 +84,6 @@ public class DocumentNameOrId extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
         DocumentImpl doc = null;
         if (Type.subTypeOf(args[0].getItemType(), Type.NODE)) {
@@ -107,14 +106,11 @@ public class DocumentNameOrId extends BasicFunction {
         }
         if (doc != null) {
             if ("document-name".equals(getSignature().getName().getLocalName())) {
-        		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new StringValue(doc.getFileURI().toString());
             } else {
-        		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new IntegerValue(doc.getDocId(), Type.INT);
             }
         }
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 

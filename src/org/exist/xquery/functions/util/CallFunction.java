@@ -74,8 +74,6 @@ public class CallFunction extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
     	
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-    	
         Sequence arg0 = getArgument(0).eval(contextSequence, contextItem);
         if(arg0.getCardinality() != Cardinality.EXACTLY_ONE)
             throw new XPathException(this, "Expected exactly one item for first argument");
@@ -93,7 +91,6 @@ public class CallFunction extends Function {
         call.setArguments(params);
         call.analyze(new AnalyzeContextInfo(this, 0));
         // Evaluate the function
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return call.eval(contextSequence);
     }
 }

@@ -45,7 +45,6 @@ public class TriggerSystemTask extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		logger.info("Entering " + SystemModule.PREFIX + ":trigger-system-task");
         String className = args[0].getStringValue();
         Properties properties = new Properties();
         if (args[1].hasOne()) {
@@ -83,7 +82,6 @@ public class TriggerSystemTask extends BasicFunction {
             logger.error(message, e);
 			throw new XPathException(this, message + e.getMessage(), e);
         }
-		logger.info("Exiting " + SystemModule.PREFIX + ":trigger-system-task");
         return Sequence.EMPTY_SEQUENCE;
     }
 

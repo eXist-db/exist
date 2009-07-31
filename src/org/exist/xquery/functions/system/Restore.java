@@ -65,7 +65,6 @@ public class Restore extends BasicFunction {
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		logger.info("Entering " + SystemModule.PREFIX + ":restore");
 		String dirOrFile = args[0].getStringValue();
 		String adminPass = null;
 		if (args[1].hasOne())
@@ -87,7 +86,6 @@ public class Restore extends BasicFunction {
 		}
 		builder.endElement();
 		builder.endDocument();
-		logger.info("Exiting " + SystemModule.PREFIX + ":restore");
 		return (NodeValue) builder.getDocument().getDocumentElement();
 	}
 

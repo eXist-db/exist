@@ -78,7 +78,6 @@ public class Shutdown extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + SystemModule.PREFIX + ":shutdown");
 		if(context.getUser().hasDbaRole())
 		{
 			//determine the shutdown delay
@@ -114,7 +113,6 @@ public class Shutdown extends BasicFunction
 			throw xPathException;
 		}
 			
-		logger.info("Exiting " + SystemModule.PREFIX + ":shutdown");
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	

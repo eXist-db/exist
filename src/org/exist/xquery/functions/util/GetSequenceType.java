@@ -53,11 +53,9 @@ public class GetSequenceType extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {		
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		Sequence seq = args[0];
 		StringValue stringValue = new StringValue(Type.getTypeName(seq.getItemType()));
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return stringValue;
 	}
 

@@ -76,12 +76,10 @@ public class FunctionFunction extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
     	String funcName = args[0].getStringValue();
     	int arity = ((NumericValue) args[1].itemAt(0)).getInt();
     	this.resolvedFunction = lookupFunction(funcName, arity);
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return new FunctionReference(resolvedFunction);
     }
 

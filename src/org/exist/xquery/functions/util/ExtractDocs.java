@@ -52,12 +52,9 @@ public class ExtractDocs extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-    	
         String moduleURI = args[0].getStringValue();
         Module module = context.getModule(moduleURI);
         if (module == null) {
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         MemTreeBuilder builder = context.getDocumentBuilder();
@@ -65,7 +62,6 @@ public class ExtractDocs extends BasicFunction {
         module(module, builder);
         functions(module, builder);
         builder.endElement();
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
     }
 
@@ -80,28 +76,6 @@ public class ExtractDocs extends BasicFunction {
 			simpleElement(builder, "signature", function.toString());
 			builder.startElement(XQDOC_NS, "comment", "comment", null);
 			String functionDescription = function.getDescription();
-			if (false) {
-				if (functionDescription.startsWith("<?xml")) {
-					try {
-						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-						DocumentBuilder db = factory.newDocumentBuilder();
-						InputSource inStream = new InputSource();
-						inStream.setCharacterStream(new StringReader(functionDescription));
-						Document doc = db.parse(inStream);
-					} catch (ParserConfigurationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (SAXException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} else {
-					simpleElement(builder, "description", functionDescription);
-				}
-			}
 			simpleElement(builder, "description", functionDescription);
 			int index = -1;
 			if (function.getArgumentTypes() != null) {

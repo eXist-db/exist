@@ -81,7 +81,6 @@ public class FunUnEscapeURI extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		try
 		{
 			return new StringValue(URLDecoder.decode(args[0].getStringValue(), args[1].getStringValue()));
@@ -89,9 +88,6 @@ public class FunUnEscapeURI extends BasicFunction {
 		catch(java.io.UnsupportedEncodingException e)
 		{
 			throw new XPathException(this, "Unsupported Encoding Scheme: " + e.getMessage(), e);
-		}
-		finally {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		}
 	}
 	

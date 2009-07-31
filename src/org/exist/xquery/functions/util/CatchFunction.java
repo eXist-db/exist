@@ -71,14 +71,12 @@ public class CatchFunction extends Function {
      * @see org.exist.xquery.Function#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
         try {
             context.pushDocumentContext();
             LocalVariable mark = context.markLocalVariables(false);
             try {
-            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return getArgument(1).eval(contextSequence, contextItem);
             } finally {
                 context.popDocumentContext();
@@ -107,7 +105,6 @@ public class CatchFunction extends Function {
                 			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         myModule.declareVariable(UtilModule.EXCEPTION_QNAME, new StringValue(e.getClass().getName()));
                         myModule.declareVariable(UtilModule.EXCEPTION_MESSAGE_QNAME, new StringValue(e.getMessage()));
-                    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (Exception e2) {

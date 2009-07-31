@@ -78,10 +78,7 @@ public class Expand extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-        
     	if (args[0].isEmpty()) {
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
     	}
 
@@ -113,7 +110,6 @@ public class Expand extends BasicFunction {
                 next.toSAX(context.getBroker(), receiver, serializeOptions);
                 result.add(builder.getDocument().getNode(nodeNr + 1));
             }
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return result;
         } catch (SAXException e) {
             throw new XPathException(this, e.getMessage());

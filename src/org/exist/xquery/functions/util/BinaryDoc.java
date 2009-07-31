@@ -84,12 +84,10 @@ public class BinaryDoc extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
         Sequence defaultReturn = (isCalledAs("binary-doc") ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE);
 
         if (args[0].isEmpty()) {
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return defaultReturn;
         }
 
@@ -99,12 +97,10 @@ public class BinaryDoc extends BasicFunction {
             doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             if(doc == null)
             {
-            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return defaultReturn;
             }
             else if(doc.getResourceType() != DocumentImpl.BINARY_FILE)
             {
-            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return defaultReturn;
             }
             else if(isCalledAs("binary-doc"))
@@ -114,12 +110,10 @@ public class BinaryDoc extends BasicFunction {
                 byte[] data = new byte[(int)context.getBroker().getBinaryResourceSize(bin)];
                 is.read(data);
                 is.close();
-            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new Base64Binary(data);
             }
             else
             {
-            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return BooleanValue.TRUE;
             }
         } catch (URISyntaxException e) {

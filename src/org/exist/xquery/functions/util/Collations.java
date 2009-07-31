@@ -53,7 +53,6 @@ public class Collations extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		ValueSequence result = new ValueSequence();
 		Locale[] locales = Collator.getAvailableLocales();
 		String locale;
@@ -63,7 +62,6 @@ public class Collations extends BasicFunction {
 				locale += '-' + locales[i].getCountry();
 			result.add(new StringValue(locale));
 		}
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return result;
 	}
 

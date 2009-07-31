@@ -53,15 +53,12 @@ public class Parse extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
         if (args[0].getItemCount() == 0) {
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         String xmlContent = args[0].itemAt(0).getStringValue();
         if (xmlContent.length() == 0) {
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         StringReader reader = new StringReader(xmlContent);
@@ -79,7 +76,7 @@ public class Parse extends BasicFunction {
                     xr.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
                     xr.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
                 } catch (Exception e) {
-                    LOG.warn("Could not instantiate neko HTML parser for function util:parse-html, falling back to " +
+                    logger.warn("Could not instantiate neko HTML parser for function util:parse-html, falling back to " +
                             "default XML parser.", e);
                 }
             }
@@ -93,7 +90,6 @@ public class Parse extends BasicFunction {
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
 
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return (DocumentImpl) adapter.getDocument();
         } catch (ParserConfigurationException e) {
             throw new XPathException(this, "Error while constructing XML parser: " + e.getMessage(), e);

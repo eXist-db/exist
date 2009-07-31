@@ -78,8 +78,6 @@ public class BuiltinFunctions extends BasicFunction {
 	public Sequence eval(Sequence[] args,	Sequence contextSequence)
 		throws XPathException {
 		
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-		
 		ValueSequence resultSeq = new ValueSequence();
 		if(getSignature().getArgumentCount() == 1) {
 			String uri = args[0].getStringValue();
@@ -99,7 +97,6 @@ public class BuiltinFunctions extends BasicFunction {
 				resultSeq.add(new QNameValue(context, sig.getName()));
 			}
 		}
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return resultSeq;
 	}
 

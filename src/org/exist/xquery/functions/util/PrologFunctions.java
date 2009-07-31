@@ -51,7 +51,6 @@ public class PrologFunctions extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		if (isCalledAs("declare-namespace"))
 			declareNamespace(args);
@@ -59,7 +58,6 @@ public class PrologFunctions extends BasicFunction {
 			declareOption(args);
 		else
 			importModule(args);
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
