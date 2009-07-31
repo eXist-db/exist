@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -31,6 +31,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -43,23 +45,35 @@ import org.exist.xquery.value.Type;
  */
 public class FunNormalizeSpace extends Function {
 	
+	protected static final String FUNCTION_DESCRIPTION = 
+		"Returns the value of $arg with whitespace normalized by stripping leading " +
+		"and trailing whitespace and replacing sequences of one or more than one " +
+		"whitespace character with a single space, #x20.\n\n" +
+		"The whitespace characters are defined in the metasymbol S (Production 3) " +
+		"of [Extensible Markup Language (XML) 1.0 Recommendation (Third Edition)].\n\n" +
+		"Note:\n\n" +
+		"The definition of the metasymbol S (Production 3), is " +
+		"unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].\n\n" +
+		"If the value of $arg is the empty sequence, returns the zero-length string.\n\n" +
+		"If no argument is supplied, $arg defaults to the string value (calculated " +
+		"using fn:string()) of the context item (.). If no argument is supplied or " +
+		"if the argument is the context item and the context item is undefined an " +
+		"error is raised: [err:XPDY0002].";
+	
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the normalized text");
+	
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
-				"Returns the value of the context item with whitespace normalized by stripping leading and trailing whitespace and replacing sequences of one or more whitespace character with a single space.",
+				FUNCTION_DESCRIPTION,
 				new SequenceType[0],
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				RETURN_TYPE
 			),
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
-				"Returns the value of $a with whitespace normalized by stripping " + 
-				"leading and trailing whitespace and replacing sequences of one " +
-				"or more whitespace character with a single space." +
-				"If the value of $a is the empty sequence, returns the " +
-				"zero-length string. If no argument is supplied  $a defaults " +
-				"to the string value of the context item.",
-				new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				FUNCTION_DESCRIPTION,
+				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to normalize") },
+				RETURN_TYPE
 			)
 	};
 				

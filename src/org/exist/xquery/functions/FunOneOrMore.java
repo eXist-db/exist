@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -30,6 +30,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,9 +50,9 @@ public class FunOneOrMore extends Function {
 			"Returns the argument sequence if it contains one or more items. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ONE_OR_MORE, "the Sequence passed in by $arg"));
 
 	/**
 	 * @param context
