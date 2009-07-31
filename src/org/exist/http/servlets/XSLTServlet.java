@@ -42,6 +42,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.dom.DocumentImpl;
 import org.exist.collections.Collection;
 import org.exist.EXistException;
+import org.exist.memtree.NodeImpl;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXToReceiver;
@@ -81,6 +82,11 @@ import javax.servlet.ServletContext;
 
 public class XSLTServlet extends HttpServlet {
 
+    private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
+    
+    private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
+    private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
+
     private final static Logger LOG = Logger.getLogger(XSLTServlet.class);
 
     private BrokerPool pool;
@@ -88,12 +94,12 @@ public class XSLTServlet extends HttpServlet {
     private final Map cache = new HashMap();
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String stylesheet = (String) request.getAttribute("xslt.stylesheet");
+        String stylesheet = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
         if (stylesheet == null)
             throw new ServletException("No stylesheet source specified!");
 
         Item inputNode = null;
-        String sourceAttrib = (String) request.getAttribute("xslt.input");
+        String sourceAttrib = (String) request.getAttribute(REQ_ATTRIBUTE_INPUT);
         if (sourceAttrib != null) {
             Object sourceObj = request.getAttribute(sourceAttrib);
             if (sourceObj != null) {
@@ -135,7 +141,7 @@ public class XSLTServlet extends HttpServlet {
                 OutputStream bufferedOutputStream = new BufferedOutputStream(os);
                 StreamResult result = new StreamResult(bufferedOutputStream);
                 TransformerHandler handler = factory.newTransformerHandler(templates);
-//                setParameters(request, handler.getTransformer());
+                setParameters(request, handler.getTransformer());
                 handler.setResult(result);
                 String mediaType = handler.getTransformer().getOutputProperty("media-type");
                 String encoding = handler.getTransformer().getOutputProperty("encoding");
@@ -216,11 +222,20 @@ public class XSLTServlet extends HttpServlet {
         return cached.getTemplates(user);
     }
 
-    private void setParameters(HttpServletRequest request, Transformer transformer) {
+    private void setParameters(HttpServletRequest request, Transformer transformer) throws XPathException {
         for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
             String name = (String) e.nextElement();
-            Object value = request.getAttribute(name);
-            transformer.setParameter(name, value);
+            if (name.startsWith(REQ_ATTRIBUTE_PREFIX) &&
+                !(REQ_ATTRIBUTE_INPUT.equals(name) || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
+                Object value = request.getAttribute(name);
+                if (value instanceof NodeValue) {
+                    NodeValue nv = (NodeValue) value;
+                    if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+                        value = nv.toMemNodeSet();
+                    }
+                }
+                transformer.setParameter(name, value);
+            }
         }
     }
 

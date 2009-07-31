@@ -13,12 +13,12 @@ return
 			<forward url="{$path}">
 				<!-- query results are passed to XSLT servlet via request attribute -->
 				<set-attribute name="xquery.attribute"
-					value="xslt.model"/>
+					value="model"/>
 			</forward>
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.input"
-						value="xslt.model"/>
+						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
 						value="stylesheets/db2html.xsl"/>
 				</forward>
@@ -28,11 +28,11 @@ return
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<!-- query results are passed to XSLT servlet via request attribute -->
 			<set-attribute name="xquery.attribute"
-				value="xslt.model"/>
+				value="model"/>
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.input"
-						value="xslt.model"/>
+						value="model"/>
 					<set-attribute name="xslt.stylesheet"
 						value="xquery/stylesheets/acronyms.xsl"/>
 				</forward>
@@ -60,11 +60,11 @@ return
 			if ($display eq "details") then "detailed.xsl" else "overview.xsl"
 		return
 			<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-				<set-attribute name="xquery.attribute" value="xslt.model"/>
+				<set-attribute name="xquery.attribute" value="model"/>
 				<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.input"
-						value="xslt.model"/>
+						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
 						value="xquery/stylesheets/{$xsl}"/>
 				</forward>
