@@ -49,6 +49,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
@@ -59,6 +60,7 @@ import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.XMLUtil;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
@@ -1397,11 +1399,12 @@ public class RESTServer {
 		writer.write("</a></p>");
 
 		writer.write("<p class=\"errmsg\">");
-		writer.write( ( e.getMessage() == null ? e.toString() : e.getMessage() ) );
+		String message = e.getMessage() == null ? e.toString() : e.getMessage();
+		writer.write(XMLUtil.encodeAttrMarkup(message));
 		writer.write("</p>");
 		if (query != null) {
 			writer.write("<p><span class=\"high\">Query</span>:</p><pre>");
-			writer.write(query);
+        writer.write(XMLUtil.encodeAttrMarkup(query));
 			writer.write("</pre>");
 		}
 		writer.write("</body></html>");
@@ -1437,11 +1440,12 @@ public class RESTServer {
 		writer.write(path);
 		writer.write("</path>");
 		writer.write("<message>");
-		writer.write( ( e.getMessage() == null ? e.toString() : e.getMessage() ) );
+		String message = e.getMessage() == null ? e.toString() : e.getMessage();
+		writer.write(XMLUtil.encodeAttrMarkup(message));
 		writer.write("</message>");
 		if (query != null) {
 			writer.write("<query>");
-			writer.write(query);
+			writer.write(XMLUtil.encodeAttrMarkup(query));
 			writer.write("</query>");
 		}
 		writer.write("</exception>");
