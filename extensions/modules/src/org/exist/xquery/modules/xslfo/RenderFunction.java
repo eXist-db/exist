@@ -120,13 +120,10 @@ public class RenderFunction extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		logger.info("Entering " + XSLFOModule.PREFIX + ":" + getName().getLocalName());
-		
 		// gather input XSL-FO document
 		// if no input document (empty), return empty result as we need data to
 		// process
 		if (args[0].isEmpty()) {
-			logger.info("Exiting " + XSLFOModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		Item inputNode = args[0].itemAt(0);
@@ -185,8 +182,6 @@ public class RenderFunction extends BasicFunction {
 			dh.startDocument();
 			inputNode.toSAX(context.getBroker(), dh, new Properties());
 			dh.endDocument();
-
-			logger.info("Exiting " + XSLFOModule.PREFIX + ":" + getName().getLocalName());
 
 			// return the result
 			return new Base64Binary(baos.toByteArray());

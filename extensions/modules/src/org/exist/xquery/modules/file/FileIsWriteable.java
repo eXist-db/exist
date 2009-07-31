@@ -70,7 +70,6 @@ public class FileIsWriteable extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		Sequence writeable 	= BooleanValue.FALSE;
 		String path 		= args[0].itemAt(0).getStringValue();
 		File file   		= new File( path );
@@ -79,7 +78,6 @@ public class FileIsWriteable extends BasicFunction {
 			writeable = BooleanValue.TRUE;
 		}
 		
-		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( writeable ); 
 	}
 }

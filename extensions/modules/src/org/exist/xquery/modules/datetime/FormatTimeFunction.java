@@ -65,8 +65,6 @@ public class FormatTimeFunction extends BasicFunction
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
         TimeValue t = (TimeValue)args[0].itemAt(0);
         String timeFormat = args[1].itemAt(0).toString();
 
@@ -74,8 +72,6 @@ public class FormatTimeFunction extends BasicFunction
 
         GregorianCalendar cal = t.calendar.toGregorianCalendar();
         String formattedDate = sdf.format(cal.getTime());
-
-        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
         return new StringValue(formattedDate);
     }

@@ -60,10 +60,6 @@ public class DateFromDateTimeFunction extends BasicFunction
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
-        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
         return args[0].itemAt(0).convertTo(Type.DATE);
     }
 }

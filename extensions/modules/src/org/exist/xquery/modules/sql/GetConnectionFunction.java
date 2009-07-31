@@ -123,8 +123,6 @@ public class GetConnectionFunction extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		logger.info("Entering " + SQLModule.PREFIX + ":" + getName().getLocalName());
-		
 		// was a db driver and url specified?
 		if (args[0].isEmpty() || args[1].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
@@ -155,33 +153,31 @@ public class GetConnectionFunction extends BasicFunction {
 				con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
 			}
 
-			logger.info("Exiting " + SQLModule.PREFIX + ":" + getName().getLocalName());
-
 			// store the connection and return the uid handle of the connection
 			return new IntegerValue(SQLModule.storeConnection(context, con));
 		} catch (IllegalAccessException iae) {
-			LOG.error(
+			logger.error(
 					"sql:get-connection() Illegal Access to database driver class: "
 							+ dbDriver, iae);
 			throw new XPathException(this,
 					"sql:get-connection() Illegal Access to database driver class: "
 							+ dbDriver, iae);
 		} catch (ClassNotFoundException cnfe) {
-			LOG.error(
+			logger.error(
 					"sql:get-connection() Cannot find database driver class: "
 							+ dbDriver, cnfe);
 			throw new XPathException(this,
 					"sql:get-connection() Cannot find database driver class: "
 							+ dbDriver, cnfe);
 		} catch (InstantiationException ie) {
-			LOG.error(
+			logger.error(
 					"sql:get-connection() Cannot instantiate database driver class: "
 							+ dbDriver, ie);
 			throw new XPathException(this,
 					"sql:get-connection() Cannot instantiate database driver class: "
 							+ dbDriver, ie);
 		} catch (SQLException sqle) {
-			LOG.error("sql:get-connection() Cannot connect to database: "
+			logger.error("sql:get-connection() Cannot connect to database: "
 					+ dbURL, sqle);
 			throw new XPathException(this,
 					"sql:get-connection() Cannot connect to database: " + dbURL,

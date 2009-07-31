@@ -91,8 +91,6 @@ public class DateRangeFunctions extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-        logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
         Item item = (Item)args[0].itemAt(0);
 
         if(!(item instanceof AbstractDateTimeValue))
@@ -112,8 +110,6 @@ public class DateRangeFunctions extends BasicFunction {
           result.add(d1);
           d1 = (AbstractDateTimeValue)d1.plus(diff);
         }
-
-        logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
         return result;
     }

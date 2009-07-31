@@ -179,13 +179,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
 	throws XPathException {
     	Sequence result = null; 
-	logger.info("Entering " + SpatialModule.PREFIX + ":" + getName().getLocalName());
     	try {
         	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
 	        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 	        if (indexWorker == null) {
 		    logger.error("Unable to find a spatial index worker");
-		    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 		    throw new XPathException("Unable to find a spatial index worker");
 		}
 	        Geometry geometry = null;	        
@@ -209,7 +207,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	}		        	
 		        	if (geometry == null) {
 				    logger.error("Unable to get a geometry from the node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 				    throw new XPathException("Unable to get a geometry from the node");
 				}
 		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
@@ -226,12 +223,10 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 			        	geometry = wktReader.read(wkt);
 			        } catch (ParseException e) {
 				    logger.error(e.getMessage());
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 				    throw new XPathException(e);	
 			        }
 		        	if (geometry == null) {
 				    logger.error("Unable to get a geometry from the node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 				    throw new XPathException("Unable to get a geometry from the node");
 				}
 		        	targetSRS = args[1].itemAt(0).getStringValue().trim();
@@ -254,7 +249,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	}
 		        	if (geometry == null) { 
 				    logger.error("Unable to get a geometry from the node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 				    throw new XPathException("Unable to get a geometry from the node");
 				}
 		        	
@@ -274,7 +268,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 			        	default:
 					    {
 						logger.error("Invalid line end style");
-						logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 						throw new XPathException("Invalid line end style");
 					    }
 		        	}		        	
@@ -298,7 +291,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	}
 		        	if (geometry == null) {
 				    logger.error("Unable to get a geometry from the node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 				    throw new XPathException("Unable to get a geometry from the node");
 				}
 		        	
@@ -322,7 +314,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	}
 		        	if (geometry == null) { 
 				    logger.error("Unable to get a geometry from the node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 				    throw new XPathException("Unable to get a geometry from the node");
 				}
 		        	
@@ -346,7 +337,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	}
 		        	if (geometry == null) {
 				    logger.error("Unable to get a geometry from the node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 				    throw new XPathException("Unable to get a geometry from the node");
 				}
 		        	
@@ -390,13 +380,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        	
 		        	if (geometry1 == null) { 
 				    logger.error("Unable to get a geometry from the first node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 
 				    throw new XPathException("Unable to get a geometry from the first node");
 				}
 		        	if (geometry2 == null) { 
 				    logger.error("Unable to get a geometry from the second node");
-				    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 
 				    throw new XPathException("Unable to get a geometry from the second node");
 				}
@@ -425,7 +413,6 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 		        String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
 		        if (gmlPrefix == null) {
 			    logger.error("namespace is not defined:" + SpatialModule.PREFIX);
-			    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 
 			    throw new XPathException("'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");
 			}
@@ -441,12 +428,10 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 	        }
     	} catch (SpatialIndexException e) {
 	    logger.error(e.getMessage());
-	    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
 	    
 	    throw new XPathException(e);
     	}
 
-	logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName()); 
         return result;
     }
     

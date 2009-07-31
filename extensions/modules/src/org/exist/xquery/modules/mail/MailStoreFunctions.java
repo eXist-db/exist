@@ -100,15 +100,11 @@ public class MailStoreFunctions extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		logger.info("Entering " + MailModule.PREFIX + ":" + getName().getLocalName());
-
 		if( isCalledAs( "get-mail-store" ) ) {
 			Sequence mailStore = getMailStore( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return mailStore;
 		} else if( isCalledAs( "close-mail-store" ) ) {
 			Sequence closeMailStore = closeMailStore( args, contextSequence );
-			logger.info("Exiting " + MailModule.PREFIX + ":" + getName().getLocalName());
 			return closeMailStore;
 		}
 	

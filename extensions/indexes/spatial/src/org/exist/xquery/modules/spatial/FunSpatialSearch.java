@@ -135,10 +135,8 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Sequence result = null;
     	Sequence nodes = args[0];
-	logger.info("Entering " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 
         if (nodes.isEmpty()) {
-	    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
             result = Sequence.EMPTY_SEQUENCE;
 	}
         else if (args[1].isEmpty())
@@ -150,7 +148,6 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 		        if (indexWorker == null) {
 			    logger.error("Unable to find a spatial index worker");
-			    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 			    throw new XPathException("Unable to find a spatial index worker");
 			}
 		        Geometry EPSG4326_geometry = null;
@@ -165,7 +162,6 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        }
 	        	if (EPSG4326_geometry == null) {
 			    logger.error("Unable to get a geometry from the node");
-			    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 			    throw new XPathException("Unable to get a geometry from the node");
 			} 
 		        int spatialOp = SpatialOperator.UNKNOWN;
@@ -189,12 +185,10 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
 		        hasUsedIndex = true;	        	
         	} catch (SpatialIndexException e) {
-		    logger.error(e.getMessage());
-		    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
+		    logger.error(e.getMessage(), e);
 		    throw new XPathException(e);
         	}
         }
-	logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
     

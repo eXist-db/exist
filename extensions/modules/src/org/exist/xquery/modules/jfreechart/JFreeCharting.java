@@ -117,11 +117,8 @@ public class JFreeCharting extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
     	
-    	logger.info("Entering " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
-
         //was an image and a mime-type speficifed
 		if(args[1].isEmpty() || args[2].isEmpty()){
-	    	logger.info("Exiting " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -154,7 +151,6 @@ public class JFreeCharting extends BasicFunction {
             // Render output
             if(isCalledAs("render")){
                 byte[] image=writePNG(config, chart);
-            	logger.info("Exiting " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
                 return new Base64Binary(image);
 
             } else {
@@ -168,7 +164,6 @@ public class JFreeCharting extends BasicFunction {
             throw new XPathException(this, ex.getMessage());
         }
 
-    	logger.info("Exiting " + JFreeChartModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 

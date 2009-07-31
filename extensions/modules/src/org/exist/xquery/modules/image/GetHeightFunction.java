@@ -87,11 +87,8 @@ public class GetHeightFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + ImageModule.PREFIX + ":" + getName().getLocalName());
-		
 		//was an image speficifed
 		if (args[0].isEmpty()) {
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
 		}
 		
@@ -104,14 +101,12 @@ public class GetHeightFunction extends BasicFunction
         catch(IOException ioe)
         {
         	logger.error("Unable to read image data!", ioe);
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	return Sequence.EMPTY_SEQUENCE;
         }
         
         if(image == null)
         {
         	logger.error("Unable to read image data!");
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	return Sequence.EMPTY_SEQUENCE;
         }
         
@@ -123,12 +118,10 @@ public class GetHeightFunction extends BasicFunction
         {
         	//no, log the error
         	logger.error("Unable to read image data!");
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	return Sequence.EMPTY_SEQUENCE; 
         }
         else
         {
-			logger.info("Exiting " + ImageModule.PREFIX + ":" + getName().getLocalName());
         	//return the Height of the image
         	return new IntegerValue(iHeight);	
         }

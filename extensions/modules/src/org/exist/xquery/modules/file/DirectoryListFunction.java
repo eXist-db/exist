@@ -107,8 +107,6 @@ public class DirectoryListFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
-		
 		File baseDir = new File( args[0].getStringValue() );
 		Sequence patterns = args[1];
 		
@@ -160,8 +158,6 @@ public class DirectoryListFunction extends BasicFunction {
 		
 		xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
 		
-		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
-
 		return(xmlResponse);
 	}
 	

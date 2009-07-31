@@ -68,7 +68,6 @@ public class FileExists extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		Sequence exists = BooleanValue.FALSE;
 		String path 	= args[0].itemAt(0).getStringValue();
 		File file   	= new File( path );
@@ -77,7 +76,6 @@ public class FileExists extends BasicFunction {
 			exists = BooleanValue.TRUE;
 		}
 		
-		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
 		return( exists );
 	}
 }

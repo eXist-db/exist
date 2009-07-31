@@ -84,7 +84,6 @@ public class FileRead extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + FileModule.PREFIX + ":" + getName().getLocalName());
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
 		
@@ -116,8 +115,6 @@ public class FileRead extends BasicFunction {
 			throw( new XPathException( this, e.getMessage() ) );	
 		}
 		
-		logger.info("Exiting " + FileModule.PREFIX + ":" + getName().getLocalName());
-
 		//TODO : return an *Item* built with sw.toString()
 		
 		return( new StringValue( sw.toString() ) );

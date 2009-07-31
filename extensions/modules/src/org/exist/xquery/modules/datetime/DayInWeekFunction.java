@@ -60,12 +60,9 @@ public class DayInWeekFunction extends BasicFunction {
 
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		logger.info("Entering " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
-
 		DateValue d = (DateValue) args[0].itemAt(0);
 		GregorianCalendar cal = d.calendar.toGregorianCalendar();
 		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-		logger.info("Exiting " + DateTimeModule.PREFIX + ":" + getName().getLocalName());
 
 		return new IntegerValue(dayOfWeek);
 	}

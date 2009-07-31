@@ -98,8 +98,6 @@ public class DeleteFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
-
 		// Was context handle or DN specified?
 		if( !( args[0].isEmpty() ) && !( args[1].isEmpty() ) ) {
 			
@@ -122,7 +120,6 @@ public class DeleteFunction extends BasicFunction
 			}
 		}
 		
-		logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 

@@ -91,11 +91,8 @@ public class CloseContextFunction extends BasicFunction
 	
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + JNDIModule.PREFIX + ":" + getName().getLocalName());
-
 		// Was a Dir Context handle specified
 		if( args[0].isEmpty() ) {
-			logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 			return( Sequence.EMPTY_SEQUENCE );
 		}
 
@@ -103,7 +100,6 @@ public class CloseContextFunction extends BasicFunction
 			
 		JNDIModule.closeJNDIContext( context, ctxID );
 		
-		logger.info("Exiting " + JNDIModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

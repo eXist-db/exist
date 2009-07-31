@@ -259,10 +259,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     	Sequence result = null;
     	Sequence nodes = args[0];        
 
-	logger.info("Entering " + SpatialModule.PREFIX + ":" + getName().getLocalName());
-
         if (nodes.isEmpty()) {
-	    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());	    
             result = Sequence.EMPTY_SEQUENCE;
         } else {
 	    try {
@@ -272,7 +269,6 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 		    context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 		if (indexWorker == null) {
 		    logger.error("Unable to find a spatial index worker");
-		    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 		    throw new XPathException("Unable to find a spatial index worker");
 		}
 		String propertyName = null;
@@ -324,7 +320,6 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 		    propertyName = "IS_VALID";
 		} else {
 		    logger.error("Unknown spatial property: " + mySignature.getName().getLocalName());
-		    logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 			    
 		    throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
 		}
@@ -341,7 +336,6 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 		    }					
 		    if (geometry == null) {
 			logger.error("Unable to get a geometry from the node");
-			logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 
 			throw new XPathException("Unable to get a geometry from the node");
 		    }
@@ -397,19 +391,16 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 			result = new BooleanValue(geometry.isValid());
 		    } else {
 			logger.error("Unknown spatial property: " + mySignature.getName().getLocalName());
-			logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 
 			throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
 		    }
 		}
 	    } catch (SpatialIndexException e) {
 		logger.error(e.getMessage());
-		logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
 
 		throw new XPathException(e);
 	    }
         }
-	logger.info("Exiting " + SpatialModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
     
