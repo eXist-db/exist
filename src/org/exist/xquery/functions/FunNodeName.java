@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -31,6 +31,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.QNameValue;
@@ -51,10 +53,10 @@ public class FunNodeName extends Function {
 		new FunctionSignature(
 			new QName("node-name", Function.BUILTIN_FUNCTION_NS),
 			"Returns an expanded-QName for node kinds that can have names. For other kinds " +
-			"of nodes it returns the empty sequence. If $a is the empty sequence, the " +
+			"of nodes it returns the empty sequence. If $arg is the empty sequence, the " +
 			"empty sequence is returned.",
-			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") },
+			new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, "the expanded QName"));
     
     /**
      * @param context

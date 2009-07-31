@@ -1,5 +1,5 @@
 /* eXist Native XML Database
- * Copyright (C) 2000-2006, The eXist Project
+ * Copyright (C) 2000-2009, The eXist Project
  * http://exist-db.org/
  *
  * This library is free software; you can redistribute it and/or
@@ -29,6 +29,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,25 +50,53 @@ public class FunNormalizeUnicode extends Function {
 	private static Integer DUMMY_INTEGER = new Integer(0);
 	private Constructor constructor = null;
 	private Method method = null;
+	
+	protected static final String FUNCTION_DESCRIPTION = 
+		"Returns the value of $arg normalized according to the " +
+		"normalization criteria for a normalization form identified " +
+		"by the value of $normalizationForm. The effective value of " +
+		"the $normalizationForm is computed by removing leading and " +
+		"trailing blanks, if present, and converting to upper case.\n\n" +
+		"If the value of $arg is the empty sequence, returns the zero-length string.\n\n" +
+		"See [Character Model for the World Wide Web 1.0: Normalization] " +
+		"for a description of the normalization forms.\n\n" +
+		"If the $normalizationForm is absent, as in the first format above, " +
+		"it shall be assumed to be \"NFC\"\n\n" +
+		"- If the effective value of $normalizationForm is \"NFC\", then the value " +
+		"returned by the function is the value of $arg in Unicode Normalization Form C (NFC).\n" +
+		"- If the effective value of $normalizationForm is \"NFD\", then the value " +
+		"returned by the function is the value of $arg in Unicode Normalization Form D (NFD).\n" +
+		"- If the effective value of $normalizationForm is \"NFKC\", then the value " +
+		"returned by the function is the value of $arg in Unicode Normalization Form KC (NFKC).\n" +
+		"- If the effective value of $normalizationForm is \"NFKD\", then the value " +
+		"returned by the function is the value of $arg in Unicode Normalization Form KD (NFKD).\n" +
+		"- If the effective value of $normalizationForm is \"FULLY-NORMALIZED\", then the value " +
+		"returned by the function is the value of $arg in the fully normalized form.\n" +
+		"- If the effective value of $normalizationForm is the zero-length string, " +
+		"no normalization is performed and $arg is returned.\n\n" +
+		"Conforming implementations must support normalization form \"NFC\" and may " +
+		"support normalization forms \"NFD\", \"NFKC\", \"NFKD\", \"FULLY-NORMALIZED\". " +
+		"They may also support other normalization forms with implementation-defined semantics. " +
+		"If the effective value of the $normalizationForm is other than one of the values " +
+		"supported by the implementation, then an error is raised [err:FOCH0003].";
 
-    public final static FunctionSignature signatures [] = {
+	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the unicode string to normalize");
+	protected static final FunctionParameterSequenceType NF_PARAM = new FunctionParameterSequenceType("normalizationForm", Type.STRING, Cardinality.ONE, "the normalization form");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the normalized text");
+
+	public final static FunctionSignature signatures [] = {
     	new FunctionSignature(
 	      new QName("normalize-unicode", Function.BUILTIN_FUNCTION_NS),
-	      "Returns the value of $a normalized according to the normalization form NFC. ",
-	      new SequenceType[] {
-	    	  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-	      },
-	      new SequenceType(Type.BOOLEAN, Cardinality.ONE)
+	      FUNCTION_DESCRIPTION,
+	      new SequenceType[] { ARG_PARAM },
+	      RETURN_TYPE
 	    ),
 	    new FunctionSignature (
-	  	      new QName("normalize-unicode", Function.BUILTIN_FUNCTION_NS),
-		      "Returns the value of $a normalized according to the normalization criteria for a " +
-		      "normalization form identified by the value of $b. ",
-		      new SequenceType[] {
-		    	  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-		    	  new SequenceType(Type.STRING, Cardinality.ONE)
-			  },
-		      new SequenceType(Type.BOOLEAN, Cardinality.ONE)),
+  	      new QName("normalize-unicode", Function.BUILTIN_FUNCTION_NS),
+	      FUNCTION_DESCRIPTION,
+	      new SequenceType[] { ARG_PARAM, NF_PARAM },
+	      RETURN_TYPE
+		)
 	};
 
     public FunNormalizeUnicode(XQueryContext context, FunctionSignature signature) {

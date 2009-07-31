@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
+ * Copyright (C) 2001-2009 The eXist team
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -35,6 +35,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -46,10 +48,12 @@ public class FunNot extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("not", Function.BUILTIN_FUNCTION_NS),
-			"Returns true if the effective boolean value (ebv) is false, true otherwise.",
+			"$arg is first reduced to an effective boolean value by applying " +
+			"the fn:boolean() function. Returns true if the effective boolean " +
+			"value is false, and false if the effective boolean value is true.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the negative of the $arg"));
 
 	private boolean inWhereClause = false;
 	
