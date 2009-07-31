@@ -37,11 +37,11 @@ return
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<!-- query results are passed to XSLT servlet via request attribute -->
 			<set-attribute name="xquery.attribute"
-				value="xslt.model"/>
+				value="model"/>
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.input"
-						value="xslt.model"/>
+						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
 						value="apps/applications.xsl"/>
 				</forward>
@@ -58,12 +58,12 @@ return
 			<forward url="/xquery/exist-articles.xql">
 				<!-- query results are passed to XSLT servlet via request attribute -->
 				<set-attribute name="xquery.attribute"
-					value="xslt.model"/>
+					value="model"/>
 			</forward>
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.input"
-						value="xslt.model"/>
+						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
 						value="stylesheets/db2html.xsl"/>
 				</forward>
@@ -99,7 +99,7 @@ return
 					<forward servlet="XSLTServlet">
 						<set-attribute name="xslt.stylesheet"
 							value="{$stylesheet}"/>
-						<set-attribute name="exist.version"
+						<set-attribute name="xslt.exist.version"
 						    value="{system:get-version()}-rev{system:get-revision()}-{system:get-build()}"/>
 					</forward>
 				</view>
