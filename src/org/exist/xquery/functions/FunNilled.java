@@ -32,6 +32,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -49,9 +51,11 @@ public class FunNilled extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("nilled", Function.BUILTIN_FUNCTION_NS),
-			"Returns whether $a is nilled of not.",
-			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+			"Returns an xs:boolean indicating whether the argument node is \"nilled\". " +
+			"If the argument is not an element node, returns the empty sequence. " +
+			"If the argument is the empty sequence, returns the empty sequence.",
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the argument node is \"nilled\""));
 
 	public FunNilled(XQueryContext context) {
 		super(context, signature);

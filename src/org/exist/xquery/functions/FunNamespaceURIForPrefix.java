@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2008 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -40,6 +40,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,20 +49,29 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 public class FunNamespaceURIForPrefix extends BasicFunction {
+	
+	protected static final String FUNCTION_DESCRIPTION =
+
+		"Returns the namespace URI of one of the in-scope namespaces " +
+		"for $element, identified by its namespace prefix.\n\n" +
+		"If $element has an in-scope namespace whose namespace prefix " +
+		"is equal to $prefix, it returns the namespace URI of that namespace. " +
+		"If $prefix is the zero-length string or the empty sequence, it " +
+		"returns the namespace URI of the default (unnamed) namespace. " +
+		"Otherwise, it returns the empty sequence.\n\n" +
+
+		"Prefixes are equal only if their Unicode code points match exactly.";
+
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("namespace-uri-for-prefix", Function.BUILTIN_FUNCTION_NS),
-			"Returns the namespace URI of one of the in-scope namespaces for $b, identified by its namespace prefix. " +
-			"If $b has an in-scope namespace whose namespace prefix is equal to $a, it returns the namespace " +
-			"URI of that namespace. If $b is the zero-length string or the empty sequence, " +
-			"it returns the namespace URI of the default (unnamed) namespace. Otherwise, " +
-			"it returns the empty sequence.",
+			FUNCTION_DESCRIPTION,
 			new SequenceType[] { 
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
+				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "")
 			},
-			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the namespace URI"));
 	
 	public FunNamespaceURIForPrefix(XQueryContext context) {
 		super(context, signature);

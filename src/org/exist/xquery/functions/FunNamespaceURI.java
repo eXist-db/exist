@@ -30,6 +30,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -43,26 +45,37 @@ import org.w3c.dom.Node;
  */
 public class FunNamespaceURI extends Function {
 
+	protected static final String FUNCTION_DESCRIPTION =
+
+		"Returns the namespace URI of the xs:QName of $arg.\n\n" +
+
+		"If the argument is omitted, it defaults to the context node (.). " +
+		"The behavior of the function if the argument is omitted is exactly " + 
+		"the same as if the context item had been passed as the argument.\n\n" +
+
+		"The following errors may be raised: if the context item is undefined " +
+		"[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
+
+		"If $arg is neither an element nor an attribute node, or if it is an " +
+		"element or attribute node whose expanded-QName (as determined by the " +
+		"dm:node-name accessor in the Section 5.11 node-name AccessorDM) is " +
+		"in no namespace, then the function returns the xs:anyURI " +
+		"corresponding to the zero-length string.";
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			"Returns the namespace URI of the xs:QName of the context item. " +
-			"If the context item is in no namespace or is neither an element nor attribute node, " +
-			"returns the xs:anyURI equivalent to the zero-length string." +
-			" Raises an error if the context item is undefined or not a node.",
+			FUNCTION_DESCRIPTION,
 			new SequenceType[0],
-			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
 			false),
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			"Returns the namespace URI of the xs:QName value of $a. " +
-			"If $a is in no namespace or is neither an element nor attribute node, " +
-			"returns the xs:anyURI eqvivalent to the zero-length string." +
-			" Raises an error if the context item is undefined or not a node.",
+			FUNCTION_DESCRIPTION,
 			new SequenceType[] { 
-				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) 
+				new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") 
 			},
-			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
 			false)
 	};
 

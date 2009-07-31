@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-2006,  the eXist team
+ * Copyright (C) 2000-2009,  the eXist team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -28,6 +28,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -41,23 +43,36 @@ import org.w3c.dom.Node;
  *
  */
 public class FunLocalName extends Function {
+	
+	protected static final String FUNCTION_DESCRIPTION =
+		"Returns the local part of the name of $arg as an xs:string that " +
+		"will either be the zero-length string or will have the lexical form of an xs:NCName.\n\n" +
+		"If the argument is omitted, it defaults to the context item (.). " +
+		"The behavior of the function if the argument is omitted is exactly " +
+		"the same as if the context item had been passed as the argument.\n\n" +
+		"The following errors may be raised: if the context item is undefined " +
+		"[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
+		"If the argument is supplied and is the empty sequence, the function " +
+		"returns the zero-length string.\n\n" +
+		"If the target node has no name (that is, if it is a document node, a " +
+		"comment, or a text node), the function returns the zero-length string.\n\n" +
+		"Otherwise, the value returned will be the local part of the expanded-QName " +
+		"of the target node (as determined by the dm:node-name accessor in Section " +
+		"5.11 node-name AccessorDM. This will be an xs:string whose lexical form is an xs:NCName." ;
+
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
-			"Returns the local part of the name of the context item as an xs:string " +
-			"that will either be the zero-length string or will have the lexical " +
-			"form of an xs:NCName.",
+			FUNCTION_DESCRIPTION,
 			new SequenceType[0],
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
 		),
 		new FunctionSignature(
 			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
-			"Returns the local part of the name of the value of $a as an xs:string " +
-			"that will either be the zero-length string or will have the lexical " +
-			"form of an xs:NCName.",
-			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			FUNCTION_DESCRIPTION,
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") },
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
 		)
 	};
 
