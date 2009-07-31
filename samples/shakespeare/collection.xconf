@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <!-- Defines a bunch of numeric indexes on the mondial collection.
+        This file should be stored into /db/system/config/db/mondial.
+    -->
+    <index>
+        <fulltext default="none" attributes="no">
+        </fulltext>
+        
+        <lucene>
+            <text match="//SCENE/*"/>
+            <text qname="TITLE"/>
+        </lucene>
+        <ngram qname="SPEAKER"/>
+    </index>
+</collection>
