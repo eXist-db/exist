@@ -73,8 +73,6 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
     public Sequence evalWithCollection(Collection collection, Sequence[] args, 
 				       Sequence contextSequence)
 	throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());	
 	return (collection == null) ? BooleanValue.FALSE : BooleanValue.TRUE;
     }
 }

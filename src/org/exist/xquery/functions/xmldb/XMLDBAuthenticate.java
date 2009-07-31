@@ -128,9 +128,7 @@ public class XMLDBAuthenticate extends BasicFunction {
      */
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
     {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	if( args[1].isEmpty() ) {
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    return BooleanValue.FALSE;
 	}
 
@@ -169,10 +167,8 @@ public class XMLDBAuthenticate extends BasicFunction {
                 cacheUserInHttpSession( user, createSession );
             }
 			
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    return BooleanValue.TRUE;
 	} catch (XMLDBException e) {
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    return BooleanValue.FALSE;
 	}
     }
@@ -219,13 +215,11 @@ public class XMLDBAuthenticate extends BasicFunction {
 			
 			if( reqVar == null || reqVar.getValue() == null ) {
 			    logger.error("No request object found in the current XQuery context.");
-			    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 			    throw( new XPathException( this, "No request object found in the current XQuery context." ) );
 			}
 			if( reqVar.getValue().getItemType() != Type.JAVA_OBJECT ) {
 			    logger.error( "Variable $request is not bound to an Java object.");
-			    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				throw( new XPathException( this, "Variable $request is not bound to an Java object." ) );
 			}
 			

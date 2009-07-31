@@ -71,16 +71,13 @@ public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
      */
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) 
 	throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	try {
             UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
             ums.chmod(((IntegerValue) args[1].convertTo(Type.INTEGER)).getInt());
         } catch (XMLDBException xe) {
 	    logger.error("Unable to change collection mode", xe);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    throw new XPathException(this, "Unable to change collection mode", xe);
 	}
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());	
 	return Sequence.EMPTY_SEQUENCE;
     }
 

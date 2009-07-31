@@ -78,7 +78,6 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 	 */
 	public Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		//logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		NodeValue data = (NodeValue) args[1].itemAt(0);
 		StringWriter writer = new StringWriter();
 		Properties properties = new Properties();
@@ -102,7 +101,6 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		}
 		
 		context.getRootExpression().resetState(false);
-        //logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		return new IntegerValue(modifications);
 	}
 }

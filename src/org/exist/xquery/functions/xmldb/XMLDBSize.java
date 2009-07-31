@@ -71,14 +71,12 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 	protected Sequence evalWithCollection(Collection collection, Sequence[] args,
 			Sequence contextSequence)
         throws XPathException {
-        logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
         try {
 			Resource resource = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 			return new IntegerValue(((EXistResource)resource).getContentLength(), Type.LONG);
 		} catch (XMLDBException e) {
             logger.error("Failed to retrieve size: " + e.getMessage());
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 			throw new XPathException(this, "Failed to retrieve size: " + e.getMessage(), e);
 		}
 	}

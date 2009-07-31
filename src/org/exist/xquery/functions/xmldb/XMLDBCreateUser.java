@@ -82,8 +82,6 @@ public class XMLDBCreateUser extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 		
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-
         String user = args[0].getStringValue();
         String pass = args[1].getStringValue();
         User userObj = new User(user, pass);
@@ -102,7 +100,6 @@ public class XMLDBCreateUser extends BasicFunction {
         	userObj.setHome(new AnyURIValue(args[3].getStringValue()).toXmldbURI());
 	    } catch(XPathException e) {
 		logger.error("Invalid home collection-uri for user " + user);
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		
         	throw new XPathException(this,"Invalid home collection URI", e);
 	    }
@@ -115,15 +112,12 @@ public class XMLDBCreateUser extends BasicFunction {
 			
 	} catch (XMLDBException xe) {
 	    logger.error("Failed to create user: " + user);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 	    throw new XPathException(this, "Failed to create new user " + user, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	}
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }

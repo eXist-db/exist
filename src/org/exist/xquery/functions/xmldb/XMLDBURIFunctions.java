@@ -94,7 +94,7 @@ public class XMLDBURIFunctions extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
 		try {
 			if(isCalledAs("encode")) {
 				return new StringValue(URIUtils.urlEncodePartsUtf8(args[0].getStringValue()));
@@ -104,10 +104,9 @@ public class XMLDBURIFunctions extends BasicFunction {
 				return new StringValue(URIUtils.urlDecodeUtf8(args[0].getStringValue()));
 			}
 		} catch(URISyntaxException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
 			throw new XPathException(this, "URI Syntax Exception: " + e.getMessage(), e);
 		} finally {
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         }
 	}
 	

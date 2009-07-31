@@ -76,7 +76,7 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
 	
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
         try {
             UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
             String user = args[1].getStringValue();
@@ -85,13 +85,11 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             
             if (null == user || 0 == user.length()) {
                 logger.error("Needs a valid user name, not: " + user);
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
                 throw new XPathException(this, "Needs a valid user name, not: " + user);
             }
             if (null == group || 0 == group.length()) {
                 logger.error("Needs a valid group name, not: " + group);
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
                 throw new XPathException(this, "Needs a valid group name, not: " + group);
             }
@@ -101,7 +99,6 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             User usr = ums.getUser(user);
             if (usr == null) {
                 logger.error("Needs a valid user name, not: " + user);
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
                 
                 throw new XPathException(this, "Needs a valid user name, not: " + user);
             }
@@ -110,12 +107,10 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             ums.setPermissions(collection, perms);
         } catch (XMLDBException xe) {
             logger.error("Unable to change collection permissions");
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
             throw new XPathException(this, "Unable to change collection permissions", xe);
         }
 
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());		
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

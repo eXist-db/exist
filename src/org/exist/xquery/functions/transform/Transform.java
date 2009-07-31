@@ -184,10 +184,7 @@ public class Transform extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		
-		logger.info("Entering " + TransformModule.PREFIX + ":" + getName().getLocalName());
-		
 		if(args[0].isEmpty()) {
-			logger.info("Exiting " + TransformModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		Item inputNode = args[0].itemAt(0);
@@ -253,7 +250,6 @@ public class Transform extends BasicFunction {
                 next = next.getNextSibling();
             }
     		context.popDocumentContext();
-    		logger.info("Exiting " + TransformModule.PREFIX + ":" + getName().getLocalName());
     		return seq;
         }
         else
@@ -317,7 +313,6 @@ public class Transform extends BasicFunction {
             } catch (IOException e) {
                 throw new XPathException(this, "IO exception while transforming node: " + e.getMessage(), e);
             }
-    		logger.info("Exiting " + TransformModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
 	}

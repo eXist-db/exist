@@ -64,7 +64,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 	
 	public Sequence eval(Sequence args[], Sequence contextSequence)
         throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
 		String path = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
 		
 		if(path.matches("^[a-z]+://.*")) {
@@ -72,7 +72,6 @@ public class XMLDBGetMimeType extends BasicFunction {
 			MimeTable mimeTable = MimeTable.getInstance();
 			MimeType mimeType = mimeTable.getContentTypeFor(path);
 			if(mimeType != null) {
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(mimeType.getName());
             }
 		} else {
@@ -86,21 +85,17 @@ public class XMLDBGetMimeType extends BasicFunction {
 				// try to open the document and acquire a lock
 				doc = (DocumentImpl)context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
 				if(doc != null) {
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					return new StringValue(((DocumentImpl)doc).getMetadata().getMimeType());
 				}
 			} catch(Exception e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				throw new XPathException(this, e.getMessage(), e);
 			} finally {
 				//release all locks
 				if(doc != null)
 					doc.getUpdateLock().release(Lock.READ_LOCK);
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			}
 		}
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }

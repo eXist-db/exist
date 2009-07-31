@@ -95,7 +95,6 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 	throws XPathException {
 
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	try {
 	    Date date;
 	    if(getSignature().getArgumentCount() == 1) {
@@ -104,7 +103,6 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 Resource resource = collection.getResource(args[1].getStringValue());
                 
                 if(resource == null) {
-		    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                     return Sequence.EMPTY_SEQUENCE;
                 }
                 
@@ -114,12 +112,10 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 		    date = ((EXistResource)resource).getCreationTime();
             }
 
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    return new DateTimeValue(date);
 
 	} catch(XMLDBException e) {
 	    logger.error("Failed to retrieve creation date or modification time of specified resource or creation date of collection");
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 	    throw new XPathException(this, "Failed to retrieve creation date: " + e.getMessage(), e);
 	}

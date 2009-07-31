@@ -66,14 +66,12 @@ public class XMLDBReindex extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         // this is "/db"
         String ROOTCOLLECTION = XmldbURI.ROOT_COLLECTION_URI.toString();
 
         // Check for DBA user
         if (!context.getUser().hasDbaRole()) {
             logger.error("Permission denied, user '" + context.getUser().getName() + "' must be a DBA to reindex the database");
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.FALSE;
         }
 
@@ -83,7 +81,6 @@ public class XMLDBReindex extends BasicFunction {
         // Collection should start with /db
         if (!collectionArg.startsWith(ROOTCOLLECTION)) {
             logger.error("Collection should start with " + ROOTCOLLECTION);
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.FALSE;            
         }
 
@@ -92,7 +89,6 @@ public class XMLDBReindex extends BasicFunction {
         Collection coll = context.getBroker().getCollection(colName);
         if (coll == null) {
             logger.error("Collection " + colName.toString() + " does not exist.");
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.FALSE;
         }
 
@@ -102,11 +98,9 @@ public class XMLDBReindex extends BasicFunction {
 
         } catch (PermissionDeniedException ex) {
             logger.error(ex.getMessage());
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.FALSE;
         }
 
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return BooleanValue.TRUE;
     }
 }

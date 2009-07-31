@@ -110,7 +110,6 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
          */
     protected Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         File baseDir = new File(args[1].getStringValue());
         logger.debug("Loading files from directory: " + baseDir);
 
@@ -174,11 +173,9 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     stored.add(new StringValue(col.getName() + "/" + resource.getId()));
                 } catch(XMLDBException e) {
                     logger.error("Could not store file " + files[j].getAbsolutePath() + ": " + e.getMessage());
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 }
             }
         }
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return stored;
     }
 }

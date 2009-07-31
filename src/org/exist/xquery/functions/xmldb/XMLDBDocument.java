@@ -106,7 +106,6 @@ public class XMLDBDocument extends Function {
 	 */
     public Sequence eval(Sequence contextSequence, Item contextItem)
 	throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	
 	DocumentSet docs = null;
 	Sequence result = null;
@@ -157,12 +156,10 @@ public class XMLDBDocument extends Function {
 		    } catch (XPathException e) { //From AnyURIValue constructor
                         e.setLocation(line, column);
 			logger.error("From AnyURIValue constructor:", e);
-			logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 			throw e;
 		    } catch (PermissionDeniedException e) {
 			logger.error("Permission denied", e);
-			logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 			throw new XPathException(this, "Permission denied: unable to load document " + (String) args.get(i));
 		    }
@@ -189,20 +186,17 @@ public class XMLDBDocument extends Function {
 	    }
 	} catch (LockException e) {
 	    logger.error("Could not acquire lock on document set", e);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
             throw new XPathException(this, "Could not acquire lock on document set.");
         } finally {
             if(!(cacheIsValid || lockOnLoad))
                 // release all locks
                 docs.unlock(lockOnLoad);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	}
 	cached = result;
 	cachedDocs = docs;
 	registerUpdateListener();
 
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	return result;
     }
 	

@@ -72,7 +72,6 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		String driverName = args[0].getStringValue();
 		boolean createDatabase = args[1].effectiveBooleanValue();
 		try {
@@ -84,10 +83,8 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 			DatabaseManager.registerDatabase(database);
 		} catch (Exception e) {
 			logger.error("failed to initiate XMLDB database driver: " + driverName);
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.FALSE;
 		}
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		return BooleanValue.TRUE;
 	}
 }

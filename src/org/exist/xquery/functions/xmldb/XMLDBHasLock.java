@@ -73,22 +73,19 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
      */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 	throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
 		try {
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			if (res != null) {
 			    String lockUser = ums.hasUserLock(res);
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());	
                 return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);
 			} else {
                 logger.error("Unable to locate resource " + args[1].getStringValue());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			    throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
 			}
 		} catch (XMLDBException e) {
             logger.error("Failed to retrieve user lock");
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			throw new XPathException(this, "Failed to retrieve user lock", e);
 		}
 	}

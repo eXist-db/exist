@@ -79,7 +79,6 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 		if(getSignature().getArgumentCount() == 3) {
 			XmldbURI doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
@@ -87,7 +86,6 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 				Resource resource = collection.getResource(doc.toString());
 				if (resource == null) {
                     logger.error("Resource " + doc + " not found");
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
 					throw new XPathException(this, "Resource " + doc + " not found");
                 }
@@ -98,13 +96,11 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
                         XmldbURI.xmldbUriFor(newName));
 			} catch (XMLDBException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
 				throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
                 
 			} catch (URISyntaxException e) {
                 logger.error(e.getMessage());
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
                 throw new XPathException(this, "URI exception: " + e.getMessage(), e);
             }
@@ -119,18 +115,15 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 
 			} catch (XMLDBException e) {
                 logger.error("Cannot rename collection: " + e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
 				throw new XPathException(this, "Cannot rename collection: " + e.getMessage(), e);
                 
 			} catch (URISyntaxException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
                 throw new XPathException(this, "URI exception: " + e.getMessage(), e);
             }
 		}
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

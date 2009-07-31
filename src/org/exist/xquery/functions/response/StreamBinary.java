@@ -82,9 +82,7 @@ public class StreamBinary extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-    	logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
         if(args[0].isEmpty() || args[1].isEmpty()) {
-        	logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         Base64Binary binary = (Base64Binary) args[0].itemAt(0);
@@ -122,7 +120,6 @@ public class StreamBinary extends BasicFunction {
         } catch (IOException e) {
             throw new XPathException(this, "IO exception while streaming data: " + e.getMessage(), e);
         }
-    	logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 
