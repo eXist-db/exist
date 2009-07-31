@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -37,6 +37,8 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -57,31 +59,45 @@ import java.util.regex.PatternSyntaxException;
  */
 public class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
+	protected static final String FUNCTION_DESCRIPTION =
+		"The function returns true if $input matches the regular expression " +
+		"supplied as $pattern as influenced by the value of $flags, if present; " +
+		"otherwise, it returns false.\n\n" +
+		"The effect of calling the first version of this function (omitting the " +
+		"argument $flags) is the same as the effect of calling the second version " +
+		"with the $flags argument set to a zero-length string. " +
+		"Flags are defined in 7.6.1.1 Flags.\n\n" +
+		"If $input is the empty sequence, it is interpreted as the zero-length string.\n\n" +
+		"Unless the metacharacters ^ and $ are used as anchors, the string is considered " +
+		"to match the pattern if any substring matches the pattern. But if anchors are used, " +
+		"the anchors must match the start/end of the string (in string mode), or the " +
+		"start/end of a line (in multiline mode).\n\n" +
+		"Note:\n\n" +
+		"This is different from the behavior of patterns in [XML Schema Part 2: Datatypes " +
+		"Second Edition], where regular expressions are implicitly anchored.\n\n" +
+		"Please note that - in contrast - with the " +
+        "specification - this method allows zero or more items for the string argument.\n\n" +
+		"An error is raised [err:FORX0002] if the value of $pattern is invalid " +
+		"according to the rules described in section 7.6.1 Regular Expression Syntax.\n\n" +
+		"An error is raised [err:FORX0001] if the value of $flags is invalid " +
+		"according to the rules described in section 7.6.1 Regular Expression Syntax.";
+
+	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_MORE, "the input string");
+	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "the pattern");
+	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "");
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("matches", Function.BUILTIN_FUNCTION_NS),
-			"Returns true if the first argument string matches the regular expression specified " +
-			"by the second argument. This function is optimized internally if a range index of type xs:string " +
-			"is defined on the nodes passed to the first argument. Please note that - in contrast - with the " +
-            "specification - this method allows zero or more items for the string argument.",
-			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+			FUNCTION_DESCRIPTION,
+			new SequenceType[] { INPUT_ARG, PATTERN_ARG },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match")
 		),
 		new FunctionSignature(
 			new QName("matches", Function.BUILTIN_FUNCTION_NS),
-			"Returns true if the first argument string matches the regular expression specified " +
-			"by the second argument. This function is optimized internally if a range index of type xs:string " +
-			"is defined on the nodes passed to the first argument. Please note that - in contrast - with the " +
-            "specification - this method allows zero or more items for the string argument.",
-			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+			FUNCTION_DESCRIPTION,
+			new SequenceType[] { INPUT_ARG, PATTERN_ARG, FLAGS_ARG },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match")
 		)
 	};
 	

@@ -37,6 +37,8 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.QNameValue;
@@ -50,28 +52,57 @@ import org.exist.xquery.value.Type;
  */
 public class FunMax extends CollatingFunction {
 
+	protected static final String FUNCTION_DESCRIPTION =
+		"Selects an item from the input sequence $arg whose value is " +
+		"greater than or equal to the value of every other item in the " +
+		"input sequence. If there are two or more such items, then the " +
+		"specific item whose value is returned is implementation dependent.\n\n" +
+		"The following rules are applied to the input sequence:\n\n" +
+		"- Values of type xs:untypedAtomic in $arg are cast to xs:double.\n" +
+		"- Numeric and xs:anyURI values are converted to the least common " +
+		"type that supports the ge operator by a combination of type " +
+		"promotion and subtype substitution. See Section B.1 Type " +
+		"PromotionXP and Section B.2 Operator MappingXP.\n\n" +
+		"The items in the resulting sequence may be reordered in an arbitrary " +
+		"order. The resulting sequence is referred to below as the converted " +
+		"sequence. This function returns an item from the converted sequence " +
+		"rather than the input sequence.\n\n" +
+		"If the converted sequence is empty, the empty sequence is returned.\n\n" +
+		"All items in $arg must be numeric or derived from a single base type " + 
+		"for which the ge operator is defined. In addition, the values in the " +
+		"sequence must have a total order. If date/time values do not have a " +
+		"timezone, they are considered to have the implicit timezone provided " +
+		"by the dynamic context for purposes of comparison. Duration values " +
+		"must either all be xs:yearMonthDuration values or must all be " +
+		"xs:dayTimeDuration values.\n\n" +
+		"If any of these conditions is not met, then a type error is raised [err:FORG0006].\n\n" +
+		"If the converted sequence contains the value NaN, the value NaN is returned.\n\n" +
+		"If the items in the value of $arg are of type xs:string or types " +
+		"derived by restriction from xs:string, then the determination of " + 
+		"the item with the largest value is made according to the collation " +
+		"that is used. If the type of the items in $arg is not xs:string " + 
+		"and $collation is specified, the collation is ignored.\n\n" +
+		"The collation used by the invocation of this function is " +
+		"determined according to the rules in 7.3.1 Collations.";
+
+
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
-					"Selects an item from the input sequence $a whose value " +
-					"is greater than or equal to the value of every other item in the " +
-					"input sequence.",
+					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-							new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "")
 					},
-					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
 			),
 			new FunctionSignature(
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
-					"Selects an item from the input sequence $a whose value " +
-					"is greater than or equal to the value of every other item in the " +
-					"input sequence. The collation URI specified in $b will be used for " +
-					"string comparisons.",
+					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-							new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
-							new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
+						new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "")
 					},
-					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
 			)
 	};
 
