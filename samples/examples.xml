@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 
-<!--    This file contains example queries for the web interface
-        (see webapp/xquery/xquery.xq
+<!--    
+    This file contains example queries for the web interface
+    (see webapp/sandbox/)
 -->
 <example-queries>
     <query>
