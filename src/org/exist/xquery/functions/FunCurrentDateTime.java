@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -31,6 +32,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -40,7 +42,7 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunCurrentDateTime extends Function {
-
+	protected static final Logger logger = Logger.getLogger(FunCurrentDateTime.class);
 	public final static FunctionSignature fnCurrentDateTime =
 		new FunctionSignature(
 			new QName("current-dateTime", Function.BUILTIN_FUNCTION_NS),
@@ -48,7 +50,7 @@ public class FunCurrentDateTime extends Function {
 			"during the evaluation of a query or transformation in which fn:current-dateTime() " +
 			"is executed.",
 			null,
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the date-time current within query execution time span"));
 
 	public final static FunctionSignature fnCurrentTime =
 		new FunctionSignature(
@@ -57,7 +59,7 @@ public class FunCurrentDateTime extends Function {
 			"some time during the evaluation of a query or transformation " +
 			"in which fn:current-time() is executed.",
 			null,
-			new SequenceType(Type.TIME, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.TIME, Cardinality.EXACTLY_ONE, "the time current within query execution time span"));
 
 	public final static FunctionSignature fnCurrentDate =
 		new FunctionSignature(
@@ -66,12 +68,16 @@ public class FunCurrentDateTime extends Function {
 			"time during the evaluation of a query or transformation in which " +
 			"fn:current-date() is executed.",
 			null,
-			new SequenceType(Type.DATE, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "the date current within the query execution time span"));
 
 	
 	public FunCurrentDateTime(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
+
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET;
+    }
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if (context.getProfiler().isEnabled()) {
@@ -91,6 +97,7 @@ public class FunCurrentDateTime extends Function {
 		} else if (isCalledAs("current-time")) {
 			result = result.convertTo(Type.TIME);
 		} else {
+            logger.error("can't handle function " + mySignature.getName().getLocalName());
 			throw new Error("can't handle function " + mySignature.getName().getLocalName());
 		}
 
@@ -99,8 +106,4 @@ public class FunCurrentDateTime extends Function {
 		return result;
 	}
     
-    public int getDependencies() {
-        return Dependency.CONTEXT_SET;
-    }
-
 }
