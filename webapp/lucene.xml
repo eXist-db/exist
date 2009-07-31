@@ -414,6 +414,37 @@ return
                         </listitem>
                     </varlistentry>
                     <varlistentry>
+                        <term><sgmltag>wildcard</sgmltag></term>
+                        <listitem>
+                            <para>A string with a '*' wildcard in it, which will be matched 
+                                against the terms of a document. Can be used instead of a <sgmltag>term</sgmltag>
+                                element. For example:</para>
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <term>nation</term><wildcard>miser*</wildcard>
+    </query>
+return
+//SPEECH[ft:query(., $query)]]]></synopsis>
+                            
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term><sgmltag>regex</sgmltag></term>
+                        <listitem>
+                            <para>A regular expression which will be matched against the terms
+                                of a document. Can be used instead of a <sgmltag>term</sgmltag>
+                                element. For example:</para>
+                            <synopsis language="xquery"><![CDATA[let $query :=
+    <query>
+        <term>nation</term><regex>miser.*</regex>
+    </query>
+return
+//SPEECH[ft:query(., $query)]]]></synopsis>
+                            
+                        </listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
                         <term>
                             <sgmltag>bool</sgmltag>
                         </term>
