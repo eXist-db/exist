@@ -1,52 +1,61 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
 import org.exist.xquery.util.DocUtils;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 /**
  * Implements the XQuery's fn:doc-available() function.
  * 
- * @author wolf
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author wolf
  */
 public class FunDocAvailable extends Function {
-
+	protected static final Logger logger = Logger.getLogger(FunDocAvailable.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc-available", Function.BUILTIN_FUNCTION_NS),
-			"Returns whether or not the document specified in the input sequence is available. " +
+			"Returns whether or not the document, $document-uri, specified in the input sequence is available. " +
             "The arguments are either document pathes like '" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
 			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
             "standard URLs, starting with http://, file://, etc.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));	
+			new SequenceType[] { 
+                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the document-uri")
+            },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the document is available, false() otherwise"));	
 	
 	public FunDocAvailable(XQueryContext context) {
 		super(context, signature);		
@@ -64,7 +73,7 @@ public class FunDocAvailable extends Function {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
@@ -82,6 +91,7 @@ public class FunDocAvailable extends Function {
     			result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
     		}
     		catch (Exception e) {
+                logger.error(e.getMessage());
     			throw new XPathException(this, e.getMessage(), e);			
     		}            
         }

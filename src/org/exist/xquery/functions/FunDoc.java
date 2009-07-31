@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -31,6 +32,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;
 import org.exist.xquery.util.DocUtils;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -44,18 +47,20 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class FunDoc extends Function {
-
+	protected static final Logger logger = Logger.getLogger(FunDoc.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc", Function.BUILTIN_FUNCTION_NS),
-			"Returns the documents specified in the input sequence. " +  
-            "The arguments are either document paths like '" +
+			"Returns the document node of $document-uri specified. " +  
+            "The argument is either a document path like '" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
-			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
+			"XMLDB URI like 'xmldb:exist://localhost:8081/" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
-            "standard URLs starting with http://, file://, etc.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
+            "standard URL starting with http://, file://, etc.",
+			new SequenceType[] {
+                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the document-uri")
+            },
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the document node of $document-uri"));
 
     private UpdateListener listener = null;
 	
@@ -76,9 +81,10 @@ public class FunDoc extends Function {
 	/**
 	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem)
+        throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
@@ -103,6 +109,7 @@ public class FunDoc extends Function {
     		try {
     			result = DocUtils.getDocument(this.context, path);
     			if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
+                    logger.error("FODC0002: can not access '" + path + "'");
     				throw new XPathException(this, "FODC0002: can not access '" + path + "'");
     			}
     //			TODO: we still need a final decision about this. Also check base-uri.
@@ -115,6 +122,7 @@ public class FunDoc extends Function {
     			}
     		}
     		catch (Exception e) {
+                logger.error(e.getMessage());
     			throw new XPathException(this, e.getMessage(), e);
     		}
         }
@@ -142,7 +150,7 @@ public class FunDoc extends Function {
                 }
 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getLine() + ": " + FunDoc.this.toString());                	
+                	logger.debug("UpdateListener: Line: " + getLine() + ": " + FunDoc.this.toString());                	
                 }
             };
             context.registerUpdateListener(listener);
