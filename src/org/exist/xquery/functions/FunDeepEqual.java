@@ -1,24 +1,27 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
+ *  
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation 
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
-
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import java.text.Collator;
 
@@ -38,6 +41,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.NumericValue;
@@ -53,29 +58,30 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class FunDeepEqual extends CollatingFunction {
-
+	protected static final Logger logger = Logger.getLogger(FunDeepEqual.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
-			"Returns true iff every item in $a is deep-equal to the item at the same position in $b, " +
-			"false otherwise. If both $a and $b are the empty sequence, returns true. ",
+			"Returns true iff every item in $items-1 is deep-equal to the item at the same position in $items-2, " +
+			"false otherwise. If both $items-1 and $items-2 are the empty sequence, returns true(). ",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
-					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "the first item sequence"), 
+                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "the second item sequence")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ONE)
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if the sequences are deep-equal, false() otherwise")
 		),
 		new FunctionSignature(
 			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
-			"Returns true iff every item in $a is deep-equal to the item at the same position in $b, " +
-			"false otherwise. If both $a and $b are the empty sequence, returns true. " +
-			"Comparison collation is specified by $c",
+			"Returns true iff every item in $items-1 is deep-equal to the item at the same position in $items-2, " +
+			"false otherwise. If both $items-1 and $items-2 are the empty sequence, returns true(). " +
+			"Comparison collation is specified by $collation-uri. " + 
+            THIRD_REL_COLLATION_ARG_EXAMPLE,
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
-				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "the first item sequence"), 
+                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "the second item sequence"),
+				new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collation-uri")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ONE)		
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if the sequences are deep-equal, false() otherwise")
 		)
 	};
 
@@ -87,7 +93,8 @@ public class FunDeepEqual extends CollatingFunction {
 		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem)
+        throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -109,8 +116,8 @@ public class FunDeepEqual extends CollatingFunction {
     			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i), collator)) {
                     result = BooleanValue.FALSE;
                     break;
-                }   
-    		}    		
+                }
+    		}
         }
         
         if (context.getProfiler().isEnabled()) 
@@ -130,7 +137,7 @@ public class FunDeepEqual extends CollatingFunction {
 					AtomicValue bv = (AtomicValue) b;
 					if (Type.subTypeOf(av.getType(), Type.NUMBER) && Type.subTypeOf(bv.getType(), Type.NUMBER)) {
 						//or if both values are NaN
-						if (((NumericValue)a).isNaN() && ((NumericValue)b).isNaN())
+						if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
 							return true;
 					}
 					return ValueComparison.compareAtomic(
@@ -175,9 +182,13 @@ public class FunDeepEqual extends CollatingFunction {
 				case Type.COMMENT:
 					return safeEquals(nva.getStringValue(), nvb.getStringValue());
 				
-				default: throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
+				default: {
+                    logger.error("unexpected item type " + Type.getTypeName(a.getType()));
+                    throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
+                }
 			}
 		} catch (XPathException e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
 			return false;
 		}
@@ -211,8 +222,10 @@ public class FunDeepEqual extends CollatingFunction {
 				case Node.ELEMENT_NODE:
 					if (!compareElements(a, b)) return false;
 					break;
-				default:
-					throw new RuntimeException("unexpected node type " + nodeTypeA);
+				default: {
+					logger.error("unexpected node type " + nodeTypeA);
+                    throw new RuntimeException("unexpected node type " + nodeTypeA);
+                }
 			}
 			a = findNextTextOrElementNode(a.getNextSibling());
 			b = findNextTextOrElementNode(b.getNextSibling());
