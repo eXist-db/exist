@@ -76,7 +76,6 @@ public class IndexKeyDocuments extends BasicFunction {
 	}
     
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
@@ -120,7 +119,6 @@ public class IndexKeyDocuments extends BasicFunction {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
 
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
 }

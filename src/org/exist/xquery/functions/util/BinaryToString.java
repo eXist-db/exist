@@ -72,10 +72,7 @@ public class BinaryToString extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-		
 		if (args[0].isEmpty()) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		String encoding = "UTF-8";
@@ -85,7 +82,6 @@ public class BinaryToString extends BasicFunction {
             Base64Binary binary = (Base64Binary) args[0].itemAt(0);
             byte[] data = binary.getBinaryData();
             try {
-    			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new StringValue(new String(data, encoding));
             } catch (UnsupportedEncodingException e) {
                 throw new XPathException(this, "Unsupported encoding: " + encoding);
@@ -94,7 +90,6 @@ public class BinaryToString extends BasicFunction {
             String str = args[0].getStringValue();
             try {
                 byte[] data = str.getBytes(encoding);
-    			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new Base64Binary(data);
             } catch (UnsupportedEncodingException e) {
                 throw new XPathException(this, "Unsupported encoding: " + encoding);

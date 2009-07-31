@@ -77,8 +77,6 @@ public class MD5 extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence  ) throws XPathException 
 	{
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-		
 		boolean base64 = false;
 		
 		String arg = args[0].itemAt( 0 ).getStringValue();
@@ -89,7 +87,6 @@ public class MD5 extends BasicFunction
 		
 		String md = MessageDigester.md5( arg, base64 );
 		
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return( new StringValue( md ) );
 	}
 

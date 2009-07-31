@@ -64,7 +64,6 @@ public class GetBuild extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalName());
 		Properties sysProperties = new Properties();
 		try
 		{
@@ -75,7 +74,6 @@ public class GetBuild extends BasicFunction
 			logger.debug("Unable to load system.properties from class loader");
 		}
 		StringValue stringValue = new StringValue(sysProperties.getProperty("product-build", "unknown build"));
-		logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
 		return stringValue;
 	}
 }

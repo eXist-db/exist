@@ -101,9 +101,7 @@ public class Serialize extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
         if(args[0].isEmpty()) {
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         
@@ -121,12 +119,10 @@ public class Serialize extends BasicFunction {
 	        File file = new File(path);
 	        if (file.isDirectory()) {
 	            logger.debug("Output file is a directory: " + file.getAbsolutePath());
-	        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	            return BooleanValue.FALSE;
 	        }
 	        if (file.exists() && !file.canWrite()) {
 	            logger.debug("Cannot write to file " + file.getAbsolutePath());
-	        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	            return BooleanValue.FALSE;
 	        }
 	        
@@ -146,7 +142,6 @@ public class Serialize extends BasicFunction {
 	        //do the serialization
 	        serialize(args[0].iterate(), outputProperties, os);
 	    
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	        return BooleanValue.TRUE;
         }
         else
@@ -165,7 +160,6 @@ public class Serialize extends BasicFunction {
         	try
         	{
         		String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         		return new StringValue(new String(((ByteArrayOutputStream)os).toByteArray(), encoding));
         	}
         	catch(UnsupportedEncodingException e)

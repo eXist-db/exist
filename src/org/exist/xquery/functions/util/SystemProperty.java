@@ -54,7 +54,6 @@ public class SystemProperty extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
 	{ 
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		Properties sysProperties = new Properties();
 		try
@@ -70,7 +69,6 @@ public class SystemProperty extends BasicFunction {
 		String value = sysProperties.getProperty(key);
 		if(value == null)
 			value = System.getProperty(key);
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(value);
 	}
 }

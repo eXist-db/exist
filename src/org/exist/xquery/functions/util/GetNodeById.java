@@ -74,17 +74,14 @@ public class GetNodeById extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
         String id = args[1].itemAt(0).getStringValue();
         NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
         NodeValue docNode = (NodeValue) args[0].itemAt(0);
         if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-    		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return ((NodeImpl) docNode).getDocument().getNodeById(nodeId);
         } else {
             DocumentImpl doc = ((NodeProxy)docNode).getDocument();
-    		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return new NodeProxy(doc, nodeId);
         }
 	}

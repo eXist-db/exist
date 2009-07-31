@@ -68,7 +68,6 @@ public class NodeId extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		NodeValue docNode =(NodeValue) args[0].itemAt(0);
                 org.exist.numbering.NodeId nodeId;
@@ -77,7 +76,6 @@ public class NodeId extends BasicFunction {
                 } else {
                     nodeId = ((NodeProxy)docNode).getNodeId();
                 }
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return new StringValue(nodeId.toString());
 	}
 }

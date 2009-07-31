@@ -51,7 +51,6 @@ public class UpdateStatistics extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		logger.info("Entering " + SystemModule.PREFIX + ":update-statistics");
         IndexStatisticsWorker index = (IndexStatisticsWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(IndexStatistics.ID);
         if (index != null) {
@@ -59,7 +58,6 @@ public class UpdateStatistics extends BasicFunction {
         } else {
         	logger.error("The module may not be enabled!");
         }
-		logger.info("Exiting " + SystemModule.PREFIX + ":update-statistics");
         return Sequence.EMPTY_SEQUENCE;
     }
 }

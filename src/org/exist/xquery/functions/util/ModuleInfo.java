@@ -85,19 +85,16 @@ public class ModuleInfo extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		if("get-module-description".equals(getSignature().getName().getLocalName())) {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
 			if(module == null)
 				throw new XPathException(this, "No module found matching namespace URI: " + uri);
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return new StringValue(module.getDescription());
 		} else if ("is-module-registered".equals(getSignature().getName().getLocalName())) {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return new BooleanValue(module != null);
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
@@ -105,7 +102,6 @@ public class ModuleInfo extends BasicFunction {
 				Module module = (Module)i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));
 			}
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return resultSeq;
 		}
 	}

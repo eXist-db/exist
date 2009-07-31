@@ -58,8 +58,6 @@ public class FunDoctype extends Function {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-		
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -86,7 +84,6 @@ public class FunDoctype extends Function {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
         
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
 	}
 

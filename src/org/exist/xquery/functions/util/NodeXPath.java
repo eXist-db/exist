@@ -28,11 +28,9 @@ public class NodeXPath extends Function
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.isEmpty()) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		
@@ -41,7 +39,6 @@ public class NodeXPath extends Function
 
 		//if at the document level just return /
 		if(n.getNodeType() == Node.DOCUMENT_NODE) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 			return new StringValue("/");
 		}
 		
@@ -58,7 +55,6 @@ public class NodeXPath extends Function
 			}
 		}
 		
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return new StringValue(buf.toString());
 	}
 	

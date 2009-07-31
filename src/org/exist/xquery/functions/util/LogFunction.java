@@ -90,26 +90,21 @@ public class LogFunction extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-		
 		SequenceIterator i;
 		
 		if( isCalledAs( "log" ) ) {
 			i = args[1].unorderedIterator();
 			if( args[1].isEmpty() ) {
-				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else if( isCalledAs( "log-app" ) ) {
 			i = args[2].unorderedIterator();
 			if( args[2].isEmpty() ) {
-				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		} else {
 			i = args[0].unorderedIterator();
 			if( args[0].isEmpty() ) {
-				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return( Sequence.EMPTY_SEQUENCE );
 			}
 		}
@@ -176,7 +171,6 @@ public class LogFunction extends BasicFunction
 			
 		}
 		
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

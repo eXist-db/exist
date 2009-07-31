@@ -63,9 +63,7 @@ public class DeepCopyFunction extends BasicFunction {
  
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
         if (args[0].isEmpty()) {
-    		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
             return Sequence.EMPTY_SEQUENCE;
         }
         
@@ -85,7 +83,6 @@ public class DeepCopyFunction extends BasicFunction {
         
         builder.endDocument();
         
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return (NodeValue)receiver.getDocument().getDocumentElement();
     }
 }

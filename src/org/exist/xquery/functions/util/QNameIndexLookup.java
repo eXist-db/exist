@@ -110,8 +110,6 @@ public class QNameIndexLookup extends Function {
     
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-    	
         if (contextSequence == null || contextSequence.isEmpty()) {
             // if the context sequence is empty, we create a default context 
             RootNode rootNode = new RootNode(context);
@@ -149,7 +147,7 @@ public class QNameIndexLookup extends Function {
             	Type.getTypeName(comparisonCriterium.getType());
         	throw new XPathException(this, message);
         }
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
+
         return result;
     }
 }

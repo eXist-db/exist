@@ -73,8 +73,6 @@ public class Hash extends BasicFunction {
       */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
     	
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-    	
         boolean base64 = false;
 
         String message = args[0].itemAt(0).getStringValue();
@@ -92,7 +90,6 @@ public class Hash extends BasicFunction {
             throw new XPathException(ex.getMessage());
         }
 
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return (new StringValue(md));
     }
 

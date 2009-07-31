@@ -86,7 +86,6 @@ public class SystemTime extends Function
 
     public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
 		if( context.getProfiler().isEnabled() ) {
 			context.getProfiler().start( this );       
@@ -115,7 +114,6 @@ public class SystemTime extends Function
 			context.getProfiler().end( this, "", result );   
 		}
 
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return( result );
     }
 	

@@ -72,7 +72,6 @@ public class DescribeFunction extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		
 		String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
@@ -100,7 +99,6 @@ public class DescribeFunction extends Function {
 			}
 		}
 		builder.endElement();
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
 	}
 

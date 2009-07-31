@@ -84,7 +84,6 @@ public class CountInstances extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalName());
 		int count = 0;
 		
 		if(isCalledAs("count-instances-max"))
@@ -100,7 +99,6 @@ public class CountInstances extends BasicFunction
 			count = bp.available();
 		}
 		
-		logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
 		return new IntegerValue(count, Type.INTEGER);
 	}
 }

@@ -74,10 +74,7 @@ public class CollectionName extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		
-		logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-		
 	    if(args[0].isEmpty()) {
-			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 	        return Sequence.EMPTY_SEQUENCE;
 	    }
 		Item item = args[0].itemAt(0);
@@ -87,7 +84,6 @@ public class CollectionName extends BasicFunction {
                 throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");
             Collection collection = (Collection)o;
             try {
-    			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(collection.getName());
 			} catch (XMLDBException e) {
 				throw new XPathException(this, "Failed to retrieve collection name", e);
@@ -96,7 +92,6 @@ public class CollectionName extends BasicFunction {
             String path = item.getStringValue();
             try {
                 XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
-    			logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
                 return new StringValue(uri.toString());
             } catch (URISyntaxException e) {
                 throw new XPathException(this, "Illegal URI for resource path: " + path);
@@ -106,14 +101,12 @@ public class CollectionName extends BasicFunction {
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				NodeProxy p = (NodeProxy) node;
 				//TODO: use xmldbUri
-				logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(p.getDocument().getCollection().getURI().toString());	
 			}
 		} else
 			throw new XPathException(this, "First argument to util:collection-name should be either " +
 				"a Java object of type org.xmldb.api.base.Collection or a node; got: " + 
 				Type.getTypeName(item.getType()));
-		logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

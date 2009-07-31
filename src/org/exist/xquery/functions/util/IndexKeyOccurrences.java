@@ -77,8 +77,6 @@ public class IndexKeyOccurrences extends BasicFunction {
     
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
     	
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
-    	
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -103,7 +101,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	        	if (indexWorker instanceof OrderedValuesIndex)
 	        		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
 	        	else
-	        		LOG.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
+	        		logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
 	        	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
 		        if (occur.length == 0)
 		        	result= Sequence.EMPTY_SEQUENCE;
@@ -123,7 +121,6 @@ public class IndexKeyOccurrences extends BasicFunction {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
 
-    	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         return result;
     }
 }

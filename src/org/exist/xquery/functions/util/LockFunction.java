@@ -49,7 +49,6 @@ public abstract class LockFunction extends Function {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-    	logger.info("Entering " + UtilModule.PREFIX + ":" + getName().getLocalName());
     	
         Sequence docsArg = getArgument(0).eval(contextSequence, contextItem);
         DocumentSet docs = docsArg.getDocumentSet();
@@ -60,7 +59,6 @@ public abstract class LockFunction extends Function {
             throw new XPathException(this, "Could not lock document set", e);
         } finally {
             docs.unlock(exclusive);
-        	logger.info("Exiting " + UtilModule.PREFIX + ":" + getName().getLocalName());
         }
     }
     
