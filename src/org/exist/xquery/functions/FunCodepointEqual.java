@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2006-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -32,22 +32,29 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+/**
+ *
+ * @author perig
+ *
+ */
 public class FunCodepointEqual extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 				new QName("codepoint-equal", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
-				"Returns true or false depending on whether the value of $a is equal to the value of $b, " +
+				"Returns true or false depending on whether the value of $string-1 is equal to the value of $string-2, " +
 				"according to the Unicode code point collation",
 				new SequenceType[] {
-						new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-						new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+                    new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "the first string"),
+                    new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "the second string"),
 				},
-				new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if the codepoints are equal, false() otherwise"));
 	
 	public FunCodepointEqual(XQueryContext context) {
 		super(context, signature);
