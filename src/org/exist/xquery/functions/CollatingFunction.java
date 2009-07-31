@@ -35,7 +35,11 @@ import org.exist.xquery.value.Sequence;
  * @author wolf
  */
 public abstract class CollatingFunction extends Function {
-
+    public final static String THIRD_REL_COLLATION_ARG_EXAMPLE = "The third argument $collation-uri is relative so you only need to " +
+        "specify the last part of a valid full collation-uri, e.g. " + 
+        "'?lang=sv-SE', " +
+        "'lang=sv-SE;strength=primary;decomposition=standard' "+
+        "or 'swedish'.";
 	/**
 	 * @param context
 	 * @param signature
