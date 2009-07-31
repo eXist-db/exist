@@ -73,14 +73,12 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
      */
     public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence)
 	throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
 	String collectionName = args[1].getStringValue();
 		
 	try {
 	    Collection newCollection = createCollectionPath(collection, collectionName);
 
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    if (newCollection == null)
 		return Sequence.EMPTY_SEQUENCE;
 	    else
@@ -88,7 +86,6 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 
 	} catch (XMLDBException e) {
 	    logger.error("Unable to create new collection " + collectionName, e);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    throw new XPathException(this, "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
 	}
     }

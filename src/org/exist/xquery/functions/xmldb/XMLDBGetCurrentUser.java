@@ -60,9 +60,7 @@ public class XMLDBGetCurrentUser extends BasicFunction
 	
 	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
 	{
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		StringValue stringValue = new StringValue(context.getUser().getName());
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		return stringValue;
 	}
 }

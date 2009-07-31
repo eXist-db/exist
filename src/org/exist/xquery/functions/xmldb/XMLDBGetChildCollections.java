@@ -60,7 +60,6 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 	//TODO: decode names?
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		
 		ValueSequence result = new ValueSequence();
 		try {
@@ -68,7 +67,6 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 			for(int i = 0; i < collections.length; i++) {
 				result.add(new StringValue(collections[i]));
 			}
-			logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			return result;
 		} catch (XMLDBException e) {
 			throw new XPathException(this, "Failed to retrieve child collections", e);

@@ -99,7 +99,7 @@ public class XMLDBUserAccess extends BasicFunction {
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
         String userName = args[0].getStringValue();
         
         Collection collection = null;
@@ -133,7 +133,6 @@ public class XMLDBUserAccess extends BasicFunction {
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 		}
 	}
     

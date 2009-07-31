@@ -65,7 +65,6 @@ public class XMLDBIsAdmin extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		String userName = args[0].getStringValue();
         
         Collection collection = null;
@@ -74,18 +73,15 @@ public class XMLDBIsAdmin extends BasicFunction {
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			User user = ums.getUser(userName);
 
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			if(user == null)
 				return Sequence.EMPTY_SEQUENCE;
 			return user.hasDbaRole() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} catch (XMLDBException xe) {
             logger.error("Failed to access user " + userName);
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			throw new XPathException(this, "Failed to access user " + userName, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		}
 	}
 

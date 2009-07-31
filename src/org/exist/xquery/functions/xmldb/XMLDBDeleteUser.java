@@ -75,8 +75,6 @@ public class XMLDBDeleteUser extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 		
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-
         String user = args[0].getStringValue();
         
         Collection collection = null;
@@ -92,7 +90,6 @@ public class XMLDBDeleteUser extends BasicFunction {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 		}
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
 	}
     

@@ -79,7 +79,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 	
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
         try {
             Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
             if (res != null) {
@@ -90,13 +90,11 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 
                 if (null == user || 0 == user.length()) {
                     logger.error("Needs a valid user name, not: " + user);
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                     
                     throw new XPathException(this, "Needs a valid user name, not: " + user);
                 }
                 if (null == group || 0 == group.length()) {
                     logger.error("Needs a valid group name, not: " + group);
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
                     
                     throw new XPathException(this, "Needs a valid group name, not: " + group);
                 }
@@ -106,7 +104,6 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 User usr = ums.getUser(user);
                 if (usr == null) {
                     logger.error("Needs a valid user name, not: " + user);
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
                     
                     throw new XPathException(this, "Needs a valid user name, not: " + user);
                 }
@@ -115,18 +112,15 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 ums.setPermissions(res, perms);
             } else {
                 logger.error("Unable to locate resource " + args[1].getStringValue());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
                 throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
             }
         } catch (XMLDBException xe) {
             logger.error("Unable to change resource permissions");
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 
             throw new XPathException(this, "Unable to change resource permissions", xe);
         }
 
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

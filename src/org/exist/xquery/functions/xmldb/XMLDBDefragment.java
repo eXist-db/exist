@@ -77,7 +77,6 @@ public class XMLDBDefragment extends BasicFunction {
      * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
         int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
         NodeSet nodes = args[0].toNodeSet();
@@ -87,7 +86,6 @@ public class XMLDBDefragment extends BasicFunction {
         } catch (EXistException e) {
             throw new XPathException("An error occurred while defragmenting documents: " + e.getMessage(), e);
         }
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }

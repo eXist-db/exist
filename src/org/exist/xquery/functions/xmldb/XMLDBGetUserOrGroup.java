@@ -100,10 +100,9 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
 		try {
 			Permission perm = getPermissions(collection, args);
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			if("get-owner".equals(getSignature().getName().getLocalName())) {
 				return new StringValue(perm.getOwner());
             } else {
@@ -113,7 +112,6 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 
         } catch (XMLDBException xe) {
             logger.error("Unable to retrieve resource permissions");
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             throw new XPathException(this, "Unable to retrieve resource permissions", xe);
         }
 	}

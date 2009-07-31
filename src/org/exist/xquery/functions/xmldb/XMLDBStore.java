@@ -116,7 +116,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence args[],
 		Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		String docName = args[1].isEmpty() ? null : args[1].getStringValue();
 		if(docName != null && docName.length() == 0)
 			docName = null;
@@ -146,7 +145,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				Object obj = ((JavaObjectValue)item).getObject();
 				if(!(obj instanceof File)) {
                     logger.error("Passed java object should be a File");
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					throw new XPathException(this, "Passed java object should be a File");
                 }
 				resource = loadFromFile(collection, (File)obj, docName, binary, mimeType);
@@ -156,7 +154,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					resource = loadFromURI(collection, uri, docName, binary, mimeType);
 				} catch (URISyntaxException e) {
                     logger.error("Invalid URI: " + item.getStringValue());
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
 				}
 			} else {
@@ -183,7 +180,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					}
 				} else {
                     logger.error("Data should be either a node or a string");
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 					throw new XPathException(this, "Data should be either a node or a string");
                 }
 
@@ -192,28 +188,23 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			}
 		} catch (XMLDBException e) {
             logger.error(e.getMessage());
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			throw new XPathException(this,
 				"XMLDB reported an exception while storing document" + e,
 				e);
 		} catch (SAXException e) {
             logger.error(e.getMessage());
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			throw new XPathException(this,
 				"SAX reported an exception while storing document",
 				e);
 		}
 		if (resource == null) {
-            logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 			return Sequence.EMPTY_SEQUENCE;
         } else {
 			try {
                 //TODO : use dedicated function in XmldbURI
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				return new StringValue(collection.getName() + "/" + resource.getId());
 			} catch (XMLDBException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 				throw new XPathException(this, "XMLDB reported an exception while retrieving the " +
 						"stored document", e);
 			}

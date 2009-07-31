@@ -74,7 +74,6 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
 	
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 	throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         try {
             Resource res = collection.getResource(args[1].getStringValue());
             if (res != null) {
@@ -82,15 +81,12 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
                 ums.chmod(res, ((IntegerValue) args[2].convertTo(Type.INTEGER)).getInt());
             } else {
 		logger.error("Unable to locate resource "+args[1].getStringValue());
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
             }
         } catch (XMLDBException xe) {
 	    logger.error("Unable to change  resource permissions", xe);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             throw new XPathException(this, "Unable to change resource permissions", xe);
         }
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	return Sequence.EMPTY_SEQUENCE;
     }
 

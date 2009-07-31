@@ -79,8 +79,6 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
-        
         if (0 == args.length)
             throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");
         
@@ -109,7 +107,6 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 				}
         	}
         	else {
-        		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         		return Sequence.EMPTY_SEQUENCE;
         	}
         }
@@ -181,7 +178,6 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         		}
             }
         }
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return s;
 	}
 

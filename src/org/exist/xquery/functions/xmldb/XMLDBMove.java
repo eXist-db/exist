@@ -78,7 +78,6 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
      */
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 
         XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
         if (getSignature().getArgumentCount() == 3) {
@@ -87,14 +86,12 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
                 Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {
                     logger.error( "Resource " + doc + " not found");
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
                 CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
                 service.moveResource(doc, destination, null);
             } catch (XMLDBException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
             }
         } else {
@@ -105,16 +102,13 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 
             } catch (XMLDBException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 throw new XPathException(this, "Cannot move collection: " + e.getMessage(), e);
 
             } catch (URISyntaxException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
                 throw new XPathException(this, "URI exception: " + e.getMessage(), e);
             }
         }
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }

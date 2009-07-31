@@ -72,7 +72,7 @@ public class XMLDBChangeUser extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) 
 	throws XPathException {
-	logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
+
 	String userName = args[0].getStringValue();
 	Collection collection = null;
 		
@@ -83,7 +83,6 @@ public class XMLDBChangeUser extends BasicFunction {
 	    User user = new User(oldUser.getName());
 	    if (user == null) {
 		logger.error("User " + userName + " not found");
-		logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		
 		throw new XPathException(this, "User " + userName + " not found");
 	    }
@@ -108,7 +107,6 @@ public class XMLDBChangeUser extends BasicFunction {
 		    user.setHome(XmldbURI.xmldbUriFor(args[3].getStringValue()));
 		} catch (URISyntaxException e) {
 		    logger.error("Invalid home collection URI " + args[3].getStringValue(), e);
-		    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		    
 		    throw new XPathException(this,"Invalid home collection URI",e);
 		}
@@ -117,15 +115,12 @@ public class XMLDBChangeUser extends BasicFunction {
 	    ums.updateUser(user);
 	} catch (XMLDBException xe) {
 	    logger.error("Failed to update user " + userName, xe);
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 	    throw new XPathException(this, "Failed to update user " + userName, xe);
         } finally {
-	    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 	}
 	
-	logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
         return Sequence.EMPTY_SEQUENCE;
     }
 }

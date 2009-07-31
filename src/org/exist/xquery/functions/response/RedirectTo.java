@@ -76,7 +76,6 @@ public class RedirectTo extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		
 		ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
 		
@@ -97,7 +96,6 @@ public class RedirectTo extends BasicFunction {
 			}
 		else
 			throw new XPathException(this, "Variable response is not bound to a response object.");
-		logger.info("Exiting " + ResponseModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	

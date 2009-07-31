@@ -74,20 +74,17 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		logger.info("Entering " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		if(getSignature().getArgumentCount() == 2) {
 			String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
 			try {
 				Resource resource = collection.getResource(doc);
 				if (resource == null) {
                     logger.error("Resource " + doc + " not found");
-                    logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());			
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
 				collection.removeResource(resource);
 			} catch (XMLDBException e) {
                 logger.error(e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());		
                 throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
 			}
 		} else {
@@ -97,11 +94,9 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 				service.removeCollection(collection.getName());
 			} catch (XMLDBException e) {
                 logger.error("Cannot remove collection: " + e.getMessage());
-                logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());	
                 throw new XPathException(this, "Cannot remove collection: " + e.getMessage(), e);
 			}
 		}
-        logger.info("Exiting " + XMLDBModule.PREFIX + ":" + getName().getLocalName());
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
