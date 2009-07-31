@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 the eXist team
+ * Copyright (C) 2001-2009 the eXist team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -33,6 +33,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -46,24 +48,44 @@ public class FunLang extends Function {
 	
 	public static String queryString = "(ancestor-or-self::*/@xml:lang)[position() = last()]";
 	public CompiledXQuery query; 
+	
+	protected static final String FUNCTION_DESCRIPTION =
+
+		"This function tests whether the language of $node, or the context item if " +
+		"the second argument is omitted, as specified by xml:lang attributes is the " +
+		"same as, or is a sublanguage of, the language specified by $testlang. The " +
+		"behavior of the function if the second argument is omitted is exactly the " +
+		"same as if the context item (.) had been passed as the second argument. The " +
+		"language of the argument node, or the context item if the second argument is " +
+		"omitted, is determined by the value of the xml:lang attribute on the node, " + 
+		"or, if the node has no such attribute, by the value of the xml:lang attribute " +
+		"on the nearest ancestor of the node that has an xml:lang attribute. If there " +
+		"is no such ancestor, then the function returns false\n\n" +
+		
+		"The following errors may be raised: if the context item is undefined [err:XPDY0002]XP; " +
+		"if the context item is not a node [err:XPTY0004]XP.\n\n" +
+
+		"If $testlang is the empty sequence it is interpreted as the zero-length string.";
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
-			"Returns true if the context items xml:lang attribute is equal " +
-			"to the value of $a, false otherwise.",
+			FUNCTION_DESCRIPTION,
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.BOOLEAN, Cardinality.ONE)),
+				 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "the language code")
+			},
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches")
+		),
 		new FunctionSignature(
 				new QName("lang", Function.BUILTIN_FUNCTION_NS),
-				"Returns true if the context items xml:lang attribute is equal " +
-				"to the value of $a, false otherwise.",
+				FUNCTION_DESCRIPTION,
 				new SequenceType[] {
-					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
-				new SequenceType(Type.BOOLEAN, Cardinality.ONE))		
-		};
+					 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "the language code"),
+					 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "")
+				},
+				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches")
+		)		
+	};
 
 	public FunLang(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
