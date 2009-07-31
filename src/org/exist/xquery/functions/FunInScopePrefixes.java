@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 
 package org.exist.xquery.functions;
 
@@ -17,6 +38,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -31,11 +54,12 @@ public class FunInScopePrefixes extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("in-scope-prefixes", Function.BUILTIN_FUNCTION_NS),
-			"Returns the prefixes of the in-scope namespaces for $a. For namespaces that have " +
-			"a prefix, it returns the prefix as an xs:NCName. For the default namespace, which has " +
-			"no prefix, it returns the zero-length string.",
-			new SequenceType[] { new SequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE) },
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+			"Returns the prefixes of the in-scope namespaces for $element. " +
+			"For namespaces that have a prefix, it returns the prefix as an " +
+			"xs:NCName. For the default namespace, which has no prefix, " +
+			"it returns the zero-length string",
+			new SequenceType[] { new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "") },
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the prefixes"));
 	
 	public FunInScopePrefixes(XQueryContext context) {
 		super(context, signature);

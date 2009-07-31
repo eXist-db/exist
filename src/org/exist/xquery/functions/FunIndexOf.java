@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -36,6 +36,8 @@ import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -51,30 +53,50 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunIndexOf extends BasicFunction {
 
+	protected static final String FUNCTION_DESCRIPTION =
+
+		"Returns a sequence of positive integers giving the " + 
+		"positions within the sequence $seqParam of items " +  
+		"that are equal to $srchParam.\n\n" +
+		"The collation used by the invocation of this function " + 
+		"is determined according to the rules in 7.3.1 Collations. " + 
+		"The collation is used when string comparison is required.\n\n" +
+		"The items in the sequence $seqParam are compared with " + 
+		"$srchParam under the rules for the eq operator. Values of " +  
+		"type xs:untypedAtomic are compared as if they were of " +  
+		"type xs:string. Values that cannot be compared, i.e. " + 
+		"the eq operator is not defined for their types, are " + 
+		"considered to be distinct. If an item compares equal, " +  
+		"then the position of that item in the sequence " + 
+		"$seqParam is included in the result.\n\n" +
+
+		"If the value of $seqParam is the empty sequence, or " + 
+		"if no item in $seqParam matches $srchParam, then the " + 
+		"empty sequence is returned.\n\n" +
+
+		"The first item in a sequence is at position 1, not position 0.\n\n" +
+
+		"The result sequence is in ascending numeric order.";
+
 	public final static FunctionSignature fnIndexOf[] = {
 			new FunctionSignature(
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
-					"Returns a sequence of positive integers giving the positions within the sequence " +
-					"$a of items that are equal to $b. If the value of $a is the empty sequence, or if " +
-					"no item in $a matches $b, then the empty sequence is returned.",
+					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-							new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
-							new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE)
+						new FunctionParameterSequenceType("seqParam", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
+						new FunctionParameterSequenceType("srchParam", Type.ATOMIC, Cardinality.EXACTLY_ONE, "")
 					},
-					new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+					new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "a sequence of positive integers giving the positions within the sequence")
 			),
 			new FunctionSignature(
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
-					"Returns a sequence of positive integers giving the positions within the sequence " +
-					"$a of items that are equal to $b. If the value of $a is the empty sequence, or if " +
-					"no item in $a matches $b, then the empty sequence is returned. Values are compared " +
-					"according to the collation specified in $c.",
+					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-							new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
-							new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
-							new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+							new FunctionParameterSequenceType("seqParam", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
+							new FunctionParameterSequenceType("srchParam", Type.ATOMIC, Cardinality.EXACTLY_ONE, ""),
+							new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "")
 					},
-					new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+					new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "a sequence of positive integers giving the positions within the sequence")
 			)
 	};
 	

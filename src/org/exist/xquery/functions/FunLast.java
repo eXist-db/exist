@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2006 The eXist team
+ * Copyright (C) 2000-2009 The eXist team
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -29,10 +29,10 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -48,7 +48,7 @@ public class FunLast extends Function {
 			"Returns the context size from the dynamic context. " + 
 			"If the context item is undefined, an error is raised.",
 			null,
-			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the context size from the dynamic context"));
 
 	public FunLast(XQueryContext context) {
 		super(context, signature);

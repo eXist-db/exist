@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,8 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.URIUtils;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -38,14 +40,48 @@ import org.exist.xquery.value.Type;
 
 public class FunIRIToURI extends Function {
 
+	protected static final String FUNCTION_DESCRIPTION =
+
+		"This function converts an xs:string containing an " +
+		"IRI into a URI according to the rules spelled out " +
+		"in Section 3.1 of [RFC 3987]. It is idempotent but " + 
+		"not invertible.\n\n" +
+		"If $iri contains a character that is invalid in an " +
+		"IRI, such as the space character (see note below), " + 
+		"the invalid character is replaced by its percent-encoded " +
+		"form as described in [RFC 3986] before the conversion is performed.\n\n" +
+		"If $iri is the empty sequence, returns the zero-length string.\n\n" +
+		"Since [RFC 3986] recommends that, for consistency, " + 
+		"URI producers and normalizers should use uppercase " +
+		"hexadecimal digits for all percent-encodings, this " +
+		"function must always generate hexadecimal values " +
+		"using the upper-case letters A-F.\n\n" +
+		"Notes:\n\n" +
+
+		"This function does not check whether $iri is a legal " +
+		"IRI. It treats it as an xs:string and operates on " + 
+		"the characters in the xs:string.\n\n" +
+
+		"The following printable ASCII characters are invalid " +
+		"in an IRI: \"<\", \">\", \" \" \" (double quote), " +
+		"space, \"{\", \"}\", \"|\", \"\\\", \"^\", and \"`\". " +
+		"Since these characters should not appear in an IRI, " +
+		"if they do appear in $iri they will be percent-encoded. " +
+		"In addition, characters outside the range x20-x126 " +
+		"will be percent-encoded because they are invalid in a URI.\n\n" +
+
+		"Since this function does not escape the PERCENT SIGN " +
+		"\"%\" and this character is not allowed in data within " +
+		"a URI, users wishing to convert character strings, " +
+		"such as file names, that include \"%\" to a URI " +
+		"should manually escape \"%\" by replacing it with \"%25\".";
+
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("iri-to-uri", Function.BUILTIN_FUNCTION_NS),
-			"Returns an URI as a xs:string if the value of $a is a valid IRI. " +
-			"Invald characters are escape sequence encoded before the conversion. " + 
-			"If $a is the empty sequence, returns the zero-length string.",
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			FUNCTION_DESCRIPTION,
+			new SequenceType[] { new FunctionParameterSequenceType("iri", Type.STRING, Cardinality.ZERO_OR_ONE, "an IRI") },
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the URI"));
 	
 	public FunIRIToURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
