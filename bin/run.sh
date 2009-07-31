@@ -4,7 +4,7 @@
 # $Id$
 
 # Usage with profiler:
-usage="run.sh [-a architecture-and-cpu] [-y yjp-home-path] class-to-run\n run.sh -a linux-x86-32 -y /home/ljo/bin/yjp-5.0.9 org.exist.xquery.XPathQueryTest\n"
+usage="run.sh [-a architecture-and-cpu] [-y yjp-home-path] class-to-run\n run.sh -a linux-x86-32 -y /home/ljo/bin/yjp-8.0.13 org.exist.xquery.XPathQueryTest\n\nYou need yjp-8 now to profile since we are using java5+"
 
 index=0
 while getopts "a:y:" option
