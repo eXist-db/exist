@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
- *  
+ * Copyright (C) 2007-2009 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -16,10 +17,11 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id: FunId.java 5378 2007-02-21 14:33:35Z brihaye $
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
@@ -38,6 +40,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -52,26 +56,35 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ *
+ * @author perig
+ * @author piotr kaminski
+ *
+ */
 public class FunIdRef extends Function {
-
+	protected static final Logger logger = Logger.getLogger(FunIdRef.class);
 	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("idref", Function.BUILTIN_FUNCTION_NS),
 			"Returns the sequence of element or attributes nodes with an IDREF value matching the " +
-			"value of one or more of the ID values supplied in $a. " +
-			"If none is matching or $a is the empty sequence, returns the empty sequence.",
+			"value of one or more of the ID values supplied in $id-sequence. " +
+			"If none is matching or $ied-sequence is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
+                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "the id-sequence"),
+            },
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "elements with matching IDREF values from IDs in $id-sequence")),
+
         new FunctionSignature(
             new QName("idref", Function.BUILTIN_FUNCTION_NS),
 			"Returns the sequence of element or attributes nodes with an IDREF value matching the " +
-			"value of one or more of the ID values supplied in $a. " +
-            "If none is matching or $a is the empty sequence, returns the empty sequence.",
+			"value of one or more of the ID values supplied in $id-sequence. " +
+            "If none is matching or $id-sequence is the empty sequence, returns the empty sequence.",
             new SequenceType[] {
-                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
-                 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
+                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "the id-sequence"),
+                new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "the node-in-document")
+            },
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "elements with matching IDREF values from IDs in $id-sequence in the same document as $node-in-document"))
     };
 				
 	/**
