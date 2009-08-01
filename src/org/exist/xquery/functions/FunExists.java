@@ -47,12 +47,12 @@ public class FunExists extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("exists", Function.BUILTIN_FUNCTION_NS),
-			"Returns true if the argument, $item-sequence, is the empty sequence, " +
+			"Returns true if the argument, $item-sequence, is not the empty sequence, " +
 			"false otherwise.",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the item-sequence")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if empty-sequence, false() otherwise"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if not empty-sequence, false() otherwise"));
 				
 	/**
 	 * @param context
