@@ -6,14 +6,27 @@
 -->
 <example-queries>
     <query>
-        <description>Simple fulltext query on Shakespeare plays</description>
-        <code><![CDATA[for $speech in //SPEECH[LINE &= 'love']
-return $speech]]></code>
+        <description>Simple full text query on the Shakespeare plays</description>
+        <code><![CDATA[//SPEECH[ft:query(LINE, 'love')]]]></code>
     </query>
     <query>
-        <description>Fulltext query using near</description>
-        <code><![CDATA[for $speech in //SPEECH[SPEAKER &= 'witch' and near(., 'fenny snake')]
-return $speech]]></code>
+        <description>Full text query searching for phrase</description>
+        <code><![CDATA[//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '"fenny snake"')]]]></code>
+    </query>
+    <query>
+        <description>Full text query using near</description>
+        <code><![CDATA[let $query :=
+    <query>
+        <near slop="20"><term>snake</term><near>tongue dog</near></near>
+    </query>
+return //SPEECH[ft:query(., $query)]]]></code>
+    </query>
+    <query>
+        <description>Full text query with results ordered by match score</description>
+        <code><![CDATA[for $m in //SPEECH[ft:query(., "boil bubble")]
+let $score := ft:score($m)
+order by $score descending
+return <m score="{$score}">{$m}</m>]]></code>
     </query>
     <query>
         <description>Show the context of a match</description>
@@ -32,7 +45,7 @@ let $scene := $speech/ancestor::SCENE,
     </query>
     <query>
         <description>Group hits by play</description>
-        <code><![CDATA[let $speech := //SPEECH[LINE &= "passion*"]
+        <code><![CDATA[let $speech := //SPEECH[ft:query(LINE, "passion*")]
 let $plays := (for $s in $speech return root($s))
 for $play in $plays/PLAY
 let $hits := $play//$speech
