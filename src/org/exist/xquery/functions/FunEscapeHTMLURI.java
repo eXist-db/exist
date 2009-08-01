@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2005-2007 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -30,22 +30,31 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.URIUtils;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+/**
+ *
+ * @author perig
+ *
+ */
 public class FunEscapeHTMLURI extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("escape-html-uri", Function.BUILTIN_FUNCTION_NS),
-			"Replaces all nonprintable ASCII characters in the string value of $a by an escape sequence represented " + 
-			"as a hexadecimal octet in the form %XX. If $a is the empty sequence, " + 
+			"Replaces all nonprintable ASCII characters in the string value of $html-uri by an escape sequence represented " + 
+			"as a hexadecimal octet in the form %XX. If $html-uri is the empty sequence, " + 
 			"returns the zero-length string." ,
-			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new SequenceType[] {
+                new FunctionParameterSequenceType("html-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the html-uri")
+            },
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "all nonprintable ASCII characters in $html-uri encoded by escape sequences"));
 	
 	public FunEscapeHTMLURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -53,14 +62,14 @@ public class FunEscapeHTMLURI extends Function {
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
+
         Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.isEmpty())
