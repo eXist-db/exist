@@ -1,26 +1,27 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -30,27 +31,29 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * Implements function fn:zero-or-more.
+ * Implements function fn:exactly-one().
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunExactlyOne extends Function {
-
+	protected static final Logger logger = Logger.getLogger(FunExactlyOne.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("exactly-one", Function.BUILTIN_FUNCTION_NS),
-			"Returns the argument sequence if it contains exactly one item. Otherwise, " +
+			"Returns the argument sequence, $item-sequence, if it contains exactly one item. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the item-sequence")
 			},
-			new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.EXACTLY_ONE, "$item-sequence if it contains exactly one item. Otherwise, an error is raised."));
 				
 	/**
 	 * @param context
@@ -64,7 +67,7 @@ public class FunExactlyOne extends Function {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
@@ -73,8 +76,10 @@ public class FunExactlyOne extends Function {
         }
         
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
-		if (!result.hasOne())
+		if (!result.hasOne()) {
+            logger.error("fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
 			throw new XPathException(this, "fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
+        }
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
