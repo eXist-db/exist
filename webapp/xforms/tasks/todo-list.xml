@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="../xsltforms/xsltforms.xsl" type="text/xsl"?>
-<?oxygen NVDLSchema="../../../../Development/Oxygen%20XML%20Editor%2010/samples/nvdl/xhtml-xforms.nvdl"?>
-<book xmlns:ev="http://www.w3.org/2001/xml-events"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xf="http://www.w3.org/2002/xforms">
+<?css-conversion no?>
+<?oxygen NVDLSchema="../../../../../Development/Oxygen/samples/nvdl/xhtml-xforms.nvdl"?>
+<book xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xf="http://www.w3.org/2002/xforms">
     <bookinfo>
         <graphic fileref="../../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
@@ -26,21 +27,21 @@
             <xf:instance id="new">
                 <edit xmlns="">
                     <todo id="">
-                        <name></name>
+                        <name/>
                         <project>default</project>
                         <priority>0</priority>
                         <progress>0</progress>
-                        <description></description>
+                        <description/>
                     </todo>
                 </edit>
             </xf:instance>
             <!-- session instance is used to keep internal properties
                  of the app -->
-             <xf:instance id="session" xmlns="">
+            <xf:instance id="session" xmlns="">
                 <session new-todo="false">
                     <action name="" uuid=""/>
                 </session>
-             </xf:instance>
+            </xf:instance>
             <!-- list of projects -->
             <xf:instance id="projects" src="../../rest/db/todo?_query=/projects&amp;_wrap=no"/>
             <!-- priorities -->
@@ -53,7 +54,7 @@
                     <priority prio="-2">Very Low</priority>
                 </priorities>
             </xf:instance>
-            
+
             <xf:instance id="completeness">
                 <percent xmlns="">
                     <value>0</value>
@@ -69,7 +70,7 @@
                     <value>100</value>
                 </percent>
             </xf:instance>
-            
+
             <!-- bind to the currently edited task -->
             <xf:bind id="bind-current-todo" nodeset="instance('edit')//todo[last()]">
                 <xf:bind id="bind-title" nodeset="name" required="true()"/>
@@ -79,17 +80,25 @@
                  to 'delete' -->
             <xf:bind id="confirm-delete" nodeset="instance('session')/action/@name"
                 relevant="instance('session')/action/@name = 'delete'"/>
-            
+
             <!-- Submit the currently edited task -->
-            <xf:submission id="s1" instance="edit" ref="instance('edit')//todo[last()]" method="post"
-                action="todo.xql" replace="instance"/>
-            
+            <xf:submission id="s1" instance="edit" ref="instance('edit')//todo[last()]"
+                method="post" action="todo.xql" replace="instance"/>
+
             <!-- Submit the project list  -->
             <xf:submission id="sprojects" method="put" ref="instance('projects')"
                 action="../rest/db/todo/todo-projects.xml" replace="none"/>
             <!-- Submit an action, e.g. to delete a task -->
             <xf:submission id="saction" ref="instance('session')//action" method="post"
                 action="todo.xql" replace="none"/>
+            
+            <!-- Initialize the database collection when the XForms has loaded by
+                submitting action 'init' to 'todo.xql' -->
+            <xf:action ev:event="xforms-ready">
+                <xf:setvalue ref="instance('session')/action/@name"
+                value="'init'"/>
+                <xf:send submission="saction"/>
+            </xf:action>
         </xf:model>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
@@ -98,61 +107,70 @@
         <xf:switch>
             <!-- Main page: display a table of tasks -->
             <xf:case id="case-list" selected="true">
-                <ul class="xforms-repeat tablehead">
-                    <li>
-                        <span class="colhead">Priority</span>
-                        <span class="colhead">Project</span>
-                        <span class="colhead">Progress</span>
-                        <span class="colhead">Title</span>
-                    </li>
-                </ul>
-                <xf:repeat class="todorepeat" id="todolist" nodeset="todo">
-                    <span class="project">
-                        <xf:output ref="instance('priorities')/priority[@prio = priority]"/>
-                    </span>
-                    <span class="project">
-                        <xf:output ref="project"/>
-                    </span>
-                    <span class="progress">
-                        <xf:output ref="progress"/>
-                    </span>
-                    <span class="buttons">
-                        <xf:trigger>
-                            <xf:label>Edit</xf:label>
-                            <xf:action ev:event="DOMActivate">
-                                <xf:setvalue ref="instance('session')/@new-todo" value="'false'"/>
-                                <!-- For editing, copy the record into the edit instance -->
-                                <xf:insert nodeset="instance('edit')//todo"
-                                    origin="instance('todo')//todo[index('todolist')]" at="last()"/>
-                                <!-- Remove any old record from the edit instance -->
-                                <xf:delete nodeset="instance('edit')//todo" at="1"/>
-                                <!-- Toggle the edit form -->
-                                <xf:toggle case="case-edit"/>
-                            </xf:action>
-                        </xf:trigger>
-                        <xf:trigger>
-                            <xf:label>Delete</xf:label>
-                            <xf:action ev:event="DOMActivate">
-                                <!-- will not directly delete a task, but activate the confirmation
-                                     dialog by setting the current action to 'delete'. The confirmation
-                                     dialog binds to this. -->
-                                <xf:setvalue ref="instance('session')/action/@name" value="'delete'"/>
-                                <xf:setvalue ref="instance('session')/action/@uuid"
-                                    value="instance('todo')//todo[index('todolist')]/@id"/>
-                            </xf:action>
-                        </xf:trigger>
-                    </span>
-                    <span class="title">
-                        <xf:output ref="name"/>
-                    </span>
-                </xf:repeat>
+                <table cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th width="10%">Priority</th>
+                            <th width="20%">Project</th>
+                            <th width="10%">Progress</th>
+                            <th width="45%">Title</th>
+                            <th width="15%"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xf:repeat class="todorepeat" id="todolist" nodeset="todo"
+                            appearance="minimal">
+                            <td class="project">
+                                <xf:output ref="instance('priorities')/priority[@prio = current()/priority]"/>
+                            </td>
+                            <td class="project">
+                                <xf:output ref="project"/>
+                            </td>
+                            <td class="progress">
+                                <xf:output ref="progress"/>
+                            </td>
+                            <td class="title">
+                                <xf:output ref="name"/>
+                            </td>
+                            <td class="buttons">
+                                <xf:trigger>
+                                    <xf:label>Edit</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:setvalue ref="instance('session')/@new-todo"
+                                            value="'false'"/>
+                                        <!-- For editing, copy the record into the edit instance -->
+                                        <xf:insert nodeset="instance('edit')//todo"
+                                            origin="instance('todo')//todo[index('todolist')]"
+                                            at="last()"/>
+                                        <!-- Remove any old record from the edit instance -->
+                                        <xf:delete nodeset="instance('edit')//todo" at="1"/>
+                                        <!-- Toggle the edit form -->
+                                        <xf:toggle case="case-edit"/>
+                                    </xf:action>
+                                </xf:trigger>
+                                <xf:trigger>
+                                    <xf:label>Delete</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <!-- will not directly delete a task, but activate the confirmation
+                                            dialog by setting the current action to 'delete'. The confirmation
+                                            dialog binds to this. -->
+                                        <xf:setvalue ref="instance('session')/action/@name"
+                                            value="'delete'"/>
+                                        <xf:setvalue ref="instance('session')/action/@uuid"
+                                            value="instance('todo')//todo[index('todolist')]/@id"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </td>
+                        </xf:repeat>
+                    </tbody>
+                </table>
                 <xf:trigger>
                     <xf:label>New</xf:label>
                     <xf:action ev:event="DOMActivate">
                         <xf:setvalue ref="instance('session')/@new-todo" value="'true'"/>
                         <!-- Copy an empty template from the 'new' instance into the 'edit' instance -->
                         <xf:insert nodeset="instance('edit')//todo" origin="instance('new')/todo"
-                        at="last()"/>
+                            at="last()"/>
                         <!-- Cleanup old data from the edit instance -->
                         <xf:delete nodeset="instance('edit')//todo" at="1"/>
                         <!-- Switch to the edit form -->
@@ -163,37 +181,39 @@
             <!-- The main edit form -->
             <xf:case id="case-edit">
                 <xf:group bind="bind-current-todo">
-                    <xf:select1 ref="priority" appearance="minimal">
+                    <xf:select1 ref="priority" appearance="compact" class="block">
                         <xf:label class="fw">Priority</xf:label>
                         <xf:itemset nodeset="instance('priorities')//priority">
                             <xf:label ref="."/>
                             <xf:value ref="@prio"/>
                         </xf:itemset>
                     </xf:select1>
-                    <xf:select1 ref="project" appearance="minimal" class="project-select">
-                        <xf:label class="fw">Project</xf:label>
-                        <xf:itemset nodeset="instance('projects')//project">
-                            <xf:label ref="."/>
-                            <xf:value ref="."/>
-                        </xf:itemset>
-                    </xf:select1>
-                    <xf:trigger>
-                        <xf:label>Edit Projects</xf:label>
-                        <xf:action ev:event="DOMActivate">
-                            <xf:toggle case="case-projects"/>
-                        </xf:action>
-                    </xf:trigger>
-                    <xf:input bind="bind-title">
+                    <div class="project-select block">
+                        <xf:select1 ref="project" appearance="minimal">
+                            <xf:label class="fw">Project</xf:label>
+                            <xf:itemset nodeset="instance('projects')//project">
+                                <xf:label ref="."/>
+                                <xf:value ref="."/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <xf:trigger>
+                            <xf:label>Edit Projects</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                                <xf:toggle case="case-projects"/>
+                            </xf:action>
+                        </xf:trigger>
+                    </div>
+                    <xf:input bind="bind-title" class="block">
                         <xf:label class="fw">Title</xf:label>
                     </xf:input>
-                    <xf:select1 ref="progress" appearance="minimal">
+                    <xf:select1 ref="progress" appearance="minimal" class="block">
                         <xf:label class="fw">Progress</xf:label>
                         <xf:itemset nodeset="instance('completeness')//value">
                             <xf:label ref="."/>
                             <xf:value ref="."/>
                         </xf:itemset>
                     </xf:select1>
-                    <xf:textarea ref="description">
+                    <xf:textarea ref="description" class="block">
                         <xf:label class="fw">Description</xf:label>
                     </xf:textarea>
                     <xf:trigger>
@@ -212,13 +232,12 @@
                                 nodeset="instance('todo')//todo[index('todolist')]" position="after"
                                 if="instance('session')/@new-todo = 'false'"/>
                             <xf:delete nodeset="instance('todo')//todo" at="index('todolist') - 1"
-                            if="instance('session')/@new-todo = 'false'"/>
+                                if="instance('session')/@new-todo = 'false'"/>
                             <!-- editing a new node: append to the existing tasks or
                                  create a first task -->
                             <xf:insert origin="instance('edit')//todo[last()]"
-                                nodeset="if(instance('todo')//todo[1],instance('todo')//todo[1],instance('todo')/*)" 
-                                position="after"
-                                if="instance('session')/@new-todo = 'true'"/>
+                                nodeset="if(instance('todo')//todo[1],instance('todo')//todo[1],instance('todo')/*)"
+                                position="after" if="instance('session')/@new-todo = 'true'"/>
                             <xf:setindex repeat="todolist" index="last()"
                                 if="instance('session')/@new-todo = 'true'"/>
                             <!-- switch back to the task list -->

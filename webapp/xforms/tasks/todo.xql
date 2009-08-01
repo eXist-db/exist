@@ -19,6 +19,10 @@ declare function todo:delete($uuid as xs:string) {
     xdb:remove("/db/todo", concat($uuid, ".xml"))
 };
 
+declare function todo:initialize() {
+    xdb:create-collection("/db", "todo")
+};
+
 declare function todo:load-instance() {
     let $instances := collection("/db/todo")/todo
     return
@@ -36,7 +40,9 @@ return
     else if ($posted instance of element(action)) then
         let $action := $posted/@name
         return
-            if ($action eq 'delete') then
+            if ($action eq 'init') then
+                todo:initialize()
+            else if ($action eq 'delete') then
                 todo:delete($posted/@uuid)
             else ()
     else

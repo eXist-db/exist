@@ -1,17 +1,26 @@
-ul.xforms-repeat li
-{
-    list-style-type:none;
-    padding: 10px;
-}
-
 .xforms-repeat-item
 {
     padding: 4px;
 }
 
+.block {
+    display: block;
+    padding-bottom: 5px;
+}
+
 .xforms-value
 {
     width: 280px;
+}
+
+.xforms-input {
+    display: block;
+}
+
+#case-edit label, #case-projects label {
+    display: block;
+    float: left;
+    width: 120px;
 }
 
 textarea.xforms-value
@@ -28,43 +37,29 @@ textarea.xforms-value
     margin-right: 1em;
 }
 
-.tablehead {
+table {
+    width: 100%;
+}
+
+td, th {
+    text-align: left;
+    padding: 4px;
+    margin: 0;
+}
+
+thead {
     background-color: #4B4B4A;
     color: white;
     padding-bottom: 5px;
 }
 
-.project, .progress, .colhead
-{
-    display: block;
-    float: left;
-    width: 15%;
-}
-
-.colhead {
-    font-weight: bold;
-}
-
-.title
-{
-    display: block;
-    margin-left: 40%;
-}
-
 .buttons
 {
-    float: right;
-    display: block;
     text-align: right;
-    margin-top: -6px;
 }
 
 #cancel-button div
 {
-    float: left;
-}
-
-.project-select {
     float: left;
 }
 
