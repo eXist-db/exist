@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
- *  
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -18,8 +19,9 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.functions;
+
+import org.apache.log4j.Logger;
 
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentSet;
@@ -40,6 +42,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -55,26 +59,34 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+/**
+ *
+ * @author wolf
+ * @author perig
+ *
+ */
 public class FunId extends Function {
-
+	protected static final Logger logger = Logger.getLogger(FunId.class);
 	public final static FunctionSignature signature[] = {
 			new FunctionSignature(
 				new QName("id", Function.BUILTIN_FUNCTION_NS),
 				"Returns the sequence of element nodes that have an ID value " +
-				"matching the value of one or more of the IDREF values supplied in $a. " +
-				"If none is matching or $a is the empty sequence, returns the empty sequence.",
+				"matching the value of one or more of the IDREF values supplied in $id-sequence. " +
+				"If none is matching or $id-sequence is the empty sequence, returns the empty sequence.",
 				new SequenceType[] {
-					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE)),
+                    new FunctionParameterSequenceType("idref-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "the idref-sequence")
+                },
+				new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE, "elements with IDs  matching IDREFs from $idref-sequence")),
             new FunctionSignature(
                     new QName("id", Function.BUILTIN_FUNCTION_NS),
                     "Returns the sequence of element nodes that have an ID value " +
-                    "matching the value of one or more of the IDREF values supplied in $a. " +
-                    "If none is matching or $a is the empty sequence, returns the empty sequence.",
+                    "matching the value of one or more of the IDREF values supplied in $idref-sequence and is in the same document as $node-in-document. " +
+                    "If none is matching or $idref-sequence is the empty sequence, returns the empty sequence.",
                     new SequenceType[] {
-                         new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
-                         new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
-                    new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE))
+                        new FunctionParameterSequenceType("idref-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "the idref-sequence"),
+                        new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "the node-in-document")
+                    },
+                    new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE, "elements with IDs matching IDREFs from $idref-sequence in the same document as $node-in-document"))
     };
 
 	/**
@@ -97,9 +109,10 @@ public class FunId extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
 
-        if (getArgumentCount() < 1)
+        if (getArgumentCount() < 1) {
+            logger.error("function id requires one argument");
 			throw new XPathException(this, "function id requires one argument");
-
+        }
         if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 
@@ -116,12 +129,16 @@ public class FunId extends Function {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
                 Sequence nodes = getArgument(1).eval(contextSequence);
-                if (nodes.isEmpty())
+                if (nodes.isEmpty()) {
+                    logger.error("XPDY0002: no node or context item for fn:id");
                     throw new XPathException(this,
                             "XPDY0002: no node or context item for fn:id");
-                if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE))
+                }
+                if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) {
+                    logger.error("XPTY0004: fn:id() argument is not a node");
                 	throw new XPathException(this,
                     "XPTY0004: fn:id() argument is not a node");
+                }
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 	//TODO : how to enforce this ?
@@ -134,11 +151,13 @@ public class FunId extends Function {
                     docs = ndocs;
                 }
                 contextSequence = node;
-            } else if (contextSequence == null)
+            } else if (contextSequence == null) {
+                logger.error("XPDY0002: no context item specified");
                 throw new XPathException(this, "XPDY0002: no context item specified");
-            else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
+           } else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
+                logger.error("XPTY0004: context item is not a node");
     			throw new XPathException(this, "XPTY0004: context item is not a node");
-    		else {
+    		} else {
     			if (contextSequence.isPersistentSet())
                     docs = contextSequence.toNodeSet().getDocumentSet();
                 else

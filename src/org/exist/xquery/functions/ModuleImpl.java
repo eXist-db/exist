@@ -111,7 +111,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunIndexOf.fnIndexOf[0], FunIndexOf.class),
 		new FunctionDef(FunIndexOf.fnIndexOf[1], FunIndexOf.class),
 		new FunctionDef(FunIRIToURI.signature, FunIRIToURI.class),
-		new FunctionDef(FunItemAt.signature, FunItemAt.class),
+		new FunctionDef(DeprecatedFunItemAt.signature, DeprecatedFunItemAt.class),
 		new FunctionDef(FunInScopePrefixes.signature, FunInScopePrefixes.class),
 		new FunctionDef(FunInsertBefore.signature, FunInsertBefore.class),
 		new FunctionDef(FunLang.signatures[0], FunLang.class),
