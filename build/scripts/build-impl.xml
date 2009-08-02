@@ -601,7 +601,7 @@
     <target name="extensions-xslt" >
         <xslt basedir="${build.extensions.indexes}" in="${build.extensions.indexes}/modules.xml"
             out="${build.extensions.indexes}/build.xml"
-            style="${build.extensions.indexes}/generate.xsl"/>
+            style="${build.extensions.indexes}/generate.xsl" classpathref="classpath.core" processor="trax"/>
     </target>
 
     <!-- ============================================================================ -->
