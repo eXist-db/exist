@@ -30,7 +30,11 @@ return <m score="{$score}">{$m}</m>]]></code>
     </query>
     <query>
         <description>Show the context of a match</description>
-        <code><![CDATA[for $speech in //SPEECH[near(LINE, 'to be or not')]
+        <code><![CDATA[let $query :=
+    <query>
+        <bool><term occur="must">nation</term><wildcard occur="should">miser*</wildcard></bool>
+    </query>
+for $speech in //SPEECH[ft:query(., $query)]
 let $scene := $speech/ancestor::SCENE,
     $act := $scene/ancestor::ACT,
     $play := $scene/ancestor::PLAY
