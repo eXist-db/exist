@@ -378,7 +378,7 @@ function execQuery() {
         success: showQueryResponse,
         failure: requestFailed
     };
-    YAHOO.util.Connect.asyncRequest('POST', 'sandbox.xql', callback, params);
+    YAHOO.util.Connect.asyncRequest('POST', 'execute', callback, params);
 	message('Query sent ...');
 }
 
@@ -467,13 +467,13 @@ function requestFailed(request) {
  */
 function retrieveNext() {
     if (currentOffset > 0 && currentOffset <= endOffset) {
-        var params = 'num=' + currentOffset;
+        var url = 'results/' + currentOffset;
 		currentOffset++;
         var callback = {
             success: itemRetrieved,
             failure: requestFailed
         };
-        YAHOO.util.Connect.asyncRequest('GET', 'sandbox.xql?' + params, callback);
+        YAHOO.util.Connect.asyncRequest('GET', url, callback);
 	} else {
         message('', false);
     }
