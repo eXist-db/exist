@@ -115,7 +115,7 @@
                     </listitem>
                     <listitem>
                         <para>if you are using eXist 1.3/SVN trunk, consider <emphasis>switching to
-                                the new Lucene-based index</emphasis>. It provides better
+                                the new <ulink url="lucene.xml">Lucene-based index</ulink></emphasis>. It provides better
                             performance and stability.</para>
                     </listitem>
                 </itemizedlist>
@@ -215,7 +215,7 @@
                     be faster to post-process the returned node set and filter out wrong matches
                     than using a much slower regular expression.</para>
 
-                <para>eXist 1.3 offers a new full text index which is based on Apache Lucene. It
+                <para>eXist 1.3 offers a <ulink url="lucene.xml">new full text index</ulink> which is based on Apache Lucene. It
                     provides better performance and overall stability than the builtin index.</para>
             </section>
         </section>
