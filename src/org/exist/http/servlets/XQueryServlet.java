@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.exist.http.Descriptor;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -52,6 +53,8 @@ import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Item;
+import org.exist.dom.XMLUtil;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -80,7 +83,8 @@ import org.xmldb.api.base.XMLDBException;
  * 	<tr><td>container-encoding</td><td>The character encoding used by the servlet
  * 	container.</td></tr>
  * 	<tr><td>form-encoding</td><td>The character encoding used by parameters posted
- * 	from HTML forms.</td></tr>
+ * 	from HTML for
+ * ms.</td></tr>
  * </table>
  *
  * User identity and password may also be specified through the HTTP session attributes
@@ -262,23 +266,45 @@ public class XQueryServlet extends HttpServlet {
         response.setContentType(contentType + "; charset=" + formEncoding);
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
-        
-        File f = new File(path);
-        if(!f.canRead()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            sendError(output, "Cannot read source file", path);
-            return;
+
+        Source source;
+        Object sourceAttrib = request.getAttribute("xquery.source");
+        if (sourceAttrib != null) {
+            String s;
+            if (sourceAttrib instanceof Item)
+                try {
+                    s = ((Item) sourceAttrib).getStringValue();
+                } catch (XPathException e) {
+                    throw new ServletException("Failed to read XQuery source string from " +
+                        "request attribute 'xquery.source': " + e.getMessage(), e);
+                }
+            else
+                s = sourceAttrib.toString();
+            source = new StringSource(s);
+        } else {
+            File f = new File(path);
+            if(!f.canRead()) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                sendError(output, "Cannot read source file", path);
+                return;
+            }
+            source = new FileSource(f, encoding, true);
         }
+
+        boolean reportErrors = false;
+        String errorOpt = (String) request.getAttribute("xquery.report-errors");
+        if (errorOpt != null)
+            reportErrors = errorOpt.equalsIgnoreCase("YES");
         
         //allow source viewing for GET?
         if(request.getMethod().toUpperCase().equals("GET")) {
             String option;
-            boolean source = false;
+            boolean allowSource = false;
             if((option = request.getParameter("_source")) != null)
-                source = option.equals("yes");
+                allowSource = option.equals("yes");
             
             //Should we display the source of the XQuery or execute it
-            if(source && descriptor != null) {
+            if(allowSource && descriptor != null) {
                 //show the source
                 
                 //check are we allowed to show the xquery source - descriptor.xml
@@ -287,8 +313,7 @@ public class XQueryServlet extends HttpServlet {
                     //Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
                     response.setContentType("text/plain;charset=" + formEncoding);
-                    FileSource fs = new FileSource(f, encoding, true);
-                    output.write(fs.getContent());
+                    output.write(source.getContent());
                     output.flush();
                     return;
                 } else {
@@ -358,8 +383,7 @@ public class XQueryServlet extends HttpServlet {
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
                 service.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
             }
-            
-            Source source = new FileSource(f, encoding, true);
+
             ResourceSet result = service.execute(source);
             String mediaType = service.getProperty(OutputKeys.MEDIA_TYPE);
             if (mediaType != null) {
@@ -377,9 +401,12 @@ public class XQueryServlet extends HttpServlet {
 
         } catch (XMLDBException e) {
             LOG.debug(e.getMessage(), e);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            sendError(output, e.getMessage(), e);
-            
+            if (reportErrors)
+                writeError(output, e);
+            else {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                sendError(output, e.getMessage(), e);
+            }
         } catch (Throwable e){
             LOG.error(e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -425,7 +452,17 @@ public class XQueryServlet extends HttpServlet {
         
         out.print("</div></body></html>");
     }
-    
+
+    private void writeError(PrintWriter out, XMLDBException e) {
+        out.print("<error>");
+        Throwable t = e.getCause();
+        if (t != null)
+            out.print(XMLUtil.encodeAttrMarkup(t.getMessage()));
+        else
+            out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));
+        out.println("</error>");
+    }
+
     private void sendError(PrintWriter out, String message, String description) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
