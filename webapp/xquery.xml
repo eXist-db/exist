@@ -53,12 +53,6 @@
                             checks!</para>
                         </important>
                     </listitem>
-                    <listitem>
-                        <para>XPath Axes: <command>following</command>, <command>preceding</command>
-                            with wildcards.</para>
-                        <para>Both axes work with an explicit element or attribute name test though
-                            (e.g. following::foo will work, but following::* will not).</para>
-                    </listitem>
                 </itemizedlist>
             </note>
 
