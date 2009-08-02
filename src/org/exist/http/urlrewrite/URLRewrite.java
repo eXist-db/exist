@@ -39,6 +39,8 @@ import java.util.Iterator;
  */
 public abstract class URLRewrite {
 
+    private final static Object UNSET = new Object();
+    
     protected String uri;
     protected String target;
     protected Map attributes = null;
@@ -57,6 +59,8 @@ public abstract class URLRewrite {
                         addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
                     } else if ("set-attribute".equals(elem.getLocalName())) {
                         setAttribute(elem.getAttribute("name"), elem.getAttribute("value"));
+                    } else if ("clear-attribute".equals(elem.getLocalName())) {
+                        unsetAttribute(elem.getAttribute("name"));
                     } else if ("set-header".equals(elem.getLocalName())) {
                        setHeader(elem.getAttribute("name"), elem.getAttribute("value"));
                     }
@@ -84,6 +88,11 @@ public abstract class URLRewrite {
         attributes.put(name, value);
     }
 
+    private void unsetAttribute(String name) {
+        if (attributes == null)
+            attributes = new HashMap();
+        attributes.put(name, UNSET);
+    }
     
     public void setTarget(String target) {
         this.target = target;
@@ -102,7 +111,11 @@ public abstract class URLRewrite {
         if (attributes != null) {
             for (Iterator iterator = attributes.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry entry = (Map.Entry) iterator.next();
-                request.setAttribute(entry.getKey().toString(), entry.getValue());
+                Object value = entry.getValue();
+                if (value == UNSET)
+                    request.removeAttribute(entry.getKey().toString());
+                else
+                    request.setAttribute(entry.getKey().toString(), entry.getValue());
             }
         }
     }
