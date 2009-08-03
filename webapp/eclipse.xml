@@ -6,6 +6,7 @@
         
         <productname>Open Source Native XML Database</productname>
         <title>Eclipse setup</title>
+        <date>August 2009</date>
         <author>
             <firstname>Loren</firstname>
             <surname>Cahlander</surname>
@@ -98,7 +99,7 @@
         <para>Click on OK.</para>
         <para>Close eclipse.</para>
         <para>Compiling exist from the command line within the exist-dev1.3 folder.</para>
-        <para>In extensions/build.properties, change all of the entries from false to true:</para>
+        <para>Copy extensions/build.properties to extensions/local.build.properties. In extensions/local.build.properties, change all of the entries from false to true:</para>
         <para>Run:</para>
         <para>./build.sh clean</para>
         <para>./build.sh download-additional-jars</para>
