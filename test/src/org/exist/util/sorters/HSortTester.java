@@ -26,60 +26,52 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.exist.dom.NodeProxy;
-import org.exist.util.FastQSort;
+import org.exist.util.HSort;
 
 /**
- * Interface to the quicksort methods.
- * <p>
- * This work was undertaken as part of the development of the taxonomic
- * repository at http://biodiversity.org.au . See <A
- * href="ghw-at-anbg.gov.au">Greg&nbsp;Whitbread</A> for further details.
+ * Interface to the improved heapsort methods.
  * 
- * @author pmurray@bigpond.com
- * @author pmurray@anbg.gov.au
- * @author https://sourceforge.net/users/paulmurray
- * @author http://www.users.bigpond.com/pmurray
- * @see FastQSort
+ * @author José María Fernández (jmfg@users.sourceforge.net)
+ * @see HSort
  * 
  */
 
-class FastQSortTester extends SortingAlgorithmTester {
-	public <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
-		throws Exception
-	{
-		FastQSort.sort(a, c, lo, hi);
-	}
-
+class HSortTester extends SortingAlgorithmTester {
 	public <C extends Comparable<C>> void invokeSort(C[] a, int lo, int hi)
 		throws Exception
 	{
-		FastQSort.sort(a, lo, hi);
+		HSort.sort(a, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(C[] a, int lo, int hi)
+	public <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
 		throws Exception
 	{
-		FastQSort.sort(a, lo, hi);
+		HSort.sort(a, c, lo, hi);
+	}
+
+	public <C extends Comparable<C>>  void sort(C[] a, int lo, int hi)
+		throws Exception
+	{
+		HSort.sort(a, lo, hi);
 	}
 
 	public <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
 		throws Exception
 	{
-		FastQSort.sort(a, lo, hi, b);
+		HSort.sort(a, lo, hi, b);
 	}
 
 	public <C> void sort(C[] a, Comparator<C> c, int lo,
 			int hi)
 		throws Exception
 	{
-		FastQSort.sort(a, c, lo, hi);
-
+		HSort.sort(a, c, lo, hi);
 	}
 
 	public <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
 		throws Exception
 	{
-		FastQSort.sort(a, lo, hi);
+		HSort.sort(a, lo, hi);
 	}
 
 	public void sort(int lo, int hi,NodeProxy[] a)
@@ -91,12 +83,12 @@ class FastQSortTester extends SortingAlgorithmTester {
 	public void sort(long[] a, int lo, int hi, Object[] b)
 		throws Exception
 	{
-		FastQSort.sort(a, lo, hi, b);
+		HSort.sort(a, lo, hi, b);
 	}
 
 	public void sortByNodeId(NodeProxy[] a, int lo, int hi)
 		throws Exception
 	{
-		FastQSort.sortByNodeId(a, lo, hi);
+		HSort.sortByNodeId(a, lo, hi);
 	}
 }

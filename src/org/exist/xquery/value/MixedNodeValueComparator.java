@@ -44,7 +44,7 @@ public class MixedNodeValueComparator implements Comparator {
                 return -1;
         } else {
             if (n2.getImplementationType() == NodeValue.PERSISTENT_NODE)
-            	return ((NodeProxy)o1).compareTo(o2);
+            	return ((NodeProxy)o1).compareTo((NodeProxy)o2);
             else
                 return 1;
         }

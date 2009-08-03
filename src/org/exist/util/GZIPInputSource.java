@@ -14,7 +14,7 @@ import java.util.zip.GZIPInputStream;
  * This is very useful for eXist, which works in two steps:
  * validation and insertion.
  * 
- * @author jmfernandez
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  *
  */
 public final class GZIPInputSource
