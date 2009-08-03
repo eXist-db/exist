@@ -176,7 +176,7 @@ public class StoredModuleTest {
 
         String module2 = "module namespace mod2 = 'urn:module2'; " +
                 "import module namespace mod3 = 'urn:module3' " +
-                "at  '" + collection3Name + "/module3.xqm'; " +
+                "at  'module3/module3.xqm'; " +
                 "declare function mod2:showMe() as xs:string {" +
                 " mod3:showMe() " +
                 "};";
@@ -187,7 +187,7 @@ public class StoredModuleTest {
                 "};";
 
         String query = "import module namespace mod2 = 'urn:module2' " +
-                "at  'xmldb:exist:/" + collection2Name + "/module2.xqm'; " +
+                "at  'module2/module2.xqm'; " +
                 "mod2:showMe()";
 
         String module3b = "module namespace mod3 = 'urn:module3';" +
