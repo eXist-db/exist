@@ -198,7 +198,7 @@ public class StoredModuleTest {
         Collection c2 = createCollection(collection2Name);
         writeModule(c2, "module2.xqm", module2);
 
-        writeModule(c2, "module3.xqm", module3b);
+        //writeModule(c2, "module3.xqm", module3b);
 
         Collection c3 = createCollection(collection3Name);
         writeModule(c3, "module3.xqm", module3a);
