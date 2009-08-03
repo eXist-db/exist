@@ -1,21 +1,23 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2009 The eXist Project
- *  http://exist.sourceforge.net
- *  
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
  */
 
 package org.exist.util.sorters;
@@ -39,12 +41,12 @@ import org.exist.util.sorters.ComparatorChecker.SortOrder;
 public class SortTestComparator<CH extends ComparatorChecker>
 	extends SortTestCase<CH>
 {
-	SortTestComparator(CH checker, String method) {
-		super(checker, method);
+	SortTestComparator(CH checker, String method, String testSuite) {
+		super(checker, method, testSuite);
 	}
 
 	public void testComparatorAscending() throws Exception {
-		System.out.println("ComparatorAscending on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort(SortOrder.ASCENDING);
@@ -53,7 +55,7 @@ public class SortTestComparator<CH extends ComparatorChecker>
 	}
 
 	public void testComparatorDescending() throws Exception {
-		System.out.println("ComparatorDescending on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort(SortOrder.DESCENDING);
@@ -62,7 +64,7 @@ public class SortTestComparator<CH extends ComparatorChecker>
 	}
 
 	public void testBadComparatorUnstable() throws Exception {
-		System.out.println("BadComparatorUnstable on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		for (int i = 0; i < 10; i++) {
 			checker.init(getRandomIntArray(100));
 			checker.sort(SortOrder.UNSTABLE);
@@ -70,13 +72,13 @@ public class SortTestComparator<CH extends ComparatorChecker>
 	}
 
 	public void testBadComparatorRandom() throws Exception {
-		System.out.println("BadComparatorRandom on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		checker.init(getRandomIntArray(100));
 		checker.sort(SortOrder.RANDOM);
 	}
 
 	public void testSortSubsection1asc() throws Exception {
-		System.out.println("SortSubsection1 asc on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -100,7 +102,7 @@ public class SortTestComparator<CH extends ComparatorChecker>
 	}
 
 	public void testSortSubsection2asc() throws Exception {
-		System.out.println("SortSubsection2 asc on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 
@@ -123,7 +125,7 @@ public class SortTestComparator<CH extends ComparatorChecker>
 	}
 
 	public void testSortSubsection1desc() throws Exception {
-		System.out.println("SortSubsection1 desc on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
@@ -149,7 +151,7 @@ public class SortTestComparator<CH extends ComparatorChecker>
 	}
 
 	public void testSortSubsection2desc() throws Exception {
-		System.out.println("SortSubsection2 desc on "+getName());
+		System.out.print("\n"+testSuite+" "+getName()+" ");
 		for (int i = 0; i < 1000; i += 100) {
 			int[] a = new int[1000];
 

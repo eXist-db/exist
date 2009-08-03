@@ -1,21 +1,23 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2009 The eXist Project
- *  http://exist.sourceforge.net
- *  
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
  */
 
 package org.exist.util.sorters;
@@ -49,7 +51,7 @@ class PlainArrayChecker extends ComparatorChecker {
 	 * It asserts the ascending ordering of an Integer array
 	 */
 	void check(int lo, int hi) {
-		for (int i = lo; i < hi - 1; i++) {
+		for (int i = lo; i < hi; i++) {
 			assertTrue(a[i].intValue() <= a[i + 1].intValue());
 		}
 	}
@@ -57,7 +59,9 @@ class PlainArrayChecker extends ComparatorChecker {
 	/**
 	 * It loads an input int array into the internal Integer one
 	 */
-	void init(int[] values) throws Exception {
+	void init(int[] values)
+		throws Exception
+	{
 		a = new Integer[values.length];
 		for (int i = 0; i < values.length; i++) {
 			a[i] = Integer.valueOf(values[i]);
@@ -75,7 +79,9 @@ class PlainArrayChecker extends ComparatorChecker {
 	/**
 	 * This method invokes sort routine on selected sorter
 	 */
-	void sort(int lo, int hi) throws Exception {
+	void sort(int lo, int hi)
+		throws Exception
+	{
 		sorter.sort(a, lo, hi);
 	}
 
@@ -83,7 +89,9 @@ class PlainArrayChecker extends ComparatorChecker {
 	 * This method invokes sort routine with a given
 	 * comparator on selected sorter
 	 */
-	void sort(SortOrder sortOrder, int lo, int hi) throws Exception {
+	void sort(SortOrder sortOrder, int lo, int hi)
+		throws Exception
+	{
 		sorter.sort(a, getComparator(sortOrder), lo, hi);
 	}
 
@@ -98,9 +106,11 @@ class PlainArrayChecker extends ComparatorChecker {
 	 * It asserts the ascending ordering of an Integer array
 	 * given an specific comparator
 	 */
-	void check(SortOrder sortOrder, int lo, int hi) throws Exception {
+	void check(SortOrder sortOrder, int lo, int hi)
+		throws Exception
+	{
 		Comparator<Integer> c = getComparator(sortOrder);
-		for (int i = lo; i < hi - 1; i++) {
+		for (int i = lo; i < hi; i++) {
 			assertTrue(c.compare(a[i], a[i + 1]) <= 0);
 		}
 	}

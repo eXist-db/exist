@@ -1,21 +1,23 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2009 The eXist Project
- *  http://exist.sourceforge.net
- *  
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
  */
 
 package org.exist.util.sorters;
@@ -39,15 +41,22 @@ import org.exist.dom.NodeProxy;
  * 
  */
 public abstract class SortingAlgorithmTester {
-	abstract void sort(Comparable<?>[] a, int lo, int hi) throws Exception;
-
-	abstract void sort(Comparable<?>[] a, int lo, int hi, int[] b)
+	abstract <C extends Comparable<C>> void invokeSort(C[] a, int lo, int hi)
+		throws Exception;
+	
+	abstract <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
 		throws Exception;
 
-	abstract <T extends Comparable<T>> void sort(T[] a, Comparator<T> c,
+	abstract <C extends Comparable<C>> void sort(C[] a, int lo, int hi)
+		throws Exception;
+
+	abstract <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
+		throws Exception;
+
+	abstract <C> void sort(C[] a, Comparator<C> c,
 			int lo, int hi) throws Exception;
 
-	abstract <T extends Comparable<T>> void sort(List<T> a, int lo, int hi)
+	abstract <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
 		throws Exception;
 
 	// This one must change its parameters so some Java compilers do not
@@ -62,7 +71,8 @@ public abstract class SortingAlgorithmTester {
 		return new SortingAlgorithmTester[] {
 			new InsertionSortTester(),
 			new HeapSortTester(),
-			new FastQSortTester()
+			new FastQSortTester(),
+			new HSortTester(),
 		};
 	}
 }

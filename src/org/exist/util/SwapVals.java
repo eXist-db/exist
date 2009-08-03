@@ -60,23 +60,23 @@ public final class SwapVals {
 		a[j] = T;
 	}
 
-	public final static void swap(List a, int i, int j)
+	public final static <C> void swap(List<C> a, int i, int j)
 	//-----------------------------------------------
 	{
-		Object T;
+		C T;
 
 		T = a.get(i);
 		a.set(i, a.get(j));
 		a.set(j, T);
 	}
-
-	public final static void swap(Comparable[] a, int i, int j)
-	//-----------------------------------------------
-	{
-		Comparable T;
-
-		T = a[i];
-		a[i] = a[j];
-		a[j] = T;
-	}
+//
+//	public final static <C extends Comparable<C>>void swap(C[] a, int i, int j)
+//	//-----------------------------------------------
+//	{
+//		Comparable T;
+//
+//		T = a[i];
+//		a[i] = a[j];
+//		a[j] = T;
+//	}
 }

@@ -22,6 +22,7 @@
 package org.exist.dom;
 
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -76,7 +77,7 @@ import java.util.Properties;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable {
+public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable<NodeProxy> {
 
     /*
      * Special values for nodes gid :
@@ -211,7 +212,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public int getImplementationType() {
 	return NodeValue.PERSISTENT_NODE;
     }
-
+    
     /**
      * Ordering first according to document ID; then if equal
      * according to node gid.
@@ -223,19 +224,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 	if (diff != Constants.EQUAL)
             return diff;
 	return nodeId.compareTo(other.nodeId);
-    }
-
-    /**
-     * The method <code>compareTo</code>
-     *
-     * @param other an <code>Object</code> value
-     * @return an <code>int</code> value
-     */
-    public int compareTo(Object other) {
-	if(!(other instanceof NodeProxy))
-            //Always superior...
-	    return Constants.SUPERIOR;
-	return compareTo((NodeProxy) other);
     }
 
     /**
@@ -1113,8 +1101,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      *
      * @return an <code>Iterator</code> value
      */
-    public Iterator getCollectionIterator() {
-        return new Iterator() {
+    public Iterator<Collection> getCollectionIterator() {
+        return new Iterator<Collection>() {
 
 		boolean hasNext = true;
 
@@ -1122,7 +1110,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 		    return hasNext;
 		}
 
-		public Object next() {
+		public Collection next() {
 		    hasNext = false;
 		    return NodeProxy.this.getDocument().getCollection();
 		}
@@ -1440,8 +1428,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * Methods of MutableDocumentSet
      ************************************************/
 
-    public Iterator getDocumentIterator() {
-        return new Iterator() {
+    public Iterator<DocumentImpl> getDocumentIterator() {
+        return new Iterator<DocumentImpl>() {
 
             private boolean hasMore = true;
 
@@ -1449,8 +1437,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 return hasMore;
             }
 
-            public Object next() {
-                final Object next = hasMore ? doc : null;
+            public DocumentImpl next() {
+                final DocumentImpl next = hasMore ? doc : null;
                 hasMore = false;
                 return next;
             }
