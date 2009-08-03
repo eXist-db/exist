@@ -4,6 +4,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Quick Start Guide</title>
+	<date>August 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -104,25 +105,32 @@
             <example>
                 <title>Console Output</title>
                 <screen><![CDATA[
-                    [Using locale: en_GB.UTF-8
+                    [Using locale: en_US.UTF-8
+Configuring eXist from /Users/joe/workspace/eXist/conf.xml
 
-WARN: The following JAR file entries from 'org/exist/start/start.config' aren't available (this may NOT be a problem):
-    /Users/joepublic/Source/Thirdparty/eXist/examples.jar
-    /Users/joepublic/Source/Thirdparty/eXist/tools/ircbot/dist/ircbot.jar
+Running with Java 1.6.0_13 [Apple Inc. (Java HotSpot(TM) 64-Bit Server
+VM) in /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home]
 
-Configuring eXist from /Users/joepublic/Source/Thirdparty/eXist/conf.xml
-27 Jun 2009 19:07:27,410 [main] INFO  (FileResource.java [<clinit>]:60) - Checking Resource aliases
-27 Jun 2009 19:07:27,525 [main] INFO  (HttpServer.java [setStatsOn]:1130) - Statistics on = false for org.mortbay.jetty.Server@d0fffc
-27 Jun 2009 19:07:27,531 [main] INFO  (HttpServer.java [doStart]:684) - Version Jetty/5.1.12
-27 Jun 2009 19:07:27,962 [main] INFO  (Container.java [start]:74) - Started org.mortbay.jetty.servlet.WebApplicationHandler@96d110
+02 Aug 2009 11:09:01,865 [main] INFO  (FileResource.java
+[<clinit>]:60) - Checking Resource aliases
+02 Aug 2009 11:09:02,030 [main] INFO  (HttpServer.java
+[setStatsOn]:1130) - Statistics on = false for
+org.mortbay.jetty.Server@1ca7085c
+02 Aug 2009 11:09:02,047 [main] INFO  (HttpServer.java [doStart]:684)
+- Version Jetty/5.1.12
+02 Aug 2009 11:09:02,608 [main] INFO  (Container.java [start]:74) -
+Started org.mortbay.jetty.servlet.WebApplicationHandler@579347e8
 Logging already initialized. Skipping...
-27 Jun 2009 19:07:28,798 [main] INFO  (Container.java [start]:74) - Started WebApplicationContext[/exist,eXist XML Database]
-27 Jun 2009 19:07:28,896 [main] INFO  (SocketListener.java [start]:205) - Started SocketListener on 0.0.0.0:8080
-27 Jun 2009 19:07:28,896 [main] INFO  (Container.java [start]:74) - Started org.mortbay.jetty.Server@d0fffc
------------------------------------------------------
-Server has started on port 8080. Configured contexts:
+02 Aug 2009 11:09:04,162 [main] INFO  (Container.java [start]:74) -
+Started WebApplicationContext[/exist,eXist XML Database]
+02 Aug 2009 11:09:04,182 [main] INFO  (SocketListener.java
+[start]:205) - Started SocketListener on 0.0.0.0:8080
+02 Aug 2009 11:09:04,182 [main] INFO  (Container.java [start]:74) -
+Started org.mortbay.jetty.Server@1ca7085c
+----------------------------------------------------------------
+eXist-db has started on port 8080. Configured contexts:
 http://localhost:8080/exist
------------------------------------------------------
+----------------------------------------------------------------
  ]]></screen>
             </example>
         </section>
