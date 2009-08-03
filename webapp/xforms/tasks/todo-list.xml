@@ -2,6 +2,7 @@
 <?xml-stylesheet href="../xsltforms/xsltforms.xsl" type="text/xsl"?>
 <?css-conversion no?>
 <?oxygen NVDLSchema="../../../../../Development/Oxygen/samples/nvdl/xhtml-xforms.nvdl"?>
+<!-- $Id$ -->
 <book xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xf="http://www.w3.org/2002/xforms">
     <bookinfo>
