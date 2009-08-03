@@ -110,5 +110,6 @@
 	<classpathentry kind="lib" path="lib/user/jfreechart-1.0.12.jar"/>
 	<classpathentry kind="lib" path="lib/user/jcommon-1.0.15.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.4.1.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.4.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
