@@ -102,7 +102,7 @@
     
     <!-- Special task for unsigning jar files -->
     <target name="jnlp-unsign-all"
-            description="Sign all jar files.">
+            description="Unsign all jar files.">
         <taskdef name="unsignjar" 
                  classname="nl.ow.dilemma.ant.jar.UnsignJarTask" 
                  classpath="${asocat-exist.jar}"/>
