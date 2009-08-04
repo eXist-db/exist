@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2004-2007 The eXist Project
+ * Copyright (C) 2004-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -43,7 +43,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class Collations {
 
-    private final static Logger LOG = Logger.getLogger(Collations.class);
+    private final static Logger logger = Logger.getLogger(Collations.class);
 
     /**
      * The default unicode codepoint collation URI as defined by the XQuery
@@ -71,7 +71,8 @@ public class Collations {
      * @throws XPathException
      */
     public final static Collator getCollationFromURI(XQueryContext context,
-            String uri) throws XPathException {
+            String uri)
+        throws XPathException {
         if (uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith("?")) {
             URI u = null;
             try {
@@ -94,7 +95,6 @@ public class Collations {
             if (query == null) {
                 return getCollationFromParams(null, strength, null);
             } else {
-                LOG.debug("Loading collation: " + query);
                 String lang = null;
                 String decomposition = null;
                 StringTokenizer queryTokenizer = new StringTokenizer(query,
@@ -122,18 +122,24 @@ public class Collations {
             uri = uri.substring("java:".length());
             try {
                 Class collatorClass = Class.forName(uri);
-                if (!Collator.class.isAssignableFrom(collatorClass))
+                if (!Collator.class.isAssignableFrom(collatorClass)) {
+                    logger.error("The specified collator class is not a subclass of java.text.Collator");
                     throw new XPathException(
                             "The specified collator class is not a subclass of java.text.Collator");
+                }
                 return (Collator) collatorClass.newInstance();
             } catch (Exception e) {
+                logger.error("err:XQST0038: The specified collator class " + uri
+                        + " could not be found");
                 throw new XPathException("err:XQST0038: The specified collator class " + uri
                         + " could not be found", e);
             }
         } else if (CODEPOINT.equals(uri)) {
         	return null;
-        } else
-            throw new XPathException("err:XQST0038: Unknown collation : '" + uri + "'");           
+        } else {
+            logger.error("err:XQST0038: Unknown collation : '" + uri + "'");
+            throw new XPathException("err:XQST0038: Unknown collation : '" + uri + "'");
+        }
     }
 
     public final static boolean equals(Collator collator, String s1, String s2) {
@@ -286,7 +292,8 @@ public class Collations {
      * @return The collator
      */
     private static Collator getCollationFromParams(String lang,
-            String strength, String decomposition) throws XPathException {
+            String strength, String decomposition)
+        throws XPathException {
         Collator collator = null;
         if (lang == null) {
             collator = Collator.getInstance();
@@ -309,7 +316,6 @@ public class Collations {
             }
         } else {
             Locale locale = getLocale(lang);
-            LOG.debug("Using locale: " + locale.toString());
             collator = Collator.getInstance(locale);
         }
 
@@ -323,9 +329,13 @@ public class Collations {
             else if (strength.length() == 0 || "identical".equals(strength))
                 // the default setting
                 collator.setStrength(Collator.IDENTICAL);
-            else
+            else {
+                logger.error("Collation strength should be either 'primary', 'secondary', 'tertiary' or 'identical");
                 throw new XPathException(
                         "Collation strength should be either 'primary', 'secondary', 'tertiary' or 'identical");
+
+            }
+
         }
 
         if (decomposition != null) {
@@ -337,9 +347,12 @@ public class Collations {
                     || "standard".equals(decomposition))
                 // the default setting
                 collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-            else
+            else {
+                logger.error("Collation decomposition should be either 'none', 'full' or 'standard");
                 throw new XPathException(
                         "Collation decomposition should be either 'none', 'full' or 'standard");
+            }
+
         }
 
         return collator;
