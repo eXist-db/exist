@@ -427,8 +427,9 @@ public abstract class Serializer implements XMLReader {
 		xinclude.setReceiver(null);
 		xslHandler = null;
 		templates = null;
-		outputProperties.clear();
-		httpContext = null;
+        outputProperties.clear();
+        showId = EXIST_ID_NONE;
+        httpContext = null;
 	}
 
 	public String serialize(DocumentImpl doc) throws SAXException {
