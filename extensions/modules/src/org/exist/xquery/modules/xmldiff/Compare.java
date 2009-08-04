@@ -54,7 +54,7 @@ public class Compare extends Function {
 			new SequenceType[] {
 					new FunctionParameterSequenceType("node-set-1", Type.NODE, Cardinality.ZERO_OR_MORE, "the first node set"),
 					new FunctionParameterSequenceType("node-set-2", Type.NODE, Cardinality.ZERO_OR_MORE, "the second node set") },
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if the two node sets $node-set-1 and $node-set-2 are equal, otherwise false()"));
 
 	public Compare(XQueryContext context) {
 		super(context, signature);
