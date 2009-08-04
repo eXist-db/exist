@@ -164,7 +164,8 @@ public class ExtFulltext extends Function implements Optimizable {
         NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
                 useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, contextQName, terms);
         // walk through the matches and compute the combined node set
-        preselectResult = hits[0];
+        if (hits.length > 0)
+        	preselectResult = hits[0];
         if (preselectResult != null) {
             for(int k = 1; k < hits.length; k++) {
                 if(hits[k] != null) {
