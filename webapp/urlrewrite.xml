@@ -241,7 +241,7 @@ return
                 XSLTServlet thus needs to read its input from the HTTP request body which contains
                 the response of the first servlet. Since request attributes are preserved throughout
                 the entire pipeline, we need to clear the <option>xslt.input</option> with an
-                explicit call to <sgmltag>clear-attribute</sgmltag>.</para>
+                explicit call to clear-attribute.</para>
 
             <para>What benefits does it have to exchange data through request attributes? Well, we
                 save one serialization step: XQueryServlet directly passes the node tree of its
@@ -251,19 +251,136 @@ return
             <para>The advantages become more obvious if you have two or more XQueries which need to
                 exchange information: XQuery 1 can use the XQuery extension function
                 request:set-attribute() to save an arbitrary XQuery sequence to an attribute. XQuery
-                2 then calls request:get-attribute() to retrieve this value. It can directly
-                access the data passed in from XQuery 1. No time is lost with serializing/deserializing
-                the data.</para>
-            
+                2 then calls request:get-attribute() to retrieve this value. It can directly access
+                the data passed in from XQuery 1. No time is lost with serializing/deserializing the
+                data.</para>
+
             <para>Let's have a look at a more complex example: the XQuery sandbox web application
                 needs to execute a user-supplied XQuery fragment. The results should be retrieved in
                 an asynchronous way, so the user doesn't need to wait and the web interface remains
                 usable.</para>
-            
-            <para>Older versions of the sandbox used the <function>util:eval</function> function
-                to evaluate the query. However, this has side-effects because util:eval executes the
+
+            <para>Older versions of the sandbox used the <function>util:eval</function> function to
+                evaluate the query. However, this has side-effects because util:eval executes the
                 query within the context of another query. Some features like module imports will
-                not work properly this way.</para>
+                not work properly this way. To avoid util:eval, the controller code below passes the
+                user-supplied query to XQueryServlet first, then post-processes the returned result
+                and stores it into a session for later use by the ajax frontend:</para>
+
+            <example>
+                <title>Post-processing the results of an XQuery with a second XQuery</title>
+                <programlisting language="xquery"><![CDATA[if (starts-with($path, '/sandbox/execute')) then
+    let $query := request:get-parameter("qu", ())
+    let $startTime := util:system-time()
+    return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    		<!-- Query is executed by XQueryServlet -->
+            <forward servlet="XQueryServlet">
+    			<!-- Query is passed via the attribute 'xquery.source' -->
+                <set-attribute name="xquery.source" value="{$query}"/>
+    			<!-- Results should be written into attribute 'results' -->
+    			<set-attribute name="xquery.attribute" value="results"/>
+    			<!-- Errors should be passed through instead of terminating the request -->
+    			<set-attribute name="xquery.report-errors" value="yes"/>
+            </forward>
+    		<view>
+    			<!-- Post process the result: store it into the HTTP session
+    				and return the number of hits only. -->
+    			<forward url="session.xql">
+    				<clear-attribute name="xquery.source"/>
+    				<clear-attribute name="xquery.attribute"/>
+    				<set-attribute name="elapsed" 
+    					value="{string(seconds-from-duration(util:system-time() - $startTime))}"/>
+    			</forward>
+    		</view>
+        </dispatch>
+    (: Retrieve an item from the query results stored in the HTTP session. The
+    format of the URL will be /sandbox/results/X, where X is the number of the
+    item in the result set :)
+    else if (starts-with($path, '/sandbox/results/')) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    	<forward url="../session.xql">
+    		<add-parameter name="num" value="{$name}"/>
+    	</forward>
+    </dispatch>]]></programlisting>
+            </example>
+
+            <para>The client passes the user-supplied query string in a request parameter, so the
+                controller has to forward this to XQueryServlet somehow. Fortunately, XQueryServlet
+                has an option to read the XQuery source from a request attribute,
+                    <option>xquery.source</option>. The query result will be saved to the attribute
+                    <option>results</option>. The second XQuery, <filename>session.xql</filename>,
+                takes the result and stores it into a HTTP session, returning only the number of
+                hits and the elapsed time.</para>
+
+            <para>When called through retrieve, <filename>session.xql</filename> looks at parameter
+                    <option>num</option> and returns the item at the corresponding position from the
+                query results stored in the HTTP session.</para>
+        </section>
+
+        <section>
+            <title>Controller XML Format</title>
+
+            <para>A controller XQuery is expected to return a single XML element:
+                    <sgmltag>dispatch</sgmltag> in the eXist namespace:
+                    <uri>http://exist.sourceforge.net/NS/exist</uri>. <sgmltag>dispatch</sgmltag>
+                may contain a single action element, followed by an optional <sgmltag>view</sgmltag>
+                element. Two action elements are currently allowed:</para>
+
+            <variablelist>
+                <varlistentry>
+                    <term>redirect</term>
+                    <listitem>
+                        <para>Redirects the client to another URL, indicating that the other URL
+                            should be used for subsequent requests. The URL to redirect to is given
+                            in attribute <option>url</option>. A redirect will usually be visible to
+                            the user.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>forward</term>
+                    <listitem>
+                        <para>Forwards the current request to another request path or servlet. The
+                            forwarding is done on the server only, via the RequestDispatcher of the
+                            servlet engine. The client can't see where the request was forwarded
+                            to.</para>
+
+                        <para>The request can either be forwarded to a servlet or to another request
+                            path, depending on which attribute is specified:</para>
+
+                        <variablelist>
+                            <varlistentry>
+                                <term>url</term>
+                                <listitem>
+                                    <para>The new request path, which will be processed by the
+                                        servlet engine in the normal way, as if it were directly
+                                        called. A relative path will be relative to the current
+                                        request path. Absolute path will be resolved relative to the
+                                        current web context. For example, if the current web context
+                                        is <filename>/exist</filename> and the supplied attribute
+                                        reads <option>url="/admin"</option>, the resulting path will
+                                        be <filename>/exist/admin</filename>.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>servlet</term>
+                                <listitem>
+                                    <para>The name of a servlet as given in the
+                                            <option>servlet-name</option> element in the
+                                        corresponding servlet definition of the web descriptor,
+                                            <filename>web.xml</filename>. For example, valid names
+                                        within the eXist standard setup would be "XQueryServlet" or
+                                        "XSLTServlet".</para>
+                                </listitem>
+                            </varlistentry>
+
+                        </variablelist>
+
+                    </listitem>
+                </varlistentry>
+
+            </variablelist>
+
         </section>
     </chapter>
 </book>
