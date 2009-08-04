@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -47,6 +47,8 @@ public class FunctionSignature {
 	 * Empty array to specify if a function doesn't take any arguments.
 	 */
 	public final static SequenceType[] NO_ARGS = new SequenceType[0];
+
+	private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed at anytime during the 1.5 development and will be removed in the 1.6 release.";
 	
 	public final static SequenceType[] singleArgument(SequenceType arg) {
 		return new SequenceType[] { arg };
@@ -148,7 +150,10 @@ public class FunctionSignature {
 	}
 	
 	public String getDeprecated() {
-		return deprecated;
+		if (deprecated != null && deprecated.length() > 0)
+			return deprecated + DEPRECATION_REMOVAL_MESSAGE;
+		else
+			return null;
 	}
 	
 	public void setDeprecated(String message) {

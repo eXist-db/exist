@@ -126,7 +126,7 @@ declare function xqdoc:print-return($comment as element(xqdoc:comment)) {
     let $returning := $comment/xqdoc:return
     return
         if (string-length($returning/text())) then
-            <div class="f-return">Returning {$returning/text()}</div>
+            <div class="f-return">Returns {$returning/text()}</div>
         else
             ()
 };
