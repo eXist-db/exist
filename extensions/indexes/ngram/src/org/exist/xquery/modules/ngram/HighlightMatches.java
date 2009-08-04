@@ -17,6 +17,8 @@ import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -35,19 +37,19 @@ public class HighlightMatches extends BasicFunction {
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("filter-matches", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
             "Highlight matching strings within text nodes that resulted from a ngram search. " +
-            "The function takes a sequence of nodes as first argument $a and a callback function (defined with " +
-            "util:function) as second parameter $b. Each node in $a will be copied into a new document fragment. " +
-            "For each ngram match found while copying a node, the callback function in $b will be called once. The " +
-            "callback function should take 2 arguments: 1) the matching text string as xs:string, 2) the node to which this " +
-            "text string belongs. The callback function should return zero or more nodes, which will be inserted into the " +
-            "resulting node set at the place where the matching text sequence occurred. " +
+            "The function takes a sequence of nodes as first argument $nodes and a callback function (defined with " +
+            "util:function) as second parameter $function-reference. Each node in $nodes will be copied into a new document fragment. " +
+            "For each ngram match found while copying a node, the callback function in $function-reference will be called once. The " +
+            "callback function should take 2 arguments:\n\n1) the matching text string as xs:string,\n2) the node to which this " +
+            "text string belongs.\n\nThe callback function should return zero or more nodes, which will be inserted into the " +
+            "resulting node set at the place where the matching text sequence occurred.\n\n" +
             "Note: a ngram match on mixed content may span multiple nodes. In this case, the callback function is called " +
             "once for every text node which is part of the matching text sequence.",
             new SequenceType[] {
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE)
+                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence of nodes"),
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a callback function")
             },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a resulting node set"));
 
     public HighlightMatches(XQueryContext context) {
         super(context, signature);
