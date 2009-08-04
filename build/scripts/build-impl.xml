@@ -584,8 +584,9 @@
         <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-sign-exist"/>
 
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <echo message="!! Please run &apos;build.bat -f build\scripts\jarsigner.xml&apos; "/>
-        <echo message="!! at least once manually for enabling webstart !!"/>
+        <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f build\scripts\jarsigner.xml&apos; "/>
+        <echo message="!! once manually to use a default keystore to sign the core jars or put !!"/>
+	<echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling webstart !!"/>
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
 
         <!-- the core jars can NOT be signed in this build.xml file because -->
