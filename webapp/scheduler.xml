@@ -2,10 +2,11 @@
 <?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" type="xml"?>
 <!-- $Id$ -->
 <book>
-    <bookinfo><graphic fileref="logo.jpg"/>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Scheduler Module</title>
-        <date>July 2009</date>
+        <date>August 2009</date>
         <author>
             <firstname>Loren</firstname>
             <surname>Cahlander</surname>
@@ -13,7 +14,9 @@
                 <address format="linespecific">
                     <email>loren at syntactica.com</email>
                 </address>
-            </affiliation></author></bookinfo>
+            </affiliation>
+        </author>
+    </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Scheduler Module</title>

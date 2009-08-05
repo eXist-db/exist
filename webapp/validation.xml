@@ -5,6 +5,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>XML Validation</title>
+        <date>August 2009</date>
         <author>
             <firstname>Dannes</firstname>
             <surname>Wessels</surname>
@@ -16,7 +17,7 @@
         </author>
     </bookinfo>
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>XML Validation</title>
         <section id="sect1">
@@ -24,7 +25,7 @@
             <para>The database supports implicit and explicit validation of XML documents. Implicit
                 validation can be executed automagically when documents are being inserted into the
                 database, explicit validation can be performed using xquery extension
-            functions.</para>
+                functions.</para>
         </section>
         <section id="sect2">
             <title>Implicit validation</title>
@@ -64,7 +65,8 @@
             <section>
                 <title>Validation mode</title>
                 <para>With the parameter <emphasis>mode</emphasis> it is possible to switch on/off
-                    the validation capabilities of the (Xerces) XML parser. The possible values are:</para>
+                    the validation capabilities of the (Xerces) XML parser. The possible values
+                    are:</para>
                 <section>
                     <title>yes</title>
                     <para>Switch on validation. All XML documents will be validated. When the
@@ -74,7 +76,7 @@
                 <section>
                     <title>no</title>
                     <para>Switch off validation. All well-formed XML documents will be
-                    accepted.</para>
+                        accepted.</para>
                 </section>
                 <section>
                     <title>auto (default)</title>
@@ -96,11 +98,11 @@
                     validation process must be registered to the database using <ulink
                         url="http://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html"
                         >OASIS catalog</ulink> files. These catalog files can be stored on disk and
-                    in the database. In eXist the resolving is performed by the apache 
-                    <a href="http://xml.apache.org/commons/components/resolver/">xml-commons resolver</a>
-                library.</para>
+                    in the database. In eXist the resolving is performed by the apache <a
+                        href="http://xml.apache.org/commons/components/resolver/">xml-commons
+                        resolver</a> library.</para>
                 <para>In the upper example the ${WEBAPP_HOME} is substituted by a
-                    <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist
+                        <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist
                     (e.g. '$EXIST_HOME/webapp/') or the equivalent directory of a deployed WAR file
                     when eXist is deployed in a servlet container (e.g.
                     '${CATALINA_HOME}/webapps/exist/')</para>
@@ -127,8 +129,8 @@
                     </example>
                 </para>
                 <para>It is possible to configure any number of catalog entries in the
-                    entity-resolver section of conf.xml . The relative "uri="s are resolved
-                    relative to the location of the catalog document.</para>
+                    entity-resolver section of conf.xml . The relative "uri="s are resolved relative
+                    to the location of the catalog document.</para>
             </section>
 
             <section>
@@ -164,8 +166,8 @@
                     </listitem>
                 </itemizedlist></para>
             <para>The first function returns a simple <emphasis>true</emphasis> or
-                <emphasis>false</emphasis> while the second generates a XML validation report. Both
-                functions accept either one or two parameters:</para>
+                    <emphasis>false</emphasis> while the second generates a XML validation report.
+                Both functions accept either one or two parameters:</para>
             <itemizedlist>
                 <listitem>
                     <para><emphasis>validate-report($a)</emphasis> : Validate $a using the same
@@ -203,7 +205,8 @@
                                     <para>an OASIS catalog xml-file (uri ends with ".xml")</para>
                                 </listitem>
                                 <listitem>
-                                    <para> a grammar file (see below for supported list of grammar types.)</para>
+                                    <para> a grammar file (see below for supported list of grammar
+                                        types.)</para>
                                 </listitem>
                                 <listitem>
                                     <para>a collection (uri ends with "/") inside the database; XSDs
@@ -218,8 +221,9 @@
                     </listitem>
                 </varlistentry>
             </variablelist>
-            <para>Supported grammar documents are DTD (".dtd"), XML Schema (".xsd") RelaxNG/compact (".rng"/".rnc"), 
-            Schematron (.sch) and Namespace-based Validation Dispatching Language (".nvdl").</para>
+            <para>Supported grammar documents are DTD (".dtd"), XML Schema (".xsd") RelaxNG/compact
+                (".rng"/".rnc"), Schematron (.sch) and Namespace-based Validation Dispatching
+                Language (".nvdl").</para>
 
             <example>
                 <title>Validation report</title>
@@ -349,7 +353,8 @@
                                 href="http://java.sun.com/j2se/1.5.0/docs/api/java/net/URLStreamHandler.html"
                                 >URLStreamHandler</a>) to the JVM. The alternative is to register
                             the object by setting the system property
-                                <code>java.protocol.handler.pkgs</code> but this fails as well.</para>
+                                <code>java.protocol.handler.pkgs</code> but this fails as
+                            well.</para>
                         <para>As a result the validation features are only partly useable in tomcat.
                             There are two altenatives: (1) switch to a recent version of Jetty, or
                             (2) use absolute URLs pointing the the rest interface, e.g.
@@ -372,26 +377,39 @@
                             collections.</para>
                     </listitem>
                     <listitem>
-                        <para>The explicit validation is performed by 
-                            <a href="http://xerces.apache.org/xerces2-j/javadocs/api/javax/xml/validation/package-summary.html">Xerces</a>
-                            (XML schema, DTD) and by <a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> - oXygen XML NVDL implementation based on Jing (RelaxNG, Schematron and Namespace-based Validation Dispatching Language)</para>
+                        <para>The explicit validation is performed by <a
+                                href="http://xerces.apache.org/xerces2-j/javadocs/api/javax/xml/validation/package-summary.html"
+                                >Xerces</a> (XML schema, DTD) and by <a
+                                href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> - oXygen XML
+                            NVDL implementation based on Jing (RelaxNG, Schematron and
+                            Namespace-based Validation Dispatching Language)</para>
                     </listitem>
                 </itemizedlist>
             </para>
         </section>
-   
+
         <section id="sect7">
             <title>References</title>
             <para>
                 <itemizedlist>
-                    <listitem>Apache <a href="http://xml.apache.org/commons/components/resolver/">xml-commons resolver</a></listitem>
-                    <listitem>OASIS <a href="http://www.oasis-open.org/committees/entity/">XML Catalog Specification</a> V1.1</listitem>
-                    <listitem>Xerces <a href="http://xerces.apache.org/xerces2-j/faq-grammars.html">caching grammars</a>.</listitem>
-                    <listitem><a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> oXygen XML NVDL implementation based on Jing</listitem>
-                    <listitem><a href="http://en.wikipedia.org/wiki/Namespace-based_Validation_Dispatching_Language">NVDL</a> (Namespace-based Validation Dispatching Language)</listitem>
-                    <listitem><a href="http://en.wikipedia.org/wiki/Schematron">Schematron</a></listitem>
-                    <listitem><a href="http://en.wikipedia.org/wiki/RELAX_NG">Relax NG</a></listitem>
-                    
+                    <listitem>Apache <a href="http://xml.apache.org/commons/components/resolver/"
+                            >xml-commons resolver</a></listitem>
+                    <listitem>OASIS <a href="http://www.oasis-open.org/committees/entity/">XML
+                            Catalog Specification</a> V1.1</listitem>
+                    <listitem>Xerces <a href="http://xerces.apache.org/xerces2-j/faq-grammars.html"
+                            >caching grammars</a>.</listitem>
+                    <listitem><a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> oXygen XML
+                        NVDL implementation based on Jing</listitem>
+                    <listitem><a
+                            href="http://en.wikipedia.org/wiki/Namespace-based_Validation_Dispatching_Language"
+                            >NVDL</a> (Namespace-based Validation Dispatching Language)</listitem>
+                    <listitem>
+                        <a href="http://en.wikipedia.org/wiki/Schematron">Schematron</a>
+                    </listitem>
+                    <listitem>
+                        <a href="http://en.wikipedia.org/wiki/RELAX_NG">Relax NG</a>
+                    </listitem>
+
                 </itemizedlist>
             </para>
         </section>

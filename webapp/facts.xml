@@ -11,14 +11,14 @@
             <category name="System Requirements">
 
                 <topic name="Java Version">
-                    <p>JDK &gt; 1.4.</p>
+                    <p>JDK &gt; 1.5.</p>
                 </topic>
 
                 <topic name="Supported Platforms">
 
                     <p>Platform independent. Tested on Linux (Debian GNU/Linux
                         3.1-5.0/Mandrake/Slackware 10-12/SUSE 9.3/Fedora 6-10.90/RHEL 5.2), FreeBSD 5.4/6.0, Sun Solaris
-                        10/Sparc/x86/x64, Windows 2000/XP/XP Server Edition</p>
+                        10/Sparc/x86/x64, Mac OS X 10.5.7, Windows 2000/XP/XP Server Edition</p>
 
                 </topic>
 
@@ -76,8 +76,7 @@
                 </topic>
 
                 <topic name="Updates">
-                    <p>Document-level and node-level updates with XUpdate and XQuery <a
-                            href="update_ext.xml">update extensions</a>.</p>
+                    <p>Document-level and node-level updates with XUpdate and XQuery <a href="update_ext.xml">update extensions</a>.</p>
                 </topic>
 
                 <topic name="Authorization Mechanism">

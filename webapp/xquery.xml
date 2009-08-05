@@ -8,7 +8,7 @@
         <date>August 2009</date>
         <orgname>The eXist Project</orgname>
     </bookinfo>
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>XQuery</title>
         <section>
@@ -18,8 +18,8 @@
                 features) as specified in the <ulink url="http://www.w3.org/TR/xquery/">W3C
                     recommendation</ulink>. Functions in the standard function library should also
                 follow the <ulink url="http://www.w3.org/TR/xpath-functions/">"XQuery 1.0 and XPath
-                    2.0 Functions and Operators" recommendation</ulink>. Please check the local function library
-                    <ulink url="xquery/functions.xql">documentation</ulink>.</para>
+                    2.0 Functions and Operators" recommendation</ulink>. Please check the local
+                function library <ulink url="xquery/functions.xql">documentation</ulink>.</para>
 
             <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS
                 version 1.0.2). This suite contains more than 14,000 tests. As of November 2007,
@@ -45,14 +45,14 @@
                         <para>Also, you currently can't specify a data type in an element or
                             attribute test. The node test <command>element(test-node)</command> is
                             supported, but the test <command>element(test-node,
-                            xs:integer)</command> will result in a syntax error.</para>
+                                xs:integer)</command> will result in a syntax error.</para>
 
                         <important>
                             <para>To avoid misunderstandings: eXist does nevertheless support strong
                                 typing whenever the expected type of an expression, a function
                                 argument or function return value is explicitely specified or can be
                                 known otherwise. Don't expect eXist to be laxist about type
-                            checks!</para>
+                                checks!</para>
                         </important>
                     </listitem>
                 </itemizedlist>
@@ -166,8 +166,8 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
 
                 <para>eXist comes with a set of utility modules, which are all implemented in Java.
                     You can also write your own modules as described <ulink url="#javamods"
-                    >below</ulink>. Some of these utility modules are frequently used in queries, so
-                    they are automatically imported into every query by default.</para>
+                        >below</ulink>. Some of these utility modules are frequently used in
+                    queries, so they are automatically imported into every query by default.</para>
 
                 <para>The query engine allows you to configure which modules will be auto-loaded.
                     The <sgmltag>builtin-modules</sgmltag> element in <filename>conf.xml</filename>
@@ -234,21 +234,21 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                     and <command>xmldb:document()</command> are eXist-specific extensions.</para>
 
                 <para>Without an URI scheme, eXist interprets the arguments to
-                    <command>collection()</command> and <command>doc()</command> as absolute or
+                        <command>collection()</command> and <command>doc()</command> as absolute or
                     relative paths, leading to some collection or document within the database. For
                     example:</para>
 
                 <synopsis>doc("/db/collection1/collection2/resource.xml)</synopsis>
 
                 <para>refers to a resource stored in
-                    <filename>/db/collection1/collection2</filename>.</para>
+                        <filename>/db/collection1/collection2</filename>.</para>
 
                 <synopsis>doc("resource.xml")</synopsis>
 
                 <para>references a resource relative to the base URI property defined in the static
                     XQuery context. The base URI contains an XML:DB URI pointing to the base
                     collection for the current query context, e.g.
-                    <filename>xmldb:exist:///db</filename>.</para>
+                        <filename>xmldb:exist:///db</filename>.</para>
 
                 <para>The base collection depends on how the query context was initialized. If you
                     call a query via the XML:DB API, the base collection is the collection from
@@ -293,17 +293,17 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                 specified collection are also included. For example, suppose we have
                                 a collection <filename moreinfo="none">/db/test</filename> that
                                 includes two subcollections <filename moreinfo="none"
-                                >/db/test/abc</filename> and <filename moreinfo="none"
-                                >/db/test/def</filename>. In this case, the function call <command
-                                    moreinfo="none">collection('/db/test')</command> will include
-                                all of the resources found in <filename moreinfo="none"
-                                >/db/test</filename>, <filename moreinfo="none"
-                                >/db/test/abc</filename> and <filename moreinfo="none"
-                                >/db/test/def</filename>.</para>
+                                    >/db/test/abc</filename> and <filename moreinfo="none"
+                                    >/db/test/def</filename>. In this case, the function call
+                                    <command moreinfo="none">collection('/db/test')</command> will
+                                include all of the resources found in <filename moreinfo="none"
+                                    >/db/test</filename>, <filename moreinfo="none"
+                                    >/db/test/abc</filename> and <filename moreinfo="none"
+                                    >/db/test/def</filename>.</para>
                             <para>The function <command moreinfo="none"
-                                >xmldb:xcollection()</command> can be used to change the behavior of
-                                    <command moreinfo="none">collection()</command>. For instance,
-                                the function call </para>
+                                    >xmldb:xcollection()</command> can be used to change the
+                                behavior of <command moreinfo="none">collection()</command>. For
+                                instance, the function call </para>
                             <synopsis format="linespecific">xmldb:xcollection('/db/test')//title</synopsis>
                             <para>will ONLY include resources found in <filename moreinfo="none"
                                     >/db/test</filename>, but NOT in <filename moreinfo="none"
@@ -352,14 +352,14 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                         cases where the order and distance of search terms is not important, eXist
                         offers two additional operators for simple keyword queries: <command
                             moreinfo="none">&amp;=</command> and <command moreinfo="none"
-                        >|=</command>.</para>
+                            >|=</command>.</para>
 
                     <variablelist>
                         <varlistentry>
                             <term>node-set &amp;= 'string of keywords'</term>
                             <listitem>
                                 <para>This operator selects context nodes containing
-                                    <emphasis>ALL</emphasis> of the keywords in the right-hand
+                                        <emphasis>ALL</emphasis> of the keywords in the right-hand
                                     argument in any order. The default tokenizer is used to split
                                     the right-hand argument into single tokens, i.e. any punctuation
                                     or white spaces are used to separate the keywords and, after
@@ -407,10 +407,10 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                         <para>The first expression selects all distinct <option>LINE</option> nodes
                             that contain both of the search terms. The second expression selects all
                             context nodes (<option>SPEECH</option> nodes) that have
-                            <option>LINE</option> children containing either or both of the terms,
-                            and should yield more results than the first one. To make the first
-                            expression select the same nodes (at least, nearly the same nodes), you
-                            would have to change the first expression to:</para>
+                                <option>LINE</option> children containing either or both of the
+                            terms, and should yield more results than the first one. To make the
+                            first expression select the same nodes (at least, nearly the same
+                            nodes), you would have to change the first expression to:</para>
                         <synopsis format="linespecific">//SPEECH[. &amp;= "cursed spite"]</synopsis>
                         <para>Note, however, that this new expression will also include other nodes,
                             for instance <option>SPEAKER</option> or <option>STAGEDIR</option>,
@@ -448,7 +448,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                     operator, <command moreinfo="none">near()</command> accepts
                                     wildcards in the keyword string, and punctuation and whitespace
                                     will be skipped according to the default tokenization
-                                rules.</para>
+                                    rules.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -462,7 +462,8 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                     XQuery core library, <command>text:match-all()</command> and
                                         <command>text:match-any()</command> try to match the regular
                                     expression argument against the keywords contained in the
-                                    full-text index, but <emphasis>NOT</emphasis> against the entire text.</para>
+                                    full-text index, but <emphasis>NOT</emphasis> against the entire
+                                    text.</para>
                                 <para>For example, assume you have a document that contains the
                                     following paragraph:</para>
                                 <synopsis>&lt;para&gt;Peter lives in Frankfurt&lt;/para&gt;</synopsis>
@@ -475,10 +476,11 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                                     <command moreinfo="none">text:match-all()</command> corresponds
                                     to <command moreinfo="none">&amp;=</command> in that it will
                                     select context nodes with keywords matching
-                                    <emphasis>ALL</emphasis> of the specified regular expressions.
-                                        <command moreinfo="none">text:match-any()</command> will
-                                    select nodes with keywords matching <emphasis>ANY</emphasis> of
-                                    the specified regular expression.</para>
+                                        <emphasis>ALL</emphasis> of the specified regular
+                                    expressions. <command moreinfo="none">text:match-any()</command>
+                                    will select nodes with keywords matching
+                                        <emphasis>ANY</emphasis> of the specified regular
+                                    expression.</para>
 
                                 <para>Since tokenization doesn't work correctly with regular
                                     expression patterns, each keyword has to be specified as a
@@ -547,7 +549,7 @@ for $rec in /rdf:RDF/* return
                         <command>xdb:register-database</command>. Then we can create a new
                     sub-collection, called "output" using <command>xdb:create-collection</command>,
                     for which we need to be logged in appropriately using
-                    <command>xmldb:login</command>.</para>
+                        <command>xmldb:login</command>.</para>
                 <para>Next, the <command>for</command>-loop iterates through all child elements of
                     the top RDF element. In each iteration, we use <command>xdb:store</command> to
                     write out the current child node to a new document. Since a unique document name
@@ -563,7 +565,8 @@ for $rec in /rdf:RDF/* return
                     number of common utility functions. The <command>util:md5</command> function,
                     used in the above example, is one such function. In this subsection, we discuss
                     a few of the important available utility functions. For a complete list, please
-                    go to the <ulink url="xquery/functions.xql">Built-in Functions</ulink> section.</para>
+                    go to the <ulink url="xquery/functions.xql">Built-in Functions</ulink>
+                    section.</para>
                 <para>However, one important function, <command>util:eval</command>, requires
                     further explanation.</para>
 
@@ -576,9 +579,9 @@ for $rec in /rdf:RDF/* return
                                 some cases - for example, web-based applications that dynamically
                                 generate queries based on HTTP request parameters the user has
                                 passed.</para>
-                            <para>By default, the dynamically executed query inherits most of the current
-                            context, including local variables:</para>
-                            
+                            <para>By default, the dynamically executed query inherits most of the
+                                current context, including local variables:</para>
+
                             <synopsis language="xquery">
 let $a := "Hello"
 return util:eval("$a")
@@ -648,7 +651,7 @@ declare function local:do-query() as element()
                 <para>In this example, there is one XQuery script responsible for evaluating the
                     user-supplied parameters, which uses the parameters from the HTTP request to
                     construct another XQuery expression, which it then passes to
-                    <command>util:eval</command> for evaluation. The application would then
+                        <command>util:eval</command> for evaluation. The application would then
                     post-process the returned results, and display them to the user. (For more
                     information on how to write web applications using XQuery, go to our <ulink
                         url="devguide.xml">Developer's Guide</ulink>.)</para>
@@ -665,7 +668,8 @@ declare function local:do-query() as element()
                     <varlistentry>
                         <term>transform:transform()</term>
                         <listitem>
-                            <para>This XSL transformation function has the following signature:</para>
+                            <para>This XSL transformation function has the following
+                                signature:</para>
 
                             <synopsis>transform:transform($input as node()?, $stylesheet as
                                 item(), $parameters as node()?) as node()?</synopsis>
@@ -778,7 +782,7 @@ declare function local:do-query() as element()
                                 stored in a session attribute, to cache query results. For more
                                 example scripts, please look at our <ulink url="examples.xml"
                                     >Examples</ulink> page, under the XQuery Examples
-                            section.</para>
+                                section.</para>
                         </listitem>
                     </varlistentry>
                 </variablelist>
@@ -813,9 +817,9 @@ math:sqrt(2)
                 type is the built-in type <option>object</option>.</para>
             <para>
                 <emphasis>Java constructors</emphasis> are called using the function
-                <option>new</option>. Again, a matching constructor is selected by looking at the
-                parameter count and types. The returned value is a new Java object with the built-in
-                type <option>object</option>.</para>
+                    <option>new</option>. Again, a matching constructor is selected by looking at
+                the parameter count and types. The returned value is a new Java object with the
+                built-in type <option>object</option>.</para>
             <para>
                 <emphasis>Instance methods</emphasis> are called by supplying a valid Java object as
                 first parameter. The Java object has to be an instance of the given class. For
@@ -887,8 +891,8 @@ declare namespace file="java:java.io.File";
                 of function definitions for all functions that should be registered. A function
                 definition (class <classname>FunctionDef</classname>) has two properties: the static
                 signature of the function (as an instance of
-                <classname>FunctionSignature</classname>), and the Java Class that implements the
-                function.</para>
+                    <classname>FunctionSignature</classname>), and the Java Class that implements
+                the function.</para>
 
             <para>A function is a class extending <classname>org.exist.xquery.Function</classname>
                 or <classname>org.exist.xquery.BasicFunction</classname>. Functions without special
@@ -936,8 +940,9 @@ throws XPathException {
                     <emphasis>QName</emphasis> by which the function is identified, a documentation
                 string, the sequence types of all arguments, and the sequence type of the returned
                 value. In the example above, we accept a single argument of type
-                <option>xs:string</option> and a cardinality of <option>ZERO_OR_MORE</option>. In
-                other words, we accept any sequence of strings containing zero or more items.</para>
+                    <option>xs:string</option> and a cardinality of <option>ZERO_OR_MORE</option>.
+                In other words, we accept any sequence of strings containing zero or more
+                items.</para>
             <para>Next, the subclass overwrites the <command>eval</command> method, which has two
                 arguments: the first contains the values of all arguments passed to the function,
                 the second passes the current context sequence (which might be null). Note that the
@@ -951,7 +956,8 @@ throws XPathException {
                 containing zero or more strings is acceptable for our method. We therefore have to
                 check if the empty sequence has been passed. In this case, the function call returns
                 immediately. Otherwise, we iterate through each item in the sequence, prepend
-                    <option>echo:</option>" to its string value, and add it to the result sequence.</para>
+                    <option>echo:</option>" to its string value, and add it to the result
+                sequence.</para>
             <para>In the next step, we want to add the function to a new module, and therefore
                 provide a driver class. The driver class defines a namespace URI and a default
                 prefix for the module. Functions are registered by passing an array of
@@ -1013,7 +1019,7 @@ example:echo(("Hello", "World!"))
             <para>Collations are used to compare strings in a <emphasis>locale-sensitive</emphasis>
                 fashion. XQuery allows one to specify collations at several places by means of a
                 collation URI. For example, a collation can be specified in the <command>order
-                by</command> clause of a XQuery FLWOR expression, as well as any string-related
+                    by</command> clause of a XQuery FLWOR expression, as well as any string-related
                 functions. However, the concrete form of the URI is defined by the eXist
                 implementation. Specifically, eXist recognizes the following URIs:</para>
 
@@ -1023,7 +1029,7 @@ example:echo(("Hello", "World!"))
                     <para>This URI selects the unicode codepoint collation. This is the default if
                         no collation is specified. Basically, it means that only the standard Java
                         implementations of the comparison and string search functions are
-                    used.</para>
+                        used.</para>
                 </listitem>
                 <listitem>
                     <synopsis>http://exist-db.org/collation?lang=xxx&amp;strength=xxx&amp;decomposition=xxx</synopsis>
@@ -1056,12 +1062,12 @@ return $w</synopsis>
 
             <para>Which returns <option>true</option>. Note that if you use the default codepoint
                 collation instead, the comparison would evaluate to <option>false</option>.</para>
-            
+
             <note>
                 <para>eXist's range index is currently only usable with the default codepoint
-                collation. This means that comparisons using a different collation will not be
-                index-assisted and will thus be slow. We plan to support collation-aware indexes
-                in the 1.3 release.</para>
+                    collation. This means that comparisons using a different collation will not be
+                    index-assisted and will thus be slow. We plan to support collation-aware indexes
+                    in the 1.3 release.</para>
             </note>
         </section>
 
@@ -1092,102 +1098,125 @@ return $w</synopsis>
 
             <variablelist>
                 <varlistentry>
-                    <term><option>expand-xincludes= yes | no</option></term>
+                    <term>
+                        <option>expand-xincludes= yes | no</option>
+                    </term>
                     <listitem>
                         <para>should the serializer expand XInclude elements?</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>highlight-matches= both | elements | attributes | none</option></term>
+                    <term>
+                        <option>highlight-matches= both | elements | attributes | none</option>
+                    </term>
                     <listitem>
-                        <para>when querying text with the full text or n-gram extensions, the
-                        query engine tracks the exact position of all matches inside text content.
-                        The serializer can later use this information to mark those matches by
-                        wrapping them into an element <sgmltag>exist:match</sgmltag>.</para>
-                        
-                        <para>Setting <option>highlight-matches=both</option> will enable this feature for every kind of indexable node.</para>
+                        <para>when querying text with the full text or n-gram extensions, the query
+                            engine tracks the exact position of all matches inside text content. The
+                            serializer can later use this information to mark those matches by
+                            wrapping them into an element <sgmltag>exist:match</sgmltag>.</para>
+
+                        <para>Setting <option>highlight-matches=both</option> will enable this
+                            feature for every kind of indexable node.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>process-xsl-pi= yes | no</option></term>
+                    <term>
+                        <option>process-xsl-pi= yes | no</option>
+                    </term>
                     <listitem>
                         <para>if a document is serialized and it has an XSL processing instruction,
-                        eXist can try to load the referenced stylesheet and apply it to the
-                        document.</para>
+                            eXist can try to load the referenced stylesheet and apply it to the
+                            document.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>add-exist-id= element | all | none</option></term>
+                    <term>
+                        <option>add-exist-id= element | all | none</option>
+                    </term>
                     <listitem>
-                        <para>shows the internal node
-                        ids of an element by adding an attribute <option>exist:id="internal-node-id"</option>.
-                        Setting add-exist-id to "element" will only show the node id of the top-level element,
-                        "all" will show the ids of all elements.</para>
+                        <para>shows the internal node ids of an element by adding an attribute
+                                <option>exist:id="internal-node-id"</option>. Setting add-exist-id
+                            to "element" will only show the node id of the top-level element, "all"
+                            will show the ids of all elements.</para>
                     </listitem>
                 </varlistentry>
-                
+
             </variablelist>
 
             <para>The general options include the following:</para>
-            
+
             <variablelist>
                 <varlistentry>
-                    <term><option>method= xml | xhtml | text</option></term>
+                    <term>
+                        <option>method= xml | xhtml | text</option>
+                    </term>
                     <listitem>
-                        <para>determines the serialization method. Should be one of
-                        "xml", "xhtml" or "text". The "xhtml" method makes sure that
-                        XHTML elements with an empty content model are serialized in
-                        the minimized form, i.e. <literal>img</literal> will be output
-                        as <sgmltag>img/</sgmltag>.
+                        <para>determines the serialization method. Should be one of "xml", "xhtml"
+                            or "text". The "xhtml" method makes sure that XHTML elements with an
+                            empty content model are serialized in the minimized form, i.e.
+                                <literal>img</literal> will be output as <sgmltag>img/</sgmltag>.
                         </para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>media-type</option></term>
+                    <term>
+                        <option>media-type</option>
+                    </term>
                     <listitem>
-                        <para>The MIME content type of the output. It will mainly be used to
-                        set the HTTP Content-Type header (if the query is running in an HTTP context).</para>
+                        <para>The MIME content type of the output. It will mainly be used to set the
+                            HTTP Content-Type header (if the query is running in an HTTP
+                            context).</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>encoding</option></term>
+                    <term>
+                        <option>encoding</option>
+                    </term>
                     <listitem>
-                        <para>specifies the character encoding to be used for outputting 
-                            the instance of the data model</para>
+                        <para>specifies the character encoding to be used for outputting the
+                            instance of the data model</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>doctype-public</option></term>
+                    <term>
+                        <option>doctype-public</option>
+                    </term>
                     <listitem>
-                        <para>a doctype declaration will be output if doctype-public and/or 
-                        doctype-system are set. The corresponding identifier is taken from
-                        the value of the parameter.</para>
+                        <para>a doctype declaration will be output if doctype-public and/or
+                            doctype-system are set. The corresponding identifier is taken from the
+                            value of the parameter.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>doctype-system</option></term>
+                    <term>
+                        <option>doctype-system</option>
+                    </term>
                     <listitem>
-                        <para>a doctype declaration will be output if doctype-public and/or 
-                            doctype-system are set. The corresponding identifier is taken from
-                            the value of the parameter.</para>
+                        <para>a doctype declaration will be output if doctype-public and/or
+                            doctype-system are set. The corresponding identifier is taken from the
+                            value of the parameter.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>indent= yes | no</option></term>
+                    <term>
+                        <option>indent= yes | no</option>
+                    </term>
                     <listitem>
                         <para>indent the document to make it easier to read. Indenting adds
-                        whitespace characters to element nodes, restricted by the rules
-                        given in the XQuery serialization spec.</para>
+                            whitespace characters to element nodes, restricted by the rules given in
+                            the XQuery serialization spec.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term><option>omit-xml-declaration= yes | no</option></term>
+                    <term>
+                        <option>omit-xml-declaration= yes | no</option>
+                    </term>
                     <listitem>
                         <para>output an XML declaration if the parameter is set to "no"</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
-            
+
             <para>For example, to disable XInclude expansion, and indent the output, you can use the
                 following syntax:</para>
 
@@ -1201,7 +1230,7 @@ return $w</synopsis>
                 returns the contents of elements - for instance,
                 &lt;A&gt;Content&lt;/A&gt; is returned as <option>Content</option>.
                 However, attribute values, processing instructions, comments, etc. are all
-            ignored.</para>
+                ignored.</para>
         </section>
         <section id="xqopts">
             <title>Other Options</title>
@@ -1234,9 +1263,9 @@ return $w</synopsis>
                     dateTime</ulink> for the XQuery context.</para>
 
             <synopsis>declare option exist:optimize "enable=yes|no";</synopsis>
-            
-            <para>Temporarily disables the query rewriting optimizer for the current query. Use
-                for testing/debugging.</para>
+
+            <para>Temporarily disables the query rewriting optimizer for the current query. Use for
+                testing/debugging.</para>
         </section>
 
         <section>
@@ -1249,7 +1278,7 @@ return $w</synopsis>
                 syntax is quite different: pragmas can now be wrapped around an arbitrary XQuery
                 expression (see the <ulink
                     url="http://www.w3.org/TR/xquery/#id-extension-expressions"
-                >specification</ulink>). </para>
+                    >specification</ulink>). </para>
             <para>Currently, eXist recognizes the following pragmas:</para>
             <section>
                 <title>exist:timer</title>
@@ -1271,12 +1300,13 @@ return $w</synopsis>
             </section>
             <section>
                 <title>exist:batch-transaction</title>
-                <para><emphasis>Currently only for XQuery Update Extensions.</emphasis> Provides a method for
-                    batching updates on the database into a single Transaction, allowing a set of
-                    updates to be atomically guaranteed. Also for each affected document or
-                    collection, any configured Triggers will only be called once, the <method>prepare()</method>
-                    method will be fired before the first update to the configured resource and the
-                    <method>finish()</method> method fired after the last update to the configured resource.</para>
+                <para><emphasis>Currently only for XQuery Update Extensions.</emphasis> Provides a
+                    method for batching updates on the database into a single Transaction, allowing
+                    a set of updates to be atomically guaranteed. Also for each affected document or
+                    collection, any configured Triggers will only be called once, the
+                        <method>prepare()</method> method will be fired before the first update to
+                    the configured resource and the <method>finish()</method> method fired after the
+                    last update to the configured resource.</para>
                 <synopsis>(# exist:batch-transaction #) {
 	            	update value //some/path/expressionA width "valueA",
             		update value //some/path/expressionB width "valueB"
@@ -1286,38 +1316,38 @@ return $w</synopsis>
             </section>
             <section>
                 <title>exist:force-index-use</title>
-                <para><emphasis>For debugging purposes</emphasis>. An expression that can be assisted by indexes: 
-                comparisons, <function>fn:matches()</function>...
-                    Will raise an error if, for any reason, this assistance can not be performed.</para>
-                <para>This can help to check whether the indexes are correctly defined or not.</para>
+                <para><emphasis>For debugging purposes</emphasis>. An expression that can be
+                    assisted by indexes: comparisons, <function>fn:matches()</function>... Will
+                    raise an error if, for any reason, this assistance can not be performed.</para>
+                <para>This can help to check whether the indexes are correctly defined or
+                    not.</para>
                 <synopsis>(# exist:force-index-use #) {
 	            	//group[. = "dba"]
 	             }</synopsis>
-                <para>Raises an error (currently <emphasis>XPDYxxxx</emphasis> since this kind of dynamic error is
-                    not yet defined by the XQuery specifications) if the general comparison doesn't
-                    use a range or a QName index.</para>
+                <para>Raises an error (currently <emphasis>XPDYxxxx</emphasis> since this kind of
+                    dynamic error is not yet defined by the XQuery specifications) if the general
+                    comparison doesn't use a range or a QName index.</para>
             </section>
             <section>
                 <title>exist:no-index</title>
                 <para>This prevents the query engine to use the index in expressions that can be
-                    assisted by indexes: comparisons, <function>fn:matches()</function>... 
-                    Useful if the searched value isn't very selective or
-                    if it is cheaper to traverse the previous step of a path expression than
-                    querying the index.</para>
+                    assisted by indexes: comparisons, <function>fn:matches()</function>... Useful if
+                    the searched value isn't very selective or if it is cheaper to traverse the
+                    previous step of a path expression than querying the index.</para>
                 <synopsis>(# exist:no-index #) {
                     //group[. = "dba"]
                  }</synopsis>
             </section>
             <section>
                 <title>exist:optimize</title>
-                <para>For testing only. This pragma is normally inserted automatically by the query rewriter (if
-                    enabled) to optimize an expression that implements the
+                <para>For testing only. This pragma is normally inserted automatically by the query
+                    rewriter (if enabled) to optimize an expression that implements the
                         <classname>org.exist.xquery.Optimizable</classname> interface.</para>
                 <synopsis>//((#exist:optimize#) { item[stock = 10] })</synopsis>
             </section>
             <para>We will certainly add more pragma expressions in the near future. Among other
                 things, pragmas are a good way to pass optimization hints to the query
-            engine.</para>
+                engine.</para>
         </section>
     </chapter>
 </book>

@@ -2,10 +2,11 @@
 <!-- $Id$ -->
 <book>
   <bookinfo>
-    <graphic fileref="logo.jpg" />
+    <graphic fileref="logo.jpg"/>
 
     <productname>Open Source Native XML Database</productname>
     <title>LDAP Security Manager</title>
+    <date>August 2009</date>
 
     <author>
       <surname>Milowski</surname>
@@ -16,35 +17,33 @@
     </author>
   </bookinfo>
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
   <chapter>
     <title>LDAP Security Manager</title>
 
     <section>
       <title>Overview</title>
 
-      <para>The LDAP Security Manager provides the ability to pull users and
-      groups from LDAP. By default, eXist stores passwords internally. If this
-      feature is enabled, the users and groups are pulled from an LDAP
-      directory server.</para>
+      <para>The LDAP Security Manager provides the ability to pull users and groups from LDAP. By
+        default, eXist stores passwords internally. If this feature is enabled, the users and groups
+        are pulled from an LDAP directory server.</para>
 
-      <para>This implementation currently only supports reading users and
-      groups. Creation or modification is not supported.</para>
+      <para>This implementation currently only supports reading users and groups. Creation or
+        modification is not supported.</para>
     </section>
 
     <section>
       <title>Configuration</title>
 
-      <para>The LDAP Security Manager provides the ability to pull users and
-      groups from LDAP. By default, eXist stores passwords internally. If this
-      feature is enabled, the users and groups are pulled from an LDAP
-      directory server.</para>
+      <para>The LDAP Security Manager provides the ability to pull users and groups from LDAP. By
+        default, eXist stores passwords internally. If this feature is enabled, the users and groups
+        are pulled from an LDAP directory server.</para>
 
       <section>
         <title>Enabling LDAP in conf.xml</title>
 
-        <para>Just place the following <code>security</code> element as a
-        child of <code>db-connection</code>:</para>
+        <para>Just place the following <code>security</code> element as a child of
+            <code>db-connection</code>:</para>
 
         <example>
           <title>Example security Element</title>
@@ -56,21 +55,18 @@
       <section>
         <title>Configure Your LDAP Server</title>
 
-        <para>For the LDAP security manager you need to distinguished names
-        (DN)--one for the users and one for the groups. Each user must be
-        represented by a single entry under the user DN as an RFC 2307
-        <code>posixAccount</code> entry.</para>
+        <para>For the LDAP security manager you need to distinguished names (DN)--one for the users
+          and one for the groups. Each user must be represented by a single entry under the user DN
+          as an RFC 2307 <code>posixAccount</code> entry.</para>
 
-        <para>Each group is represented by a single entry under the groupDN as
-        a union of RFC 2307 <code>posixGroup</code> and RFC 2256
-        <code>groupOfUniqueNames</code>.</para>
+        <para>Each group is represented by a single entry under the groupDN as a union of RFC 2307
+            <code>posixGroup</code> and RFC 2256 <code>groupOfUniqueNames</code>.</para>
       </section>
 
       <section>
         <title>Set the Java Properties for LDAP</title>
 
-        <para>When eXist is started, you must specify the follow java
-        properties:</para>
+        <para>When eXist is started, you must specify the follow java properties:</para>
 
         <variablelist>
           <varlistentry>
@@ -98,9 +94,8 @@
           </varlistentry>
         </variablelist>
 
-        <para>If you choose not to use the recommended entries under the user
-        list DN, you can control each facet location by the following
-        properties:</para>
+        <para>If you choose not to use the recommended entries under the user list DN, you can
+          control each facet location by the following properties:</para>
 
         <variablelist>
           <varlistentry>
@@ -147,15 +142,13 @@
             <term>security.ldap.attr.userDigestPassword</term>
 
             <listitem>
-              <para>The encoded digest password of the user (for
-              WebDAV).</para>
+              <para>The encoded digest password of the user (for WebDAV).</para>
             </listitem>
           </varlistentry>
         </variablelist>
 
-        <para>If you choose not to use the recommended entries under the group
-        list DN, you can control each facet location by the following
-        properties:</para>
+        <para>If you choose not to use the recommended entries under the group list DN, you can
+          control each facet location by the following properties:</para>
 
         <variablelist>
           <varlistentry>
@@ -178,8 +171,7 @@
             <term>security.ldap.attr.gidNumber</term>
 
             <listitem>
-              <para>The group id. This must be the same in the user and
-              group.</para>
+              <para>The group id. This must be the same in the user and group.</para>
             </listitem>
           </varlistentry>
 
@@ -187,8 +179,7 @@
             <term>security.ldap.attr.groupMemberName</term>
 
             <listitem>
-              <para>The name of the member entry which contains the user's
-              DN.</para>
+              <para>The name of the member entry which contains the user's DN.</para>
             </listitem>
           </varlistentry>
         </variablelist>
@@ -200,8 +191,7 @@
             <term>security.ldap.contextFactory</term>
 
             <listitem>
-              <para>The class name of the JNDI context factory for
-              LDAP.</para>
+              <para>The class name of the JNDI context factory for LDAP.</para>
             </listitem>
           </varlistentry>
         </variablelist>
