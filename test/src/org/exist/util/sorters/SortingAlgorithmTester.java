@@ -72,7 +72,7 @@ public abstract class SortingAlgorithmTester {
 			new InsertionSortTester(),
 			new HeapSortTester(),
 			new FastQSortTester(),
-			new HSortTester(),
+//			new HSortTester(),
 		};
 	}
 }
