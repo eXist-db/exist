@@ -2,14 +2,17 @@
 <article>
     <articleinfo>
         <title>Index-driven XQuery processing in the eXist XML database</title>
+        <date>August 2009</date>
         <author>
-            <firstname>Wolfgang</firstname>
+            <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
-            <email>wolfgang@exist-db.org</email>
+            <affiliation>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation>
         </author>
     </articleinfo>
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <section>
         <title>Introduction</title>
 
@@ -33,7 +36,8 @@
         <para>The indexing scheme forms the very core of eXist and represents the basis of all
             efficient query processing in the database. Understanding the ideas behind it helps to
             understand why some query formulations might be faster than their alternatives and is
-            certainly a requirement for those who want to work on improving eXist's XQuery engine.</para>
+            certainly a requirement for those who want to work on improving eXist's XQuery
+            engine.</para>
 
         <para>The main purpose of the indexing scheme is to allow a quick identification of
             structural relationships between nodes. To determine the relationship between any pair
@@ -61,7 +65,8 @@
             <para>As explained above, the indexer assigns a unique node ID to every node in the
                 document tree. Various labeling or numbering schemes for XML nodes have been
                 proposed over the past years. Whatever numbering scheme we choose, it should allow
-                us to determine the relationship between any two given nodes from the ID alone.</para>
+                us to determine the relationship between any two given nodes from the ID
+                alone.</para>
 
             <para>The originial numbering scheme used in eXist was based on level-order numbering.
                 In this scheme, a unique integer ID is assigned to every node while traversing the
@@ -211,8 +216,8 @@
 
         <para>Based on the features of the numbering scheme, eXist uses structural joins to resolve
             path expressions. If we know the IDs of all nodes corresponding to e.g.
-            <sgmltag>article</sgmltag> elements in a set of documents and we have a second node set
-            representing <sgmltag>section</sgmltag> nodes, we can filter out all sections being
+                <sgmltag>article</sgmltag> elements in a set of documents and we have a second node
+            set representing <sgmltag>section</sgmltag> nodes, we can filter out all sections being
             children or descendants of an article node by applying a simple join operation on the
             two node sets.</para>
 
@@ -233,7 +238,8 @@
             nodes of A. However, eXist instead defers the evaluation of the wildcard part of the
             expression and later filters out those nodes which cannot be children of A.</para>
 
-        <para>This approach to index-based query processing leads to some characteristic features:</para>
+        <para>This approach to index-based query processing leads to some characteristic
+            features:</para>
 
         <para>First, operations that require direct access on a stored node will nearly always
             result in a significant slow-down of the query - unless they are supported by additional

@@ -6,17 +6,16 @@
 
         <productname>Open Source Native XML Database</productname>
         <title>Server Configuration</title>
+        <date>August 2009</date>
 
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
-                <address format="linespecific">
-          <email>wolfgang at exist-db.org</email>
-        </address>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
             </affiliation>
         </author>
-
+        
         <author>
             <surname>Milowski</surname>
 

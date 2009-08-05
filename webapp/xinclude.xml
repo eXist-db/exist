@@ -6,6 +6,7 @@
         <graphic fileref="logo.jpg"/>
         <style href="styles/default-style.css"/>
         <title>Open Source XML Database</title>
+        <date>August 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>

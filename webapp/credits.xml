@@ -12,9 +12,7 @@
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
-                <address format="linespecific">
-                    <email>wolfgang at exist-db.org</email>
-                </address>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
             </affiliation>
         </author>
     </bookinfo>
@@ -106,6 +104,9 @@
                 </listitem>
                 <listitem>
                     <para>Chris Marasti-Georg (developer)</para>
+                </listitem>
+                <listitem>
+                    <para>Dan McCreary (documentation)</para>
                 </listitem>
                 <listitem>
                     <para>Wolfgang Meier (main developer)</para>

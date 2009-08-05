@@ -3,13 +3,12 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <title>Open Source Native XML Database</title>
+        <date>August 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
-                <address format="linespecific">
-                    <email>wolfgang@exist-db.org</email>
-                </address>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
             </affiliation>
         </author>
         <style> table { margin-left: 15px; margin-right: 15px; } td { margin-bottom: 2em;

@@ -5,6 +5,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Using WebDAV to Access the Database</title>
+        <date>August 2009</date>
         <author>
             <firstname>Dannes</firstname>
             <surname>Wessels</surname>
@@ -15,7 +16,7 @@
             </affiliation>
         </author>
     </bookinfo>
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter id="webdav">
         <title>WebDAV</title>
 
@@ -57,12 +58,20 @@
             </note>
 
             <para>Perform the following steps in Internet Explorer: <itemizedlist>
-                    <listitem><para>Select <command>File -&gt; Open</command>.</para></listitem>
-                    <listitem><para>Fill in URL like
-                        <command>http://localhost:8080/exist/webdav/db/</command> or
-                            <command>https://localhost:8443/exist/webdav/db/</command>.</para></listitem>
-                    <listitem><para>Check "Open as Web Folder".</para></listitem>
-                    <listitem><para>Click OK.</para></listitem>
+                    <listitem>
+                        <para>Select <command>File -&gt; Open</command>.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Fill in URL like
+                                <command>http://localhost:8080/exist/webdav/db/</command> or
+                                <command>https://localhost:8443/exist/webdav/db/</command>.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Check "Open as Web Folder".</para>
+                    </listitem>
+                    <listitem>
+                        <para>Click OK.</para>
+                    </listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_xp_webfolders.png"/>
@@ -129,11 +138,19 @@
 
             <para>
                 <itemizedlist>
-                    <listitem><para>Select <command>File -&gt; Open URL</command>.</para></listitem>
-                    <listitem><para>Fill <command>User</command> and <command>Password</command>.</para></listitem>
-                    <listitem><para>Enter <command>Server Url</command>
-                        http://localhost:8080/exist/webdav/db/.</para></listitem>
-                    <listitem><para>Click <command>Browse</command>.</para></listitem>
+                    <listitem>
+                        <para>Select <command>File -&gt; Open URL</command>.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Fill <command>User</command> and <command>Password</command>.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Enter <command>Server Url</command>
+                            http://localhost:8080/exist/webdav/db/.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Click <command>Browse</command>.</para>
+                    </listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_oxygen.png"/>
@@ -146,7 +163,8 @@
                     certification path to requested target.</para>
                 <para>You'll need to add the Server certificate to your trusted certificates
                     keystore (<ulink
-                        url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores">more info</ulink>).</para>
+                        url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores"
+                        >more info</ulink>).</para>
             </note>
 
             <note>
@@ -165,12 +183,17 @@
 
             <para>
                 <itemizedlist>
-                    <listitem><para>Select <command>File -&gt; Open URL</command></para>
+                    <listitem>
+                        <para>Select <command>File -&gt; Open URL</command></para>
                     </listitem>
-                    <listitem><para>Enter <command>Username, Password</command>
-                    </para></listitem>
-                    <listitem><para>Enter <command>Server URL</command> without a slash on the end
-                        (otherwise you'll see 2x 'db')</para></listitem>
+                    <listitem>
+                        <para>Enter <command>Username, Password</command>
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>Enter <command>Server URL</command> without a slash on the end
+                            (otherwise you'll see 2x 'db')</para>
+                    </listitem>
                 </itemizedlist>
                 <screenshot>
                     <graphic fileref="resources/webdav_xmlspy.png"/>
