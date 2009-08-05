@@ -179,18 +179,6 @@ return
                 data of the previous step. XSLTServlet gets the path to the stylesheet from the
                 request attribute "xslt.stylesheet" and applies it to the data.</para>
 
-            <note>
-                <para>Note: the cache-control element is used to tell XQueryURLRewrite if the
-                    current URL rewrite should be cached. Internally, XQueryURLRewrite keeps a map
-                    of input URIs to dispatch rules. With the cache enabled, the controller XQuery
-                    does only need to be executed once for every input URI. Subsequent requests will
-                    use the cache.</para>
-
-                <para>However, only the URL rewrite rule is cached, not the HTTP response. The
-                    cache-control setting has nothing to do with the corresponding HTTP cache
-                    headers or client-side caching within the browser.</para>
-            </note>
-
             <para>We can also pass a request through more than one "view". The following fragment
                 applies two stylesheets in sequence (code taken from
                     <filename>webapp/xquery/controller.xql</filename>):</para>
@@ -373,14 +361,71 @@ return
                                         "XSLTServlet".</para>
                                 </listitem>
                             </varlistentry>
-
                         </variablelist>
-
                     </listitem>
                 </varlistentry>
+            </variablelist>
+            <para>In addition to the action, an element <sgmltag>cache-control</sgmltag> may
+                appear:</para>
 
+            <variablelist>
+                <varlistentry>
+                    <term>cache-control</term>
+                    <listitem>
+                        <para>has a single attribute <option>cache="yes|no"</option>. the
+                            cache-control element is used to tell XQueryURLRewrite if the current
+                            URL rewrite should be cached. Internally, XQueryURLRewrite keeps a map
+                            of input URIs to dispatch rules. With the cache enabled, the controller
+                            XQuery does only need to be executed once for every input URI.
+                            Subsequent requests will use the cache.</para>
+
+                        <para>However, only the URL rewrite rule is cached, not the HTTP response.
+                            The cache-control setting has nothing to do with the corresponding HTTP
+                            cache headers or client-side caching within the browser.</para>
+                    </listitem>
+                </varlistentry>
             </variablelist>
 
+            <para>Within an action element, parameters and attributes can be set as follows:</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>add-parameter</term>
+                    <listitem>
+                        <para>Add (or overwrite) a request parameter. The original HTTP request
+                            will be copied before the change is applied. Subsequent steps in
+                            the pipeline will not see the parameter. The name of the parameter
+                            is taken from attribute <option>name</option>, the value from attribute
+                            <option>value</option>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>set-attribute</term>
+                    <listitem>
+                        <para>Set a request attribute to the given value. The name of the attribute
+                            is read from attribute <option>name</option>, the value from attribute 
+                            <option>value</option>. You can set arbitrary request attributes, e.g. to pass
+                            information between XQueries. However, some attributes may be reserved by
+                            the called servlet (see examples above).</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>clear-attribute</term>
+                    <listitem>
+                        <para>Clears a request attribute. Unlike parameters, request attributes will be visible to subsequent steps
+                            in the processing pipeline. They does need to be cleared once they are no longer needed.
+                            The name of the attribute is read from attribute <option>name</option>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>set-header</term>
+                    <listitem>
+                        <para>Set an HTTP response header field. The HTTP response is shared between
+                            all steps in the pipeline, so all following steps will be able to see the
+                            changed header.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
         </section>
     </chapter>
 </book>
