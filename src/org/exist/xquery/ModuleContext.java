@@ -26,9 +26,13 @@ import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
+import org.exist.util.FileUtils;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.AnyURIValue;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.HashMap;
 
@@ -42,20 +46,26 @@ import java.util.HashMap;
 public class ModuleContext extends XQueryContext {
 
 	private XQueryContext parentContext;
-    private String modulePrefix;
-    private String moduleNamespace;
+    private final String modulePrefix;
+    private final String moduleNamespace;
+    private final String location;
 
 	/**
 	 * @param parentContext
 	 */
-	public ModuleContext(XQueryContext parentContext, String modulePrefix, String moduleNamespace) {
+	public ModuleContext(XQueryContext parentContext, String modulePrefix, String moduleNamespace, String location) {
 		super(parentContext.getAccessContext());
         this.moduleNamespace = moduleNamespace;
         this.modulePrefix = modulePrefix;
+        this.location = location;
         setParentContext(parentContext);
 		loadDefaults(broker.getConfiguration());
     }
 	
+	String getLocation() {
+	    return location;
+	}
+   
 	String getModuleNamespace() {
 		return moduleNamespace;
 	}
@@ -69,7 +79,39 @@ public class ModuleContext extends XQueryContext {
         if (parentContext != null) {
 		    this.broker = parentContext.broker;
 		    baseURI = parentContext.baseURI;
-		    moduleLoadPath = parentContext.moduleLoadPath;
+		    try {
+		        if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) ||
+                    (location.indexOf(':') < 0 &&
+                     parentContext.moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
+		            // use XmldbURI resolution - unfortunately these are not interpretable as URIs 
+		            // because the scheme xmldb:exist: is not a valid URI scheme
+                    XmldbURI locationUri = XmldbURI.xmldbUriFor(FileUtils.dirname(location));
+                    if (parentContext.moduleLoadPath.equals ("."))
+                        moduleLoadPath = locationUri.toString();
+                    else {
+                        XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.moduleLoadPath);
+                        XmldbURI moduleLoadUri = parentLoadUri.resolveCollectionPath(locationUri);
+                        moduleLoadPath = moduleLoadUri.toString();
+                    }
+		        } else {
+                    String dir = FileUtils.dirname(location);
+		            if (parentContext.moduleLoadPath.equals(".")) {
+		                if (! dir.equals(".")) {
+		                    if (dir.startsWith("/"))
+		                        moduleLoadPath = "." + dir;
+		                    else
+		                        moduleLoadPath = "./" + dir;
+		                }
+		            } else {
+		                if (dir.startsWith("/"))
+		                    moduleLoadPath = dir;
+		                else
+		                    moduleLoadPath = FileUtils.addPaths(parentContext.moduleLoadPath, dir);
+		            }
+		        }
+		    } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         }
 	}
 
@@ -99,11 +141,12 @@ public class ModuleContext extends XQueryContext {
 
     public void updateContext(XQueryContext from) {
         if (from.hasParent())
+            // TODO: shouldn't this call setParentContext ? - sokolov
             this.parentContext = ((ModuleContext)from).parentContext;
     }
 
     public XQueryContext copyContext() {
-        ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace);
+        ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace, location);
         copyFields(ctx);
         try {
             ctx.declareNamespace(modulePrefix, moduleNamespace);
