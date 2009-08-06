@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,11 +30,14 @@ import org.exist.xquery.XPathException;
  * JFreeChart module for eXist.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
+ * @author ljo
  */
 public class JFreeChartModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/jfreechart";
     public final static String PREFIX = "jfreechart";
+    public final static String INCLUSION_DATE = "2009-04-13";
+    public final static String RELEASED_IN_VERSION = "trunk";
 
     public final static FunctionDef[] functions = {
         new FunctionDef(JFreeCharting.signatures[0], JFreeCharting.class),
@@ -64,4 +67,9 @@ public class JFreeChartModule extends AbstractInternalModule {
     public String getDefaultPrefix() {
         return PREFIX;
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

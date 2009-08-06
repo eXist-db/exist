@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.image;
 
 import java.awt.Graphics2D;
@@ -45,22 +44,23 @@ import org.exist.xquery.value.Base64Binary;
  * on images stored in the eXist database.
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author ljo
  * @serial 2006-03-10
  * @version 1.0
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
-
+public class ImageModule extends AbstractInternalModule {
 /*
  * TODO: metadata extraction from images, especially JPEG's
  */
 
-public class ImageModule extends AbstractInternalModule {
-
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/image";
 	
 	public final static String PREFIX = "image";
-	
+    public final static String INCLUSION_DATE = "2006-03-13";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+
 	private final static FunctionDef[] functions = {
 		new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
 		new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
@@ -85,6 +85,10 @@ public class ImageModule extends AbstractInternalModule {
 	public String getDescription() {
 		return "A module for performing operations on Images stored in the eXist db";
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
 	
 	/**
 	 * Get's an the raw binary data from base64 binary encoded image data

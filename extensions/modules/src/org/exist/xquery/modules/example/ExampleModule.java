@@ -27,13 +27,16 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author ljo
  */
 public class ExampleModule extends AbstractInternalModule {
 
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/examples";
 	
 	public final static String PREFIX = "example";
-	
+    public final static String INCLUSION_DATE = "2005-04-20";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+
 	private final static FunctionDef[] functions = {
 		new FunctionDef(EchoFunction.signature, EchoFunction.class)
 	};
@@ -51,6 +54,11 @@ public class ExampleModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "A simple example module";
+		return "A module for showing good examples of module usage";
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

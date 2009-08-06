@@ -40,6 +40,7 @@ import org.exist.xquery.XQueryContext;
  * against SQL Databases, returning an XML representation of the result set.
  * 
  * @author Adam Retter <adam@exist-db.org>
+ * @author ljo
  * @serial 2008-05-19
  * @version 1.1
  * 

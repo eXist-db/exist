@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2008-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -24,12 +24,22 @@ package org.exist.versioning.xquery;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+
+/**
+ * Module function definitions for versioning module.
+ *
+ * @author wolf
+ * @author ljo
+ *
+ */
 public class VersioningModule extends AbstractInternalModule {
 
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/versioning";
 
     public static final String PREFIX = "version";
+    public final static String INCLUSION_DATE = "2008-12-29";
+    public final static String RELEASED_IN_VERSION = "trunk";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(PatchFunction.signatures[0], PatchFunction.class),
@@ -50,6 +60,11 @@ public class VersioningModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "Versioning functions.";
+        return "A module for versioning of XML documents.";
     }
+
+   public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

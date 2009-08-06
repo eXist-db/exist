@@ -20,6 +20,7 @@
  *  $Id$
  *  
  *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ *  @author ljo
  */
 package org.exist.xquery.modules.spatial;
 
@@ -95,7 +96,7 @@ public class SpatialModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "Functions to perform spatial operations on GML 2D geometries.";
+		return "A module for spatial operations on GML 2D geometries.";
 	}
 
     public String getReleaseVersion() {

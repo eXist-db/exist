@@ -28,6 +28,7 @@ import org.exist.xquery.FunctionDef;
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author ljo
  * @serial 20070905
  * @version 1.2
  */

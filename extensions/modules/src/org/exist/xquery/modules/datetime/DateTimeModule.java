@@ -26,6 +26,7 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
+ * @author ljo
  * @version 1.1
  */
 public class DateTimeModule extends AbstractInternalModule
@@ -33,6 +34,8 @@ public class DateTimeModule extends AbstractInternalModule
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/datetime";
 
     public final static String PREFIX = "datetime";
+    public final static String INCLUSION_DATE = "2007-02-01";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     private final static FunctionDef[] functions = {
         new FunctionDef(DateFromDateTimeFunction.signature, DateFromDateTimeFunction.class),
@@ -71,5 +74,9 @@ public class DateTimeModule extends AbstractInternalModule
     public String getDescription()
     {
         return "A module for performing date and time operations";
+    }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
     }
 }

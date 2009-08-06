@@ -46,6 +46,7 @@ import javax.mail.Store;
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author ljo
  * @serial 2009-03-12
  * @version 1.3
  *
@@ -58,6 +59,10 @@ public class MailModule extends AbstractInternalModule
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/mail";
 	
 	public final static String PREFIX = "mail";
+    // JavaMail-based from 2009-03-14
+    // makes the need for versioning of the functions obvious too /ljo
+    public final static String INCLUSION_DATE = "2005-05-12, 2009-03-14";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2 (JavaMail-based in trunk)";
 	
 	private final static FunctionDef[] functions = {
 		
@@ -107,6 +112,10 @@ public class MailModule extends AbstractInternalModule
 		return( "A module for performing email related functions" );
 	}
 	
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 	
 	//***************************************************************************
 	//*

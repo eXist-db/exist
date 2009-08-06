@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2007-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@ import org.exist.xquery.FunctionDef;
  * XQuery Extension module for compression and de-compression functions
  * 
  * @author Adam Retter <adam@exist-db.org>
+ * @author ljo
  * @version 1.0
  */
 public class CompressionModule extends AbstractInternalModule {
@@ -35,6 +36,8 @@ public class CompressionModule extends AbstractInternalModule {
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
 
     public final static String PREFIX = "compression";
+    public final static String INCLUSION_DATE = "2007-07-10";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     private final static FunctionDef[] functions = {
         new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
@@ -66,4 +69,9 @@ public class CompressionModule extends AbstractInternalModule {
     public String getDescription() {
         return "Compression and De-Compression functions";
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }
