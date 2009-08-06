@@ -52,12 +52,12 @@ public class DateForFunction extends BasicFunction {
 			new QName("date-for", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
 			"Returns the date for a given set of parameters.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "the year of interest"),
-				new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "the month of interest (1 = January, 12 = December)"),
+				new FunctionParameterSequenceType("year", Type.INTEGER, Cardinality.EXACTLY_ONE, "The year of interest"),
+				new FunctionParameterSequenceType("month", Type.INTEGER, Cardinality.EXACTLY_ONE, "The month of interest (1 = January, 12 = December)"),
 				new FunctionParameterSequenceType("week", Type.INTEGER, Cardinality.EXACTLY_ONE, "The week in the month of interest (1 = first week, 4 or 5 = last week)"),
 				new FunctionParameterSequenceType("weekday", Type.INTEGER, Cardinality.EXACTLY_ONE, "The day in the week of interest (1 = Sunday, 7 = Saturday)"),
 			},
-			new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "The date generated from the parameters."));
+			new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "the date generated from the parameters."));
 
 	public DateForFunction(XQueryContext context)
 	{

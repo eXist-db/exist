@@ -69,7 +69,7 @@ public class MailStoreFunctions extends BasicFunction
 	
 		new FunctionSignature(
 			new QName( "close-mail-store", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Closes's a mail store.",
+			"Closes a mail store.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "mail store handle retrieved from mail:get-mail-store()" )

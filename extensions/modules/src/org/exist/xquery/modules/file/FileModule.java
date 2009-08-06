@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -82,7 +82,7 @@ public class FileModule extends AbstractInternalModule
 
 	public String getDescription() 
 	{
-		return( "A module for performing various file-based operations." );
+		return( "A module for performing various operations on files and directories stored in the file system." );
 	}
 		
 	

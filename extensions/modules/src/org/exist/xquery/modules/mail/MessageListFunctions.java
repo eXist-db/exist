@@ -127,7 +127,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		new FunctionSignature(
 			new QName( "close-message-list", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Closes's a message list.",
+			"Closes a message list.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )

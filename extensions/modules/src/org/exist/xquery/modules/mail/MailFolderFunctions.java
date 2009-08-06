@@ -71,7 +71,7 @@ public class MailFolderFunctions extends BasicFunction
 	
 		new FunctionSignature(
 			new QName( "close-mail-folder", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Closes's a mail folder.",
+			"Closes a mail folder.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" ),

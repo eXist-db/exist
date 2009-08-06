@@ -22,14 +22,16 @@
  */
 package org.exist.xquery.modules.metadata;
 
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -38,10 +40,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-import java.util.Iterator;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
@@ -53,11 +52,11 @@ public class MetadataFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("metadata", MetadataModule.NAMESPACE_URI, MetadataModule.PREFIX),
-			"Retrieves metadata for the dynamic context." +
+			"Retrieves metadata for the dynamic context. " +
 			"If the context item is undefined an error is raised.",
 			null,
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the metadata documents"),
-			"an orphaned experiment.  This will be removed in the next release after 1.4.");
+			"an orphaned experiment.");
 
 	public MetadataFunction(XQueryContext context) {
 		super(context, signature);

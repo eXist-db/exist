@@ -69,6 +69,6 @@ public class MathModule extends AbstractInternalModule {
     }
     
     public String getDescription() {
-        return "Functions for mathematical operations.";
+        return "A module containing functions for common mathematical operations.";
     }
 }
