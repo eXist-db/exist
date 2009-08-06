@@ -31,6 +31,9 @@ public class SpatialModule extends AbstractInternalModule {
 	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/spatial";
 	
 	public static final String PREFIX = "spatial";
+    public final static String INCLUSION_DATE = "2007-05-28";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+
 
     public static final FunctionDef[] functions = {
     	new FunctionDef(FunSpatialSearch.signatures[0], FunSpatialSearch.class),
