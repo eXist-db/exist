@@ -78,5 +78,4 @@ public class MathModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-
 }
