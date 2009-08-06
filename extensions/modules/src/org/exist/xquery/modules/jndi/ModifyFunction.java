@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -75,9 +75,9 @@ public class ModifyFunction extends BasicFunction
 					new QName( "modify", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Modify a JNDI Directory entry.",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
-						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
-						new FunctionParameterSequenceType( "attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "entry attributes to be set in the"
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" ), 
+						new FunctionParameterSequenceType( "attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The entry attributes to be set in the"
 							+ " form <attributes><attribute name=\"\" value=\"\" operation=\"add | replace | remove\"/></attributes>. "
 							+ " You can also optionally specify ordered=\"true\" for an attribute." ) 
 					},

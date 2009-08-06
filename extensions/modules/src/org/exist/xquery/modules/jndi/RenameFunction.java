@@ -67,8 +67,8 @@ public class RenameFunction extends BasicFunction
 							"Rename a JNDI Directory entry.",
 					new SequenceType[] {
 						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
-						new FunctionParameterSequenceType( "old-dn", Type.STRING, Cardinality.EXACTLY_ONE, "DN to rename" ),
-						new FunctionParameterSequenceType( "new-dn", Type.STRING, Cardinality.EXACTLY_ONE, "the new DN" )
+						new FunctionParameterSequenceType( "old-dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name to rename" ),
+						new FunctionParameterSequenceType( "new-dn", Type.STRING, Cardinality.EXACTLY_ONE, "The new Distinguished Name" )
 					},
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};

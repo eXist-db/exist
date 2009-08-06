@@ -59,7 +59,7 @@ public class GetWidthFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-width", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the Width of the image passed in, returning an integer of the images width in pixels or an empty sequence if the image is invalid.",
+			"Gets the width of the image passed in, returning an integer of the images width in pixels or an empty sequence if the image is invalid.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "the image data")

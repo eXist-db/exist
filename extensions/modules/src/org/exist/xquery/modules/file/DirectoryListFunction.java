@@ -67,16 +67,14 @@ public class DirectoryListFunction extends BasicFunction {
 		new FunctionSignature(
 			new QName("directory-list", NAMESPACE_URI, PREFIX),
 			"List all files, including their file size and modification time, found in a directory. Files are located in the server's " +
-			"file system, using file patterns. " +
-			"The first argument is the directory in the file system where the files are located." +
-			"The second argument is the file pattern. File pattern matching is based " +
-			"on code from Apache's Ant, thus following the same conventions. For example: " +
-			"*.xml matches any file ending with .xml in the current directory, **/*.xml matches files " +
-			"in any directory below the current one. ",
+			"file system, using filename patterns.  File pattern matching is based " +
+			"on code from Apache's Ant, thus following the same conventions. For example:\n\n" +
+			"'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files " +
+			"in any directory below the specified directory. ",
 			new SequenceType[]
 			{
-			    new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "the base directory"),
-			    new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "the file glob pattern")
+			    new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The base directory path in the file system where the files are located."),
+			    new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The file name pattern")
 				},
 			new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching filenames, including their file size and modification time, and the subdirectory they were found in" )
 			)

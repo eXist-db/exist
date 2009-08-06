@@ -65,10 +65,10 @@ public class ScaleFunction extends BasicFunction
 	
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("scale", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Scale the image passed in $image. $dimension specifies the maximum dimensions of the scaled image, if empty then the default values are 'maxheight = 100' and 'maxwidth = 100', the first value of $dimension is 'maxheight' and the second 'maxwidth'.",
+			"Scale the image image to a specified dimension.  If no dimensions are specified, then the default values are 'maxheight = 100' and 'maxwidth = 100'.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, null),
-				new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, null),
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data"),
+				new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, "The maximum dimension of the scaled image. expressed in pixels (maxheight, maxwidth).  If empty, then the default values are 'maxheight = 100' and 'maxwidth = 100'."),
 				new FunctionParameterSequenceType("mimeType", Type.STRING, Cardinality.EXACTLY_ONE, "the mime-type of the image")
 			},
 			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the scaled image or an empty sequence if $image is invalid"));

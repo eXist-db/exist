@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -75,9 +75,9 @@ public class SearchFunction extends BasicFunction
 					new QName( "search", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Searches a JNDI Directory by attributes.",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
-						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
-						new FunctionParameterSequenceType( "search-attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "search attributes in the form <attributes><attribute name=\"\" value=\"\"/></attributes>." ) 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" ), 
+						new FunctionParameterSequenceType( "search-attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The search attributes in the form <attributes><attribute name=\"\" value=\"\"/></attributes>." ) 
 					},
 					new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the search results in DSML format" ) ),
 			
@@ -85,10 +85,10 @@ public class SearchFunction extends BasicFunction
 					new QName( "search", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Searches a JNDI Directory by filter.",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
-						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" ), 
 						new FunctionParameterSequenceType( "filter", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
-						new FunctionParameterSequenceType( "scope", Type.STRING, Cardinality.EXACTLY_ONE, "the scope, which has a value of 'object', 'onelevel' or 'subtree'" ) 
+						new FunctionParameterSequenceType( "scope", Type.STRING, Cardinality.EXACTLY_ONE, "The scope, which has a value of 'object', 'onelevel' or 'subtree'" ) 
 					},
 					new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the search results in DSML format" ) )
 			};

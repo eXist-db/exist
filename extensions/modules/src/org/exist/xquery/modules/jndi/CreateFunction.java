@@ -67,9 +67,9 @@ public class CreateFunction extends BasicFunction
 					new QName( "create", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Create a JNDI Directory entry.",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
-						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" ), 
-						new FunctionParameterSequenceType( "attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "entry attributes to be set in the"
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" ), 
+						new FunctionParameterSequenceType( "attributes", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The entry attributes to be set in the"
 							+ " form <attributes><attribute name=\"\" value=\"\"/></attributes>. "
 							+ " You can also optionally specify ordered=\"true\" for an attribute." ) 
 					},
