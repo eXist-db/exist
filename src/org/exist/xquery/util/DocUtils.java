@@ -24,6 +24,7 @@ package org.exist.xquery.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -112,15 +113,18 @@ public class DocUtils {
                 memtreeDoc.setContext(context);
                 memtreeDoc.setDocumentURI(path);
                 document = memtreeDoc;
-            } catch(MalformedURLException e)
-            {
+
+            } catch(ConnectException e) {
+                // prevent long stacktraces
+                throw new XPathException(e.getMessage()+ " ("+path+")");
+
+            } catch(MalformedURLException e) {
                 throw new XPathException(e.getMessage(), e);
-            } catch(SAXException e)
-            {
+
+            } catch(SAXException e) {
                 throw new XPathException(e.getMessage(), e);
             }
-            catch(IOException e)
-            {
+            catch(IOException e) {
                 // Special case: FileNotFoundException
                 if(e instanceof FileNotFoundException)
                 {
