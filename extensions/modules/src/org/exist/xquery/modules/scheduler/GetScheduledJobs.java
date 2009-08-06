@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.scheduler;
 
 import java.util.Date;
@@ -190,7 +189,7 @@ public class GetScheduledJobs extends BasicFunction
 		}
 		catch(SAXException se)
 		{
-			throw(new XPathException(this, se.getMessage(), se));
+		    throw(new XPathException(this, se.getMessage(), se));
 		}
 	}
 }

@@ -163,7 +163,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 						thumbPath.toXmldbURI());
 				dbbroker.saveCollection(transaction, thumbCollection);
 			} catch (Exception e) {
-				throw new XPathException(this,e.getMessage());
+				throw new XPathException(this, e.getMessage());
 			}
 		} else {
 			thumbDir = new File(thumbPath.toString());
@@ -171,7 +171,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 				try {
 					thumbDir.mkdirs();
 				} catch (Exception e) {
-					throw new XPathException(this,e.getMessage());
+					throw new XPathException(this, e.getMessage());
 				}
 
 		}
@@ -230,7 +230,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 							bImage = ImageModule.createThumb(image, maxThumbHeight,
 									maxThumbWidth);
 						} catch (Exception e) {
-							throw new XPathException(this,e.getMessage());
+							throw new XPathException(this, e.getMessage());
 						}
 
 						if (isSaveToDataBase) {
@@ -238,7 +238,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 							try {
 								ImageIO.write(bImage, "jpg", os);
 							} catch (Exception e) {
-								throw new XPathException(this,e.getMessage());
+								throw new XPathException(this, e.getMessage());
 							}
 							try {
 								doc = thumbCollection.addBinaryResource(
@@ -247,7 +247,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 												+ docImage.getFileURI()), os
 												.toByteArray(), "image/jpeg");
 							} catch (Exception e) {
-								throw new XPathException(this,e.getMessage());
+								throw new XPathException(this, e.getMessage());
 							}
 							// result.add(new
 							// StringValue(""+docImage.getFileURI()+"|"+thumbCollection.getURI()+THUMBPREFIX
@@ -262,7 +262,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 														+ "/" + prefix
 														+ docImage.getFileURI()));
 							} catch (Exception e) {
-								throw new XPathException(this,e.getMessage());
+								throw new XPathException(this, e.getMessage());
 							}
 							// result.add(new StringValue(
 							// thumbPath.toString() + "/"
@@ -285,7 +285,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 		try {
 			transact.commit(transaction);
 		} catch (Exception e) {
-			throw new XPathException(this,e.getMessage());
+			throw new XPathException(this, e.getMessage());
 		}
 		transact.getJournal().flushToLog(true);
 		dbbroker.closeDocument();

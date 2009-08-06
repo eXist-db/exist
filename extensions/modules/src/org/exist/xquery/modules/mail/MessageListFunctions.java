@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id: SendEmailFunction.java,v 1.12 2006/03/01 13:52:00 deliriumsky Exp $
+ *  $Id$
  */
 
 package org.exist.xquery.modules.mail;
@@ -190,7 +190,7 @@ public class MessageListFunctions extends BasicFunction
 			return closeMessageList;
 		} 
 			
-		throw( new XPathException( this, "Invalid function name" ) );	
+		throw( new XPathException(this, "Invalid function name" ) );	
 	}
 	
 	
@@ -206,14 +206,14 @@ public class MessageListFunctions extends BasicFunction
 		
 		// was a folder handle specified?
 		if( args[0].isEmpty() ) {
-			throw( new XPathException( this, "Folder handle not specified" ) );
+			throw( new XPathException(this, "Folder handle not specified" ) );
 		}
 
 		// get the Folder
 		long folderHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Folder folder= MailModule.retrieveFolder( context, folderHandle );
 		if( folder == null ) {
-			throw( new XPathException( this, "Invalid Folder handle specified" ) );
+			throw( new XPathException(this, "Invalid Folder handle specified" ) );
 		}
 		
 		try {
@@ -222,7 +222,7 @@ public class MessageListFunctions extends BasicFunction
 			prefetchMessages( folder, msgList );
 		}
 		catch( MessagingException me ) {
-			throw( new XPathException( this, "Failed to get mail list", me ) );
+			throw( new XPathException(this, "Failed to get mail list", me ) );
 		}
 		
 		// save the message list and return the handle of the message list
@@ -237,14 +237,14 @@ public class MessageListFunctions extends BasicFunction
 		
 		// was a folder handle specified?
 		if( args[0].isEmpty() || args[1].isEmpty() ) {
-			throw( new XPathException( this, "Folder handle or Search Terms not specified" ) );
+			throw( new XPathException(this, "Folder handle or Search Terms not specified" ) );
 		}
 
 		// get the Folder
 		long folderHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Folder folder= MailModule.retrieveFolder( context, folderHandle );
 		if( folder == null ) {
-			throw( new XPathException( this, "Invalid Folder handle specified" ) );
+			throw( new XPathException(this, "Invalid Folder handle specified" ) );
 		}
 		
 		Node searchTermsXML = ( (NodeValue)args[1].itemAt( 0 ) ).getNode();
@@ -255,7 +255,7 @@ public class MessageListFunctions extends BasicFunction
 			prefetchMessages( folder, msgList );
 		}
 		catch( MessagingException me ) {
-			throw( new XPathException( this, "Failed to get mail list", me ) );
+			throw( new XPathException(this, "Failed to get mail list", me ) );
 		}
 		
 		// save the message list and return the handle of the message list
@@ -285,14 +285,14 @@ public class MessageListFunctions extends BasicFunction
 		
 		// was a msgList handle specified?
 		if( args[0].isEmpty() ) {
-			throw( new XPathException( this, "Message List handle not specified" ) );
+			throw( new XPathException(this, "Message List handle not specified" ) );
 		}
 
 		// get the MessageList
 		long msgListHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		msgList = MailModule.retrieveMessageList( context, msgListHandle );
 		if( msgList == null ) {
-			throw( new XPathException( this, "Invalid Message List handle specified" ) );
+			throw( new XPathException(this, "Invalid Message List handle specified" ) );
 		}
 		
 		if( msgList.length > 0 ) {
@@ -449,7 +449,7 @@ public class MessageListFunctions extends BasicFunction
 				}
 			}
 			catch( MessagingException me ) {
-				throw( new XPathException( this, "Failed to retrieve messages from list", me ) );
+				throw( new XPathException(this, "Failed to retrieve messages from list", me ) );
 			}
 			
 			builder.endElement();
@@ -478,7 +478,7 @@ public class MessageListFunctions extends BasicFunction
 	{
 		// was a msgList handle specified?
 		if( args[0].isEmpty() ) {
-			throw( new XPathException( this, "Message List handle not specified" ) );
+			throw( new XPathException(this, "Message List handle not specified" ) );
 		}
 		
 		// get the msgList
@@ -527,15 +527,15 @@ public class MessageListFunctions extends BasicFunction
 				} else if( type.equalsIgnoreCase( "received" ) ) {
 					st = parseReceivedDateTerm( terms );
 				} else {
-					throw( new XPathException( this, "Invalid Search Term type specified: " + type ) );
+					throw( new XPathException(this, "Invalid Search Term type specified: " + type ) );
 				}
 			} else {
-				throw( new XPathException( this, "Invalid Search Term type specified: null" ) );
+				throw( new XPathException(this, "Invalid Search Term type specified: null" ) );
 			}
 		} 
 		
 		if( st == null ) {
-			throw( new XPathException( this, "Invalid Search Terms specified" ) );
+			throw( new XPathException(this, "Invalid Search Terms specified" ) );
 		}
 		
 		return( st );
@@ -555,7 +555,7 @@ public class MessageListFunctions extends BasicFunction
 			
 			st = parseSearchTerms( child );
 		} else {
-			throw( new XPathException( this, "Only one child term is allowed for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Only one child term is allowed for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -577,7 +577,7 @@ public class MessageListFunctions extends BasicFunction
 				st.add( parseSearchTerms( child ) );
 			}
 		} else {
-			throw( new XPathException( this, "At least one child term is required for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "At least one child term is required for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( (SearchTerm[])st.toArray( new SearchTerm[] {} ) );
@@ -593,7 +593,7 @@ public class MessageListFunctions extends BasicFunction
 		if( pattern != null && pattern.length() > 0 ) {
 			st = new FromStringTerm( pattern );
 		} else {
-			throw( new XPathException( this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -609,7 +609,7 @@ public class MessageListFunctions extends BasicFunction
 		if( pattern != null && pattern.length() > 0 ) {
 			st = new SubjectTerm( pattern );
 		} else {
-			throw( new XPathException( this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -625,7 +625,7 @@ public class MessageListFunctions extends BasicFunction
 		if( pattern != null && pattern.length() > 0 ) {
 			st = new BodyTerm( pattern );
 		} else {
-			throw( new XPathException( this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -640,7 +640,7 @@ public class MessageListFunctions extends BasicFunction
 		String type     = ((Element)terms).getAttribute( "recipientType" );
 		
 		if( type == null || type.length() == 0 ) {
-			throw( new XPathException( this, "recipientType not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "recipientType not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		if( pattern != null && pattern.length() > 0 ) {
@@ -653,12 +653,12 @@ public class MessageListFunctions extends BasicFunction
 			} else if( type.equalsIgnoreCase( "bcc" ) ) {
 				rtype = Message.RecipientType.BCC;
 			} else {
-				throw( new XPathException( this, "Invalid recipientType: " + type + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+				throw( new XPathException(this, "Invalid recipientType: " + type + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 			}
 			
 			st = new RecipientStringTerm( rtype, pattern );
 		} else {
-			throw( new XPathException( this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -673,13 +673,13 @@ public class MessageListFunctions extends BasicFunction
 		String name     = ((Element)terms).getAttribute( "name" );
 		
 		if( name == null || name.length() == 0 ) {
-			throw( new XPathException( this, "name not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "name not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		if( pattern != null && pattern.length() > 0 ) {
 			st = new HeaderTerm( name, pattern );
 		} else {
-			throw( new XPathException( this, "pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -694,7 +694,7 @@ public class MessageListFunctions extends BasicFunction
 		String value = ((Element)terms).getAttribute( "value" );
 		
 		if( value == null || value.length() == 0 ) {
-			throw( new XPathException( this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		if( flag != null && flag.length() > 0 ) {
@@ -711,12 +711,12 @@ public class MessageListFunctions extends BasicFunction
 			} else if( flag.equalsIgnoreCase( "seen" ) ) {
 				flags = new Flags( Flags.Flag.SEEN );
 			} else {
-				throw( new XPathException( this, "Invalid flag: " + flag + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+				throw( new XPathException(this, "Invalid flag: " + flag + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 			}
 				
 			st = new FlagTerm( flags, value.equalsIgnoreCase( "true" ) );
 		} else {
-			throw( new XPathException( this, "flag attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "flag attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -731,11 +731,11 @@ public class MessageListFunctions extends BasicFunction
 		String format = ((Element)terms).getAttribute( "format" );
 		
 		if( value == null || value.length() == 0 ) {
-			throw( new XPathException( this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		if( format == null || format.length() == 0 ) {
-			throw( new XPathException( this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		int  cp = parseComparisonAttribute( terms );
@@ -748,7 +748,7 @@ public class MessageListFunctions extends BasicFunction
 			st = new SentDateTerm( cp, date );
 		}
 		catch( ParseException pe ) {
-			throw( new XPathException( this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -763,11 +763,11 @@ public class MessageListFunctions extends BasicFunction
 		String format = ((Element)terms).getAttribute( "format" );
 		
 		if( value == null || value.length() == 0 ) {
-			throw( new XPathException( this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		if( format == null || format.length() == 0 ) {
-			throw( new XPathException( this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		int  cp = parseComparisonAttribute( terms );
@@ -780,7 +780,7 @@ public class MessageListFunctions extends BasicFunction
 			st = new ReceivedDateTerm( cp, date );
 		}
 		catch( ParseException pe ) {
-			throw( new XPathException( this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( st );
@@ -807,10 +807,10 @@ public class MessageListFunctions extends BasicFunction
 			} else if( comp.equalsIgnoreCase( "ne" ) ) {
 				cp = ComparisonTerm.NE;
 			} else {
-				throw( new XPathException( this, "Invalid comparison: " + comp + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+				throw( new XPathException(this, "Invalid comparison: " + comp + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 			}
 		} else {
-			throw( new XPathException( this, "comparison attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw( new XPathException(this, "comparison attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		return( cp );

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -38,7 +38,9 @@ public class CacheModule extends AbstractInternalModule {
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/cache";
 
 	public final static String PREFIX = "cache";
-
+    public final static String INCLUSION_DATE = "2009-03-04";
+    public final static String RELEASED_IN_VERSION = "trunk";
+        
 	private final static FunctionDef[] functions = {
 		new FunctionDef(PutFunction.signatures[0], PutFunction.class),
 		new FunctionDef(GetFunction.signatures[0], GetFunction.class),
