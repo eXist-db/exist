@@ -21,6 +21,11 @@
  */
 package org.exist.xquery;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
@@ -168,41 +173,77 @@ public class StoredModuleTest {
         assertEquals("hi from module 1", r);
 
     }
+    private static final String module2 = "module namespace mod2 = 'urn:module2'; " +
+    "import module namespace mod3 = 'urn:module3' " +
+    "at  'module3/module3.xqm'; " +
+    "declare function mod2:showMe() as xs:string {" +
+    " mod3:showMe() " +
+    "};";
 
-    @Test @Ignore("Error relative resolve")
-    public void bugtestmodule23() throws Exception {
+    private static final String module2b = "module namespace mod2 = 'urn:module2'; " +
+    "import module namespace mod3 = 'urn:module3' " +
+    "at  'module3.xqm'; " +
+    "declare function mod2:showMe() as xs:string {" +
+    " mod3:showMe() " +
+    "};";
+
+    private static final String module3a = "module namespace mod3 = 'urn:module3';" +
+    "declare function mod3:showMe() as xs:string {" +
+    "'hi from module 3a'" +
+    "};";
+    
+    private static final String module3b = "module namespace mod3 = 'urn:module3';" +
+    "import module namespace mod4 = 'urn:module4' " +
+    "at  '../module2/module4.xqm'; " +
+    "declare function mod3:showMe() as xs:string {" +
+    "mod4:showMe()" +
+    "};";
+
+    private static final String module4 = "module namespace mod4 = 'urn:module4';" +
+    "declare function mod4:showMe() as xs:string {" +
+    "'hi from module 4'" +
+    "};";
+
+    @Test(expected=XMLDBException.class)
+    public void testModule23_missingRelativeContext() throws XMLDBException {
         String collection2Name = "module2";
         String collection3Name = "module2/module3";
-
-        String module2 = "module namespace mod2 = 'urn:module2'; " +
-                "import module namespace mod3 = 'urn:module3' " +
-                "at  'module3/module3.xqm'; " +
-                "declare function mod2:showMe() as xs:string {" +
-                " mod3:showMe() " +
-                "};";
-
-        String module3a = "module namespace mod3 = 'urn:module3';" +
-                "declare function mod3:showMe() as xs:string {" +
-                "'hi from module 3a'" +
-                "};";
 
         String query = "import module namespace mod2 = 'urn:module2' " +
                 "at  'module2/module2.xqm'; " +
                 "mod2:showMe()";
 
-        String module3b = "module namespace mod3 = 'urn:module3';" +
-                "declare function mod3:showMe() as xs:string {" +
-                "'hi from module 3b'" +
-                "};";
-
         Collection c2 = createCollection(collection2Name);
         writeModule(c2, "module2.xqm", module2);
-
-        //writeModule(c2, "module3.xqm", module3b);
 
         Collection c3 = createCollection(collection3Name);
         writeModule(c3, "module3.xqm", module3a);
 
+        ResourceSet rs = executeQuery(query);
+        String r = (String) rs.getResource(0).getContent();
+        assertEquals("hi from module 3a", r);
+    }
+
+    @Test 
+    public void testRelativeImportDb() throws Exception {
+        String collection2Name = "module2";
+        String collection3Name = "module2/module3";
+
+        String query = "import module namespace mod2 = 'urn:module2' " +
+                "at  'xmldb:exist:/" + collection2Name + "/module2.xqm'; " +
+                "mod2:showMe()";
+        
+        Collection c2 = createCollection(collection2Name);
+        writeModule(c2, "module2.xqm", module2);
+
+        writeModule(c2, "module3.xqm", module3b);
+        
+        writeModule(c2, "module4.xqm", module4);
+
+        Collection c3 = createCollection(collection3Name);
+        writeModule(c3, "module3.xqm", module3a);
+
+        // test relative module import in subfolder
         try {
             ResourceSet rs = executeQuery(query);
             String r = (String) rs.getResource(0).getContent();
@@ -213,6 +254,69 @@ public class StoredModuleTest {
             LOG.error(ex);
         }
 
+        // test relative module import in same folder, and using ".."
+        writeModule(c2, "module2.xqm", module2b);
+        
+        try {
+            ResourceSet rs = executeQuery(query);
+            String r = (String) rs.getResource(0).getContent();
+            assertEquals("hi from module 4", r);
+        } catch (XMLDBException ex) {
+            fail(ex.getMessage());
+            LOG.error(ex);
+        }
+    }
+    
+    @Test 
+    public void testRelativeImportFile() throws Exception {
+        String collection2Name = "module2";
+        String collection3Name = "module2/module3";
 
+        String query = "import module namespace mod2 = 'urn:module2' " +
+                "at  '/test/temp/" + collection2Name + "/module2.xqm'; " +
+                "mod2:showMe()";
+        
+        String c2 = "test/temp/" + collection2Name;
+        writeFile(c2 + "/module2.xqm", module2);
+        writeFile(c2 + "/module3.xqm", module3b);
+        writeFile(c2 + "/module4.xqm", module4);
+
+        String c3 = "test/temp/" + collection3Name;
+        writeFile(c3 + "/module3.xqm", module3a);
+
+        // test relative module import in subfolder
+        try {
+            ResourceSet rs = executeQuery(query);
+            String r = (String) rs.getResource(0).getContent();
+            assertEquals("hi from module 3a", r);
+            
+        } catch (XMLDBException ex) {
+            fail(ex.getMessage());
+            LOG.error(ex);
+        }
+        
+        // test relative module import in same folder, and using ".."
+        writeFile(c2 + "/module2.xqm", module2b);
+        
+        try {
+            ResourceSet rs = executeQuery(query);
+            String r = (String) rs.getResource(0).getContent();
+            assertEquals("hi from module 4", r);
+        } catch (XMLDBException ex) {
+            fail(ex.getMessage());
+            LOG.error(ex);
+        }
+    }
+
+    private void writeFile(String path, String module) throws IOException {
+        path = path.replace("/", File.separator);
+        File f = new File (path);
+        File dir = f.getParentFile();
+        assertTrue (dir.exists() || dir.mkdirs());
+        assertTrue (dir.canWrite());
+        assertTrue (f.createNewFile() || f.canWrite());
+        PrintWriter writer = new PrintWriter (new FileOutputStream(f));
+        writer.print(module);
+        writer.close();
     }
 }

@@ -2215,7 +2215,7 @@ public class XQueryContext {
         } catch (IOException e) {
         	throw new XPathException("IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e);
         }
-        XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI);
+        XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI, location);
         XQueryLexer lexer = new XQueryLexer(modContext, reader);
         XQueryParser parser = new XQueryParser(lexer);
         XQueryTreeParser astParser = new XQueryTreeParser(modContext);
