@@ -66,8 +66,8 @@ public class DeleteFunction extends BasicFunction
 					new QName( "delete", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Delete a JNDI Directory entry. $a is the directory context handle from a jndi:get-dir-context() call. $b is the DN.",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
-						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "" )
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" )
 					},
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};

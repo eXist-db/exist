@@ -1,6 +1,6 @@
 /*
  *  eXist Image Module Extension GetHeightFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ public class GetHeightFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-height", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if $a is invalid.",
+			"Get's the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if the image is invalid.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data")

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -46,7 +46,7 @@ public class ClearPersistentCookiesFunction extends BaseHTTPClientFunction {
 	public final static FunctionSignature signature =
         new FunctionSignature(
         new QName( "clear-persistent-cookies", NAMESPACE_URI, PREFIX ),
-        "Clears any persistent cookies.",
+        "Clears any persistent cookies stored in the current session on the client.",
         null,
         new SequenceType( Type.ITEM, Cardinality.EMPTY )
         );

@@ -37,16 +37,19 @@ public class Query extends Function implements Optimizable {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("query", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "Query the node set in $nodes using a Lucene full text index which is defined " +
-            "on those nodes. Parameter $query specifies the query, either as a query string " +
-            "based on Lucene's default query syntax or as an XML fragment. The context of the " +
-            "Lucene query is determined by the given input node set in $nodes. The Lucene indexes should " +
-            "be defined on the nodes in $nodes. Indexes on descendant nodes are not used. If no index " +
-            "is available on a node, nothing will be found." +
-            "See http://exist-db.org/lucene.html#N1029E",
+            "Queries a node set using a Lucene full text index; a lucene index " +
+            "must already be defined on the nodes, because if no index is available " +
+            "on a node, nothing will be found. Indexes on descendant nodes are not " +
+            "used. The context of the Lucene query is determined by the given input " +
+            "node set. The query is specified either as a query string based on " +
+            "Lucene's default query syntax or as an XML fragment. " +
+            "See http://exist-db.org/lucene.html#N1029E for complete documentation.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "node"),
-                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE, "item")
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, 
+                		"The node set to search using a Lucene full text index which is defined on those nodes"),
+                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE, 
+                		"The query to search for, provided either as a string or text in Lucene's default query " +
+                		"syntax or as an XML fragment to bypass Lucene's default query parser")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the input node set matching the query. match highlighting information " +
