@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" ns="www.allette.com.au/Tournament" xmlns:sch="http://www.ascc.net/xml/schematron">
+	<!-- Declare the namespace for use in Schematron rules -->
+	<sch:ns prefix="t" uri="www.allette.com.au/Tournament" xmlns:sch="http://www.ascc.net/xml/schematron"/>
+	<start>
+		<ref name="Tournament"/>
+	</start>
+	<define name="Tournament">
+		<element name="Tournament">
+			<element name="Name">
+				<text/>
+			</element>
+			<element name="Type">
+				<choice>
+					<value>Singles</value>
+					<value>Doubles</value>
+				</choice>
+			</element>
+			<element name="Date">
+				<data type="date"/>
+			</element>
+			<element name="Participants">
+				<attribute name="nbrParticipants">
+					<data type="integer"/>
+				</attribute>
+				<!-- We must have at least two participants -->
+				<ref name="Name"/>
+				<oneOrMore>
+					<ref name="Name"/>
+				</oneOrMore>
+			</element>
+			<element name="Teams">
+				<attribute name="nbrTeams">
+					<data type="integer"/>
+				</attribute>
+				<!-- We must have at least two teams -->
+				<ref name="Team"/>
+				<oneOrMore>
+					<ref name="Team"/>
+				</oneOrMore>
+			</element>
+			<element name="Matches">
+				<attribute name="nbrMatches">
+					<data type="integer"/>
+				</attribute>
+				<oneOrMore>
+					<element name="Match">
+							<sch:pattern name="Check participants for single and double matches.">
+								<sch:rule context="t:Type[text() = 'Singles']">
+									<sch:assert test="../t:Participants/@nbrParticipants &gt;= 2">If you're playing single matches there must be at least 2 participants.</sch:assert>
+									<sch:assert test="../t:Participants/@nbrParticipants = ../t:Teams/@nbrTeams">If you're playing single matches the number of participants must equal the number of teams.</sch:assert>
+								</sch:rule>
+								<sch:rule context="t:Type[text() = 'Doubles']">
+									<sch:assert test="../t:Participants/@nbrParticipants &gt;= 4">If you're playing doubles you must have at least 4 participants.</sch:assert>
+									<sch:assert test="../t:Participants/@nbrParticipants mod 2 = 0">If you're playing doubles the number of particiapants must be a multiple of 2.</sch:assert>
+									<sch:assert test="../t:Participants/@nbrParticipants = ../t:Teams/@nbrTeams * 2">If you're playing doubles the number of participants must equal the number of teams x 2.</sch:assert>
+								</sch:rule>
+							</sch:pattern>
+						<sch:pattern name="Check Teams." id="Teams">
+							<sch:rule context="t:Teams">
+								<sch:assert diagnostics="d1" test="count(t:Team) = @nbrTeams">The number of Team elements in <sch:name/> should match
+									the @nbrTeams attribute.</sch:assert>
+							</sch:rule>
+						</sch:pattern>
+						<sch:diagnostics>
+							<sch:diagnostic id="d1"> Value of nbrTeams attribute = <sch:value-of select="@nbrTeams"/> and number of Team elements = <sch:value-of select="count(t:Team)"/></sch:diagnostic>
+						</sch:diagnostics>
+						<element name="Team">
+							<text/>
+						</element>
+						<element name="Team">
+							<text/>
+						</element>
+						<attribute name="id"/>
+					</element>
+				</oneOrMore>
+			</element>
+		</element>
+	</define>
+	<define name="Team">
+		<element name="Team">
+			<attribute name="id"/>
+			<optional>
+				<attribute name="Name"/>
+			</optional>
+			<element name="Member">
+				<text/>
+			</element>
+		</element>
+	</define>
+	<define name="Name">
+		<element name="Name">
+			<attribute name="id"/>
+			<text/>
+		</element>
+	</define>
+</grammar>
