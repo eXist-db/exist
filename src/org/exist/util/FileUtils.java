@@ -77,4 +77,42 @@ public class FileUtils
       
    }
    
+   /**
+    * @param path a path or uri
+    * @return the directory portion of a path by stripping the last '/' and
+    * anything following, unless the path has no '/', in which case '.' is returned,
+    * or ends with '/', in 
+    * which case return the path unchanged.
+    */
+   public static String dirname (String path) {
+       int islash = path.lastIndexOf('/');
+       if (islash >= 0 && islash < path.length() - 1)
+           return path.substring(0, islash);
+       else if (islash >= 0)
+           return path;
+       else
+           return ".";
+   }
+
+   /**
+    * @param path1
+    * @param path2
+    * @return path1 + path2, joined by a single file separator (or /, if a slash is already present).
+    */
+   public static String addPaths(String path1, String path2) {
+       if (path1.endsWith("/") || path2.endsWith (File.separator)) {
+           if (path2.startsWith("/") || path2.startsWith(File.separator)) {
+               return path1 + path2.substring (1);
+           } else {
+               return path1 + path2;
+           }
+       } else {
+           if (path2.startsWith("/") || path2.startsWith(File.separator)) {
+               return path1 + path2;
+           } else {
+               return path1 + File.separatorChar + path2;
+           }
+       }
+   }
+   
 }
