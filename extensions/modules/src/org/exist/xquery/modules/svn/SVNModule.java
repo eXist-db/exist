@@ -29,6 +29,9 @@ public class SVNModule extends AbstractInternalModule {
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/svn";
 
 	public final static String PREFIX = "svn";
+    public final static String INCLUSION_DATE = "2008-04-05";
+    public final static String RELEASED_IN_VERSION = "trunk";
+
 
 	private final static FunctionDef[] functions = {
 		new FunctionDef(SVNLog.signature, SVNLog.class)
@@ -49,4 +52,9 @@ public class SVNModule extends AbstractInternalModule {
 	public String getDescription() {
 		return "Functions to retrieve information from an SVN repository";
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }
