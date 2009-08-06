@@ -26,12 +26,18 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * Module function definitions for NGram module.
+ *
+ * @author wolf
+ * @author ljo
+ *
  */
 public class NGramModule extends AbstractInternalModule {
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/ngram";
 
     public static final String PREFIX = "ngram";
+    public final static String INCLUSION_DATE = "2007-05-19";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(NGramSearch.signatures[0], NGramSearch.class),
@@ -53,6 +59,11 @@ public class NGramModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "Extension functions for NGram search.";
+        return "A module for NGram-based indexed searching.";
     }
+
+   public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.scheduler;
 
 import org.exist.xquery.AbstractInternalModule;
@@ -34,17 +33,19 @@ import org.exist.xquery.FunctionDef;
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author Loren Cahlander <loren.cahlander@gmail.com>
+ * @author ljo
  * @serial 2009-05-15
  * @version 1.3
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
-public class SchedulerModule extends AbstractInternalModule
-{
+public class SchedulerModule extends AbstractInternalModule {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/scheduler";
 	
 	public final static String PREFIX = "scheduler";
-	
+    public final static String INCLUSION_DATE = "2006-11-16, 2009-02-06";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2 (job-name argument-version in trunk)";
+
 	private final static FunctionDef[] functions = {
 		new FunctionDef(ScheduleFunctions.signatures[0], ScheduleFunctions.class),
 		new FunctionDef(ScheduleFunctions.signatures[1], ScheduleFunctions.class),
@@ -77,4 +78,9 @@ public class SchedulerModule extends AbstractInternalModule
 	{
 		return "A module for Scheduling Jobs using the Quartz Scheduler";
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

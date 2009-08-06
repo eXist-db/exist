@@ -27,11 +27,14 @@ import org.exist.xquery.FunctionDef;
 /**
  * @author Craig Goodyer <craiggoodyer@gmail.com>
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author ljo
  */
 public class XSLFOModule extends AbstractInternalModule {
 
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
 	public final static String PREFIX = "xslfo";
+    public final static String INCLUSION_DATE = "2007-10-04";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
 	private final static FunctionDef[] functions = {
 			new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
@@ -50,6 +53,11 @@ public class XSLFOModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "Module for performing XSL-FO transformations";
+		return "A module for performing XSL-FO transformations";
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

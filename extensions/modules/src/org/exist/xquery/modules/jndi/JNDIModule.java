@@ -1,25 +1,24 @@
 /*
- *  eXist SQL Module Extension
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
- *  www.adamretter.co.uk
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.jndi;
 
 import java.util.HashMap;
@@ -49,12 +48,12 @@ import org.w3c.dom.NodeList;
  * against JNDI sources, including LDAP, returning an XML representation of the results.
  * 
  * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author ljo
  * @serial 2008-12-02
  * @version 1.0
  * 
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
-
 public class JNDIModule extends AbstractInternalModule 
 {
 
@@ -63,6 +62,8 @@ public class JNDIModule extends AbstractInternalModule
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/jndi";
 
 	public final static String PREFIX = "jndi";
+    public final static String INCLUSION_DATE = "2008-12-04";
+    public final static String RELEASED_IN_VERSION = "trunk";
 
 	private final static FunctionDef[] functions = {
 			new FunctionDef( GetDirContextFunction.signatures[0], 	GetDirContextFunction.class ),
@@ -100,6 +101,9 @@ public class JNDIModule extends AbstractInternalModule
 		return( "A module for performing JNDI queries against Directories, returning XML representations of the results." );
 	}
 	
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
 
 	/**
 	 * Retrieves a previously stored Connection from the Context of an XQuery

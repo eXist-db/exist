@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2006-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -26,13 +26,16 @@ import org.exist.xquery.FunctionDef;
  *  eXist module for mathematical operations.
  *
  * @author Dannes Wessels
+ * @author ljo
  */
 public class MathModule extends AbstractInternalModule {
     
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/math";
     
     public final static String PREFIX = "math";
-    
+    public final static String INCLUSION_DATE = "2006-10-13";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+
     private final static FunctionDef functions[] = {
         new FunctionDef(OneParamFunctions.signature[0], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[1], OneParamFunctions.class),
@@ -71,4 +74,9 @@ public class MathModule extends AbstractInternalModule {
     public String getDescription() {
         return "A module containing functions for common mathematical operations.";
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

@@ -1,25 +1,24 @@
 /*
- *  eXist SQL Module Extension
- *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
- *  www.adamretter.co.uk
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2008-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.file;
 
 import org.exist.xquery.AbstractInternalModule;
@@ -33,18 +32,20 @@ import org.exist.xquery.XQueryContext;
  * activities.
  * 
  * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author ljo
  * @serial 2008-03-06
  * @version 1.0
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
-
-
 public class FileModule extends AbstractInternalModule
 {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/file";
 	
 	public final static String PREFIX = "file";
+    public final static String INCLUSION_DATE = "2008-03-07";
+    public final static String RELEASED_IN_VERSION = "trunk";
+
 	
 	private final static FunctionDef[] functions = {
 		new FunctionDef( DirectoryListFunction.signatures[0], 	DirectoryListFunction.class ),
@@ -84,7 +85,10 @@ public class FileModule extends AbstractInternalModule
 	{
 		return( "A module for performing various operations on files and directories stored in the file system." );
 	}
-		
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
 	
 	/**
 	 * Resets the Module Context 

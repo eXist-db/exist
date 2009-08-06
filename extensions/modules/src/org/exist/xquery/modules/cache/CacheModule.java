@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionDef;
  * XQuery Extension module for store data in global cache
  * 
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
+ * @author ljo
  * @version 1.0
  */
 public class CacheModule extends AbstractInternalModule {

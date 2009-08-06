@@ -24,6 +24,13 @@ package org.exist.xquery.modules.svn;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+/**
+ * Module function definitions for subversion (svn) module.
+ *
+ * @author wolf
+ * @author ljo
+ *
+ */
 public class SVNModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/svn";
@@ -50,7 +57,7 @@ public class SVNModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "Functions to retrieve information from an SVN repository";
+		return "a module for interaction with subversion (svn) repositories.";
 	}
 
     public String getReleaseVersion() {
