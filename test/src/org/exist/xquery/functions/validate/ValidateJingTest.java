@@ -1,25 +1,13 @@
 package org.exist.xquery.functions.validate;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.exist.test.EmbeddedExistTester;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 import org.junit.Ignore;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
@@ -27,45 +15,11 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author jim.fuller@webcomposite.com
  */
-public class ValidateJingTest {
-
-    private final static Logger LOG = Logger.getLogger(ValidateJingTest.class);
-    private static Class cl = null;
-    private static XPathQueryService service;
-    private static Collection root = null;
-    private static Database database = null;
-
-    public ValidateJingTest() {
-    }
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        Logger rootLogger = Logger.getRootLogger();
-        rootLogger.removeAllAppenders(); // To avoid duplicate output
-        rootLogger.addAppender(new ConsoleAppender(new PatternLayout(
-                "%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n")));
-        rootLogger.setLevel(Level.DEBUG);
-
-
-        // initialize driver
-        cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-        service = (XPathQueryService) root.getService("XQueryService", "1.0");
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        database = null;
-    }
+public class ValidateJingTest extends EmbeddedExistTester {
 
     @Test
-    public void testValidateXSDwithJing() throws XPathException {
+    public void testValidateXSDwithJing() {
+        LOG.info("start test");
 
         ResourceSet result = null;
         String r = "";
@@ -91,18 +45,20 @@ public class ValidateJingTest {
                     "\n" +
                     "\tvalidation:jing($v,$schema)";
 
-            result = service.query(query);
+            result = xpxqService.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("true", r);
+
         } catch (XMLDBException e) {
-            System.out.println("testValidateXSDwithJing(): " + e);
+            LOG.error("testValidateXSDwithJing(): " + e.getMessage(), e);
             fail(e.getMessage());
         }
 
     }
 
     @Test
-    public void testValidateXSDwithJing_invalid() throws XPathException {
+    public void testValidateXSDwithJing_invalid() {
+        LOG.info("start test");
 
         ResourceSet result = null;
         String r = "";
@@ -128,11 +84,12 @@ public class ValidateJingTest {
                     "\n" +
                     "\tvalidation:jing($v,$schema)";
 
-            result = service.query(query);
+            result = executeQuery(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("false", r);
+
         } catch (XMLDBException e) {
-            System.out.println("testValidateXSDwithJing(): " + e);
+            System.out.println("testValidateXSDwithJing_invalid(): " + e);
             fail(e.getMessage());
         }
 
@@ -141,6 +98,8 @@ public class ValidateJingTest {
     @Test
     public void testValidateRNGwithJing() throws XPathException {
 
+        LOG.info("start test");
+
         ResourceSet result = null;
         String r = "";
         try {
@@ -177,18 +136,21 @@ public class ValidateJingTest {
                     "\n" +
                     "\tvalidation:jing($v,$schema)";
 
-            result = service.query(query);
+            result = executeQuery(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("true", r);
+
         } catch (XMLDBException e) {
-            System.out.println("testValidateRNGwithJing(): " + e);
+            LOG.error("testValidateRNGwithJing(): " + e.getMessage(), e);
             fail(e.getMessage());
         }
 
     }
 
     @Test
-    public void testValidateRNGwithJing_invalid() throws XPathException {
+    public void testValidateRNGwithJing_invalid() {
+
+        LOG.info("start test");
 
         ResourceSet result = null;
         String r = "";
@@ -226,11 +188,12 @@ public class ValidateJingTest {
                     "\n" +
                     "\tvalidation:jing($v,$schema)";
 
-            result = service.query(query);
+            result = executeQuery(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("false", r);
+
         } catch (XMLDBException e) {
-            System.out.println("testValidateRNGwithJing(): " + e);
+            LOG.error("testValidateRNGwithJing_invalid(): " + e.getMessage(), e);
             fail(e.getMessage());
         }
 
