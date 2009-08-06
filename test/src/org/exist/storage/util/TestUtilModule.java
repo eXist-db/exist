@@ -1,20 +1,42 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2008-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.storage.util;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
 /**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: Dec 2, 2008
- * Time: 11:35:39 AM
- * To change this template use File | Settings | File Templates.
+ * Module function definitions for xquery test module.
+ *
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author ljo
  */
 public class TestUtilModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/test";
 
     public final static String PREFIX = "test";
+    public final static String INCLUSION_DATE = "2008-12-03";
+    public final static String RELEASED_IN_VERSION = "trunk";
 
     private final static FunctionDef functions[] = {
         new FunctionDef(PauseFunction.signature, PauseFunction.class)
@@ -33,6 +55,11 @@ public class TestUtilModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "Utility modules used by the test suite.";
+        return "A module for utilities used by the test suite.";
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

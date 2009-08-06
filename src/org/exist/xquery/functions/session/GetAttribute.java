@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetSessionAttribute.java 2980 2006-03-26 22:18:09 +0100 (Sun, 26 Mar 2006) deliriumsky $
+ *  $Id$
  */
 package org.exist.xquery.functions.session;
 

@@ -28,11 +28,16 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionDef;
 
 /**
+ * Module function definitions for xpath-functions module.
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author ljo
  */
 public class ModuleImpl extends AbstractInternalModule {
 
 	public final static String PREFIX = "";
+    public final static String INCLUSION_DATE = "2004-01-29";
+    public final static String RELEASED_IN_VERSION = "&lt; eXist-1.0";
 	
 	public final static FunctionDef[] functions = {
 		new FunctionDef(FunAbs.signature, FunAbs.class),
@@ -206,7 +211,7 @@ public class ModuleImpl extends AbstractInternalModule {
 	 * @see org.exist.xquery.Module#getDescription()
 	 */
 	public String getDescription() {
-		return "XQuery/XPath Core Library Functions";
+		return "A module with the XQuery/XPath Core Library Functions";
 	}
 	
 	/* (non-Javadoc)
@@ -223,4 +228,8 @@ public class ModuleImpl extends AbstractInternalModule {
 		return PREFIX;
 	}
 	
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

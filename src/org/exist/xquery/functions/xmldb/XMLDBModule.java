@@ -27,14 +27,19 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
 /**
+ * Module function definitions for xmldb module.
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  * @author Luigi P. Bai, finder@users.sf.net, 2004
+ * @author ljo
  */
 public class XMLDBModule extends AbstractInternalModule {
     
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xmldb";
     
     public final static String PREFIX = "xmldb";
+    public final static String INCLUSION_DATE = "2004-09-12";
+    public final static String RELEASED_IN_VERSION = "&lt; eXist-1.0";
     
     public final static FunctionDef[] functions = {
         new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
@@ -108,7 +113,7 @@ public class XMLDBModule extends AbstractInternalModule {
          * @see org.exist.xquery.Module#getDescription()
          */
     public String getDescription() {
-        return "Database manipulation functions";
+        return "A module for database manipulation functions.";
     }
     
         /* (non-Javadoc)
@@ -123,6 +128,10 @@ public class XMLDBModule extends AbstractInternalModule {
          */
     public String getDefaultPrefix() {
         return PREFIX;
+    }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
     }
     
 }

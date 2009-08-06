@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: SetCurrentUser.java 800 2004-10-31 18:11:45 +0000 (Sun, 31 Oct 2004) wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.functions.session;
 

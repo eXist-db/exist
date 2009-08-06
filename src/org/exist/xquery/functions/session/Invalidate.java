@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id: InvalidateSession.java 325 2004-05-13 13:33:08 +0100 (Thu, 13 May 2004) wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.functions.session;
 

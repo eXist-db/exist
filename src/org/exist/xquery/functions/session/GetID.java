@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetSessionID.java 2436 2006-01-07 21:47:15 +0000 (Sat, 07 Jan 2006) brihaye $
+ *  $Id$
  */
 package org.exist.xquery.functions.session;
 
