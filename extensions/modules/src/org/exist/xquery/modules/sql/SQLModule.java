@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2006-2009 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -53,6 +53,8 @@ public class SQLModule extends AbstractInternalModule {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sql";
 
 	public final static String PREFIX = "sql";
+    public final static String INCLUSION_DATE = "2006-09-25";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
 	private final static FunctionDef[] functions = {
 			new FunctionDef(GetConnectionFunction.signatures[0],
