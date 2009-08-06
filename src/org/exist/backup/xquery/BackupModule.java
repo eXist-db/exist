@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -24,12 +24,21 @@ package org.exist.backup.xquery;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+/**
+ * Module function definitions for backup module.
+ *
+ * @author wolf
+ * @author ljo
+ *
+ */
 public class BackupModule extends AbstractInternalModule {
 
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/backups";
 
     public static final String PREFIX = "backups";
+    public final static String INCLUSION_DATE = "2009-02-02";
+    public final static String RELEASED_IN_VERSION = "eXist-1.2.6";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(ListBackups.signature, ListBackups.class),
@@ -51,4 +60,9 @@ public class BackupModule extends AbstractInternalModule {
     public String getDescription() {
         return "A module for access to database backups available on the server";
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

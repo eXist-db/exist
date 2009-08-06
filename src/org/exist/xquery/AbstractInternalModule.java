@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -41,6 +40,8 @@ import org.exist.xquery.value.Sequence;
  * similar XQuery functions in one single class.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author ljo
+ *
  */
 public abstract class AbstractInternalModule implements InternalModule {
 
@@ -87,6 +88,20 @@ public abstract class AbstractInternalModule implements InternalModule {
 	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public abstract String getDefaultPrefix();
+
+    /**
+     * Module description for the documentation.
+     * This is a short phrase describing the module, starting with:
+     * A module for. 
+     */
+    public abstract String getDescription();
+
+    /**
+     * Module release version for the documentation. Since a module can live 
+     * in trunk a long time before it is included in a release,
+     * this is neccessary for the documentation.
+     */
+    public abstract String getReleaseVersion();
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#listFunctions()
