@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetConnectionFunction.java 4126 2006-09-18 21:20:17 +0000 (Mon, 18 Sep 2006) deliriumsky $
+ *  $Id$
  */
 
 package org.exist.xquery.modules.sql;
@@ -159,27 +159,27 @@ public class GetConnectionFunction extends BasicFunction {
 			logger.error(
 					"sql:get-connection() Illegal Access to database driver class: "
 							+ dbDriver, iae);
-			throw new XPathException(this,
+			throw new XPathException(this, 
 					"sql:get-connection() Illegal Access to database driver class: "
 							+ dbDriver, iae);
 		} catch (ClassNotFoundException cnfe) {
 			logger.error(
 					"sql:get-connection() Cannot find database driver class: "
 							+ dbDriver, cnfe);
-			throw new XPathException(this,
+			throw new XPathException(this, 
 					"sql:get-connection() Cannot find database driver class: "
 							+ dbDriver, cnfe);
 		} catch (InstantiationException ie) {
 			logger.error(
 					"sql:get-connection() Cannot instantiate database driver class: "
 							+ dbDriver, ie);
-			throw new XPathException(this,
+			throw new XPathException(this, 
 					"sql:get-connection() Cannot instantiate database driver class: "
 							+ dbDriver, ie);
 		} catch (SQLException sqle) {
 			logger.error("sql:get-connection() Cannot connect to database: "
 					+ dbURL, sqle);
-			throw new XPathException(this,
+			throw new XPathException(this, 
 					"sql:get-connection() Cannot connect to database: " + dbURL,
 					sqle);
 		}

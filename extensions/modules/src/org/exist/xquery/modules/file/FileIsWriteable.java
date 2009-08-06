@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id: FileRead.java 7488 2008-03-07 05:27:06Z chaeron $
+ *  $Id$
  */
 package org.exist.xquery.modules.file;
 

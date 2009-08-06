@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetWidthFunction.java 5201 2007-01-16 17:40:10Z deliriumsky $
+ *  $Id$
  */
 
 package org.exist.xquery.modules.image;
@@ -159,7 +159,7 @@ public class GetMetadataFunction extends BasicFunction
 				}
 				catch(SAXException se)
 				{
-					throw new XPathException(this, se.getMessage(), se);
+				    throw (new XPathException(this, se.getMessage(), se));
 				}
 				finally
 				{
@@ -169,7 +169,7 @@ public class GetMetadataFunction extends BasicFunction
 		}
 		catch(IOException ioe)
 		{
-			throw new XPathException(this, ioe.getMessage(), ioe);
+		    throw (new XPathException(this, ioe.getMessage(), ioe));
 		}
 		
 		return Sequence.EMPTY_SEQUENCE;

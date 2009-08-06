@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id: SendEmailFunction.java,v 1.12 2006/03/01 13:52:00 deliriumsky Exp $
+ *  $Id$
  */
 
 package org.exist.xquery.modules.mail;
@@ -111,7 +111,7 @@ public class MailFolderFunctions extends BasicFunction
 			return closeMailFolder;
 		} 
 			
-		throw( new XPathException( this, "Invalid function name" ) );	
+		throw( new XPathException(this, "Invalid function name" ) );	
 	}
 	
 	
@@ -121,14 +121,14 @@ public class MailFolderFunctions extends BasicFunction
 		
 		// was a store handle specified?
 		if( args[0].isEmpty() || args[1].isEmpty() ) {
-			throw( new XPathException( this, "Store handle and/or folder name not specified" ) );
+			throw( new XPathException(this, "Store handle and/or folder name not specified" ) );
 		}
 
 		// get the Store
 		long storeHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Store store = MailModule.retrieveStore( context, storeHandle );
 		if( store == null ) {
-			throw( new XPathException( this, "Invalid Store handle specified" ) );
+			throw( new XPathException(this, "Invalid Store handle specified" ) );
 		}
 		
 		// get the Folder Name
@@ -140,7 +140,7 @@ public class MailFolderFunctions extends BasicFunction
 			folder.open( Folder.READ_WRITE  );
 		}
 		catch( MessagingException me ) {
-			throw( new XPathException( this, "Failed to open mail folder", me ) );
+			throw( new XPathException(this, "Failed to open mail folder", me ) );
 		}
 		
 		// save the folder and return the handle of the folder
@@ -153,7 +153,7 @@ public class MailFolderFunctions extends BasicFunction
 	{
 		// was a folder handle specified?
 		if( args[0].isEmpty() ) {
-			throw( new XPathException( this, "Folder handle not specified" ) );
+			throw( new XPathException(this, "Folder handle not specified" ) );
 		}
 		
 		boolean expunge = ((BooleanValue)args[1].itemAt(0)).effectiveBooleanValue();
@@ -162,14 +162,14 @@ public class MailFolderFunctions extends BasicFunction
 		long folderHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
 		Folder folder = MailModule.retrieveFolder( context, folderHandle );
 		if( folder == null ) {
-			throw( new XPathException( this, "Invalid Folder handle specified" ) );
+			throw( new XPathException(this, "Invalid Folder handle specified" ) );
 		}
 		
 		try {
 			folder.close( expunge );
 		}
 		catch( MessagingException me ) {
-			throw( new XPathException( this, "Failed to close mail folder", me ) );
+			throw( new XPathException(this, "Failed to close mail folder", me ) );
 		}
 		finally {
 			MailModule.removeFolder( context, folderHandle );
