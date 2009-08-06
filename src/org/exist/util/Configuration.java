@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -86,7 +86,7 @@ public class Configuration implements ErrorHandler
     protected File existHome = null;
     
     protected DocumentBuilder builder = null;
-    protected HashMap config = new HashMap(); //Configuration
+    protected HashMap<String,Object> config = new HashMap<String,Object>(); //Configuration
     
     public static final class JobConfig
     {
