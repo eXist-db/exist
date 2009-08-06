@@ -62,7 +62,10 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                     <table class="f-module-heading-table">
                         <tr>
                             <td class="f-module-heading-namespace">{ $modURI }</td>
-                            <td class="f-module-heading-description">{  /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description/text() }</td>
+                            <td class="f-module-heading-description"><div>{  /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description/text() }</div>
+			    <br/>
+			    <div>{if (/xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:release-version/text() eq "trunk") then "Can only be used with current svn trunk from sourceforge at https://exist.svn.sourceforge.net/svnroot/exist/trunk/" else concat("Available from release: ", /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:release-version/text())}</div>
+			    </td>
                             <td class="f-module-heading-hideshow">{ $hideIndicator }</td>
                         </tr>
                     </table>

@@ -60,6 +60,14 @@ public class ExternalModuleImpl implements ExternalModule {
 	public String getDescription() {
 		return "User defined module";
 	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getReleaseVersion()
+	 */
+	public String getReleaseVersion() {
+		return "user-defined";
+	}
+
 	
 	public UserDefinedFunction getFunction(QName qname, int arity) {
 		FunctionId id = new FunctionId(qname, arity);
