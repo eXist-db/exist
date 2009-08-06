@@ -91,6 +91,10 @@ public class SQLModule extends AbstractInternalModule {
 		return "A module for performing SQL queries against Databases, returning XML representations of the result sets.";
 	}
 
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 	/**
 	 * Retrieves a previously stored Connection from the Context of an XQuery
 	 * 

@@ -66,5 +66,8 @@ public class CacheModule extends AbstractInternalModule {
 	public String getDescription() {
 		return "A module for accessing a global cache for stored/shared data between sessions";
 	}
-	
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
 }

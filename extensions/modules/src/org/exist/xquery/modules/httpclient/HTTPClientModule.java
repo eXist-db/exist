@@ -76,5 +76,9 @@ public class HTTPClientModule extends AbstractInternalModule
     {
         return( "A module for performing HTTP requests as a client" );
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
     
 }

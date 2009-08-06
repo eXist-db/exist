@@ -97,4 +97,9 @@ public class SpatialModule extends AbstractInternalModule {
 	public String getDescription() {
 		return "Functions to perform spatial operations on GML 2D geometries.";
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }
