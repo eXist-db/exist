@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -53,10 +53,9 @@ public class ListBackups extends BasicFunction {
     public final static FunctionSignature signature =
             new FunctionSignature(
                 new QName("list", BackupModule.NAMESPACE_URI, BackupModule.PREFIX),
-                "Returns an XML fragment listing all eXist backups found in a specific " +
-                "backup directory. The directory is passed in the argument.",
+                "Returns an XML fragment listing all eXist backups found in a specific backup directory.",
                 new SequenceType[] { new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "Directory name to show list of backups on.") },
-                new FunctionReturnSequenceType(Type.NODE, Cardinality.ONE_OR_MORE, "an XML fragment listing eXist backups")
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ONE_OR_MORE, "an XML fragment listing all eXist backups found in the specified backup birectory")
             );
 
     public final static QName DIRECTORY_ELEMENT = new QName("directory", Namespaces.EXIST_NS, "");

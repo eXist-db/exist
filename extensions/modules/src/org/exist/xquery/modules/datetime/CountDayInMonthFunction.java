@@ -51,7 +51,7 @@ public class CountDayInMonthFunction extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("count-day-in-month", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-			"Returns the count of a specific weekday in a month from the given date.For example it can tell you there are 5 Fridays in February 2008.",
+			"Returns the count of a specific weekday in a month from the given date. For example it can tell you there are 5 Fridays in February 2008.",
 			new SequenceType[] { 
 				new FunctionParameterSequenceType("weekday", Type.INTEGER, Cardinality.EXACTLY_ONE, "Day of the week in the range of 1 to 7 where 1 = Sunday and 7 = Saturday."),
 				new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The day that will identify the month to get the count of the number of occurrences of a given weekday")

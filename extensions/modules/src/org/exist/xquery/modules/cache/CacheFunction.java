@@ -47,11 +47,11 @@ public class CacheFunction extends BasicFunction {
     public final static FunctionSignature signatures[] = { 
 		new FunctionSignature(
 				new QName("cache", CacheModule.NAMESPACE_URI, CacheModule.PREFIX),
-				"Get/create named cache",
+				"Get/create a cache using the specified name.",
 				new SequenceType[] { 
-					new FunctionParameterSequenceType("name", Type.STRING, Cardinality.ONE, "The name of the cache to create") 
+					new FunctionParameterSequenceType("name", Type.STRING, Cardinality.ONE, "The name of the cache to get/create") 
 				}, 
-		        new FunctionParameterSequenceType("java-object", Type.JAVA_OBJECT, Cardinality.ONE, "the Java cache object created with the given name.")
+		        new FunctionParameterSequenceType("java-object", Type.JAVA_OBJECT, Cardinality.ONE, "the Java cache object with the given name.")
 			) 
 	};
 
@@ -61,7 +61,7 @@ public class CacheFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		String name = args[0].itemAt(0).getStringValue();
-		logger.info("Get/create cache [" + name + "]");
+		logger.debug("Get/create cache [" + name + "]");
 		return new JavaObjectValue(Cache.getInstance(name));
 	}
 }

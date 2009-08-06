@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-09 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * \$Id\$
+ */
 package org.exist.backup.xquery;
 
 import org.exist.xquery.BasicFunction;
@@ -22,27 +43,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
- *  http://exist-db.org
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \$Id\$
- */
+import java.util.Properties;
 
 public class RetrieveBackup extends BasicFunction {
 
@@ -50,7 +51,7 @@ public class RetrieveBackup extends BasicFunction {
         new FunctionSignature(
                 new QName("retrieve", BackupModule.NAMESPACE_URI, BackupModule.PREFIX),
                 "Retrieves a zipped backup archive and directly streams it to the HTTP response. " +
-                "For security reasons, the function will not allow to read other files.",
+                "For security reasons, the function will only read .zip files in the specified directory.",
                 new SequenceType[] {
                         new FunctionParameterSequenceType("exportDir", Type.STRING, Cardinality.EXACTLY_ONE, "The base directory for the backup files."),
                         new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "Name of the file to retrieve.")

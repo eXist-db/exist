@@ -50,12 +50,12 @@ public class FormatDateTimeFunction extends BasicFunction
     public final static FunctionSignature signature =
         new FunctionSignature(
                 new QName("format-dateTime", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
-                "Returns a xs:string of the xs:dateTime according to the SimpleDateFormat format string.",
+                "Returns a xs:string of the xs:dateTime according to the SimpleDateFormat format.",
                 new SequenceType[] { 
                         new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The dateTime to to be formatted."),
                         new FunctionParameterSequenceType("simple-date-format", Type.STRING, Cardinality.EXACTLY_ONE, "Format string according to the Java java.text.SimpleDateFormat class")
                 },
-                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "The formatted dateTime string"));
+                new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the formatted dateTime string"));
 
     
     public FormatDateTimeFunction(XQueryContext context)

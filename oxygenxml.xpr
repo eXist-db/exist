@@ -680,11 +680,12 @@
             <file name="webapp/facts.xml"/>
             <file name="webapp/feed.xql"/>
             <file name="webapp/header.xml"/>
+            <file name="webapp/header.xml.tmpl"/>
             <file name="webapp/index.xml"/>
             <file name="webapp/indexing.xml"/>
             <file name="webapp/jmx.xml"/>
             <file name="webapp/journal.xml"/>
-            <file name="webapp/kwic.xql"/>
+            <file name="webapp/kwic.xml"/>
             <file name="webapp/ldap-security.xml"/>
             <file name="webapp/lucene.xml"/>
             <file name="webapp/quickstart.xml"/>
@@ -696,6 +697,7 @@
             <file name="webapp/triggers.xml"/>
             <file name="webapp/tuning.xml"/>
             <file name="webapp/update_ext.xml"/>
+            <file name="webapp/urlrewrite.xml"/>
             <file name="webapp/validation.xml"/>
             <file name="webapp/webdav.xml"/>
             <file name="webapp/xacml.xml"/>
@@ -706,6 +708,7 @@
             <file name="webapp/xinclude.xml"/>
             <file name="webapp/xmlprague06.xml"/>
             <file name="webapp/xquery.xml"/>
+            <file name="webapp/xq-url-rewrite.xml"/>
         </folder>
     </projectTree>
 </project>

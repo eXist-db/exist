@@ -54,7 +54,7 @@ public class JFreeChartModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "JFreeChart wrapper.";
+        return "A module for generating charts using the JFreeChart library.";
     }
 
     public String getNamespaceURI() {
