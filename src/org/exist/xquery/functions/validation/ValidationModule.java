@@ -28,14 +28,18 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 
 /**
+ * Module function definitions for validation module.
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
+ * @author ljo
  */
 public class ValidationModule extends AbstractInternalModule {
     
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/validation";
     
     public final static String PREFIX = "validation";
-    
+    public final static String INCLUSION_DATE = "2005-11-17";
+    public final static String RELEASED_IN_VERSION = "eXist-1.0";    
     public final static FunctionDef[] functions = {
        new FunctionDef(Validation.signatures[0], Validation.class),
        new FunctionDef(Validation.signatures[1], Validation.class),
@@ -82,4 +86,9 @@ public class ValidationModule extends AbstractInternalModule {
     public String getDefaultPrefix() {
         return PREFIX;
     }
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+
 }

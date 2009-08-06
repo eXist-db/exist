@@ -1,7 +1,7 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
- *  http://exist-db.org
+ * Copyright (C) 2006-2009 The eXist Project
+ * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.functions.response;
 
 import org.exist.dom.QName;
@@ -28,12 +27,18 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 
 /**
+ * Module function definitions for xmldb module.
+ *
  * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author ljo
  */
 public class ResponseModule extends AbstractInternalModule {
 
 	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/response";	
 	public static final String PREFIX = "response";
+    public final static String INCLUSION_DATE = "2006-04-09";
+    public final static String RELEASED_IN_VERSION = "eXist-1.0";
+
 	public static final QName RESPONSE_VAR = new QName("response", NAMESPACE_URI, PREFIX);
 	
 	public static final FunctionDef[] functions = {
@@ -56,7 +61,7 @@ public class ResponseModule extends AbstractInternalModule {
 	 * @see org.exist.xquery.Module#getDescription()
 	 */
 	public String getDescription() {
-		return "Functions dealing with HTTP responses"; 
+		return "A module for dealing with HTTP responses."; 
 	}
 	
 	/* (non-Javadoc)
@@ -72,5 +77,9 @@ public class ResponseModule extends AbstractInternalModule {
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
+
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
 
 }
