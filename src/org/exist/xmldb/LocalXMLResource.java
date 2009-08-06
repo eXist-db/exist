@@ -24,6 +24,7 @@ package org.exist.xmldb;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
 
@@ -399,11 +400,21 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		root = null;
 		if (obj instanceof File)
 			file = (File) obj;
+
 		else if (obj instanceof AtomicValue)
 			value = (AtomicValue) obj;
+
 		else if (obj instanceof InputSource)
 			inputSource=(InputSource) obj;
-		else {
+
+        else if (obj instanceof byte[]){
+            try {
+				content = new String((byte[])obj,"UTF-8");
+			} catch(UnsupportedEncodingException uee) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
+			}
+            
+        } else {
 			content = obj.toString();
 		}
 	}
