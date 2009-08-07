@@ -148,7 +148,13 @@ public class ExtractDocs extends BasicFunction {
         simpleElement(builder, "name", module.getDefaultPrefix());
         builder.startElement(XQDOC_NS, "comment", "comment", null);
         simpleElement(builder, "description", module.getDescription());
-        simpleElement(builder, "release-version", module.getReleaseVersion());
+        try {
+			simpleElement(builder, "release-version", module.getReleaseVersion());
+        } catch (AbstractMethodError e) {
+			logger.error("Problem with function module for [" + module.getNamespaceURI() + "]", e);
+		} catch (Exception e) {
+			logger.error("Problem with function module for [" + module.getNamespaceURI() + "]", e);
+		}
         builder.endElement();
         builder.endElement();
     }

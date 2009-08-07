@@ -19,7 +19,7 @@ public class VariableByteOutputStream extends OutputStream {
     protected FastByteBuffer buf;	
     private final byte[] temp = new byte[5];
     
-    private static Logger LOG = Logger.getLogger(VariableByteArrayInput.class.getName());
+    private static final Logger LOG = Logger.getLogger(VariableByteArrayInput.class);
     
 	public VariableByteOutputStream() {
 		super();

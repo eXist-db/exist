@@ -19,6 +19,7 @@
         <touch file="webapp/api/index.html"/>
 
         <mkdir dir="webapp/WEB-INF/data"/>
+        <mkdir dir="webapp/WEB-INF/loggerdir"/>
         <mkdir dir="webapp/WEB-INF/logs"/>
 
         <!-- create war specific configuration files -->
