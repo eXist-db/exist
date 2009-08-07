@@ -129,10 +129,10 @@ public class Jing extends BasicFunction  {
             report.start();
 
             // Get inputstream of XML instance document
-            is=Shared.getInputStream(args[0], context);
+            is=Shared.getInputStream(args[0].itemAt(0), context);
 
             // Validate using resource specified in second parameter
-            InputSource grammar = Shared.getInputSource(args[1], context);
+            InputSource grammar = Shared.getInputSource(args[1].itemAt(0), context);
 
             // Special setup for compact notation
             String grammarUrl = grammar.getSystemId();

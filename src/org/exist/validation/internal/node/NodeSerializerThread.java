@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.exist.storage.io.BlockingOutputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.SequenceIterator;
 
 /**
@@ -41,15 +42,15 @@ public class NodeSerializerThread extends Thread{
     private final static Logger logger = Logger.getLogger(NodeSerializerThread.class);
     
     private Serializer serializer;
-    private SequenceIterator siNode;
+    private NodeValue node;
     private BlockingOutputStream bos;
     
     /**
      * Creates a new instance of NodeSerializerThread
      */
-    public NodeSerializerThread(Serializer serializer, SequenceIterator siNode, BlockingOutputStream bos) {
+    public NodeSerializerThread(Serializer serializer, NodeValue node, BlockingOutputStream bos) {
         this.serializer=serializer;
-        this.siNode=siNode;
+        this.node=node;
         this.bos=bos;
     }
     
@@ -65,7 +66,7 @@ public class NodeSerializerThread extends Thread{
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             
-            NodeSerializer.serialize(serializer, siNode, outputProperties, bos);
+            NodeSerializer.serialize(serializer, node, outputProperties, bos);
             
         } catch (IOException ex) {
             logger.error(ex);

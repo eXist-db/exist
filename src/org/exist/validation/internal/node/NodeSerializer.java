@@ -45,7 +45,7 @@ public class NodeSerializer {
     
     private final static Logger LOG = Logger.getLogger(NodeSerializer.class);
       
-    public static void serialize(Serializer serializer, SequenceIterator siNode,
+    public static void serialize(Serializer serializer, NodeValue node,
         Properties outputProperties, OutputStream os) throws IOException {
         
         LOG.debug("Serializing started.");
@@ -61,11 +61,12 @@ public class NodeSerializer {
 
             
             sax.startDocument();
+            serializer.toSAX(node);
             
-            while(siNode.hasNext()) {
-                NodeValue next = (NodeValue)siNode.nextItem();
-                serializer.toSAX(next);
-            }
+//            while(node.hasNext()) {
+//                NodeValue next = (NodeValue)node.nextItem();
+//                serializer.toSAX(next);
+//            }
             
             sax.endDocument();
             writer.close();
