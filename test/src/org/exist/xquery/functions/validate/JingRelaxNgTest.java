@@ -12,7 +12,7 @@ import org.xmldb.api.base.ResourceSet;
  *
  * @author wessels
  */
-public class JingTest extends EmbeddedExistTester {
+public class JingRelaxNgTest extends EmbeddedExistTester {
 
     @BeforeClass
     public static void prepareResources() throws Exception {
@@ -45,71 +45,6 @@ public class JingTest extends EmbeddedExistTester {
 
     }
 
-    @Test
-    public void xsd_stored_valid() {
-        String query = "validation:jing( doc('/db/personal/personal-valid.xml'), doc('/db/personal/personal.xsd') )";
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-    }
-
-    @Test
-    public void xsd_stored_invalid() {
-        String query = "validation:jing( doc('/db/personal/personal-invalid.xml'), doc('/db/personal/personal.xsd') )";
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-    }
-
-    @Test
-    public void xsd_anyuri_valid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-    }
-
-    @Test
-    public void xsd_anyuri_invalid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-    }
 
     @Test
     public void rng_stored_valid() {
