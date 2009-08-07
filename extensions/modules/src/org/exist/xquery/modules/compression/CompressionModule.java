@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.compression;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -32,6 +33,8 @@ import org.exist.xquery.FunctionDef;
  * @version 1.0
  */
 public class CompressionModule extends AbstractInternalModule {
+
+    private final static Logger logger = Logger.getLogger(CompressionModule.class);
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
 
@@ -54,6 +57,7 @@ public class CompressionModule extends AbstractInternalModule {
 
     public CompressionModule() {
         super(functions);
+		logger.info("Instantiating Compression module");
     }
 
     @Override
@@ -67,7 +71,7 @@ public class CompressionModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "Compression and De-Compression functions";
+        return "A module for compression and decompression functions";
     }
 
     public String getReleaseVersion() {
