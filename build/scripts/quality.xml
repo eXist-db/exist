@@ -49,15 +49,15 @@
         
     </target>
 	
-    <available file="${tools.ant}/lib/pmd-3.6.jar" property="jars-present" />
+    <available file="${tools.ant}/lib/pmd-4.2.5.jar" property="jars-present" />
 
     <target name="check-jars-present" unless="jars-present">
     	
-        <get src="http://www.ibiblio.org/maven2/pmd/pmd/3.6/pmd-3.6.jar"
-                dest="${tools.ant}/lib/pmd-3.6.jar" verbose="true" />
+        <get src="http://www.ibiblio.org/maven2/pmd/pmd/4.2.5/pmd-4.2.5.jar"
+                dest="${tools.ant}/lib/pmd-4.2.5.jar" verbose="true" />
     	
-        <get src="http://www.ibiblio.org/maven2/jaxen/jaxen/1.1-beta-8/jaxen-1.1-beta-8.jar"
-                dest="${tools.ant}/lib/jaxen-1.1-beta-8.jar" verbose="true" />
+        <get src="http://www.ibiblio.org/maven2/jaxen/jaxen/1.1-beta-12/jaxen-1.1-beta-12.jar"
+                dest="${tools.ant}/lib/jaxen-1.1-beta-12.jar" verbose="true" />
            
         <get src="http://www.ibiblio.org/maven2/oro/oro/2.0.8/oro-2.0.8.jar"
                 dest="${tools.ant}/lib/oro-2.0.8.jar" verbose="true" />
