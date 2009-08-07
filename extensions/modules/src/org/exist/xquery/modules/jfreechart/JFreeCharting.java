@@ -130,7 +130,9 @@ public class JFreeCharting extends BasicFunction {
 
             // Get datastream
             Serializer serializer=context.getBroker().getSerializer();
-            InputStream is = new NodeInputStream(serializer, args[2].iterate());
+
+            NodeValue node = (NodeValue) args[2].itemAt(0);
+            InputStream is = new NodeInputStream(serializer, node);
             
             // get chart
             JFreeChart chart = null;
