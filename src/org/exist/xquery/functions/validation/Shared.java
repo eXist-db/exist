@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.validation;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,6 +47,7 @@ import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -123,7 +126,6 @@ public class Shared {
             streamSource.setInputStream(is);
             streamSource.setSystemId(inputFile.toURI().toURL().toString());
 
-
         } else if (s.getType() == Type.ANY_URI) {
             logger.debug("Streaming xs:anyURI");
 
@@ -145,7 +147,7 @@ public class Shared {
             if (s instanceof NodeProxy) {
                 NodeProxy np = (NodeProxy) s;
                 String url = "xmldb:exist://" + np.getDocument().getBaseURI();
-                logger.debug("Document detected, addng URL " + url);
+                logger.debug("Document detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
 
@@ -154,6 +156,12 @@ public class Shared {
 
             NodeValue node = (NodeValue) s;
             InputStream is = new NodeInputStream(serializer, node); // new NodeInputStream()
+            streamSource.setInputStream(is);
+
+        } else if (s.getType() == Type.BASE64_BINARY) {
+            Base64Binary base64 = (Base64Binary) s;
+            byte[] data = (byte[]) base64.toJavaObject(byte[].class);
+            InputStream is = new ByteArrayInputStream(data);
             streamSource.setInputStream(is);
 
         } else {
