@@ -64,6 +64,10 @@
 			<lib dir="extensions/indexes/lucene/lib">
 				<include name="*.jar"/>
 			</lib>
+            <!-- Include spatial jars, when available -->
+            <lib dir="extensions/indexes/spatial/lib">
+                <include name="*.jar"/>
+            </lib>
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
