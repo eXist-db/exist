@@ -853,6 +853,7 @@ public class RpcConnection implements RpcAPI {
                 // A tweak for very large XML resources
                 if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     File tempFile = File.createTempFile("eXistRPCC", ".xml");
+
                     tempFile.deleteOnExit();
                     LOG.debug("Writing to temporary file: " + tempFile.getName());
                     
@@ -2184,6 +2185,7 @@ public class RpcConnection implements RpcAPI {
         if (fileName == null || fileName.length() == 0) {
             // create temporary file
             file = File.createTempFile("rpc", ".xml");
+            file.deleteOnExit();
             fileName = file.getAbsolutePath();
             LOG.debug("created temporary file " + file.getAbsolutePath());
         } else {
@@ -4529,12 +4531,12 @@ public class RpcConnection implements RpcAPI {
         List result = new ArrayList(2);
         File file;
         file = File.createTempFile("rpc", ".xml");
+        file.deleteOnExit();
         FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true);
         os.write(getDocument(name, parameters));
         os.close();
         result.add(file.getName());
         result.add(Long.toString(file.length()));
-        file.deleteOnExit();
         return result;
     }
 
