@@ -151,7 +151,7 @@ public class Validation extends BasicFunction  {
         ValidationReport report = null;
 
         try { // args[0]
-            is = Shared.getInputStream(args[0], context);
+            is = Shared.getInputStream(args[0].itemAt(0), context);
 
             if(args.length == 1) {
                 // Validate using system catalog

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 
 
+import java.util.ArrayList;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -47,7 +48,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -77,7 +80,7 @@ public class Jaxv extends BasicFunction  {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.ONE_OR_MORE,
                             "Location of XML Schema (.xsd) document.")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -91,7 +94,7 @@ public class Jaxv extends BasicFunction  {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.ONE_OR_MORE,
                             "Location of XML Schema (.xsd) document.")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
@@ -125,14 +128,17 @@ public class Jaxv extends BasicFunction  {
             report.start();
             
             // Get inputstream for instance document
-            is=Shared.getInputStream(args[0], context);
+            is=Shared.getInputStream(args[0].itemAt(0), context);
 
             // Validate using resource speciefied in second parameter
-            StreamSource grammar = Shared.getStreamSource(args[1], context);
            
-            String grammarUrl = grammar.getSystemId();
-            if(grammarUrl != null && !grammarUrl.endsWith(".xsd")){
-                throw new XPathException("Only XML schemas (.xsd) are supported.");
+            StreamSource grammars[] = Shared.getStreamSource(args[1], context);
+           
+            for(StreamSource grammar: grammars){
+                String grammarUrl = grammar.getSystemId();
+                if(grammarUrl != null && !grammarUrl.endsWith(".xsd")){
+                    throw new XPathException("Only XML schemas (.xsd) are supported.");
+                }
             }
 
             // Prepare
@@ -141,7 +147,7 @@ public class Jaxv extends BasicFunction  {
 
             // Create grammar
             
-            Schema schema = factory.newSchema(grammar);
+            Schema schema = factory.newSchema(grammars);
  
             // Setup validator
             Validator validator = schema.newValidator();

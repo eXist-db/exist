@@ -29,6 +29,9 @@ import org.apache.log4j.Logger;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.OrderedLinkedList.Node;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.SequenceIterator;
 
 /**
@@ -44,13 +47,13 @@ public class NodeInputStream extends InputStream{
     
     
     /** Creates a new instance of NodeInputStream */
-    public NodeInputStream(Serializer serializer, SequenceIterator siNode) {
+    public NodeInputStream(Serializer serializer, NodeValue node) {
         logger.debug("Initializing NodeInputStream");
         
         bis = new BlockingInputStream();
         bos = bis.getOutputStream();
         
-        rt = new NodeSerializerThread(serializer, siNode , bos);
+        rt = new NodeSerializerThread(serializer, node , bos);
         
         rt.start();
         

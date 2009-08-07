@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 
+import org.exist.dom.NodeProxy;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -45,7 +47,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
 import org.xml.sax.InputSource;
@@ -59,12 +63,10 @@ import org.xml.sax.helpers.AttributesImpl;
 public class Shared {
 
     private final static Logger logger = Logger.getLogger(Shared.class);
-
     public final static String simplereportText = "Returns true() if the " +
             "document is valid and no single problem occured, false() for " +
             "all other situations. Check corresponding report function " +
             "for details.";
-    
     public final static String xmlreportText = "Validation report formatted as\n<report>\n" +
             "\t<status>valid</status>\n" + "\t<namespace>...\n" + "\t<time>...\n" +
             "\t<exception>\n" +
@@ -78,7 +80,7 @@ public class Shared {
     /**
      *  Get input stream for specified resource.
      */
-    public static InputStream getInputStream(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static InputStream getInputStream(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
         StreamSource streamSource = getStreamSource(s, context);
         return streamSource.getInputStream();
     }
@@ -87,14 +89,31 @@ public class Shared {
      *  Get stream source for specified resource, containing InputStream and 
      * location. Used by @see Jaxv.
      */
-    public static StreamSource getStreamSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static StreamSource[] getStreamSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+
+        ArrayList<StreamSource> sources = new ArrayList<StreamSource>();
+
+        SequenceIterator i = s.iterate();
+
+        while (i.hasNext()) {
+            Item next = i.nextItem();
+
+            StreamSource streamsource = getStreamSource(next, context);
+            sources.add(streamsource);
+        }
+
+        StreamSource returnSources[] = new StreamSource[sources.size()];
+        returnSources = sources.toArray(returnSources);
+        return returnSources;
+    }
+
+    public static StreamSource getStreamSource(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
 
         StreamSource streamSource = new StreamSource();
-
-        if (s.getItemType() == Type.JAVA_OBJECT) {
+        if (s.getType() == Type.JAVA_OBJECT) {
             logger.debug("Streaming Java object");
-            Item item = s.itemAt(0);
-            Object obj = ((JavaObjectValue) item).getObject();
+
+            Object obj = ((JavaObjectValue) s).getObject();
             if (!(obj instanceof File)) {
                 throw new XPathException("Passed java object should be a File");
             }
@@ -105,7 +124,7 @@ public class Shared {
             streamSource.setSystemId(inputFile.toURI().toURL().toString());
 
 
-        } else if (s.getItemType() == Type.ANY_URI) {
+        } else if (s.getType() == Type.ANY_URI) {
             logger.debug("Streaming xs:anyURI");
 
             // anyURI provided
@@ -120,17 +139,26 @@ public class Shared {
             streamSource.setInputStream(is);
             streamSource.setSystemId(url);
 
-        } else if (s.getItemType() == Type.ELEMENT || s.getItemType() == Type.DOCUMENT) {
+        } else if (s.getType() == Type.ELEMENT || s.getType() == Type.DOCUMENT) {
             logger.debug("Streaming element or document node");
 
+            if (s instanceof NodeProxy) {
+                NodeProxy np = (NodeProxy) s;
+                String url = "xmldb:exist://" + np.getDocument().getBaseURI();
+                logger.debug("Document detected, addng URL " + url);
+                streamSource.setSystemId(url);
+            }
+
             // Node provided
-            Serializer serializer=context.getBroker().newSerializer();
-            InputStream is = new NodeInputStream(serializer, s.iterate()); // new NodeInputStream()
+            Serializer serializer = context.getBroker().newSerializer();
+
+            NodeValue node = (NodeValue) s;
+            InputStream is = new NodeInputStream(serializer, node); // new NodeInputStream()
             streamSource.setInputStream(is);
 
         } else {
-            logger.error("Wrong item type " + Type.getTypeName(s.getItemType()));
-            throw new XPathException("wrong item type " + Type.getTypeName(s.getItemType()));
+            logger.error("Wrong item type " + Type.getTypeName(s.getType()));
+            throw new XPathException("wrong item type " + Type.getTypeName(s.getType()));
         }
 
         return streamSource;
@@ -140,7 +168,7 @@ public class Shared {
      *  Get input source for specified resource, containing inputStream and 
      * location. Used by @see Jing.
      */
-    public static InputSource getInputSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static InputSource getInputSource(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
 
         StreamSource streamSource = getStreamSource(s, context);
 
