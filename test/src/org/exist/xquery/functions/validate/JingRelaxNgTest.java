@@ -7,6 +7,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 /**
  *
@@ -115,13 +116,18 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     @Test
     //@Ignore("rnc is binary file")
     public void rnc_stored_valid() {
-        String query = "validation:jing( doc('/db/personal/personal-valid.xml'), xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
+        String query = "validation:jing-report( doc('/db/personal/personal-valid.xml'), " +
+                //"util:binary-doc('/db/personal/personal.rnc') )";
+                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            System.out.println(r);
+
+            assertXpathEvaluatesTo("valid", "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
@@ -132,13 +138,18 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     @Test
     //@Ignore("rnc is binary file")
     public void rnc_stored_invalid() {
-        String query = "validation:jing( doc('/db/personal/personal-invalid.xml'), xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
+        String query = "validation:jing-report( doc('/db/personal/personal-invalid.xml'), " +
+                //"util:binary-doc('/db/personal/personal.rnc') )";
+                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            System.out.println(r);
+
+            assertXpathEvaluatesTo("invalid", "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
