@@ -158,8 +158,8 @@ public class Validation extends BasicFunction  {
                 report=validator.validate(is);
 
             } else {
-                // Validate using resource speciefied in second parameter
-                String url=Shared.getUrl(args[1]);
+                // Validate using resource specified in second parameter
+                String url=Shared.getUrl(args[1].itemAt(0));
 
                 report=validator.validate(is, url);
             }
