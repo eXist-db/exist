@@ -110,13 +110,13 @@ public class Shared {
         return returnSources;
     }
 
-    public static StreamSource getStreamSource(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+    public static StreamSource getStreamSource(Item item, XQueryContext context) throws XPathException, MalformedURLException, IOException {
 
         StreamSource streamSource = new StreamSource();
-        if (s.getType() == Type.JAVA_OBJECT) {
+        if (item.getType() == Type.JAVA_OBJECT) {
             logger.debug("Streaming Java object");
 
-            Object obj = ((JavaObjectValue) s).getObject();
+            Object obj = ((JavaObjectValue) item).getObject();
             if (!(obj instanceof File)) {
                 throw new XPathException("Passed java object should be a File");
             }
@@ -126,11 +126,11 @@ public class Shared {
             streamSource.setInputStream(is);
             streamSource.setSystemId(inputFile.toURI().toURL().toString());
 
-        } else if (s.getType() == Type.ANY_URI) {
+        } else if (item.getType() == Type.ANY_URI) {
             logger.debug("Streaming xs:anyURI");
 
             // anyURI provided
-            String url = s.getStringValue();
+            String url = item.getStringValue();
 
             // Fix URL
             if (url.startsWith("/")) {
@@ -141,11 +141,11 @@ public class Shared {
             streamSource.setInputStream(is);
             streamSource.setSystemId(url);
 
-        } else if (s.getType() == Type.ELEMENT || s.getType() == Type.DOCUMENT) {
+        } else if (item.getType() == Type.ELEMENT || item.getType() == Type.DOCUMENT) {
             logger.debug("Streaming element or document node");
 
-            if (s instanceof NodeProxy) {
-                NodeProxy np = (NodeProxy) s;
+            if (item instanceof NodeProxy) {
+                NodeProxy np = (NodeProxy) item;
                 String url = "xmldb:exist://" + np.getDocument().getBaseURI();
                 logger.debug("Document detected, adding URL " + url);
                 streamSource.setSystemId(url);
@@ -154,26 +154,26 @@ public class Shared {
             // Node provided
             Serializer serializer = context.getBroker().newSerializer();
 
-            NodeValue node = (NodeValue) s;
+            NodeValue node = (NodeValue) item;
             InputStream is = new NodeInputStream(serializer, node); 
             streamSource.setInputStream(is);
 
-        } else if (s.getType() == Type.BASE64_BINARY) {
-            Base64Binary base64 = (Base64Binary) s;
+        } else if (item.getType() == Type.BASE64_BINARY) {
+            Base64Binary base64 = (Base64Binary) item;
             byte[] data = (byte[]) base64.toJavaObject(byte[].class);
             InputStream is = new ByteArrayInputStream(data);
             streamSource.setInputStream(is);
 
-            if (s instanceof Base64BinaryDocument) {
-                Base64BinaryDocument b64doc = (Base64BinaryDocument) s;
+            if (item instanceof Base64BinaryDocument) {
+                Base64BinaryDocument b64doc = (Base64BinaryDocument) item;
                 String url = "xmldb:exist://" + b64doc.getUrl();
                 logger.debug("Base64BinaryDocument detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
 
         } else {
-            logger.error("Wrong item type " + Type.getTypeName(s.getType()));
-            throw new XPathException("wrong item type " + Type.getTypeName(s.getType()));
+            logger.error("Wrong item type " + Type.getTypeName(item.getType()));
+            throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
         }
 
         return streamSource;
@@ -195,12 +195,21 @@ public class Shared {
 
     }
 
+    public static StreamSource getStreamSource(InputSource in) throws XPathException, MalformedURLException, IOException {
+
+        StreamSource streamSource = new StreamSource();
+        streamSource.setInputStream(in.getByteStream());
+        streamSource.setSystemId(in.getSystemId());
+
+        return streamSource;
+    }
+
     /**
      *  Get URL value of parameter.
      */
-    public static String getUrl(Sequence s) throws XPathException {
+    public static String getUrl(Item s) throws XPathException {
 
-        if (s.getItemType() != Type.ANY_URI && s.getItemType() != Type.STRING) {
+        if (s.getType() != Type.ANY_URI && s.getType() != Type.STRING) {
             throw new XPathException("Parameter should be of type xs:anyURI" +
                     " or string");
         }

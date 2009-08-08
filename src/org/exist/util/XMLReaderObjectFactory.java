@@ -70,6 +70,9 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
     public final static String APACHE_PROPERTIES_ENTITYRESOLVER
             ="http://apache.org/xml/properties/internal/entity-resolver";
+
+    public final static String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
+            ="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
     
     private BrokerPool pool;
 

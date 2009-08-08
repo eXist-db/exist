@@ -53,6 +53,8 @@ public class ValidationModule extends AbstractInternalModule {
        new FunctionDef(Jaxv.signatures[1], Jaxv.class),
        new FunctionDef(Jing.signatures[0], Jing.class),
        new FunctionDef(Jing.signatures[1], Jing.class),
+//       new FunctionDef(Parse.signatures[0], Parse.class),
+//       new FunctionDef(Parse.signatures[1], Parse.class),
     };
     
     public final static QName EXCEPTION_QNAME =
