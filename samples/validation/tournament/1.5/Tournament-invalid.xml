@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    
+    This XML file demonstrates co-occurrence constraints that cannot be 
+    expressed in a RELAX NG schema or in a W3C XML Schema schema but can 
+    be expressed as Schematron constraints embedded in such schemas. 
+    Validate this XML file against Tournament.rng or Tournament.xsd as 
+    schema with embedded Schematron rules to see how the violations of 
+    the Schematron rules are reported in a validation process.
+
+-->
+<Tournament xmlns="www.allette.com.au/Tournament">
+	<Name>Allette Open</Name>
+	<Type>Singles</Type>
+	<Date>2001-03-20</Date>
+	<Participants nbrParticipants="5">
+		<Name id="p1">Nick</Name>
+		<Name id="p2">Marcus</Name>
+		<Name id="p3">Eddie</Name>
+	</Participants>
+	<Teams nbrTeams="3">
+		<Team id="t1" Name="Team 1">
+			<Member>p1</Member>
+		</Team>
+		<Team id="t2" Name="Team 2">
+			<Member>p2</Member>
+		</Team>
+		<Team id="t3" Name="Team 3">
+			<Member>p3</Member>
+		</Team>
+	</Teams>
+	<Matches nbrMatches="3">
+		<Match id="m1">
+			<Team>t1</Team>
+			<Team>t2</Team>
+		</Match>
+		<Match id="m2">
+			<Team>t1</Team>
+			<Team>t3</Team>
+		</Match>
+		<Match id="m3">
+			<Team>t2</Team>
+			<Team>t5</Team>
+		</Match>
+	</Matches>
+</Tournament>
