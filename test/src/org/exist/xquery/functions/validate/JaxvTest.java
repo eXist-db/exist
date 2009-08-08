@@ -1,16 +1,41 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2009 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
+ */
 package org.exist.xquery.functions.validate;
 
-import org.exist.test.EmbeddedExistTester;
 import java.io.File;
 import java.io.FilenameFilter;
+
 import org.junit.*;
 import static org.junit.Assert.*;
+
+import org.exist.test.EmbeddedExistTester;
+
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 
 /**
+ * Tests for the validation:jaxv() function with XSDs.
  *
- * @author wessels
+ * @author dizzzz@exist-db.org
  */
 public class JaxvTest extends EmbeddedExistTester {
 
@@ -49,7 +74,7 @@ public class JaxvTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void stored_valid() {
+    public void xsd_stored_valid() {
         String query = "validation:jaxv( doc('/db/personal/personal-valid.xml'), doc('/db/personal/personal.xsd') )";
 
         try {
@@ -65,7 +90,7 @@ public class JaxvTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void stored_invalid() {
+    public void xsd_stored_invalid() {
         String query = "validation:jaxv( doc('/db/personal/personal-invalid.xml'), doc('/db/personal/personal.xsd') )";
 
         try {
@@ -81,7 +106,7 @@ public class JaxvTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void anyuri_valid() {
+    public void xsd_anyuri_valid() {
         String query = "validation:jaxv( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
@@ -98,7 +123,7 @@ public class JaxvTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void anyuri_invalid() {
+    public void xsd_anyuri_invalid() {
         String query = "validation:jaxv( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
