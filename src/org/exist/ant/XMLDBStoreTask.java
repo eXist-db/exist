@@ -144,9 +144,15 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 		    targetFile = srcFile.getName();
 		log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
 		res = col.createResource(targetFile, resourceType);
-		res.setContent(srcFile);
-		((EXistResource) res).setMimeType(mime.getName());
-		col.storeResource(res);
+
+        if(srcFile.length() == 0){
+             // note: solves bug id 2429889 when this task hits empty files
+        }else{
+		    res.setContent(srcFile);
+            ((EXistResource) res).setMimeType(mime.getName());
+		    col.storeResource(res);
+        }
+
 	      } else
 	      {
 		for(FileSet fileSet: fileSetList) {
