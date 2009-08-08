@@ -39,10 +39,10 @@
 
     <target name="alltests">
         <au:antunit>
-            <!--file file="base.xml"/>
+            <file file="base.xml"/>
             <file file="user.xml"/>
             <file file="file.xml"/>
-            <file file="server.xml"/-->
+            <file file="server.xml"/>
             <file file="xmldb.xml"/>
             <au:plainlistener/>
         </au:antunit>

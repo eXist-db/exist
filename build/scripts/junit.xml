@@ -21,7 +21,7 @@
     </condition>
 
     <target name="test"
-            depends="check-java-version, test-prepare, test-local,  test-fluent, test-indexing, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup"
+            depends="check-java-version, test-prepare, test-local,  test-fluent, test-indexing, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->

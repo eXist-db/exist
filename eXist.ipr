@@ -5,7 +5,31 @@
     <buildFile url="file://$PROJECT_DIR$/build.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
-      <customJdkName value="" />
+      <customJdkName value="1.5" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/test/src/ant/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="1.5" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq/main/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="1.5" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="1.5" />
       <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
       <properties />
@@ -50,6 +74,9 @@
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/GMLIndexTest.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/AllIndexTests.java" />
+      <file url="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
+      <file url="file://$PROJECT_DIR$/tools/XFormsFilter/web.xml" />
+      <file url="file://$PROJECT_DIR$/build/docs/source/WEB-INF/web.xml" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -67,6 +94,9 @@
       <entry name="?*.tld" />
       <entry name="?*.config" />
     </wildcardResourcePatterns>
+  </component>
+  <component name="CopyrightManager" default="">
+    <module2copyright />
   </component>
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
@@ -147,6 +177,12 @@
     <option name="FILTER_WARNINGS" value="false" />
     <option name="FILTER_INFO" value="true" />
     <option name="CUSTOM_FILTER" />
+  </component>
+  <component name="Monitor.Log4jWindowPlugin">
+    <option name="tree.default.font.size" value="10" />
+    <option name="table.default.font.family" value="#GungSeo" />
+    <option name="tree.default.font.family" value="#GungSeo" />
+    <option name="table.default.font.size" value="10" />
   </component>
   <component name="Palette2">
     <group name="Swing">
@@ -273,6 +309,9 @@
     <option name="projectName" value="eXist" />
   </component>
   <component name="ProjectFileVersion" converted="true" />
+  <component name="ProjectKey">
+    <option name="state" value="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/eXist.ipr" />
+  </component>
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
@@ -315,6 +354,7 @@
       </map>
     </option>
     <option name="myVersion" value="124" />
+    <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
@@ -403,6 +443,7 @@
         <root url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" />
         <root url="file://$PROJECT_DIR$/extensions/fluent/lib" />
         <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
+        <root url="file://$PROJECT_DIR$/lib/extensions" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

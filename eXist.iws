@@ -1,9 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project relativePaths="true" version="4">
   <component name="AnalysisUIOptions">
-    <option name="ANALYZE_TEST_SOURCES" value="false" />
     <option name="SCOPE_TYPE" value="3" />
     <option name="CUSTOM_SCOPE_NAME" value="Project Files" />
+  </component>
+  <component name="BuildServerSettings">
+    <option name="HISTORY" value="" />
+    <option name="LOGIN" value="cutlass" />
+    <option name="SERVER_URL" value="http://serengeti.friprogramvarusyndikatet.se:8111" />
+    <option name="PASSWORD" value="dfdfdfe4dfc8dfebdfdedf92" />
+    <option name="REMEMBER_ME" value="true" />
+    <option name="USE_IDEA_PROXY_SETTINGS" value="true" />
+    <option name="INSPECTIONS_BUILD_TYPE_NAME" />
+    <option name="INSPECTIONS_PROJECT_ID" />
+    <option name="INSPECTIONS_BUILD_TYPE_ID" />
+    <option name="DUPLICATES_BUILD_TYPE_NAME" />
+    <option name="DUPLICATES_PROJECT_ID" />
+    <option name="DUPLICATES_BUILD_TYPE_ID" />
+    <option name="PERFORM_COMMIT_IF_SUCCESSFUL" value="true" />
+    <option name="PERFORM_COMMIT_IF_NO_NEW_FAILED_TESTS" value="false" />
+    <option name="REQUEST_CONFIRMATON" value="false" />
+    <option name="PRE_TESTED_COMMIT" value="true" />
+    <option name="STATUS_DIALOG_SPLITTER_PROPORTION" value="0.8" />
+    <option name="FILTER_BY_USER" value="true" />
+    <option name="FILTER_REMOTE_RUN_TREE" value="false" />
+    <option name="FILTER_BY_STATUS" value="false" />
+    <option name="SHOW_CLOSE_PROMPT" value="true" />
+    <TreeState key="changes">
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Root" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.RootDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="ChangesGroup::Older" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.ChangesGroupDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Root" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.RootDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="ChangesGroup::Yesterday" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.ChangesGroupDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Root" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.RootDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="ChangesGroup::Today" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.ChangesGroupDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="Root" />
+          <option name="myItemType" value="jetbrains.buildServer.tree.descriptors.RootDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+    </TreeState>
   </component>
   <component name="CCaseConfig">
     <option name="checkoutReserved" value="false" />
@@ -34,18 +94,16 @@
     <option name="USER" value="" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject" afterPath="$PROJECT_DIR$/nbproject" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/xmldb/CreateCollectionsTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/xmldb/CreateCollectionsTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/project.xml" afterPath="$PROJECT_DIR$/nbproject/project.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/private/private.xml" afterPath="$PROJECT_DIR$/nbproject/private/private.xml" />
+    <list default="true" readonly="true" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xforms/xforms.xml" afterPath="$PROJECT_DIR$/webapp/xforms/xforms.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/WEB-INF/catalog.xml" afterPath="$PROJECT_DIR$/webapp/WEB-INF/catalog.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/project.properties" afterPath="$PROJECT_DIR$/nbproject/project.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/build-impl.xml" afterPath="$PROJECT_DIR$/nbproject/build-impl.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbbuild.xml" afterPath="$PROJECT_DIR$/nbbuild.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf.xml.tmpl" afterPath="$PROJECT_DIR$/conf.xml.tmpl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/genfiles.properties" afterPath="$PROJECT_DIR$/nbproject/genfiles.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java" afterPath="$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/ant/xmldb.xml" afterPath="$PROJECT_DIR$/test/src/ant/xmldb.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/junit.xml" afterPath="$PROJECT_DIR$/build/scripts/junit.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/ant/build.xml" afterPath="$PROJECT_DIR$/test/src/ant/build.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/ant/test.css" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
     </list>
   </component>
   <component name="ChangesViewManager" flattened_view="false" show_ignored="false" />
@@ -119,15 +177,20 @@
       <SplitterProportionsDataImpl />
     </option>
   </component>
-  <component name="ErrorTreeViewConfiguration">
-    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
-    <option name="HIDE_WARNINGS" value="false" />
-  </component>
   <component name="FavoritesManager">
-    <favorites_list name="eXist" />
+    <favorites_list name="eXist">
+      <favorite_root url="file://$PROJECT_DIR$/extensions" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+      <favorite_root url="file://$PROJECT_DIR$/test" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+      <favorite_root url="file://$PROJECT_DIR$/src" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+      <favorite_root url="file://$PROJECT_DIR$/webapp" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+    </favorites_list>
+    <favorites_list name="xprocxq">
+      <favorite_root url="file://$PROJECT_DIR$/extensions/xprocxq/main" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+      <favorite_root url="file://$PROJECT_DIR$/webapp/xproc" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+    </favorites_list>
   </component>
   <component name="FavoritesProjectViewPane">
-    <subPane subId="eXist">
+    <subPane>
       <PATH>
         <PATH_ELEMENT>
           <option name="myItemId" />
@@ -135,9 +198,152 @@
         </PATH_ELEMENT>
       </PATH>
     </subPane>
+    <subPane subId="eXist" />
+    <subPane subId="xprocxq">
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="test" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="test" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="tests.xproc.org" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="etc" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="EvalTest.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/src/org/exist/xquery/functions/util/EvalTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="25" column="13" selection-start="685" selection-end="685" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="XMLDBExtractTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/ant/XMLDBExtractTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="53" column="13" selection-start="1768" selection-end="1768" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="xmldb.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/src/ant/xmldb.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="117" column="30" selection-start="4913" selection-end="4913" vertical-scroll-proportion="0.5">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="junit.xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/build/scripts/junit.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="33" column="80" selection-start="1422" selection-end="1422" vertical-scroll-proportion="0.50337076">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/src/ant/build.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="6" column="29" selection-start="260" selection-end="260" vertical-scroll-proportion="4.173913">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AntUnitTestRunner.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/src/org/exist/ant/AntUnitTestRunner.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="24" column="13" selection-start="651" selection-end="651" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test.css" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/src/ant/test.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -154,55 +360,21 @@
       <path-vars />
     </Eclipse-Importer>
   </component>
+  <component name="InspectionPassRegistrar">
+    <option name="LOAD_NEW_PROBLEMS" value="true" />
+  </component>
+  <component name="J2EEProjectPane">
+    <subPane subId="file" />
+  </component>
   <component name="ModuleEditorState">
     <option name="LAST_EDITED_MODULE_NAME" />
     <option name="LAST_EDITED_TAB_NAME" />
   </component>
+  <component name="NamedScopeManager">
+    <scope name="src" pattern="file[eXist]:tools/requestlog/src//*" />
+  </component>
   <component name="PackagesPane">
-    <subPane>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist.ipr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist.ipr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="org.exist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist.ipr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="eXist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="org.exist" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="storage" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
-        </PATH_ELEMENT>
-      </PATH>
-    </subPane>
+    <subPane />
   </component>
   <component name="PerforceChangeBrowserSettings">
     <option name="USE_CLIENT_FILTER" value="true" />
@@ -222,7 +394,7 @@
     <OptionsSetting value="true" id="Undo Check Out" />
     <OptionsSetting value="true" id="Compare with SourceSafe Version" />
     <OptionsSetting value="true" id="Get Latest Version" />
-    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="2" id="Add" />
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectPane">
@@ -247,7 +419,47 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="PsiDirectory:/Users/wessels/Development/existdb/eXist-1.3" />
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="build" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="build" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="scripts" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -271,192 +483,103 @@
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="0.5" version="1" splitterProportion="0.5">
       <flattenPackages />
-      <showMembers />
+      <showMembers Favorites="true" />
       <showModules />
       <showLibraryContents />
       <hideEmptyPackages ProjectPane="true" />
       <abbreviatePackageNames />
-      <showStructure PackagesPane="false" Scope="false" Favorites="false" ProjectPane="false" />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
+      <showStructure PackagesPane="false" J2EEPane="false" Scope="false" Favorites="false" ProjectPane="false" />
+      <autoscrollToSource Favorites="false" />
+      <autoscrollFromSource Favorites="false" />
+      <sortByType PackagesPane="true" Favorites="true" />
     </navigator>
   </component>
   <component name="PropertiesComponent">
-    <property name="GoToClass.includeJavaFiles" value="false" />
-    <property name="MemberChooser.copyJavadoc" value="false" />
+    <property name="project.structure.proportion" value="0.15" />
     <property name="cvs_file_history_treeWidth0" value="292" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="71" />
     <property name="cvs_file_history_flatWidth2" value="292" />
-    <property name="cvs_file_history_treeOrder1" value="1" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web2" value="/private/tmp/webExplodedDir42908tmp" />
-    <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web4" value="/private/tmp/webExplodedDir18349tmp" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
     <property name="cvs_file_history_flatOrder1" value="1" />
-    <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
     <property name="cvs_file_history_flatWidth1" value="291" />
+    <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web" value="/private/tmp/webExplodedDir6263tmp" />
-    <property name="cvs_file_history_treeWidth1" value="291" />
-    <property name="GoToClass.includeLibraries" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="58" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="cvs_file_history_flatOrder2" value="2" />
-    <property name="cvs_file_history_treeWidth2" value="292" />
-    <property name="GoToClass.toSaveIncludeLibraries" value="false" />
-    <property name="cvs_file_history_flatOrder3" value="3" />
-    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="true" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="779" />
+    <property name="options.lastSelected" value="preferences.pluginManager" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
     <property name="MemberChooser.sorted" value="false" />
+    <property name="options.searchVisible" value="true" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
     <property name="RunManagerConfig.compileBeforeRunning" value="true" />
     <property name="cvs_file_history_flatOrder0" value="0" />
     <property name="cvs_file_history_treeOrder3" value="3" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder3" value="3" />
     <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
+    <property name="cvs_file_history_treeWidth3" value="292" />
+    <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
+    <property name="dynamic.classpath" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
+    <property name="cvs_file_history_flatWidth3" value="292" />
+    <property name="GoToClass.includeJavaFiles" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder0" value="0" />
+    <property name="MemberChooser.copyJavadoc" value="false" />
+    <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="cvs_file_history_treeOrder1" value="1" />
+    <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="76" />
+    <property name="cvs_file_history_treeWidth1" value="291" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="33" />
+    <property name="GoToClass.includeLibraries" value="false" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="66" />
+    <property name="cvs_file_history_treeWidth2" value="292" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
+    <property name="cvs_file_history_flatOrder3" value="3" />
+    <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="RunManagerConfig.showSettingsBeforeRunnig" value="true" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="99" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web3" value="/private/tmp/webExplodedDir6251tmp" />
     <property name="GenerateAntBuildDialog.backupFiles" value="true" />
-    <property name="cvs_file_history_treeWidth3" value="292" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="92" />
     <property name="cvs_file_history_treeOrder2" value="2" />
-    <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="750" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
     <property name="cvs_file_history_flatWidth0" value="292" />
-    <property name="cvs_file_history_flatWidth3" value="292" />
     <property name="cvs_file_history_treeOrder0" value="0" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="66" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="org.exist.xquery.functions.util" />
       <recent name="org.exist.xquery.functions.text" />
     </key>
   </component>
-  <component name="RestoreUpdateTree">
-    <UpdateInfo date="11/5/08 8:32 PM" ActionInfo="_Update">
-      <UpdatedFiles>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated from server" />
-          <option name="myStatusName" value="Changed on server" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CHANGED_ON_SERVER" />
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Updated" />
-            <option name="myStatusName" value="Changed" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="UPDATED" />
-            <PATH vcs="svn" revision="8307">$PROJECT_DIR$/webapp/acknowledge.xml</PATH>
-            <PATH vcs="svn" revision="8307">$PROJECT_DIR$/src/org/exist/xquery/functions/session/Invalidate.java</PATH>
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Created" />
-            <option name="myStatusName" value="Created" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="CREATED" />
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Deleted" />
-            <option name="myStatusName" value="Deleted" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="true" />
-            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Restored" />
-            <option name="myStatusName" value="Will be restored" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="RESTORED" />
-          </FILE-GROUP>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Modified" />
-          <option name="myStatusName" value="Modified" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MODIFIED" />
-          <PATH>$PROJECT_DIR$/eXist.iws</PATH>
-          <PATH>$PROJECT_DIR$/nbbuild.xml</PATH>
-          <PATH>$PROJECT_DIR$/webapp/WEB-INF/catalog.xml</PATH>
-          <PATH>$PROJECT_DIR$/test/src/org/exist/xmldb/CreateCollectionsTest.java</PATH>
-          <PATH>$PROJECT_DIR$/nbproject</PATH>
-          <PATH>$PROJECT_DIR$/nbproject/project.properties</PATH>
-          <PATH>$PROJECT_DIR$/nbproject/project.xml</PATH>
-          <PATH>$PROJECT_DIR$/nbproject/genfiles.properties</PATH>
-          <PATH>$PROJECT_DIR$/nbproject/private/private.xml</PATH>
-          <PATH>$PROJECT_DIR$/nbproject/build-impl.xml</PATH>
-          <PATH>$PROJECT_DIR$/conf.xml.tmpl</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Skipped" />
-          <option name="myStatusName" value="Skipped" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="SKIPPED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with conflicts" />
-          <option name="myStatusName" value="Will be merged with conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_CONFLICTS" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged" />
-          <option name="myStatusName" value="Will be merged" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Not in repository" />
-          <option name="myStatusName" value="Not in repository" />
-          <option name="mySupportsDeletion" value="true" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UNKNOWN" />
-          <PATH>$PROJECT_DIR$/samplexmldata2.xml</PATH>
-          <PATH>$PROJECT_DIR$/webapp/.exist_history</PATH>
-          <PATH>$PROJECT_DIR$/webapp/WEB-INF/entities/section.dtd</PATH>
-          <PATH>$PROJECT_DIR$/webapp/WEB-INF/entities/xhtml-lat1.dtd</PATH>
-          <PATH>$PROJECT_DIR$/webapp/WEB-INF/entities/xhtml-special.dtd</PATH>
-          <PATH>$PROJECT_DIR$/webapp/WEB-INF/entities/xhtml-symbol.dtd</PATH>
-          <PATH>$PROJECT_DIR$/build/intellij</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Locally added" />
-          <option name="myStatusName" value="Locally added" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="LOCALLY_ADDED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Locally removed" />
-          <option name="myStatusName" value="Locally removed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="LOCALLY_REMOVED" />
-        </FILE-GROUP>
-      </UpdatedFiles>
-    </UpdateInfo>
-  </component>
-  <component name="RunManager" selected="Application.Server">
-    <tempConfiguration default="false" name="XmldbLocalTests" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
-      <pattern value="org.exist.xmldb.*" />
-      <module name="eXist" />
+  <component name="RunManager" selected="JUnit.AntUnitTestRunner">
+    <tempConfiguration default="false" name="RetrieveChunked" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="org.exist.examples.xmlrpc.RetrieveChunked" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="org.exist.xmldb" />
-      <option name="MAIN_CLASS_NAME" value="org.exist.xmldb.XmldbLocalTests" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="wholeProject" />
-      </option>
+      <module name="eXist" />
       <envs />
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" value="false" />
-        <option name="Run ant target" value="true" />
+        <option name="Make" value="true" />
       </method>
     </tempConfiguration>
     <configuration default="true" type="Remote" factoryName="Remote">
@@ -466,23 +589,19 @@
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
     </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
       <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <envs />
-      <method>
-        <option name="Make" value="true" />
-      </method>
     </configuration>
-    <configuration default="true" type="TestNG" factoryName="TestNG" enabled="false" merge="false">
+    <configuration default="true" type="TestNG" factoryName="TestNG" enabled="false" merge="false" runner="emma">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -511,7 +630,22 @@
         <option name="Make" value="true" />
       </method>
     </configuration>
-    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+    <configuration default="true" type="XSLT" factoryName="XSLT">
+      <option name="myOutputFile" />
+      <option name="myOpenOutputFile" value="false" />
+      <option name="myOpenInBrowser" value="false" />
+      <option name="mySmartErrorHandling" value="true" />
+      <option name="myRunnerPort" value="34873" />
+      <option name="myVmArguments" />
+      <option name="myWorkingDirectory" />
+      <option name="myModule" />
+      <option name="myJdk" />
+      <parameters />
+      <OutputType value="CONSOLE" />
+      <FileType name="XML" />
+      <JdkChoice value="FROM_MODULE" />
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -534,19 +668,23 @@
         <option name="Run ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
+    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
       <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method>
+        <option name="Make" value="true" />
+      </method>
     </configuration>
-    <configuration default="false" name="eXist Client" type="Application" factoryName="Application" enabled="false" merge="false">
+    <configuration default="false" name="eXist Client" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
       <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
       <option name="VM_PARAMETERS" value="-Dexist.home=$PROJECT_DIR$/../eXist-1.3  -Xmx128m" />
       <option name="PROGRAM_PARAMETERS" value="client -l" />
@@ -571,7 +709,7 @@
         <option name="Run ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="Server" type="Application" factoryName="Application" enabled="false" merge="false">
+    <configuration default="false" name="Server" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
       <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
       <option name="VM_PARAMETERS" value="-Dexist.home=$PROJECT_DIR$/../eXist-1.3  -Xmx128m" />
       <option name="PROGRAM_PARAMETERS" value="jetty" />
@@ -589,17 +727,56 @@
         <option name="Make" value="false" />
       </method>
     </configuration>
-    <configuration default="false" name="XIncludeSerializerTest" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
+    <configuration default="false" name="AntUnitTestRunner" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+      <pattern>
+        <option name="PATTERN" value="org.exist.ant.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.exist.storage.test" />
-      <option name="MAIN_CLASS_NAME" value="org.exist.storage.test.XIncludeSerializerTest" />
-      <option name="METHOD_NAME" value="" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="org.exist.ant" />
+      <option name="MAIN_CLASS_NAME" value="org.exist.ant.AntUnitTestRunner" />
+      <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="wholeProject" />
+      </option>
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="62529" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Make" value="false" />
+        <option name="Run ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="ONVDLTest" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+      <pattern>
+        <option name="PATTERN" value="org.exist.xquery.functions.onvdl.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+      <module name="eXist" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="org.exist.xquery.functions.validate" />
+      <option name="MAIN_CLASS_NAME" value="org.exist.xquery.functions.validate.ONVDLTest" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <option name="ADDITIONAL_CLASS_PATH" />
@@ -614,11 +791,12 @@
         <option name="Run ant target" value="true" />
       </method>
     </configuration>
-    <list size="4">
+    <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Application.eXist Client" />
       <item index="1" class="java.lang.String" itemvalue="Application.Server" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.XIncludeSerializerTest" />
-      <item index="3" class="java.lang.String" itemvalue="JUnit.XmldbLocalTests" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.AntUnitTestRunner" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.ONVDLTest" />
+      <item index="4" class="java.lang.String" itemvalue="Application.RetrieveChunked" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -631,6 +809,193 @@
     </option>
   </component>
   <component name="ScopeViewComponent">
+    <subPane subId="Tests">
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
+    <subPane>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="test">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="test">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="ant">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="test">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
+    <subPane subId="Problems" />
+    <subPane subId="Production">
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="tools">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
+    <subPane subId="src">
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="tools/requestlog/src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
+    <subPane subId="All">
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
     <subPane subId="Project">
       <PATH>
         <PATH_ELEMENT USER_OBJECT="Root">
@@ -640,6 +1005,7 @@
       </PATH>
     </subPane>
   </component>
+  <component name="ShelveChangesManager" show_recycled="false" />
   <component name="StarteamConfiguration">
     <option name="SERVER" value="" />
     <option name="PORT" value="49201" />
@@ -652,8 +1018,8 @@
     <option name="UNLOCK_ON_CHECKIN" value="false" />
   </component>
   <component name="StructureViewFactory">
-    <option name="AUTOSCROLL_MODE" value="true" />
-    <option name="AUTOSCROLL_FROM_SOURCE" value="false" />
+    <option name="AUTOSCROLL_MODE" value="false" />
+    <option name="AUTOSCROLL_FROM_SOURCE" value="true" />
     <option name="ACTIVE_ACTIONS" value="" />
   </component>
   <component name="Struts Assistant">
@@ -683,12 +1049,14 @@
     <option name="PASSWORD" value="" />
     <option name="LAST_MERGED_REVISION" />
     <option name="UPDATE_RUN_STATUS" value="true" />
-    <option name="UPDATE_RECURSIVELY" value="true" />
     <option name="MERGE_DRY_RUN" value="false" />
+    <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
     <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
+    <option name="IGNORE_SPACES_IN_MERGE" value="false" />
     <configuration useDefault="true">$PROJECT_DIR$/../../../.subversion</configuration>
     <remoteStatus />
     <myIsUseDefaultProxy>true</myIsUseDefaultProxy>
+    <supportedVersion>125</supportedVersion>
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -711,38 +1079,44 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1440" height="811" extended-state="0" />
+    <frame x="11" y="22" width="1139" height="691" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32927817" order="3" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22566372" order="7" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25233644" order="0" x="72" y="49" width="451" height="485" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.36103153" order="1" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24874191" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3270349" order="8" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="6" />
-      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24856909" order="1" />
-      <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3270349" order="8" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32848838" order="2" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24979724" order="2" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3990188" order="0" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29977876" order="4" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" order="8" x="4" y="2" width="968" height="391" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3241279" order="8" />
-      <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="0" />
-      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="2" />
-      <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="3" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="5" />
-      <window_info id="EclipseImporter" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32570422" sideWeight="0.5" order="7" side_tool="false" />
+      <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" />
+      <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.102658115" sideWeight="0.28521127" order="8" side_tool="true" />
+      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.102658115" sideWeight="0.27640846" order="3" side_tool="true" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35211268" sideWeight="0.0" order="11" side_tool="false" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3015582" sideWeight="0.6883803" order="0" side_tool="false" x="72" y="49" width="451" height="485" />
+      <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5105634" sideWeight="0.5" order="8" side_tool="false" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.017605634" sideWeight="0.5" order="1" side_tool="false" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23281394" sideWeight="0.72183096" order="1" side_tool="false" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29929578" sideWeight="0.5" order="14" side_tool="false" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.34738773" sideWeight="0.6883803" order="1" side_tool="false" />
+      <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5369718" sideWeight="0.5" order="9" side_tool="false" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43133804" sideWeight="0.5" order="16" side_tool="false" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.044014085" sideWeight="0.5" order="2" side_tool="false" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37323943" sideWeight="0.5" order="4" side_tool="false" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" sideWeight="0.5" order="19" side_tool="false" x="4" y="2" width="968" height="391" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3556338" sideWeight="0.5" order="13" side_tool="false" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
+      <window_info id="SVN Properties" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33453238" sideWeight="0.5" order="10" side_tool="false" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" />
+      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
+      <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" />
+      <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" />
+      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" />
+      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" />
+      <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" />
+      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" />
+      <window_info id="EclipseImporter" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="20" side_tool="false" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24979724" sideWeight="0.5" order="2" side_tool="false" />
+      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
     </layout>
   </component>
   <component name="VCS.FileViewConfiguration">
@@ -758,9 +1132,10 @@
     <option name="PERFORM_UPDATE_IN_BACKGROUND" value="false" />
     <option name="PERFORM_COMMIT_IN_BACKGROUND" value="false" />
     <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="[ignore] added oxygenxml to acknowledge page" />
+    <option name="LAST_COMMIT_MESSAGE" value="[bug.ant] added antunit tests to junit test target" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -771,25 +1146,31 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="Don't close the collection after xmldb:store. It flushes the caches, which takes too much time." />
-    <MESSAGE value="Another attempt to fix bug #1572054 without killing performance ;-)" />
-    <MESSAGE value="Applied patch 1520454 to support relative XIncludes." />
-    <MESSAGE value="util:compile function complained about &amp;amp; and other predefined entities." />
-    <MESSAGE value="Don't escape &amp; as &amp;amp; inside CDATA." />
-    <MESSAGE value="Wrong filename in build message." />
-    <MESSAGE value="Don't throw an exception if a thread tries to release a lock it doesn't hold. As described in bug report 1483020, Lock.release() is usually called within a finally block. If the thread was interrupted while waiting for the lock in Lock.acquire, it does not yet hold the lock. The finally block will still be executed. This is perfectly valid, so release() should print a warning to the logs instead of throwing a hard exception." />
-    <MESSAGE value="Fixed: wrong line numbers in XQuery error messages: line breaks inside comments were not counted." />
-    <MESSAGE value="Fixed: util:catch needs to push/pop local variables on the stack before executing the main expression. Fixes a problem with running the XQTS." />
-    <MESSAGE value="Added XIncludeSerializerTest." />
-    <MESSAGE value="A" />
-    <MESSAGE value="minor changes for Intellij ; added spatial jars" />
-    <MESSAGE value="minor changes for Intellij ; added sources" />
-    <MESSAGE value="Added logging to resolvers. Additional refactoring needed" />
-    <MESSAGE value="Removed dependencies on the full text index from the db core. Consequently, the full text index does now need to be configured as an external module in conf.xml." />
-    <MESSAGE value="[update] introduced generics into the validation classes. Chased my &quot;java5&quot; todo marks" />
-    <MESSAGE value="[ignore] extended acknowledgment" />
-    <MESSAGE value="[ignore] updated intellij project files" />
-    <MESSAGE value="[ignore] added oxygenxml to acknowledge page" />
+    <MESSAGE value="[documentation.xproc] removing docs from xproc extensions directory and pointing people to use webapp/xproc/xproc.xml" />
+    <MESSAGE value="[documentation.xproc] starting section on 'how to run xproc from xquery'" />
+    <MESSAGE value="[refactoring.xproc] preparing to redo validation steps" />
+    <MESSAGE value="[refactoring.xproc] cleaned up test directory and tweak document" />
+    <MESSAGE value="[refactoring.xproc] working on increasing unit test pass percentage, lots of small changes across many files" />
+    <MESSAGE value="small cosmetic change e.g. added pipeline names, hope no one minds" />
+    <MESSAGE value="[fix.xproc] fixed bug with http-request not honoring detailed attribute on c:request" />
+    <MESSAGE value="[fix.xproc] confirmed p:try working as intended" />
+    <MESSAGE value="[integrate.xproc] integrating Dannes new validation funcs ... looks good, but still testing" />
+    <MESSAGE value="[test.validate] added xquery level test for Dannes new validation stuff, only tests XSD at the moment" />
+    <MESSAGE value="[test.validate] added method to test rng to validate unit test" />
+    <MESSAGE value="[test.validate] added xsd test with assert-valid = false with invalid document, which means validate step should act like an identity step" />
+    <MESSAGE value="[test.validate] final cleanup of validate tasks" />
+    <MESSAGE value="[xproc.http-request] still need to do more but basic functionality is there, all easy stuff for the rest" />
+    <MESSAGE value="[xproc.uuid] implemented optional uuid step, works fine but doesn't pass w3c test due to planned refactor elsewhere" />
+    <MESSAGE value="[xproc.www-form-urldecode] implemented optional www-form-urldecode step, works fine need to check namespace leakage on c:param-set element" />
+    <MESSAGE value="[xproc.pack] implemented pack step" />
+    <MESSAGE value="[xproc.split-sequence] implemented split-sequence step" />
+    <MESSAGE value="[xproc.escapemarkup] implemented escape markup step" />
+    <MESSAGE value="[xproc.misc]" />
+    <MESSAGE value="[bug.xmlrpc] related to temp file usage in xmlrpc server ... there was a missing deleteOnExit() which may have fixed things" />
+    <MESSAGE value="[bug.validation] build was breaking due to unused import, commented it out" />
+    <MESSAGE value="[bug.xmlrpc] added System.gc to client to fix ID: 2833828" />
+    <MESSAGE value="[bug.ant] solve eXist ant store task when it tries to store empty files bug ID: 2833828" />
+    <MESSAGE value="[bug.ant] added antunit tests to junit test target" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -825,6 +1206,13 @@
       <option name="VERSION" />
     </GetOptions>
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+  </component>
+  <component name="XPathView.XPathProjectComponent">
+    <history />
+    <find-history />
+  </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
@@ -834,15 +1222,18 @@
       <targetFilters>
         <filter targetName="all" isVisible="true" />
         <filter targetName="antlr" isVisible="false" />
+        <filter targetName="benchmark" isVisible="false" />
         <filter targetName="check-jars-present" isVisible="false" />
+        <filter targetName="check-java-version" isVisible="false" />
         <filter targetName="clean" isVisible="true" />
+        <filter targetName="clean-all" isVisible="true" />
         <filter targetName="clean-minimal" isVisible="false" />
         <filter targetName="cleandocs" isVisible="false" />
         <filter targetName="commandline-installer" isVisible="false" />
         <filter targetName="compile" isVisible="true" />
         <filter targetName="compile-tomcat-realm" isVisible="true" />
         <filter targetName="copy-xapi" isVisible="false" />
-        <filter targetName="cvs-build" isVisible="false" />
+        <filter targetName="DeclScanner" isVisible="false" />
         <filter targetName="demoserver" isVisible="false" />
         <filter targetName="deploy" isVisible="false" />
         <filter targetName="dist" isVisible="false" />
@@ -851,8 +1242,19 @@
         <filter targetName="dist-war" isVisible="true" />
         <filter targetName="dist-zip" isVisible="true" />
         <filter targetName="docs" isVisible="false" />
+        <filter targetName="download-additional-jars" isVisible="true" />
+        <filter targetName="extension-fluent" isVisible="false" />
+        <filter targetName="extension-indexes" isVisible="false" />
         <filter targetName="extension-modules" isVisible="false" />
+        <filter targetName="extension-versioning" isVisible="false" />
+        <filter targetName="extension-xprocxq" isVisible="false" />
+        <filter targetName="extensions-xslt" isVisible="false" />
+        <filter targetName="extra-tests" isVisible="false" />
+        <filter targetName="install-data-dblp" isVisible="false" />
+        <filter targetName="install-data-goethe" isVisible="false" />
+        <filter targetName="install-data-imdi" isVisible="false" />
         <filter targetName="installer" isVisible="true" />
+        <filter targetName="installer-exe" isVisible="true" />
         <filter targetName="jar" isVisible="true" />
         <filter targetName="java2wsdl" isVisible="false" />
         <filter targetName="javadocs" isVisible="true" />
@@ -860,24 +1262,34 @@
         <filter targetName="jetty-keygen" isVisible="true" />
         <filter targetName="jnlp-clean" isVisible="true" />
         <filter targetName="jnlp-keygen" isVisible="true" />
+        <filter targetName="jnlp-pack200" isVisible="true" />
         <filter targetName="jnlp-prepare" isVisible="false" />
         <filter targetName="jnlp-sign-all" isVisible="true" />
         <filter targetName="jnlp-sign-core" isVisible="true" />
         <filter targetName="jnlp-sign-exist" isVisible="true" />
         <filter targetName="jnlp-unsign-all" isVisible="false" />
         <filter targetName="pmd" isVisible="true" />
+        <filter targetName="post-process-benchmark" isVisible="false" />
         <filter targetName="prepare" isVisible="false" />
         <filter targetName="prepare-docs" isVisible="false" />
+        <filter targetName="prepare-extensions" isVisible="false" />
         <filter targetName="prepare-installer" isVisible="false" />
         <filter targetName="rebuild" isVisible="true" />
+        <filter targetName="redo" isVisible="false" />
+        <filter targetName="run-benchmark" isVisible="false" />
         <filter targetName="samples" isVisible="true" />
         <filter targetName="sign" isVisible="false" />
         <filter targetName="snapshot-installer" isVisible="true" />
         <filter targetName="start-server" isVisible="false" />
+        <filter targetName="svn-diff" isVisible="true" />
         <filter targetName="svn-download" isVisible="false" />
         <filter targetName="svn-prepare" isVisible="false" />
+        <filter targetName="svn-update" isVisible="true" />
         <filter targetName="test" isVisible="true" />
+        <filter targetName="test-compile" isVisible="false" />
         <filter targetName="test-concurrent" isVisible="false" />
+        <filter targetName="test-fluent" isVisible="false" />
+        <filter targetName="test-indexing" isVisible="false" />
         <filter targetName="test-jetty" isVisible="false" />
         <filter targetName="test-local" isVisible="false" />
         <filter targetName="test-prepare" isVisible="false" />
@@ -891,78 +1303,50 @@
         <filter targetName="wrapper" isVisible="false" />
         <filter targetName="wsdl2java" isVisible="false" />
         <filter targetName="xquery" isVisible="false" />
+        <filter targetName="XQuery" isVisible="false" />
+        <filter targetName="xquery-ng" isVisible="false" />
+        <filter targetName="XQueryTreeParser" isVisible="false" />
       </targetFilters>
       <treeView value="true" />
       <verbose value="true" />
       <viewClosedWhenNoErrors value="true" />
     </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/build.xml">
+    <buildFile url="file://$PROJECT_DIR$/test/src/ant/build.xml">
       <antCommandLine value="" />
-      <runInBackground value="false" />
+      <runInBackground value="true" />
       <targetFilters>
-        <filter targetName="all" isVisible="true" />
-        <filter targetName="antlr" isVisible="false" />
-        <filter targetName="check-jars-present" isVisible="false" />
-        <filter targetName="clean" isVisible="true" />
-        <filter targetName="clean-minimal" isVisible="false" />
-        <filter targetName="cleandocs" isVisible="false" />
-        <filter targetName="commandline-installer" isVisible="false" />
-        <filter targetName="compile" isVisible="true" />
-        <filter targetName="compile-tomcat-realm" isVisible="true" />
-        <filter targetName="copy-xapi" isVisible="false" />
-        <filter targetName="cvs-build" isVisible="false" />
-        <filter targetName="demoserver" isVisible="false" />
-        <filter targetName="deploy" isVisible="false" />
-        <filter targetName="dist" isVisible="false" />
-        <filter targetName="dist-minimal" isVisible="false" />
-        <filter targetName="dist-tgz" isVisible="true" />
-        <filter targetName="dist-war" isVisible="true" />
-        <filter targetName="dist-zip" isVisible="true" />
-        <filter targetName="docs" isVisible="false" />
-        <filter targetName="extension-modules" isVisible="false" />
-        <filter targetName="installer" isVisible="true" />
-        <filter targetName="jar" isVisible="true" />
-        <filter targetName="java2wsdl" isVisible="false" />
-        <filter targetName="javadocs" isVisible="true" />
-        <filter targetName="jdepend" isVisible="true" />
-        <filter targetName="jetty-keygen" isVisible="true" />
-        <filter targetName="jnlp-clean" isVisible="true" />
-        <filter targetName="jnlp-keygen" isVisible="true" />
-        <filter targetName="jnlp-prepare" isVisible="false" />
-        <filter targetName="jnlp-sign-all" isVisible="true" />
-        <filter targetName="jnlp-sign-core" isVisible="true" />
-        <filter targetName="jnlp-sign-exist" isVisible="true" />
-        <filter targetName="jnlp-unsign-all" isVisible="false" />
-        <filter targetName="pmd" isVisible="true" />
-        <filter targetName="prepare" isVisible="false" />
-        <filter targetName="prepare-docs" isVisible="false" />
-        <filter targetName="prepare-installer" isVisible="false" />
-        <filter targetName="rebuild" isVisible="true" />
-        <filter targetName="samples" isVisible="true" />
-        <filter targetName="sign" isVisible="false" />
-        <filter targetName="snapshot-installer" isVisible="true" />
-        <filter targetName="start-server" isVisible="false" />
-        <filter targetName="svn-download" isVisible="false" />
-        <filter targetName="svn-prepare" isVisible="false" />
-        <filter targetName="test" isVisible="true" />
-        <filter targetName="test-concurrent" isVisible="false" />
-        <filter targetName="test-jetty" isVisible="false" />
-        <filter targetName="test-local" isVisible="false" />
-        <filter targetName="test-prepare" isVisible="false" />
-        <filter targetName="test-recovery" isVisible="false" />
-        <filter targetName="test-remote" isVisible="false" />
-        <filter targetName="test-shutdown-server" isVisible="false" />
-        <filter targetName="test-wrapup" isVisible="false" />
-        <filter targetName="thirdparty" isVisible="false" />
-        <filter targetName="undeploy" isVisible="false" />
-        <filter targetName="webapps" isVisible="false" />
-        <filter targetName="wrapper" isVisible="false" />
-        <filter targetName="wsdl2java" isVisible="false" />
-        <filter targetName="xquery" isVisible="false" />
+        <filter targetName="alltests" isVisible="false" />
+        <filter targetName="run" isVisible="false" />
+        <filter targetName="setup" isVisible="false" />
+        <filter targetName="teardown" isVisible="false" />
       </targetFilters>
       <treeView value="true" />
       <verbose value="true" />
-      <viewClosedWhenNoErrors value="true" />
+      <viewClosedWhenNoErrors value="false" />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq/main/build.xml">
+      <antCommandLine value="" />
+      <runInBackground value="true" />
+      <targetFilters>
+        <filter targetName="clean" isVisible="false" />
+        <filter targetName="dist" isVisible="false" />
+        <filter targetName="exist-jar" isVisible="false" />
+        <filter targetName="get-w3c-artifacts" isVisible="true" />
+      </targetFilters>
+      <treeView value="true" />
+      <verbose value="true" />
+      <viewClosedWhenNoErrors value="false" />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq.xml">
+      <antCommandLine value="" />
+      <runInBackground value="true" />
+      <targetFilters>
+        <filter targetName="all" isVisible="false" />
+        <filter targetName="clean" isVisible="false" />
+      </targetFilters>
+      <treeView value="true" />
+      <verbose value="true" />
+      <viewClosedWhenNoErrors value="false" />
     </buildFile>
   </component>
   <component name="com.intellij.ide.util.scopeChooser.ScopeChooserConfigurable" proportions="0.16666667" version="1">
@@ -976,121 +1360,218 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/AllIndexTests.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xmldb/RemoteXPathQueryService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="0" selection-start="1145" selection-end="1145" vertical-scroll-proportion="0.32592592">
+        <state line="65" column="8" selection-start="2352" selection-end="2355" vertical-scroll-proportion="-0.61538464">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/AbstractGMLJDBCIndex.java">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/hello.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="104" column="22" selection-start="3678" selection-end="3678" vertical-scroll-proportion="0.33333334">
+        <state line="1" column="53" selection-start="119" selection-end="119" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/GETFunction.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="35" selection-start="2918" selection-end="2918" vertical-scroll-proportion="0.019261638">
+        <state line="2074" column="1" selection-start="88038" selection-end="88039" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/BaseHTTPClientFunction.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/client/QueryDialog.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="293" column="66" selection-start="12063" selection-end="12063" vertical-scroll-proportion="0.019261638">
+        <state line="83" column="4" selection-start="2793" selection-end="2793" vertical-scroll-proportion="0.12190476">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xqj/package.html">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xmlrpc/RpcConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2757" column="19" selection-start="111050" selection-end="111050" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/org/apache/tools/ant/Task.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
-      <provider editor-type-id="HtmlPreview">
-        <state />
-      </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/HTTPClientModule.java">
+    <entry file="file://$PROJECT_DIR$/test/src/ant/test.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="76" selection-start="1678" selection-end="1678" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/ModuleUtils.java">
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/ant/AntUnitTestRunner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="125" column="17" selection-start="4549" selection-end="4549" vertical-scroll-proportion="0.0">
+        <state line="24" column="13" selection-start="651" selection-end="651" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/xmldb/XmldbLocalTests.java">
+    <entry file="file://$PROJECT_DIR$/test/src/ant/exist.properties">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="34" selection-start="369" selection-end="369" vertical-scroll-proportion="0.0">
+        <state line="3" column="0" selection-start="52" selection-end="78" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java">
+    <entry file="file://$PROJECT_DIR$/test/src/ant/build.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="16" selection-start="1433" selection-end="1433" vertical-scroll-proportion="0.0">
+        <state line="6" column="29" selection-start="260" selection-end="260" vertical-scroll-proportion="4.173913">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xmldb/LocalCollection.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/ant/XMLDBExtractTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="764" column="124" selection-start="30883" selection-end="30883" vertical-scroll-proportion="0.018808777">
+        <state line="53" column="13" selection-start="1768" selection-end="1768" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xqj/XQDataSource.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/util/Eval.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="13" selection-start="762" selection-end="762" vertical-scroll-proportion="0.019261638">
+        <state line="408" column="0" selection-start="18333" selection-end="18369" vertical-scroll-proportion="0.54008436">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xqj/XQCommonHandler.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/ant/XMLDBStoreTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="13" selection-start="210" selection-end="210" vertical-scroll-proportion="0.169279">
+        <state line="148" column="75" selection-start="5435" selection-end="5435" vertical-scroll-proportion="0.33966243">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xqj/XQConnection.java">
+    <entry file="file://$PROJECT_DIR$/test/src/org/exist/xquery/functions/util/EvalTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="13" selection-start="779" selection-end="779" vertical-scroll-proportion="0.019261638">
+        <state line="25" column="13" selection-start="685" selection-end="685" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/xmldb/CreateCollectionsTest.java">
+    <entry file="file://$PROJECT_DIR$/test/src/ant/xmldb.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="164" column="46" selection-start="5873" selection-end="5873" vertical-scroll-proportion="0.019261638">
+        <state line="117" column="30" selection-start="4913" selection-end="4913" vertical-scroll-proportion="0.5">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar:///System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/../Classes/classes.jar!/org/xml/sax/XMLReader.class">
+    <entry file="file://$PROJECT_DIR$/build/scripts/junit.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="9" selection-start="1246" selection-end="1246" vertical-scroll-proportion="0.5778491">
+        <state line="33" column="80" selection-start="1422" selection-end="1422" vertical-scroll-proportion="0.50337076">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/acknowledge.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="110" column="68" selection-start="5463" selection-end="5463" vertical-scroll-proportion="1.5775402">
-          <folding />
-        </state>
-      </provider>
-    </entry>
+  </component>
+  <component name="masterDetails">
+    <option name="states">
+      <map>
+        <entry key="Copyright.UI">
+          <value>
+            <UIState>
+              <option name="proportions">
+                <SplitterProportionsDataImpl>
+                  <option name="proportions">
+                    <list>
+                      <option value="0.2" />
+                    </list>
+                  </option>
+                </SplitterProportionsDataImpl>
+              </option>
+            </UIState>
+          </value>
+        </entry>
+        <entry key="Errors.UI">
+          <value>
+            <UIState>
+              <option name="proportions">
+                <SplitterProportionsDataImpl />
+              </option>
+            </UIState>
+          </value>
+        </entry>
+        <entry key="ScopeChooserConfigurable.UI">
+          <value>
+            <UIState>
+              <option name="proportions">
+                <SplitterProportionsDataImpl>
+                  <option name="proportions">
+                    <list>
+                      <option value="0.2" />
+                    </list>
+                  </option>
+                </SplitterProportionsDataImpl>
+              </option>
+              <option name="lastEditedConfigurable" value="src" />
+              <option name="order">
+                <list>
+                  <option value="src" />
+                </list>
+              </option>
+            </UIState>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="myStates">
+      <map>
+        <entry key="Copyright.UI">
+          <value>
+            <UIState>
+              <option name="proportions">
+                <SplitterProportionsDataImpl>
+                  <option name="proportions">
+                    <list>
+                      <option value="0.2" />
+                    </list>
+                  </option>
+                </SplitterProportionsDataImpl>
+              </option>
+            </UIState>
+          </value>
+        </entry>
+        <entry key="Errors.UI">
+          <value>
+            <UIState>
+              <option name="proportions">
+                <SplitterProportionsDataImpl />
+              </option>
+            </UIState>
+          </value>
+        </entry>
+        <entry key="ScopeChooserConfigurable.UI">
+          <value>
+            <UIState>
+              <option name="proportions">
+                <SplitterProportionsDataImpl>
+                  <option name="proportions">
+                    <list>
+                      <option value="0.2" />
+                    </list>
+                  </option>
+                </SplitterProportionsDataImpl>
+              </option>
+              <option name="lastEditedConfigurable" value="src" />
+              <option name="order">
+                <list>
+                  <option value="src" />
+                </list>
+              </option>
+            </UIState>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
 
