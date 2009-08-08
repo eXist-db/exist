@@ -214,7 +214,9 @@ public class XQuery {
         expression.reset();
         if (resetContext) {
         	context.setBroker(broker);
-        	context.getWatchDog().reset();
+            // closed bug ID: 2828589
+        	//context.getWatchDog().reset();    
+            context.reset(true);
         }
         
         //do any preparation before execution
