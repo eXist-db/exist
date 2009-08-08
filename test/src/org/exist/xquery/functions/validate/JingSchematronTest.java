@@ -59,7 +59,7 @@ public class JingSchematronTest extends EmbeddedExistTester {
             }
         };
 
-        // Store schematron 1.5
+        // Store schematron 1.5 test files
         Collection col15 = createCollection(rootCollection, "tournament/1.5");
         File sch15 = new File("samples/validation/tournament/1.5");
 
@@ -69,7 +69,7 @@ public class JingSchematronTest extends EmbeddedExistTester {
             storeResource(col15, file.getName(), data);
         }
 
-        // Store schematron iso
+        // Store schematron iso testfiles
         Collection colISO = createCollection(rootCollection, "tournament/iso");
         File schISO = new File("samples/validation/tournament/iso");
 
