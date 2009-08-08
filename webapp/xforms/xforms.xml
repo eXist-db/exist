@@ -21,7 +21,7 @@
 
     <section>
         <title>Configuration &amp; Quick Start</title>
-        <para>Since eXist v1.3 (???1.4), xsltxforms is built and configured by defualt with eXist and should be enabled and ready to use. Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
+        <para>Since eXist v1.3, xsltxforms is built and configured by default with eXist and should be ready to use. Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
 		</para>
     </section>
 
@@ -34,46 +34,71 @@
 			<programlisting>
 			<markup>
 				<![CDATA[
-				<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
-				<html xmlns:ajx="http://www.ajaxforms.net/2006/ajx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/1999/xhtml">
-					
-					.... xforms .....
-				</html>
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xf="http://www.w3.org/2002/xforms"
+      xmlns:sample="http://www.agencexml.com/sample">
+   <head>
+      <title>Hello World in XForms</title>
+      <xf:model>
+         <xf:instance>
+            <sample:data>
+               <sample:PersonGivenName/>
+            </sample:data>
+         </xf:instance>
+      </xf:model>
+   </head>
+   <body>
+			<div id="xformControl">
+				<span>
+					<input type="checkbox"
+					       onclick="$('console').style.display = this.checked? 'block' : 'none';"
+					       checked="checked"/> Debug
+				</span>
+			</div>
+      <p>Type your first name in the input box. <br/>
+        If you are running XForms, the output should be displayed in the output area.</p>
+			 <xf:input ref="sample:PersonGivenName" incremental="true">
+					<xf:label>Please enter your first name: </xf:label>
+			 </xf:input>
+			 <br />
+			 <xf:output value="concat('Hello ', sample:PersonGivenName, '. We hope you like XForms!')">
+					<xf:label>Output: </xf:label>
+			 </xf:output>
+			<div id="console"></div>
+   </body>
+</html>
+				
 				]]>			
 			</markup>
 			</programlisting>
 			</example>
 			
-	<para>...	</para>
+	<para>As xsltforms is an xsl stylesheet we use an xml-stylesheet PI to transform the XForm definition into
+    </para>
 	
 
-				
+
 		</section>
-		
-	    
+
+
 		<section>
 			<title>Additional XForms Resources</title>
 			<section>
 				<title>Mailing Lists</title>
 			<ul>
-			<li>mailing list</li>
+			<li>xsltforms <a href="https://lists.sourceforge.net/lists/listinfo/xsltforms-support">mailing list</a></li>
 			</ul>
 			</section>
-			<section>
-				<title>XForms articles</title>
-			<ul>
-			<li></li>
-			</ul>
-		</section>
-		
+
 			<section>
 				<title>XForms Specifications</title>
 			<ul>
-			<li></li>
+			<li><a href="http://www.w3.org/TR/xforms/">XForms v1.0 (Third Edition)</a></li>
 
 		</ul>
 			</section>
-		
+
 			<section>
 				<title>Useful</title>
 			<ul>
@@ -84,13 +109,4 @@
 
 	</section>
 
-    <section>
-        <title>xforms FAQ</title>
-
-		<section>
-			<title>What is xsltforms and why does eXist use it for XForms processing ?</title>
-			<para>...</para>
-		</section>
-		
-	</section>
 </article>

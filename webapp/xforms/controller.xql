@@ -10,7 +10,7 @@ declare function local:setup() {
     if (not(collection("/db/todo"))) then
         let $coll := xdb:create-collection("/db", "todo")
         let $home := system:get-exist-home()
-    	let $dir := 
+    	let $dir :=
     		if (doc-available(concat("file:///", $home, "/webapp/download.xml"))) then
     			concat($home, "/webapp")
     		else if(ends-with($home, "WEB-INF")) then
@@ -39,26 +39,17 @@ let $path := substring-after($uri, $context)
 let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
     (: send docbook docs through the db2xhtml stylesheet :)
-    if (ends-with($uri, ".xml")) then
+    if (ends-with($uri, 'examples.xml') or ends-with($uri, 'xforms.xml')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.stylesheet"
-						value="/stylesheets/db2xhtml.xsl"/>
+						value="/stylesheets/db2html.xsl"/>
 				</forward>
 			</view>
-			<cache-control cache="yes"/>
+            <cache-control cache="no"/>
 		</dispatch>
-    (: make sure the global css and js files are resolved :)
-    else if ($name = ('default-style.css', 'curvycorners.js')) then
-        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
-        return
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    			<forward url="{$newPath}"/>
-    			<cache-control cache="yes"/>
-    		</dispatch>
     else
-        (: everything else is passed through :)
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
     	</ignore>
