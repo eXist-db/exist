@@ -400,6 +400,7 @@ public class QueryDialog extends JFrame {
 			return;
 		resultDisplay.setText("");
 		new QueryThread(xpath).start();
+        System.gc();
 	}
 	
 	
@@ -495,7 +496,7 @@ public class QueryDialog extends JFrame {
 						select = ClientFrame.showErrorMessageQuery(
 								"An error occurred while retrieving results: "
 								+ InteractiveClient.getExceptionMessage(e), e);
-						if (select == 2) break;
+						if (select == 3) break;
 					}
 				}
 				resultDisplay.setText(contents.toString());
