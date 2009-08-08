@@ -44,7 +44,7 @@
     </p:input>
 </p:xquery>
 <p:choose name="test-uptodate">
-    <p:when test="./c:result/notfound">
+    <p:when test=".//notfound">
         <p:http-request name="http-get">
             <p:input port="source">
                 <p:inline>
@@ -68,5 +68,5 @@
         <p:data href="/db/xproc/examples/twitter-view.xql" wrapper="c:query" content-type="plain/text" xproc:escape="false"/>
     </p:input>
 </p:xquery>
-<p:filter select="/c:result/*:html"/>
+<p:filter select="//*:html"/>
 </p:pipeline>
