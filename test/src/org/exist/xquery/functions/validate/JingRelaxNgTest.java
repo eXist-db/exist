@@ -1,17 +1,42 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2009 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
+ */
 package org.exist.xquery.functions.validate;
 
-import org.exist.test.EmbeddedExistTester;
-import java.io.File;
-import java.io.FilenameFilter;
 import org.junit.*;
 import static org.junit.Assert.*;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
+import org.exist.test.EmbeddedExistTester;
+
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ResourceSet;
+
 /**
- *
- * @author wessels
+ * Tests for the validation:jing() function with RNGs and RNCs.
+ * 
+ * @author dizzzz@exist-db.org
  */
 public class JingRelaxNgTest extends EmbeddedExistTester {
 
@@ -114,11 +139,9 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     }
 
     @Test
-    //@Ignore("rnc is binary file")
     public void rnc_stored_valid() {
         String query = "validation:jing-report( doc('/db/personal/personal-valid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
-                //"xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
 
         try {
             ResourceSet results = executeQuery(query);
@@ -136,11 +159,9 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     }
 
     @Test
-    //@Ignore("rnc is binary file")
     public void rnc_stored_invalid() {
         String query = "validation:jing-report( doc('/db/personal/personal-invalid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
-                //"xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
 
         try {
             ResourceSet results = executeQuery(query);
