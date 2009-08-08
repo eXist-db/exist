@@ -39,17 +39,37 @@ let $path := substring-after($uri, $context)
 let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
     (: send docbook docs through the db2xhtml stylesheet :)
-    if (ends-with($uri, 'examples.xml') or ends-with($uri, 'xforms.xml')) then
+   if (ends-with($uri, 'examples.xml') or ends-with($uri, 'xforms.xml')) then
+         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+ 			<view>
+ 				<forward servlet="XSLTServlet">
+ 					<set-attribute name="xslt.stylesheet"
+ 						value="/stylesheets/db2html.xsl"/>
+ 				</forward>
+ 			</view>
+             <cache-control cache="no"/>
+ 		</dispatch>
+    else if (ends-with($uri, ".xml")) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.stylesheet"
-						value="/stylesheets/db2html.xsl"/>
+						value="/stylesheets/db2xhtml.xsl"/>
 				</forward>
 			</view>
-            <cache-control cache="no"/>
+			<cache-control cache="yes"/>
 		</dispatch>
+    (: make sure the global css and js files are resolved :)
+    else if ($name = ('default-style.css', 'curvycorners.js')) then
+        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="{$newPath}"/>
+    			<cache-control cache="yes"/>
+    		</dispatch>
+
     else
+        (: everything else is passed through :)
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
     	</ignore>
