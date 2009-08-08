@@ -18,7 +18,7 @@
 		<Name id="p2">Marcus</Name>
 		<Name id="p3">Eddie</Name>
 	</Participants>
-	<Teams nbrTeams="5">
+	<Teams nbrTeams="3">
 		<Team id="t1" Name="Team 1">
 			<Member>p1</Member>
 		</Team>
