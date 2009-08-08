@@ -38,6 +38,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryDocument;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -110,7 +111,9 @@ public class BinaryDoc extends BasicFunction {
                 byte[] data = new byte[(int)context.getBroker().getBinaryResourceSize(bin)];
                 is.read(data);
                 is.close();
-                return new Base64Binary(data);
+                Base64BinaryDocument b64doc = new Base64BinaryDocument(data);
+                b64doc.setUrl(path);
+                return b64doc;
             }
             else
             {

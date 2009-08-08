@@ -117,8 +117,8 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     //@Ignore("rnc is binary file")
     public void rnc_stored_valid() {
         String query = "validation:jing-report( doc('/db/personal/personal-valid.xml'), " +
-                //"util:binary-doc('/db/personal/personal.rnc') )";
-                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
+                "util:binary-doc('/db/personal/personal.rnc') )";
+                //"xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
 
         try {
             ResourceSet results = executeQuery(query);
@@ -139,8 +139,8 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
     //@Ignore("rnc is binary file")
     public void rnc_stored_invalid() {
         String query = "validation:jing-report( doc('/db/personal/personal-invalid.xml'), " +
-                //"util:binary-doc('/db/personal/personal.rnc') )";
-                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
+                "util:binary-doc('/db/personal/personal.rnc') )";
+                //"xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
 
         try {
             ResourceSet results = executeQuery(query);

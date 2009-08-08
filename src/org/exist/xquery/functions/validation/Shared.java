@@ -47,6 +47,7 @@ import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryDocument;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -162,6 +163,13 @@ public class Shared {
             byte[] data = (byte[]) base64.toJavaObject(byte[].class);
             InputStream is = new ByteArrayInputStream(data);
             streamSource.setInputStream(is);
+
+            if (s instanceof Base64BinaryDocument) {
+                Base64BinaryDocument b64doc = (Base64BinaryDocument) s;
+                String url = "xmldb:exist://" + b64doc.getUrl();
+                logger.debug("Base64BinaryDocument detected, adding URL " + url);
+                streamSource.setSystemId(url);
+            }
 
         } else {
             logger.error("Wrong item type " + Type.getTypeName(s.getType()));
