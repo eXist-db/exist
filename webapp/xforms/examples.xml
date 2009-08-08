@@ -29,6 +29,23 @@
                 <ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink>.</para> 
         </abstract>
 
+
+        <section>
+            <title>Simple Examples from the XSLTForms distribution</title>
+
+            <para>You first need to run the "Examples Setup" page from the <ulink url="../admin/"
+                    >admin web application</ulink> to run any of the following examples, as
+                xsltforms needs to be uploaded to eXist.</para>
+
+            <ul>
+                <li>
+                    <ulink url="hello.xml">hello</ulink>
+                </li>
+
+            </ul>
+
+        </section>
+        
         <section>
             <title>Advanced Example: Task Manager</title>
             
@@ -44,106 +61,5 @@
             </itemizedlist>
         </section>
 
-        <section>
-            <title>Simple Examples from the XSLTForms distribution</title>
-                
-            <para>You first need to run the "Examples Setup" page from the <ulink url="../admin/"
-                    >admin web application</ulink> to run any of the following examples, as
-                xsltforms needs to be uploaded to eXist.</para>
-
-            <ul>
-                <li>
-                    <ulink url="../rest/db/xforms/hello.xml">hello</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/calculator.xml"
-                        >Calculator</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/input.xml">Input</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/incremental.xml"
-                        >Incremental</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/spreadsheet.xml"
-                        >Spreadsheet</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/bind.xml">Bind</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/address.xml"
-                        >Address</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/secret.xml"
-                        >Secret</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/textarea.xml"
-                        >Textarea</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/checkbox.xml"
-                        >Checkbox</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/select1.xml"
-                        >Select1</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/select1-drop.xml">Select1
-                        drop</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/select.xml"
-                        >Select</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/select-model.xml">Select
-                        model</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/select-multi-col.xml"
-                        >Select multi column</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/select-from-file.xml"
-                        >Select from file</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/date.xml">Date</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/button.xml"
-                        >Button</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/deep-copy.xml">Deep
-                        copy</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/first-field.xml">Setting
-                        initial cursor</ulink>
-                </li>
-            </ul>
-            <para>The following example will save form input into /db/xforms/data on
-                submission.</para>
-            <ul>
-                <li>
-                    <ulink url="../rest/db/xforms/xf.xml">Contact</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/balance.xml"
-                        >Balance*</ulink>
-                </li>
-                <li>
-                    <ulink url="../rest/db/xforms/bookmarks.xml"
-                        >Bookmarks*</ulink>
-                </li>
-            </ul>
-        </section>
     </chapter>
 </book>
