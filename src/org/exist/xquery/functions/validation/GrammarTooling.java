@@ -93,7 +93,8 @@ public class GrammarTooling extends BasicFunction  {
             ValidationModule.PREFIX),
             "Remove all cached grammers.",
             null,
-            new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE,
+            "the number of deleted grammars.")
         ),
         
         new FunctionSignature(
@@ -115,7 +116,7 @@ public class GrammarTooling extends BasicFunction  {
                         "Reference to grammar.")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
-             "Sequence of namespaces of preparsed grammars.")
+             "sequence of namespaces of preparsed grammars.")
         ),
             
             
