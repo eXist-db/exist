@@ -233,15 +233,14 @@ return
 		<title><a href='components-xproc-steps.xml'>XProc Components</a></title>
 		<para>
 			<ul>
-				<li>input and output ports: </li>
-				<li>p:pipe, p:inline, p:document, p:data and p:empty: </li>
-				<li>p:log: </li>
-				<li>p:serialization: </li>
-				<li>p:log: </li>
-				<li>variables,options and parameters: </li>
-				<li>p:declare-step: </li>
-				<li>p:library and p:import: </li>
-
+				<li><a href="core-xproc-steps.xml#ports">input and output ports</a>: </li>
+				<li><a href="core-xproc-steps.xml#step">p:pipe, p:inline, p:document, p:data and p:empty</a>: </li>
+				<li><a href="core-xproc-steps.xml#log">p:log</a>: </li>
+				<li><a href="core-xproc-steps.xml#serialize">p:serialization</a>: </li>
+				<li><a href="core-xproc-steps.xml#vars">variables,options and parameters</a>: </li>
+				<li><a href="core-xproc-steps.xml#p:declare-step">p:declare-step</a>: </li>
+				<li><a href="core-xproc-steps.xml#p:library">p:library</a>: </li>
+                <li><a href="core-xproc-steps.xml#p:import">p:import</a>: </li>
 			</ul>
 		</para>
 	</section>
