@@ -83,33 +83,54 @@ public class Parse extends BasicFunction {
             "Validate document by parsing $instance. Optionally" +
             "a location of a grammar file (xsd, dtd) can be set and" +
             "a xml catalog.";
+
     private final BrokerPool brokerPool;
+
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-        new QName("parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-        extendedFunctionTxt,
-        new SequenceType[]{
-            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-            "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-            new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.ZERO_OR_ONE,
-            "Location of grammar file."),
-            new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_ONE,
-            "Catalog or location of XML catalog."),},
-        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-        Shared.simplereportText)),
+                new QName("parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt,
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                },
+                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                Shared.simplereportText)),
+                
         new FunctionSignature(
-        new QName("parse-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-        extendedFunctionTxt + " An xml report is returned.",
-        new SequenceType[]{
-            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-            "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-            new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.ZERO_OR_ONE,
-            "Location of grammar file."),
-            new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_ONE,
-            "Catalog or location of XML catalog."),},
-        new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-        Shared.xmlreportText))
+                new QName("parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt,
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_ONE,
+                    "Catalog or location of XML catalog."),
+                },
+                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                Shared.simplereportText)),
+
+        new FunctionSignature(
+                new QName("parse-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt + " An xml report is returned.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                Shared.xmlreportText)),
+
+        new FunctionSignature(
+                new QName("parse-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt + " An xml report is returned.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_ONE,
+                    "Catalog or location of XML catalog."),
+                },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                Shared.xmlreportText)),
     };
 
     public Parse(XQueryContext context, FunctionSignature signature) {
@@ -125,9 +146,8 @@ public class Parse extends BasicFunction {
             throws XPathException {
 
         XMLEntityResolver entityResolver = null;
-        InputSource instance = null;
         File tmpFile = null;
-        String grammarUrl = null;
+
         ValidationReport report = new ValidationReport();
         ValidationContentHandler contenthandler = new ValidationContentHandler();
 
@@ -142,9 +162,10 @@ public class Parse extends BasicFunction {
             xmlReader.setErrorHandler(report);
 
             // Get inputstream for instance document
-            instance = Shared.getInputSource(args[0].itemAt(0), context);
+            InputSource instance = Shared.getInputSource(args[0].itemAt(0), context);
 
-            // Prepare grammar
+            // Prepare grammar ; does not work
+            /*
             if (args[1].hasOne()) {
                 // Get URL for grammar
                 grammarUrl = Shared.getUrl(args[1].itemAt(0));
@@ -162,30 +183,36 @@ public class Parse extends BasicFunction {
                     throw new XPathException("Grammar type not supported.");
                 }
             }
+            */
 
             // Handle catalog
-            if (args[2].hasOne()) {
+            if (args[1].isEmpty()) {
+                // Use system catalog
+                Configuration config = brokerPool.getConfiguration();
+                entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                
+            } else {
                 // Get URL for catalog
-                grammarUrl = Shared.getUrl(args[2].itemAt(0));
+                String catalogUrls[] = Shared.getUrls(args[2]);
+                String singleUrl = catalogUrls[0];
 
-                if (grammarUrl.endsWith("/")) {
-                    entityResolver = new SearchResourceResolver(grammarUrl, brokerPool);
+                if (singleUrl.endsWith("/")) {
+                    // Search grammar in collection specified by URL. Just one collection is used.
+                    LOG.debug("Search for grammar in "+singleUrl);
+                    entityResolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
                     xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
 
-                } else if (grammarUrl.endsWith(".xml")) {
+                } else if (singleUrl.endsWith(".xml")) {
+                    LOG.debug("Using catalogs "+catalogUrls);
                     entityResolver = new eXistXMLCatalogResolver();
-                    ((eXistXMLCatalogResolver) entityResolver).setCatalogList(new String[]{grammarUrl});
+                    ((eXistXMLCatalogResolver) entityResolver).setCatalogList(catalogUrls);
                     xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
 
-                } else if (grammarUrl.endsWith("systemcatalog")) {
-                    // Get configuration
-                    Configuration config = brokerPool.getConfiguration();
-                    entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                } else {
+                    LOG.error("Catalog URLs should end on / or .xml");
                 }
 
             }
-
-
 
             // Parse document
             xmlReader.parse(instance);

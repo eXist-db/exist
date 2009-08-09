@@ -52,6 +52,12 @@ import org.exist.xquery.value.ValueSequence;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class Validation extends BasicFunction  {
+
+    private static final String deprecated1="Use the validation:parse(), " +
+            "validation:jaxv() or valation:jing() functions.";
+
+    private static final String deprecated2="Use the validation:parse-report(), " +
+            "validation:jaxv-report() or valation:jing-report() functions.";
     
     private static final String simpleFunctionTxt=
         "Validate xml. " +
@@ -66,7 +72,7 @@ public class Validation extends BasicFunction  {
     private final BrokerPool brokerPool;
     
     // Setup function signature
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature deprecated[] = {
         new FunctionSignature(
             new QName("validate", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
@@ -76,7 +82,7 @@ public class Validation extends BasicFunction  {
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                Shared.simplereportText)
+                Shared.simplereportText), deprecated1
         ),
         
         
@@ -94,7 +100,7 @@ public class Validation extends BasicFunction  {
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                    Shared.simplereportText)
+                    Shared.simplereportText), deprecated1
         ),
         
         new FunctionSignature(
@@ -106,7 +112,7 @@ public class Validation extends BasicFunction  {
                             "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                    Shared.xmlreportText)
+                    Shared.xmlreportText), deprecated2
         ),
         
         new FunctionSignature(
@@ -123,7 +129,7 @@ public class Validation extends BasicFunction  {
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                    Shared.xmlreportText)
+                    Shared.xmlreportText), deprecated2
         )
                         
     };
