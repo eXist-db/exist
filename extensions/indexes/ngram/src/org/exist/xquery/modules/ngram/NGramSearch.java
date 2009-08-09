@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2007-09 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ *  $Id$
+ */
 package org.exist.xquery.modules.ngram;
 
 import org.exist.dom.*;
@@ -23,12 +44,12 @@ public class NGramSearch extends Function implements Optimizable {
             "is case insensitive. Nodes need to have an ngram index to be searched.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                    "the input node set to search"),
+                    "The input node set to search"),
                 new FunctionParameterSequenceType("queryString", Type.STRING, Cardinality.ZERO_OR_ONE,
-                    "the exact string to search for")
+                    "The exact string to search for")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                "set of nodes from the input node set $nodes containing the query string " +
+                "a set of nodes from the input node set $nodes containing the query string " +
                 "or the empty sequence")
         ),
         new FunctionSignature(
@@ -39,12 +60,12 @@ public class NGramSearch extends Function implements Optimizable {
             "is case insensitive. Nodes need to have an ngram index to be searched.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                    "the input node set to search"),
+                    "The input node set to search"),
                 new FunctionParameterSequenceType("queryString", Type.STRING, Cardinality.ZERO_OR_ONE,
-                    "the exact string to search for")
+                    "The exact string to search for")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                "set of nodes from the input node set $nodes ending with the query string " +
+                "a set of nodes from the input node set $nodes ending with the query string " +
                 "or the empty sequence")
         ),
         new FunctionSignature(
@@ -55,12 +76,12 @@ public class NGramSearch extends Function implements Optimizable {
             "is case insensitive. Nodes need to have an ngram index to be searched.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                    "the input node set to search"),
+                    "The input node set to search"),
                 new FunctionParameterSequenceType("queryString", Type.STRING, Cardinality.ZERO_OR_ONE,
-                    "the exact string to search for")
+                    "The exact string to search for")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                "set of nodes from the input node set $nodes starting with the query string " +
+                "a set of nodes from the input node set $nodes starting with the query string " +
                 "or the empty sequence")
         )
     };
