@@ -1097,8 +1097,11 @@ public class RESTServer {
 
 			if (compiled == null)
 				compiled = xquery.compile(context, source);
-			else
+			else {
 				compiled.getContext().updateContext(context);
+                context.getWatchDog().reset();
+            }
+            
 			try {
 				long startTime = System.currentTimeMillis();
 				Sequence resultSequence = xquery.execute(compiled, null, outputProperties);
