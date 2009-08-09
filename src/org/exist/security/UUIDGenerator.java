@@ -53,15 +53,15 @@ public class UUIDGenerator {
 
     /**
      *  Return version 4 UUID code (random).
-     * @see http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29
+     * Check <a href="http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_4_.28random.29">Wikipedia</a>
      */
     public static String getUUIDversion4(){
         return UUID.randomUUID().toString();
     }
 
     /**
-     * Return version 3 UUID code (derived from value)
-     * @see http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29
+     * Return version 3 UUID code (derived from value).
+     * Check <a href="http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29">Wikipedia</a>
      * @param value Initialization value.
      */
     public static String getUUIDversion3(String value){
