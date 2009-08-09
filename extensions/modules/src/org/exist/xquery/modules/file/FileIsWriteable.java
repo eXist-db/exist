@@ -49,9 +49,9 @@ public class FileIsWriteable extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "is-writeable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if file is writeable",
+			"Tests if a file is writeable",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
 				},				
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the file has write permissions" ) )
 		};

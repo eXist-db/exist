@@ -71,9 +71,9 @@ public class SerializeToFile extends BasicFunction
 			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
 			"called from.",
 			new SequenceType[] { 
-				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "" ),
-				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "full path to the file" ),
-				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "serialization parameters specified as key-value pairs" )
+				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
+				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file" ),
+				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" )
                         },
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
                 ),
@@ -81,8 +81,8 @@ public class SerializeToFile extends BasicFunction
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
 			"Writes binary data into a file on the file system.",
 			new SequenceType[]{
-				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, ""),
-				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "full path to the file")
+				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
+				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file")
                         },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
                 )

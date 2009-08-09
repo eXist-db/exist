@@ -50,7 +50,7 @@ public class FileDelete extends BasicFunction {
 			new QName( "delete", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Delete a file.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
 				},				
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
 		};

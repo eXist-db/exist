@@ -47,9 +47,9 @@ public class FileExists extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if file exists",
+			"Tests if a file exists",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
 				},				
 			new FunctionParameterSequenceType( "exists", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the file exists" ) )
 		};

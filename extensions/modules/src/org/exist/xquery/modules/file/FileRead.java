@@ -55,17 +55,17 @@ public class FileRead extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of file.",
+			"Reads the content of file.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." )
 				},				
 			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) ),
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of file.",
+			"Reads the content of file.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." ),
-				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "encoding" )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding type for the file" )
 				},
 				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};

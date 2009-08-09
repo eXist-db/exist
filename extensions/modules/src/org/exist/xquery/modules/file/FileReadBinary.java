@@ -54,9 +54,9 @@ public class FileReadBinary extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-binary", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Read content of a binary file.",
+			"Reads the contents of a binary file.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "a string representing a URL, eg file://etc." )
+				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." )
 				},				
 			new FunctionReturnSequenceType( Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};

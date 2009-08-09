@@ -49,9 +49,9 @@ public class FileIsReadable extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "is-readable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if file is readable",
+			"Tests if a file is readable",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "full path to the file" )
+				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
 				},				
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if file can be read" ) )
 		};
