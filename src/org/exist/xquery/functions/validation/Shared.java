@@ -205,7 +205,7 @@ public class Shared {
     }
 
     /**
-     *  Get URL value of parameter.
+     *  Get URL value of item.
      */
     public static String getUrl(Item s) throws XPathException {
 
@@ -224,7 +224,7 @@ public class Shared {
     }
 
     /**
-     *  Get URLs value of sequence.
+     *  Get URL values of sequence.
      */
     public static String[] getUrls(Sequence s) throws XPathException {
 

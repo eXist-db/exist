@@ -18,7 +18,7 @@ public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
 	 * @param primaryType	The <strong>Type</strong> of the parameter.
 	 * @param cardinality	The <strong>Cardinality</strong> of the parameter.
 	 * @param description	A description of the parameter in the <strong>FunctionSignature</strong>.
-	 * @see FunctionSignature, Type, Cardinality
+	 * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
 	 */
 	public FunctionParameterSequenceType(String attributeName, int primaryType, int cardinality, String description) {
 		super(primaryType, cardinality, description);

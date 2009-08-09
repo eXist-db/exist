@@ -41,8 +41,6 @@ import org.exist.xquery.value.Type;
 /**
  * Implements the xpath-functions for timezone adjustment 
  *
- * @author
- *
  */
 public class FunAdjustTimezone extends BasicFunction {
     public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the date-time");
