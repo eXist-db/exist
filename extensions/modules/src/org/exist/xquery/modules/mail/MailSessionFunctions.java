@@ -1,6 +1,6 @@
 /*
- *  eXist Mail Module Extension SendEmailFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  eXist Mail Module Extension MailSessionFunctions
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -64,7 +64,7 @@ public class MailSessionFunctions extends BasicFunction
 			"Open's a JavaMail session.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>.  The JavaMail properties are spelled out in Appendix A of the JavaMail specifications." )
+				new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "An optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>.  The JavaMail properties are spelled out in Appendix A of the JavaMail specifications." )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the session handle." )
 			)

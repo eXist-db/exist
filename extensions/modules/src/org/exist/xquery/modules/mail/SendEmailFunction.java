@@ -1,6 +1,6 @@
 /*
  *  eXist Mail Module Extension SendEmailFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -52,6 +52,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.system.GetVersion;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -88,15 +90,15 @@ public class SendEmailFunction extends BasicFunction
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
 			new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
-			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><reply-to/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message><attachment filename=\"\" mimetype=\"\">xs:base64Binary</attachment></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
+			"Sends an email through the SMTP Server.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+				new FunctionParameterSequenceType("email", Type.NODE, Cardinality.EXACTLY_ONE, "The email message in the following format: <mail> <from/> <reply-to/> <to/> <cc/> <bcc/> <subject/> <message> <text/> <xhtml/> </message> <attachment filename=\"\" mimetype=\"\">xs:base64Binary</attachment> </mail>."),
+				new FunctionParameterSequenceType("server", Type.STRING, Cardinality.ZERO_OR_ONE, "The SMTP server.  If empty, then it tries to use the local sendmail program."),
+				new FunctionParameterSequenceType("charset", Type.STRING, Cardinality.ZERO_OR_ONE, "The charset value used in the \"Content-Type\" message header (Defaults to UTF-8)")
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
-			"Use the new JavaMail-based send function instead. This function will be removed at some point in the future."
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the email message was successfully sent"),
+			"The JavaMail send function will be released in the maintenance release 1.4.1."
 			);
 
 	/**
