@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -52,13 +52,13 @@ public class GetParameter extends BasicFunction {
 			"get-parameter",
 			RequestModule.NAMESPACE_URI,
 			RequestModule.PREFIX),
-			"Returns the HTTP request parameter identified by $parameter-name. If the parameter could not be found, " +
+			"Returns the HTTP request parameter identified by $name. If the parameter could not be found, " +
 			"the default value is returned instead. Note: this function will not try to expand " +
 			"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
 			"be treated as an &amp; character.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name"),
+				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The default value if the parameter does not exist")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value")),
 	
 		new FunctionSignature(
@@ -66,15 +66,14 @@ public class GetParameter extends BasicFunction {
 			"get-parameter",
 			RequestModule.NAMESPACE_URI,
 			RequestModule.PREFIX),
-			"Returns the HTTP request parameter identified by $parameter-name. If the parameter could not be found, " +
+			"Returns the HTTP request parameter identified by $name. If the parameter could not be found, " +
 			"the default value is returned instead. Note: this function will not try to expand " +
 			"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
-			"be treated as an &amp; character. If the $failonerror value is set to false, then the function " +
-			"will not fail if there is no request in scope.",
+			"be treated as an &amp; character.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
-				new FunctionParameterSequenceType( "failonerror", Type.BOOLEAN, Cardinality.ZERO_OR_MORE, "" )},
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name"),
+				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The default value if the parameter does not exist"),
+				new FunctionParameterSequenceType( "failonerror", Type.BOOLEAN, Cardinality.ZERO_OR_MORE, "The fail on error flag.  If the value is set to false, then the function will not fail if there is no request in scope." )},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value"))
 		
 	};
@@ -85,13 +84,13 @@ public class GetParameter extends BasicFunction {
 		"request-parameter",
 		RequestModule.NAMESPACE_URI,
 		RequestModule.PREFIX),
-		"Returns the HTTP request parameter identified by $parameter-name. If the parameter could not be found, " +
+		"Returns the HTTP request parameter identified by $name. If the parameter could not be found, " +
 		"the default value is returned instead. Note: this function will not try to expand " +
 		"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
 		"be treated as an &amp; character.",
 		new SequenceType[] {
-			new FunctionParameterSequenceType("parameter-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-			new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name"),
+				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The default value if the parameter does not exist")},
 		new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value"),
 		"Renamed to request:get-parameter.");
 	

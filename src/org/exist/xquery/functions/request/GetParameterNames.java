@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -55,7 +55,7 @@ public class GetParameterNames extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns a sequence containing the names of all parameters passed in the current request",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "sequence containing the names of all parameters"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence containing the names of all parameters"));
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -65,7 +65,7 @@ public class GetParameterNames extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns a sequence containing the names of all parameters passed in the current request",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "sequence containing the names of all parameters"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence containing the names of all parameters"));
 	
 	/**
 	 * @param context

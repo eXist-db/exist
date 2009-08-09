@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -49,7 +49,7 @@ public class GetRemotePort extends BasicFunction {
 			new QName("get-remote-port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the Internet Protocol (IP) source port of the client or last proxy that sent the current request.",
 			null,
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "and IP port number"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the IP port number"));
 	
 	/**
 	 * @param context

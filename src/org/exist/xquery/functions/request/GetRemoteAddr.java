@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -49,7 +49,7 @@ public class GetRemoteAddr extends BasicFunction {
 			new QName("get-remote-addr", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the IP address of the client machine that made the current request, as a string.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "IP address"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the IP address"));
 
 	/**
 	 * @param context

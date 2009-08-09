@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -56,7 +56,7 @@ public class GetUploadedFileSize extends BasicFunction {
 			"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
 			"does not point to a file part.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
 			},
 			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the size of the uploaded file"));
 	
