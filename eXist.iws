@@ -95,15 +95,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xforms/xforms.xml" afterPath="$PROJECT_DIR$/webapp/xforms/xforms.xml" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list.xproc" afterPath="$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list-local.xproc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java" afterPath="$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/ant/xmldb.xml" afterPath="$PROJECT_DIR$/test/src/ant/xmldb.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/junit.xml" afterPath="$PROJECT_DIR$/build/scripts/junit.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/ant/build.xml" afterPath="$PROJECT_DIR$/test/src/ant/build.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/ant/test.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql" afterPath="$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/build.properties" afterPath="$PROJECT_DIR$/extensions/build.properties" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list-native.xproc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xproc/examples.xml" afterPath="$PROJECT_DIR$/webapp/xproc/examples.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/xproc.xqm" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/xproc.xqm" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/std.xqm" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/std.xqm" />
     </list>
   </component>
   <component name="ChangesViewManager" flattened_view="false" show_ignored="false" />
@@ -198,8 +197,7 @@
         </PATH_ELEMENT>
       </PATH>
     </subPane>
-    <subPane subId="eXist" />
-    <subPane subId="xprocxq">
+    <subPane subId="eXist">
       <PATH>
         <PATH_ELEMENT>
           <option name="myItemId" />
@@ -209,52 +207,6 @@
       <PATH>
         <PATH_ELEMENT>
           <option name="myItemId" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="main" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="main" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="test" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="main" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="test" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="tests.xproc.org" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" />
-          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="main" />
           <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
@@ -268,11 +220,205 @@
           <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="org.exist" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="org.exist" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xquery" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="org.exist" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xquery" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="functions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="org.exist" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xquery" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="functions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="util" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="org.exist" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xquery" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="functions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="util" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="UtilModule" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
           <option name="myItemId" value="main" />
           <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="etc" />
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xquery" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
+    <subPane subId="xprocxq">
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
           <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
         </PATH_ELEMENT>
       </PATH>
@@ -280,64 +426,64 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="EvalTest.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/org/exist/xquery/functions/util/EvalTest.java">
+      <file leaf-file-name="std.xqm" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/std.xqm">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="13" selection-start="685" selection-end="685" vertical-scroll-proportion="0.0">
+            <state line="177" column="45" selection-start="7796" selection-end="7796" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="XMLDBExtractTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/ant/XMLDBExtractTask.java">
+      <file leaf-file-name="xproc.xqm" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/xproc.xqm">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="53" column="13" selection-start="1768" selection-end="1768" vertical-scroll-proportion="0.0">
+            <state line="9" column="0" selection-start="382" selection-end="382" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="xmldb.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/ant/xmldb.xml">
+      <file leaf-file-name="testrunner.xql" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="117" column="30" selection-start="4913" selection-end="4913" vertical-scroll-proportion="0.5">
+            <state line="32" column="0" selection-start="1254" selection-end="1273" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="junit.xml" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/build/scripts/junit.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="80" selection-start="1422" selection-end="1422" vertical-scroll-proportion="0.50337076">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/ant/build.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="29" selection-start="260" selection-end="260" vertical-scroll-proportion="4.173913">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AntUnitTestRunner.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/org/exist/ant/AntUnitTestRunner.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="13" selection-start="651" selection-end="651" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test.css" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/ant/test.css">
+      <file leaf-file-name="test-runner.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/test-runner.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pdirectory-list-local.xproc" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list-local.xproc">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="271" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="examples.xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webapp/xproc/examples.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="62" column="126" selection-start="2905" selection-end="2905" vertical-scroll-proportion="0.8102767">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pdirectory-list-native.xproc" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list-native.xproc">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="4" column="0" selection-start="194" selection-end="194" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -437,7 +583,7 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="build" />
+          <option name="myItemId" value="webapp" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -455,11 +601,77 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="build" />
+          <option name="myItemId" value="webapp" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="scripts" />
+          <option name="myItemId" value="xproc" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -482,13 +694,13 @@
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="0.5" version="1" splitterProportion="0.5">
-      <flattenPackages />
+      <flattenPackages Favorites="true" />
       <showMembers Favorites="true" />
       <showModules />
       <showLibraryContents />
       <hideEmptyPackages ProjectPane="true" />
       <abbreviatePackageNames />
-      <showStructure PackagesPane="false" J2EEPane="false" Scope="false" Favorites="false" ProjectPane="false" />
+      <showStructure Favorites="false" J2EEPane="false" Scope="false" PackagesPane="false" ProjectPane="false" />
       <autoscrollToSource Favorites="false" />
       <autoscrollFromSource Favorites="false" />
       <sortByType PackagesPane="true" Favorites="true" />
@@ -825,6 +1037,59 @@
         </PATH_ELEMENT>
       </PATH>
     </subPane>
+    <subPane subId="Problems" />
+    <subPane subId="Production">
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="tools">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT USER_OBJECT="Root">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="eXist">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT USER_OBJECT="src">
+          <option name="myItemId" value="" />
+          <option name="myItemType" value="" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
     <subPane>
       <PATH>
         <PATH_ELEMENT USER_OBJECT="Root">
@@ -902,59 +1167,6 @@
           <option name="myItemType" value="" />
         </PATH_ELEMENT>
         <PATH_ELEMENT USER_OBJECT="test">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-      </PATH>
-    </subPane>
-    <subPane subId="Problems" />
-    <subPane subId="Production">
-      <PATH>
-        <PATH_ELEMENT USER_OBJECT="Root">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="eXist">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="eXist">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT USER_OBJECT="Root">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="eXist">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="eXist">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="tools">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT USER_OBJECT="Root">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="eXist">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="eXist">
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT USER_OBJECT="src">
           <option name="myItemId" value="" />
           <option name="myItemType" value="" />
         </PATH_ELEMENT>
@@ -1079,7 +1291,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="11" y="22" width="1139" height="691" extended-state="0" />
+    <frame x="-9" y="22" width="1139" height="691" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32570422" sideWeight="0.5" order="7" side_tool="false" />
@@ -1087,7 +1299,7 @@
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.102658115" sideWeight="0.28521127" order="8" side_tool="true" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.102658115" sideWeight="0.27640846" order="3" side_tool="true" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35211268" sideWeight="0.0" order="11" side_tool="false" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3015582" sideWeight="0.6883803" order="0" side_tool="false" x="72" y="49" width="451" height="485" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25022915" sideWeight="0.6883803" order="0" side_tool="false" x="72" y="49" width="451" height="485" />
       <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5105634" sideWeight="0.5" order="8" side_tool="false" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.017605634" sideWeight="0.5" order="1" side_tool="false" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23281394" sideWeight="0.72183096" order="1" side_tool="false" />
@@ -1095,7 +1307,7 @@
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29929578" sideWeight="0.5" order="14" side_tool="false" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.34738773" sideWeight="0.6883803" order="1" side_tool="false" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34738773" sideWeight="0.6883803" order="1" side_tool="false" />
       <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5369718" sideWeight="0.5" order="9" side_tool="false" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43133804" sideWeight="0.5" order="16" side_tool="false" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.044014085" sideWeight="0.5" order="2" side_tool="false" />
@@ -1135,7 +1347,7 @@
     <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="[bug.ant] added antunit tests to junit test target" />
+    <option name="LAST_COMMIT_MESSAGE" value="[xproc.pdirectory-list] refactored to default to use native xmldb store and optionally with enabled File extension module when using file://" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
@@ -1146,13 +1358,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="[documentation.xproc] removing docs from xproc extensions directory and pointing people to use webapp/xproc/xproc.xml" />
-    <MESSAGE value="[documentation.xproc] starting section on 'how to run xproc from xquery'" />
-    <MESSAGE value="[refactoring.xproc] preparing to redo validation steps" />
-    <MESSAGE value="[refactoring.xproc] cleaned up test directory and tweak document" />
-    <MESSAGE value="[refactoring.xproc] working on increasing unit test pass percentage, lots of small changes across many files" />
-    <MESSAGE value="small cosmetic change e.g. added pipeline names, hope no one minds" />
-    <MESSAGE value="[fix.xproc] fixed bug with http-request not honoring detailed attribute on c:request" />
     <MESSAGE value="[fix.xproc] confirmed p:try working as intended" />
     <MESSAGE value="[integrate.xproc] integrating Dannes new validation funcs ... looks good, but still testing" />
     <MESSAGE value="[test.validate] added xquery level test for Dannes new validation stuff, only tests XSD at the moment" />
@@ -1171,6 +1376,13 @@
     <MESSAGE value="[bug.xmlrpc] added System.gc to client to fix ID: 2833828" />
     <MESSAGE value="[bug.ant] solve eXist ant store task when it tries to store empty files bug ID: 2833828" />
     <MESSAGE value="[bug.ant] added antunit tests to junit test target" />
+    <MESSAGE value="[bug.xquery_context_watchdog] commited patch, tested and confirmed correct operation bug ID: 2828589" />
+    <MESSAGE value="[docs.xforms] tidied up" />
+    <MESSAGE value="[docs.xforms] falling back to working xform examples, from the filesystem" />
+    <MESSAGE value="[refactor.xproc] fixed xproc twitter example, to reflect latest changes due to spec changes with http-request step" />
+    <MESSAGE value="[doc.xforms] small doc tweaks" />
+    <MESSAGE value="[xquery.util_functions] removed util:directory-list" />
+    <MESSAGE value="[xproc.pdirectory-list] refactored to default to use native xmldb store and optionally with enabled File extension module when using file://" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1360,114 +1572,114 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xmldb/RemoteXPathQueryService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="8" selection-start="2352" selection-end="2355" vertical-scroll-proportion="-0.61538464">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/xforms/hello.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="53" selection-start="119" selection-end="119" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2074" column="1" selection-start="88038" selection-end="88039" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/client/QueryDialog.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="83" column="4" selection-start="2793" selection-end="2793" vertical-scroll-proportion="0.12190476">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xmlrpc/RpcConnection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2757" column="19" selection-start="111050" selection-end="111050" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/org/apache/tools/ant/Task.class">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/date.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/ant/test.css">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/address.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/ant/AntUnitTestRunner.java">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/tasks/todo.xql">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="13" selection-start="651" selection-end="651" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/ant/exist.properties">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/examples.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="0" selection-start="52" selection-end="78" vertical-scroll-proportion="0.0">
+        <state line="26" column="0" selection-start="1194" selection-end="1194" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/ant/build.xml">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/tasks/todo-list.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="29" selection-start="260" selection-end="260" vertical-scroll-proportion="4.173913">
+        <state line="16" column="17" selection-start="757" selection-end="757" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/ant/XMLDBExtractTask.java">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/xf.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="13" selection-start="1768" selection-end="1768" vertical-scroll-proportion="0.0">
+        <state line="18" column="11" selection-start="1048" selection-end="1264" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/util/Eval.java">
+    <entry file="file://$PROJECT_DIR$/webapp/xforms/xforms.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="408" column="0" selection-start="18333" selection-end="18369" vertical-scroll-proportion="0.54008436">
+        <state line="69" column="26" selection-start="2652" selection-end="2652" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/ant/XMLDBStoreTask.java">
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="148" column="75" selection-start="5435" selection-end="5435" vertical-scroll-proportion="0.33966243">
+        <state line="677" column="24" selection-start="22289" selection-end="22289" vertical-scroll-proportion="-45.653847">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/exist/xquery/functions/util/EvalTest.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/util/UtilModule.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="13" selection-start="685" selection-end="685" vertical-scroll-proportion="0.0">
+        <state line="116" column="0" selection-start="6478" selection-end="6478" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/ant/xmldb.xml">
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/std.xqm">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="117" column="30" selection-start="4913" selection-end="4913" vertical-scroll-proportion="0.5">
+        <state line="177" column="45" selection-start="7796" selection-end="7796" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/build/scripts/junit.xml">
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/xproc.xqm">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="80" selection-start="1422" selection-end="1422" vertical-scroll-proportion="0.50337076">
+        <state line="9" column="0" selection-start="382" selection-end="382" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="0" selection-start="1254" selection-end="1273" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/test-runner.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list-native.xproc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="0" selection-start="194" selection-end="194" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/xproc/examples/pdirectory-list-local.xproc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="271" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/xproc/examples.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="62" column="126" selection-start="2905" selection-end="2905" vertical-scroll-proportion="0.8102767">
           <folding />
         </state>
       </provider>

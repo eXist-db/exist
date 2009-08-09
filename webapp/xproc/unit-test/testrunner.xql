@@ -8,7 +8,7 @@ import module namespace xproc = "http://xproc.net/xproc";
 import module namespace u = "http://xproc.net/xproc/util";
 import module namespace naming = "http://xproc.net/xproc/naming";
 
-declare namespace file="http://exist-db.org/xquery/util";
+(:NOTE - requires file module to be enabled :)
 
 declare option exist:serialize "method=html media-type=text/html omit-xml-declaration=yes indent=yes";
 

@@ -174,14 +174,25 @@ let $v := u:get-primary($primary)
 let $path := u:get-option('path',$options,$v)
 let $include-filter := u:get-option('include-filter',$options,$v)
 let $exclude-filter := u:get-option('exclude-filter',$options,$v)
-let $query := concat("util:directory-list('",$path,"','",$include-filter,"')")
-let $directory-list := u:eval($query) 
-let $result := <c:directory name="{$directory-list/@name}">
-					{for $file in $directory-list//*:file
+let $result := if (starts-with($path,'file://')) then
+                let $query := concat("file:directory-list('",substring-after($path,'file://'),"','",$include-filter,"')")
+                let $files := u:eval($query)
+                return
+                    <c:directory name="">
+					{for $file in $files//*:file
 					return
 						<c:file name="{$file/@name}"/>
 					}
-				</c:directory>
+				    </c:directory>
+              else
+                let $files := collection($path)/util:document-name(.)
+                return
+                    <c:directory name="">
+					{for $file in $files
+					return
+						<c:file name="{$file}"/>
+					}
+				    </c:directory>
 return
 		u:outputResultElement($result)
 };
