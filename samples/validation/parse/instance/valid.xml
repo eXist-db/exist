@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns1:A xmlns:ns1="MyNameSpace"
+ xmlns:ns2="AnotherNamespace"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <b>b0</b>
+    <c>0</c>
+    <Z>
+        <X>50</X>
+        <Y>2006-05-04T18:13:51.0Z</Y>
+    </Z>
+</ns1:A>
