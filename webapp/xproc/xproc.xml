@@ -250,157 +250,157 @@ return
 			<title><a href='standard-xproc-steps.xml'>Standard Steps</a></title>
 			<para>
 				<ul>
-				<li><b><a href="standard-xproc-steps.xml#addattribute">p:add-attribute</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Add
+				<li><b><a href="standard-xproc-steps.xml#p:add-attribute">p:add-attribute</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Add
 											an attribute to a set of matching elements.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:add-xml-base</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Add
+				                                <a href="standard-xproc-steps.xml#p:add-xml-base">p:add-xml-base</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Add
 											or correct <code>xml:base</code> attributes
 											on elements.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:compare</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Compare
+				                                <a href="standard-xproc-steps.xml#p:compare">p:compare</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Compare
 											two documents for equivalence.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:count</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Count the
+				                                <a href="standard-xproc-steps.xml#p:count">p:count</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Count the
 											number of documents in source input.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:delete</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Delete items
+				                                <a href="standard-xproc-steps.xml#p:delete">p:delete</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Delete items
 											specified by a match pattern from the source input.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:directory-list</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Enumerate
+				                                <a href="standard-xproc-steps.xml#p:directory-list">p:directory-list</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Enumerate
 											the directory listing into the result output.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:error</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Generate a
+				                                <a href="standard-xproc-steps.xml#p:error">p:error</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Generate a
 											dynamic error.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:escape-markup</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Escape
+				                                <a href="standard-xproc-steps.xml#p:escape-markup">p:escape-markup</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Escape
 											source input.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:http-request</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Interact with
+				                                <a href="standard-xproc-steps.xml#p:http-request">p:http-request</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Interact with
 											resources identified by Internationalized Resource Identifiers (IRIs)
 											over HTTP.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:identity</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Make an exact
+				                                <a href="standard-xproc-steps.xml#p:identity">p:identity</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Make an exact
 											copy of an input source to the result output.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:insert</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Insert an XML
+				                                <a href="standard-xproc-steps.xml#p:insert">p:insert</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Insert an XML
 											selection into the source input.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:label-elements</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Create a
+				                                <a href="standard-xproc-steps.xml#p:label-elements">p:label-elements</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Create a
 											label for each matched element, and store the value of the label in
 											an attribute.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:load</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Load an XML
+				                                <a href="standard-xproc-steps.xml#p:load">p:load</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Load an XML
 											resource that an IRI specifies and provide it as result output.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:make-absolute-uris</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Make
+				                                <a href="standard-xproc-steps.xml#p:make-absolute-uris">p:make-absolute-uris</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Make
 											the value of an element or attribute in the source input an absolute IRI
 											value in the result output .
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:namespace-rename</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Rename
+				                                <a href="standard-xproc-steps.xml#p:namespace-rename">p:namespace-rename</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Rename
 											the namespace declarations.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:pack</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Merge two
+				                                <a href="standard-xproc-steps.xml#p:pack">p:pack</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Merge two
 											document sequences.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:parameters</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Make available
+				                                <a href="standard-xproc-steps.xml#p:parameters">p:parameters</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Make available
 											a set of parameters as a <code>c:param-set</code> XML
 											document in the result output.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:rename</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Rename elements,
+				                                <a href="standard-xproc-steps.xml#p:rename">p:rename</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Rename elements,
 											attributes, or processing instruction.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:replace</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Replace matching
+				                                <a href="standard-xproc-steps.xml#p:replace">p:replace</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Replace matching
 											elements.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:set-attributes</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Set attributes
+				                                <a href="standard-xproc-steps.xml#p:set-attributes">p:set-attributes</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Set attributes
 											on matching elements.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:sink</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Accept source input and
+				                                <a href="standard-xproc-steps.xml#p:sink">p:sink</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Accept source input and
 											generate no result output.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:split-sequence</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Divide a single
+				                                <a href="standard-xproc-steps.xml#p:split-sequence">p:split-sequence</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Divide a single
 											sequence into two.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:store</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Store a serialized
+				                                <a href="standard-xproc-steps.xml#p:store">p:store</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Store a serialized
 											version of its source input to a URI.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:string-replace</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b>Perform string
+				                                <a href="standard-xproc-steps.xml#p:string-replace">p:string-replace</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b>Perform string
 											replacement on the source input.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:unescape-markup</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Unescape
+				                                <a href="standard-xproc-steps.xml#p:unescape-markup">p:unescape-markup</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Unescape
 											the source input.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:unwrap</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Replace matched elements
+				                                <a href="standard-xproc-steps.xml#p:unwrap">p:unwrap</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Replace matched elements
 											with their children.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:wrap</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Wrap matching nodes
+				                                <a href="standard-xproc-steps.xml#p:wrap">p:wrap</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Wrap matching nodes
 											in the source document with a new parent element.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:wrap-sequence</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Produce a
+				                                <a href="standard-xproc-steps.xml#p:wrap-sequence">p:wrap-sequence</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Produce a
 											new sequence of documents.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:xinclude</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply XInclude
+				                                <a href="standard-xproc-steps.xml#p:xinclude">p:xinclude</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply XInclude
 											processing to the input source.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="standard-xproc-steps.xml#addattribute">p:xslt</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply an XSLT
+				                                <a href="standard-xproc-steps.xml#p:xslt">p:xslt</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply an XSLT
 											version 1.0 or XSLT version 2.0 style sheet input source.
 										</li>
 				</ul>
@@ -414,52 +414,52 @@ return
 				<ul>
 				<li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:exec</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply an external
+				                                <a href="optional-xproc-steps.xml#p:exec">p:exec</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply an external
 											command to the input source.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:hash</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Generate a message
+				                                <a href="optional-xproc-steps.xml#p:hash">p:hash</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Generate a message
 											digest or a digital fingerprint for some value.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:uuid</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Generate a
+				                                <a href="optional-xproc-steps.xml#p:uuid">p:uuid</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Generate a
 											Universally Unique Identifier (UUID).
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:validate-with-relax-ng</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Validate
+				                                <a href="optional-xproc-steps.xml#p:validate-with-relax-ng">p:validate-with-relax-ng</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Validate
 											the input XML with RelaxNG schema.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:validate-with-schematron</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Validate
+				                                <a href="optional-xproc-steps.xml#p:validate-with-schematron">p:validate-with-schematron</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Validate
 											the input XML with Schematron schema.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:validate-with-xml-schema</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Validate
+				                                <a href="optional-xproc-steps.xml#p:validate-with-xml-schema">p:validate-with-xml-schema</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Validate
 											the input XML with XML schema.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:www-form-urldecode</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Decode
+				                                <a href="optional-xproc-steps.xml#p:www-form-urldecode">p:www-form-urldecode</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Decode
 											the x-www-form-urlencoded string into a set of XProc parameters.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:www-form-urlencode</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Encode
+				                                <a href="optional-xproc-steps.xml#p:www-form-urlencode">p:www-form-urlencode</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Encode
 											a set of XProc parameter values as an x-www-form-urlencoded string.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:xquery</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply an XQuery
+				                                <a href="optional-xproc-steps.xml#p:xquery">p:xquery</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Apply an XQuery
 											version 1.0 query.
 										</li>
 				                        <li>
 				                            <b>
-				                                <a href="optional-xproc-steps.xml#addattribute">p:xsl-formatter</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Render an
+				                                <a href="optional-xproc-steps.xml#p:xsl-formatter">p:xsl-formatter</a> [<a href="http://www.w3.org/XML/XProc/docs/langspec.html#p.add-attribute">spec</a>]:</b> Render an
 											XSL version 1.1 document (as in XSL-FO).
 										</li>
 									</ul>
@@ -495,10 +495,10 @@ return
                 <li><a href="unit-test/testrunner.xql?type=optional/&amp;file=*.xml&amp;not=err&amp;debug=err&amp;dbg=0&amp;format=html" target="_result">All optional without err tests </a></li>
 			</ul>
 			</para>
-            <note>
-                <para>Currently this set of tests will return results lower then expected as the test runner
-                is undergoing development.</para>
-            </note>
+            <important>
+                <para>Please note that you will need to enable the File extension module and download the W3C XProc test suite
+                    to run these tests.</para>
+            </important>
 
 		</section>
 	    

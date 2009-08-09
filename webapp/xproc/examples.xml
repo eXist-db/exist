@@ -58,7 +58,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="examples/pdirectory-list-native.xproc" target="_example">p:directory-list-native.xproc</a>
+                        <a href="examples/pdirectory-list-local.xproc" target="_example">p:directory-list-local.xproc</a>
                     </td>
                     <td>p:directory step example on file system directories (NOTE - requires existdb File module to be enabled).</td>
                 </tr>

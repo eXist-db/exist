@@ -18,44 +18,63 @@
         <para>The </para>
     </section>
 
+
     <section>
-		<a name="pipeline"/>
-        <title>p:pipeline</title>
+		<a name="p:exec"/>
+        <title>p:exec</title>
         <para></para>
     </section>
 
     <section>
-		<a name="foreach"/>
-        <title>p:for-each</title>
+		<a name="p:hash"/>
+        <title>p:hash</title>
         <para></para>
     </section>
 
     <section>
-		<a name="viewport"/>
-        <title>p:viewport</title>
+		<a name="p:uuid"/>
+        <title>p:uuid</title>
         <para></para>
     </section>
 
     <section>
-		<a name="group"/>	
-        <title>p:group</title>
+		<a name="p:validate-with-relax-ng"/>
+        <title>p:validate-with-relax-ng</title>
         <para></para>
     </section>
 
     <section>
-		<a name="choose"/>
-        <title>p:choose</title>
+		<a name="p:validate-with-schematron"/>
+        <title>p:validate-with-schematron</title>
         <para></para>
     </section>
 
     <section>
-		<a name="try"/>
-        <title>p:try</title>
+		<a name="p:validate-with-xml-schema"/>
+        <title>p:validate-with-xml-schema</title>
         <para></para>
     </section>
 
+     <section>
+		<a name="p:www-form-urldecode"/>
+        <title>p:www-form-urldecode</title>
+        <para></para>
+    </section>
 
-
-
+     <section>
+		<a name="p:www-form-urlencode"/>
+        <title>p:www-form-urlencode</title>
+        <para></para>
+    </section>
+     <section>
+		<a name="p:xquery"/>
+        <title>p:xquery</title>
+        <para></para>
+    </section>
+     <section>
+		<a name="p:xsl-formatter"/>
+        <title>p:xsl-formatter</title>
+        <para></para>
+    </section>
 
 </article>
