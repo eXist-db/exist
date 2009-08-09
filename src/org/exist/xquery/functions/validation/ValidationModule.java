@@ -22,6 +22,7 @@
 
 package org.exist.xquery.functions.validation;
 
+import java.util.Arrays;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -54,12 +55,18 @@ public class ValidationModule extends AbstractInternalModule {
        
        new FunctionDef(Parse.signatures[0], Parse.class),
        new FunctionDef(Parse.signatures[1], Parse.class),
+       new FunctionDef(Parse.signatures[2], Parse.class),
+       new FunctionDef(Parse.signatures[3], Parse.class),
 
        new FunctionDef(Validation.deprecated[0], Validation.class),
        new FunctionDef(Validation.deprecated[1], Validation.class),
        new FunctionDef(Validation.deprecated[2], Validation.class),
        new FunctionDef(Validation.deprecated[3], Validation.class),
     };
+
+//    static {
+//        Arrays.sort(functions, new FunctionComparator());
+//    }
     
     public final static QName EXCEPTION_QNAME =
             new QName("exception", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX);

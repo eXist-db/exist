@@ -159,6 +159,8 @@ public class Shared {
             streamSource.setInputStream(is);
 
         } else if (item.getType() == Type.BASE64_BINARY) {
+            LOG.debug("Streaming base64 binary");
+
             Base64Binary base64 = (Base64Binary) item;
             byte[] data = (byte[]) base64.toJavaObject(byte[].class);
             InputStream is = new ByteArrayInputStream(data);
@@ -207,15 +209,30 @@ public class Shared {
     /**
      *  Get URL value of item.
      */
-    public static String getUrl(Item s) throws XPathException {
+    public static String getUrl(Item item) throws XPathException {
 
-        if (s.getType() != Type.ANY_URI && s.getType() != Type.STRING) {
-            throw new XPathException("Parameter should be of type xs:anyURI" +
-                    " or string");
+        String url = null;
+
+        if (item.getType() == Type.ANY_URI /*|| item.getType() != Type.STRING */) {
+            LOG.debug("Converting anyURI");
+            url = item.getStringValue();
+
+        } else if (item.getType() == Type.DOCUMENT || item.getType() == Type.NODE) {
+
+            LOG.debug("Retreiving URL from (document) node");
+
+            if (item instanceof NodeProxy) {
+                NodeProxy np = (NodeProxy) item;
+                url = np.getDocument().getBaseURI();
+                LOG.debug("Document detected, adding URL " + url);
+            }
+
         }
 
-        String url = s.getStringValue();
-
+        if(url==null) {
+            throw new XPathException("Parameter should be of type xs:anyURI or document.");
+        }
+        
         if (url.startsWith("/")) {
             url = "xmldb:exist://" + url;
         }
@@ -234,28 +251,16 @@ public class Shared {
 
         while (i.hasNext()) {
             Item next = i.nextItem();
-            
-            if (next.getType() != Type.ANY_URI && next.getType() != Type.STRING) {
-                throw new XPathException("Parameter should be of type xs:anyURI" +
-                        " or xs:string");
-            }
 
-            String url = s.getStringValue();
-
-            if (url.startsWith("/")) {
-                url = "xmldb:exist://" + url;
-            }
+            String url = getUrl(next);
 
             urls.add(url);
         }
 
         String returnUrls[] = new String[urls.size()];
         returnUrls = urls.toArray(returnUrls);
-
-        LOG.debug("Found " + returnUrls.length + " URLs in sequence: " + returnUrls);
         
         return returnUrls;
-
     }
 
     /**

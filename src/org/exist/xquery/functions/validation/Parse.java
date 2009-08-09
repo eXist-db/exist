@@ -104,7 +104,7 @@ public class Parse extends BasicFunction {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_ONE,
+                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_MORE,
                     "Catalog or location of XML catalog."),
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -126,11 +126,11 @@ public class Parse extends BasicFunction {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_ONE,
+                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_MORE,
                     "Catalog or location of XML catalog."),
                 },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                Shared.xmlreportText)),
+                Shared.xmlreportText))
     };
 
     public Parse(XQueryContext context, FunctionSignature signature) {
@@ -186,14 +186,17 @@ public class Parse extends BasicFunction {
             */
 
             // Handle catalog
-            if (args[1].isEmpty()) {
+            if(args.length==1){
+                LOG.debug("No Catalog found");
+
+            } else if (args[1].isEmpty()) {
                 // Use system catalog
                 Configuration config = brokerPool.getConfiguration();
                 entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
                 
             } else {
                 // Get URL for catalog
-                String catalogUrls[] = Shared.getUrls(args[2]);
+                String catalogUrls[] = Shared.getUrls(args[1]);
                 String singleUrl = catalogUrls[0];
 
                 if (singleUrl.endsWith("/")) {
@@ -203,7 +206,7 @@ public class Parse extends BasicFunction {
                     xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
-                    LOG.debug("Using catalogs "+catalogUrls);
+                    LOG.debug("Using catalogs "+getStrings(catalogUrls));
                     entityResolver = new eXistXMLCatalogResolver();
                     ((eXistXMLCatalogResolver) entityResolver).setCatalogList(catalogUrls);
                     xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
@@ -295,5 +298,14 @@ public class Parse extends BasicFunction {
         transformer.transform(instance, result);
 
         return tmp;
+    }
+
+    private static String getStrings(String[] data){
+        StringBuilder sb = new StringBuilder();
+        for(String field: data){
+            sb.append(field);
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 }
