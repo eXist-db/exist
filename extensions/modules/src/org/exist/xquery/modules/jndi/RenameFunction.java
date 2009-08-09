@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -66,7 +66,7 @@ public class RenameFunction extends BasicFunction
 					new QName( "rename", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 							"Rename a JNDI Directory entry.",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" ), 
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
 						new FunctionParameterSequenceType( "old-dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name to rename" ),
 						new FunctionParameterSequenceType( "new-dn", Type.STRING, Cardinality.EXACTLY_ONE, "The new Distinguished Name" )
 					},

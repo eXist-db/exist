@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -64,7 +64,7 @@ public class DeleteFunction extends BasicFunction
 			
 			new FunctionSignature(
 					new QName( "delete", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
-							"Delete a JNDI Directory entry. $a is the directory context handle from a jndi:get-dir-context() call. $b is the DN.",
+							"Delete a JNDI Directory entry.",
 					new SequenceType[] {
 						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
 						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" )

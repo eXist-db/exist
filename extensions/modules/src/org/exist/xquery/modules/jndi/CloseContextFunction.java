@@ -59,7 +59,7 @@ public class CloseContextFunction extends BasicFunction
 					new QName( "close-context", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 					"Closes a JNDI Context",
 					new SequenceType[] {
-						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "the directory context handle from a jndi:get-dir-context() call" )
+						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" )
 					},
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};

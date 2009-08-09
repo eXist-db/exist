@@ -1,5 +1,5 @@
 /*
- *  eXist SQL Module Extension GetConnectionFunction
+ *  eXist SQL Module Extension ModifyFunction
  *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
