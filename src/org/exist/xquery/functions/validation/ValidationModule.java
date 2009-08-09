@@ -39,26 +39,31 @@ public class ValidationModule extends AbstractInternalModule {
     
     public final static String PREFIX = "validation";
     public final static String INCLUSION_DATE = "2005-11-17";
-    public final static String RELEASED_IN_VERSION = "eXist-1.0";    
-    public final static FunctionDef[] functions = {
-       new FunctionDef(Validation.signatures[0], Validation.class),
-       new FunctionDef(Validation.signatures[1], Validation.class),
-       new FunctionDef(Validation.signatures[2], Validation.class),
-       new FunctionDef(Validation.signatures[3], Validation.class),
+    public final static String RELEASED_IN_VERSION = "eXist-1.0";
+    
+    public final static FunctionDef[] functions = {     
        new FunctionDef(GrammarTooling.signatures[0], GrammarTooling.class),
        new FunctionDef(GrammarTooling.signatures[1], GrammarTooling.class),
        new FunctionDef(GrammarTooling.signatures[2], GrammarTooling.class),
 
        new FunctionDef(Jaxv.signatures[0], Jaxv.class),
        new FunctionDef(Jaxv.signatures[1], Jaxv.class),
+
        new FunctionDef(Jing.signatures[0], Jing.class),
        new FunctionDef(Jing.signatures[1], Jing.class),
-//       new FunctionDef(Parse.signatures[0], Parse.class),
-//       new FunctionDef(Parse.signatures[1], Parse.class),
+       
+       new FunctionDef(Parse.signatures[0], Parse.class),
+       new FunctionDef(Parse.signatures[1], Parse.class),
+
+       new FunctionDef(Validation.deprecated[0], Validation.class),
+       new FunctionDef(Validation.deprecated[1], Validation.class),
+       new FunctionDef(Validation.deprecated[2], Validation.class),
+       new FunctionDef(Validation.deprecated[3], Validation.class),
     };
     
     public final static QName EXCEPTION_QNAME =
             new QName("exception", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX);
+    
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX);
     

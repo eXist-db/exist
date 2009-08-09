@@ -65,7 +65,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class Shared {
 
-    private final static Logger logger = Logger.getLogger(Shared.class);
+    private final static Logger LOG = Logger.getLogger(Shared.class);
     public final static String simplereportText = "Returns true() if the " +
             "document is valid and no single problem occured, false() for " +
             "all other situations. Check corresponding report function " +
@@ -114,7 +114,7 @@ public class Shared {
 
         StreamSource streamSource = new StreamSource();
         if (item.getType() == Type.JAVA_OBJECT) {
-            logger.debug("Streaming Java object");
+            LOG.debug("Streaming Java object");
 
             Object obj = ((JavaObjectValue) item).getObject();
             if (!(obj instanceof File)) {
@@ -127,7 +127,7 @@ public class Shared {
             streamSource.setSystemId(inputFile.toURI().toURL().toString());
 
         } else if (item.getType() == Type.ANY_URI) {
-            logger.debug("Streaming xs:anyURI");
+            LOG.debug("Streaming xs:anyURI");
 
             // anyURI provided
             String url = item.getStringValue();
@@ -142,12 +142,12 @@ public class Shared {
             streamSource.setSystemId(url);
 
         } else if (item.getType() == Type.ELEMENT || item.getType() == Type.DOCUMENT) {
-            logger.debug("Streaming element or document node");
+            LOG.debug("Streaming element or document node");
 
             if (item instanceof NodeProxy) {
                 NodeProxy np = (NodeProxy) item;
                 String url = "xmldb:exist://" + np.getDocument().getBaseURI();
-                logger.debug("Document detected, adding URL " + url);
+                LOG.debug("Document detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
 
@@ -167,12 +167,12 @@ public class Shared {
             if (item instanceof Base64BinaryDocument) {
                 Base64BinaryDocument b64doc = (Base64BinaryDocument) item;
                 String url = "xmldb:exist://" + b64doc.getUrl();
-                logger.debug("Base64BinaryDocument detected, adding URL " + url);
+                LOG.debug("Base64BinaryDocument detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
 
         } else {
-            logger.error("Wrong item type " + Type.getTypeName(item.getType()));
+            LOG.error("Wrong item type " + Type.getTypeName(item.getType()));
             throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
         }
 
@@ -221,6 +221,41 @@ public class Shared {
         }
 
         return url;
+    }
+
+    /**
+     *  Get URLs value of sequence.
+     */
+    public static String[] getUrls(Sequence s) throws XPathException {
+
+        ArrayList<String> urls = new ArrayList<String>();
+
+        SequenceIterator i = s.iterate();
+
+        while (i.hasNext()) {
+            Item next = i.nextItem();
+            
+            if (next.getType() != Type.ANY_URI && next.getType() != Type.STRING) {
+                throw new XPathException("Parameter should be of type xs:anyURI" +
+                        " or xs:string");
+            }
+
+            String url = s.getStringValue();
+
+            if (url.startsWith("/")) {
+                url = "xmldb:exist://" + url;
+            }
+
+            urls.add(url);
+        }
+
+        String returnUrls[] = new String[urls.size()];
+        returnUrls = urls.toArray(returnUrls);
+
+        LOG.debug("Found " + returnUrls.length + " URLs in sequence: " + returnUrls);
+        
+        return returnUrls;
+
     }
 
     /**
