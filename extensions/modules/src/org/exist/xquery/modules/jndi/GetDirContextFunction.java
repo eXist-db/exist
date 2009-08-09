@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or

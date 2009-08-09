@@ -87,7 +87,7 @@ public class SearchFunction extends BasicFunction
 					new SequenceType[] {
 						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
 						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" ), 
-						new FunctionParameterSequenceType( "filter", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
+						new FunctionParameterSequenceType( "filter", Type.STRING, Cardinality.EXACTLY_ONE, "The filter.  The format and interpretation of filter follows RFC 2254 with the following interpretations for \'attr\' and \'value\'  mentioned in the RFC. \'attr\' is the attribute's identifier. \'value\' is the string represention the attribute's value. The translation of this string representation into the attribute's value is directory-specific. " ),
 						new FunctionParameterSequenceType( "scope", Type.STRING, Cardinality.EXACTLY_ONE, "The scope, which has a value of 'object', 'onelevel' or 'subtree'" ) 
 					},
 					new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the search results in DSML format" ) )
