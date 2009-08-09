@@ -30,8 +30,17 @@ let $stdin :=  if ($stdin1//t:pipeline/@href) then
         xmlns:c="http://www.w3.org/ns/xproc-step"
         xmlns:err="http://www.w3.org/ns/xproc-error">
 
-{$stdin1//t:input}
-
+{$stdin1//t:input[not(@href)]}
+{let $a := $stdin1//t:input[@href]
+return
+for $input in $a
+return
+		<t:input port="{$input/@port}">
+			{let $doc := doc(concat('file://',$dir,$input/@href))
+			return
+			    $doc}
+		</t:input>
+}
 <t:pipeline>
 {let $doc := doc(concat('file://',$dir,$stdin1//t:pipeline/@href))
 return
@@ -39,7 +48,17 @@ return
 }
 </t:pipeline>
 
-{$stdin1//t:output}
+{$stdin1//t:output[not(@href)]}
+{let $a := $stdin1//t:output[@href]
+return
+for $input in $a
+return
+		<t:output port="{$input/@port}">
+			{let $doc := doc(concat('file://',$dir,$input/@href))
+			return
+			    $doc}
+		</t:output>
+}
 </t:test>
                else
 
@@ -62,7 +81,17 @@ return
 
 {$stdin1//t:pipeline}
 
-{$stdin1//t:output}
+{$stdin1//t:output[not(@href)]}
+{let $a := $stdin1//t:output[@href]
+return
+for $input in $a
+return
+		<t:output port="{$input/@port}">
+			{let $doc := doc(concat('file://',$dir,$input/@href))
+			return
+			    $doc}
+		</t:output>
+}
 </t:test>
 
 let $pipeline := if (count($stdin//t:input) = 0) then
