@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -49,7 +49,7 @@ public class GetRemoteHost extends BasicFunction {
 			new QName("get-remote-host", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the fully qualified name of the client or the last proxy that sent the current request.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "host name"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the host name"));
 
 	/**
 	 * @param context

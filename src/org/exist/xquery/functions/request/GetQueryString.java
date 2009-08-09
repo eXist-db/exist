@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -51,7 +51,7 @@ public class GetQueryString extends BasicFunction {
 			new QName("get-query-string", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the full query string passed to the servlet (without the initial question mark).",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "query string"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the query string"));
 
 	public GetQueryString(XQueryContext context)
 	{

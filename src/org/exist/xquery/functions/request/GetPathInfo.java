@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -50,7 +50,7 @@ public class GetPathInfo extends BasicFunction {
 			"Returns any extra path information associated with the URL the client sent when it made this request.\n" +
 			"For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /extra/path when myfile.xq is executed.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "request path information"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the request path information"));
 
 	/**
 	 * @param context

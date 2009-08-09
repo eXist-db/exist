@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -52,7 +52,7 @@ public class GetRequestAttribute extends BasicFunction {
 			"Returns the string value of the request attribute specified in the argument or the empty " +
             "sequence if no such attribute exists. The attribute value should be a string.",
 			new SequenceType[] {
-                    new FunctionParameterSequenceType("attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "Name of the attribute")
+                    new FunctionParameterSequenceType("attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the attribute")
             },
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the string value of the requested attribute"));
 

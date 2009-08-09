@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -57,7 +57,7 @@ public class GetServerName extends BasicFunction {
 			new QName("request-servername", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the server nodename of the current request.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the server nodename of the current request"),
 			"Renamed to request:get-server-name.");
 
 	/**

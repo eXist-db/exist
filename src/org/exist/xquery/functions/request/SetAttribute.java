@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -33,7 +33,6 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -53,8 +52,8 @@ public class SetAttribute extends Function {
 			new QName( "set-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Stores a value in the current request using the supplied attribute name.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "attribute name" ),
-				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "attribute value" )
+				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" ),
+				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The attribute value" )
 				},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		);
