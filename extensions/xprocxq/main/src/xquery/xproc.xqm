@@ -582,13 +582,13 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
                         }
 
                  let $select := string(
-                            if (empty($input/@select)) then
+                            if ($input/@select eq '/' or empty($input/@select) or $input/@select eq ' ') then
                                  '/'
                             else
                                  string($input/@select)
                              )
 
-                 let $selectval := if ($select eq '/') then
+                 let $selectval := if ($select eq '/' or empty($select)) then
                                         $primaryresult
                                  else
                                         let $namespaces :=   u:list-used-namespaces ($primaryresult)

@@ -106,13 +106,13 @@ declare function opt:validate($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $schema := u:get-secondary('schema',$secondary)
 let $assert-valid := u:get-option('assert-valid',$options,$v)
-let $validation-result :=  validation:jing($v,$schema)
+let $validation-result :=  validation:jing($v,$schema/*)
 
 return
     if($assert-valid eq 'false' ) then
-        $v
+     $v
     else if ($assert-valid eq 'true' and xs:boolean($validation-result)) then
-        $v
+     $v
     else
 	    u:dynamicError('err:XC0053',concat(": invalid ",u:serialize($v,$const:TRACE_SERIALIZE)))
 };
