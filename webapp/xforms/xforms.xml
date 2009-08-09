@@ -74,10 +74,24 @@
 			</programlisting>
 			</example>
 			
-	<para>As xsltforms is an xsl stylesheet we use an xml-stylesheet PI to transform the XForm definition into
+	<para>xsltforms transforms the XForms xml into an XHTML page with javascript that can process XForms. As
+        eXist has support for RESTful interactions the action of saving the XML representation of data provided by XForms can be
+        as easy as using HTTP PUT method with an action attribute referencing an xml
+        document in the XML Database. The following example shows an example of this.
     </para>
-	
 
+    <example>
+    <title>Example of setting submission to save to eXistdb</title>
+    <programlisting>
+    <markup>
+    <![CDATA[
+     <xf:submission id="s01" method="put" replace="all" action="/db/xforms/data/xf.xml">
+            <xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
+        </xf:submission>
+    ]]>
+    </markup>
+    </programlisting>
+    </example>
 
 		</section>
 
@@ -102,6 +116,7 @@
 			<section>
 				<title>Useful</title>
 			<ul>
+            <li><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is a useful place to learn XForms</li>
 			<li><a href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/" target="_resource">xsltforms coverage of W3C test suite</a></li>
 
 		</ul>
