@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -56,7 +56,7 @@ public class MetadataFunction extends BasicFunction {
 			"If the context item is undefined an error is raised.",
 			null,
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the metadata documents"),
-			"an orphaned experiment.");
+			"An orphaned experiment.");
 
 	public MetadataFunction(XQueryContext context) {
 		super(context, signature);
