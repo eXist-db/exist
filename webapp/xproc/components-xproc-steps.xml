@@ -18,6 +18,45 @@
         <para>The </para>
     </section>
 
-
+    <section>
+		<a name="ports"/>
+        <title>input and output ports</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="step"/>
+        <title>p:pipe, p:inline, p:document, p:data and p:empty</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="log"/>
+        <title>p:log</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="serialize"/>
+        <title>p:serialization</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="vars"/>
+        <title>variables,options and parameters</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:declare-step"/>
+        <title>p:declare-step</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:library"/>
+        <title>p:library</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:import"/>
+        <title>p:import</title>
+        <para></para>
+    </section>
 
 </article>
