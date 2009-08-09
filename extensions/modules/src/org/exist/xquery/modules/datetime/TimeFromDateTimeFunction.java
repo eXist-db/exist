@@ -48,7 +48,7 @@ public class TimeFromDateTimeFunction extends BasicFunction
         new SequenceType[] {
             new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The dateTime to extract the time from.")
         },
-        new FunctionReturnSequenceType(Type.TIME, Cardinality.EXACTLY_ONE, "The time extracted from the date-time")
+        new FunctionReturnSequenceType(Type.TIME, Cardinality.EXACTLY_ONE, "the time extracted from the date-time")
     );
 
 

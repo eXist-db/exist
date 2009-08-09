@@ -53,7 +53,7 @@ public class DaysInMonthFunction extends BasicFunction
         new SequenceType[] {
             new FunctionParameterSequenceType("date", Type.DATE, Cardinality.EXACTLY_ONE, "The date for extracting the number of days in the month component.")
         },
-        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of days in the given month.")
+        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the number of days in the given month.")
     );
 
     public DaysInMonthFunction(XQueryContext context)

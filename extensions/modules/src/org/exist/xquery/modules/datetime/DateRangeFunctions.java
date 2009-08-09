@@ -56,7 +56,7 @@ public class DateRangeFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
-            new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_MORE, "The range(s)")
+            new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_MORE, "the range(s)")
         ),
 
         new FunctionSignature(
@@ -67,7 +67,7 @@ public class DateRangeFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
-            new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_MORE, "The range(s)")
+            new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_MORE, "the range(s)")
         ),
 
         new FunctionSignature(
@@ -78,7 +78,7 @@ public class DateRangeFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
-            new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_MORE, "The range(s)")
+            new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_MORE, "the range(s)")
         )
     };
 
