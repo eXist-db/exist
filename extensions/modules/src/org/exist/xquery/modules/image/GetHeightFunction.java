@@ -58,10 +58,10 @@ public class GetHeightFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-height", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if the image is invalid.",
+			"Gets the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if the image is invalid.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data")
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
 			},
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the height in pixels"));
 
