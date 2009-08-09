@@ -50,8 +50,8 @@ import org.exist.xquery.value.Type;
  * 
  * @author Andrzej Taramina <andrzej@chaeron.com>
  * @author ljo
- * @serial 2009-06-29
- * @version 1.1
+ * @serial 2009-08-09
+ * @version 1.2
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -68,8 +68,8 @@ public class DirectoryListFunction extends BasicFunction {
 	{
 		new FunctionSignature(
 			new QName("directory-list", NAMESPACE_URI, PREFIX),
-			"List all files, including their file size and modification time, found in a directory. Files are located in the server's " +
-			"file system, using filename patterns.  File pattern matching is based " +
+			"List all files, including their file size and modification time, found in or below a directory, $directory. Files are located in the server's " +
+			"file system, using filename patterns, $pattern.  File pattern matching is based " +
 			"on code from Apache's Ant, thus following the same conventions. For example:\n\n" +
 			"'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files " +
 			"in any directory below the specified directory. ",
