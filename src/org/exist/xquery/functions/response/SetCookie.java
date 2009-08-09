@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2006 The eXist team
+ * Copyright (C) 2001-2009 The eXist team
  *  http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -56,20 +56,20 @@ import org.exist.xquery.value.Type;
 public class SetCookie extends Function {
 	
 	protected static final Logger logger = Logger.getLogger(SetCookie.class);
-	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "the cookie name");
-	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "the cookie value");
-	protected static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.EXACTLY_ONE, "the xs:duration of the cookie");
-	protected static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("name", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "is the cookie to be secure (eg. only transferred using HTTPS)");
+	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie name");
+	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie value");
+	protected static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.EXACTLY_ONE, "The xs:duration of the cookie");
+	protected static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("name", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag on whether the cookie is to be secure (eg. only transferred using HTTPS)");
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP Cookie on the HTTP Response.",
+			"Sets a HTTP Cookie on the HTTP Response.",
 			new SequenceType[] { NAME_PARAM, VALUE_PARAM },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 		new FunctionSignature(
 			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP Cookie on the HTTP Response.",
+			"Sets a HTTP Cookie on the HTTP Response.",
 			new SequenceType[] { NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)) 
 		};

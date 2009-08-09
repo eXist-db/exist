@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -55,9 +55,9 @@ public class SetStatusCode extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-status-code", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP server status code on the HTTP Response.",
+			"Sets a HTTP server status code on the HTTP Response.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("code", Type.INTEGER, Cardinality.EXACTLY_ONE, "the status code")
+				new FunctionParameterSequenceType("code", Type.INTEGER, Cardinality.EXACTLY_ONE, "The status code")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
