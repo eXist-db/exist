@@ -18,44 +18,196 @@
         <para>The </para>
     </section>
 
+    7.1.3
+    7.1.4
+    7.1.5
+    7.1.6
+    7.1.7
+    7.1.8
+    7.1.9
+    7.1.10
+    7.1.11
+    7.1.12
+    7.1.13
+    7.1.14
+    7.1.15
+    7.1.16
+    7.1.17
+    7.1.18
+    7.1.19
+    7.1.20
+    7.1.21
+    7.1.22
+    7.1.23
+    7.1.24
+    7.1.25
+    7.1.26
+    7.1.27
+    7.1.28
+    7.1.29
+    7.1.30
+    7.1.31
+
+
     <section>
-		<a name="pipeline"/>
-        <title>p:pipeline</title>
+		<a name="p:add-attribute"/>
+        <title>p:add-attribute</title>
         <para></para>
     </section>
 
     <section>
-		<a name="foreach"/>
-        <title>p:for-each</title>
+		<a name="p:add-xml-base"/>
+        <title>p:add-xml-base</title>
         <para></para>
     </section>
 
     <section>
-		<a name="viewport"/>
-        <title>p:viewport</title>
+		<a name="p:compare"/>
+        <title>p:compare</title>
         <para></para>
     </section>
 
     <section>
-		<a name="group"/>	
-        <title>p:group</title>
+		<a name="p:count"/>
+        <title>p:count</title>
         <para></para>
     </section>
 
     <section>
-		<a name="choose"/>
-        <title>p:choose</title>
+		<a name="p:delete"/>
+        <title>p:delete</title>
         <para></para>
     </section>
 
     <section>
-		<a name="try"/>
-        <title>p:try</title>
+		<a name="p:directory-list"/>
+        <title>p:directory-list</title>
         <para></para>
     </section>
 
-
-
-
-
+    <section>
+		<a name="p:error"/>
+        <title>p:error</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:escape-markup"/>
+        <title>p:escape-markup</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:filter"/>
+        <title>p:filter</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:http-request"/>
+        <title>p:http-request</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:identity"/>
+        <title>p:identity</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:insert"/>
+        <title>p:insert</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:label-elements"/>
+        <title>p:label-elements</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:load"/>
+        <title>p:load</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:make-absolute-uris"/>
+        <title>p:make-absolute-uris</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:namespace-rename"/>
+        <title>p:namespace-rename</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:pack"/>
+        <title>p:pack</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:parameters"/>
+        <title>p:parameters</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:rename"/>
+        <title>p:rename</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:replace"/>
+        <title>p:replace</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:set-attributes"/>
+        <title>p:set-attributes</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:sink"/>
+        <title>p:sink</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:split-sequence"/>
+        <title>p:split-sequence</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:store"/>
+        <title>p:store</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:string-replace"/>
+        <title>p:string-replace</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:unescape-markup"/>
+        <title>p:unescape-markup</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:unwrap"/>
+        <title>p:unwrap</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:wrap"/>
+        <title>p:wrap</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:wrap-sequence"/>
+        <title>p:wrap-sequence</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:xinclude"/>
+        <title>p:xinclude</title>
+        <para></para>
+    </section>
+    <section>
+		<a name="p:xslt"/>
+        <title>p:xslt</title>
+        <para></para>
+    </section>
 </article>

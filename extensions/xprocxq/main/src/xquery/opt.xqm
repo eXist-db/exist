@@ -106,10 +106,8 @@ declare function opt:validate($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $schema := u:get-secondary('schema',$secondary)
 let $assert-valid := u:get-option('assert-valid',$options,$v)
-let $validation-result :=  validation:jing($v,element {node-name($schema/node())}
-          {$schema/@*,
-    $schema/*/*
-    })
+let $validation-result :=  validation:jing($v,$schema)
+
 return
     if($assert-valid eq 'false' ) then
         $v
