@@ -115,9 +115,6 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(Hash.signatures[1], Hash.class),
         new FunctionDef(GetFragmentBetween.signature, GetFragmentBetween.class),
 
-        //temp xproc required function
-        new FunctionDef(DirectoryListFunction.signatures[0], DirectoryListFunction.class),
-
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
 		new FunctionDef(FileRead.deprecated[0], FileRead.class),
