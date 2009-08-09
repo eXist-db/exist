@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -49,8 +50,8 @@ public class ParseSimpleQL extends BasicFunction {
             "Translates expressions in a simple query language to an XPath expression. A single search term " +
             "is translated into '. &= term', 'and'/'or' used to combine terms, quotes define a phrase and are translated " +
             "into near(., 'quoted terms').",
-            new SequenceType[] { new FunctionParameterSequenceType("expression", Type.STRING, Cardinality.ZERO_OR_ONE, "")},
-            new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "result"));
+            new SequenceType[] { new FunctionParameterSequenceType("expression", Type.STRING, Cardinality.ZERO_OR_ONE, "The expression to parse")},
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the result"));
     
     public ParseSimpleQL(XQueryContext context) {
         super(context, signature);
