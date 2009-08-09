@@ -1,6 +1,6 @@
 /*
  *  eXist Scheduler Module Extension GetSheduledJobs
- *  Copyright (C) 2006-2009 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -24,10 +24,10 @@ package org.exist.xquery.modules.scheduler;
 import java.util.Date;
 
 import org.exist.dom.QName;
-import org.exist.security.User;
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJob;
+import org.exist.security.User;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -35,10 +35,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-
 import org.xml.sax.SAXException;
 
 /**
@@ -61,7 +60,7 @@ public class GetScheduledJobs extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Get's details of all Scheduled Jobs in the form: " +
+			"Gets the details of all scheduled jobs in the form: " +
 			"<scheduler:jobs xmlns:scheduler=\"http://exist-db.org/xquery/scheduler\" count=\"iJobs\">" +
 			"    <scheduler:group name=\"group\">" +
 			"        <scheduler:job name=\"\">" +
@@ -78,7 +77,7 @@ public class GetScheduledJobs extends BasicFunction
 			"    </scheduler:group>" +
 			"</scheduler:jobs>",
 			null,
-			new FunctionParameterSequenceType( "scheduled-jobs", Type.NODE, Cardinality.EXACTLY_ONE, "returns the XML containing the list of jobs" ) );
+			new FunctionReturnSequenceType( Type.NODE, Cardinality.EXACTLY_ONE, "the XML containing the list of jobs" ) );
 	
 	/**
 	 * GetScheduledJobs Constructor

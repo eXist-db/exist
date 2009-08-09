@@ -1,6 +1,6 @@
 /*
  *  eXist Scheduler Module Extension ResumeSheduledJob
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -33,6 +33,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -55,12 +56,12 @@ public class ResumeScheduledJob extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("resume-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Resumes the named job in the Scheduler. Will only resume User Scheduled Jobs!",
+			"Resumes the named job in the scheduler. Will only resume user scheduled jobs!",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to resume.")
 			},
-			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "successful resumption"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the indicator of successful resumption"));
 	
 	/**
 	 * ResumeScheduledJob Constructor
