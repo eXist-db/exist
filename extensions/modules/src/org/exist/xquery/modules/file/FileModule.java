@@ -83,7 +83,7 @@ public class FileModule extends AbstractInternalModule
 
 	public String getDescription() 
 	{
-		return( "A module for performing various operations on files and directories stored in the file system." );
+		return( "A module for performing various operations on files and directories stored in the server file system." );
 	}
 
     public String getReleaseVersion() {

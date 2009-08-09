@@ -51,7 +51,7 @@ public class FileIsDirectory extends BasicFunction {
 			new QName( "is-directory", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a path is a directory",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file or directory" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file or directory" )
 				},				
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the path is a directory" ) )
 		};
