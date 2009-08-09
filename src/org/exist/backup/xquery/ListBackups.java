@@ -49,13 +49,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ListBackups extends BasicFunction {
+	
+	private final static String returnText = 
+		"an XML fragment listing all eXist backups found in the specified backup directory: " +
+		"<directory> " +
+		"<backup file=\"filename\"> " +
+		"<key>value</key>" +
+		"<key>value</key>" +
+		"</backup> " +
+		"<backup file=\"filename\"> " +
+		"<key>value</key>" +
+		"<key>value</key>" +
+		"</backup> " +
+		"</directory> " +
+		"Where key is a property name and value is a property value for the given .zip file.";
 
     public final static FunctionSignature signature =
             new FunctionSignature(
                 new QName("list", BackupModule.NAMESPACE_URI, BackupModule.PREFIX),
-                "Returns an XML fragment listing all eXist backups found in a specified backup directory, $directory.",
-                new SequenceType[] { new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "Directory name to show list of backups on.") },
-                new FunctionReturnSequenceType(Type.NODE, Cardinality.ONE_OR_MORE, "an XML fragment listing all eXist backups found in the specified backup birectory")
+                "Returns an XML fragment listing all eXist backups found in a specified backup directory.",
+                new SequenceType[] { new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the directory to show the list of backups on.") },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, returnText)
             );
 
     public final static QName DIRECTORY_ELEMENT = new QName("directory", Namespaces.EXIST_NS, "");

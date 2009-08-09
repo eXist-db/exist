@@ -58,7 +58,7 @@ public class BackupModule extends AbstractInternalModule {
     }
 
     public String getDescription() {
-        return "A module for access to database backups available on the server";
+        return "A module for access to database backups available on the server file system";
     }
 
     public String getReleaseVersion() {
