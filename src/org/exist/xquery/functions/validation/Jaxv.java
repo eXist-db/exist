@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 
-
-import java.util.ArrayList;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -39,7 +37,6 @@ import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
-
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -48,9 +45,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -65,7 +60,7 @@ public class Jaxv extends BasicFunction  {
     
     
     private static final String extendedFunctionTxt=
-        "Validate document specified by $a using grammar $b. " +
+        "Validate document specified by $instance using the schema(a) $grammars. " +
         "Based on functionality provided by javax.xml.validation.Validator";
         
 
@@ -80,7 +75,7 @@ public class Jaxv extends BasicFunction  {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.ONE_OR_MORE,
+                    new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
                             "Location of XML Schema (.xsd) document.")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -94,7 +89,7 @@ public class Jaxv extends BasicFunction  {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                    new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.ONE_OR_MORE,
+                    new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
                             "Location of XML Schema (.xsd) document.")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
