@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -72,16 +72,19 @@ public class JFreeCharting extends BasicFunction {
      private static final String function2Txt = function1Txt +
              " Output is directly streamed into the servlet output stream.";
 
-    private static final String chartText="The type of chart to render.  Supported chart types: LineChart, LineChart3D, " +
-            "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
-            "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
-            "WaterfallChart.";
+    private static final String chartText = 
+    	"The type of chart to render.  Supported chart types: LineChart, LineChart3D, " +
+        "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
+        "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
+        "WaterfallChart.";
 
-    private static final String parametersText="The configuration for the chart.  The configuration should be supplied as follows: <configuration>"+
-            "<param1>Value1</param1><param2>Value2</param2>/<configuration>.  " +
-            "Supported parameters: width height title categoryAxisLabel " +
-            "valueAxisLabel domainAxisLabel rangeAxisLabel orientation " +
-            "order legend tooltips urls.";
+    private static final String parametersText = 
+    	"The configuration for the chart.  The configuration should be " +
+    	"supplied as follows: <configuration>"+
+        "<param1>Value1</param1> <param2>Value2</param2> </configuration>.  " +
+        "Supported parameters: width height title categoryAxisLabel " +
+        "valueAxisLabel domainAxisLabel rangeAxisLabel orientation " +
+        "order legend tooltips urls.";
 
     public final static FunctionSignature signatures[] = {
 
