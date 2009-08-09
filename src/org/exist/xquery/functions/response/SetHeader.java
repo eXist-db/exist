@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -51,13 +51,13 @@ import org.exist.xquery.value.Type;
 public class SetHeader extends Function {
 	
 	protected static final Logger logger = Logger.getLogger(SetHeader.class);
-	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "the header name");
-	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "the header value");
+	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The header name");
+	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The header value");
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-header", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP Header on the HTTP Response.",
+			"Sets a HTTP Header on the HTTP Response.",
 			new SequenceType[] { NAME_PARAM, VALUE_PARAM },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 

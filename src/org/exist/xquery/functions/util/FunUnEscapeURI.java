@@ -52,7 +52,7 @@ public class FunUnEscapeURI extends BasicFunction {
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType("escaped-string", Type.STRING, Cardinality.EXACTLY_ONE, "The escaped string to be un-escaped"),
-				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "the encoding scheme to use in the un-escaping of the string")
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding scheme to use in the un-escaping of the string")
 			},
 			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"));
 
@@ -63,7 +63,7 @@ public class FunUnEscapeURI extends BasicFunction {
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType("escaped-string", Type.STRING, Cardinality.EXACTLY_ONE, "The escaped string to be un-escaped"),
-				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "the encoding scheme to use in the un-escaping of the string")
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding scheme to use in the un-escaping of the string")
 			},
 			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"),
 			"Moved to the util module. See util:unescape-uri.");

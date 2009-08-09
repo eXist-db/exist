@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -33,7 +33,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -48,7 +47,7 @@ public class GetExists extends BasicFunction
 			new QName( "exists", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX ),
 			"Returns whether a response object exists.",
 			null,
-			new FunctionParameterSequenceType( "result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the response object exists" ) );
+			new FunctionParameterSequenceType( "result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the response object exists" ) );
 
 	/**
 	 * @param context
