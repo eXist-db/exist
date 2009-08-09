@@ -78,14 +78,14 @@ import org.apache.log4j.Logger;
 public abstract class BaseHTTPClientFunction extends BasicFunction 
 {
 	protected static final Logger logger = Logger.getLogger(BaseHTTPClientFunction.class);
-	protected static final FunctionParameterSequenceType URI_PARAM = new FunctionParameterSequenceType( "url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "" );
-	protected static final FunctionParameterSequenceType PUT_CONTENT_PARAM = new FunctionParameterSequenceType( "content", Type.NODE, Cardinality.EXACTLY_ONE, "XML PUT payload/content. If it is an XML Node it will be serialized, any other type will be atomized into a string." );
-	protected static final FunctionParameterSequenceType POST_CONTENT_PARAM = new FunctionParameterSequenceType( "content", Type.ITEM, Cardinality.EXACTLY_ONE, "XML POST payload/content. If it is an XML Node it will be serialized, any other type will be atomized into a string." );
-	protected static final FunctionParameterSequenceType POST_FORM_PARAM = new FunctionParameterSequenceType( "content", Type.ELEMENT, Cardinality.EXACTLY_ONE, "the form data in the format <httpclient:fields><httpclient:field name=\"\" value=\"\"/>...</httpclient:fields>.  If the field values will be suitably URLEncoded and sent with the mime type application/x-www-form-urlencoded." );
-	protected static final FunctionParameterSequenceType PERSIST_PARAM = new FunctionParameterSequenceType( "persist", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "cookies persist for the query lifetime" );
-	protected static final FunctionParameterSequenceType REQUEST_HEADER_PARAM = new FunctionParameterSequenceType( "request-headers", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "any HTTP Request Headers to set in the form  <headers><header name=\"\" value=\"\"/></headers>" );
+	protected static final FunctionParameterSequenceType URI_PARAM = new FunctionParameterSequenceType( "url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URL to process" );
+	protected static final FunctionParameterSequenceType PUT_CONTENT_PARAM = new FunctionParameterSequenceType( "content", Type.NODE, Cardinality.EXACTLY_ONE, "The XML PUT payload/content. If it is an XML Node it will be serialized, any other type will be atomized into a string." );
+	protected static final FunctionParameterSequenceType POST_CONTENT_PARAM = new FunctionParameterSequenceType( "content", Type.ITEM, Cardinality.EXACTLY_ONE, "The XML POST payload/content. If it is an XML Node it will be serialized, any other type will be atomized into a string." );
+	protected static final FunctionParameterSequenceType POST_FORM_PARAM = new FunctionParameterSequenceType( "content", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The form data in the format <httpclient:fields><httpclient:field name=\"\" value=\"\"/>...</httpclient:fields>.  If the field values will be suitably URLEncoded and sent with the mime type application/x-www-form-urlencoded." );
+	protected static final FunctionParameterSequenceType PERSIST_PARAM = new FunctionParameterSequenceType( "persist", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The to indicate if the cookies persist for the query lifetime" );
+	protected static final FunctionParameterSequenceType REQUEST_HEADER_PARAM = new FunctionParameterSequenceType( "request-headers", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "Any HTTP Request Headers to set in the form  <headers><header name=\"\" value=\"\"/></headers>" );
 
-	protected static final FunctionReturnSequenceType XML_BODY_RETURN = new FunctionReturnSequenceType( Type.ITEM, Cardinality.EXACTLY_ONE, "XML body content" );
+	protected static final FunctionReturnSequenceType XML_BODY_RETURN = new FunctionReturnSequenceType( Type.ITEM, Cardinality.EXACTLY_ONE, "the XML body content" );
 
 	
     final static String NAMESPACE_URI                       = HTTPClientModule.NAMESPACE_URI;
