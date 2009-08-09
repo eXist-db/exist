@@ -42,7 +42,28 @@ return
 {$stdin1//t:output}
 </t:test>
                else
-                 $stdin1
+
+<t:test xmlns:t="http://xproc.org/ns/testsuite"
+        xmlns:p="http://www.w3.org/ns/xproc"
+        xmlns:c="http://www.w3.org/ns/xproc-step"
+        xmlns:err="http://www.w3.org/ns/xproc-error">
+
+{$stdin1//t:input[not(@href)]}
+{let $a := $stdin1//t:input[@href]
+return
+for $input in $a
+return
+		<t:input port="{$input/@port}">
+			{let $doc := doc(concat('file://',$dir,$input/@href))
+			return
+			    $doc}
+		</t:input>
+}
+
+{$stdin1//t:pipeline}
+
+{$stdin1//t:output}
+</t:test>
 
 let $pipeline := if (count($stdin//t:input) = 0) then
         doc('/db/xproc/unit-test/test-runner2.xml')

@@ -102,41 +102,4 @@ components
 	p:log
 	p:pipeinfo
 
-	
-
---------------------------------------------------------------------------------
-
-
-filter 1 * (one test should be error, the other is dynamically constructed select)
-insert 2 *
-label-elements 0 *
-pack 0 *
-rename 0 *
-replace 0 *
-set-attributes 0 *
-unescape 1 *
-unwrap 0 *
-wrap 2 *
-
-
-add-attribute 3
-delete 3
-choose 4
-compare 4
-count 2
-data 0
-declare-step 3
-escape-markup 0
-evaluation-order 3
-for-each 0
-group 2
-http-request 0
-identity 4 (1 due to eXist issue with PI)
-input 5
-load 0
-pipe 001 1
-sink 0
-string-replace 0 
-xinclude 0
-xslt 3
 
