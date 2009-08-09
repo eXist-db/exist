@@ -53,7 +53,7 @@ public class MetadataModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "Metadata module";
+		return "A module for accessing the metadata for the dynamic context.";
 	}
 
     public String getReleaseVersion() {
