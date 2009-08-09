@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,19 +50,19 @@ public class TwoParamFunctions extends BasicFunction {
                 new QName("atan2", MathModule.NAMESPACE_URI),
                 "Returns the angle theta from the conversion of rectangular coordinates (x, y) to polar coordinates (r, theta).",
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, ""),
-                    new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "")
+                    new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The y coordinate"),
+                    new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The x coordinate")
                 },
-                new FunctionParameterSequenceType("theta", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The angle theta")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in polar coordinates that corresponds to the point (x, y) in Cartesian coordinates.")
                 ),
         new FunctionSignature(
                 new QName("power", MathModule.NAMESPACE_URI),
                 "Returns the value of $value raised to the power of $power.",
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, ""),
-                    new FunctionParameterSequenceType("power", Type.DOUBLE, Cardinality.EXACTLY_ONE, "")
+                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
+                    new FunctionParameterSequenceType("power", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The power to raise the value to")
                 },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
                 )
     };
     
