@@ -1,6 +1,6 @@
 /*
- *  eXist Mail Module Extension SendEmailFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  eXist Mail Module Extension MailFolderFunctions
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -60,11 +60,11 @@ public class MailFolderFunctions extends BasicFunction
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "get-mail-folder", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Open's a mail folder.",
+			"Opens a mail folder.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "mail store handle retrieved from mail:get-mail-store()" ),
-				new FunctionParameterSequenceType( "foldername", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the folder to open" )
+				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" ),
+				new FunctionParameterSequenceType( "foldername", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the folder to open" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the folder handle." )
 			),
@@ -74,8 +74,8 @@ public class MailFolderFunctions extends BasicFunction
 			"Closes a mail folder.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" ),
-				new FunctionParameterSequenceType( "expunge", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean that specifies whether to expunge the folder on close." )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
+				new FunctionParameterSequenceType( "expunge", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "A boolean that specifies whether to expunge the folder on close." )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)

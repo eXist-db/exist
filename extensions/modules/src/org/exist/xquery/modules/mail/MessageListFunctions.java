@@ -1,6 +1,6 @@
 /*
- *  eXist Mail Module Extension SendEmailFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  eXist Mail Module Extension MessageListFunctions
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -90,7 +90,7 @@ public class MessageListFunctions extends BasicFunction
 			"Returns a message list of all messages in a folder.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the message list handle." )
 			),
@@ -108,8 +108,8 @@ public class MessageListFunctions extends BasicFunction
 			"The format string should conform to Java SimpleDateFormat specifications and the date string must conform to the specified format string.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mail folder handle retrieved from mail:get-mail-folder()" ),
-				new FunctionParameterSequenceType( "search-parameters", Type.ELEMENT, Cardinality.EXACTLY_ONE, "an xml fragment defining the search terms" )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
+				new FunctionParameterSequenceType( "search-parameters", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The xml fragment defining the search terms" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the message list handle." )
 			),
@@ -119,8 +119,8 @@ public class MessageListFunctions extends BasicFunction
 			"Returns a message list of all messages in a folder as XML.  If there are no messages in the list, an empty sequence will be returned",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "message list handle retrieved from mail:get-message-list() or mail:search-message-list()" ),
-				new FunctionParameterSequenceType( "include-headers", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean specifying whether to include message headers" )
+				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" ),
+				new FunctionParameterSequenceType( "include-headers", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "A boolean specifying whether to include message headers" )
 			},
 			new FunctionReturnSequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE, "the list of all messages in a folder as XML" )
 			),
@@ -130,7 +130,7 @@ public class MessageListFunctions extends BasicFunction
 			"Closes a message list.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )
+				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)

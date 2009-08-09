@@ -1,6 +1,6 @@
 /*
- *  eXist Mail Module Extension SendEmailFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  eXist Mail Module Extension MailStoreFunctions
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -59,10 +59,10 @@ public class MailStoreFunctions extends BasicFunction
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "get-mail-store", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
-			"Open's a mail store. Host/User/Password/Protocol values will be obtained from the session.",
+			"Opens a mail store. Host/User/Password/Protocol values will be obtained from the session.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "JavaMail session handle retrieved from mail:get-mail-session()" )
+				new FunctionParameterSequenceType( "mail-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The JavaMail session handle retrieved from mail:get-mail-session()" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the store handle." )
 			),
@@ -72,7 +72,7 @@ public class MailStoreFunctions extends BasicFunction
 			"Closes a mail store.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "mail store handle retrieved from mail:get-mail-store()" )
+				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 			)
