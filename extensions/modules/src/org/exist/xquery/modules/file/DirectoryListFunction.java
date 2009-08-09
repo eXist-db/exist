@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.file;
 
 import java.io.File;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -32,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -140,9 +142,15 @@ public class DirectoryListFunction extends BasicFunction {
 				builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
 				
 				builder.addAttribute(new QName("name", null, null), files[j].getName());
-				builder.addAttribute(new QName("size", null, null), Long.toString(files[j].length()));				
-				// FIXIT: return a dateTime instead of a long. /ljo
-				builder.addAttribute(new QName("modified", null, null), Long.toString(files[j].lastModified()));				
+
+                Long sizeLong = files[j].length();
+                String sizeString = Long.toString(sizeLong);
+                String humanSize = getHumanSize(sizeLong, sizeString);
+                
+				builder.addAttribute(new QName("size", null, null), sizeString);
+                builder.addAttribute(new QName("human-size", null, null), humanSize);
+                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(files[j].lastModified())).getStringValue());
+
 				if (relDir != null && relDir.length() > 0) {
 					builder.addAttribute(new QName("subdir", null, null), relDir);
 				}
@@ -158,5 +166,25 @@ public class DirectoryListFunction extends BasicFunction {
 		
 		return(xmlResponse);
 	}
+
+    private String getHumanSize(final Long sizeLong, final String sizeString) {
+        String humanSize = "n/a";
+        int sizeDigits = sizeString.length();
+        if (sizeDigits < 4) {
+            humanSize = Long.toString(Math.abs(sizeLong));
+        } else if (sizeDigits >= 4 && sizeDigits <= 5) {
+            if (sizeLong < 1024) {
+                // We don't want 0KB för e.g. 1006 Bytes.
+                humanSize = Long.toString(Math.abs(sizeLong));
+            } else {
+                humanSize = Math.abs((sizeLong / 1024)) + "KB";
+            }
+        } else if(sizeDigits >= 6 && sizeDigits <= 8) {
+            humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
+        } else if (sizeDigits >= 9) {
+            humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) +"GB";
+        }
+        return humanSize;
+    }
 	
 }
