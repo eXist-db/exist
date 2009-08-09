@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,93 +48,93 @@ public class OneParamFunctions extends BasicFunction {
     public final static FunctionSignature signature[] = {
         new FunctionSignature(
                 new QName("abs", MathModule.NAMESPACE_URI),
-                "Returns the absolute value of a number.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "Value to return the absolute value of") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Calculates the absolute value (distance from zero) of a value or expression",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value to return the absolute value of") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the absolute value (distance from zero) of a value or expression")
                 ),
         new FunctionSignature(
                 new QName("acos", MathModule.NAMESPACE_URI),
-                "Returns the arccosine value of a number in radians.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Returns the arc cosine of an angle, in the range of 0.0 through pi.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
                 ),
         new FunctionSignature(
                 new QName("asin", MathModule.NAMESPACE_URI),
-                "Returns the arcsine value of a number in radians.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Returns the arc sine of an angle, in the range of -pi/2 through pi/2.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
                 ),
         new FunctionSignature(
                 new QName("atan", MathModule.NAMESPACE_URI),
-                "Returns the arctangent value of a number in radians.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Returns the arc tangent of an angle, in the range of -pi/2 through pi/2.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
                 ),
         new FunctionSignature(
                 new QName("ceil", MathModule.NAMESPACE_URI),
                 "Returns the smallest (closest to negative infinity) value that is not less than the argument and is equal to a mathematical integer.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
                 ),
         new FunctionSignature(
                 new QName("cos", MathModule.NAMESPACE_URI),
-                "Returns e (the base of natural logarithms) raised to a power.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Returns the trigonometric cosine of an angle.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the cosine")
                 ),
         new FunctionSignature(
                 new QName("exp", MathModule.NAMESPACE_URI),
-                "Returns the absolute value of a number.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Calculates e (the Euler Constant) raised to the power of a value or expression",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression")
                 ),
         new FunctionSignature(
                 new QName("floor", MathModule.NAMESPACE_URI),
                 "Returns the largest (closest to positive infinity) value that is not greater than the argument and is equal to a mathematical integer.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the floor value")
                 ),
         new FunctionSignature(
                 new QName("log", MathModule.NAMESPACE_URI),
-                "Returns the natural logarithm of a number.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Returns the natural logarithm (base e) of a number.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log")
                 ),
         new FunctionSignature(
                 new QName("round", MathModule.NAMESPACE_URI),
                 "Returns the double value that is closest to a integer.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the rounded value")
                 ),
         new FunctionSignature(
                 new QName("sin", MathModule.NAMESPACE_URI),
-                "Returns the sine of the number in radians.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                "Returns the trigonometric sine of an angle.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the sine")
                 ),
         new FunctionSignature(
                 new QName("sqrt", MathModule.NAMESPACE_URI),
-                "Returns the square root of a number.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "square root of $x")
+                "Returns the correctly rounded positive square root of a number.",
+                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the square root of $x")
                 ),
         new FunctionSignature(
                 new QName("tan", MathModule.NAMESPACE_URI),
                 "Returns the tangent of the number passed as an argument in radians.",
-                new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                new SequenceType[] { new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The radians") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the tangent")
                 ),
         new FunctionSignature(
                 new QName("degrees", MathModule.NAMESPACE_URI),
                 "Converts angle in radians to degrees.",
-                new SequenceType[] { new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("degrees", Type.DOUBLE, Cardinality.EXACTLY_ONE, "degrees")
+                new SequenceType[] { new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The radians") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the degrees")
                 ),
         new FunctionSignature(
                 new QName("radians", MathModule.NAMESPACE_URI),
                 "Converts angle in degrees to radians.",
-                new SequenceType[] { new FunctionParameterSequenceType("degrees", Type.DOUBLE, Cardinality.EXACTLY_ONE, "") },
-                new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.EXACTLY_ONE, "radians")
+                new SequenceType[] { new FunctionParameterSequenceType("degrees", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The degrees") },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the radians")
                 )
     };
     
