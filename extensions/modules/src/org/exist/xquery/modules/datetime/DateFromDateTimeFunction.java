@@ -49,7 +49,7 @@ public class DateFromDateTimeFunction extends BasicFunction
         new SequenceType[] {
             new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The dateTime to extract the date from.")
         },
-		new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "The extracted date.")
+		new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "the extracted date.")
     );
 
     public DateFromDateTimeFunction(XQueryContext context)
