@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -58,9 +58,9 @@ public class GetAttribute extends Function
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "" )
+				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The session attribute name" )
 			},
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_MORE, "attribute value" ) );
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute value" ) );
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -68,9 +68,9 @@ public class GetAttribute extends Function
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "" )
+				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The session attribute name" )
 			},
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_MORE, "attribute value" ),
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute value" ),
 			"Moved to 'session' module. Renamed to session:get-attribute");
 		
 	public GetAttribute( XQueryContext context ) 

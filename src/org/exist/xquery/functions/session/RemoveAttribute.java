@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -53,7 +53,7 @@ public class RemoveAttribute extends Function {
 			new QName("remove-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Removes the attribute with the supplied name from the current session",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 

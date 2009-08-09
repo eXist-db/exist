@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -53,8 +53,8 @@ public class SetAttribute extends Function
 			new QName( "set-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
 			"Stores a value in the current session using the supplied attribute name. If no session exists, then one will be created.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
-				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "Value to be stored in the session by the attribute name" )
+				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" ),
+				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value to be stored in the session by the attribute name" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 	

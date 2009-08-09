@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -58,10 +58,10 @@ public class SetCurrentUser extends BasicFunction {
 			"Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
 			"new user identity.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "the user name"),
-				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password")
+				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "The user name"),
+				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if valid user"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the user name and password represent a valid user"));
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -69,10 +69,10 @@ public class SetCurrentUser extends BasicFunction {
 			"Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
 			"new user identity.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "the user name"),
-				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password")
+				new FunctionParameterSequenceType("user-name", Type.STRING, Cardinality.EXACTLY_ONE, "The user name"),
+				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if valid user"),
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the user name and password represent a valid user"),
 			"Moved to session module. See session:set-current-user.");
 	
 	public SetCurrentUser(XQueryContext context) {
