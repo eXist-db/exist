@@ -1,6 +1,6 @@
 /*
  *  eXist Image Module Extension GetMetadataFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -71,11 +71,11 @@ public class GetMetadataFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-metadata", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the metadta of the image passed in, returning the images XML metadata.",
+			"Gets the metadta of the image passed in, returning the images XML metadata.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "image data"),
-				new FunctionParameterSequenceType("native-format", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "When true() metadata of the images native format is returned, otherwise common java ImageIO metadata is returned.")
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data"),
+				new FunctionParameterSequenceType("native-format", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "When true metadata of the images native format is returned, otherwise common java ImageIO metadata is returned.")
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the image metadata"));
 

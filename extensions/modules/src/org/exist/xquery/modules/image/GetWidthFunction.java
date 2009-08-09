@@ -1,6 +1,6 @@
 /*
  *  eXist Image Module Extension GetWidthFunction
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -62,7 +62,7 @@ public class GetWidthFunction extends BasicFunction
 			"Gets the width of the image passed in, returning an integer of the images width in pixels or an empty sequence if the image is invalid.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "the image data")
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
 			},
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the width in pixels"));
 

@@ -1,6 +1,6 @@
 /*
  *  eXist Image Module Extension
- *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
