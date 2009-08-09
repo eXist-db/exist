@@ -293,7 +293,7 @@ let $steps := <p:declare-step >
 
 </p:declare-step>
 return
-    <p:declare-step name="{$pipeline/@name}">
+    <p:declare-step name="{if ($pipeline/@name) then $pipeline/@name else 'pipeline'}">
         {$steps/*}
     </p:declare-step>
 };
