@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -54,7 +54,7 @@ public class EncodeURL extends BasicFunction {
 			new QName("encode-url", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Encodes the specified URL with the current HTTP session-id.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URL to encode")
 			},
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the encoded URL"));
 	
@@ -63,7 +63,7 @@ public class EncodeURL extends BasicFunction {
 			new QName("encode-url", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Encodes the specified URL with the current HTTP session-id.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URL to encode")
 			},
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the encoded URL"),
 			"Moved to the 'session' module. See session:encode-url.");

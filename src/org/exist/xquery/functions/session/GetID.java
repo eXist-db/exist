@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -54,14 +54,14 @@ public class GetID extends Function
 			new QName("get-id", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Returns the ID of the current session or an empty sequence if there is no session.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "session ID")
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the session ID")
 	);
 	
 	public final static FunctionSignature deprecated = new FunctionSignature(
 			new QName("get-session-id", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the ID of the current session or an empty sequence if there is no session.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "session ID"),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the session ID"),
 			"Moved to session module and renamed to session:get-id."
 	);
 	

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -33,9 +33,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -51,7 +51,7 @@ public class Clear extends BasicFunction {
 			new QName("clear", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
 			"Removes all attributes from the current HTTP session. Does NOT invalidate the session.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "empty sequence"));
+			new SequenceType(Type.STRING, Cardinality.EMPTY));
 
 	/**
 	 * @param context
