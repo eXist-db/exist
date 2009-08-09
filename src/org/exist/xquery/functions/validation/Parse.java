@@ -22,11 +22,8 @@
 package org.exist.xquery.functions.validation;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -50,6 +47,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.resolver.SearchResourceResolver;
@@ -80,9 +78,16 @@ import org.xml.sax.XMLReader;
 public class Parse extends BasicFunction {
 
     private static final String extendedFunctionTxt =
-            "Validate document by parsing $instance. Optionally" +
-            "a location of a grammar file (xsd, dtd) can be set and" +
-            "a xml catalog.";
+            "Validate document by parsing $instance. Optionally " +
+            "grammar caching can be uses and " +
+            "an XML catalog can be specified.";
+
+    private static final String documentTxt
+            = "Document referenced as xs:anyURI() or a node (element or fn:doc()).";
+    private static final String catalogTxt
+            = "Catalog referenced as xs:anyURI(), doc() or collection().";
+    private static final String cacheTxt
+            = "Set true() to use grammar cache.";
 
     private final BrokerPool brokerPool;
 
@@ -93,7 +98,9 @@ public class Parse extends BasicFunction {
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    documentTxt),
+                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    cacheTxt)
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 Shared.simplereportText)),
@@ -103,9 +110,11 @@ public class Parse extends BasicFunction {
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    documentTxt),
+                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    cacheTxt),
                     new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_MORE,
-                    "Catalog or location of XML catalog."),
+                    catalogTxt),
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 Shared.simplereportText)),
@@ -115,7 +124,9 @@ public class Parse extends BasicFunction {
                 extendedFunctionTxt + " An xml report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    documentTxt),
+                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    cacheTxt),
                 },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                 Shared.xmlreportText)),
@@ -125,9 +136,11 @@ public class Parse extends BasicFunction {
                 extendedFunctionTxt + " An xml report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                    documentTxt),
+                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    cacheTxt),
                     new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_MORE,
-                    "Catalog or location of XML catalog."),
+                    catalogTxt),
                 },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                 Shared.xmlreportText))
@@ -146,6 +159,7 @@ public class Parse extends BasicFunction {
             throws XPathException {
 
         XMLEntityResolver entityResolver = null;
+        GrammarPool grammarPool = null;
         File tmpFile = null;
 
         ValidationReport report = new ValidationReport();
@@ -164,39 +178,18 @@ public class Parse extends BasicFunction {
             // Get inputstream for instance document
             InputSource instance = Shared.getInputSource(args[0].itemAt(0), context);
 
-            // Prepare grammar ; does not work
-            /*
-            if (args[1].hasOne()) {
-                // Get URL for grammar
-                grammarUrl = Shared.getUrl(args[1].itemAt(0));
-
-                // Special case for DTD, the document needs to be rewritten.
-                if (grammarUrl.endsWith(".dtd")) {
-                    StreamSource newInstance = Shared.getStreamSource(instance);
-                    tmpFile = preparseDTD(newInstance, grammarUrl);
-                    instance = new InputSource(new FileInputStream(tmpFile));
-
-                } else if (grammarUrl.endsWith(".xsd")) {
-                    xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION, grammarUrl);
-
-                } else {
-                    throw new XPathException("Grammar type not supported.");
-                }
-            }
-            */
-
             // Handle catalog
-            if(args.length==1){
-                LOG.debug("No Catalog found");
+            if(args.length==2){
+                LOG.debug("No Catalog specified");
 
-            } else if (args[1].isEmpty()) {
+            } else if (args[2].isEmpty()) {
                 // Use system catalog
                 Configuration config = brokerPool.getConfiguration();
                 entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
                 
             } else {
                 // Get URL for catalog
-                String catalogUrls[] = Shared.getUrls(args[1]);
+                String catalogUrls[] = Shared.getUrls(args[2]);
                 String singleUrl = catalogUrls[0];
 
                 if (singleUrl.endsWith("/")) {
@@ -217,8 +210,19 @@ public class Parse extends BasicFunction {
 
             }
 
+            boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
+            // Use grammarpool
+            if(useCache){
+                LOG.debug("Grammar caching enabled.");
+                Configuration config = brokerPool.getConfiguration();
+                grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            }
+
             // Parse document
+            LOG.debug("Start parsing document");
             xmlReader.parse(instance);
+            LOG.debug("Stopped parsing document");
 
             // Distill namespace from document
             report.setNamespaceUri(contenthandler.getNamespaceUri());
@@ -259,6 +263,8 @@ public class Parse extends BasicFunction {
     }
 
     // ####################################
+
+    
     private XMLReader getXMLReader() throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
@@ -308,4 +314,26 @@ public class Parse extends BasicFunction {
         }
         return sb.toString();
     }
+
+    /*
+     *           // Prepare grammar ; does not work
+            /*
+            if (args[1].hasOne()) {
+                // Get URL for grammar
+                grammarUrl = Shared.getUrl(args[1].itemAt(0));
+
+                // Special case for DTD, the document needs to be rewritten.
+                if (grammarUrl.endsWith(".dtd")) {
+                    StreamSource newInstance = Shared.getStreamSource(instance);
+                    tmpFile = preparseDTD(newInstance, grammarUrl);
+                    instance = new InputSource(new FileInputStream(tmpFile));
+
+                } else if (grammarUrl.endsWith(".xsd")) {
+                    xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION, grammarUrl);
+
+                } else {
+                    throw new XPathException("Grammar type not supported.");
+                }
+            }
+            */
 }

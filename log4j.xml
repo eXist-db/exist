@@ -65,13 +65,13 @@
         </layout>
     </appender>
     
-    <appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
+    <!--appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/validation.log"/>
         <param name="MaxFileSize" value="500KB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
-    </appender>
+    </appender-->
     
     <!--appender name="exist.webdav" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/webdav.log"/>
@@ -134,10 +134,10 @@
         <appender-ref ref="console"/>
     </category>
     
-    <category name="org.exist.validation" additivity="false">
+    <!--category name="org.exist.validation" additivity="false">
         <priority value="debug"/>
         <appender-ref ref="exist.validation"/>
-    </category>
+    </category-->
     
     <!--category name="org.exist.http.webdav" additivity="false">
         <priority value="debug"/>
