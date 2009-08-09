@@ -85,7 +85,7 @@ public class Parse extends BasicFunction {
     private static final String documentTxt
             = "Document referenced as xs:anyURI() or a node (element or result of fn:doc()).";
     private static final String catalogTxt
-            = "Catalog referenced as xs:anyURI() or result of fn:doc().";
+            = "Catalogs referenced as xs:anyURI() or result of fn:doc().";
     private static final String cacheTxt
             = "Set true() to use grammar cache.";
 
@@ -113,7 +113,7 @@ public class Parse extends BasicFunction {
                     documentTxt),
                     new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     cacheTxt),
-                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_MORE,
+                    new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
                     catalogTxt),
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -139,7 +139,7 @@ public class Parse extends BasicFunction {
                     documentTxt),
                     new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     cacheTxt),
-                    new FunctionParameterSequenceType("catalog", Type.ITEM, Cardinality.ZERO_OR_MORE,
+                    new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
                     catalogTxt),
                 },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,

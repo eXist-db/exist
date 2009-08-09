@@ -66,11 +66,11 @@ import org.xml.sax.helpers.AttributesImpl;
 public class Shared {
 
     private final static Logger LOG = Logger.getLogger(Shared.class);
-    public final static String simplereportText = "Returns true() if the " +
-            "document is valid and no single problem occured, false() for " +
+    public final static String simplereportText = "value true() if the " +
+            "document is valid and no single problem occured, value false() for " +
             "all other situations. Check corresponding report function " +
             "for details.";
-    public final static String xmlreportText = "Validation report formatted as\n<report>\n" +
+    public final static String xmlreportText = "a validation report formatted as\n<report>\n" +
             "\t<status>valid</status>\n" + "\t<namespace>...\n" + "\t<time>...\n" +
             "\t<exception>\n" +
             "\t\t<class>...\n" + "\t\t<message>...\n" + "\t\t<stacktrace>...\n" +
