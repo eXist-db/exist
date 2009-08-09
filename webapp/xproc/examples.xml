@@ -52,9 +52,15 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="examples/pdirectory-list.xproc" target="_example">pdirectory-list.xproc</a>
+                        <a href="examples/pdirectory-list-native.xproc" target="_example">p:directory-list-native.xproc</a>
                     </td>
-                    <td>p:directory step example on eXist directory.</td>
+                    <td>p:directory step example working on eXist collections.</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="examples/pdirectory-list-native.xproc" target="_example">p:directory-list-native.xproc</a>
+                    </td>
+                    <td>p:directory step example on file system directories (NOTE - requires existdb File module to be enabled).</td>
                 </tr>
                 <tr>
                     <td>
