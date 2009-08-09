@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -30,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -52,7 +53,7 @@ public class EchoFunction extends BasicFunction {
 			new QName("echo", ExampleModule.NAMESPACE_URI, ExampleModule.PREFIX),
 			"A useless example function. It just echoes the input parameters.",
 			new SequenceType[] { new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ZERO_OR_MORE, "The text to echo")},
-			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_MORE, "The echoed text"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the echoed text"));
 
 	public EchoFunction(XQueryContext context) {
 		super(context, signature);
