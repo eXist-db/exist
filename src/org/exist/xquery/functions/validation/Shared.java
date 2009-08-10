@@ -66,7 +66,7 @@ import org.xml.sax.helpers.AttributesImpl;
 public class Shared {
 
     private final static Logger LOG = Logger.getLogger(Shared.class);
-    public final static String simplereportText = "value true() if the " +
+    public final static String simplereportText = "true() if the " +
             "document is valid and no single problem occured, value false() for " +
             "all other situations. Check corresponding report function " +
             "for details.";
