@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -33,9 +33,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.util.UtilModule;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -54,14 +53,14 @@ public class GetVersion extends BasicFunction
 			new QName("get-version", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the version of eXist running this query.",
 			FunctionSignature.NO_ARGS,
-			new FunctionParameterSequenceType("version-string", Type.STRING, Cardinality.EXACTLY_ONE, "the version string"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the version string"));
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
 			new QName("eXist-version", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the version of eXist running this query.",
 			FunctionSignature.NO_ARGS,
-			new FunctionParameterSequenceType("version-string", Type.STRING, Cardinality.EXACTLY_ONE, "the version string"),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the version string"),
 			"Moved to system module and renamed to system:get-version.");
 
 	public GetVersion(XQueryContext context)

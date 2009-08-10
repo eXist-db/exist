@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -32,7 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -52,7 +52,7 @@ public class GetBuild extends BasicFunction
 			new QName("get-build", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the build of eXist running this query.",
 			FunctionSignature.NO_ARGS,
-			new FunctionParameterSequenceType("build-number", Type.STRING, Cardinality.EXACTLY_ONE, "The build number"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the build number"));
 
 	public GetBuild(XQueryContext context)
 	{

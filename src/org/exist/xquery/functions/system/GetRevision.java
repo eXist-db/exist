@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -32,7 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -50,9 +50,9 @@ public class GetRevision extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-revision", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Returns the SubVersion (SVN) revision id of eXist running this query.",
+			"Returns the SubVersion (SVN) revision ID of eXist running this query.",
 			FunctionSignature.NO_ARGS,
-			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "The SubVersion (SVN) revision ID of the eXist running this query."));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the revision ID."));
 
 	public GetRevision(XQueryContext context)
 	{

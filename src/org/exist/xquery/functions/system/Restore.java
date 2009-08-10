@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -51,8 +52,9 @@ public class Restore extends BasicFunction {
 					new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
 							"The password for the admin user"),
 					new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-							"Set the admin password to this new password.") }, new FunctionParameterSequenceType("result",
-					Type.NODE, Cardinality.EXACTLY_ONE, "the restore results"));
+							"Set the admin password to this new password.") 
+			}, 
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the restore results"));
 
 	public final static QName RESTORE_ELEMENT = new QName("restore", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	public final static QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);

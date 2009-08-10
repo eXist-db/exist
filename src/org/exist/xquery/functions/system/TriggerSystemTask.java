@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-09 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
+ */
 package org.exist.xquery.functions.system;
 
 import java.util.Properties;
@@ -29,13 +50,10 @@ public class TriggerSystemTask extends BasicFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("trigger-system-task", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Trigger a system task. The first argument specifies the name of the Java class to be executed. The " +
-            "class has to implement org.exist.storage.SystemTask. An XML fragment may be passed as second " +
-            "argument. It should have the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
-            "</parameters>. The parameters are transformed into Java properties and passed to the system task.",
+			"Trigger a system task.",
 			new SequenceType[]{
-                new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to execute.  It must implement org.exist.storage.SystemTask"),
-                new FunctionParameterSequenceType("task-parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
+                new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the Java class to execute.  It must implement org.exist.storage.SystemTask"),
+                new FunctionParameterSequenceType("task-parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
             },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
