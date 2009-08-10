@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -37,6 +37,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -60,9 +61,9 @@ public class DocumentNameOrId extends BasicFunction {
             "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
             "does not belong to a stored document, the empty sequence is returned.",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "a node or a string path pointing to a resource in the database.")
+					new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "The node or a string path pointing to a resource in the database.")
 			},
-			new FunctionParameterSequenceType("document-name", Type.STRING, Cardinality.ZERO_OR_ONE, "the name of the document"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name of the document"));
 	
 	public final static FunctionSignature docIdSignature =
 		new FunctionSignature(
@@ -71,9 +72,9 @@ public class DocumentNameOrId extends BasicFunction {
             "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
             "does not belong to a stored document, the empty sequence is returned.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "a node or a string path pointing to a resource in the database.")
+				new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "The node or a string path pointing to a resource in the database.")
 			},
-			new FunctionParameterSequenceType("document-id", Type.INT, Cardinality.ZERO_OR_ONE, "the id of the document"));
+			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the ID of the document"));
 	
 	public DocumentNameOrId(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);

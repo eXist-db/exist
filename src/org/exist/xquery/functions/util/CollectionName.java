@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -34,6 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -60,9 +61,9 @@ public class CollectionName extends BasicFunction {
             "If the argument is a string, it is interpreted as path to a resource and the function returns the " +
             "computed parent collection path for this resource.",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("node-or-path-string", Type.ITEM, Cardinality.ZERO_OR_ONE, "A document node or a path string.  ")
+					new FunctionParameterSequenceType("node-or-path-string", Type.ITEM, Cardinality.ZERO_OR_ONE, "The document node or a path string.")
 			},
-			new FunctionParameterSequenceType("collection-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The name of the collection."));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name of the collection."));
 	
 	public CollectionName(XQueryContext context) {
 		super(context, signature);

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -31,6 +31,7 @@ import org.exist.xquery.LocalVariable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -54,11 +55,11 @@ public class CatchFunction extends Function {
 			"$b, the function checks the name of the exception and calls $c if it matches one of " +
 			"the fully qualified Java class names specified in $a.  A value of \"*\" in $a will catch all java exceptions",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
-					new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "These code blocks will be put inside of a the try part of the try-catch statement."),
-					new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "These code blocks will called if the catch matches one of the $java-classnames")
+					new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
+					new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
+					new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be will called if the catch matches one of the $java-classnames")
 			},
-			new FunctionParameterSequenceType("results", Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"));
     
     /**
      * @param context

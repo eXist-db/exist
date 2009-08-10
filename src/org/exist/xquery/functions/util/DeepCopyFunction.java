@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -53,9 +54,9 @@ public class DeepCopyFunction extends BasicFunction {
 			"Performs a Deep Clone of the passed in item.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.ZERO_OR_ONE, "item to be cloned"),
+				new FunctionParameterSequenceType("item", Type.ITEM, Cardinality.ZERO_OR_ONE, "The item to be cloned"),
 			},
-			new FunctionParameterSequenceType("clone", Type.ITEM, Cardinality.ZERO_OR_ONE, "the item clone"));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the item clone"));
 
 	public DeepCopyFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);			

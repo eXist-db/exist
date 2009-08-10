@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -35,6 +35,7 @@ import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -57,7 +58,7 @@ public class Expand extends BasicFunction {
             new SequenceType[]{
                 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE, "The node(s) to create in-memory copies of.")
             },
-            new FunctionParameterSequenceType("results", Type.NODE, Cardinality.ZERO_OR_MORE, "results")),
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results")),
         new FunctionSignature(
             new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Creates an in-memory copy of the passed node set, using the specified " +
@@ -67,9 +68,9 @@ public class Expand extends BasicFunction {
             "as the exist:serialize option.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_MORE, "The node(s) to create in-memory copies of."),
-                new FunctionParameterSequenceType("serialization-parameters", Type.STRING, Cardinality.EXACTLY_ONE, "")
+                new FunctionParameterSequenceType("serialization-parameters", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization parameters")
             },
-            new FunctionParameterSequenceType("results", Type.NODE, Cardinality.ZERO_OR_MORE, "results"))
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"))
     };
 
     public Expand(XQueryContext context, FunctionSignature signature) {

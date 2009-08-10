@@ -34,6 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -57,10 +58,10 @@ public class GetNodeById extends BasicFunction {
 			"not check if the passed id does really point to an existing node. It just returns " +
 			"a pointer, which may thus be invalid.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "the document whose node is to be retrieved by its id"),
-				new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "the internal node id")
+				new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "The document whose node is to be retrieved by its id"),
+				new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "The internal node id")
 			},
-			new FunctionParameterSequenceType("result", Type.NODE, Cardinality.EXACTLY_ONE, "the node"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the node"));
 	
 	/**
 	 * @param context

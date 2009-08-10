@@ -31,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -47,8 +48,8 @@ public class Hash extends BasicFunction {
 	
 	private static final FunctionParameterSequenceType message = new FunctionParameterSequenceType("message", Type.ITEM, Cardinality.EXACTLY_ONE, "The string to generate the hashcode from");
 	private static final FunctionParameterSequenceType algorithm = new FunctionParameterSequenceType("algorithm", Type.STRING, Cardinality.EXACTLY_ONE, "The algorithm used to generate the hashcode");
-	private static final FunctionParameterSequenceType base64flag = new FunctionParameterSequenceType("base64flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "specifies whether to return the result as Base64 encoded");
-	private static final FunctionParameterSequenceType result = new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the hashcode");
+	private static final FunctionParameterSequenceType base64flag = new FunctionParameterSequenceType("base64flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag that specifies whether to return the result as Base64 encoded");
+	private static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the hashcode");
 	
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(

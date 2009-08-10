@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -36,6 +36,7 @@ import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,14 +59,14 @@ public class BuiltinFunctions extends BasicFunction {
 				"Returns a sequence containing the QNames of all functions " +
 				"declared in the module identified by the specified namespace URI. " +
 				"An error is raised if no module is found for the specified URI.",
-				new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the namespace URI of the function module") },
-				new FunctionParameterSequenceType("function-names", Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
+				new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 		new FunctionSignature(
 			new QName("registered-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a sequence containing the QNames of all functions " +
 			"currently known to the system, including functions in imported and built-in modules.",
 			null,
-			new FunctionParameterSequenceType("function-names", Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 	};
 
 	public BuiltinFunctions(XQueryContext context, FunctionSignature signature) {

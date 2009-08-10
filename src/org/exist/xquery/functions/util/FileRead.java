@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -34,6 +34,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -44,28 +46,28 @@ import org.exist.xquery.value.Type;
  * @author Dizzzz
  * @author Andrzej Taramina
  *
- * DEPRECATED.  Moved to the file extension module.  See file:file-read.  This class will eventually be deleted
+ * DEPRECATED.  Moved to the file extension module.  See file:read.  This class will eventually be deleted
  */
 public class FileRead extends BasicFunction {
 	
 	public final static FunctionSignature deprecated[] = {
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Read content of file $a.",
+			"Read the contents of a file as a string.",
 			new SequenceType[] {				
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL of the file to read")
 				},				
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file"),
 			"Moved to the file extension module.  See file:read() in the file extension module"
 			),
 		new FunctionSignature(
 			new QName("file-read", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Read content of file $a with the encoding specified in $b.",
+			"Read the contents of a file as a string.",
 			new SequenceType[] {
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new FunctionParameterSequenceType("url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL of the file to read"),
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding of the file")
 				},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file"),
 			"Moved to the file extension module.  See file:read() in the file extension module"
 			)
 		};

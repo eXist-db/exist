@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2007-2009 The eXist Project
+ * Copyright (C) 2007-09 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -21,14 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Comparator;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -45,9 +39,6 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class ExtractDocs extends BasicFunction {
@@ -61,9 +52,9 @@ public class ExtractDocs extends BasicFunction {
             "The module is identified through its module namespace URI, which is passed as an argument. " +
             "The function returns a module documentation in XQDoc format.",
 			new SequenceType[] {
-                    new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.EXACTLY_ONE, "namespace URI of the function module")
+                    new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module")
             },
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "xqdocs for the function module"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the xqdocs for the function module"));
 
     private final String XQDOC_NS = "http://www.xqdoc.org/1.0";
 
