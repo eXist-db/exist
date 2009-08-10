@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -51,13 +51,19 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class RegexpFilter extends BasicFunction {
     
-    // Setup function signature
+    protected static final FunctionParameterSequenceType FLAGS_PARAM = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
+
+	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "The regular expression to perform against the text");
+
+	protected static final FunctionParameterSequenceType TEXT_PARAM = new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "The text to filter");
+
+	// Setup function signature
     public final static FunctionSignature signatures[] = {new FunctionSignature(
             new QName("filter", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "Filter substrings that match the regular expression in the text.",
             new SequenceType[]{
-                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "the text to filter"),
-                new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "the regular expression to perform against the text")
+                TEXT_PARAM,
+                REGEX_PARAM
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the substrings")
     ),
@@ -67,8 +73,8 @@ public class RegexpFilter extends BasicFunction {
 			"Returns an empty sequence if the string does not match, or a sequence whose " +
 			"first item is the entire string, and whose following items are the matched groups.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "the text to filter"),
-                new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "the regular expression to perform against the text")
+                TEXT_PARAM,
+                REGEX_PARAM
 				},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "an empty sequence if the string does not match, or a sequence whose " +
 			"first item is the entire string, and whose following items are the matched groups.")
@@ -80,9 +86,9 @@ public class RegexpFilter extends BasicFunction {
 			"not match, or a sequence whose first item is the entire string, and whose " +
 			"following items are the matched groups.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "the text to filter"),
-                new FunctionParameterSequenceType("regularexpression", Type.STRING, Cardinality.EXACTLY_ONE, "the regular expression to perform against the text"),
-				new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                TEXT_PARAM,
+                REGEX_PARAM,
+				FLAGS_PARAM,
 				},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "an empty sequence if the string does "+
 			"not match, or a sequence whose first item is the entire string, and whose " +

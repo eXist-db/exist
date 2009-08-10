@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2009 The eXist team
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -63,10 +63,10 @@ import java.util.List;
  */
 public class MatchRegexp extends Function implements Optimizable {
 
-	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_MORE, "the node set that is to be searched for the keyword set");
-	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "the regular expressions to be matched against the fulltext index");
+	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set that is to be searched for the keyword set");
+	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "The regular expressions to be matched against the fulltext index");
 	protected static final FunctionParameterSequenceType FLAGS_PARAM = new FunctionParameterSequenceType("flag", Type.STRING, Cardinality.EXACTLY_ONE, "With 'w' specified, the regular expression is matched against the entire keyword, i.e. 'explain.*' will match 'explained' , but not 'unexplained'.");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence of all of the matching nodes");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the sequence of all of the matching nodes");
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -67,9 +67,9 @@ public class HighlightMatches extends BasicFunction {
             "result of the function call is inserted into the resulting node set where the matching sequence occurred. For example, " +
             "you can use this to mark all matching terms with a <span class=\"highlight\">abc</span>.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("source", Type.TEXT, Cardinality.ZERO_OR_MORE, "sequence of text nodes"),
-                    new FunctionParameterSequenceType("callback-function-ref", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a callback function (defined with util:function)"),
-                    new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "a sequence of additional values that will be passed to the callback functions third parameter.")
+                    new FunctionParameterSequenceType("source", Type.TEXT, Cardinality.ZERO_OR_MORE, "The sequence of text nodes"),
+                    new FunctionParameterSequenceType("callback-function-ref", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The callback function (defined with util:function)"),
+                    new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence of additional values that will be passed to the callback functions third parameter.")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the source with the added highlights"));
     

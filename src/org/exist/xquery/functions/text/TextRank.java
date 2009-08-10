@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -49,7 +49,7 @@ public class TextRank extends BasicFunction {
 		new QName("text-rank", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 		"This is just a skeleton for a possible ranking function. Don't use this.",
 		new SequenceType[]{
-			new FunctionParameterSequenceType("text", Type.NODE, Cardinality.ZERO_OR_ONE, "the text to rank")},
+			new FunctionParameterSequenceType("text", Type.NODE, Cardinality.ZERO_OR_ONE, "The text to rank")},
 		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the ranking of the text"));
 	
 	public TextRank(XQueryContext context) {

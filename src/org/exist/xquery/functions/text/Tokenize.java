@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -48,9 +48,9 @@ public class Tokenize extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("make-token", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-			"split a string into a token",
+			"Split a string into tokens",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ONE, "the string to tokenize")},
+					new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ONE, "The string to tokenize")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of tokens"));
 	
 	public Tokenize(XQueryContext context) {
