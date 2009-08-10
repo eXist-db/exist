@@ -78,9 +78,9 @@ public class Jing extends BasicFunction  {
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "Supported grammar documents extensions are \".xsd\" "+
+                            "The supported grammar documents extensions are \".xsd\" "+
                             "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -93,9 +93,9 @@ public class Jing extends BasicFunction  {
                 extendedFunctionTxt+" An xml report is returned.",
                 new SequenceType[]{
                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "Supported grammar documents extensions are \".xsd\" "+
+                            "The supported grammar documents extensions are \".xsd\" "+
                             "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,

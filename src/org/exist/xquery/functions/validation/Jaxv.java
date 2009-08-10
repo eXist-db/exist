@@ -74,9 +74,9 @@ public class Jaxv extends BasicFunction  {
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                            "Location of XML Schema (.xsd) document.")
+                            "The location of XML Schema (.xsd) document.")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
@@ -88,9 +88,9 @@ public class Jaxv extends BasicFunction  {
                 extendedFunctionTxt+" An xml report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                            "Location of XML Schema (.xsd) document.")
+                            "The location of XML Schema (.xsd) document.")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)

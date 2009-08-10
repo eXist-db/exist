@@ -22,7 +22,6 @@
 
 package org.exist.xquery.functions.validation;
 
-import java.util.Arrays;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -84,7 +83,7 @@ public class ValidationModule extends AbstractInternalModule {
          * @see org.exist.xquery.ValidationModule#getDescription()
          */
     public String getDescription() {
-        return "XML validation and grammars functions.";
+        return "A module for XML validation and grammars functions.";
     }
     
         /* (non-Javadoc)

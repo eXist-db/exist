@@ -79,7 +79,7 @@ public class Validation extends BasicFunction  {
             simpleFunctionTxt,
             new SequenceType[]{
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 Shared.simplereportText), deprecated1
@@ -92,9 +92,9 @@ public class Validation extends BasicFunction  {
             extendedFunctionTxt,
             new SequenceType[]{
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                 new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
-                        "Reference to an OASIS catalog file (.xml), "+
+                        "The reference to an OASIS catalog file (.xml), "+
                         "a collection (path ends with '/') or a grammar document. "+
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
@@ -109,7 +109,7 @@ public class Validation extends BasicFunction  {
             simpleFunctionTxt+" An  xml report is returned.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "Document referenced as xs:anyURI or a node (element or returned by fn:doc())")
+                            "The document referenced as xs:anyURI or a node (element or returned by fn:doc())")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText), deprecated2
@@ -121,9 +121,9 @@ public class Validation extends BasicFunction  {
             extendedFunctionTxt+" An xml report is returned.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "Document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                 new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
-                        "Reference to an OASIS catalog file (.xml), "+
+                        "The reference to an OASIS catalog file (.xml), "+
                         "a collection (path ends with '/') or a grammar document. "+
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
                         "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")

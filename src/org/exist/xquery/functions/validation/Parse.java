@@ -83,11 +83,11 @@ public class Parse extends BasicFunction {
             "an XML catalog can be specified.";
 
     private static final String documentTxt
-            = "Document referenced as xs:anyURI() or a node (element or result of fn:doc()).";
+            = "The document referenced as xs:anyURI() or a node (element or result of fn:doc()).";
     private static final String catalogTxt
-            = "Catalogs referenced as xs:anyURI() or result of fn:doc().";
+            = "The catalogs referenced as xs:anyURI() or result of fn:doc().";
     private static final String cacheTxt
-            = "Set true() to use grammar cache.";
+            = "The flag set to true() to use grammar cache.";
 
     private final BrokerPool brokerPool;
 
