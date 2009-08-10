@@ -47,9 +47,9 @@ import org.xml.sax.SAXException;
  */
 public class LogFunction extends BasicFunction 
 {
-	protected static final FunctionParameterSequenceType PRIORITY_PARAMETER = new FunctionParameterSequenceType( "priority", Type.STRING, Cardinality.EXACTLY_ONE, "the logging priority: 'error', 'warn', 'debug', 'info', 'trace'");
-	protected static final FunctionParameterSequenceType LOGGER_NAME_PARAMETER = new FunctionParameterSequenceType( "logger-name", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the logger, eg: my.app.log" );
-	protected static final FunctionParameterSequenceType MESSAGE_PARAMETER = new FunctionParameterSequenceType( "message", Type.ITEM, Cardinality.ZERO_OR_MORE, "the message to log" );
+	protected static final FunctionParameterSequenceType PRIORITY_PARAMETER = new FunctionParameterSequenceType( "priority", Type.STRING, Cardinality.EXACTLY_ONE, "The logging priority: 'error', 'warn', 'debug', 'info', 'trace'");
+	protected static final FunctionParameterSequenceType LOGGER_NAME_PARAMETER = new FunctionParameterSequenceType( "logger-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the logger, eg: my.app.log" );
+	protected static final FunctionParameterSequenceType MESSAGE_PARAMETER = new FunctionParameterSequenceType( "message", Type.ITEM, Cardinality.ZERO_OR_MORE, "The message to log" );
 
 	protected static final Logger logger = Logger.getLogger(LogFunction.class);
 	

@@ -46,7 +46,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class ModuleInfo extends BasicFunction {
 	
-	protected static final FunctionParameterSequenceType NAMESPACE_URI_PARAMETER = new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the namespace URI of the module");
+	protected static final FunctionParameterSequenceType NAMESPACE_URI_PARAMETER = new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the module");
 
 	protected static final Logger logger = Logger.getLogger(ModuleInfo.class);
 
@@ -56,7 +56,7 @@ public class ModuleInfo extends BasicFunction {
 			"Returns a sequence containing the namespace URIs of all modules " +
 			"currently known to the system, including built in and imported modules.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "a sequence of all of the active function modules namespace URIs"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"));
 	
 	public final static FunctionSignature registeredModuleSig =
 		new FunctionSignature(

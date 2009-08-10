@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-09 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -52,9 +53,9 @@ public class NodeId extends BasicFunction {
 			"Returns the internal node-id of a node. The internal node-id uniquely identifies " +
 			"a node within its document. It is encoded as a long number.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "the node to get the internal node-id from"),
+				new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "The node to get the internal node-id from"),
 			},
-			new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "the internal node-id"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the internal node-id"));
 	
 	/**
 	 * @param context

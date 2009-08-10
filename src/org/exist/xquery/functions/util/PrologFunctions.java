@@ -1,3 +1,25 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-09 The eXist Team
+ *
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
@@ -23,24 +45,24 @@ public class PrologFunctions extends BasicFunction {
 			"meaning as in an 'import module ...' expression in the query prolog.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType("module-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The namespace URI of the module"),
-				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "prefix to be assigned to the namespace"),
-				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "location of the module")
+				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix to be assigned to the namespace"),
+				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location of the module")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 		new FunctionSignature(
 			new QName("declare-namespace", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically declares a namespace/prefix mapping for the current context.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "prefix to be assigned to the namespace"),
-				new FunctionParameterSequenceType("namespace-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI")
+				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix to be assigned to the namespace"),
+				new FunctionParameterSequenceType("namespace-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The namespace URI")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 		new FunctionSignature(
 			new QName("declare-option", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically declares a serialization option as with 'declare option'.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-				new FunctionParameterSequenceType("option", Type.STRING, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization option name"),
+				new FunctionParameterSequenceType("option", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization option value")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 	};

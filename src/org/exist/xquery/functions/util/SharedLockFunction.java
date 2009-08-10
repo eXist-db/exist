@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -44,7 +44,7 @@ public class SharedLockFunction extends LockFunction {
 			"Then evaluates the expressions in the second argument $expression and releases the acquired locks after" +
 			"their completion.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "all nodes that the shared lock will be placed on their owning documents."),
+				new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes that the shared lock will be placed on their owning documents."),
 				new FunctionParameterSequenceType("expression", Type.ITEM, Cardinality.ZERO_OR_MORE, "The expression to be evaluated before the acquired locks are released.")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluation of the expression(s)"));

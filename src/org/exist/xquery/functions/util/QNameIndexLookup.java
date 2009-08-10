@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-09 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -44,6 +44,7 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
@@ -62,9 +63,9 @@ public class QNameIndexLookup extends Function {
 			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Can be used to query existing qname indexes defined on a set of nodes. ",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "the QName"),
-					new FunctionParameterSequenceType("comparison-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "") },
-			new FunctionParameterSequenceType("result", Type.NODE, Cardinality.ZERO_OR_MORE, "result"));
+					new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "The QName"),
+					new FunctionParameterSequenceType("comparison-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The comparison value") },
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the result"));
 
 	public QNameIndexLookup(XQueryContext context) {
 		super(context, signature);
