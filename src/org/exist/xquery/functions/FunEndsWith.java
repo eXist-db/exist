@@ -50,8 +50,8 @@ public class FunEndsWith extends CollatingFunction {
 			      "string value of $source-string, false otherwise. If either $source-string or $suffix is the empty " +
 			      "sequence, the empty sequence is returned.",
                   new SequenceType[] {
-                      new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "the source-string"),
-                      new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "the suffix")
+                      new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
+                      new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "The suffix")
                   },
 			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if $suffix is suffix of $source-string, false() otherwise")),
 	new FunctionSignature (
@@ -61,9 +61,9 @@ public class FunEndsWith extends CollatingFunction {
 			       "either $source-string or $suffix is the empty sequence, the empty sequence" +
 			       " is returned." + THIRD_REL_COLLATION_ARG_EXAMPLE,
 			       new SequenceType[] {
-                       new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "the source-string"),
-                       new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "the suffix"),
-				   new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collation-uri")
+                       new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
+                       new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "The suffix"),
+				   new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 			       },
 			       new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if $suffix is suffix of $source-string, false() otherwise"))			
     };

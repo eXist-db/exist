@@ -65,8 +65,8 @@ public class FunDeepEqual extends CollatingFunction {
 			"Returns true iff every item in $items-1 is deep-equal to the item at the same position in $items-2, " +
 			"false otherwise. If both $items-1 and $items-2 are the empty sequence, returns true(). ",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "the first item sequence"), 
-                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "the second item sequence")
+                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "The first item sequence"), 
+                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "The second item sequence")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if the sequences are deep-equal, false() otherwise")
 		),
@@ -77,9 +77,9 @@ public class FunDeepEqual extends CollatingFunction {
 			"Comparison collation is specified by $collation-uri. " + 
             THIRD_REL_COLLATION_ARG_EXAMPLE,
 			new SequenceType[] {
-                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "the first item sequence"), 
-                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "the second item sequence"),
-				new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collation-uri")
+                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "The first item sequence"), 
+                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "The second item sequence"),
+				new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if the sequences are deep-equal, false() otherwise")
 		)

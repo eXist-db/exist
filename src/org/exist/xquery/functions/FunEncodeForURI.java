@@ -50,9 +50,9 @@ public class FunEncodeForURI extends Function {
 			new QName("encode-for-uri", Function.BUILTIN_FUNCTION_NS),
             "Escapes reserved characters in $uri-part by replacing it with its percent-encoded form as described in [RFC 3986]. If $uri-part is the empty sequence, returns the zero-length string.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("uri-part", Type.STRING, Cardinality.ZERO_OR_ONE, "the uri-part to encode")
+                new FunctionParameterSequenceType("uri-part", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI part to encode")
             },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "uri-part with reserved characters precent-encoded"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the URI part with reserved characters percent encoded"));
 	
 	public FunEncodeForURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);

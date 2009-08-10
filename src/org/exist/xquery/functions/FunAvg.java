@@ -58,7 +58,7 @@ public class FunAvg extends Function {
 			"Returns the average of the values in the input sequence $values, that is, the "
 				+ "sum of the values divided by the number of values.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the values")},
+                new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The values")},
 			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the average of the values in the input sequence"));
 
 	/**

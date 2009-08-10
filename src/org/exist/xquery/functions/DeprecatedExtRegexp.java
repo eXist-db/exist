@@ -66,9 +66,9 @@ import java.util.List;
 public class DeprecatedExtRegexp extends Function implements Optimizable {
 	protected static final Logger logger = Logger.getLogger(DeprecatedExtRegexp.class);
 
-	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "the node set that is to be searched for the keyword set");
-	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "the regular expressions to be matched against the fulltext index");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence of all of the matching nodes");
+	protected static final FunctionParameterSequenceType SOURCE_PARAM = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set that is to be searched for the keyword set");
+	protected static final FunctionParameterSequenceType REGEX_PARAM = new FunctionParameterSequenceType("regular-expression", Type.STRING, Cardinality.ONE_OR_MORE, "The regular expressions to be matched against the fulltext index");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the sequence of all of the matching nodes");
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(

@@ -27,8 +27,6 @@ import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import java.util.Iterator;
 
 /**

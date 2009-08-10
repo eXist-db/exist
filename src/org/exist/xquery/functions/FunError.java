@@ -50,34 +50,34 @@ public class FunError extends BasicFunction {
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception using the default qname, 'http://www.w3.org/2004/07/xqt-errors#err:FOER0000', and the default error message, 'An error has been raised by the query'.",
 			null,
-			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "empty-sequence")),
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 		new FunctionSignature(
 			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception using $qname and the default message,'An error has been raised by the query'.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "the qname")
+				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "The qname")
 			},
-			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "empty-sequence")),
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 		new FunctionSignature(
 			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception using $qname and $message.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_ONE, "the qname"),
-				new FunctionParameterSequenceType("message", Type.STRING, Cardinality.EXACTLY_ONE, "the message")
+				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_ONE, "The qname"),
+				new FunctionParameterSequenceType("message", Type.STRING, Cardinality.EXACTLY_ONE, "The message")
 			},
-			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "empty-sequence")),
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 		new FunctionSignature(
 			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception using $qname and $message with $error-object appended.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_ONE, "the qname"),
-				new FunctionParameterSequenceType("message", Type.STRING, Cardinality.EXACTLY_ONE, "the message"),
-				new FunctionParameterSequenceType("error-object", Type.ITEM, Cardinality.ZERO_OR_MORE, "the error-object")
+				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_ONE, "The qname"),
+				new FunctionParameterSequenceType("message", Type.STRING, Cardinality.EXACTLY_ONE, "The message"),
+				new FunctionParameterSequenceType("error-object", Type.ITEM, Cardinality.ZERO_OR_MORE, "The error object")
 			},
-			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "empty-sequence")),
+			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 	};
 
 	public final static QName DEFAULT_ERR =

@@ -47,7 +47,7 @@ public class FunEmpty extends Function {
 			new QName("empty", Function.BUILTIN_FUNCTION_NS),
 			"Returns true() if the value of the argument, $item-sequence, is the empty sequence, false() otherwise.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the item-sequence")
+                new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if empty sequence, false() otherwise"));
 	

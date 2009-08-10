@@ -43,10 +43,10 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FunAdjustTimezone extends BasicFunction {
-    public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the date-time");
-    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "the date");
-    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "the time");
-    public final static FunctionParameterSequenceType DURATION_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the duration");
+    public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time");
+    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
+    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
+    public final static FunctionParameterSequenceType DURATION_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration");
 
     public final static FunctionReturnSequenceType DATE_TIME_01_RETURN = new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the adjusted date-time");
     public final static FunctionReturnSequenceType DATE_01_RETURN = new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_ONE, "the adjusted date");

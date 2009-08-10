@@ -48,9 +48,9 @@ public class FunData extends Function {
 			new QName("data", Function.BUILTIN_FUNCTION_NS),
 			"fn:data takes a sequence of items, $items, and returns a sequence of atomic values.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "the items")
+                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items")
             },
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "atomic values of the items in $items"));
+			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items"));
 
 	/**
 	 * @param context

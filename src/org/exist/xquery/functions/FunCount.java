@@ -44,7 +44,7 @@ public class FunCount extends Function {
 			new QName("count", Function.BUILTIN_FUNCTION_NS),
 			"Returns the number of items in the argument sequence, $items.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "the items") 
+                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items") 
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE, "the number of items in the argument sequence")
 		);
