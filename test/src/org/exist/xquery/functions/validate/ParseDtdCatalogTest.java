@@ -109,20 +109,7 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
@@ -131,20 +118,7 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"invalid");
     }
 
     /*
@@ -156,20 +130,7 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
@@ -178,20 +139,7 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+       executeAndEvaluate(query,"invalid");
     }
 
     /*
@@ -206,20 +154,7 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
@@ -228,21 +163,26 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
+        executeAndEvaluate(query,"invalid");
+    }
+
+    private void executeAndEvaluate(String query, String expectedValue){
+
+        LOG.info("Query="+query);
+        LOG.info("ExpectedValue="+query);
+
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
+            LOG.info(r);
 
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
+            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
             fail(ex.getMessage());
         }
     }
-
-
 }

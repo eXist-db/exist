@@ -73,8 +73,10 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
 
 
     @Test
-    public void rng_stored_valid() {
-        String query = "validation:jing( doc('/db/personal/personal-valid.xml'), doc('/db/personal/personal.rng') )";
+    public void rng_stored_valid_boolean() {
+        String query = "validation:jing( " +
+                "doc('/db/personal/personal-valid.xml'), " +
+                "doc('/db/personal/personal.rng') )";
 
         try {
             ResourceSet results = executeQuery(query);
@@ -87,124 +89,92 @@ public class JingRelaxNgTest extends EmbeddedExistTester {
             fail(ex.getMessage());
         }
     }
+    
+    @Test
+    public void rng_stored_valid() {
+        String query = "validation:jing-report( " +
+                "doc('/db/personal/personal-valid.xml'), " +
+                "doc('/db/personal/personal.rng') )";
+
+        executeAndEvaluate(query,"valid");
+    }
+
+
 
     @Test
     public void rng_stored_invalid() {
-        String query = "validation:jing( doc('/db/personal/personal-invalid.xml'), doc('/db/personal/personal.rng') )";
+        String query = "validation:jing-report( " +
+                "doc('/db/personal/personal-invalid.xml'), " +
+                "doc('/db/personal/personal.rng') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void rng_anyuri_valid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rng') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void rng_anyuri_invalid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rng') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void rnc_stored_valid() {
-        String query = "validation:jing-report( doc('/db/personal/personal-valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "doc('/db/personal/personal-valid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void rnc_stored_invalid() {
-        String query = "validation:jing-report( doc('/db/personal/personal-invalid.xml'), " +
+        String query = "validation:jing-report( " +
+                "doc('/db/personal/personal-invalid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
+
+        executeAndEvaluate(query,"invalid");
+    }
+
+    @Test
+    public void rnc_anyuri_valid() {
+        String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
+
+        executeAndEvaluate(query,"valid");
+    }
+
+    @Test
+    public void rnc_anyuri_invalid() {
+        String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
+
+        executeAndEvaluate(query,"invalid");
+    }
+
+    private void executeAndEvaluate(String query, String expectedValue){
+
+        LOG.info("Query="+query);
+        LOG.info("ExpectedValue="+query);
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
+            LOG.info(r);
 
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-    }
-
-    @Test
-    public void rnc_anyuri_valid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
-    }
-
-    @Test
-    public void rnc_anyuri_invalid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
-
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
+            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);

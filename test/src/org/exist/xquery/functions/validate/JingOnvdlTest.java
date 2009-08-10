@@ -98,95 +98,65 @@ public class JingOnvdlTest extends EmbeddedExistTester {
     @Test
     public void onvdl_valid() throws XPathException, IOException, XpathException, SAXException {
 
-        ResourceSet result = null;
-        String r = "";
-        try {
-            String query = "let $a := " + XML_DATA1 +
-                    "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
-                    "return " +
-                    "validation:validate-report($a,$b)";
-            result = executeQuery(query);
-            r = (String) result.getResource(0).getContent();
-            System.out.println(r);
+        String query = "let $a := " + XML_DATA1 +
+                "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
+                "return " +
+                "validation:validate-report($a,$b)";
 
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (XMLDBException e) {
-            LOG.error("testONVDL(): " + e.getMessage(), e);
-            fail(e.getMessage());
-        }
-
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void onvdl_invalid() throws XPathException, IOException, XpathException, SAXException {
 
-        ResourceSet result = null;
-        String r = "";
-        try {
-            String query = "let $a := <test/>" +
+        String query = "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                     "return " +
                     "validation:validate-report($a,$b)";
-            result = executeQuery(query);
-            r = (String) result.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (XMLDBException e) {
-            LOG.error("testONVDLFail(): " + e.getMessage(), e);
-            fail(e.getMessage());
-        }
-
+        executeAndEvaluate(query,"invalid");
     }
 
 
     @Test
     public void onvdl_stored_valid() {
-        String query = "validation:jing-report( doc('/db/validate-test/valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "doc('/db/validate-test/valid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void onvdl_stored_invalid() {
-        String query = "validation:jing-report( doc('/db/validate-test/invalid.xml'), " +
+        String query = "validation:jing-report( " +
+                "doc('/db/validate-test/invalid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void onvdl_anyuri_valid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
+                "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
+
+        executeAndEvaluate(query,"valid");
+    }
+
+    @Test
+    public void onvdl_anyuri_invalid() {
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
+                "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
+
+        executeAndEvaluate(query,"invalid");
+    }
+
+    @Test
+    public void onvdl_anyuri_valid_boolean() {
+        String query = "validation:jing( " +
+                "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
 
         try {
@@ -201,16 +171,19 @@ public class JingOnvdlTest extends EmbeddedExistTester {
         }
     }
 
-    @Test
-    public void onvdl_anyuri_invalid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
+    private void executeAndEvaluate(String query, String expectedValue){
+
+        LOG.info("Query="+query);
+        LOG.info("ExpectedValue="+query);
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            LOG.info(r);
+
+            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);

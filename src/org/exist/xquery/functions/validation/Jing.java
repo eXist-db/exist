@@ -27,10 +27,7 @@ import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-
 
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
@@ -38,7 +35,6 @@ import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
-
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -122,14 +118,13 @@ public class Jing extends BasicFunction  {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        InputStream is = null;
         ValidationReport report = new ValidationReport();
 
         try {
             report.start();
 
             // Get inputstream of XML instance document
-            is=Shared.getInputStream(args[0].itemAt(0), context);
+            InputSource instance=Shared.getInputSource(args[0].itemAt(0), context);
 
             // Validate using resource specified in second parameter
             InputSource grammar = Shared.getInputSource(args[1].itemAt(0), context);
@@ -148,11 +143,9 @@ public class Jing extends BasicFunction  {
             ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
 
             // Load schema
-            
             driver.loadSchema(grammar);
 
             // Validate XML instance
-            InputSource instance = new InputSource(is);
             driver.validate(instance);
             
         } catch (MalformedURLException ex) {
@@ -168,15 +161,7 @@ public class Jing extends BasicFunction  {
             report.setException(ex);
 
         } finally {
-            // Force release stream
             report.stop();
-            
-            try {
-                if(is!=null)
-                    is.close();
-            } catch (IOException ex) {
-                LOG.debug("Attemted to close stream. ignore.", ex);
-            }
         }
 
         // Create response

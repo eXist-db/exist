@@ -160,7 +160,6 @@ public class Parse extends BasicFunction {
 
         XMLEntityResolver entityResolver = null;
         GrammarPool grammarPool = null;
-        File tmpFile = null;
 
         ValidationReport report = new ValidationReport();
         ValidationContentHandler contenthandler = new ValidationContentHandler();
@@ -184,6 +183,7 @@ public class Parse extends BasicFunction {
 
             } else if (args[2].isEmpty()) {
                 // Use system catalog
+                LOG.debug("Using system catalog.");
                 Configuration config = brokerPool.getConfiguration();
                 entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
                 
@@ -242,11 +242,6 @@ public class Parse extends BasicFunction {
 
         } finally {
             report.stop();
-
-            if (tmpFile != null) {
-                LOG.debug("Remove tmp file " + tmpFile.getAbsolutePath());
-                tmpFile.delete();
-            }
         }
 
         // Create response
