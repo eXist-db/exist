@@ -77,9 +77,13 @@ import org.xml.sax.XMLReader;
  */
 public class Parse extends BasicFunction {
 
+    private static final String simpleFunctionTxt =
+            "Validate document by parsing $instance. Optionally " +
+            "grammar caching can be used.";
+
     private static final String extendedFunctionTxt =
             "Validate document by parsing $instance. Optionally " +
-            "grammar caching can be uses and " +
+            "grammar caching can be used and " +
             "an XML catalog can be specified.";
 
     private static final String documentTxt
@@ -87,15 +91,15 @@ public class Parse extends BasicFunction {
     private static final String catalogTxt
             = "The catalogs referenced as xs:anyURI() or result of fn:doc().";
     private static final String cacheTxt
-            = "The flag set to true() to use grammar cache.";
+            = "The flag set to true() to use grammar caching.";
 
     private final BrokerPool brokerPool;
 
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                new QName("parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt,
+                new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                simpleFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     documentTxt),
@@ -106,7 +110,7 @@ public class Parse extends BasicFunction {
                 Shared.simplereportText)),
                 
         new FunctionSignature(
-                new QName("parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
@@ -120,8 +124,8 @@ public class Parse extends BasicFunction {
                 Shared.simplereportText)),
 
         new FunctionSignature(
-                new QName("parse-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt + " An xml report is returned.",
+                new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                simpleFunctionTxt + " An XML report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     documentTxt),
@@ -132,8 +136,8 @@ public class Parse extends BasicFunction {
                 Shared.xmlreportText)),
 
         new FunctionSignature(
-                new QName("parse-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt + " An xml report is returned.",
+                new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt + " An XML report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     documentTxt),

@@ -34,7 +34,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 
 /**
- * Tests for the validation:parse() function with Catalog (resolvers).
+ * Tests for the validation:jaxp() function with Catalog (resolvers).
  * 
  * @author dizzzz@exist-db.org
  */
@@ -106,7 +106,7 @@ public class ParseXsdCatalogTest extends EmbeddedExistTester {
     
     @Test
     public void xsd_stored_catalog_valid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
 
@@ -115,7 +115,7 @@ public class ParseXsdCatalogTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_stored_catalog_invalid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
 
@@ -127,7 +127,7 @@ public class ParseXsdCatalogTest extends EmbeddedExistTester {
      */
     @Test
     public void xsd_anyURI_catalog_valid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
 
@@ -136,7 +136,7 @@ public class ParseXsdCatalogTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_anyURI_catalog_invalid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
 
@@ -149,7 +149,7 @@ public class ParseXsdCatalogTest extends EmbeddedExistTester {
     
     @Test
     public void xsd_searched_valid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
@@ -158,7 +158,7 @@ public class ParseXsdCatalogTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_searched_invalid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 

@@ -73,7 +73,7 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
 
     @Test
     public void xsd_stored_valid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), " +
                 "xs:anyURI('/db/addressbook/addressbook.xsd'), () )";
 
@@ -95,7 +95,7 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
 
     @Test @Ignore("todo")
     public void xsd_stored_invalid() {
-        String query = "validation:parse-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
+        String query = "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
         try {
@@ -116,7 +116,7 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
 
     @Test @Ignore("todo")
     public void xsd_anyuri_valid() {
-        String query = "validation:parse-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
+        String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
 
         try {
@@ -137,7 +137,7 @@ public class ParseXsdTestNOK extends EmbeddedExistTester {
 
     @Test @Ignore("todo")
     public void xsd_anyuri_invalid() {
-        String query = "validation:parse-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
+        String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
 
         try {

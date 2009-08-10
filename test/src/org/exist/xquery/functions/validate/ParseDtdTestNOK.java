@@ -34,7 +34,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 
 /**
- * Tests for the validation:parse() function with DTDss.
+ * Tests for the validation:jaxp() function with DTDss.
  * 
  * @author dizzzz@exist-db.org
  */
@@ -79,7 +79,7 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
 
     @Test
     public void xsd_stored_valid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "doc('/db/hamlet/hamlet_valid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
@@ -101,7 +101,7 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
 
     @Test
     public void xsd_stored_invalid() {
-        String query = "validation:parse-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
+        String query = "validation:jaxp-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
         try {
@@ -122,7 +122,7 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
 
     @Test
     public void xsd_anyuri_valid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
@@ -145,7 +145,7 @@ public class ParseDtdTestNOK extends EmbeddedExistTester {
 
     @Test
     public void xsd_anyuri_invalid() {
-        String query = "validation:parse-report( " +
+        String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
