@@ -42,6 +42,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -53,10 +54,10 @@ import org.exist.xquery.value.Type;
 public class IndexKeyDocuments extends BasicFunction {
 	
 	protected static final Logger logger = Logger.getLogger(IndexKeyDocuments.class);
-	protected static final FunctionParameterSequenceType nodeParam = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes whose content is indexed");
-	protected static final FunctionParameterSequenceType valueParam = new FunctionParameterSequenceType("value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "the indexed value to search for");
-	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "the index in which the search is made");
-	protected static final FunctionParameterSequenceType result = new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.ZERO_OR_ONE, "the number of documents for the indexed value");
+	protected static final FunctionParameterSequenceType nodeParam = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes whose content is indexed");
+	protected static final FunctionParameterSequenceType valueParam = new FunctionParameterSequenceType("value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The indexed value to search for");
+	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made");
+	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the number of documents for the indexed value");
 
 	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(

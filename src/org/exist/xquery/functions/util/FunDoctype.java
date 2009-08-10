@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -43,7 +43,7 @@ public class FunDoctype extends Function {
 			"Returns the document nodes of the documents with the given DOCTYPE(s).",
 			new SequenceType[] {
 				 new FunctionParameterSequenceType("doctype", Type.STRING, Cardinality.ONE_OR_MORE, "The DOCTYPE of the documents to find")},
-			new FunctionParameterSequenceType("results", Type.NODE, Cardinality.ZERO_OR_MORE, "The document nodes"),
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes"),
 			true);
 
 	/**

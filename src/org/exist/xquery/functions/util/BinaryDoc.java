@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -37,10 +37,10 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.Base64BinaryDocument;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -56,25 +56,25 @@ public class BinaryDoc extends BasicFunction {
             "value of type xs:base64Binary. An empty sequence is returned if the resource " +
             "could not be found or $binary-resource was empty.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the binary resource")
+                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "The path to the binary resource")
             },
-            new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary document")
+            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary document")
         ),
         new FunctionSignature(
             new QName("binary-doc-available", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Checks if the binary resource identified by $a is available.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the binary resource")
+                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "The path to the binary resource")
             },
-            new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "returns true() if the binary document is available")
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the binary document is available")
         ),
         new FunctionSignature(
             new QName("is-binary-doc", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Checks if the resource identified by $a is a binary resource.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the binary resource")
+                new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "The path to the binary resource")
             },
-            new FunctionParameterSequenceType("result", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "returns true() if the resource is a binary document")
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the resource is a binary document")
         )
     };
     

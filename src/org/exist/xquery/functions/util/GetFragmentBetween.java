@@ -1,5 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-09 The eXist Team
+ *
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -15,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: GetFragmentBetweenFunction.java $
+ *  $Id$
  */
 package org.exist.xquery.functions.util;
 
@@ -41,6 +44,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -74,11 +78,11 @@ public class GetFragmentBetween extends BasicFunction {
         "Example call of the function for getting the fragment between two page breaks: " +
         "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true())" ,
         new SequenceType[] { 
-                             new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.ZERO_OR_ONE, "the first node/milestone element"),
-                             new FunctionParameterSequenceType("ending-node", Type.NODE, Cardinality.ZERO_OR_ONE, "the second node/milestone element"),
-                             new FunctionParameterSequenceType("add-open-close-tags", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "open and closing tags before and after the two node/milestones are appended.")
+                             new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The first node/milestone element"),
+                             new FunctionParameterSequenceType("ending-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The second node/milestone element"),
+                             new FunctionParameterSequenceType("add-open-close-tags", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag indicating if open and closing tags before and after the two node/milestones are appended.")
                            },
-        new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ONE, "a string containing the fragments between the two node/milestone elements."));
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the string containing the fragments between the two node/milestone elements."));
 
   public GetFragmentBetween(XQueryContext context) {
     super(context, signature);

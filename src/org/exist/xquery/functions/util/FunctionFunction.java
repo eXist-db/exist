@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -34,9 +34,9 @@ import org.exist.xquery.value.*;
 public class FunctionFunction extends BasicFunction {
 	
 	protected static final Logger logger = Logger.getLogger(FunctionFunction.class);
-	protected static final FunctionParameterSequenceType functionName = new FunctionParameterSequenceType("name", Type.QNAME, Cardinality.EXACTLY_ONE, "the name of the function");
-	protected static final FunctionParameterSequenceType arity = new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "the arity of the function");
-	protected static final FunctionParameterSequenceType result = new FunctionParameterSequenceType("result", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "reference to the XQuery function");
+	protected static final FunctionParameterSequenceType functionName = new FunctionParameterSequenceType("name", Type.QNAME, Cardinality.EXACTLY_ONE, "The name of the function");
+	protected static final FunctionParameterSequenceType arity = new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "The arity of the function");
+	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the reference to the XQuery function");
 
     public final static FunctionSignature signature =
         new FunctionSignature(

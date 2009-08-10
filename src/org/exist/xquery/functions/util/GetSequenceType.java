@@ -29,6 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -43,9 +44,9 @@ public class GetSequenceType extends BasicFunction {
 			new QName("get-sequence-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the string representation of the type of sequence.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("sequence-type", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "a type of sequence")
+				new FunctionParameterSequenceType("sequence-type", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "The type of sequence")
 			},
-			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the string representation of the type of sequence"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the string representation of the type of sequence"));
 	
 	public GetSequenceType(XQueryContext context) {
 		super(context, signature);

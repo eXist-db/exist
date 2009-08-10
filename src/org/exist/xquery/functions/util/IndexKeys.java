@@ -52,15 +52,15 @@ public class IndexKeys extends BasicFunction {
                 "All index keys defined for the given node set are reported to a callback function. " +
                 "The function will check for indexes defined on path as well as indexes defined by QName. ",
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, null),
+                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set"),
                     new FunctionParameterSequenceType("start-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported."),
-                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a function reference as created by the util:function function. " +
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function reference as created by the util:function function. " +
                 "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
                 "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
                 "c) the current position of the key in the whole list of keys returned."),
-                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "the maximum number of returned keys")
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys")
                  },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
     	new FunctionSignature(
@@ -69,16 +69,16 @@ public class IndexKeys extends BasicFunction {
                 "All index keys defined for the given node set are reported to a callback function. " +
                 "The function will check for indexes defined on path as well as indexes defined by QName. ",
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, null),
+                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set"),
                     new FunctionParameterSequenceType("start-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported."),
-                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "a function reference as created by the util:function function. " +
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function reference as created by the util:function function. " +
                 "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
                 "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
                 "c) the current position of the key in the whole list of keys returned."),
-                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "the maximum number of returned keys"),
-                    new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "the index in which the search is made")
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys"),
+                    new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made")
                 },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference"))      
     };

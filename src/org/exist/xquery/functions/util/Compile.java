@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2009 The eXist team
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -53,12 +54,12 @@ public class Compile extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("compile", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Dynamically evaluates the XPath/XQuery expression specified in $a within " +
+			"Dynamically evaluates the XPath/XQuery expression specified in $expression within " +
 			"the current instance of the query engine.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("expression", Type.STRING, Cardinality.EXACTLY_ONE, "XPath/XQuery expression.")
+				new FunctionParameterSequenceType("expression", Type.STRING, Cardinality.EXACTLY_ONE, "The XPath/XQuery expression.")
 			},
-			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "result"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the results of the expression"));
 	
 	public Compile(XQueryContext context) {
 		super(context, signature);
