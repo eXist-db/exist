@@ -46,7 +46,7 @@ class SortTestNodeProxy extends NodeProxy {
 		this.val = val;
 	}
 
-	public int compareTo(NodeProxy o) {
+	public int compareTo(Object o) {
 		if (val < 0)
 			throw new IllegalStateException(
 					"Sort ought not be looking at the value");
@@ -54,7 +54,7 @@ class SortTestNodeProxy extends NodeProxy {
 			throw new IllegalStateException("Test implementation limitation hit");
 			
 		return val - ((SortTestNodeProxy)o).val;
-	};
+	}
 
 	public SortTestNodeId getNodeId() {
 		return (SortTestNodeId) super.getNodeId();

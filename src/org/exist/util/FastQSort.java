@@ -56,13 +56,13 @@ public final class FastQSort {
 	private final static int M = 10;
 	private final static double LOG2 = Math.log(2.0);
 	
-	private final static <C extends Comparable<C>> void IntroSort(C a[], int lo, int hi)
+	private final static <C extends Comparable<? super C>> void IntroSort(C a[], int lo, int hi)
 	{
 		IntroSortLoop(a,lo,hi,2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 		InsertionSort.sort(a,lo,hi);
 	}
 
-	private final static <C extends Comparable<C>> void IntroSort(C a[], int lo, int hi, int b[])
+	private final static <C extends Comparable<? super C>> void IntroSort(C a[], int lo, int hi, int b[])
 	{
 		IntroSortLoop(a,lo,hi,b,2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 		InsertionSort.sort(a,lo,hi,b);
@@ -74,7 +74,7 @@ public final class FastQSort {
 		InsertionSort.sort(a,comp,lo,hi);
 	}
 	
-	private final static <C extends Comparable<C>> void IntroSort(List<C> a, int lo, int hi)
+	private final static <C extends Comparable<? super C>> void IntroSort(List<C> a, int lo, int hi)
 	{
 		IntroSortLoop(a,lo,hi,2*(int)Math.floor(Math.log(hi-lo+1)/LOG2));
 		InsertionSort.sort(a,lo,hi);
@@ -92,7 +92,7 @@ public final class FastQSort {
 		InsertionSort.sortByNodeId(a,lo,hi);
 	}
 	
-	private final static <C extends Comparable<C>> void IntroSortLoop(C a[], int l, int r, int maxdepth)
+	private final static <C extends Comparable<? super C>> void IntroSortLoop(C a[], int l, int r, int maxdepth)
 	//----------------------------------------------------
 	{
 		while ( (r - l) > M ) {
@@ -147,7 +147,7 @@ public final class FastQSort {
 		}
 	}
 
-	private final static <C extends Comparable<C>> void IntroSortLoop(C a[], int l, int r, int b[], int maxdepth)
+	private final static <C extends Comparable<? super C>> void IntroSortLoop(C a[], int l, int r, int b[], int maxdepth)
 	//----------------------------------------------------
 	{
 		while ( (r - l) > M ) {
@@ -266,7 +266,7 @@ public final class FastQSort {
 		}
 	}
 
-	private final static <C extends Comparable<C>> void IntroSortLoop(List<C> a, int l, int r, int maxdepth)
+	private final static <C extends Comparable<? super C>> void IntroSortLoop(List<C> a, int l, int r, int maxdepth)
 	//----------------------------------------------------
 	{
 		while ( (r - l) > M ) {
@@ -439,13 +439,13 @@ public final class FastQSort {
 		}
 	}
 	
-	public static <C extends Comparable<C>> void sort(C[] a, int lo, int hi) {
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi) {
 		if (lo >= hi)
 			return; // just one item, doesn't need sorting
 		IntroSort(a, lo, hi);
 	}
 
-	public static <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b) {
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b) {
 		if (lo >= hi)
 			return; // just one item, doesn't need sorting
 		IntroSort(a, lo, hi, b);
@@ -457,7 +457,7 @@ public final class FastQSort {
 		IntroSort(a, c, lo, hi);
 	}
 	
-	public static <C extends Comparable<C>> void sort(List<C> a, int lo, int hi) {
+	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi) {
 		if (lo >= hi)
 			return; // just one item, doesn't need sorting
 		IntroSort(a, lo, hi);

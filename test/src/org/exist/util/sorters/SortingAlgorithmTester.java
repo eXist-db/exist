@@ -41,22 +41,22 @@ import org.exist.dom.NodeProxy;
  * 
  */
 public abstract class SortingAlgorithmTester {
-	abstract <C extends Comparable<C>> void invokeSort(C[] a, int lo, int hi)
+	abstract <C extends Comparable<? super C>> void invokeSort(C[] a, int lo, int hi)
 		throws Exception;
 	
 	abstract <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
 		throws Exception;
 
-	abstract <C extends Comparable<C>> void sort(C[] a, int lo, int hi)
+	abstract <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)
 		throws Exception;
 
-	abstract <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
+	abstract <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b)
 		throws Exception;
 
 	abstract <C> void sort(C[] a, Comparator<C> c,
 			int lo, int hi) throws Exception;
 
-	abstract <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
+	abstract <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi)
 		throws Exception;
 
 	// This one must change its parameters so some Java compilers do not

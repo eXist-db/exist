@@ -60,7 +60,7 @@ public final class HeapSort {
      * to sort a subsection of an array.
      */
 	
-	public static <C extends Comparable<C>> void sort(C[] a, int lo, int hi) {
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi) {
 		// Establish the heap property.
 
 		for (int i=hi-1; i>=lo; i--)
@@ -79,7 +79,7 @@ public final class HeapSort {
 		}
 	}
 
-	public static <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b) {
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b) {
 		// Establish the heap property.
 
 		for (int i=hi-1; i>=lo; i--)
@@ -118,7 +118,7 @@ public final class HeapSort {
 		}
 	}
 
-	public static <C extends Comparable<C>> void sort(List<C> a, int lo, int hi) {
+	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi) {
 		// Establish the heap property.
 		for (int i=hi-1; i>=lo; i--)
 			fixHeap(a,lo,i,hi);
@@ -174,7 +174,7 @@ public final class HeapSort {
 		}
 	}
 
-	private static <C extends Comparable<C>> void fixHeap(C[] a, int root, int item, int end) {
+	private static <C extends Comparable<? super C>> void fixHeap(C[] a, int root, int item, int end) {
 		for(;;) {
 			int child = (item-root) * 2 + 1 + root;
 
@@ -191,7 +191,7 @@ public final class HeapSort {
 		}
 	}
 
-	private static <C extends Comparable<C>> void fixHeap(C[] a, int[] b, int root, int item, int end) {
+	private static <C extends Comparable<? super C>> void fixHeap(C[] a, int[] b, int root, int item, int end) {
 		for(;;) {
 			int child = (item-root) * 2 + 1 + root;
 
@@ -227,7 +227,7 @@ public final class HeapSort {
 		}
 	}
 
-	private static <C extends Comparable<C>> void fixHeap(List<C> a, int root, int item, int end) {
+	private static <C extends Comparable<? super C>> void fixHeap(List<C> a, int root, int item, int end) {
 		for(;;) {
 			int child = (item-root) * 2 + 1 + root;
 

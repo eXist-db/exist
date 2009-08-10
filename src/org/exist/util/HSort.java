@@ -39,7 +39,7 @@ import org.exist.numbering.NodeId;
 */
 
 public final class HSort {
-	public static <C extends Comparable<C>> void sort(C[] a, int lo, int hi)
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)
 	{
 		if (lo >= hi)
 			return;
@@ -76,7 +76,7 @@ public final class HSort {
 		}
 	}
 
-	public static <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b)
 	{
 		if (lo >= hi)
 			return;
@@ -157,7 +157,7 @@ public final class HSort {
 		}
 	}
 	
-	public static <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
+	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi)
 	{
 		if (lo >= hi)
 			return;
@@ -275,7 +275,7 @@ public final class HSort {
 		}
 	}
 
-	private static <C extends Comparable<C>> void siftdown(C[] a, int n, int vacant, C missing, int drop)
+	private static <C extends Comparable<? super C>> void siftdown(C[] a, int n, int vacant, C missing, int drop)
 	{
 		int memo=vacant;
 		int child, parent;
@@ -318,7 +318,7 @@ public final class HSort {
 		a[vacant]=missing;
 	}
 
-	private static <C extends Comparable<C>> void siftdown(C[] a, int[] b, int n, int vacant, C missing, int missingB, int drop)
+	private static <C extends Comparable<? super C>> void siftdown(C[] a, int[] b, int n, int vacant, C missing, int missingB, int drop)
 	{
 		int memo=vacant;
 		int child, parent;
@@ -412,7 +412,7 @@ public final class HSort {
 		a[vacant]=missing;
 	}
 
-	private static <C extends Comparable<C>> void siftdown(List<C> a, int n, int vacant, C missing, int drop)
+	private static <C extends Comparable<? super C>> void siftdown(List<C> a, int n, int vacant, C missing, int drop)
 	{
 		int memo=vacant;
 		int child, parent;
