@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ public class FilterNested extends BasicFunction {
             "within 'a' nodes, but you only want to see the innermost matches, i.e. the 'b' nodes, not the 'a' nodes " +
             "containing 'b' nodes.",
             new SequenceType[]{
-    			new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "the node set")},
+    			new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set")},
     		new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a node set containing nodes that do not have descendent nodes."));
 
     public FilterNested(XQueryContext context) {

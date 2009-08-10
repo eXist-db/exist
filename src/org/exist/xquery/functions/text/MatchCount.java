@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -52,7 +52,7 @@ public class MatchCount extends BasicFunction {
     	new QName("match-count", TextModule.NAMESPACE_URI, TextModule.PREFIX),
     		"Counts the number of fulltext matches within the nodes and subnodes in $source.",
     		new SequenceType[]{
-    			new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_ONE, "the node and subnodes to do the fulltext match on")},
+    			new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_ONE, "The node and subnodes to do the fulltext match on")},
     		new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the count"));
     
     /**

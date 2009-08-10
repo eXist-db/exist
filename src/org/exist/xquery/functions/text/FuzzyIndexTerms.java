@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -50,7 +50,7 @@ public class FuzzyIndexTerms extends BasicFunction {
             "a sequence of strings which are similar to the argument. Similarity is based on Levenshtein " +
             "distance. This function may not be useful in its current form and is subject to change.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("term", Type.STRING, Cardinality.ZERO_OR_ONE, "")},
+					new FunctionParameterSequenceType("term", Type.STRING, Cardinality.ZERO_OR_ONE, "The term")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of strings which are similar to the argument $term"));
 	
 	public FuzzyIndexTerms(XQueryContext context) {

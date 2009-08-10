@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -44,8 +44,8 @@ public class FuzzyMatchAny extends FuzzyMatchAll {
 			"(or edit distance). The function tries to match any of the keywords specified in the " +
 			"keyword string against the string value of each item in the sequence $source.",
 			new SequenceType[]{
-				new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_MORE, ""),
-				new FunctionParameterSequenceType("keyword", Type.STRING, Cardinality.EXACTLY_ONE, "the keyword string")},
+				new FunctionParameterSequenceType("source", Type.NODE, Cardinality.ZERO_OR_MORE, "The source"),
+				new FunctionParameterSequenceType("keyword", Type.STRING, Cardinality.EXACTLY_ONE, "The keyword string")},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the sequence of nodes that match the keywords"),
 			true);
 	

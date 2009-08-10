@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -60,11 +60,11 @@ public class IndexTerms extends BasicFunction {
                     new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                         "The set of nodes in which the returned tokens occur"),
                     new FunctionParameterSequenceType("start", Type.STRING, Cardinality.ZERO_OR_ONE,
-                        "Optional start string"),
+                        "The optional start string"),
                     new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
-                        "Callback function reference"),
+                        "The callback function reference"),
                     new FunctionParameterSequenceType("returnMax", Type.INT, Cardinality.EXACTLY_ONE,
-                        "Maximum number of terms to report")
+                        "The maximum number of terms to report")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the evaluation of the function reference")),
         new FunctionSignature(
@@ -79,11 +79,11 @@ public class IndexTerms extends BasicFunction {
                     new FunctionParameterSequenceType("qnames", Type.QNAME, Cardinality.ONE_OR_MORE,
                         "One or more element or attribute names for which index terms are returned"),
                     new FunctionParameterSequenceType("start", Type.STRING, Cardinality.ZERO_OR_ONE,
-                        "Optional start string"),
+                        "The optional start string"),
                     new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
-                        "Callback function reference"),
+                        "The callback function reference"),
                     new FunctionParameterSequenceType("returnMax", Type.INT, Cardinality.EXACTLY_ONE,
-                        "Maximum number of terms to report")
+                        "The maximum number of terms to report")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the evaluation of the function reference"))
     };

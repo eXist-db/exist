@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -39,6 +39,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -52,11 +53,11 @@ import org.xml.sax.SAXException;
 
 public class KWICDisplay extends BasicFunction {
 
-	protected static final FunctionParameterSequenceType TEXT_ARG = new FunctionParameterSequenceType("text", Type.TEXT, Cardinality.ZERO_OR_MORE, "text nodes");
-	protected static final FunctionParameterSequenceType WIDTH_ARG = new FunctionParameterSequenceType("width", Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE, "");
-	protected static final FunctionParameterSequenceType CALLBACK_ARG = new FunctionParameterSequenceType("callback-function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "");
-    protected static final FunctionParameterSequenceType RESULT_CALLBACK_ARG = new FunctionParameterSequenceType("result-callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "");
-	protected static final FunctionParameterSequenceType PARAMETERS_ARG = new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "");
+	protected static final FunctionParameterSequenceType TEXT_ARG = new FunctionParameterSequenceType("text", Type.TEXT, Cardinality.ZERO_OR_MORE, "The text nodes");
+	protected static final FunctionParameterSequenceType WIDTH_ARG = new FunctionParameterSequenceType("width", Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE, "The width");
+	protected static final FunctionParameterSequenceType CALLBACK_ARG = new FunctionParameterSequenceType("callback-function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The callback function");
+    protected static final FunctionParameterSequenceType RESULT_CALLBACK_ARG = new FunctionParameterSequenceType("result-callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The result callback function");
+	protected static final FunctionParameterSequenceType PARAMETERS_ARG = new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "The parameters passed into the last argument of the callback function");
 
 	public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -79,7 +80,7 @@ public class KWICDisplay extends BasicFunction {
             "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
             "string; c) the length of the match as reported by the index.",
             new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, PARAMETERS_ARG },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results")),
         new FunctionSignature(
                 new QName("kwic-display", TextModule.NAMESPACE_URI, TextModule.PREFIX),
                 "This function takes a sequence of text nodes in $a, containing matches from a fulltext search. " +
@@ -100,7 +101,7 @@ public class KWICDisplay extends BasicFunction {
                 "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
                 "string; c) the length of the match as reported by the index.",
                 new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, RESULT_CALLBACK_ARG, PARAMETERS_ARG },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE))
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"))
     };
     
     public KWICDisplay(XQueryContext context, FunctionSignature signature) {
