@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2008-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -54,18 +54,15 @@ public class SVNLog extends BasicFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("log", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Retrieves the log from a subversion repository. The first argument " +
-            "is an xs:anyURI pointing to a location in the repository for which the " +
-            "log should be retrieved. The second argument denotes the start revision (or rev." +
-            " 0 if the argument is empty). The third argument specifies the end revision (or HEAD).",
+			"Retrieves the log entries from a subversion repository.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("repositort-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, ""),
-                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-                new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, ""),
-                new FunctionParameterSequenceType("end-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "")
+                new FunctionParameterSequenceType("repositort-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location in the subversion repository URI from which the logs should be retrieved"),
+                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion password"),
+                new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to start from.  If empty, then start from the beginning."),
+                new FunctionParameterSequenceType("end-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to end with.  If empty, then end with the HEAD revision")
             },
-			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "logs"));
+			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entriess"));
 
     private final static QName LOG_ELEMENT = new QName("log", "", "");
     private final static QName ENTRY_ELEMENT = new QName("entry", "", "");
