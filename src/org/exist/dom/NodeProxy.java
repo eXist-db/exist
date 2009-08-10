@@ -77,7 +77,7 @@ import java.util.Properties;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable<NodeProxy> {
+public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable<Object> {
 
     /*
      * Special values for nodes gid :
@@ -224,6 +224,19 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 	if (diff != Constants.EQUAL)
             return diff;
 	return nodeId.compareTo(other.nodeId);
+    }
+
+    /**
+     * The method <code>compareTo</code>
+     *
+     * @param other an <code>Object</code> value
+     * @return an <code>int</code> value
+     */
+    public int compareTo(Object other) {
+	if(!(other instanceof NodeProxy))
+            //Always superior...
+	    return Constants.SUPERIOR;
+	return compareTo((NodeProxy) other);
     }
 
     /**

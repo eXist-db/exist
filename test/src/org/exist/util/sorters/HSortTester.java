@@ -37,7 +37,7 @@ import org.exist.util.HSort;
  */
 
 class HSortTester extends SortingAlgorithmTester {
-	public <C extends Comparable<C>> void invokeSort(C[] a, int lo, int hi)
+	public <C extends Comparable<? super C>> void invokeSort(C[] a, int lo, int hi)
 		throws Exception
 	{
 		HSort.sort(a, lo, hi);
@@ -49,13 +49,13 @@ class HSortTester extends SortingAlgorithmTester {
 		HSort.sort(a, c, lo, hi);
 	}
 
-	public <C extends Comparable<C>>  void sort(C[] a, int lo, int hi)
+	public <C extends Comparable<? super C>>  void sort(C[] a, int lo, int hi)
 		throws Exception
 	{
 		HSort.sort(a, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
+	public <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b)
 		throws Exception
 	{
 		HSort.sort(a, lo, hi, b);
@@ -68,7 +68,7 @@ class HSortTester extends SortingAlgorithmTester {
 		HSort.sort(a, c, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
+	public <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi)
 		throws Exception
 	{
 		HSort.sort(a, lo, hi);

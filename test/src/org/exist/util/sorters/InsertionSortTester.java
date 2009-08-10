@@ -43,7 +43,7 @@ import org.exist.util.InsertionSort;
  */
 
 class InsertionSortTester extends SortingAlgorithmTester {
-	public <C extends Comparable<C>> void invokeSort(C[] a, int lo, int hi)
+	public <C extends Comparable<? super C>> void invokeSort(C[] a, int lo, int hi)
 		throws Exception
 	{
 		InsertionSort.sort(a, lo, hi);
@@ -55,13 +55,13 @@ class InsertionSortTester extends SortingAlgorithmTester {
 		InsertionSort.sort(a, c, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(C[] a, int lo, int hi)
+	public <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)
 		throws Exception
 	{
 		InsertionSort.sort(a, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
+	public <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b)
 		throws Exception
 	{
 		InsertionSort.sort(a, lo, hi, b);
@@ -74,7 +74,7 @@ class InsertionSortTester extends SortingAlgorithmTester {
 		InsertionSort.sort(a, c, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
+	public <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi)
 		throws Exception
 	{
 		InsertionSort.sort(a, lo, hi);

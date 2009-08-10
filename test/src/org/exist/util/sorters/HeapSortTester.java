@@ -44,7 +44,7 @@ import org.exist.util.HeapSort;
  */
 
 class HeapSortTester extends SortingAlgorithmTester {
-	public <C extends Comparable<C>> void invokeSort(C[] a, int lo, int hi)
+	public <C extends Comparable<? super C>> void invokeSort(C[] a, int lo, int hi)
 		throws Exception
 	{
 		HeapSort.sort(a, lo, hi);
@@ -56,13 +56,13 @@ class HeapSortTester extends SortingAlgorithmTester {
 		HeapSort.sort(a, c, lo, hi);
 	}
 
-	public <C extends Comparable<C>>  void sort(C[] a, int lo, int hi)
+	public <C extends Comparable<? super C>>  void sort(C[] a, int lo, int hi)
 		throws Exception
 	{
 		HeapSort.sort(a, lo, hi);
 	}
 
-	public <C extends Comparable<C>> void sort(C[] a, int lo, int hi, int[] b)
+	public <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b)
 		throws Exception
 	{
 		HeapSort.sort(a, lo, hi, b);
@@ -76,7 +76,7 @@ class HeapSortTester extends SortingAlgorithmTester {
 
 	}
 
-	public <C extends Comparable<C>> void sort(List<C> a, int lo, int hi)
+	public <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi)
 		throws Exception
 	{
 		HeapSort.sort(a, lo, hi);
