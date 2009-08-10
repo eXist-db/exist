@@ -52,7 +52,7 @@ import org.xml.sax.InputSource;
 
 /**
  *   xQuery function for validation of XML instance documents
- * using jing for grammars like XSD, Relaxng, onvdl and schematron.
+ * using jing for grammars like XSD, Relaxng, nvdl and schematron.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
@@ -60,8 +60,8 @@ public class Jing extends BasicFunction  {
     
     
     private static final String extendedFunctionTxt=
-        "Validate document using Jing. " +
-        "Based on functionality provided by com.thaiopensource.validate.ValidationDriver";
+        "Validate document using 'Jing'. " +
+        "Based on functionality provided by 'com.thaiopensource.validate.ValidationDriver'.";
         
 
     private final BrokerPool brokerPool;
@@ -76,7 +76,7 @@ public class Jing extends BasicFunction  {
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "The supported grammar documents extensions are \".xsd\" "+
+                        "The grammar file documents extensions are \".xsd\" "+
                             "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -86,12 +86,12 @@ public class Jing extends BasicFunction  {
         
         new FunctionSignature(
                 new QName("jing-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt+" An xml report is returned.",
+                extendedFunctionTxt+" An XML report is returned.",
                 new SequenceType[]{
                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "The supported grammar documents extensions are \".xsd\" "+
+                        "The supported grammar documents extensions are \".xsd\" "+
                             "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,

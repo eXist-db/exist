@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import javax.xml.XMLConstants;
@@ -61,7 +59,7 @@ public class Jaxv extends BasicFunction  {
     
     private static final String extendedFunctionTxt=
         "Validate document specified by $instance using the schemas in $grammars. " +
-        "Based on functionality provided by javax.xml.validation.Validator";
+        "Based on functionality provided by 'javax.xml.validation.Validator'.";
         
 
     private final BrokerPool brokerPool;
@@ -76,7 +74,8 @@ public class Jaxv extends BasicFunction  {
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())."),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        "The location of XML Schema documents (.xsd), referenced as xs:anyURI or a by fn:doc()).")
+                        "One of more XML Schema documents (.xsd), " +
+                        "referenced as xs:anyURI or a node (element or returned by fn:doc()).")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
@@ -85,12 +84,13 @@ public class Jaxv extends BasicFunction  {
         
         new FunctionSignature(
                 new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt+" An xml report is returned.",
+                extendedFunctionTxt+" An XML report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())."),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        "The location of XML Schema documents (.xsd), referenced as xs:anyURI or a by fn:doc()).")
+                        "One of more XML Schema documents (.xsd), " +
+                        "referenced as xs:anyURI or a node (element or returned by fn:doc()).")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
@@ -141,7 +141,6 @@ public class Jaxv extends BasicFunction  {
             SchemaFactory factory = SchemaFactory.newInstance(schemaLang);
 
             // Create grammar
-            
             Schema schema = factory.newSchema(grammars);
  
             // Setup validator

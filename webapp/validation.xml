@@ -141,22 +141,37 @@
             <para> The database provides extension functions for validating XML in an xquery script. Starting with
                 eXist-db release 1.4 the following validation options are provided: <itemizedlist>
                     <listitem>
+                        <para>JAXP</para>
+                    </listitem>
+                    <listitem>
                         <para>JAXV</para>
                     </listitem>
                     <listitem>
                         <para>Jing</para>
                     </listitem>
-                    <listitem>
-                        <para>Xerces</para>
-                    </listitem>
                 </itemizedlist>Each of these options are discussed in the following sections. Consult the <a
                     href="xquery/functions.xql">XQuery Function Documentation</a> for detailed functions
                 descriptions.</para>
             <section>
+                <title>JAXP</title>
+                <para>The JAXP validation functions are based on the validation capabilities of the <a
+                        href="http://java.sun.com/j2se/1.5.0/docs/api/javax/xml/parsers/package-summary.html"
+                        >javax.xml.parsers</a> API. The validation is performed by the <a
+                        href="http://xerces.apache.org/xerces2-j/">Xerces2</a> library.</para>
+                        <para>When the parser
+                    starts reading an XML document it finds references to data models (either DTDs or XSDs). The parser
+                    attempts resolve the grammar references, by itself (by following the XSD xsi:schemaLocation or
+                    xsi:noNamespaceSchemaLocation hints or the DTD DOCTYPE SYSTEM information), or by outsourcing the
+                    retrieval of the grammars using a Xml Catalog resolver. The resolver identifies XSDs by the
+                    (target)namespace, DTDs are identified by the PublicId.</para>
+                <para>The validation speed can be increased by enabling grammar caching. The cached compiled grammars
+                    are shared by the implicit validation feature.</para>
+            </section>
+            <section>
                 <title>JAXV</title>
                 <para>The JAXV validation functions are based on the <a
                         href="http://java.sun.com/j2se/1.5.0/docs/api/javax/xml/validation/package-summary.html"
-                        >java.xml.validation</a> API wich is introduced in Java 5 to provide a
+                        >java.xml.validation</a> API which has been introduced in Java 5 to provide a
                     schema-language-independent interface to validation services. Although officially the specification
                     allows to use additional schema languages, only XML schemas can be really used. </para>
                 <para/>
@@ -184,19 +199,6 @@
                         </listitem>
                     </itemizedlist>
                 </para>
-            </section>
-            <section>
-                <title>Xerces</title>
-                <para>This option relies on the validation capabilities of the parser provided by the <a
-                        href="http://xerces.apache.org/xerces2-j/">Xerces2</a> library. How it works: When the parser
-                    starts reading an XML document it finds references to data models (either DTDs or XSDs). The parser
-                    attempts resolve the grammar reference either by itself (by following the XSD xsi:schemaLocation or
-                    xsi:noNamespaceSchemaLocation hint or the DTD DOCTYPE SYSTEM information), or by outsourcing the
-                    retrieval of the grammar using a Xml Catalog resolver. The latter identifies XSDs by the
-                    (target)namespace, DTDs are identified by the PublicId. Both mechanism are available as in the
-                    functions.</para>
-                <para>Validation performance can be increased by enabling grammar caching. The cached compiled grammars
-                    are shared by the implicit validation feature.</para>
             </section>
         </section>
         
