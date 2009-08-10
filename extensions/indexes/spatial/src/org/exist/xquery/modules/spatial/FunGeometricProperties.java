@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2007-2009 The eXist Project
+ *  Copyright (C) 2007-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     protected static final Logger logger = Logger.getLogger(FunGeometricProperties.class);
     boolean hasUsedIndex = false;
     private static final String paramNameGeometry = "geometry";
-    private static final String paramNameGeometryDesc = "the geometry";
+    private static final String paramNameGeometryDesc = "The geometry";
 
     protected WKTWriter wktWriter = new WKTWriter();
     protected WKBWriter wkbWriter = new WKBWriter();

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2007-2009 The eXist Project
+ *  Copyright (C) 2007-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -63,8 +63,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("transform", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of geometry $geometry with the SRS $srs",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "srs")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "The srs")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of geometry $geometry with the SRS $srs")
         ),
@@ -72,8 +72,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("WKTtoGML", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of WKT $wkt with the SRS $srs",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("wkt", Type.STRING, Cardinality.ZERO_OR_ONE, "wkt"),
-            	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "srs")
+            	new FunctionParameterSequenceType("wkt", Type.STRING, Cardinality.ZERO_OR_ONE, "The wkt"),
+            	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "The srs")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of WKT $wkt with the SRS $srs")
         ),
@@ -82,8 +82,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by 8 segments per circle quadrant.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "width")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The width")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
         ),
@@ -92,9 +92,9 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by $c segments per circle quadrant.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "width"),
-            	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "segments")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The width"),
+            	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "The segments")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
         ),
@@ -103,10 +103,10 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by $c segments per circle quadrant. The fourth argument denotes the line end style (round, butt or square) as an integer constant.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry"),
-            	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "width"),
-            	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "segments"),
-            	new FunctionParameterSequenceType("line-end-style", Type.INTEGER, Cardinality.EXACTLY_ONE, "line-end-style")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The width"),
+            	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "The segments"),
+            	new FunctionParameterSequenceType("line-end-style", Type.INTEGER, Cardinality.EXACTLY_ONE, "The line-end-style")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
         ),
@@ -114,7 +114,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("getBbox", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the bounding box of geometry $geometry.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the bounding box of geometry $geometry.")
         ),         
@@ -122,7 +122,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("convexHull", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the convex hull of geometry $geometry.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the convex hull of geometry $geometry.")
         ), 
@@ -130,7 +130,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("boundary", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the boundary of geometry $geometry.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
+            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the boundary of geometry $geometry.")
         ), 
@@ -138,8 +138,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("intersection", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the intersection of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
-            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-b")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the intersection of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ), 
@@ -147,8 +147,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("union", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the union of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
-            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-b")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the union of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ), 
@@ -156,8 +156,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("difference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
-            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-b")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ), 
@@ -165,8 +165,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("symetricDifference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the symetric difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-a"),
-            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "the geometry-b")
+            	new FunctionParameterSequenceType("geometry-a", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-a"),
+            	new FunctionParameterSequenceType("geometry-b", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry-b")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the symetric difference of geometry $geometry-a and geometry $geometry-b in the SRS of $geometry-a.")
         ) 
