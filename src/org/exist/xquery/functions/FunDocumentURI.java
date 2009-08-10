@@ -53,9 +53,9 @@ public class FunDocumentURI extends Function {
 			"was constructed, if none such URI exists returns the empty sequence. " +
 			"If $document-node is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("document-node", Type.NODE, Cardinality.ZERO_OR_ONE, "the document-node")
+                new FunctionParameterSequenceType("document-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The document node")
 			},
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "document-uri of $document-node"));
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the document URI of $document-node"));
 			
 	/**
 	 * 

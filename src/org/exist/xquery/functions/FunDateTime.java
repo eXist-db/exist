@@ -53,8 +53,8 @@ public class FunDateTime extends BasicFunction {
 				new QName("dateTime", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
 				"Creates an xs:dateTime from an xs:date, $date, and an xs:time, $time.",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "the date as xs:date"),
-					new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "the time as xs:time")
+					new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date"),
+					new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time")
 				},
 				new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the combined date and time as xs:dateTime")
 			);

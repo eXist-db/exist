@@ -53,7 +53,7 @@ public class FunDocAvailable extends Function {
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
             "standard URLs, starting with http://, file://, etc.",
 			new SequenceType[] { 
-                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the document-uri")
+                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The document URI")
             },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the document is available, false() otherwise"));	
 	

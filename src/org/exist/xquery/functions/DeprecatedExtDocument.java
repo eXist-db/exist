@@ -77,7 +77,7 @@ public class DeprecatedExtDocument extends Function {
             "If the input sequence is empty, " +
             "the function will load all documents in the database.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of paths or uris of the documents")
+                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of paths or uris of the documents")
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the documents"),
 			true,

@@ -57,10 +57,10 @@ public class FunEscapeURI extends BasicFunction {
             "octets in the form %HH, where HH is the hexadecimal representation " +
             "of the octet. $escape-reserved indicates whether to escape reserved characters.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the uri"),
-                 new FunctionParameterSequenceType("escape-reserved", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the escaped-reserved")
+                new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI"),
+                 new FunctionParameterSequenceType("escape-reserved", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The escaped-reserved")
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "identified characters in $uri encoded with escape sequences"));
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the identified characters in $uri encoded with escape sequences"));
     
     public FunEscapeURI(XQueryContext context) {
         super(context, signature);

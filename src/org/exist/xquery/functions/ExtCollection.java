@@ -76,7 +76,7 @@ public class ExtCollection extends Function {
 			"Documents contained in subcollections are also included.",
 			new SequenceType[] {
 				//Different from the offical specs
-                new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ZERO_OR_MORE, "the collection-uris for which to include the documents")},
+                new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ZERO_OR_MORE, "The collection-uris for which to include the documents")},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes contained in or under the given collections"),
 			true);
 

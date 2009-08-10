@@ -58,7 +58,7 @@ public class FunDoc extends Function {
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
             "standard URL starting with http://, file://, etc.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the document-uri")
+                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The document URI")
             },
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the document node of $document-uri"));
 

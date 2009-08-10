@@ -46,7 +46,7 @@ public class FunCeiling extends Function {
             "returns the smallest (closest to negative infinity) number " +
             "with no fractional part that is not less than the value of the argument, $number.",
 			new SequenceType[] { 
-                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "the number")
+                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number")
             },
 			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE, "the non-fractional number not less than $number")
 		);

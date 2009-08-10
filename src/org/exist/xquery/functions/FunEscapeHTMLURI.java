@@ -52,7 +52,7 @@ public class FunEscapeHTMLURI extends Function {
 			"as a hexadecimal octet in the form %XX. If $html-uri is the empty sequence, " + 
 			"returns the zero-length string." ,
 			new SequenceType[] {
-                new FunctionParameterSequenceType("html-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "the html-uri")
+                new FunctionParameterSequenceType("html-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The html URI")
             },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "all nonprintable ASCII characters in $html-uri encoded by escape sequences"));
 	

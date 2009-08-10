@@ -48,7 +48,7 @@ public class FunDefaultCollation extends BasicFunction {
 			new QName("default-collation", Function.BUILTIN_FUNCTION_NS),
 			"Returns the context's default collation. E.g. http://www.w3.org/2005/xpath-functions/collation/codepoint",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "default collation from context"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the default collation from context"));
 
 	public FunDefaultCollation(XQueryContext context) {
 		super(context, signature);

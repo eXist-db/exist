@@ -51,8 +51,8 @@ public class FunContains extends CollatingFunction {
 			"one sequence of collation units that provides a minimal match to the " +
 			"collation units in the value of $substring, according to the default collation.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "the source-string"),
-                new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")
+                new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
+                new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "The substring")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if $source-string contains $substring, false() otherwise")),
 		new FunctionSignature(
@@ -63,9 +63,9 @@ public class FunContains extends CollatingFunction {
 			"collation units in the value of $substring, according to the collation that is " +
 			"specified in $collation-uri." + THIRD_REL_COLLATION_ARG_EXAMPLE,
 			new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "the source-string"),
-                new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "the substring"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collation-uri")
+                new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
+                new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "The substring"),
+                new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 					
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if $source-string contains $substring, false() otherwise"))

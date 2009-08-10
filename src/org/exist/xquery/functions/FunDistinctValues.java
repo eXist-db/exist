@@ -62,19 +62,19 @@ public class FunDistinctValues extends CollatingFunction {
 			"Returns a sequence where duplicate values of $atomic-values, based on value equality, " + 
 			"have been deleted.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the atomic-values")
+                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The atomic values")
             },
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "distinct-values sequence")
+			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the distinct values sequence")
 		),
 		new FunctionSignature(
 				new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
 				"Returns a sequence where duplicate values of $atomic-values, based on value equality specified by collation $collation-uri, " + 
 				"have been deleted.",
 				new SequenceType[] { 
-					new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the atomic values"),
-					new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collation-uri")
+					new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The atomic values"),
+					new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 				},
-				new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "distinct-values sequence")
+				new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the distinct values sequence")
 		)		
 	};
 

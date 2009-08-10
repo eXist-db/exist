@@ -55,24 +55,24 @@ public class FunBaseURI extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base-uri property for the context item.",
+            "Returns the value of the base URI property for the context item.",
 			null,
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base-uri from the context item")
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base URI from the context item")
 		),
         new FunctionSignature(
             new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base-uri property for $uri. If $uri is the empty " +
+            "Returns the value of the base URI property for $uri. If $uri is the empty " +
             "sequence, the empty sequence is returned.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("uri", Type.NODE, Cardinality.ZERO_OR_ONE, "the uri") },
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base-uri from $uri")
+                new FunctionParameterSequenceType("uri", Type.NODE, Cardinality.ZERO_OR_ONE, "The URI") },
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base URI from $uri")
         ),
         new FunctionSignature(
             new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base-uri property from the static context. " +
+            "Returns the value of the base URI property from the static context. " +
             "If the base-uri property is undefined, the empty sequence is returned.",
             null,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base-uri from the static context")
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base URI from the static context")
         )
     };
 			

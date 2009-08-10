@@ -31,6 +31,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -48,10 +50,10 @@ public class DeprecatedFunItemAt extends Function {
 			"Returns the item in the first argument sequence that is located at the position " +
 			"specified by the second argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+				 new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence to get the item from"),
+				 new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of the item in the sequence to return")
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the item"),
 			"This function is eXist-specific and deprecated. It should not be in the standard functions namespace. " +
             "Use $x[1] instead");
 	

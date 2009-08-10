@@ -46,7 +46,7 @@ public class DeprecatedExtXCollection extends ExtCollection {
             "Works like fn:collection(), but does not include documents " +
             "found in sub-collections of the specified collections.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of paths or uris of the documents")
+                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of paths or uris of the documents")
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collection paths only, not including descendant collections"),
             true,
