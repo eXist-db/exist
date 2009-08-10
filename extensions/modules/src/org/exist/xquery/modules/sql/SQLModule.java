@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension
- *  Copyright (C) 2006-2009 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2006-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -58,18 +58,12 @@ public class SQLModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
 	private final static FunctionDef[] functions = {
-			new FunctionDef(GetConnectionFunction.signatures[0],
-					GetConnectionFunction.class),
-			new FunctionDef(GetConnectionFunction.signatures[1],
-					GetConnectionFunction.class),
-			new FunctionDef(GetConnectionFunction.signatures[2],
-					GetConnectionFunction.class),
-			new FunctionDef(GetJNDIConnectionFunction.signatures[0],
-					GetJNDIConnectionFunction.class),
-			new FunctionDef(GetJNDIConnectionFunction.signatures[1],
-					GetJNDIConnectionFunction.class),
-			new FunctionDef(ExecuteFunction.signatures[0],
-					ExecuteFunction.class),
+			new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
+			new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
+			new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
+			new FunctionDef(GetJNDIConnectionFunction.signatures[0], GetJNDIConnectionFunction.class),
+			new FunctionDef(GetJNDIConnectionFunction.signatures[1], GetJNDIConnectionFunction.class),
+			new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
 
 	};
 

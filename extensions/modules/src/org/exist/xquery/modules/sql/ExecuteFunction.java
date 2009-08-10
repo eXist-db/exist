@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension ExecuteFunction
- *  Copyright (C) 2006 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2006-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -73,9 +73,9 @@ public class ExecuteFunction extends BasicFunction
 				"Executes a SQL statement against a SQL db using the connection " +
 				"indicated by the connection handle.",
 				new SequenceType[] {
-						new FunctionParameterSequenceType( "handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "connection handle" ),
-						new FunctionParameterSequenceType( "sql-statement", Type.STRING, Cardinality.EXACTLY_ONE, "" ),
-						new FunctionParameterSequenceType( "make-node-from-column-name", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)" ) },
+						new FunctionParameterSequenceType( "handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The connection handle" ),
+						new FunctionParameterSequenceType( "sql-statement", Type.STRING, Cardinality.EXACTLY_ONE, "The SQL statement" ),
+						new FunctionParameterSequenceType( "make-node-from-column-name", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag that indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)" ) },
 				new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the results" ) 
 			) };
 

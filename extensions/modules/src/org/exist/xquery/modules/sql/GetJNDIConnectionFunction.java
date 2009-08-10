@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetJNDIConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -61,21 +61,21 @@ public class GetJNDIConnectionFunction extends BasicFunction {
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JNDI name. Returns an xs:long representing the connection handle.",
+					"Opens a connection to a SQL Database.",
 					new SequenceType[] { 
-						new FunctionParameterSequenceType("jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "")
+						new FunctionParameterSequenceType("jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "The JNDI name")
 					},
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")),
+					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle")),
 
 			new FunctionSignature(
 					new QName("get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JNDI name, a username and a password. Returns an xs:long representing the connection handle.",
+					"Opens a connection to a SQL Database.",
 					new SequenceType[] { 
-						new FunctionParameterSequenceType("jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-						new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-						new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "") 
+						new FunctionParameterSequenceType("jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "The JNDI name"),
+						new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username"),
+						new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password") 
 					}, 
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")) };
+					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle")) };
 
 	/**
 	 * GetJNDIConnectionFunction Constructor
