@@ -24,6 +24,8 @@ package org.exist.xquery.functions.validate;
 import org.junit.*;
 import static org.junit.Assert.*;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -72,69 +74,57 @@ public class JingXsdTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_stored_valid() {
-        String query = "validation:jing( doc('/db/personal/personal-valid.xml'), doc('/db/personal/personal.xsd') )";
+        String query = "validation:jing-report( " +
+                "doc('/db/personal/personal-valid.xml'), " +
+                "doc('/db/personal/personal.xsd') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void xsd_stored_invalid() {
-        String query = "validation:jing( doc('/db/personal/personal-invalid.xml'), doc('/db/personal/personal.xsd') )";
+        String query = "validation:jing-report( " +
+                "doc('/db/personal/personal-invalid.xml'), " +
+                "doc('/db/personal/personal.xsd') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void xsd_anyuri_valid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void xsd_anyuri_invalid() {
-        String query = "validation:jing( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
+
+        executeAndEvaluate(query,"invalid");
+    }
+
+    private void executeAndEvaluate(String query, String expectedValue){
+
+        LOG.info("Query="+query);
+        LOG.info("ExpectedValue="+query);
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            LOG.info(r);
+
+            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
             fail(ex.getMessage());
         }
     }
-
- 
 }

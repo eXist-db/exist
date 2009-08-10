@@ -67,9 +67,9 @@ public class Shared {
 
     private final static Logger LOG = Logger.getLogger(Shared.class);
     public final static String simplereportText = "true() if the " +
-            "document is valid and no single problem occured, value false() for " +
-            "all other situations. Check corresponding report function " +
-            "for details.";
+            "document is valid and no single problem occured, false() for " +
+            "all other conditions. For detailed validation information " +
+            "use the corresponding -report() function.";
     public final static String xmlreportText = "a validation report formatted as\n<report>\n" +
             "\t<status>valid</status>\n" + "\t<namespace>...\n" + "\t<time>...\n" +
             "\t<exception>\n" +

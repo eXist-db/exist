@@ -27,6 +27,8 @@ import java.io.FilenameFilter;
 import org.junit.*;
 import static org.junit.Assert.*;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import org.exist.test.EmbeddedExistTester;
 
 import org.xmldb.api.base.Collection;
@@ -75,7 +77,9 @@ public class JaxvTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_stored_valid() {
-        String query = "validation:jaxv( doc('/db/personal/personal-valid.xml'), doc('/db/personal/personal.xsd') )";
+        String query = "validation:jaxv( " +
+                "doc('/db/personal/personal-valid.xml'), " +
+                "doc('/db/personal/personal.xsd') )";
 
         try {
             ResourceSet results = executeQuery(query);
@@ -90,14 +94,42 @@ public class JaxvTest extends EmbeddedExistTester {
     }
 
     @Test
-    public void xsd_stored_invalid() {
-        String query = "validation:jaxv( doc('/db/personal/personal-invalid.xml'), doc('/db/personal/personal.xsd') )";
+    public void xsd_stored_report_valid() {
+        String query = "validation:jaxv-report( " +
+                "doc('/db/personal/personal-valid.xml'), " +
+                "doc('/db/personal/personal.xsd') )";
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            System.out.println(r);
+
+            assertXpathEvaluatesTo("valid", "//status/text()", r);
+
+        } catch (Exception ex) {
+            LOG.error(ex);
+            fail(ex.getMessage());
+        }
+    }
+
+
+
+    @Test
+    public void xsd_stored_invalid() {
+        String query = "validation:jaxv-report( " +
+                "doc('/db/personal/personal-invalid.xml'), " +
+                "doc('/db/personal/personal.xsd') )";
+
+        try {
+            ResourceSet results = executeQuery(query);
+            assertEquals(1, results.getSize());
+
+            String r = (String) results.getResource(0).getContent();
+            System.out.println(r);
+
+            assertXpathEvaluatesTo("invalid", "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
@@ -107,14 +139,18 @@ public class JaxvTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_anyuri_valid() {
-        String query = "validation:jaxv( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
+        String query = "validation:jaxv-report( " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "true",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            System.out.println(r);
+
+            assertXpathEvaluatesTo("valid", "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
@@ -124,14 +160,18 @@ public class JaxvTest extends EmbeddedExistTester {
 
     @Test
     public void xsd_anyuri_invalid() {
-        String query = "validation:jaxv( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
+        String query = "validation:jaxv-report( " +
+                "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
-            assertEquals(query, "false",
-                    results.getResource(0).getContent().toString());
+
+            String r = (String) results.getResource(0).getContent();
+            System.out.println(r);
+
+            assertXpathEvaluatesTo("invalid", "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);

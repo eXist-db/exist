@@ -83,21 +83,30 @@ public class JingSchematronTest extends EmbeddedExistTester {
 
     @Test
     public void sch_15_stored_valid() {
-        String query = "validation:jing-report( doc('/db/tournament/1.5/Tournament-valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
-        try {
+        executeAndEvaluate(query,"valid");
+    }
+
+    @Test
+    public void sch_15_stored_valid_boolean() {
+        String query = "validation:jing( " +
+                "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
+                "doc('/db/tournament/1.5/tournament-schema.sch') )";
+
+         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
             System.out.println(r);
 
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
+            assertEquals("true", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
             fail(ex.getMessage());
         }
     }
@@ -105,63 +114,47 @@ public class JingSchematronTest extends EmbeddedExistTester {
     @Test
 
     public void sch_15_stored_invalid() {
-        String query = "validation:jing-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
+        String query = "validation:jing-report( " +
+                "doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"invalid");
     }
 
     @Test
     public void sch_15_anyuri_valid() {
-        String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
 
-        try {
-            ResourceSet results = executeQuery(query);
-            assertEquals(1, results.getSize());
-
-            String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
-
-            assertXpathEvaluatesTo("valid", "//status/text()", r);
-
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
+        executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void sch_15_anyuri_invalid() {
-        String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
+        String query = "validation:jing-report( " +
+                "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
+
+        executeAndEvaluate(query,"invalid");
+    }
+
+    private void executeAndEvaluate(String query, String expectedValue){
+
+        LOG.info("Query="+query);
+        LOG.info("ExpectedValue="+query);
 
         try {
             ResourceSet results = executeQuery(query);
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
+            LOG.info(r);
 
-            assertXpathEvaluatesTo("invalid", "//status/text()", r);
+            assertXpathEvaluatesTo(expectedValue, "//status/text()", r);
 
         } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
             fail(ex.getMessage());
         }
     }

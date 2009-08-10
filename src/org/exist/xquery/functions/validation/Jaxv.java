@@ -74,9 +74,9 @@ public class Jaxv extends BasicFunction  {
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())."),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                            "The location of XML Schema (.xsd) document.")
+                        "The location of XML Schema documents (.xsd), referenced as xs:anyURI or a by fn:doc()).")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
@@ -88,9 +88,9 @@ public class Jaxv extends BasicFunction  {
                 extendedFunctionTxt+" An xml report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
+                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())."),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                            "The location of XML Schema (.xsd) document.")
+                        "The location of XML Schema documents (.xsd), referenced as xs:anyURI or a by fn:doc()).")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
@@ -116,14 +116,14 @@ public class Jaxv extends BasicFunction  {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        InputStream is = null;
+
         ValidationReport report = new ValidationReport();
 
         try {
             report.start();
             
             // Get inputstream for instance document
-            is=Shared.getInputStream(args[0].itemAt(0), context);
+            StreamSource is=Shared.getStreamSource(args[0].itemAt(0), context);
 
             // Validate using resource speciefied in second parameter
            
@@ -146,13 +146,10 @@ public class Jaxv extends BasicFunction  {
  
             // Setup validator
             Validator validator = schema.newValidator();
-            validator.setErrorHandler(report);
-
-            // TODO add external resolver          
+            validator.setErrorHandler(report);      
 
             // Perform validation
-            StreamSource instance = new StreamSource(is);
-            validator.validate(instance);
+            validator.validate(is);
 
 
         } catch (MalformedURLException ex) {
@@ -169,14 +166,6 @@ public class Jaxv extends BasicFunction  {
 
         } finally {
             report.stop();
-            
-            // Force release stream
-            try {
-                if(is!=null)
-                    is.close();
-            } catch (IOException ex) {
-                LOG.debug("Attemted to close stream. ignore.", ex);
-            }
         }
 
         // Create response
