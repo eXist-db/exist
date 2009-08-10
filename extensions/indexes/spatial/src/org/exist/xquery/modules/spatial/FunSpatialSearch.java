@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2007-2009 The eXist Project
+ *  Copyright (C) 2007-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -49,80 +49,58 @@ import org.w3c.dom.Element;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
-    protected static final Logger logger = Logger.getLogger(FunSpatialSearch.class);
+    protected static final FunctionParameterSequenceType NODES_PARAMETER = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes");
+	protected static final FunctionParameterSequenceType GEOMETRY_PARAMETER = new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry");
+	protected static final Logger logger = Logger.getLogger(FunSpatialSearch.class);
     boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("equals", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which is equal to geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which is equal to geometry $geometry")
         ),
         new FunctionSignature(
             new QName("disjoint", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which is disjoint with geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which is disjoint with geometry $geometry")
         ),
         new FunctionSignature(
             new QName("intersects", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which instersects with geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which instersects with geometry $geometry")
         ),
         new FunctionSignature(
             new QName("touches", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which touches geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which touches geometry $geometry")
         ),
         new FunctionSignature(
             new QName("crosses", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which crosses geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which touches geometry $geometry")
         ),
         new FunctionSignature(
             new QName("within", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which is within geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-		new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which is within geometry $geometry")
         ),
         new FunctionSignature(
             new QName("contains", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which contains geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-                    new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which contains geometry $geometry")
         ),
         new FunctionSignature(
             new QName("overlaps", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which overlaps geometry $geometry",
-            new SequenceType[]{
-		new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "nodes"),
-                    new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "geometry")
-            },
+            new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which overlaps geometry $geometry")
         )                
 	};    
