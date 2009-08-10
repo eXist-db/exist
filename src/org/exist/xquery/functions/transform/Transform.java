@@ -139,7 +139,7 @@ public class Transform extends BasicFunction {
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
                 new FunctionParameterSequenceType("serailization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serailization options")},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the tranfromed result (nodes tree)")),
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (nodes tree)")),
         new FunctionSignature(
             new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
             "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
