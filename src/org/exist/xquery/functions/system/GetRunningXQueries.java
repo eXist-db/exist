@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -31,10 +31,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -55,7 +54,7 @@ public class GetRunningXQueries extends BasicFunction
 			new QName( "get-running-xqueries", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Get a list of running XQueries (dba role only).",
 			null,
-			new FunctionParameterSequenceType( "running-xqueries", Type.ITEM, Cardinality.EXACTLY_ONE, "a node containing the list of running XQueries" )
+			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EXACTLY_ONE, "a node containing the list of running XQueries" )
 		);
 		
 

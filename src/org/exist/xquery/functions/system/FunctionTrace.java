@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -43,16 +43,16 @@ public class FunctionTrace extends BasicFunction {
         new FunctionSignature(
                 new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Enable function tracing on the database instance.",
-                new SequenceType[] { new FunctionParameterSequenceType("enable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "boolean flag to enable/disable function tracing") },
+                new SequenceType[] { new FunctionParameterSequenceType("enable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The boolean flag to enable/disable function tracing") },
                 new SequenceType(Type.ITEM, Cardinality.EMPTY)
         ),
         new FunctionSignature(
                 new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Enable function tracing on the database instance.",
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("enable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "boolean flag to enable/disable function tracing"),
+                    new FunctionParameterSequenceType("enable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The enable boolean flag to enable/disable function tracing"),
                     new FunctionParameterSequenceType("tracelog", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                        "boolean flag: if set to true, entering/exiting a function will be logged to the logger 'xquery.profiling'")
+                        "The tracelog boolean flag: if set to true, entering/exiting a function will be logged to the logger 'xquery.profiling'")
                 },
                 new SequenceType(Type.ITEM, Cardinality.EMPTY)
         ),
@@ -60,7 +60,7 @@ public class FunctionTrace extends BasicFunction {
                 new QName( "tracing-enabled", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Returns true if function tracing is currently enabled on the database instance.",
                 null,
-                new FunctionParameterSequenceType("tracing-enabled", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Returns true is tracing is enabled.")
+                new FunctionParameterSequenceType("tracing-enabled", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true is tracing is enabled.")
         ),
         new FunctionSignature(
                 new QName( "clear-trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),

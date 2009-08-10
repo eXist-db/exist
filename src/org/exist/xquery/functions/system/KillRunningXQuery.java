@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -43,7 +43,11 @@ import org.exist.xquery.value.Type;
  */
 public class KillRunningXQuery extends BasicFunction
 {
-    protected final static Logger logger = Logger.getLogger(KillRunningXQuery.class);
+    protected static final FunctionParameterSequenceType WAIT_TIME_PARAM = new FunctionParameterSequenceType( "wait-time", Type.LONG, Cardinality.EXACTLY_ONE, "The wait time in milliseconds before terminating the XQuery" );
+
+	protected static final FunctionParameterSequenceType XQUERY_ID_PARAM = new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "The XQuery ID obtained from get-running-xqueries()" );
+
+	protected final static Logger logger = Logger.getLogger(KillRunningXQuery.class);
 
 	final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
     final static String PREFIX                              = SystemModule.PREFIX;
@@ -53,19 +57,14 @@ public class KillRunningXQuery extends BasicFunction
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Kill a running XQuey (dba role only).",
-			new SequenceType[] {
-				new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "the XQuery ID obtained from get-running-xqueries()" )
-			},
+			new SequenceType[] { XQUERY_ID_PARAM },
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		),
 		
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Kill a running XQuey (dba role only).",
-			new SequenceType[] {
-				new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "the XQuery ID obtained from get-running-xqueries()" ),
-				new FunctionParameterSequenceType( "wait-time", Type.LONG, Cardinality.EXACTLY_ONE, "the wait time in milliseconds before terminating the XQuery" )
-			},
+			new SequenceType[] { XQUERY_ID_PARAM, WAIT_TIME_PARAM },
 			new SequenceType( Type.ITEM, Cardinality.EMPTY )
 		),
 	};

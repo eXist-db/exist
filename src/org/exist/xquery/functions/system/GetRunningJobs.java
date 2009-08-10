@@ -1,22 +1,43 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-09 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
+ */
 package org.exist.xquery.functions.system;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.DateTimeValue;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
-
-import java.util.Date;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 public class GetRunningJobs extends BasicFunction {
 
@@ -30,7 +51,7 @@ public class GetRunningJobs extends BasicFunction {
                 new QName( "get-running-jobs", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Get a list of running jobs (dba role only).",
                 null,
-                new FunctionParameterSequenceType( "result", Type.ITEM, Cardinality.EXACTLY_ONE, "The list of running jobs" )
+                new FunctionReturnSequenceType( Type.ITEM, Cardinality.EXACTLY_ONE, "the list of running jobs" )
         );
 
     public GetRunningJobs(XQueryContext context) {

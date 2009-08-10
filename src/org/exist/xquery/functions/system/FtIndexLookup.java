@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2005-2009 The eXist Project
+ * Copyright (C) 2005-09 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -54,10 +54,10 @@ public class FtIndexLookup extends Function {
             new QName("ft-index-lookup", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
             "Internal function doing old full-text index lookup filtering. Intended to support the query optimizer by allowing restrictive filtering early on.",
             new SequenceType[]{
-                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes"),
-                new FunctionParameterSequenceType("string-filter", Type.STRING, Cardinality.ZERO_OR_ONE, "the string-filter")
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes"),
+                new FunctionParameterSequenceType("string-filter", Type.STRING, Cardinality.ZERO_OR_ONE, "The string-filter")
             },
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "nodes matching the string-filter"));
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes matching the string-filter"));
     
     public FtIndexLookup(XQueryContext context) {
         super(context, signature);

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -61,7 +61,7 @@ public class Shutdown extends BasicFunction
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Shutdown eXist. (dba role only)",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("delay", Type.LONG, Cardinality.EXACTLY_ONE, "Delay in milliseconds before eXist starts to shutdown.")
+					new FunctionParameterSequenceType("delay", Type.LONG, Cardinality.EXACTLY_ONE, "The delay in milliseconds before eXist starts to shutdown.")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		)
