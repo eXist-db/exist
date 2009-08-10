@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -59,7 +59,7 @@ public class UUID extends BasicFunction {
                     "Generate a version 3 Universally Unique Identifier string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
                     new SequenceType[]{
                         new FunctionParameterSequenceType("name", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "Input value for UUID calculation."),
+                            "The input value for UUID calculation."),
                     },
                     new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string")
                 )

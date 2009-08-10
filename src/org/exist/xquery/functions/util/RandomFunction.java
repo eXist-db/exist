@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -46,7 +47,7 @@ public class RandomFunction extends BasicFunction
             new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a random number between 0.0 and 1.0",
             null,
-            new FunctionParameterSequenceType("result", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The random number between 0.0 and 1.0")),
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "a random number between 0.0 and 1.0")),
         
         new FunctionSignature(
                 new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -54,7 +55,7 @@ public class RandomFunction extends BasicFunction
                 new SequenceType[] {
     					new FunctionParameterSequenceType("max", Type.INTEGER, Cardinality.EXACTLY_ONE, "The maximum value for the random number.")
     			},
-                new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.EXACTLY_ONE, "The  random number between 0 and $max"))
+                new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "a random number between 0 and $max"))
     };
     
     public RandomFunction(XQueryContext context, FunctionSignature signature)

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -86,10 +86,10 @@ public class Serialize extends BasicFunction {
                 "The function does NOT automatically inherit the serialization options of the XQuery it is " +
                 "called from.",
                 new SequenceType[] { 
-                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "node set to serialize"),
-                    new FunctionParameterSequenceType("parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "sequence of zero or more serialization parameters")
+                    new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
+                    new FunctionParameterSequenceType("parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "The serialization parameters")
                 },
-                new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the serialized node set.")
+                new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set.")
         )
     };
         

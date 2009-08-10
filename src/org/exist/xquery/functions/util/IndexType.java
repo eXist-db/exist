@@ -33,6 +33,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -50,9 +51,9 @@ public class IndexType extends BasicFunction {
             new QName("index-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Returns the range index type for a set of nodes or an empty sequence if no index is defined. ", 
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("set-of-nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "") 
+                    new FunctionParameterSequenceType("set-of-nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The set of nodes") 
                     },
-            new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "result"));
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the range index type"));
 
     /**
      * @param context

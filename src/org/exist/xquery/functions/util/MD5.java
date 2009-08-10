@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-09 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -29,6 +29,8 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -49,9 +51,9 @@ public class MD5 extends BasicFunction
 			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Generates an MD5 key from a string.",
 			new SequenceType[] {
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
+				new FunctionParameterSequenceType( "arg", Type.ITEM, Cardinality.EXACTLY_ONE, "The input string" ),
 				},
-			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.EXACTLY_ONE, "the MD5 key" ),
                 "Use the hash($a, \"MD5\") function instead. SHA-1 is supported as " +
                         "more secure message digest algorithm."),
 	
@@ -59,10 +61,10 @@ public class MD5 extends BasicFunction
 			new QName( "md5", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
 			"Generates an MD5 key from a string. $b specifies whether to return result Base64 encoded",
 			new SequenceType[] {
-				new SequenceType( Type.ITEM, Cardinality.EXACTLY_ONE ),
-				new SequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE )
+				new FunctionParameterSequenceType( "arg", Type.ITEM, Cardinality.EXACTLY_ONE, "The input string" ),
+				new FunctionParameterSequenceType( "base64encoded", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag to determine if the result is Base64 encoded" )
 				},
-			new SequenceType( Type.STRING, Cardinality.EXACTLY_ONE ),
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.EXACTLY_ONE, "the MD5 key" ),
                 "Use the hash($a, \"MD5\") function instead. SHA-1 is supported as " +
                         "more secure message digest algorithm.")
 		};

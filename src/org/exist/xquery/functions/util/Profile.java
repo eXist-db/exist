@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ public class Profile extends BasicFunction {
             "other profiling options can be configured via the 'declare option exist:profiling ...' in the " +
             "query prolog.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("verbosity", Type.INT, Cardinality.EXACTLY_ONE, "the verbosity of the profiling"),
+                new FunctionParameterSequenceType("verbosity", Type.INT, Cardinality.EXACTLY_ONE, "The verbosity of the profiling"),
             },
             new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
