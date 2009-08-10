@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -36,6 +36,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -57,44 +58,39 @@ import org.exist.xquery.value.Type;
  */
 public class GetConnectionFunction extends BasicFunction {
 
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle");
+
+	protected static final FunctionParameterSequenceType JDBC_PASSWORD_PARAM = new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The SQL database password");
+
+	protected static final FunctionParameterSequenceType JDBC_USERNAME_PARAM = new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The SQL database username");
+
+	protected static final FunctionParameterSequenceType JDBC_PROPERTIES_PARAM = new FunctionParameterSequenceType("properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The JDBC database connection properties in the form <properties><property name=\"\" value=\"\"/></properties>.");
+
+	protected static final FunctionParameterSequenceType JDBC_URL_PARAM = new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "The JDBC connection URL");
+
+	protected static final FunctionParameterSequenceType JDBC_DRIVER_CLASSNAME_PARAM = new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The JDBC driver classname");
+
 	private static final Logger logger = Logger.getLogger(GetConnectionFunction.class);
 	
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
-					new QName("get-connection", SQLModule.NAMESPACE_URI,
-							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JDBC Driver class name and a JDBC URL. Returns an xs:long representing the connection handle.",
-					new SequenceType[] {
-							new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-							new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "JDBC URL") 
-					},
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")),
+					new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+					"Opens a connection to a SQL Database",
+					new SequenceType[] { JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM },
+					RETURN_TYPE),
 
 			new FunctionSignature(
-					new QName("get-connection", SQLModule.NAMESPACE_URI,
-							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects "
-							+ "a JDBC Driver class name and a JDBC URL."
-							+ " Additional JDBC properties may be set in the"
-							+ " form <properties><property name=\"\" value=\"\"/></properties>. "
-							+ "Returns an xs:long representing the connection handle.",
-					new SequenceType[] {
-							new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-							new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "JDBC URL"),
-							new FunctionParameterSequenceType("properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "")
-					},
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")),
+					new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+					"Opens a connection to a SQL Database",
+					new SequenceType[] { JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM, JDBC_PROPERTIES_PARAM },
+					RETURN_TYPE),
 
 			new FunctionSignature(
-					new QName("get-connection", SQLModule.NAMESPACE_URI,
-							SQLModule.PREFIX),
-					"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a, a JDBC URL in $b, a username in $c and a password in $d. Returns an xs:long representing the connection handle.",
-					new SequenceType[] {
-							new FunctionParameterSequenceType("driver-classname", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-							new FunctionParameterSequenceType("url", Type.STRING, Cardinality.EXACTLY_ONE, "JDBC URL"),
-							new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-							new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "") },
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "handle")) };
+					new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+					"Opens a connection to a SQL Database",
+					new SequenceType[] { JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM, JDBC_USERNAME_PARAM, JDBC_PASSWORD_PARAM },
+					RETURN_TYPE) 
+			};
 
 	/**
 	 * GetConnectionFunction Constructor
