@@ -97,15 +97,15 @@ public class FunMin extends CollatingFunction {
 		new FunctionSignature(
 			new QName("min", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "")},
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence")},
 			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the minimum value")
 		),
 		new FunctionSignature(
 			new QName("min", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
 			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
-				new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence"),
+				new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation")
 			},
 			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the minimum value")
 		)

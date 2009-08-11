@@ -80,8 +80,8 @@ public class FunNormalizeUnicode extends Function {
 		"If the effective value of the $normalizationForm is other than one of the values " +
 		"supported by the implementation, then an error is raised [err:FOCH0003].";
 
-	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the unicode string to normalize");
-	protected static final FunctionParameterSequenceType NF_PARAM = new FunctionParameterSequenceType("normalizationForm", Type.STRING, Cardinality.ONE, "the normalization form");
+	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The unicode string to normalize");
+	protected static final FunctionParameterSequenceType NF_PARAM = new FunctionParameterSequenceType("normalizationForm", Type.STRING, Cardinality.ONE, "The normalization form");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the normalized text");
 
 	public final static FunctionSignature signatures [] = {

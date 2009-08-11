@@ -52,7 +52,7 @@ public class FunNot extends Function {
 			"the fn:boolean() function. Returns true if the effective boolean " +
 			"value is false, and false if the effective boolean value is true.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "")},
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input item")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the negative of the $arg"));
 
 	private boolean inWhereClause = false;

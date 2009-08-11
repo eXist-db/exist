@@ -73,7 +73,7 @@ public class FunNamespaceURI extends Function {
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
 			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") 
+				new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") 
 			},
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
 			false)

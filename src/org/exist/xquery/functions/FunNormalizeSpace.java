@@ -72,7 +72,7 @@ public class FunNormalizeSpace extends Function {
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
 				FUNCTION_DESCRIPTION,
-				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to normalize") },
+				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to normalize") },
 				RETURN_TYPE
 			)
 	};

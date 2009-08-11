@@ -54,7 +54,7 @@ public class FunNilled extends BasicFunction {
 			"Returns an xs:boolean indicating whether the argument node is \"nilled\". " +
 			"If the argument is not an element node, returns the empty sequence. " +
 			"If the argument is the empty sequence, returns the empty sequence.",
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") },
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the argument node is \"nilled\""));
 
 	public FunNilled(XQueryContext context) {

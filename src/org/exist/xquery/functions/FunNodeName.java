@@ -55,7 +55,7 @@ public class FunNodeName extends Function {
 			"Returns an expanded-QName for node kinds that can have names. For other kinds " +
 			"of nodes it returns the empty sequence. If $arg is the empty sequence, the " +
 			"empty sequence is returned.",
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") },
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") },
 			new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, "the expanded QName"));
     
     /**
