@@ -31,6 +31,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -57,11 +58,11 @@ public class FunTranslate extends Function {
 			"the replacement character. If $transString is longer than $mapString, the excess characters are ignored.\n\n" +
 			"i.e. fn:translate(\"bar\",\"abc\",\"ABC\") returns \"BAr\"",
 			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to be translated"),
-				new FunctionParameterSequenceType("mapString", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-				new FunctionParameterSequenceType("transString", Type.STRING, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be translated"),
+				new FunctionParameterSequenceType("mapString", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
+				new FunctionParameterSequenceType("transString", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
 			},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the translated string"));
 				
 	/**
 	 * @param context

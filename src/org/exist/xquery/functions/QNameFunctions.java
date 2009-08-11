@@ -52,7 +52,7 @@ public class QNameFunctions extends BasicFunction {
 				"Returns an xs:NCName representing the prefix of $arg. If $arg is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName")
+					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "The QName")
 				},
 				new FunctionReturnSequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE, "the prefix"));
 	
@@ -62,7 +62,7 @@ public class QNameFunctions extends BasicFunction {
 				"Returns an xs:NCName representing the local part of $arg. If $arg is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName")
+					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "The QName")
 				},
 				new FunctionReturnSequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE, "the local name"));
 	
@@ -72,7 +72,7 @@ public class QNameFunctions extends BasicFunction {
 				"Returns the namespace URI for $arg. If $arg is the empty " +
 				"sequence, returns the empty sequence.",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "the QName")
+					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "The QName")
 				},
 				new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the namespace URI"));
 	
