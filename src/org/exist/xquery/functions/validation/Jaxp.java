@@ -89,11 +89,11 @@ public class Jaxp extends BasicFunction {
             "are '.xsd' and '.dtd'.";
 
     private static final String documentTxt
-            = "The document referenced as xs:anyURI() or a node (element or result of fn:doc()).";
+            = "The document referenced as xs:anyURI or a node (element or result of fn:doc()).";
     private static final String catalogTxt
-            = "The catalogs referenced as xs:anyURI().";
+            = "The catalogs referenced as xs:anyURI's.";
     private static final String cacheTxt
-            = "Set the flag to true() to use grammar caching.";
+            = "Set the flag to true() to enable grammar caching.";
 
     private final BrokerPool brokerPool;
 
@@ -105,7 +105,7 @@ public class Jaxp extends BasicFunction {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     documentTxt),
-                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("cache-grammars", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     cacheTxt)
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -117,7 +117,7 @@ public class Jaxp extends BasicFunction {
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                     documentTxt),
-                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    new FunctionParameterSequenceType("cache-grammars", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     cacheTxt),
                     new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
                     catalogTxt),
