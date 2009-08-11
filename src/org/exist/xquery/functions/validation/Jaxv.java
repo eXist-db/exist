@@ -59,7 +59,8 @@ public class Jaxv extends BasicFunction  {
     
     private static final String extendedFunctionTxt=
         "Validate document specified by $instance using the schemas in $grammars. " +
-        "Based on functionality provided by 'javax.xml.validation.Validator'.";
+        "Based on functionality provided by 'javax.xml.validation.Validator'. Only " +
+        "'.xsd' grammars are supported.";
         
 
     private final BrokerPool brokerPool;

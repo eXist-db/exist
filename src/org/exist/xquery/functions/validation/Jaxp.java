@@ -75,23 +75,25 @@ import org.xml.sax.XMLReader;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class Parse extends BasicFunction {
+public class Jaxp extends BasicFunction {
 
     private static final String simpleFunctionTxt =
             "Validate document by parsing $instance. Optionally " +
-            "grammar caching can be used.";
+            "grammar caching can be enabled. Supported grammars types " +
+            "are '.xsd' and '.dtd'.";
 
     private static final String extendedFunctionTxt =
             "Validate document by parsing $instance. Optionally " +
-            "grammar caching can be used and " +
-            "an XML catalog can be specified.";
+            "grammar caching can be enabled and " +
+            "an XML catalog can be specified. Supported grammars types " +
+            "are '.xsd' and '.dtd'.";
 
     private static final String documentTxt
             = "The document referenced as xs:anyURI() or a node (element or result of fn:doc()).";
     private static final String catalogTxt
-            = "The catalogs referenced as xs:anyURI() or result of fn:doc().";
+            = "The catalogs referenced as xs:anyURI().";
     private static final String cacheTxt
-            = "The flag set to true() to use grammar caching.";
+            = "Set the flag to true() to use grammar caching.";
 
     private final BrokerPool brokerPool;
 
@@ -150,7 +152,7 @@ public class Parse extends BasicFunction {
                 Shared.xmlreportText))
     };
 
-    public Parse(XQueryContext context, FunctionSignature signature) {
+    public Jaxp(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         brokerPool = context.getBroker().getBrokerPool();
     }
@@ -223,7 +225,7 @@ public class Parse extends BasicFunction {
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
 
-            // Parse document
+            // Jaxp document
             LOG.debug("Start parsing document");
             xmlReader.parse(instance);
             LOG.debug("Stopped parsing document");
