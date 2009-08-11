@@ -91,7 +91,7 @@ public class FunMax extends CollatingFunction {
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "")
+						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence")
 					},
 					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
 			),
@@ -99,8 +99,8 @@ public class FunMax extends CollatingFunction {
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
-						new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "")
+						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence"),
+						new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation")
 					},
 					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
 			)

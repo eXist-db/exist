@@ -68,8 +68,8 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 			new QName("namespace-uri-for-prefix", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
 			new SequenceType[] { 
-				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
-				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "")
+				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "The namespace prefix"),
+				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The element")
 			},
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the namespace URI"));
 	
