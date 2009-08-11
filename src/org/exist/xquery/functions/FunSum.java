@@ -53,7 +53,7 @@ public class FunSum extends Function {
 			"single-argument form of the function is used, then the value returned for " +
 			"an empty sequence is the xs:double value 0.0e0.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "a sequence of numbers to be summed up")},
+				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up")},
 			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		),
 		new FunctionSignature(
@@ -64,8 +64,8 @@ public class FunSum extends Function {
 			"is used, then the value returned for an empty sequence is the value of " +
 			"the $default argument.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "a sequence of numbers to be summed up"),
-				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the default value if $arg is an empty sequence")
+				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up"),
+				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The default value if $arg is an empty sequence")
 				 },
 					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		)

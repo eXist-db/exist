@@ -53,8 +53,8 @@ public class FunTrace extends BasicFunction {
             +"In addition, the inputs $value, converted to an xs:string, "
             +"and $label is directed to a trace data set in the eXist log files.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
-                new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "")
+                new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
+                new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "The label in the log file")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "$value")
         );

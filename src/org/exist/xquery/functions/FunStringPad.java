@@ -51,8 +51,8 @@ public class FunStringPad extends Function {
 			"concatenated together without any separators. The number of copies is specified " +
 			"by the second argument.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to be replecated"),
-				 new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE, "the number of copies of $arg to be returned")
+				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be replecated"),
+				 new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of copies of $arg to be returned")
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the replecated string"));
 			
