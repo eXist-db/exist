@@ -57,7 +57,7 @@ public class FunStrLength extends Function {
 			"If the value of $arg is the empty sequence, the xs:integer 0 is returned.\n" +
 			"If no argument is supplied, $arg defaults to the string value (calculated using fn:string()) of the context item (.). If no argument is supplied or if the argument is the context item and the context item is undefined an error is raised",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string")
+				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string")
 			},
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the length in characters")
 		)

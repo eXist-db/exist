@@ -48,6 +48,9 @@ import org.exist.xquery.value.Type;
  */
 public class FunSubstringAfter extends CollatingFunction {
 
+	protected static final FunctionParameterSequenceType COLLATION_ARG = new FunctionParameterSequenceType("collator", Type.STRING, Cardinality.EXACTLY_ONE, "The collation is a specification of the manner in which character strings are compared and, by extension, ordered.");
+	protected static final FunctionParameterSequenceType SEARCH_ARG = new FunctionParameterSequenceType("searchString", Type.STRING, Cardinality.ZERO_OR_ONE, "The search string");
+	protected static final FunctionParameterSequenceType SOURCE_ARG = new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("substring-after", Function.BUILTIN_FUNCTION_NS),
@@ -58,8 +61,8 @@ public class FunSubstringAfter extends CollatingFunction {
 			"If the value of $sourceString does not contain a string that is equal to the value " +
 			"of $searchString, the zero-length string is returned.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
-				 new FunctionParameterSequenceType("searchString", Type.STRING, Cardinality.ZERO_OR_ONE, "")
+				 SOURCE_ARG,
+				 SEARCH_ARG
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")),
 		new FunctionSignature(
@@ -71,9 +74,9 @@ public class FunSubstringAfter extends CollatingFunction {
 				"If the value of $sourceString does not contain a string that is equal to the value " +
 				"of $searchString, the zero-length string is returned.",
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
-					 new FunctionParameterSequenceType("searchString", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
-					 new FunctionParameterSequenceType("collator", Type.STRING, Cardinality.EXACTLY_ONE, "A collation is a specification of the manner in which character strings are compared and, by extension, ordered.")
+					 SOURCE_ARG,
+					 SEARCH_ARG,
+					 COLLATION_ARG
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring"))
 	};

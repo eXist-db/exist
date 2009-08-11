@@ -49,7 +49,7 @@ public class FunStringToCodepoints extends BasicFunction {
 				"Returns the sequence of unicode code points that constitute an xs:string. If $arg is a zero-length " +
 				"string or the empty sequence, the empty sequence is returned.",
 				new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string"),
+						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
 				},
 				new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE, "the sequence of code points"));
 	

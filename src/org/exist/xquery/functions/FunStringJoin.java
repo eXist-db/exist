@@ -54,8 +54,8 @@ public class FunStringJoin extends BasicFunction {
 				"$arg sequence using $separator as a separator. If the value of the separator is the zero-length " +
 				"string, then the members of the sequence are concatenated without a separator.",
 				new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence to be joined to form the string"),
-						new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "the separator to be placed in the string between the elements of $arg")
+						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_MORE, "The sequence to be joined to form the string"),
+						new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "The separator to be placed in the string between the elements of $arg")
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string"));
 	
