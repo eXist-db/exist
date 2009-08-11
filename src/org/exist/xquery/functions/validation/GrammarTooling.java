@@ -103,7 +103,7 @@ public class GrammarTooling extends BasicFunction  {
             "Show all cached grammars.",
             null,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                "XML document formatted as\n"+cacheReport)
+                "an XML document containing details on all cached grammars.")
         ),
             
         new FunctionSignature(
