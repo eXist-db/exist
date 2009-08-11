@@ -44,7 +44,7 @@ public class FunReverse extends Function {
 			new QName("reverse", Function.BUILTIN_FUNCTION_NS),
 			"Reverses the order of items in a sequence.  If the argument is an empty" +
 			"sequence, the empty sequence is returned.",
-			new SequenceType[] {new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to reverse")},
+			new SequenceType[] {new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence to reverse")},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the reverse order sequence"));
 			
 	public FunReverse(XQueryContext context) {

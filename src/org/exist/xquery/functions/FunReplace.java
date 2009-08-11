@@ -74,10 +74,10 @@ public class FunReplace extends FunMatches {
 													   "included \"as is\" in the replacement string, and the rules are reapplied using the number N " +
 													   "formed by stripping off this last digit.";
 
-	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "the input string");
-	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "the pattern to match");
-	protected static final FunctionParameterSequenceType REPLACEMENT_ARG = new FunctionParameterSequenceType("replacement", Type.STRING, Cardinality.EXACTLY_ONE, "the string to replace the pattern with");
-	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "");
+	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
+	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern to match");
+	protected static final FunctionParameterSequenceType REPLACEMENT_ARG = new FunctionParameterSequenceType("replacement", Type.STRING, Cardinality.EXACTLY_ONE, "The string to replace the pattern with");
+	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flag");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the altered string");
 			
 	public final static FunctionSignature signatures[] = {

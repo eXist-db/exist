@@ -60,9 +60,9 @@ public class FunStartsWith extends CollatingFunction {
 		"If the specified collation does not support collation " +
 		"units an error may be raised [err:FOCH0004].";
 
-	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("arg1", Type.STRING, Cardinality.ZERO_OR_ONE, "the input test string");
-	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("arg2", Type.STRING, Cardinality.ZERO_OR_ONE, "the string to deterine if it is at the beginning of $arg1");
-	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "");
+	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("arg1", Type.STRING, Cardinality.ZERO_OR_ONE, "The input test string");
+	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("arg2", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to deterine if it is at the beginning of $arg1");
+	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if $arg2 is at the beginning of the string $arg1");
 	
     public final static FunctionSignature signatures[] = {

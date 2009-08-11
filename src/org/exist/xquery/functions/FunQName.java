@@ -55,10 +55,10 @@ public class FunQName extends BasicFunction {
 			"the correct lexical form for xs:QName an error is raised [err:FOCA0002].\n\n" +
 			"Note that unlike xs:QName this function does not require a xs:string literal as the argument.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("paramURI", Type.STRING, Cardinality.ZERO_OR_ONE, "namespace URI"),
-				new FunctionParameterSequenceType("paramQName", Type.STRING, Cardinality.EXACTLY_ONE, "the prefix")
+				new FunctionParameterSequenceType("paramURI", Type.STRING, Cardinality.ZERO_OR_ONE, "The namespace URI"),
+				new FunctionParameterSequenceType("paramQName", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix")
 			},
-			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "an xs:QName with the namespace URI given in $paramURI"));
+			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the xs:QName with the namespace URI given in $paramURI"));
 	
 	/**
 	 * @param context

@@ -65,8 +65,8 @@ public class FunResolveQName extends BasicFunction {
     			"resulting expanded-QName has no namespace part.\n\nThe prefix (or absence of a prefix) in the " +
     			"supplied $qname argument is retained in the returned expanded-QName.", 
     			new SequenceType[] { 
-    				new FunctionParameterSequenceType("qname", Type.STRING, Cardinality.ZERO_OR_ONE, "the QName name"), 
-    				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "") 
+    				new FunctionParameterSequenceType("qname", Type.STRING, Cardinality.ZERO_OR_ONE, "The QName name"), 
+    				new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The element") 
     			}, 
     			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the QName")
     	);

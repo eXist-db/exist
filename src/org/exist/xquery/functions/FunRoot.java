@@ -67,7 +67,7 @@ public class FunRoot extends Function {
         new FunctionSignature(
                 new QName("root", Function.BUILTIN_FUNCTION_NS),
                 FUNCTION_DESCRIPTION,
-                new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "the input tree")},
+                new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input tree") },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the root node of the tree")
                 )
     };
