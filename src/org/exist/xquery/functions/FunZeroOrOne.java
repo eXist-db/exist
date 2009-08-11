@@ -50,9 +50,9 @@ public class FunZeroOrOne extends Function {
 			"Returns the argument sequence if it contains zero or one items. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to be tested for cardinality")
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence to be tested for cardinality")
 			},
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "$arg"));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the input sequence"));
 				
 	/**
 	 * @param context
