@@ -45,9 +45,9 @@ public class FunFloor extends Function {
 			"Returns the largets number not greater than the value of $number." + 
 			"If $number is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_MORE, "the number")
+                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_MORE, "The number")
             },
-			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE, "largets number without fraction part not greater than the value of $number"));
+			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE, "the largets number without fraction part not greater than the value of $number"));
 
 	public FunFloor(XQueryContext context) {
 		super(context, signature);

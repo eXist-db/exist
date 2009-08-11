@@ -80,7 +80,7 @@ public class FunIRIToURI extends Function {
 		new FunctionSignature(
 			new QName("iri-to-uri", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
-			new SequenceType[] { new FunctionParameterSequenceType("iri", Type.STRING, Cardinality.ZERO_OR_ONE, "an IRI") },
+			new SequenceType[] { new FunctionParameterSequenceType("iri", Type.STRING, Cardinality.ZERO_OR_ONE, "The IRI") },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the URI"));
 	
 	public FunIRIToURI(XQueryContext context, FunctionSignature signature) {

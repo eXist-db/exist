@@ -71,7 +71,7 @@ public class FunLocalName extends Function {
 		new FunctionSignature(
 			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "") },
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The node to retrieve the local name from") },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the local name")
 		)
 	};

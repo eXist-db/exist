@@ -49,7 +49,7 @@ public class FunImplicitTimezone extends Function {
 			new QName("implicit-timezone", Function.BUILTIN_FUNCTION_NS),
 			"Returns the value of the implicit timezone property from the dynamic context.",
 			null,
-			new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.EXACTLY_ONE, "daytime-duration from implicit timezone in dynamic context"));
+			new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.EXACTLY_ONE, "the daytime-duration from implicit timezone in dynamic context"));
 
 	public FunImplicitTimezone(XQueryContext context) {
 		super(context, signature);
