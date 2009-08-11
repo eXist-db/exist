@@ -70,15 +70,7 @@ public class Shared {
             "document is valid and no single problem occured, false() for " +
             "all other conditions. For detailed validation information " +
             "use the corresponding -report() function.";
-    public final static String xmlreportText = "a validation report formatted as\n<report>\n" +
-            "\t<status>valid</status>\n" + "\t<namespace>...\n" + "\t<time>...\n" +
-            "\t<exception>\n" +
-            "\t\t<class>...\n" + "\t\t<message>...\n" + "\t\t<stacktrace>...\n" +
-            "\t</exception>\n" +
-            "\t<message level=\"\" line=\"\" column=\"\" repeat=\"\">...</message>\n" +
-            "\t....\n" +
-            "\t....\n" +
-            "</report>";
+    public final static String xmlreportText = "a validation report.";
 
     /**
      *  Get input stream for specified resource.

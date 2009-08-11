@@ -52,10 +52,10 @@ public class ValidationModule extends AbstractInternalModule {
        new FunctionDef(Jing.signatures[0], Jing.class),
        new FunctionDef(Jing.signatures[1], Jing.class),
        
-       new FunctionDef(Parse.signatures[0], Parse.class),
-       new FunctionDef(Parse.signatures[1], Parse.class),
-       new FunctionDef(Parse.signatures[2], Parse.class),
-       new FunctionDef(Parse.signatures[3], Parse.class),
+       new FunctionDef(Jaxp.signatures[0], Jaxp.class),
+       new FunctionDef(Jaxp.signatures[1], Jaxp.class),
+       new FunctionDef(Jaxp.signatures[2], Jaxp.class),
+       new FunctionDef(Jaxp.signatures[3], Jaxp.class),
 
        new FunctionDef(Validation.deprecated[0], Validation.class),
        new FunctionDef(Validation.deprecated[1], Validation.class),

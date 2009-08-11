@@ -60,8 +60,9 @@ public class Jing extends BasicFunction  {
     
     
     private static final String extendedFunctionTxt=
-        "Validate document using 'Jing'. " +
-        "Based on functionality provided by 'com.thaiopensource.validate.ValidationDriver'.";
+            "Validate document using 'Jing'. Supported grammar documents extensions are \".xsd\" "+
+             "\".rng\" \".rnc\" \".sch\" and \".nvdl\". Based on functionality provided by " +
+             "'com.thaiopensource.validate.ValidationDriver'.";
         
 
     private final BrokerPool brokerPool;
@@ -76,8 +77,8 @@ public class Jing extends BasicFunction  {
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The grammar file documents extensions are \".xsd\" "+
-                            "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+                        "The grammar document as node (element of returned by fn:doc()), xs:anyURI " +
+                        "or returned by util:binary-doc().")
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
@@ -91,8 +92,8 @@ public class Jing extends BasicFunction  {
                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
                     new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The supported grammar documents extensions are \".xsd\" "+
-                            "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+                        "The grammar document as node (element of returned by fn:doc()), xs:anyURI, " +
+                        "or returned by util:binary-doc().")
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)

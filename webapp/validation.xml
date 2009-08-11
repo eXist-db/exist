@@ -36,7 +36,9 @@
                         <para>Catalog Entity Resolver</para>
                     </listitem>
                 </itemizedlist></para>
-            <para><example>
+            <section>
+                <title>Validation mode</title>
+                <example>
                     <title>Default configuration</title>
                     <programlisting format="linespecific"><![CDATA[
     <validation mode="auto">
@@ -44,19 +46,7 @@
             <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml" />
         </entity-resolver>
     </validation>]]></programlisting>
-                </example> Catalog documents can also be stored inside the database, which is much more flexible
-                compared the previous example. Please note the three forward slashes /// here... <example>
-                    <title>Catalog stored in database</title>
-                    <programlisting format="linespecific"><![CDATA[
-    <validation mode="auto">
-        <entity-resolver>
-            <catalog uri="xmldb:exist:///db/grammar/catalog.xml" />
-            <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml" />
-        </entity-resolver>
-    </validation>]]></programlisting>
-                </example></para>
-            <section>
-                <title>Validation mode</title>
+                </example>
                 <para>With the parameter <emphasis>mode</emphasis> it is possible to switch on/off the validation
                     capabilities of the (Xerces) XML parser. The possible values are:</para>
                 <section>
@@ -88,14 +78,28 @@
                     the actual resolving is performed by the apache <a
                         href="http://xml.apache.org/commons/components/resolver/">xml-commons resolver</a>
                     library.</para>
+                <para>It is possible to configure any number of catalog entries in the entity-resolver section of
+                    conf.xml . The relative "uri="s are resolved relative to the location of the catalog
+                    document.</para>
+
+                <example>
+                    <title>Catalog stored in database</title>
+                    <programlisting format="linespecific"><![CDATA[
+    <validation mode="auto">
+        <entity-resolver>
+            <catalog uri="xmldb:exist:///db/grammar/catalog.xml" />
+            <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml" />
+        </entity-resolver>
+    </validation>]]></programlisting>
+                </example>
+                <para>A catalog stored in the database can be addressed by an URL like '<emphasis role="bold"
+                        >xmldb:exist:///db/mycollection/catalog.xml</emphasis>' (note the 3 slashes) or the shorter
+                    equivalent '/db/mycollection/catalog.xml'.</para>
                 <para>In the upper example the <emphasis role="bold">${WEBAPP_HOME}</emphasis> is substituted by a
                         <emphasis>file://</emphasis> URL pointing to the 'webapp'-directory of eXist (e.g. '<emphasis
                         role="bold">$EXIST_HOME/webapp/</emphasis>') or the equivalent directory of a deployed WAR file
                     when eXist is deployed in a servlet container (e.g. '<emphasis role="bold"
                         >${CATALINA_HOME}/webapps/exist/</emphasis>')</para>
-                <para>A catalog stored in the database can be addressed by an URL like '<emphasis role="bold"
-                        >xmldb:exist:///db/mycollection/catalog.xml</emphasis>' (note the 3 slashes) or the shorter
-                    equivalent '/db/mycollection/catalog.xml'.</para>
                 <para>
                     <example>
                         <title>Default OASIS catalog file</title>
@@ -115,9 +119,7 @@
     </catalog>]]></programlisting>
                     </example>
                 </para>
-                <para>It is possible to configure any number of catalog entries in the entity-resolver section of
-                    conf.xml . The relative "uri="s are resolved relative to the location of the catalog
-                    document.</para>
+
             </section>
             <section>
                 <title>Collection validation configuration</title>
@@ -156,14 +158,13 @@
                 <title>JAXP</title>
                 <para>The JAXP validation functions are based on the validation capabilities of the <a
                         href="http://java.sun.com/j2se/1.5.0/docs/api/javax/xml/parsers/package-summary.html"
-                        >javax.xml.parsers</a> API. The validation is performed by the <a
+                        >javax.xml.parsers</a> API. The actual validation is performed by the <a
                         href="http://xerces.apache.org/xerces2-j/">Xerces2</a> library.</para>
-                        <para>When the parser
-                    starts reading an XML document it finds references to data models (either DTDs or XSDs). The parser
-                    attempts resolve the grammar references, by itself (by following the XSD xsi:schemaLocation or
-                    xsi:noNamespaceSchemaLocation hints or the DTD DOCTYPE SYSTEM information), or by outsourcing the
-                    retrieval of the grammars using a Xml Catalog resolver. The resolver identifies XSDs by the
-                    (target)namespace, DTDs are identified by the PublicId.</para>
+                <para>When the parser starts reading an XML document it finds references to data models (either DTDs or
+                    XSDs). The parser attempts resolve the grammar references, by itself (by following the XSD
+                    xsi:schemaLocation or xsi:noNamespaceSchemaLocation hints or the DTD DOCTYPE SYSTEM information), or
+                    by outsourcing the retrieval of the grammars using a Xml Catalog resolver. The resolver identifies
+                    XSDs by the (target)namespace, DTDs are identified by the PublicId.</para>
                 <para>The validation speed can be increased by enabling grammar caching. The cached compiled grammars
                     are shared by the implicit validation feature.</para>
             </section>
@@ -201,12 +202,10 @@
                 </para>
             </section>
         </section>
-        
+
         <section id="sect3a">
             <title>Validation report</title>
-            <para>
-                The validation report can contain the following information:
-                <example>
+            <para> The validation report contains the following information: <example>
                     <title>Valid document</title>
                     <programlisting format="linespecific"><![CDATA[
     <?xml version='1.0'?>
@@ -216,7 +215,6 @@
         <duration unit="msec">106</duration>
     </report>]]></programlisting>
                 </example>
-                
                 <example>
                     <title>Invalid document</title>
                     <programlisting format="linespecific"><![CDATA[
@@ -229,7 +227,6 @@
         <message level="Error" line="3" column="20">cvc-type.3.1.3: The value 'aaaaaaaa' of element 'c' is not valid.</message>
     </report>]]></programlisting>
                 </example>
-                
                 <example>
                     <title>Exception</title>
                     <programlisting format="linespecific"><![CDATA[
@@ -253,13 +250,12 @@
         </exception>
     </report>]]></programlisting>
                 </example>
-                
             </para>
-            
-            
-            
+
+
+
         </section>
-        
+
 
         <section id="sect4">
             <title>Grammar management</title>
@@ -376,7 +372,7 @@
                     <listitem>
                         <para>eXist heavily relies on the features as provided by the Xerces XML parser. By default
                             eXist izPack installer provides all required jar files. However, when eXist is installed in
-                            e.g. Tomcat the required parser libraries need to be copied manually from the lib/endorsed
+                            e.g. Tomcat the required parser libraries need to be copied manually from the eXist lib/endorsed
                             directory into the server '<a
                                 href="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html">endorsed</a>'
                             directory.</para>
@@ -391,7 +387,7 @@
                         <para>The explicit validation is performed by <a
                                 href="http://xerces.apache.org/xerces2-j/javadocs/api/javax/xml/validation/package-summary.html"
                                 >Xerces</a> (XML schema, DTD) and by <a href="http://www.oxygenxml.com/onvdl.html"
-                                >oNVDL</a> - oXygen XML NVDL implementation based on Jing (RelaxNG, Schematron and
+                                >oNVDL</a> - oXygen XML NVDL implementation based on Jing (XSD, RelaxNG, Schematron and
                             Namespace-based Validation Dispatching Language)</para>
                     </listitem>
                 </itemizedlist>
