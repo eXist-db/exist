@@ -72,7 +72,7 @@ public class FunLang extends Function {
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "the language code")
+				 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "The language code")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches")
 		),
@@ -80,8 +80,8 @@ public class FunLang extends Function {
 				new QName("lang", Function.BUILTIN_FUNCTION_NS),
 				FUNCTION_DESCRIPTION,
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "the language code"),
-					 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "")
+					 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "The language code"),
+					 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "The node")
 				},
 				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches")
 		)		

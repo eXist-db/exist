@@ -58,7 +58,7 @@ public class FunInScopePrefixes extends BasicFunction {
 			"For namespaces that have a prefix, it returns the prefix as an " +
 			"xs:NCName. For the default namespace, which has no prefix, " +
 			"it returns the zero-length string",
-			new SequenceType[] { new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "") },
+			new SequenceType[] { new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The element") },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the prefixes"));
 	
 	public FunInScopePrefixes(XQueryContext context) {

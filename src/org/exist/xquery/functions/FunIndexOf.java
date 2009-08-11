@@ -53,6 +53,14 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunIndexOf extends BasicFunction {
 
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the sequence of positive integers giving the positions within the sequence");
+
+	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation");
+
+	protected static final FunctionParameterSequenceType SEARCH_PARAM = new FunctionParameterSequenceType("srchParam", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The search component");
+
+	protected static final FunctionParameterSequenceType SEQ_PARAM = new FunctionParameterSequenceType("seqParam", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence");
+
 	protected static final String FUNCTION_DESCRIPTION =
 
 		"Returns a sequence of positive integers giving the " + 
@@ -83,20 +91,20 @@ public class FunIndexOf extends BasicFunction {
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("seqParam", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
-						new FunctionParameterSequenceType("srchParam", Type.ATOMIC, Cardinality.EXACTLY_ONE, "")
+						SEQ_PARAM,
+						SEARCH_PARAM
 					},
-					new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "a sequence of positive integers giving the positions within the sequence")
+					RETURN_TYPE
 			),
 			new FunctionSignature(
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION,
 					new SequenceType[] {
-							new FunctionParameterSequenceType("seqParam", Type.ATOMIC, Cardinality.ZERO_OR_MORE, ""),
-							new FunctionParameterSequenceType("srchParam", Type.ATOMIC, Cardinality.EXACTLY_ONE, ""),
-							new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "")
+							SEQ_PARAM,
+							SEARCH_PARAM,
+							COLLATION_PARAM
 					},
-					new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "a sequence of positive integers giving the positions within the sequence")
+					RETURN_TYPE
 			)
 	};
 	

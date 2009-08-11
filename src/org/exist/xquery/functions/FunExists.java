@@ -50,7 +50,7 @@ public class FunExists extends Function {
 			"Returns true if the argument, $item-sequence, is not the empty sequence, " +
 			"false otherwise.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the item-sequence")
+                new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if not empty-sequence, false() otherwise"));
 				

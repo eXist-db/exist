@@ -53,8 +53,8 @@ import org.exist.xquery.value.Type;
  */
 public class FunGetDurationComponent extends BasicFunction {
 	protected static final Logger logger = Logger.getLogger(FunGetDurationComponent.class);
-    public final static FunctionParameterSequenceType DAYTIME_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the duration as xs:dayTimeDuration");
-    public final static FunctionParameterSequenceType YEARMONTH_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.YEAR_MONTH_DURATION, Cardinality.ZERO_OR_ONE, "the duration as xs:yearMonthDuration");
+    public final static FunctionParameterSequenceType DAYTIME_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:dayTimeDuration");
+    public final static FunctionParameterSequenceType YEARMONTH_DURA_01_PARAM = new FunctionParameterSequenceType("duration", Type.YEAR_MONTH_DURATION, Cardinality.ZERO_OR_ONE, "The duration as xs:yearMonthDuration");
 
 	public final static FunctionSignature fnDaysFromDuration =
 		new FunctionSignature(

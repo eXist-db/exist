@@ -71,9 +71,9 @@ public class FunIdRef extends Function {
 			"value of one or more of the ID values supplied in $id-sequence. " +
 			"If none is matching or $ied-sequence is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "the id-sequence"),
+                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "The id sequence"),
             },
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "elements with matching IDREF values from IDs in $id-sequence")),
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $id-sequence")),
 
         new FunctionSignature(
             new QName("idref", Function.BUILTIN_FUNCTION_NS),
@@ -81,10 +81,10 @@ public class FunIdRef extends Function {
 			"value of one or more of the ID values supplied in $id-sequence. " +
             "If none is matching or $id-sequence is the empty sequence, returns the empty sequence.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "the id-sequence"),
-                new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "the node-in-document")
+                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "The id sequence"),
+                new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "The node in document")
             },
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "elements with matching IDREF values from IDs in $id-sequence in the same document as $node-in-document"))
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $id-sequence in the same document as $node-in-document"))
     };
 				
 	/**

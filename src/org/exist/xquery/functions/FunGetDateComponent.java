@@ -49,9 +49,9 @@ import org.exist.xquery.value.Type;
  */
 public class FunGetDateComponent extends BasicFunction {
 	protected static final Logger logger = Logger.getLogger(FunGetDateComponent.class);
-    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "the date as xs:date");
-    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "the time as xs:time");
-        public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the date-time as xs:dateTime");
+    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date");
+    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time");
+        public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time as xs:dateTime");
 
 	// ----- fromDate
 	public final static FunctionSignature fnDayFromDate =
@@ -62,7 +62,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                DATE_01_PARAM 
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "day component from $date"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the day component from $date"));
 	
 	public final static FunctionSignature fnMonthFromDate =
 		new FunctionSignature(
@@ -72,7 +72,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "month component from $date"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the month component from $date"));
 	
 	public final static FunctionSignature fnYearFromDate =
 		new FunctionSignature(
@@ -81,7 +81,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "year component from $date"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the year component from $date"));
 	
 	public final static FunctionSignature fnTimezoneFromDate =
 		new FunctionSignature(
@@ -91,7 +91,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_01_PARAM
             },
-            new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "timezone component from $date"));
+            new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the timezone component from $date"));
 
 	// ----- fromTime
 	public final static FunctionSignature fnHoursFromTime =
@@ -102,7 +102,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "hours component from $time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component from $time"));
 	
 	public final static FunctionSignature fnMinutesFromTime =
 		new FunctionSignature(
@@ -112,7 +112,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "minutes component from $time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component from $time"));
 	
 	public final static FunctionSignature fnSecondsFromTime =
 		new FunctionSignature(
@@ -124,7 +124,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "seconds component from $time"));
+			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component from $time"));
 	
 	public final static FunctionSignature fnTimezoneFromTime =
 		new FunctionSignature(
@@ -135,7 +135,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "timezone component from $time"));
+			new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the timezone component from $time"));
 
 	
 	// ----- fromDateTime
@@ -147,7 +147,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "day component from $date-time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the day component from $date-time"));
 	
 	public final static FunctionSignature fnMonthFromDateTime =
 		new FunctionSignature(
@@ -157,7 +157,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "month component from $date-time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the month component from $date-time"));
 	
 	public final static FunctionSignature fnYearFromDateTime =
 		new FunctionSignature(
@@ -166,7 +166,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "year component from $date-time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the year component from $date-time"));
 	
 	public final static FunctionSignature fnHoursFromDateTime =
 		new FunctionSignature(
@@ -176,7 +176,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "hours component from $date-time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component from $date-time"));
 	
 	public final static FunctionSignature fnMinutesFromDateTime =
 		new FunctionSignature(
@@ -186,7 +186,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "minutes component from $date-time"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component from $date-time"));
 	
 	public final static FunctionSignature fnSecondsFromDateTime =
 		new FunctionSignature(
@@ -198,7 +198,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "seconds component from $date-time"));
+			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component from $date-time"));
 	
 	public final static FunctionSignature fnTimezoneFromDateTime =
 		new FunctionSignature(
@@ -209,7 +209,7 @@ public class FunGetDateComponent extends BasicFunction {
 			new SequenceType[] {
                 DATE_TIME_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "timezone component from $date-time"));
+			new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the timezone component from $date-time"));
 	
 	
 	public FunGetDateComponent(XQueryContext context, FunctionSignature signature) {
