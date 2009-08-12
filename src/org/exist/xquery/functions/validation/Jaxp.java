@@ -90,8 +90,10 @@ public class Jaxp extends BasicFunction {
 
     private static final String documentTxt
             = "The document referenced as xs:anyURI or a node (element or result of fn:doc()).";
+
     private static final String catalogTxt
             = "The catalogs referenced as xs:anyURI's.";
+    
     private static final String cacheTxt
             = "Set the flag to true() to enable grammar caching.";
 
