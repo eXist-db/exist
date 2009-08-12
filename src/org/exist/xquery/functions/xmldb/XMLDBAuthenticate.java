@@ -60,57 +60,57 @@ public class XMLDBAuthenticate extends BasicFunction {
 	public final static FunctionSignature authenticateSignature =
 			new FunctionSignature(
 				new QName("authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Check if a user is registered as database user. The function simply tries to " +
-				"read the database collection specified in the first parameter $collection, using the " +
-				"supplied username in $user-id and password in $password. " +
-				"It returns true if the attempt succeeds, false otherwise.",
+				"Check if the user, $user-id, can authenticate against the database collection $collection-uri. The function simply tries to " +
+				"read the collection $collection-uri, using the credentials " +
+				"$user-id and $password. " +
+				"It returns true if the authentication succeeds, false otherwise.",
 				new SequenceType[] {
-				    new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
+				    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
 				    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "The user-id"),
 				    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password")
 				},
-				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
+				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on successful authentication, false() otherwise")
 			);
 	
     public final static FunctionSignature loginSignatures[] = {
 		
         new FunctionSignature(
             new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Check if a user is registered as database user and change the user identity for the " +
-            "current XQuery script. The function simply tries to " +
-            "read the database collection specified in the first parameter $collection, using the " +
-            "supplied username in $user-id and password in $password. " +
-			"Contrary to the authenticate function," +
-            "login will set the current user for the xquery script to the authenticated user. " +
-            "It returns true if the attempt succeeds, false otherwise. If called from a HTTP context" +
-            "then the login is cached for the lifetime of the HTTP session and may be used for all XQuery" +
-            "scripts in that session.",
+            "Login the user, $user-id, and set it as the owner " +
+            "of the currently executing XQuery. " +
+			"It returns true if the authentication succeeds, false otherwise. " +
+            "If called from a HTTP context the login is cached for the " +
+            "lifetime of the HTTP session and may be used for any XQuery " +
+            "run in that session. " +
+            "If an HTTP session does not already exist, none will be created.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
                 new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "The user-id"),
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on successful authentication and owner elevation, false() otherwise")
 		),
 	
 		new FunctionSignature(
             new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Check if a user is registered as database user and change the user identity for the " +
-            "current XQuery script. The function simply tries to " +
-            "read the database collection specified in the first parameter $collection, using the " +
-            "supplied username in $user-id and password in $password. $create-session specifies whether to create an HTTP session on successful login if one does not already exist (default false). " +
-			"Contrary to the authenticate function," +
-            "login will set the current user for the xquery script to the authenticated user. " +
-            "It returns true if the attempt succeeds, false otherwise. If called from a HTTP context" +
-            "then the login is cached for the lifetime of the HTTP session and may be used for all XQuery" +
-            "scripts in that session.",
+            "Login the user, $user-id, and set it as the owner " +
+            "of the currently executing XQuery. " +
+			"It returns true() if the authentication succeeds, " +
+            "false() otherwise. " +
+            "If called from a HTTP context the login is cached for the " +
+            "lifetime of the HTTP session and may be used for any XQuery" +
+            "run in that session. " +
+            "$create-session specifies whether to create an HTTP session on " +
+            "successful authentication or not. " +
+            "If $create-session is false() or the empty sequence no session " + 
+            "will be created if one does not already exist.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path"),
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password"),
-		new FunctionParameterSequenceType("create-session", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "wether to create the seession or not on successful authentication, default false()")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "The user-id"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
+		new FunctionParameterSequenceType("create-session", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "whether to create the session or not on successful authentication, default false()")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on successful authentication and owner elevation, false() otherwise")
 		)
 	};
     
@@ -126,37 +126,37 @@ public class XMLDBAuthenticate extends BasicFunction {
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
-    {
-	if( args[1].isEmpty() ) {
-	    return BooleanValue.FALSE;
-	}
-
+    public Sequence eval( Sequence[] args, Sequence contextSequence )
+        throws XPathException {
+        if( args[1].isEmpty() ) {
+            return BooleanValue.FALSE;
+        }
+        
         String uri = args[0].getStringValue();
-	String userName = args[1].getStringValue();
-	String password = args[2].getStringValue();
+        String userName = args[1].getStringValue();
+        String password = args[2].getStringValue();
 		
-	boolean createSession = false;
+        boolean createSession = false;
 		
-	if (args.length > 3) {
+        if (args.length > 3) {
             createSession = args[3].effectiveBooleanValue();
         }
-
+        
         XmldbURI targetColl;
 		
         if( !uri.startsWith( XmldbURI.XMLDB_SCHEME + ':' ) ) {
             targetColl = XmldbURI.EMBEDDED_SERVER_URI.resolveCollectionPath( XmldbURI.create( uri ) );
-	} else {
+        } else {
             targetColl = XmldbURI.create( uri );
-	}
-	
+        }
+        
         try {
-	    Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
+            Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
 			
             if( root == null ) {
-		logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist");
+                logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist");
                 throw( new XPathException( this, "Unable to authenticate user: target collection " + targetColl + " does not exist" ) );
-	    }
+            }
 			
             if( isCalledAs( "login" ) ) {
                 UserManagementService ums = (UserManagementService)root.getService( "UserManagementService", "1.0" );
@@ -167,10 +167,10 @@ public class XMLDBAuthenticate extends BasicFunction {
                 cacheUserInHttpSession( user, createSession );
             }
 			
-	    return BooleanValue.TRUE;
-	} catch (XMLDBException e) {
-	    return BooleanValue.FALSE;
-	}
+            return BooleanValue.TRUE;
+        } catch (XMLDBException e) {
+            return BooleanValue.FALSE;
+        }
     }
 	
 	/**
