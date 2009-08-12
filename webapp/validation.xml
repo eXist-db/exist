@@ -165,6 +165,45 @@
                     (target)namespace, DTDs are identified by the PublicId.</para>
                 <para>Validation performance is increased through grammar caching; the cached compiled grammars are
                     shared by the implicit validation feature.</para>
+                <para>The jaxp() and jaxp-report() functions accept the following parameters: <variablelist>
+                        <varlistentry>
+                            <term>$instance</term>
+                            <listitem>
+                                <para>The XML instance document, referenced as document node (returned by fn:doc()),
+                                    element node or as xs:anyURI.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>$cache-grammars</term>
+                            <listitem>
+                                <para>Set this to true() to enable grammar caching.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>$catalogs</term>
+                            <listitem>
+                                <para>One or more OASIS catalog files referenced as xs:anyURI. Depending on the
+                                    xs:anyURI a different resolver will be used: <itemizedlist>
+                                        <listitem>
+                                            <para>When an empty sequence is set, the catalog files defined in conf.xml
+                                                are used.</para>
+                                        </listitem>
+                                        <listitem>
+                                            <para>If the URI ends with ".xml" the specified catalog is used.</para>
+                                        </listitem>
+                                        <listitem>
+                                            <para>If the URI points to a collection (when the URL ends with "/") the
+                                                grammar files are searched in the database using an xquery. XSDs are
+                                                found by their targetNamespace attributes, DTDs are found by their
+                                                publicId entries in catalog files.</para>
+                                        </listitem>
+                                    </itemizedlist>
+                                </para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </para>
+
             </section>
             <section>
                 <title>JAXV</title>
@@ -174,6 +213,23 @@
                     schema-language-independent interface to validation services. Although officially the specification
                     allows use of additional schema languages, only XML schemas can be really used so far. </para>
                 <para/>
+                <para>The jaxv() and jaxv-report() functions accept the following parameters: <variablelist>
+                        <varlistentry>
+                            <term>$instance</term>
+                            <listitem>
+                                <para>The XML instance document, referenced as document node (returned by fn:doc()),
+                                    element node or as xs:anyURI.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>$grammars</term>
+                            <listitem>
+                                <para>One or more grammar files, referenced as document nodes (returned by fn:doc()),
+                                    element nodes or as xs:anyURI.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </para>
             </section>
             <section>
                 <title>Jing</title>
@@ -197,6 +253,23 @@
                             <para>Schematron 1.5 (.sch)</para>
                         </listitem>
                     </itemizedlist></para>
+                <para>The jing() and jing-report() functions accept the following parameters: <variablelist>
+                        <varlistentry>
+                            <term>$instance</term>
+                            <listitem>
+                                <para>The XML instance document, referenced as document node (returned by fn:doc()),
+                                    element node or as xs:anyURI.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>$grammar</term>
+                            <listitem>
+                                <para>The grammar file, referenced as document node (returned by fn:doc()), element
+                                    node, as xs:anyURI or as binary document (returned by util:binary-doc()).</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </para>
             </section>
         </section>
         <section id="sect3a">

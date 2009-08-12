@@ -61,7 +61,13 @@ public class Jaxv extends BasicFunction  {
         "Validate document specified by $instance using the schemas in $grammars. " +
         "Based on functionality provided by 'javax.xml.validation.Validator'. Only " +
         "'.xsd' grammars are supported.";
-        
+
+    private static final String instanceText=
+            "The document referenced as xs:anyURI or a node (element or returned by fn:doc()).";
+
+    private static final String grammarText=
+            "One of more XML Schema documents (.xsd), " +
+            "referenced as xs:anyURI or a node (element or returned by fn:doc()).";
 
     private final BrokerPool brokerPool;
     
@@ -73,10 +79,9 @@ public class Jaxv extends BasicFunction  {
                 extendedFunctionTxt,
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())."),
+                        instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        "One of more XML Schema documents (.xsd), " +
-                        "referenced as xs:anyURI or a node (element or returned by fn:doc()).")
+                        grammarText)
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
@@ -88,10 +93,9 @@ public class Jaxv extends BasicFunction  {
                 extendedFunctionTxt+" An XML report is returned.",
                 new SequenceType[]{
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())."),
+                        instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        "One of more XML Schema documents (.xsd), " +
-                        "referenced as xs:anyURI or a node (element or returned by fn:doc()).")
+                        grammarText)
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
