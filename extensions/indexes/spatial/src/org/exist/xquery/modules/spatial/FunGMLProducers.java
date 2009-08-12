@@ -63,7 +63,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("transform", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of geometry $geometry with the SRS $srs",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	FunSpatialSearch.GEOMETRY_PARAMETER,
             	new FunctionParameterSequenceType("srs", Type.STRING, Cardinality.EXACTLY_ONE, "The srs")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of geometry $geometry with the SRS $srs")
@@ -82,7 +82,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
             "Curves will be represented by 8 segments per circle quadrant.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	FunSpatialSearch.GEOMETRY_PARAMETER,
             	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The width")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the GML representation of a buffer around geometry $geometry having width $width in its CRS.")
@@ -90,9 +90,9 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
-            "Curves will be represented by $c segments per circle quadrant.",
+            "Curves will be represented by $segments segments per circle quadrant.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	FunSpatialSearch.GEOMETRY_PARAMETER,
             	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The width"),
             	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "The segments")
             },
@@ -101,9 +101,9 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of a buffer around geometry $geometry having width $width in its CRS. " +
-            "Curves will be represented by $c segments per circle quadrant. The fourth argument denotes the line end style (round, butt or square) as an integer constant.",
+            "Curves will be represented by $segments segments per circle quadrant. The fourth argument denotes the line end style (round, butt or square) as an integer constant.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry"),
+            	FunSpatialSearch.GEOMETRY_PARAMETER,
             	new FunctionParameterSequenceType("width", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The width"),
             	new FunctionParameterSequenceType("segments", Type.INTEGER, Cardinality.EXACTLY_ONE, "The segments"),
             	new FunctionParameterSequenceType("line-end-style", Type.INTEGER, Cardinality.EXACTLY_ONE, "The line-end-style")
@@ -114,7 +114,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("getBbox", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the bounding box of geometry $geometry.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry")
+            	FunSpatialSearch.GEOMETRY_PARAMETER
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the bounding box of geometry $geometry.")
         ),         
@@ -122,7 +122,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("convexHull", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the convex hull of geometry $geometry.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry")
+            	FunSpatialSearch.GEOMETRY_PARAMETER
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the convex hull of geometry $geometry.")
         ), 
@@ -130,7 +130,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new QName("boundary", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the boundary of geometry $geometry.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry")
+            	FunSpatialSearch.GEOMETRY_PARAMETER
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the GML representation of the boundary of geometry $geometry.")
         ), 
