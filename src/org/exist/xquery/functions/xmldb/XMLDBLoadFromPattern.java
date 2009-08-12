@@ -51,17 +51,21 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = Logger.getLogger(XMLDBLoadFromPattern.class);
-    private final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
+	
+	protected final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 
-    private final static String FUNCTION_DESCRIPTION = "Store new resources into the database. Resources are read from the server's " +
+    protected final static String FUNCTION_DESCRIPTION = "Store new resources into the database. Resources are read from the server's " +
             "file system, using file patterns. " +
             "The function returns a sequence of all document paths added " +
             "to the db. These can be directly passed to fn:doc() to retrieve the document(s).";
 
-    private final static SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection where resources should be stored. Specified either as a simple collection path or an XMLDB URI.");
-    private final static SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("fs-directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
-    private final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
-    private final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
+    protected final static SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection where resources should be stored. Specified either as a simple collection path or an XMLDB URI.");
+    protected final static SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("fs-directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
+    protected final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
+    protected final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
+	protected static final SequenceType PARAM_PRESERVE_STRUCTURE = new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.");
+
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of document paths");
 
 
 
@@ -69,35 +73,20 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         new FunctionSignature(
                 FUNCTION_NAME,
                 FUNCTION_DESCRIPTION,
-                new SequenceType[] {
-                    PARAM_COLLECTION,
-                    PARAM_FS_DIRECTORY,
-                    PARAM_FS_PATTERN
-                },
-                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "document paths")
+                new SequenceType[] { PARAM_COLLECTION, PARAM_FS_DIRECTORY, PARAM_FS_PATTERN },
+                RETURN_TYPE
         ),
         new FunctionSignature(
                 FUNCTION_NAME,
                 FUNCTION_DESCRIPTION,
-                new SequenceType[] {
-                    PARAM_COLLECTION,
-                    PARAM_FS_DIRECTORY,
-                    PARAM_FS_PATTERN,
-                    PARAM_MIME_TYPE
-                },
-                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "document paths")
+                new SequenceType[] { PARAM_COLLECTION, PARAM_FS_DIRECTORY, PARAM_FS_PATTERN, PARAM_MIME_TYPE },
+                RETURN_TYPE
         ),
         new FunctionSignature(
                 FUNCTION_NAME,
                 FUNCTION_DESCRIPTION,
-                new SequenceType[] {
-                    PARAM_COLLECTION,
-                    PARAM_FS_DIRECTORY,
-                    PARAM_FS_PATTERN,
-                    PARAM_MIME_TYPE,
-                    new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.")
-                },
-                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "document paths")
+                new SequenceType[] { PARAM_COLLECTION, PARAM_FS_DIRECTORY, PARAM_FS_PATTERN, PARAM_MIME_TYPE, PARAM_PRESERVE_STRUCTURE },
+                RETURN_TYPE
         )
     };
 

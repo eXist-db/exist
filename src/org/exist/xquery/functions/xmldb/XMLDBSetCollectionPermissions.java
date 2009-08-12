@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
@@ -32,7 +31,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -57,12 +55,12 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             "The final argument contains the permissions, specified as an xs:integer value. "+
             "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "the group-id"),
-                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "the permissions"),
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user id"),
+                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group id"),
+                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions"),
 			},
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
+            new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
 	
 	public XMLDBSetCollectionPermissions(XQueryContext context) {

@@ -50,33 +50,33 @@ public class XMLDBURIFunctions extends BasicFunction {
 				new QName("encode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Encodes the string provided in $string such that it will be a valid collection or resource path.  Provides similar functionality to java's URLEncoder.encode() function, with some enhancements",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("string", Type.STRING, Cardinality.EXACTLY_ONE, "the string"),
+					new FunctionParameterSequenceType("string", Type.STRING, Cardinality.EXACTLY_ONE, "The input string"),
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "url-encoded string")
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the URL encoded string")
 		),
 		new FunctionSignature(
 				new QName("encode-uri", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Encodes the string provided in $string such that it will be a valid collection or resource path.  Provides similar functionality to java's URLEncoder.encode() function, with some enhancements.  Returns an xs:anyURI object representing a valid XmldbURI",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("string", Type.STRING, Cardinality.EXACTLY_ONE, "the string"),
+					new FunctionParameterSequenceType("string", Type.STRING, Cardinality.EXACTLY_ONE, "The input string"),
 				},
-				new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "XmldbURI encoded from $string")
+				new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the XmldbURI encoded from $string")
 		),
 		new FunctionSignature(
 				new QName("decode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Decodes the string provided in $string such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("string",Type.STRING, Cardinality.EXACTLY_ONE, "the string"),
+					new FunctionParameterSequenceType("string",Type.STRING, Cardinality.EXACTLY_ONE, "The input string"),
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "url-encoded string")
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the decoded string")
 		),
 		new FunctionSignature(
 				new QName("decode-uri", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Decodes the URI provided in $uri such that any percent encoded octets will be translated to their decoded UTF-8 representation.",
 				new SequenceType[] {
-					new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "the uri"),
+					new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI"),
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "decoded string from $uri")
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the decoded string from $uri")
 		)
 	};
 	

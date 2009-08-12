@@ -22,14 +22,12 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -51,17 +49,17 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 				"Remove a collection $collection-uri. The collection can be specified either as " +
 				"a simple collection path or an XMLDB URI.",
 				new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri")},
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")},
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		new FunctionSignature(
 			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Remove a resource from the collection specified in $collection-uri. The collection " +
 			"can be either specified as a simple collection path or an XMLDB URI.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")},
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")},
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		)
 	};
 	

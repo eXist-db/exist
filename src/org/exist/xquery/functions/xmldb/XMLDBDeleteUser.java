@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
@@ -33,7 +32,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -53,11 +51,11 @@ public class XMLDBDeleteUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("delete-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Deletes an existing user in the database. Requires username. Does not delete the user's home collection.",
+			"Deletes an existing user in the database. Requires username. This does not delete the user's home collection.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "the name of the user account to delete"),
+					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user account to delete"),
             },
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
+			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
 	/**
 	 * @param context

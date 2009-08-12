@@ -22,14 +22,12 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -56,11 +54,11 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
 			      "Sets the mode of the specified Resource. $collection-path is the collection path, $resource is the resource name, $mode is the mode as xs:integer. "+
 			      "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
 			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path"),
-				  new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource"),
-				  new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "the mode as xs:integer"),
+				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
+				  new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
+				  new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mode as xs:integer"),
 			      },
-			      new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
 	
     public XMLDBChmodResource(XQueryContext context) {

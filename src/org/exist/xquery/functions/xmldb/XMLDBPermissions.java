@@ -45,6 +45,8 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
+	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri");
+	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource");
 	protected static final Logger logger = Logger.getLogger(XMLDBPermissions.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -52,21 +54,16 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 			"Returns the permissions assigned to the collection $collection-uri. " +
 			"The collection can be specified as a simple collection path or " +
 			"an XMLDB URI.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri")
-			},
-			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "collection permissions")
+			new SequenceType[] { ARG_COLLECTION },
+			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the collection permissions")
 		),
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the permissions assigned to the resource specified in $resource " +
 			"which is a child of the collection $collection-uri. The collection can be specified " +
 			"as a simple collection path or an XMLDB URI.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
-			},
-			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "resource persissions")
+			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE },
+			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the resource persissions")
 		)
 	};
 	

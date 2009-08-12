@@ -53,7 +53,7 @@ public class XMLDBReindex extends BasicFunction {
                       XMLDBModule.PREFIX), // yes, only a path not an uri /ljo
             "Reindex collection $collection-path. DBA only",
             new SequenceType[]{
-                new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-path")
+                new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")
     },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise"));
 

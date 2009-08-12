@@ -56,19 +56,19 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
 			new SequenceType[] {
-			    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection"),
-			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resuource")
+			    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
 			},
-			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "creation date")
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the creation date")
         ),
 		new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the creation date of $collection-uri. The collection can be passed as a simple collection "
 			+ "path or an XMLDB URI.",
 			new SequenceType[] {
-			    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection")
+			    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")
 			},
-			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "creation date")
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the creation date")
         )
     };
 	
@@ -79,10 +79,10 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 			"$collection-uri. The collection " +
 			"can be passed as a simple collection path or an XMLDB URI.",
 			new SequenceType[] {
-			    new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "the collection"),
-			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
+			    new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "The collection URI"),
+			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
 			},
-			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "last-modification date")
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the last modification date")
         );
 	
 	public XMLDBCreated(XQueryContext context, FunctionSignature signature) {

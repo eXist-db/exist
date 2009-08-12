@@ -22,14 +22,16 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
-import org.exist.dom.QName;
-import org.exist.dom.NodeSet;
 import org.exist.dom.DocumentSet;
-import org.exist.xquery.*;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.update.Modification;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -52,10 +54,10 @@ public class XMLDBDefragment extends BasicFunction {
                     "references to this document will become invalid, in particular, variables pointing to " +
                     "some nodes in the doc.",
                     new SequenceType[] {
-			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "nodes from ducuments to defragment"),
-			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE, "min number of fragmented pages required before defragmenting")
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The nodes from the documents to defragment"),
+			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE, "The minimum number of fragmented pages required before defragmenting")
                     },
-                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")),
+                    new SequenceType(Type.ITEM, Cardinality.EMPTY)),
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Start a defragmentation run on each document for which a node is passed in the first argument. " +
@@ -65,9 +67,9 @@ public class XMLDBDefragment extends BasicFunction {
                     "references to this document will become invalid, in particular, variables pointing to " +
                     "some nodes in the doc.",
                     new SequenceType[] {
-			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "nodes from ducuments to defragment"),
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The nodes from the documents to defragment"),
                     },
-                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"))
+                    new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
     public XMLDBDefragment(XQueryContext context, FunctionSignature signature) {

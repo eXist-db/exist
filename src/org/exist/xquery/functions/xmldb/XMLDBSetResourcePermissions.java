@@ -59,13 +59,13 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                         "The final argument contains the permissions, specified as an xs:integer value. "+
                         "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource"),
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "the group-id"),
-                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "the permissions as xs:integer"),
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user id"),
+                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group id"),
+                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions as xs:integer"),
 			},
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
+            new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
 	
 	public XMLDBSetResourcePermissions(XQueryContext context) {

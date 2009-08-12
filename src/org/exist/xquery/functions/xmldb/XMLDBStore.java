@@ -62,7 +62,16 @@ import org.xmldb.api.modules.XMLResource;
  * @author wolf
  */
 public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
+	
 	protected static final Logger logger = Logger.getLogger(XMLDBStore.class);
+
+	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
+	protected static final FunctionParameterSequenceType ARG_RESOURCE_NAME = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The resource name");
+	protected static final FunctionParameterSequenceType ARG_CONTENTS = new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "The contents");
+	protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
+	
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource");
+	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -75,11 +84,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
 			"from that URI. The functions returns the path to the new document as an xs:string or " + 
 			" - if the document could not be stored - the empty sequence.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-				new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "the resource-name"),
-				new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "the contents")},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "path to new resource")),
+			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS },
+			RETURN_TYPE),
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Store a new resource into the database. The first " +
@@ -93,13 +99,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"is not a xml based type, the resource will be stored as " +
 			"a binary resource. The functions returns the path to the new document as an xs:string or " +
 			"- if the document could not be stored - the empty sequence.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-				new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "the resource-name"),
-				new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "the contents"),
-				new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "the mime-type")
-			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "path to new resource"))
+			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE },
+			RETURN_TYPE)
 	};
 
 	/**

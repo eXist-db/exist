@@ -43,27 +43,29 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBGetUserOrGroup extends XMLDBPermissions {
+	protected static final FunctionParameterSequenceType OWNER_COLLECTION_ARG = new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "The collection URI");
+	protected static final FunctionParameterSequenceType GROUP_COLLECTION_ARG = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
+	protected static final FunctionParameterSequenceType RESOURCE_ARG = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource");
+
+	protected static final FunctionReturnSequenceType OWNER_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user id");
+	protected static final FunctionReturnSequenceType GROUP_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the owner group");
+
 	protected static final Logger logger = Logger.getLogger(XMLDBGetUserOrGroup.class);
 	public final static FunctionSignature getGroupSignatures[] = {
 			new FunctionSignature(
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner group of the collection $collection-uri. The collection can be passed as a simple collection "
 				+ "path or an XMLDB URI.",
-				new SequenceType[] {
-                    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri")
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "owner group")
+				new SequenceType[] { GROUP_COLLECTION_ARG },
+				GROUP_RETURN_TYPE
 			),
 			new FunctionSignature(
 				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner group of a resource in the collection specified by $collection-uri. " +
 				"The collection can be passed as a simple collection " +
 				"path or an XMLDB URI.",
-				new SequenceType[] {
-                    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "owner group")
+				new SequenceType[] { GROUP_COLLECTION_ARG, RESOURCE_ARG },
+				GROUP_RETURN_TYPE
 			)
 		};
 	
@@ -73,21 +75,16 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 				"Returns the owner of a collection $collection-uri. " +
 				"The collection can be passed as a simple collection " +
 				"path or an XMLDB URI.",
-				new SequenceType[] {
-                    new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "the collection-uri")
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "user-id")
+				new SequenceType[] { OWNER_COLLECTION_ARG },
+				OWNER_RETURN_TYPE
 			),
 			new FunctionSignature(
 				new QName("get-owner", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the owner of the specified resource $resource in collection $collection-uri. " +
 				"The collection can be passed as a simple collection " +
 				"path or an XMLDB URI.",
-				new SequenceType[] {
-                    new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "user-id")
+				new SequenceType[] { OWNER_COLLECTION_ARG, RESOURCE_ARG },
+				OWNER_RETURN_TYPE
 			)
 		};
 	

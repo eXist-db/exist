@@ -53,9 +53,9 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 				"Rename a collection $source-collection-uri. The collection can be specified either as " +
 				"a simple collection path or an XMLDB URI.",
 				new SequenceType[] {
-                new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source-collection-uri"),
-                new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target-collection-uri")},
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")
+                new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
+                new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI")},
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -63,10 +63,10 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
             "The collection can be either specified as a simple collection path or " +
             "an XMLDB URI.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource"),
-                new FunctionParameterSequenceType("new-resource-name", Type.STRING, Cardinality.EXACTLY_ONE, "the new-resource-name")},
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
+                new FunctionParameterSequenceType("new-resource-name", Type.STRING, Cardinality.EXACTLY_ONE, "The new resource name")},
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		)
 	};
 	

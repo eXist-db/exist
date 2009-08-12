@@ -54,10 +54,10 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "user-id of the lock owner, otherwise if not locked the empty sequence")
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user id of the lock owner, otherwise if not locked the empty sequence")
             );
 	
 	public XMLDBHasLock(XQueryContext context) {

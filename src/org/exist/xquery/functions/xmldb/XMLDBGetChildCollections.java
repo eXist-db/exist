@@ -49,9 +49,9 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 			new QName("get-child-collections", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns a sequence of strings containing all the child collections of the collection specified.",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "a simple collection path or an XMLDB URI")
+					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path or an XMLDB URI")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "sequence of path names to the child collections"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of path names to the child collections"));
 	
 	public XMLDBGetChildCollections(XQueryContext context) {
 		super(context, signature);

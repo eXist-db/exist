@@ -65,9 +65,9 @@ public class XMLDBAuthenticate extends BasicFunction {
 				"supplied username in $user-id and password in $password. " +
 				"It returns true if the attempt succeeds, false otherwise.",
 				new SequenceType[] {
-				    new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path"),
-				    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
-				    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password")
+				    new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
+				    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "The user-id"),
+				    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password")
 				},
 				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
 			);
@@ -86,9 +86,9 @@ public class XMLDBAuthenticate extends BasicFunction {
             "then the login is cached for the lifetime of the HTTP session and may be used for all XQuery" +
             "scripts in that session.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path"),
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "the user-id"),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "password")
+                new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.ZERO_OR_ONE, "The user-id"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on success, false() otherwise")
 		),

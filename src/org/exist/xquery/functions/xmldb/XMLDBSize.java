@@ -55,8 +55,8 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 			"The collection can be passed as a simple collection " +
 			"path or an XMLDB URI.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri"),
-                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
 			},
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "the size of the pages, occupied by the resource, in bytes")
         );

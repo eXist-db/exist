@@ -54,9 +54,9 @@ public class XMLDBPermissionsToString extends BasicFunction {
 			"followed by group and world. 'r' denotes read, 'w' write and 'u' update " +
 			"permissions",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "the permissions in xs:integer format")
+                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions in xs:integer format")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "permissions as string 'rwu' for, user, group and other"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the permissions as string 'rwu' for, user, group and other"));
 	
 	/**
 	 * @param context
