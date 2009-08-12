@@ -53,35 +53,27 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBUserAccess extends BasicFunction {
+	protected static final FunctionParameterSequenceType ARG_USER_ID = new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id");
 	protected static final Logger logger = Logger.getLogger(XMLDBUserAccess.class);
 	public final static FunctionSignature fnExistsUser = new FunctionSignature(
-			new QName("exists-user", XMLDBModule.NAMESPACE_URI,
-					XMLDBModule.PREFIX),
+			new QName("exists-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns true if user exists. Requires username.",
-			new SequenceType[]{
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-            },
+			new SequenceType[]{ ARG_USER_ID },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user exists, false() otherwise"));
 	
 	public final static FunctionSignature fnUserGroups = new FunctionSignature(
-			new QName("get-user-groups", XMLDBModule.NAMESPACE_URI,
-					XMLDBModule.PREFIX),
+			new QName("get-user-groups", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Receives the sequence of groups the specified user is a member of.",
-			new SequenceType[]{
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-            },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "group memberships"));
+			new SequenceType[]{ ARG_USER_ID },
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the group memberships"));
 	
 	//TODO: let users know about signature change from string to any_uri
 	public final static FunctionSignature fnUserHome = new FunctionSignature(
-			new QName("get-user-home", XMLDBModule.NAMESPACE_URI,
-					XMLDBModule.PREFIX),
+			new QName("get-user-home", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the home collection of the specified user or the empty sequence " +
 			"if no home collection is assigned to the user.",
-			new SequenceType[]{
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-            },
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "home collection of user"));
+			new SequenceType[]{ ARG_USER_ID },
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the home collection of user"));
 
 	/**
 	 * @param context

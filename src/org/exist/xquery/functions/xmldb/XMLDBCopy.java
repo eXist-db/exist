@@ -53,19 +53,19 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 			      "Copy a collection $source-collection-uri to the collection $target-collection-uri. The collections can be specified either as " +
 			      "a simple collection path or an XMLDB URI.",
 			      new SequenceType[]{
-				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source collection-uri"),
-				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection-uri")},
-			      new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")),
+				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
+				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI")},
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
 			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			      "Copy a resource $resource from the collection specified in $source-collection-uri to collection in $target-collection-uri. " +
 			      "The collections can be either specified as a simple collection path " +
 			      "or an XMLDB URI.",
 			      new SequenceType[]{
-				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source collection-uri"),
-				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection-uri"),
+				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
+				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection URI"),
 			      new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource to copy")},
-			      new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"))
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
     public XMLDBCopy(XQueryContext context, FunctionSignature signature) {

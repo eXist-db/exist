@@ -56,12 +56,12 @@ public class XMLDBChangeUser extends BasicFunction {
 									    "Change properties of an existing user, you must have appropriate permissions to do this. $user-id is the username, $password is the password, " +
 									    "$groups is the sequence of group memberships, $home-collection is the home collection. The username is mandatory but other values are optional, where if empty the existing value is used.",
 									    new SequenceType[]{
-										new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-										new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "the password"),
-										new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "the set of groups ths user is member of"),
-										new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "the home collection of the user")
+										new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+										new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
+										new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The set of groups ths user is member of"),
+										new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection of the user")
 									    },
-									    new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"));
+									    new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
     public XMLDBChangeUser(XQueryContext context) {
 	super(context, signature);

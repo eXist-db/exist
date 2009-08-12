@@ -48,7 +48,7 @@ public class FunXCollection extends ExtCollection {
             "Works like fn:collection(), but does not include documents " +
             "found in sub-collections of the specified collections.",
             new SequenceType[] {
-		new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "the set of collection paths to operate on")},
+		new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of collection paths to operate on")},
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collections"));
 				
 	/**

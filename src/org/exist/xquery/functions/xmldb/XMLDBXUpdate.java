@@ -65,8 +65,8 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 					+ "document conforming to the XUpdate specification. "
 					+ "The function returns the number of modifications caused by the XUpdate.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "the collection as a simple collection path or an XMLDB URI"),
-					new FunctionParameterSequenceType("modifications", Type.NODE, Cardinality.EXACTLY_ONE, "the XUpdate modifications to be processed")},
+					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection as a simple collection path or an XMLDB URI"),
+					new FunctionParameterSequenceType("modifications", Type.NODE, Cardinality.EXACTLY_ONE, "The XUpdate modifications to be processed")},
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the number of modifications, as xs:integer, caused by the XUpdate"));
 
 	public XMLDBXUpdate(XQueryContext context) {

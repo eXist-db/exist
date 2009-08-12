@@ -46,27 +46,28 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
+
 	protected static final Logger logger = Logger.getLogger(XMLDBMove.class);
+	
+	protected static final FunctionParameterSequenceType ARG_SOURCE = new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI");
+	protected static final FunctionParameterSequenceType ARG_TARGET = new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI");
+	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource");
+	
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
         new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Move a collection $source-collection-uri. The collection can be specified either as " +
         "a simple collection path or an XMLDB URI.",
-        new SequenceType[]{
-            new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source-collection-uri"),
-            new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target-collection-uri")},
-        new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")),
+        new SequenceType[]{ ARG_SOURCE, ARG_TARGET },
+        new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 
         new FunctionSignature(
         new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Move a resource $resource from the collection specified in $source-collection-uri to collection in $target-collection-uri. " +
         "The collection can be either specified as a simple collection path or " +
         "an XMLDB URI.",
-        new SequenceType[]{
-            new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the source-collection-uri"),
-            new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target-collection-uri"),
-            new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource")},
-        new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence"))
+        new SequenceType[]{ ARG_SOURCE, ARG_TARGET, ARG_RESOURCE },
+        new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
     public XMLDBMove(XQueryContext context, FunctionSignature signature) {

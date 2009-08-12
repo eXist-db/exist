@@ -51,7 +51,7 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
 			      "Returns true() if there is a collection "+
 			      "with the same name as $collection-path, otherwise false().",
 			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path")},
+				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")},
 			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists, false() otherwise"),
 			      true,
 			      "Use " + XMLDBModule.PREFIX + ":collection-available() instead."),
@@ -61,7 +61,7 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
 			      "Returns true() if there is a collection "+
 			      "with the same name as $collection-path, otherwise false().",
 			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "the collection path")},
+				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")},
 			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists and is available, false() otherwise"))
     };
 		

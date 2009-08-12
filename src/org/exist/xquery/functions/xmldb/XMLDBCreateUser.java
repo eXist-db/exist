@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
@@ -34,7 +33,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -58,12 +56,12 @@ public class XMLDBCreateUser extends BasicFunction {
 			"$groups is the sequence of group memberships, " + 
 			"$home-collection is the home collection.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
-					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "the password"),
-                    new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "group memberships"),
-					new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "the home collection for the user")
+					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
+                    new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships"),
+					new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection for the user")
             },
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY, "empty item sequence")
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)
            );
 	
 	/**

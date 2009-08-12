@@ -52,7 +52,7 @@ public class XMLDBIsAdmin extends BasicFunction {
 					XMLDBModule.PREFIX),
 			"Returns true if user is an Admin. Requires username in $user-id.",
 			new SequenceType[]{
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "the user-id"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user ID"),
             },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if user is admin, false() otherwise"));
 	

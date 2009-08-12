@@ -52,8 +52,8 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 					+ "This is only required if you want to access a database instance different "
 					+ "from the one that executes the XQuery.",
 			new SequenceType[]{
-                new FunctionParameterSequenceType("driver", Type.STRING, Cardinality.EXACTLY_ONE, "the DB driver"),
-                new FunctionParameterSequenceType("create-db", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "create the db if not exists")},
+                new FunctionParameterSequenceType("driver", Type.STRING, Cardinality.EXACTLY_ONE, "The DB driver"),
+                new FunctionParameterSequenceType("create-db", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag to create the db if not exists")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully registered, false() otherwise")
            );
 
