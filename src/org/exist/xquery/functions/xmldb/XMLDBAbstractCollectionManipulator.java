@@ -1,27 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
- *  Modifications Copyright (C) 2004 Luigi P. Bai
- *  finder@users.sf.net
- *  Licensed as below under the LGPL.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
 
@@ -44,6 +40,14 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+/**
+ *
+ *  @author Luigi P. Bai, finder@users.sf.net, 2004
+ *  @author gev
+ *  @author delirium
+ *
+ *
+ */
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	protected static final Logger logger = Logger.getLogger(XMLDBAbstractCollectionManipulator.class);
@@ -52,7 +56,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	private int paramNumber = 0;  //collecton will be passed as parameter number 0 by default  
 	
-	protected void setCollectionParameterNubmer(int paramNumber){
+	protected void setCollectionParameterNumber(int paramNumber){
 		this.paramNumber = paramNumber;
 	}
 	
