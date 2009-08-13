@@ -38,7 +38,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * Converts the supplied number in given base to other base (currently a base-10 integer).
+ * Converts the supplied number in given base to other base.
  *
  * @author ljo
  */
@@ -46,16 +46,41 @@ public class BaseConverter extends BasicFunction {
 	protected static final Logger logger = Logger.getLogger(BaseConverter.class);
 	
 	private static final FunctionParameterSequenceType number_param = new FunctionParameterSequenceType("number", Type.ITEM, Cardinality.EXACTLY_ONE, "The number to convert");
-	private static final FunctionParameterSequenceType base_param = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.EXACTLY_ONE, "The base of $number");
-	private static final FunctionReturnSequenceType int_result = new FunctionReturnSequenceType(Type.INT, Cardinality.EXACTLY_ONE, "the xs:integer representation of $number in base $base");
+	private static final FunctionParameterSequenceType int_param = new FunctionParameterSequenceType("number", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number to convert");
+	private static final FunctionParameterSequenceType base_param = new FunctionParameterSequenceType("base", Type.INTEGER, Cardinality.EXACTLY_ONE, "The base of $number");
+	private static final FunctionReturnSequenceType int_result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the xs:integer representation of $number in base $base");
+	private static final FunctionReturnSequenceType string_result = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the xs:string representation of $number in base $base");
 	
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
                     new QName("base-to-integer", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Converts the number $number from base $base to xs:integer.",
                     new SequenceType[]{ number_param, base_param },
-                    int_result)
+                    int_result),
+            new FunctionSignature(
+                    new QName("integer-to-base", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Converts the xs:integer $number (unsigned) into base $base as xs:string. Bases 2, 8, and 16 are supported.",
+                    new SequenceType[]{ int_param, base_param },
+                    string_result)
     };
+
+    public enum Base {
+        BINARY(2), OCTAL(8), DECIMAL(10), HEXADECIMAL(16);
+        public final int base;
+  
+        Base(int base) {
+            this.base = base;
+        }
+
+        static public Base getBase(int otherBase)  {
+            for (Base b : Base.values()) {
+                if (otherBase == b.base) {
+                    return b;
+                } 
+            }
+            return DECIMAL;
+        }
+    }
 
     public BaseConverter(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -67,12 +92,37 @@ public class BaseConverter extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
         throws XPathException {
     	int intValue;
+        String stringValue;
         String number = args[0].itemAt(0).getStringValue();
-        String base = args[1].itemAt(0).getStringValue();
-        
-        intValue = Integer.parseInt(number, Integer.parseInt(base));
+        int intBase = ((IntegerValue) args[1].itemAt(0)).getInt();
 
-        return new IntegerValue(intValue);
+        if (isCalledAs("base-to-integer")) {
+            intValue = Integer.parseInt(number, intBase);
+            return new IntegerValue(intValue);
+        } else {
+            switch (Base.getBase(intBase)) {
+                case BINARY:
+                    stringValue = Integer.toBinaryString(Integer.parseInt(number));
+                    break;
+                case OCTAL:
+                    stringValue = Integer.toOctalString(Integer.parseInt(number));
+                    break;
+                    //case DECIMAL:
+                    //stringValue = number;
+                    //break;
+                case HEXADECIMAL:
+                    stringValue = Integer.toHexString(Integer.parseInt(number));
+                    break;
+                default:
+                    {
+                        logger.error("Unhandled base for conversion target in integer-to-base().");
+						throw new XPathException("Unhandled base for conversion target in integer-to-base().");
+                    }
+            }
+            return new StringValue(stringValue);
+
+        }
+
     }
 
 }

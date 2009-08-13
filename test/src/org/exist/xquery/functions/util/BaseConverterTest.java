@@ -76,18 +76,54 @@ public class BaseConverterTest {
     }
 
     @Test
-    public void testBaseConverter() throws XPathException {
+    public void testBaseConverterOctalToInt() throws XPathException {
 
         ResourceSet result = null;
         String r = "";
         try {
-            String query = "util:base-to-integer(0755, \"8\")";
+            String query = "util:base-to-integer(0755, 8)";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("493", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testBaseConverter(): " + e);
+            System.out.println("testBaseConverterOctalToInt(): " + e);
+            fail(e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void testBaseConverterIntToHex() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "util:integer-to-base(10, 16)";
+            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            assertEquals("a", r);
+
+        } catch (XMLDBException e) {
+            System.out.println("testBaseConverterIntToHex(): " + e);
+            fail(e.getMessage());
+        }
+
+    }
+
+@Test
+    public void testBaseConverterIntToBinary() throws XPathException {
+
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "util:integer-to-base(4, 2)";
+            result = service.query(query);
+            r = (String) result.getResource(0).getContent();
+            assertEquals("100", r);
+
+        } catch (XMLDBException e) {
+            System.out.println("testBaseConverterIntToBinary(): " + e);
             fail(e.getMessage());
         }
 

@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2004-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -51,17 +51,23 @@ public class XMLDBChangeUser extends BasicFunction {
     private static final Logger logger = Logger.getLogger(XMLDBChangeUser.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
-									    new QName("change-user", XMLDBModule.NAMESPACE_URI,
-										      XMLDBModule.PREFIX),
-									    "Change properties of an existing user, you must have appropriate permissions to do this. $user-id is the username, $password is the password, " +
-									    "$groups is the sequence of group memberships, $home-collection is the home collection. The username is mandatory but other values are optional, where if empty the existing value is used.",
-									    new SequenceType[]{
-										new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
-										new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
-										new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The set of groups ths user is member of"),
-										new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection of the user")
-									    },
-									    new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			    new QName("change-user", XMLDBModule.NAMESPACE_URI,
+					      XMLDBModule.PREFIX),
+			    "Change properties of an existing database user. " +
+                XMLDBModule.NEED_PRIV_USER +
+                " $user-id is the username, $password is the password, " +
+			    "$groups is the sequence of group memberships, " +
+                "$home-collection is the home collection. The username, " +
+                "$user-id, is mandatory. " +
+                "Non-empty values for the other parameters are optional, " +
+                "where if empty the existing value is used.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+                    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
+                    new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The groups the user is member of"),
+                    new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The user's home collection")
+                },
+                new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
     public XMLDBChangeUser(XQueryContext context) {
 	super(context, signature);
@@ -82,36 +88,35 @@ public class XMLDBChangeUser extends BasicFunction {
 	    User oldUser = ums.getUser(userName);
 	    User user = new User(oldUser.getName());
 	    if (user == null) {
-		logger.error("User " + userName + " not found");
-		
-		throw new XPathException(this, "User " + userName + " not found");
+            logger.error("User " + userName + " not found");
+            throw new XPathException(this, "User " + userName + " not found");
 	    }
 	    if (!args[1].isEmpty()) {
-		// set password
-		user.setPassword(args[1].getStringValue());
+            // set password
+            user.setPassword(args[1].getStringValue());
 	    } else {
-		//use the old password
-		user.setEncodedPassword(oldUser.getPassword());
-		user.setPasswordDigest(oldUser.getDigestPassword());
+            //use the old password
+            user.setEncodedPassword(oldUser.getPassword());
+            user.setPasswordDigest(oldUser.getDigestPassword());
 	    }
 	    if (!args[2].isEmpty()) {
-		// set groups
-		for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
-		    user.addGroup(i.nextItem().getStringValue());
-		}
+            // set groups
+            for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
+                user.addGroup(i.nextItem().getStringValue());
+            }
 	    } else
-		user.setGroups(oldUser.getGroups());
+            user.setGroups(oldUser.getGroups());
 	    if (!args[3].isEmpty()) {
 		// set home collection
 		try {
 		    user.setHome(XmldbURI.xmldbUriFor(args[3].getStringValue()));
 		} catch (URISyntaxException e) {
 		    logger.error("Invalid home collection URI " + args[3].getStringValue(), e);
-		    
-		    throw new XPathException(this,"Invalid home collection URI",e);
+            throw new XPathException(this,"Invalid home collection URI",e);
 		}
 	    } else
-		user.setHome(oldUser.getHome());
+            user.setHome(oldUser.getHome());
+
 	    ums.updateUser(user);
 	} catch (XMLDBException xe) {
 	    logger.error("Failed to update user " + userName, xe);
