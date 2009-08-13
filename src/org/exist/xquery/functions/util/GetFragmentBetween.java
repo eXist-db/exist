@@ -242,6 +242,9 @@ public class GetFragmentBetween extends BasicFunction {
       String attrString = "";
       if (! (attrNamePrefix == null || attrNamePrefix.length() == 0))
         attrString = attrNamePrefix + ":";
+      if (attrName.toLowerCase().equals("href")) {
+        attrValue = escape(attrValue);
+      }
       attrString = attrString + attrName + "=\"" + attrValue + "\"";
       elemAttrString = elemAttrString + " " + attrString;
     }
@@ -304,6 +307,12 @@ public class GetFragmentBetween extends BasicFunction {
         case '&' :
           resultStrBuf.append("&amp;");
           break;
+        case '\"' :
+          resultStrBuf.append("&quot;");
+          break;
+        case '\'' :
+          resultStrBuf.append("&#039;");
+          break;
         default:
           resultStrBuf.append(ch);
           break;
@@ -346,13 +355,18 @@ public class GetFragmentBetween extends BasicFunction {
   
   private ArrayList<String> pathName2ElementsWithAttributes(String pathName) {
     ArrayList<String> result = new ArrayList<String>();
-    String regExpr = "/[^/]+\\[[^\\]]*\\]" + "|" + "/[^/\\[]+"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
+    if (pathName.charAt(0) == '/')
+      pathName = pathName.substring(1, pathName.length());  // without first "/" character
+    String regExpr = "[a-zA-Z0-9]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9]+?/" + "|" + "[a-zA-Z0-9]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
     Pattern p = Pattern.compile(regExpr, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // both flags enabled
     Matcher m = p.matcher(pathName);
     while (m.find()) {
       int msBeginPos = m.start();
       int msEndPos = m.end();
-      String elementName = pathName.substring(msBeginPos+1, msEndPos);  // without first "/" character
+      String elementName = pathName.substring(msBeginPos, msEndPos);
+      int elemNameSize = elementName.length();
+      if (elemNameSize > 0 && elementName.charAt(elemNameSize - 1) == '/')
+        elementName = elementName.substring(0, elemNameSize - 1);  // without last "/" character
       result.add(elementName);
     }
     return result;
@@ -387,7 +401,10 @@ public class GetFragmentBetween extends BasicFunction {
     NamedNodeMap attrs = n.getAttributes();
     for(int i = 0; i < attrs.getLength(); i++) {
       Node attr = attrs.item(i);
-      xpath.append("[@" + getFullNodeName(attr) + " eq \"" + attr.getNodeValue() + "\"]");
+      String fullNodeName = getFullNodeName(attr);
+      String attrNodeValue = attr.getNodeValue();
+      if (!fullNodeName.equals("") && (! (fullNodeName == null)))
+        xpath.append("[@" + fullNodeName + " eq \"" + attrNodeValue + "\"]");
     }
     return xpath;
   }
@@ -399,6 +416,18 @@ public class GetFragmentBetween extends BasicFunction {
    * @return The full name of the node
    */
   private String getFullNodeName(Node n) {
-    return n.getPrefix() != null && !n.getPrefix().equals("") ? n.getPrefix() + ":" + n.getLocalName() : n.getLocalName();
+    String prefix = n.getPrefix();
+    String localName = n.getLocalName();
+    if (prefix == null || prefix.equals("")) {
+      if (localName == null || localName.equals(""))
+        return "";
+      else
+        return localName;
+    } else {
+      if (localName == null || localName.equals(""))
+        return "";
+      else
+        return prefix + ":" + localName;
+    }
   }
 }
