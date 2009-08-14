@@ -69,18 +69,15 @@ public class XMLDBDocument extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Returns the documents specified in the input sequence. " +  
-            "The arguments are either document paths like '" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
-			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml'. " +  
+            "Returns the documents $document-uris in the input sequence. " +  
+            XMLDBModule.COLLECTION_URI +
             "If the input sequence is empty, " +
             "the function will load all documents in the database.",
 			new SequenceType[] {
-			    new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of paths or URIs of the documents")
+			    new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The document URIs")
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the documents"),
-			true, "See the standard doc() function");
+			true, "See the standard fn:doc() function");
 
 	private List cachedArgs = null;
 	private Sequence cached = null;

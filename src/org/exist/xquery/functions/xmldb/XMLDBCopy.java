@@ -50,17 +50,15 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
 			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Copy a collection $source-collection-uri to the collection $target-collection-uri. The collections can be specified either as " +
-			      "a simple collection path or an XMLDB URI.",
+			      "Copy the collection $source-collection-uri to the collection $target-collection-uri. " + XMLDBModule.COLLECTION_URI,
 			      new SequenceType[]{
 				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
 				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI")},
 			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
         new FunctionSignature(
 			      new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Copy a resource $resource from the collection specified in $source-collection-uri to collection in $target-collection-uri. " +
-			      "The collections can be either specified as a simple collection path " +
-			      "or an XMLDB URI.",
+			      "Copy the resource $resource in $source-collection-uri to collection $target-collection-uri. " +
+			      XMLDBModule.COLLECTION_URI,
 			      new SequenceType[]{
 				  new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
 				  new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the target collection URI"),

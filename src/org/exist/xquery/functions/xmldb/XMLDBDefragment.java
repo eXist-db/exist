@@ -38,36 +38,40 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-
+/**
+ * Implments the xmldb:defragment() function. 
+ *
+ *
+ */
 public class XMLDBDefragment extends BasicFunction {
     private static final Logger logger = Logger.getLogger(XMLDBDefragment.class);
 
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Start a defragmentation run on each document for which a node is passed in the first argument. " +
+                    "Start a defragmentation run on each document which has a node in $nodes. " +
                     "Fragmentation may occur if nodes are inserted into a document using XQuery update " +
                     "extensions. " +
                     "The second argument specifies the minimum number of fragmented pages which should " +
                     "be in a document before it is considered for defragmentation. " +
                     "Please note that defragmenting a document changes its internal structure, so any " +
                     "references to this document will become invalid, in particular, variables pointing to " +
-                    "some nodes in the doc.",
+                    "some nodes in the document.",
                     new SequenceType[] {
-			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The nodes from the documents to defragment"),
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The sequence of nodes from the documents to defragment"),
 			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE, "The minimum number of fragmented pages required before defragmenting")
                     },
                     new SequenceType(Type.ITEM, Cardinality.EMPTY)),
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Start a defragmentation run on each document for which a node is passed in the first argument. " +
+                    "Start a defragmentation run on each document which has a node in $nodes. " +
                     "Fragmentation may occur if nodes are inserted into a document using XQuery update " +
                     "extensions. " +
                     "Please note that defragmenting a document changes its internal structure, so any " +
                     "references to this document will become invalid, in particular, variables pointing to " +
-                    "some nodes in the doc.",
+                    "some nodes in the document.",
                     new SequenceType[] {
-			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The nodes from the documents to defragment"),
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The sequence of nodes from the documents to defragment"),
                     },
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
@@ -86,6 +90,7 @@ public class XMLDBDefragment extends BasicFunction {
         try {
             Modification.checkFragmentation(context, docs, splitCount);
         } catch (EXistException e) {
+            logger.error("An error occurred while defragmenting documents: " + e.getMessage());
             throw new XPathException("An error occurred while defragmenting documents: " + e.getMessage(), e);
         }
         return Sequence.EMPTY_SEQUENCE;

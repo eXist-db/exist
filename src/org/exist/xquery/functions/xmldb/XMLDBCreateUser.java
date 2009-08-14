@@ -52,14 +52,18 @@ public class XMLDBCreateUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new user in the database. You must have appropriate permissions to do this. $user-id is the username, $password is the password, " +
-			"$groups is the sequence of group memberships, " + 
-			"$home-collection is the home collection.  This method is only available to the DBA role.",
+			"Create a new user, $user-id, in the database. " +
+            XMLDBModule.NEED_PRIV_USER +
+            " $user-id is the username, $password is the password, " +
+			"$groups is the sequence of group memberships. " +
+            "The first group in the sequence is the primary group." +
+			"$home-collection-uri is the home collection URI." +
+            XMLDBModule.COLLECTION_URI,
 			new SequenceType[]{
 					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
 					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
                     new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships"),
-					new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection for the user")
+					new FunctionParameterSequenceType("home-collection-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection URI")
             },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
            );

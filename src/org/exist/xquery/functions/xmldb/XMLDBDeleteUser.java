@@ -51,9 +51,12 @@ public class XMLDBDeleteUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("delete-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Deletes an existing user in the database. Requires username. This does not delete the user's home collection.  This method is only available to the DBA role.",
+			"Deletes an existing user, $user-id, in the database. " +
+            "This does not delete the user's home collection. " +
+            XMLDBModule.NEED_PRIV_USER +
+            " You cannot delete the owner of the currently running XQuery.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user account to delete"),
+					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id to delete"),
             },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
