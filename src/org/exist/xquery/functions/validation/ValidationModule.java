@@ -57,6 +57,8 @@ public class ValidationModule extends AbstractInternalModule {
        new FunctionDef(Jaxp.signatures[2], Jaxp.class),
        new FunctionDef(Jaxp.signatures[3], Jaxp.class),
 
+       //new FunctionDef(Jaxp.signatures[4], Jaxp.class),
+
        new FunctionDef(Validation.deprecated[0], Validation.class),
        new FunctionDef(Validation.deprecated[1], Validation.class),
        new FunctionDef(Validation.deprecated[2], Validation.class),

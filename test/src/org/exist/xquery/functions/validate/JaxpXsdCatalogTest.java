@@ -38,7 +38,7 @@ import org.xmldb.api.base.ResourceSet;
  * 
  * @author dizzzz@exist-db.org
  */
-public class ParseDtdCatalogTest extends EmbeddedExistTester {
+public class JaxpXsdCatalogTest extends EmbeddedExistTester {
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -56,17 +56,17 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
         FilenameFilter filter = new FilenameFilter() {
 
             public boolean accept(File dir, String name) {
-                return (name.endsWith(".dtd"));
+                return (name.endsWith(".xsd"));
             }
         };
 
-        Collection dtdsCollection = createCollection(rootCollection, "parse/dtds");
-        File schemas = new File("samples/validation/parse/dtds");
+        Collection schemasCollection = createCollection(rootCollection, "parse/schemas");
+        File schemas = new File("samples/validation/parse/schemas");
 
         for (File file : schemas.listFiles(filter)) {
             LOG.info("Storing " + file.getAbsolutePath());
             byte[] data = readFile(schemas, file.getName());
-            storeResource(dtdsCollection, file.getName(), data);
+            storeResource(schemasCollection, file.getName(), data);
         }
 
         File catalog = new File("samples/validation/parse");
@@ -77,11 +77,11 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
         File instance = new File("samples/validation/parse/instance");
         Collection instanceCollection = createCollection(rootCollection, "parse/instance");
 
-        byte[] valid = readFile(instance, "valid-dtd.xml");
-        storeResource(instanceCollection, "valid-dtd.xml", valid);
+        byte[] valid = readFile(instance, "valid.xml");
+        storeResource(instanceCollection, "valid.xml", valid);
 
-        byte[] invalid = readFile(instance, "invalid-dtd.xml");
-        storeResource(instanceCollection, "invalid-dtd.xml", invalid);
+        byte[] invalid = readFile(instance, "invalid.xml");
+        storeResource(instanceCollection, "invalid.xml", invalid);
     }
 
     @Before
@@ -103,19 +103,20 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
     /*
      * ***********************************************************************************
      */
+    
     @Test
-    public void dtd_stored_catalog_valid() {
+    public void xsd_stored_catalog_valid() {
         String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
+                "doc('/db/parse/instance/valid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
 
         executeAndEvaluate(query,"valid");
     }
 
     @Test
-    public void dtd_stored_catalog_invalid() {
+    public void xsd_stored_catalog_invalid() {
         String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
+                "doc('/db/parse/instance/invalid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
 
         executeAndEvaluate(query,"invalid");
@@ -125,42 +126,40 @@ public class ParseDtdCatalogTest extends EmbeddedExistTester {
      * ***********************************************************************************
      */
     @Test
-    public void dtd_anyURI_catalog_valid() {
+    public void xsd_anyURI_catalog_valid() {
         String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
+                "xs:anyURI('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
 
         executeAndEvaluate(query,"valid");
     }
 
     @Test
-    public void dtd_anyURI_catalog_invalid() {
+    public void xsd_anyURI_catalog_invalid() {
         String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
+                "xs:anyURI('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
 
-       executeAndEvaluate(query,"invalid");
+        executeAndEvaluate(query,"invalid");
     }
 
     /*
      * ***********************************************************************************
-     *
-     * DIZZZZ: doc('/db/parse/instance/valid-dtd.xml') does not work xs:anyURI does
-     *
      */
+    
     @Test
-    public void dtd_searched_valid() {
+    public void xsd_searched_valid() {
         String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
+                "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
         executeAndEvaluate(query,"valid");
     }
 
     @Test
-    public void dtd_searched_invalid() {
+    public void xsd_searched_invalid() {
         String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
+                "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
 
         executeAndEvaluate(query,"invalid");
