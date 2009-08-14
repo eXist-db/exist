@@ -48,7 +48,7 @@ public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = Logger.getLogger(XMLDBChmodCollection.class);
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("chmod-collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                        "Sets the mode of collection $collection. $mode is the mode as xs:integer. "+
+                        "Sets the mode of collection $collection. $mode is the mode as xs:integer. " +
                         XMLDBModule.REMEMBER_OCTAL_CALC,
 			new SequenceType[] {
 			    new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),

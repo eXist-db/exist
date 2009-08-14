@@ -51,10 +51,10 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
     public final static FunctionSignature signature =
 	new FunctionSignature(
 			      new QName("chmod-resource", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Sets the mode of the specified Resource. $collection-path is the collection path, $resource is the resource name, $mode is the mode as xs:integer. "+
-			      "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
+			      "Sets the mode of the resource $resource in collection $collection, $mode is the mode as xs:integer. " +
+			      XMLDBModule.REMEMBER_OCTAL_CALC,
 			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
+				  new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection"),
 				  new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
 				  new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mode as xs:integer"),
 			      },
@@ -82,7 +82,7 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
                 throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
             }
         } catch (XMLDBException xe) {
-	    logger.error("Unable to change  resource permissions", xe);
+	    logger.error("Unable to change resource permissions", xe);
             throw new XPathException(this, "Unable to change resource permissions", xe);
         }
 	return Sequence.EMPTY_SEQUENCE;
