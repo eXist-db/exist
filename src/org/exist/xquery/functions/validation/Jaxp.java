@@ -41,8 +41,10 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.memtree.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
@@ -65,6 +67,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -81,78 +84,76 @@ public class Jaxp extends BasicFunction {
             "Validate document by parsing $instance. Optionally " +
             "grammar caching can be enabled. Supported grammars types " +
             "are '.xsd' and '.dtd'.";
-
     private static final String extendedFunctionTxt =
             "Validate document by parsing $instance. Optionally " +
             "grammar caching can be enabled and " +
             "an XML catalog can be specified. Supported grammars types " +
             "are '.xsd' and '.dtd'.";
-
-    private static final String documentTxt
-            = "The document referenced as xs:anyURI, a node (element or result of fn:doc()) " +
+    private static final String documentTxt = "The document referenced as xs:anyURI, a node (element or result of fn:doc()) " +
             "or as a Java file object.";
-
-    private static final String catalogTxt
-            = "The catalogs referenced as xs:anyURI's.";
-    
-    private static final String cacheTxt
-            = "Set the flag to true() to enable grammar caching.";
-
+    private static final String catalogTxt = "The catalogs referenced as xs:anyURI's.";
+    private static final String cacheTxt = "Set the flag to true() to enable grammar caching.";
     private final BrokerPool brokerPool;
-
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                simpleFunctionTxt,
-                new SequenceType[]{
-                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    documentTxt),
-                    new FunctionParameterSequenceType("cache-grammars", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                    cacheTxt)
-                },
-                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                Shared.simplereportText)),
-                
+        new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+        simpleFunctionTxt,
+        new SequenceType[]{
+            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+            documentTxt),
+            new FunctionParameterSequenceType("cache-grammars", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+            cacheTxt)
+        },
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+        Shared.simplereportText)),
         new FunctionSignature(
-                new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt,
-                new SequenceType[]{
-                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    documentTxt),
-                    new FunctionParameterSequenceType("cache-grammars", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                    cacheTxt),
-                    new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
-                    catalogTxt),
-                },
-                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                Shared.simplereportText)),
-
+        new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+        extendedFunctionTxt,
+        new SequenceType[]{
+            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+            documentTxt),
+            new FunctionParameterSequenceType("cache-grammars", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+            cacheTxt),
+            new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
+            catalogTxt),},
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+        Shared.simplereportText)),
         new FunctionSignature(
-                new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                simpleFunctionTxt + " An XML report is returned.",
-                new SequenceType[]{
-                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    documentTxt),
-                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                    cacheTxt),
-                },
-                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                Shared.xmlreportText)),
-
+        new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+        simpleFunctionTxt + " An XML report is returned.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+            documentTxt),
+            new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+            cacheTxt),},
+        new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+        Shared.xmlreportText)),
         new FunctionSignature(
-                new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-                extendedFunctionTxt + " An XML report is returned.",
-                new SequenceType[]{
-                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                    documentTxt),
-                    new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                    cacheTxt),
-                    new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
-                    catalogTxt),
-                },
-                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                Shared.xmlreportText))
+        new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+        extendedFunctionTxt + " An XML report is returned.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+            documentTxt),
+            new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+            cacheTxt),
+            new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
+            catalogTxt),},
+        new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+        Shared.xmlreportText)),
+        new FunctionSignature(
+        new QName("jaxp-parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+        "Parse document in validating more, all defaults are filled in according to the " +
+        "grammar (xsd).",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+            documentTxt),
+            new FunctionParameterSequenceType("enable-grammar-cache", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+            cacheTxt),
+            new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
+            catalogTxt),},
+        new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+        "Parsed document"))
     };
 
     public Jaxp(XQueryContext context, FunctionSignature signature) {
@@ -171,7 +172,16 @@ public class Jaxp extends BasicFunction {
         GrammarPool grammarPool = null;
 
         ValidationReport report = new ValidationReport();
-        ValidationContentHandler contenthandler = new ValidationContentHandler();
+        ContentHandler contenthandler = null;
+        MemTreeBuilder instanceBuilder = null;
+
+        if (isCalledAs("jaxp-parse")) {
+            instanceBuilder = context.getDocumentBuilder();
+            contenthandler = new DocumentBuilderReceiver(instanceBuilder, true); // (namespace?)
+
+        } else {
+            contenthandler = new ValidationContentHandler();
+        }
 
         try {
             report.start();
@@ -187,7 +197,7 @@ public class Jaxp extends BasicFunction {
             InputSource instance = Shared.getInputSource(args[0].itemAt(0), context);
 
             // Handle catalog
-            if(args.length==2){
+            if (args.length == 2) {
                 LOG.debug("No Catalog specified");
 
             } else if (args[2].isEmpty()) {
@@ -195,7 +205,7 @@ public class Jaxp extends BasicFunction {
                 LOG.debug("Using system catalog.");
                 Configuration config = brokerPool.getConfiguration();
                 entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-                
+
             } else {
                 // Get URL for catalog
                 String catalogUrls[] = Shared.getUrls(args[2]);
@@ -203,12 +213,12 @@ public class Jaxp extends BasicFunction {
 
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
-                    LOG.debug("Search for grammar in "+singleUrl);
+                    LOG.debug("Search for grammar in " + singleUrl);
                     entityResolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
                     xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
-                    LOG.debug("Using catalogs "+getStrings(catalogUrls));
+                    LOG.debug("Using catalogs " + getStrings(catalogUrls));
                     entityResolver = new eXistXMLCatalogResolver();
                     ((eXistXMLCatalogResolver) entityResolver).setCatalogList(catalogUrls);
                     xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
@@ -221,7 +231,7 @@ public class Jaxp extends BasicFunction {
 
             boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             // Use grammarpool
-            if(useCache){
+            if (useCache) {
                 LOG.debug("Grammar caching enabled.");
                 Configuration config = brokerPool.getConfiguration();
                 grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
@@ -234,7 +244,10 @@ public class Jaxp extends BasicFunction {
             LOG.debug("Stopped parsing document");
 
             // Distill namespace from document
-            report.setNamespaceUri(contenthandler.getNamespaceUri());
+            if (contenthandler instanceof ValidationContentHandler) {
+                report.setNamespaceUri(
+                        ((ValidationContentHandler) contenthandler).getNamespaceUri());
+            }
 
 
         } catch (MalformedURLException ex) {
@@ -260,9 +273,18 @@ public class Jaxp extends BasicFunction {
             return result;
 
         } else /* isCalledAs("parse-report") */ {
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = Shared.writeReport(report, builder);
-            return result;
+
+            if (contenthandler instanceof DocumentBuilderReceiver) {
+                DocumentBuilderReceiver dbr = (DocumentBuilderReceiver) contenthandler;
+                return ((DocumentImpl) instanceBuilder.getDocument()).getNode(0);
+
+            } else {
+
+                MemTreeBuilder builder = context.getDocumentBuilder();
+                NodeImpl result = Shared.writeReport(report, builder);
+                return result;
+            }
+
         }
     }
 
@@ -292,7 +314,8 @@ public class Jaxp extends BasicFunction {
     }
 
     // No-go ...processor is in validating mode
-    private File preparseDTD(StreamSource instance, String systemId) throws IOException, TransformerConfigurationException, TransformerException {
+    private File preparseDTD(StreamSource instance, String systemId)
+            throws IOException, TransformerConfigurationException, TransformerException {
 
         // prepare output tmp storage
         File tmp = File.createTempFile("DTDvalidation", "tmp");
@@ -310,9 +333,9 @@ public class Jaxp extends BasicFunction {
         return tmp;
     }
 
-    private static String getStrings(String[] data){
+    private static String getStrings(String[] data) {
         StringBuilder sb = new StringBuilder();
-        for(String field: data){
+        for (String field : data) {
             sb.append(field);
             sb.append(" ");
         }
@@ -321,23 +344,23 @@ public class Jaxp extends BasicFunction {
 
     /*
      *           // Prepare grammar ; does not work
-            /*
-            if (args[1].hasOne()) {
-                // Get URL for grammar
-                grammarUrl = Shared.getUrl(args[1].itemAt(0));
+    /*
+    if (args[1].hasOne()) {
+    // Get URL for grammar
+    grammarUrl = Shared.getUrl(args[1].itemAt(0));
 
-                // Special case for DTD, the document needs to be rewritten.
-                if (grammarUrl.endsWith(".dtd")) {
-                    StreamSource newInstance = Shared.getStreamSource(instance);
-                    tmpFile = preparseDTD(newInstance, grammarUrl);
-                    instance = new InputSource(new FileInputStream(tmpFile));
+    // Special case for DTD, the document needs to be rewritten.
+    if (grammarUrl.endsWith(".dtd")) {
+    StreamSource newInstance = Shared.getStreamSource(instance);
+    tmpFile = preparseDTD(newInstance, grammarUrl);
+    instance = new InputSource(new FileInputStream(tmpFile));
 
-                } else if (grammarUrl.endsWith(".xsd")) {
-                    xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION, grammarUrl);
+    } else if (grammarUrl.endsWith(".xsd")) {
+    xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION, grammarUrl);
 
-                } else {
-                    throw new XPathException("Grammar type not supported.");
-                }
-            }
-            */
+    } else {
+    throw new XPathException("Grammar type not supported.");
+    }
+    }
+     */
 }
