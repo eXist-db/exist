@@ -274,8 +274,12 @@ public class Jaxp extends BasicFunction {
 
         } else /* isCalledAs("parse-report") */ {
 
+            if(report.getThrowable()!=null){
+                throw new XPathException(report.getThrowable().getMessage(), report.getThrowable());
+            }
+
             if (contenthandler instanceof DocumentBuilderReceiver) {
-                DocumentBuilderReceiver dbr = (DocumentBuilderReceiver) contenthandler;
+                //DocumentBuilderReceiver dbr = (DocumentBuilderReceiver) contenthandler;
                 return ((DocumentImpl) instanceBuilder.getDocument()).getNode(0);
 
             } else {
