@@ -28,7 +28,7 @@
  declare variable $xproc:run-step := util:function(xs:QName("xproc:run-step"), 5);
  declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_and_eval"), 4);
  (: -------------------------------------------------------------------------- :)
- declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 4);
+ declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 5);
  declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
  declare variable $xproc:try :=util:function(xs:QName("xproc:try"), 5);
  declare variable $xproc:catch :=util:function(xs:QName("xproc:catch"), 5);
@@ -46,11 +46,12 @@
 
 
  (: -------------------------------------------------------------------------- :)
- declare function xproc:declare-step($primary,$secondary,$options,$step) {
+ declare function xproc:declare-step($primary,$secondary,$options,$currentstep,$outputs) {
  (: -------------------------------------------------------------------------- :)
-    <test1/>
+    let $v := u:get-primary($primary)
+    return
+	    $v
  };
-
 
 
  (: -------------------------------------------------------------------------- :)
@@ -218,9 +219,9 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: ------------------------------------------------------------------------------------------ :)
-                                                                       (: PREPARSE II UTILS   :)
- (: ------------------------------------------------------------------------------------------ :)
+ (: ----------------------------------------------------------------------------------- :)
+                                                                 (: PREPARSE II UTILS   :)
+ (: ----------------------------------------------------------------------------------- :)
 
  (: -------------------------------------------------------------------------- :)
  declare function xproc:get-step($stepname as xs:string,$declarestep) {
@@ -442,7 +443,6 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-inline-binding($child){
  (: -------------------------------------------------------------------------- :)
-    (: TODO - should this return a document node ?:)
     $child/*
  };
 
@@ -807,10 +807,9 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
-
- (: ------------------------------------------------------------------------------------------ :)
-                                                                            (: ENTRY POINTS   :)
- (: ------------------------------------------------------------------------------------------ :)
+ (: ----------------------------------------------------------------------------------- :)
+                                                                      (: ENTRY POINTS   :)
+ (: ----------------------------------------------------------------------------------- :)
 
 
  (: -------------------------------------------------------------------------- :)
@@ -819,34 +818,25 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
     xproc:run($pipeline,$stdin,"0","0",(),())
  };
 
+
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$debug){
  (: -------------------------------------------------------------------------- :)
     xproc:run($pipeline,$stdin,$debug,"0",(),())
  };
 
+
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$debug,$bindings,$options){
  (: -------------------------------------------------------------------------- :)
-
     xproc:run($pipeline,$stdin,$debug,"0",$bindings,$options)
  };
+
 
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$dflag,$tflag,$bindings,$options){
  (: -------------------------------------------------------------------------- :)
-
-     (: STEP I: generate parse tree :)
-     let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))
-     let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)
-
-     (: STEP II: parse and eval tree :)
-     let $eval_result := xproc:parse_and_eval($xproc-binding,$stdin,$bindings)
-
-     (: STEP III: serialize and return results :)
-     let $serialized_result := xproc:output($eval_result,$dflag)
-
-     let $internaldbg := 0
+    let $internaldbg := 0
 
      return
          if ($internaldbg eq 1) then
@@ -860,10 +850,18 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
                        naming:explicitnames(
                              naming:fixup($pipeline,$stdin)
                        )
-         else if ($internaldbg eq 3) then
-                     $eval_result
          else
          (
+     (: STEP I: generate parse tree :)
+     let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))
+     let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)
+
+     (: STEP II: parse and eval tree :)
+     let $eval_result := xproc:parse_and_eval($xproc-binding,$stdin,$bindings)
+
+     (: STEP III: serialize and return results :)
+     let $serialized_result := xproc:output($eval_result,$dflag)
+     return
           if ($tflag="1") then
                  document
                     {
@@ -881,10 +879,11 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
          )
  };
 
+
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$dflag,$tflag,$bindings,$options,$outputs){
  (: -------------------------------------------------------------------------- :)
- if (not(empty($pipeline))) then
+ if (exists($pipeline)) then
 
      (: STEP I: generate parse tree :)
      let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))

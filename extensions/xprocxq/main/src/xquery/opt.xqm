@@ -160,8 +160,7 @@ u:assert(exists(u:get-secondary('query',$secondary)/c:query),'p:input query is r
 		else
 			$xquery/node()
 
-    (: TODO - change to u:xquery :)
-    let $result := u:evalXPATH($query,$v)
+    let $result := u:xquery($query,$v)
         return
             $result
             (:

@@ -1,8 +1,8 @@
-xquery version "1.0" encoding "UTF-8"; 
+xquery version "1.0" encoding "UTF-8";
 module namespace naming = "http://xproc.net/xproc/naming";
-(: ------------------------------------------------------------------------------------ 
- 
-	naming.xqm - manages the first pass parsing of xproc pipeline, providing the output 
+(: ------------------------------------------------------------------------------------
+
+	naming.xqm - manages the first pass parsing of xproc pipeline, providing the output
 	in topological order and cross referencing step with defined functional signatures.
 
 ---------------------------------------------------------------------------------------- :)
@@ -25,20 +25,17 @@ import module namespace ext = "http://xproc.net/xproc/ext";
 
 
 (: -------------------------------------------------------------------------- :)
-(: returns step from std, opt and ext step definitions :)
+declare function naming:get-step($stepname as xs:string) {
 (: -------------------------------------------------------------------------- :)
-declare function naming:get-step($stepname as xs:string,$declarestep) {
     $const:std-steps/p:declare-step[@type=$stepname],
     $const:opt-steps/p:declare-step[@type=$stepname],
-    $const:ext-steps/p:declare-step[@type=$stepname],
-    $declarestep/@type
+    $const:ext-steps/p:declare-step[@type=$stepname]
 };
 
 
 (: -------------------------------------------------------------------------- :)
-(: returns step type :)
-(: -------------------------------------------------------------------------- :)
 declare function naming:type($stepname as xs:string,$is_declare-step) as xs:string {
+(: -------------------------------------------------------------------------- :)
 
     let $stdstep := $const:std-steps/p:declare-step[@type=$stepname]
     let $optstep := $const:opt-steps/p:declare-step[@type=$stepname]
@@ -70,7 +67,9 @@ declare function naming:type($stepname as xs:string,$is_declare-step) as xs:stri
                      (: --------------------------------------------------------------------------- :)
 
 
+(: -------------------------------------------------------------------------- :)
 declare function naming:preparse-options($allstep,$step,$stepname){
+(: -------------------------------------------------------------------------- :)
     for $option in $allstep
         return
 
@@ -105,7 +104,9 @@ declare function naming:preparse-options($allstep,$step,$stepname){
 };
 
 
+(: -------------------------------------------------------------------------- :)
 declare function naming:preparse-input-bindings($allstep,$step,$allbindings){
+(: -------------------------------------------------------------------------- :)
 
 if ($allbindings eq 'all') then
     $step/p:input
@@ -129,7 +130,10 @@ else
                }
 };
 
+
+(: -------------------------------------------------------------------------- :)
 declare function naming:preparse-output-bindings($allstep,$step,$allbindings){
+(: -------------------------------------------------------------------------- :)
 
 if ($allbindings eq 'all') then
     $step/p:output
@@ -152,43 +156,11 @@ else
                }
 };
 
-declare function naming:generate-step($step,$stepname,$allstep){
-if($allstep/@xproc:support) then
-    element {node-name($step)} {
-        attribute name{$step/@name},
-
-		(: TODO - need to fix input/output preparse bindings :)
-        naming:preparse-input-bindings($allstep/p:*[@primary='true'],$step,$allstep/@xproc:bindings),
-        naming:preparse-output-bindings($allstep/p:*[@primary='false'],$step,$allstep/@xproc:bindings),
-        naming:preparse-options($allstep/p:option,$step,$stepname)
-   }
-
-else
-	u:xprocxqError('xxq-error:XXQ0002',concat($stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
-
-};
 
 
-declare function naming:generate-component($xproc,$allcomp,$step,$stepname){
-if($allcomp/@xproc:support) then
-        element {node-name($step)} {
-            if ($allcomp/@xproc:step = "true") then (attribute name{$step/@name},$step/@*[not(name(.) eq 'name')]) else  $step/@*,
-
-            (: TODO - will need to fixup top level input/output ports :)
-            <ext:pre>
-				{naming:preparse-output-bindings($allcomp/p:*[@primary='true'],$step,())}
-			</ext:pre>,
-
-            naming:explicitnames(document{$step/*})
-        }
-else
-	u:xprocxqError('xxq-error:XXQ0001',concat($stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
-
-
-};
-
-
+(: -------------------------------------------------------------------------- :)
 declare function naming:pipeline-step-sort($unsorted, $sorted, $pipelinename )  {
+(: -------------------------------------------------------------------------- :)
     if (empty($unsorted)) then
         ($sorted)
     else
@@ -201,29 +173,92 @@ declare function naming:pipeline-step-sort($unsorted, $sorted, $pipelinename )  
 };
 
 
+(: -------------------------------------------------------------------------- :)
+declare function naming:generate-step($xproc,$is_step,$step,$stepname){
+(: -------------------------------------------------------------------------- :)
+
+if($is_step/@xproc:support) then
+    element {node-name($step)} {
+        attribute name{$step/@name},
+		(: TODO - need to fix input/output preparse bindings :)
+        naming:preparse-input-bindings($is_step/p:*[@primary='true'],$step,$is_step/@xproc:bindings),
+        naming:preparse-output-bindings($is_step/p:*[@primary='false'],$step,$is_step/@xproc:bindings),
+        naming:preparse-options($is_step/p:option,$step,$stepname)
+   }
+else if($is_step/@type) then
+    <ext:xproc name="test">
+        <p:input port="source" primary="true" select="/"/>
+        <p:output port="result" primary="true" select=""/>
+        <p:input port="pipeline" primary="false" select="/">
+           <p:inline>
+                <p:declare-step name="{$step/@name}">
+                {$is_step/*}
+                </p:declare-step>
+           </p:inline>
+        </p:input>
+        <p:input port="bindings" primary="false" select="/"/>
+        <p:with-option name="dflag" select="'0'"></p:with-option>
+        <p:with-option name="tflag" select="'0'"></p:with-option>
+     </ext:xproc>
+else
+	u:xprocxqError('xxq-error:XXQ0001',concat($stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
+};
+
+
+(: -------------------------------------------------------------------------- :)
+declare function naming:generate-component($xproc,$is_comp,$step,$stepname){
+(: -------------------------------------------------------------------------- :)
+if($is_comp/@xproc:support) then
+        element {node-name($step)} {
+            if ($is_comp/@xproc:step = "true") then (attribute name{$step/@name},$step/@*[not(name(.) eq 'name')]) else  $step/@*,
+
+            (: TODO - will need to fixup top level input/output ports :)
+            <ext:pre test="test">
+				{naming:preparse-output-bindings($is_comp/p:*[@primary='true'],$step,())}
+			</ext:pre>,
+
+            naming:explicitnames(document{$step/*})
+        }
+else
+	u:xprocxqError('xxq-error:XXQ0002',concat($stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
+
+};
+
+
+(: -------------------------------------------------------------------------- :)
 declare function naming:explicitnames($xproc as item()){
+(: -------------------------------------------------------------------------- :)
 
 if(empty($xproc/*)) then
     ()
 else
     let $pipelinename := $xproc/@name
     let $explicitnames :=
-    
+
         for $step at $count in $xproc/*
             let $stepname := name($step)
 
-            let $is_declare-step := $xproc/p:declare-step[@type=$stepname]
-            let $is_step := naming:get-step($stepname,$is_declare-step)
-            let $is_component := u:get-comp($stepname)
+            let $is_declared_step := $xproc/p:declare-step[@type=$stepname]
+            let $is_standard_step := $const:std-steps/p:declare-step[@type=$stepname]
+            let $is_optional_step := $const:opt-steps/p:declare-step[@type=$stepname]
+            let $is_extension_step := $const:ext-steps/p:declare-step[@type=$stepname]
+            let $is_step := ($is_declared_step,
+                             $is_standard_step,
+                             $is_optional_step,
+                             $is_extension_step)
+
+            let $is_component := $const:comp-steps//xproc:element[@type=$stepname]
 
             return
-               if ($is_declare-step) then
-			   (: TODO - must re-enable generate-declare-step at some point :)
-					()
-               else if($is_step) then
-                    naming:generate-step($step,$stepname,$is_step)
-               else if ($is_component) then
+               if (exists($is_component) and $step/@type )then
+                    ()
+               else if(exists($is_step)) then
+                    (: generate std,opt,ext and declared steps:)
+                    naming:generate-step($xproc,$is_step,$step,$stepname)
+               else if (exists($is_component)) then
+                    (: generate p:declare-step and all other xproc components :)
                     naming:generate-component($xproc,$is_component,$step,$stepname)
+
                else
                     (: throws error on unknown element in pipeline namespace :)
                     u:staticError('err:XS0044', concat("static error during explicit naming pass:  ",$stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
@@ -250,9 +285,8 @@ else
 
 
 (: -------------------------------------------------------------------------- :)
-(: Fix up top level input/output with ext:pre                                 :)
-(: -------------------------------------------------------------------------- :)
 declare function naming:fixup($xproc as item(),$stdin){
+(: -------------------------------------------------------------------------- :)
 
 let $pipeline := $xproc/p:*[name(.) = "p:pipeline" or name(.) ="p:declare-step"]
 let $steps := <p:declare-step >
@@ -293,7 +327,7 @@ let $steps := <p:declare-step >
 
 </p:declare-step>
 return
-    <p:declare-step name="{if ($pipeline/@name) then $pipeline/@name else 'pipeline'}">
+    <p:declare-step name="{if ($pipeline/@name) then $pipeline/@name else 'xproc:default-pipeline'}">
         {$steps/*}
     </p:declare-step>
 };
