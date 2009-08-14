@@ -54,14 +54,14 @@ public class FileReadUnicode extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found",
+			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found.  This method is only available to the DBA role.",
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL to the file, e.g. file://etc." )
 				},				
 			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) ),
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found",
+			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found.  This method is only available to the DBA role.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL to the file, e.g. file://etc." ),
 				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
@@ -83,6 +83,12 @@ public class FileReadUnicode extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		if (!context.getUser().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
+
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
 		

@@ -55,14 +55,14 @@ public class FileRead extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the content of file.",
+			"Reads the content of file.  This method is only available to the DBA role.",
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." )
 				},				
 			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) ),
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the content of file.",
+			"Reads the content of file.  This method is only available to the DBA role.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." ),
 				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding type for the file" )
@@ -84,6 +84,12 @@ public class FileRead extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		if (!context.getUser().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
+
 		String arg = args[0].itemAt(0).getStringValue();
 		StringWriter sw;
 		

@@ -51,7 +51,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("delete-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Deletes an existing user in the database. Requires username. This does not delete the user's home collection.",
+			"Deletes an existing user in the database. Requires username. This does not delete the user's home collection.  This method is only available to the DBA role.",
 			new SequenceType[]{
 					new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user account to delete"),
             },
@@ -75,19 +75,34 @@ public class XMLDBDeleteUser extends BasicFunction {
 		
         String user = args[0].getStringValue();
         
-        Collection collection = null;
-		try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-            User userObj = ums.getUser(user);
-            if (null != userObj)
-                ums.removeUser(userObj);
-		} catch (XMLDBException xe) {
-			throw new XPathException(this, "Failed to remove user " + user, xe);
-        } finally {
-            if (null != collection)
-                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
-		}
+        User contextUser = context.getUser();
+		if (contextUser.hasDbaRole()) {
+			if (contextUser.getName().equals(user)) {
+				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must not be deleting itself");
+				logger.error("Invalid user", xPathException);
+				throw xPathException;
+			} else {
+		        Collection collection = null;
+				try {
+		            collection = new LocalCollection(contextUser, context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
+					UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+		            User userObj = ums.getUser(user);
+		            if (null != userObj)
+		                ums.removeUser(userObj);
+				} catch (XMLDBException xe) {
+					throw new XPathException(this, "Failed to remove user " + user, xe);
+		        } finally {
+		            if (null != collection)
+		                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+				}
+			}
+        	
+        } else {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to delete a user");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+        }
+        
         return Sequence.EMPTY_SEQUENCE;
 	}
     

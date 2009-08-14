@@ -69,7 +69,7 @@ public class SerializeToFile extends BasicFunction
 			"sequence of zero or more serialization parameters specified as key=value pairs. The " +
 			"serialization options are the same as those recognized by \"declare option exist:serialize\". " +
 			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
-			"called from.",
+			"called from.  This method is only available to the DBA role.",
 			new SequenceType[] { 
 				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
 				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file" ),
@@ -79,7 +79,7 @@ public class SerializeToFile extends BasicFunction
                 ),
                 new FunctionSignature(
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
-			"Writes binary data into a file on the file system.",
+			"Writes binary data into a file on the file system.  This method is only available to the DBA role.",
 			new SequenceType[]{
 				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
 				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file")
@@ -100,6 +100,12 @@ public class SerializeToFile extends BasicFunction
             if(args[0].isEmpty()) {
                 return Sequence.EMPTY_SEQUENCE;
             }
+
+    		if (!context.getUser().hasDbaRole()) {
+    			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+    			logger.error("Invalid user", xPathException);
+    			throw xPathException;
+    		}
 
 
             //check the file output path

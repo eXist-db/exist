@@ -52,14 +52,14 @@ public class Shutdown extends BasicFunction
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist immediately (dba role only).",
+			"Shutdown eXist immediately.  This method is only available to the DBA role.",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Shutdown eXist. (dba role only)",
+			"Shutdown eXist.  This method is only available to the DBA role.",
 			new SequenceType[] {
 					new FunctionParameterSequenceType("delay", Type.LONG, Cardinality.EXACTLY_ONE, "The delay in milliseconds before eXist starts to shutdown.")
 			},
