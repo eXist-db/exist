@@ -48,7 +48,7 @@ public class FileExists extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if a file exists",
+			"Tests if a file exists.  This method is only available to the DBA role.",
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file in the file system" )
 				},				
@@ -69,6 +69,12 @@ public class FileExists extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		if (!context.getUser().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
+
 		Sequence exists = BooleanValue.FALSE;
 		String path 	= args[0].itemAt(0).getStringValue();
 		File file   	= new File( path );

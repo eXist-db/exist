@@ -72,7 +72,7 @@ public class DirectoryListFunction extends BasicFunction {
 			"file system, using filename patterns, $pattern.  File pattern matching is based " +
 			"on code from Apache's Ant, thus following the same conventions. For example:\n\n" +
 			"'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files " +
-			"in any directory below the specified directory. ",
+			"in any directory below the specified directory.  This method is only available to the DBA role.",
 			new SequenceType[]
 			{
 			    new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The base directory path in the file system where the files are located."),
@@ -107,6 +107,12 @@ public class DirectoryListFunction extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		if (!context.getUser().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
+
 		File baseDir = new File( args[0].getStringValue() );
 		Sequence patterns = args[1];
 		

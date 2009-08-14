@@ -54,7 +54,7 @@ public class FileReadBinary extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-binary", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a binary file.",
+			"Reads the contents of a binary file.  This method is only available to the DBA role.",
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." )
 				},				
@@ -75,6 +75,12 @@ public class FileReadBinary extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
+		if (!context.getUser().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
+
 		String arg 		= args[0].itemAt(0).getStringValue();
 		byte[] buffer;
 		

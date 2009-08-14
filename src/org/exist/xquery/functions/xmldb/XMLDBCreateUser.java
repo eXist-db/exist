@@ -54,7 +54,7 @@ public class XMLDBCreateUser extends BasicFunction {
 					XMLDBModule.PREFIX),
 			"Create a new user in the database. You must have appropriate permissions to do this. $user-id is the username, $password is the password, " +
 			"$groups is the sequence of group memberships, " + 
-			"$home-collection is the home collection.",
+			"$home-collection is the home collection.  This method is only available to the DBA role.",
 			new SequenceType[]{
 					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
 					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
@@ -86,6 +86,12 @@ public class XMLDBCreateUser extends BasicFunction {
         
         logger.info("Attempting to create user " + user);
         
+		if (!context.getUser().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
+
         // changed by wolf: the first group is always the primary group, so we don't need
         // an additional argument
         Sequence groups = args[2];
