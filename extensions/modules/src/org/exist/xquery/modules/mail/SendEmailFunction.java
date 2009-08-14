@@ -83,8 +83,6 @@ public class SendEmailFunction extends BasicFunction
 {
 	protected static final Logger logger = Logger.getLogger(SendEmailFunction.class);
 	
-	// This function has been deprecated, in favour of using the JavaMail version.
-    
     private String charset;
 	
 	public final static FunctionSignature deprecated =
@@ -97,8 +95,7 @@ public class SendEmailFunction extends BasicFunction
 				new FunctionParameterSequenceType("server", Type.STRING, Cardinality.ZERO_OR_ONE, "The SMTP server.  If empty, then it tries to use the local sendmail program."),
 				new FunctionParameterSequenceType("charset", Type.STRING, Cardinality.ZERO_OR_ONE, "The charset value used in the \"Content-Type\" message header (Defaults to UTF-8)")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the email message was successfully sent"),
-			"The JavaMail send function will be released in the maintenance release 1.4.1."
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the email message was successfully sent")
 			);
 
 	/**
