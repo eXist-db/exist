@@ -45,8 +45,6 @@
       <p:output port="result"/>
     </xproc:element>
 
-<!-- //-->    
-
     <xproc:element type="p:documentation" xproc:support="true"/>
     <xproc:element type="p:serialization"  xproc:support="true"/>
     <xproc:element type="p:log"/>

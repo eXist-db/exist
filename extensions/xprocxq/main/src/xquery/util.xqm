@@ -273,18 +273,31 @@ declare function u:function($func,$arity){
 
 (: -------------------------------------------------------------------------- :)
 declare function u:xquery($query,$xml){
-let $static-content := <static-context>
+    let $static-content := <static-context>
 						<default-context>{$xml}</default-context>
 						</static-context>
-    let $result := util:eval-with-context($query,$static-content,false())
+    let $qry := if (starts-with(normalize-space($query),'/') or starts-with(normalize-space($query),'//')) then
+                concat('.',$query)
+			  else if(contains($query,'(/')) then
+				replace($query,'\(/','(./')
+              else
+                  $query
+
+    let $result := util:eval-with-context($qry,$static-content,false())
     return
         $result
 };
 
 
 (: -------------------------------------------------------------------------- :)
-declare function u:xquery($exp as xs:string){
-    let $result := util:eval($exp)
+declare function u:xquery($query as xs:string){
+    let $qry := if (starts-with($query,'/') or starts-with($query,'//')) then
+                concat('.',$query)
+			  else if(contains($query,'(/')) then
+				replace($query,'\(/','(./')
+              else
+                  $query
+    let $result := util:eval($qry)   
     return
         $result
 };
