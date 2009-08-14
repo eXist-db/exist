@@ -63,11 +63,13 @@ public class Jaxv extends BasicFunction  {
         "'.xsd' grammars are supported.";
 
     private static final String instanceText=
-            "The document referenced as xs:anyURI or a node (element or returned by fn:doc()).";
+            "The document referenced as xs:anyURI, a node (element or returned by fn:doc()) " +
+            "or as a Java file object.";
 
     private static final String grammarText=
             "One of more XML Schema documents (.xsd), " +
-            "referenced as xs:anyURI or a node (element or returned by fn:doc()).";
+            "referenced as xs:anyURI, a node (element or returned by fn:doc()) " +
+            "or as Java file objects.";
 
     private final BrokerPool brokerPool;
     

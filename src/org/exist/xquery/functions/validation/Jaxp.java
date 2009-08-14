@@ -89,7 +89,8 @@ public class Jaxp extends BasicFunction {
             "are '.xsd' and '.dtd'.";
 
     private static final String documentTxt
-            = "The document referenced as xs:anyURI or a node (element or result of fn:doc()).";
+            = "The document referenced as xs:anyURI, a node (element or result of fn:doc()) " +
+            "or as a Java file object.";
 
     private static final String catalogTxt
             = "The catalogs referenced as xs:anyURI's.";

@@ -65,11 +65,12 @@ public class Jing extends BasicFunction  {
              "'com.thaiopensource.validate.ValidationDriver'.";
         
     private static final String instanceText=
-            "The document referenced as xs:anyURI or a node (element or returned by fn:doc())";
+            "The document referenced as xs:anyURI, a node (element or returned by fn:doc()) " +
+            "or as a Java file object.";
 
     private static final String grammarText=
-            "The grammar document as node (element of returned by fn:doc()), xs:anyURI " +
-            "or returned by util:binary-doc().";
+            "The grammar document as node (element of returned by fn:doc()), xs:anyURI, " +
+            "returned by util:binary-doc() or as a Java file object.";
 
     private final BrokerPool brokerPool;
     

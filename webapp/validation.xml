@@ -170,7 +170,7 @@
                             <term>$instance</term>
                             <listitem>
                                 <para>The XML instance document, referenced as document node (returned by fn:doc()),
-                                    element node or as xs:anyURI.</para>
+                                    element node, xs:anyURI or as Java file object.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -218,14 +218,14 @@
                             <term>$instance</term>
                             <listitem>
                                 <para>The XML instance document, referenced as document node (returned by fn:doc()),
-                                    element node or as xs:anyURI.</para>
+                                    element node, xs:anyURI or as Java file object.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
                             <term>$grammars</term>
                             <listitem>
                                 <para>One or more grammar files, referenced as document nodes (returned by fn:doc()),
-                                    element nodes or as xs:anyURI.</para>
+                                    element nodes, xs:anyURI or as Java file objects.</para>
                             </listitem>
                         </varlistentry>
                     </variablelist>
@@ -258,14 +258,15 @@
                             <term>$instance</term>
                             <listitem>
                                 <para>The XML instance document, referenced as document node (returned by fn:doc()),
-                                    element node or as xs:anyURI.</para>
+                                    element node, xs:anyURI or as Java file object.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
                             <term>$grammar</term>
                             <listitem>
                                 <para>The grammar file, referenced as document node (returned by fn:doc()), element
-                                    node, as xs:anyURI or as binary document (returned by util:binary-doc()).</para>
+                                    node, as xs:anyURI, binary document (returned by util:binary-doc() for RNC files) or
+                                    as Java file object.</para>
                             </listitem>
                         </varlistentry>
                     </variablelist>
