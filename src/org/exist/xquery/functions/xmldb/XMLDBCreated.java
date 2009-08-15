@@ -74,9 +74,9 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature lastModifiedSignature =
         new FunctionSignature(
 			new QName("last-modified", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the last-modification date of $resource, located in " +
-			"$collection-uri. The collection " +
-			"can be passed as a simple collection path or an XMLDB URI.",
+			"Returns the last-modification date of resource $resource in " +
+			"collection $collection-uri. " +
+            XMLDBModule.COLLECTION_URI,
 			new SequenceType[] {
 			    new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "The collection URI"),
 			    new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
