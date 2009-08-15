@@ -57,15 +57,14 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("update", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Process an XUpdate request against a collection. The first "
-					+ "argument specifies the collection as a simple collection "
-					+ "path or an XMLDB URI. "
-					+ "The second argument specifies the XUpdate "
-					+ "modifications to be processed. Modifications are passed in a "
-					+ "document conforming to the XUpdate specification. "
-					+ "The function returns the number of modifications caused by the XUpdate.",
+			"Processes an XUpdate request, $modifications, against a collection $collection-uri. "
+            + XMLDBModule.COLLECTION_URI 
+            + "The modifications are passed in a "
+            + "document conforming to the XUpdate specification. "
+            + "http://rx4rdf.liminalzone.org/xupdate-wd.html#N1a32e0"
+            + "The function returns the number of modifications caused by the XUpdate.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection as a simple collection path or an XMLDB URI"),
+					new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
 					new FunctionParameterSequenceType("modifications", Type.NODE, Cardinality.EXACTLY_ONE, "The XUpdate modifications to be processed")},
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the number of modifications, as xs:integer, caused by the XUpdate"));
 
