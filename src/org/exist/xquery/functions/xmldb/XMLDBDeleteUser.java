@@ -53,7 +53,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 					XMLDBModule.PREFIX),
 			"Deletes an existing user, $user-id, in the database. " +
             "This does not delete the user's home collection. " +
-            XMLDBModule.NEED_PRIV_USER +
+            XMLDBModule.NEED_PRIV_USER_NOT_CURRENT +
             " You cannot delete the owner of the currently running XQuery.",
 			new SequenceType[]{
 					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id to delete"),

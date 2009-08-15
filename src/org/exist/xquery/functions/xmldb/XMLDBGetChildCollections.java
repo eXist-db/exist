@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2004-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -39,7 +39,10 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 
-
+/**
+ * @author gvalentino
+ *
+ */
 public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator {
 	
 	protected static final Logger logger = Logger.getLogger(XMLDBGetChildCollections.class);
@@ -47,11 +50,12 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-child-collections", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns a sequence of strings containing all the child collections of the collection specified.",
+			"Returns the names of the child collections in the collection $collection-uri. " +
+            XMLDBModule.COLLECTION_URI,
 			new SequenceType[] {
-					new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path or an XMLDB URI")
+					new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of path names to the child collections"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of child collection names"));
 	
 	public XMLDBGetChildCollections(XQueryContext context) {
 		super(context, signature);
