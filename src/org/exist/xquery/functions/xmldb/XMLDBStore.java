@@ -70,35 +70,46 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	protected static final FunctionParameterSequenceType ARG_CONTENTS = new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "The contents");
 	protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
 	
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource if sucessfully stored, otherwise emtpty sequence");
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Store a new resource into the database. The first " +
-			"argument denotes the collection where the resource should be stored. " +
-			"The collection can be either specified as a simple collection path or " +
-			"an XMLDB URI. The second argument is the name of the new " +
-			"resource. The third argument, $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. " +
+			"Stores a new resource into the database. The resource is stored  " +
+			"in the collection $collection-uri with the name $resource-name. " +
+            XMLDBModule.COLLECTION_URI + 
+            // fixit! - security -  if URI and possibly also file object
+            // DBA role should be required/ljo
+            // Of course we need to think of the node case too but it has at 
+            // least been passed throught fn:doc() but since the retrieval
+            // happens firstly who knows ... 
+			" The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
-			"document. If the argument is of type xs:anyURI, the resource is loaded " +
-			"from that URI. The functions returns the path to the new document as an xs:string or " + 
-			" - if the document could not be stored - the empty sequence.",
+			"document. If $contents is of type xs:anyURI, the resource is loaded " +
+			"from that URI. " + 
+            "Returns the path to the new document if successfully stored, " + 
+            "otherwise the empty sequence.",
 			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS },
 			RETURN_TYPE),
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Store a new resource into the database. The first " +
-			"argument denotes the collection where the resource should be stored. " +
-			"The collection can be either specified as a simple collection path or " +
-			"an XMLDB URI. The second argument is the name of the new " +
-			"resource. The third argument, $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. " +
+			"Stores a new resource into the database. The resource is stored  " +
+			"in the collection $collection-uri with the name $resource-name. " +
+            XMLDBModule.COLLECTION_URI + 
+            // fixit! - security -  if URI and possibly also file object 
+            // DBA role should be required/ljo
+            // Of course we need to think of the node case too but it has at 
+            // least been passed through fn:doc() but since the retrieval
+            // happens firstly who knows ... 
+
+            " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
-			"document. If the argument is of type xs:anyURI, the resource is loaded " +
-			"from that URI. The final argument $mime-type is used to specify a mime-type.  If the mime-type " +
-			"is not a xml based type, the resource will be stored as " +
-			"a binary resource. The functions returns the path to the new document as an xs:string or " +
-			"- if the document could not be stored - the empty sequence.",
+			"document. If $contents is of type xs:anyURI, the resource is loaded " +
+			"from that URI. The final argument $mime-type is used to specify " +
+            "a mime type.  If the mime-type is not a xml based type, the " +
+            "resource will be stored as a binary resource." +
+            "Returns the path to the new document if successfully stored, " + 
+		   "otherwise the empty sequence.",
 			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE },
 			RETURN_TYPE)
 	};
