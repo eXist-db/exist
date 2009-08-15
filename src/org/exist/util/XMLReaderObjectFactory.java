@@ -27,6 +27,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
 
+import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.GrammarPool;
@@ -44,6 +45,8 @@ import org.xml.sax.XMLReader;
  * @author wolf
  */
 public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
+
+    private final static Logger LOG = Logger.getLogger(XMLReaderObjectFactory.class);
     
     public final static int VALIDATION_UNKNOWN = -1;
     public final static int VALIDATION_ENABLED = 0;
@@ -161,37 +164,41 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     /**
      * Setup validation mode of xml reader.
      */
-    public static void setReaderValidationMode(int validation, XMLReader xmlReader){
-        
-        if(validation==VALIDATION_UNKNOWN){
+    public static void setReaderValidationMode(int validation, XMLReader xmlReader) {
+
+        if (validation == VALIDATION_UNKNOWN) {
             return;
         }
 
         // Configure xmlreader see http://xerces.apache.org/xerces2-j/features.html
-        try {
-            xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
-            
-            xmlReader.setFeature(Namespaces.SAX_VALIDATION,
+        setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
+
+        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
                 validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
 
-            xmlReader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
+        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC,
                 validation == VALIDATION_AUTO);
 
-            xmlReader.setFeature(APACHE_FEATURES_VALIDATION_SCHEMA,
-                validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);            
+        setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA,
+                (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED) );
 
-            xmlReader.setFeature(APACHE_PROPERTIES_LOAD_EXT_DTD,
-                validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
+                (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED) );
 
-            // Attempt to make validation function equal to insert mode
-            //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+        // Attempt to make validation function equal to insert mode
+        //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+    }
 
-        } catch (SAXNotRecognizedException e1) {
-            // Ignore: feature only recognized by xerces
-        } catch (SAXNotSupportedException e1) {
-            // Ignore: feature only recognized by xerces
+    private static void setReaderFeature(XMLReader xmlReader, String featureName, boolean value){
+        try {
+            xmlReader.setFeature(featureName, value);
+
+        } catch (SAXNotRecognizedException ex) {
+            LOG.error(ex.getMessage());
+
+        } catch (SAXNotSupportedException ex) {
+            LOG.error(ex.getMessage());
         }
-        
     }
 
 }
