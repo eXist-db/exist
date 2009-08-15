@@ -1,24 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2006-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- * $Id$
+ *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
 
@@ -48,9 +47,9 @@ public class XMLDBGetCurrentUser extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-current-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the current user from the context of the xquery.",
+			"Returns the user-id of the current user from the xquery context.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the username of the current user")
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the user-id of the current user")
 		);
 	
 	public XMLDBGetCurrentUser(XQueryContext context, FunctionSignature signature)
