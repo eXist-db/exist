@@ -2,7 +2,7 @@
 priority
 ----------------------------------------
 
-    declare-step, library, import
+   import, library
     options, variables, params
     namespace handling
     serialization
