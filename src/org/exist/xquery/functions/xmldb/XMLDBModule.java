@@ -45,6 +45,7 @@ public class XMLDBModule extends AbstractInternalModule {
     public final static String NEED_PRIV_USER_NOT_CURRENT = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role, and not being the owner of the currently running XQuery.";
     public final static String REMEMBER_OCTAL_CALC = "PLEASE REMEMBER that octal number 0755 is 7*64+5*8+5 i.e. 493 in decimal NOT 755. You can use util:base-to-integer(0755, 8) as argument for convenience.";
     public final static String COLLECTION_URI = "Collection URIs can be specified either as a simple collection path or an XMLDB URI.";
+    public final static String ANY_URI = "Resource URIs can be specified either as a simple collection path, an XMLDB URI or any URI.";
 
     public final static FunctionDef[] functions = {
         new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),

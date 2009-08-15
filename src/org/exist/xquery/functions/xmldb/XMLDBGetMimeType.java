@@ -50,7 +50,8 @@ public class XMLDBGetMimeType extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-mime-type", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the MIME Type of the resource indicated in $resource-uri or an empty sequence otherwise.",
+			"Returns the MIME type if available of the resource $resource-uri, otherwise the empty sequence. " +
+            XMLDBModule.ANY_URI,
 			new SequenceType[] {
                 new FunctionParameterSequenceType("resource-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The resource URI")
 			},

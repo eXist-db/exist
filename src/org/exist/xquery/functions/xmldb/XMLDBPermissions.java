@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2004-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -42,28 +42,28 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author gvalentino
  *
  */
 public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
-	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "the collection-uri");
-	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "the resource");
+	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection-uri");
+	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource");
 	protected static final Logger logger = Logger.getLogger(XMLDBPermissions.class);
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the permissions assigned to the collection $collection-uri. " +
-			"The collection can be specified as a simple collection path or " +
-			"an XMLDB URI.",
+            XMLDBModule.COLLECTION_URI,
 			new SequenceType[] { ARG_COLLECTION },
 			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the collection permissions")
 		),
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the permissions assigned to the resource specified in $resource " +
-			"which is a child of the collection $collection-uri. The collection can be specified " +
-			"as a simple collection path or an XMLDB URI.",
+			"Returns the permissions assigned to the resource $resource " +
+			"in collection $collection-uri. " +
+            XMLDBModule.COLLECTION_URI,
 			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE },
-			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the resource persissions")
+			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the resource permissions")
 		)
 	};
 	
