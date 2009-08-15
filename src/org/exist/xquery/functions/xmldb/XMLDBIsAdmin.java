@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2004-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -50,11 +50,11 @@ public class XMLDBIsAdmin extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("is-admin-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Returns true if user is an Admin. Requires username in $user-id.",
+			"Returns true() if user $user-id has DBA role, false() otherwise.",
 			new SequenceType[]{
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user ID"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
             },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if user is admin, false() otherwise"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if user has DBA role, false() otherwise"));
 	
 	public XMLDBIsAdmin(XQueryContext context) {
 		super(context, signature);
@@ -74,6 +74,7 @@ public class XMLDBIsAdmin extends BasicFunction {
 			User user = ums.getUser(userName);
 
 			if(user == null)
+                // todo - why not just return false()? /ljo
 				return Sequence.EMPTY_SEQUENCE;
 			return user.hasDbaRole() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} catch (XMLDBException xe) {
