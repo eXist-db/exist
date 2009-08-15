@@ -51,7 +51,8 @@ public class XMLDBReindex extends BasicFunction {
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("reindex", XMLDBModule.NAMESPACE_URI,
                       XMLDBModule.PREFIX), // yes, only a path not an uri /ljo
-            "Reindex collection $collection-path. DBA only",
+            "Reindex collection $collection-path. " +
+            XMLDBModule.NEED_PRIV_USER,
             new SequenceType[]{
                 new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")
     },
