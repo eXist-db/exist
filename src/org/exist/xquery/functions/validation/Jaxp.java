@@ -70,6 +70,8 @@ import org.exist.xquery.value.ValueSequence;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -205,6 +207,7 @@ public class Jaxp extends BasicFunction {
                 LOG.debug("Using system catalog.");
                 Configuration config = brokerPool.getConfiguration();
                 entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                setXmlReaderEnitityResolver(xmlReader, entityResolver);
 
             } else {
                 // Get URL for catalog
@@ -215,13 +218,13 @@ public class Jaxp extends BasicFunction {
                     // Search grammar in collection specified by URL. Just one collection is used.
                     LOG.debug("Search for grammar in " + singleUrl);
                     entityResolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
-                    xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
+                    setXmlReaderEnitityResolver(xmlReader, entityResolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
                     LOG.debug("Using catalogs " + getStrings(catalogUrls));
                     entityResolver = new eXistXMLCatalogResolver();
                     ((eXistXMLCatalogResolver) entityResolver).setCatalogList(catalogUrls);
-                    xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
+                    setXmlReaderEnitityResolver(xmlReader, entityResolver);
 
                 } else {
                     LOG.error("Catalog URLs should end on / or .xml");
@@ -229,8 +232,8 @@ public class Jaxp extends BasicFunction {
 
             }
 
-            boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             // Use grammarpool
+            boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
                 Configuration config = brokerPool.getConfiguration();
@@ -308,13 +311,39 @@ public class Jaxp extends BasicFunction {
         SAXParser saxParser = saxFactory.newSAXParser();
         XMLReader xmlReader = saxParser.getXMLReader();
 
-        xmlReader.setFeature(Namespaces.SAX_VALIDATION, true);
-        xmlReader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
-        xmlReader.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, true);
-        xmlReader.setFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, true);
-        xmlReader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+        setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, true);
+        setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, false);
+        setXmlReaderFeature(xmlReader, XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, true);
+        setXmlReaderFeature(xmlReader, XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, true);
+        setXmlReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
 
         return xmlReader;
+    }
+
+    private void setXmlReaderFeature(XMLReader xmlReader, String featureName, boolean value){
+
+        try {
+            xmlReader.setFeature(featureName, value);
+            
+        } catch (SAXNotRecognizedException ex) {
+            LOG.error(ex.getMessage());
+
+        } catch (SAXNotSupportedException ex) {
+            LOG.error(ex.getMessage());
+        }
+    }
+
+    private void setXmlReaderEnitityResolver(XMLReader xmlReader, XMLEntityResolver entityResolver ){
+
+        try {
+            xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
+
+        } catch (SAXNotRecognizedException ex) {
+            LOG.error(ex.getMessage());
+
+        } catch (SAXNotSupportedException ex) {
+            LOG.error(ex.getMessage());
+        }
     }
 
     // No-go ...processor is in validating mode
