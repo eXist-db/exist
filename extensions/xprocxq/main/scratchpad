@@ -2,11 +2,14 @@
 priority
 ----------------------------------------
 
-   import, library
-    options, variables, params
+    viewport and all path iterators (p:viewport,p:for-each)
+    revisit p:outputs
+    implement variables & params
+    implement extension functions
     namespace handling
     serialization
-    automating err related unit tests
+    error assertions
+
 
 ----------------------------------------
 current
@@ -26,18 +29,15 @@ to each function
 * fix p:choose deal with xpath-context, each subpipeline must have the same output signature (static check)
 
 * need to check eq and = throughout the codebase to ensure we are testing equality properly
+(yes sloppy I know)
 
 * migrate errors from string to QName
 
-* make error reporting look nicer and try to get some kind of line number reporting correct
-
-* declare-steps needs refactoring in parsing and execution
+* make error reporting look nicer and try to get some kind of line number reporting
 
 * inputs in nested p:declare-steps need fixing due to $allcomp in xproc:explicitnames
 
 * namespace fixups: enumerate step level in scope namespaces
-
-* sequences need rationalization and sanitization
 
 * create namespace module to manage namespace fixups 
 
@@ -59,13 +59,6 @@ Parameters, unlike options and variables, have names that can be computed at run
 complex/container steps
 ------------------------------
 	p:viewport - treewalker and then apply ext:eval-step to node
-
-------------------------------
-Reuse
-------------------------------
-	p:declare-step
-	p:libary
-	p:import
 
 ------------------------------
 standard steps
@@ -101,5 +94,3 @@ components
 	p:serialisation
 	p:log
 	p:pipeinfo
-
-
