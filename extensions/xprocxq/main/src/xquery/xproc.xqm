@@ -54,9 +54,9 @@
  };
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outputs) {
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
  let $v := u:get-primary($primary)
  let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
  let $subpipeline := $currentstep/*
@@ -74,12 +74,11 @@
     return
         (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
         {$subpipeline}</p:declare-step>,$child,(),($outputs,$iteration-source))/.)[last()]/node()
-
  };
 
-
-
+(: -------------------------------------------------------------------------- :)
 declare function xproc:replace-matching-elements($element as element(),$select,$defaultname,$currentstep,$outputs) as element() {
+(: -------------------------------------------------------------------------- :)
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
@@ -96,8 +95,10 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
 };
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
+declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
+
      let $v := u:get-primary($primary)
 
      let $match := string($currentstep/@match[1])
@@ -124,31 +125,33 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:library($primary,$secondary,$options,$step) {
+(: -------------------------------------------------------------------------- :)
+declare function xproc:library($primary,$secondary,$options,$step) {
+(: -------------------------------------------------------------------------- :)
     <test4/>
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:pipeline($primary,$secondary,$options,$step) {
+(: -------------------------------------------------------------------------- :)
+declare function xproc:pipeline($primary,$secondary,$options,$step) {
+(: -------------------------------------------------------------------------- :)
     <test5/>
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:group($primary,$secondary,$options,$currentstep,$outputs) {
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:group($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
         (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/*}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:try($primary,$secondary,$options,$currentstep,$outputs) {
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:try($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
@@ -158,10 +161,11 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
                  {$currentstep/p:group}</p:declare-step>,$v,(),$outputs)/.)[last()]/node(),
              (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
                  {$currentstep/p:catch}</p:declare-step>,$v,(),$outputs)/.)[last()]/node())
- };
- (: -------------------------------------------------------------------------- :)
- declare function xproc:catch($primary,$secondary,$options,$currentstep,$outputs) {
- (: -------------------------------------------------------------------------- :)
+};
+
+(: -------------------------------------------------------------------------- :)
+declare function xproc:catch($primary,$secondary,$options,$currentstep,$outputs) {
+(: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
@@ -169,9 +173,9 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs) {
- (: -------------------------------------------------------------------------- :)
+(: ----------------------------------------------------------------------------- :)
+declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs) {
+(: ----------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     let $xpath-context := <test1/>
@@ -205,9 +209,9 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: -------------------------------------------------------------------------- :)
+ (: ------------------------------------------------------------------------ :)
  declare function xproc:run-step($primary,$secondary,$options,$step,$outputs) {
- (: -------------------------------------------------------------------------- :)
+ (: ------------------------------------------------------------------------ :)
     let $v := u:get-primary($primary)
     let $pipeline := u:get-secondary('pipeline',$secondary)
     let $bindings := u:get-secondary('bindings',$secondary)
@@ -223,9 +227,9 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
                                                                  (: PREPARSE II UTILS   :)
  (: ----------------------------------------------------------------------------------- :)
 
- (: -------------------------------------------------------------------------- :)
+ (: ---------------------------------------------------------------- :)
  declare function xproc:get-step($stepname as xs:string,$declarestep) {
- (: -------------------------------------------------------------------------- :)
+ (: ---------------------------------------------------------------- :)
 
      $const:std-steps/p:declare-step[@type=$stepname],
      $const:opt-steps/p:declare-step[@type=$stepname],
@@ -234,10 +238,10 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: -------------------------------------------------------------------------- :)
- (: TODO - refactor at some point perhaps using base-uri ? :)
+ (: ----------------------------------------------------------------------------- :)
  declare function xproc:type($stepname as xs:string,$is_declare-step) as xs:string {
- (: -------------------------------------------------------------------------- :)
+ (: ----------------------------------------------------------------------------- :)
+ (: TODO - refactor at some point perhaps using base-uri ? :)
 
  let $stdstep := $const:std-steps/p:declare-step[@type=$stepname]
  let $optstep := $const:opt-steps/p:declare-step[@type=$stepname]
@@ -265,15 +269,16 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
 
 
 
- (: ------------------------------------------------------------------------------------------ :)
-                                                                       (: PREPARSE II ROUTINES:)
- (: ------------------------------------------------------------------------------------------ :)
+ (: -------------------------------------------------------------------------------------- :)
+                                                                    (: PREPARSE II ROUTINES:)
+ (: -------------------------------------------------------------------------------------- :)
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:generate-explicit-input($step,$count,$xproc,$unique_before,$unique_id,$allstep){
+(: -------------------------------------------------------------------------- :)
+declare function xproc:generate-explicit-input($step,$count,$xproc,$unique_before,$unique_id,$allstep){
+(: -------------------------------------------------------------------------- :)
+
  (: TODO - this section will be refactored:)
- (: -------------------------------------------------------------------------- :)
  for $input in $step/p:input
      return
          if($input/*) then
@@ -327,29 +332,27 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:generate-explicit-output($step){
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:generate-explicit-output($step){
+(: -------------------------------------------------------------------------- :)
        for $output in $step/p:output
          return
              $output
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:generate-explicit-options($step){
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:generate-explicit-options($step){
+(: -------------------------------------------------------------------------- :)
        for $option in $step/p:with-option
          return
              $option
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:generate-step-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_id,$unique_before,$allstep){
- (: -------------------------------------------------------------------------- :)
-
-
+(: -------------------------------------------------------------------------- :)
+declare function xproc:generate-step-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_id,$unique_before,$allstep){
+(: -------------------------------------------------------------------------- :)
              element {if (empty($allstep/@xproc:use-function)) then node-name($step) else $allstep/@xproc:use-function} {
                  attribute name{ if(empty(string($step/@name)) or string($step/@name) eq '') then $unique_id else $step/@name},
                  attribute xproc:defaultname{$unique_id},
@@ -359,13 +362,12 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
                  xproc:generate-explicit-output($step),
                  xproc:generate-explicit-options($step)
              }
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:generate-component-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_id,$unique_before,$compstep){
- (: -------------------------------------------------------------------------- :)
-
+(: -------------------------------------------------------------------------- :)
+declare function xproc:generate-component-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_id,$unique_before,$compstep){
+(: -------------------------------------------------------------------------- :)
              element {node-name($step)} {
                 $step/@*,
                  if ($const:comp-steps/xproc:element[@type=$stepname]/@xproc:step) then attribute xproc:defaultname{$unique_id} else (),
@@ -377,16 +379,16 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  };
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:generate-declare-step-binding($step,$is_declare-step){
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:generate-declare-step-binding($step,$is_declare-step){
+(: -------------------------------------------------------------------------- :)
      $step
- };
+};
 
 
- (: -------------------------------------------------------------------------- :)
- declare function xproc:explicitbindings($xproc,$unique_id){
- (: -------------------------------------------------------------------------- :)
+(: -------------------------------------------------------------------------- :)
+declare function xproc:explicitbindings($xproc,$unique_id){
+(: -------------------------------------------------------------------------- :)
  let $pipelinename := $xproc/@name
  let $explicitbindings := document {
 
@@ -837,8 +839,7 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
  declare function xproc:run($pipeline,$stdin,$dflag,$tflag,$bindings,$options){
  (: -------------------------------------------------------------------------- :)
     let $internaldbg := 0
-
-     return
+    return
          if ($internaldbg eq 1) then
                      xproc:explicitbindings(
                        naming:explicitnames(
@@ -849,9 +850,11 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
          else if ($internaldbg eq 2) then
                        naming:explicitnames(
                              naming:fixup($pipeline,$stdin)
-                       )
+                     )
+         else if ($internaldbg eq 3) then
+                             naming:fixup($pipeline,$stdin)
          else
-         (
+     (
      (: STEP I: generate parse tree :)
      let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))
      let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)

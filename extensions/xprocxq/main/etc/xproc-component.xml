@@ -6,8 +6,8 @@
     <xproc:root-element type="p:pipeline" xproc:step="true" xproc:support="true"/>
 
     	<xproc:element type="p:pipeline" xproc:step="true" xproc:support="true"/>
-    	<xproc:element type="p:library"/>
-	    <xproc:element type="p:import"/>
+    	<xproc:element type="p:library" xproc:support="true"/>
+	    <xproc:element type="p:import"  xproc:support="true"/>
 	    <xproc:element type="p:import-schema"/>
 
 <!-- multi-container steps//-->

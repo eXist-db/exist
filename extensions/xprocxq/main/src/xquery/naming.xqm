@@ -100,7 +100,6 @@ declare function naming:preparse-options($allstep,$step,$stepname){
             else
                 (: TODO: may have to throw additional errors before this :)
                 <p:with-option name="{$option/@name}" select="{$option/@default}"/>
-
 };
 
 
@@ -176,7 +175,6 @@ declare function naming:pipeline-step-sort($unsorted, $sorted, $pipelinename )  
 (: -------------------------------------------------------------------------- :)
 declare function naming:generate-step($xproc,$is_step,$step,$stepname){
 (: -------------------------------------------------------------------------- :)
-
 if($is_step/@xproc:support) then
     element {node-name($step)} {
         attribute name{$step/@name},
@@ -186,7 +184,7 @@ if($is_step/@xproc:support) then
         naming:preparse-options($is_step/p:option,$step,$stepname)
    }
 else if($is_step/@type) then
-    <ext:xproc name="test">
+    <ext:xproc name="{if ($step/@name) then $step/@name else ''}">
         <p:input port="source" primary="true" select="/"/>
         <p:output port="result" primary="true" select=""/>
         <p:input port="pipeline" primary="false" select="/">
@@ -197,9 +195,9 @@ else if($is_step/@type) then
            </p:inline>
         </p:input>
         <p:input port="bindings" primary="false" select="/"/>
-        <p:with-option name="dflag" select="'0'"></p:with-option>
-        <p:with-option name="tflag" select="'0'"></p:with-option>
-     </ext:xproc>
+        <p:with-option name="dflag" select="'0'"/>
+        <p:with-option name="tflag" select="'0'"/>
+    </ext:xproc>
 else
 	u:xprocxqError('xxq-error:XXQ0001',concat($stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
 };
@@ -250,7 +248,9 @@ else
             let $is_component := $const:comp-steps//xproc:element[@type=$stepname]
 
             return
-               if (exists($is_component) and $step/@type )then
+               if ( name($step) eq 'p:import') then
+                    ()
+               else if (exists($is_component) and $step/@type)then
                     ()
                else if(exists($is_step)) then
                     (: generate std,opt,ext and declared steps:)
@@ -287,7 +287,6 @@ else
 (: -------------------------------------------------------------------------- :)
 declare function naming:fixup($xproc as item(),$stdin){
 (: -------------------------------------------------------------------------- :)
-
 let $pipeline := $xproc/p:*[name(.) = "p:pipeline" or name(.) ="p:declare-step"]
 let $steps := <p:declare-step >
                <ext:pre name="!{$pipeline/@name}">
@@ -315,15 +314,16 @@ let $steps := <p:declare-step >
             }
            </ext:pre>
             {
-               for $import in $xproc/p:import
+               for $import in $xproc/*/p:import
                 return
                     if (doc-available($import/@href)) then
-                          doc($import/@href)
+                          (: TODO - add file: support :)
+                          doc($import/@href)/p:library/*
                     else
                           u:dynamicError('XD0002',"cannot import pipeline document ")
             }
 
-            {$pipeline/*[not(name(.)="p:input")][not(name(.)="p:output")]}
+            {$pipeline/*[not(name(.)="p:input")][not(name(.)="p:output")][not(name(.)="p:import")]}
 
 </p:declare-step>
 return
