@@ -47,12 +47,12 @@ public class XMLDBPermissionsToString extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("permissions-to-string", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Format the resource or collection permissions passed as an integer " +
+			"Formats the resource or collection permissions, $permissions, passed as an integer " +
 			"value into a string. The returned string shows the permissions following " +
-			"the usual Unix conventions, i.e. all permissions set is returned as " +
+			"the Unix conventions, i.e. all permissions set is returned as " +
 			"rwurwurwu, where the first three chars are for user permissions, " +
-			"followed by group and world. 'r' denotes read, 'w' write and 'u' update " +
-			"permissions",
+			"followed by group and other users. 'r' denotes read, 'w' write and 'u' update " +
+			"permissions.",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions in xs:integer format")
 			},

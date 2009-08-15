@@ -46,16 +46,16 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Remove a collection $collection-uri. The collection can be specified either as " +
-				"a simple collection path or an XMLDB URI.",
-				new SequenceType[] {
+            "Removes the collection $collection-uri and its contents from the database. " +
+            XMLDBModule.COLLECTION_URI,
+            new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")},
             new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		new FunctionSignature(
 			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Remove a resource from the collection specified in $collection-uri. The collection " +
-			"can be either specified as a simple collection path or an XMLDB URI.",
+			"Removes the resource $resource from the collection $collection-uri. " +
+            XMLDBModule.COLLECTION_URI,
 			new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
                 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")},
