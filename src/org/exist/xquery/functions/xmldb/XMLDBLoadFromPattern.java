@@ -54,13 +54,18 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 	
 	protected final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 
-    protected final static String FUNCTION_DESCRIPTION = "Store new resources into the database. Resources are read from the server's " +
+    protected final static String FUNCTION_DESCRIPTION = "Stores new resources into the database. Resources are read from the server's " +
             "file system, using file patterns. " +
             "The function returns a sequence of all document paths added " +
             "to the db. These can be directly passed to fn:doc() to retrieve the document(s).";
 
-    protected final static SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection where resources should be stored. Specified either as a simple collection path or an XMLDB URI.");
-    protected final static SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("fs-directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
+    protected final static SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection-uri where resources should be stored. " + XMLDBModule.COLLECTION_URI);
+    protected final static SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
+
+    // fixit! - security - we should say some words about sanity   
+    // DBA role should be required for anything short of chroot/jail
+    // easily setup per installation/execution host for each function. /ljo
+    
     protected final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
     protected final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
 	protected static final SequenceType PARAM_PRESERVE_STRUCTURE = new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.");

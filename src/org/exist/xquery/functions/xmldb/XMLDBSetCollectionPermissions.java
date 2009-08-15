@@ -49,15 +49,16 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-collection-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Sets the permissions of the specified collection. $collection-uri is the collection, which can be specified " +
-            "as a simple collection path or an XMLDB URI. $user-id specifies the user which " +
-            "will become the owner of the resource, $group-id the group. " +
-            "The final argument contains the permissions, specified as an xs:integer value. "+
-            "PLEASE REMEMBER that 0755 is 7*64+5*8+5, NOT decimal 755.",
+            "Sets the permissions of the collection $collection-uri. " +
+            XMLDBModule.COLLECTION_URI +
+            " $user-id specifies the user which " +
+            "will become the owner of the resource, $group-id the group, and " +
+            "$permissons the permissions as an xs:integer value. " +
+            XMLDBModule.REMEMBER_OCTAL_CALC,
 			new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user id"),
-                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group id"),
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id"),
                 new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions"),
 			},
             new SequenceType(Type.ITEM, Cardinality.EMPTY));
