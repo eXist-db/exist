@@ -45,11 +45,14 @@ public class FunXCollection extends ExtCollection {
 	public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("xcollection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Works like fn:collection(), but does not include documents " +
-            "found in sub-collections of the specified collections.",
+            "Returns the document nodes in the collections $collection-uris " +
+            "non-recursively, i.e. does not include document nodes found in " +
+            "sub-collections. " +
+            "C.f. fn:collection(). " +
+            XMLDBModule.COLLECTION_URI,
             new SequenceType[] {
-		new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of collection paths to operate on")},
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collections"));
+		new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The collection URIs")},
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collections excluding sub-collections"));
 				
 	/**
 	 * @param context
