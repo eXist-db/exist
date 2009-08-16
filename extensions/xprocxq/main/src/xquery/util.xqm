@@ -308,9 +308,17 @@ declare function u:xslt($xslt,$xml){
 	transform:transform(document{$xml},$xslt, ())
 };
 
+
+(: -------------------------------------------------------------------------- :)
+declare function u:safe-evalXPATH($qry as xs:string, $xml){
+    util:catch("*", u:evalXPATH($qry,$xml),())
+};
+
+
 (: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($qry as xs:string, $xml){
 
+(: TODO - these namespace declarations need to be removed :)
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),

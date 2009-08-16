@@ -95,25 +95,19 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
 };
 
 
-(: -------------------------------------------------------------------------- :)
+(: ------------------------------------------------------------------------------- :)
 declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outputs) {
-(: -------------------------------------------------------------------------- :)
-
+(: ------------------------------------------------------------------------------- :)
      let $v := u:get-primary($primary)
-
      let $match := string($currentstep/@match[1])
-
-     (: let $query := if (contains($match,'/')) then
+     let $query := if (contains($match,'/')) then
                     $match
                   else
                     concat('.//',$match)
      let $matchresult := u:evalXPATH($match, $v)
-:)
      let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
      return
 
-     $match
-     (:
         for $child in $v/*
         return
             xproc:replace-matching-elements($child,
@@ -121,7 +115,6 @@ declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outpu
                                             $defaultname,
                                             $currentstep,
                                             $outputs)
-    :)
  };
 
 

@@ -195,7 +195,7 @@ return
 		]]>			
 	</markup>
 	</programlisting>
-	<a href="complex-pipeline.xproc" target="_example">run complex-pipeline.xproc</a>
+	<a href="complex-pipeline.xproc?stdin=/db/xproc/examples/test.xml" target="_example">run complex-pipeline.xproc</a>
 	</example>
 	
 	<para>
@@ -487,6 +487,24 @@ return
 		</section>
 
        <section>
+			<title>Reuse and Extending XProc</title>
+			<para>eXist XProc implementation provides a range of extension mechanisms for creating
+                new steps.
+			</para>
+
+           <section>
+                <title>Defining XProc libraries using XQuery</title>
+            </section>
+           <section>
+                <title>Defining XProc libraries using XSLT</title>
+            </section>  
+           <section>
+                <title>Defining XProc libraries using Java</title>
+            </section>
+
+		</section>
+
+       <section>
 			<title>W3C XProc Unit Test</title>
 			<para> The following links run xprocxq against W3C XProc Unit Test suite
 			<ul>
@@ -587,8 +605,20 @@ return
     <section>
         <title>xprocxq FAQ</title>
 
+        <section>
+            <title>Why can't I access files from filesytem ?</title>
+        <para>By default, XProc is set to read files only from the XML Database. If you want to access
+            files from the hard drive then you will need to enable eXist File extension module
+            and make sure to use file:// prefix in your file paths.</para>
+        </section>
+
+        <section>
+            <title>What is xprocxq ?</title>
+        <para>Initially, development of eXist XProc processor was a standalone project, called xprocxq. The i</para>
+        </section>
+
 <section>
-	<title>xprocxq limitations</title>
+	<title>xprocxq compliance and limitations</title>
 <para>
 	xprocxq, being implemented in XQuery, currently has several limitations and is no where compliant with the existing XProc draft specification. The best way to understand what works or doesn't currently is to check out step examples included in the release.
 </para>
@@ -627,11 +657,12 @@ return
         <para>
         	XQuery's somewhat functional approach appealed to me and having been a long time XSLT user I wanted to gain some understanding of the nuances between XSLT and XQuery.</para>
 		<para>
-			In building xqueryxq, my primary goals were;
+			In building xprocxq, my primary goals were;
 			<ul>
 				<li>creating an implementation in XQuery meant that XProc processor will be as
 					performant as the underlying XQuery implementation and be able to naturally process XML data stored in XML Database.</li>
-			    	<li>Exercise fundamental FP principles building a non trivial XQuery application. I think I have achieved this goal, as xprocxq 'main engine' is the u:step-fold function (in util.xqm) which operates on simple pipelines.</li>
+                <li>make it easier to allow for extension steps to be built using xquery (and xslt)</li>
+			    <li>Exercise fundamental FP principles building a non trivial XQuery application. I think I have achieved this goal, as xprocxq 'main engine' is the u:step-fold function (in util.xqm) which operates on simple pipelines.</li>
 			    <li>To understand variability between XQuery processors. I think there is a surprising amount of differences between XQuery processors, but thankfully mostly in the form of extension functions, implicit type casting and in smaller part some interpretations of the spec (where the spec allowed for impl to do things as they see fit). The real impact though is that we need things like EXPath and EXQuery to allow for even a remote chance of compatibility between XQuery processors</li>
 			</ul>
 		</para>

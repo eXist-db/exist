@@ -235,7 +235,6 @@ else
 
         for $step at $count in $xproc/*
             let $stepname := name($step)
-
             let $is_declared_step := $xproc/p:declare-step[@type=$stepname]
             let $is_standard_step := $const:std-steps/p:declare-step[@type=$stepname]
             let $is_optional_step := $const:opt-steps/p:declare-step[@type=$stepname]
