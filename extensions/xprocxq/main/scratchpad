@@ -12,10 +12,10 @@ priority
 
 
 ----------------------------------------
-current
+current issues
 ----------------------------------------
 
-* declare-step/pipeline need declared name attribute
+* declare-step/pipeline need require name attribute
 * sequence issue with input to choose
 * dont forget I changed p namespace and p1 namespace in util.xqm
 * pipelines need name attribute, should default to xproc:defaultname
@@ -75,6 +75,11 @@ components
 	p:log
 	p:pipeinfo
 
+------------------------------
+other
+------------------------------
+    provide validation switch to xproc:run func signature and use annotated relaxNG schema
+to validate against
 
 ----------------------------------------
 spec reminders

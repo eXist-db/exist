@@ -232,11 +232,10 @@ return
 
 (: -------------------------------------------------------------------------- :)
 declare function std:filter($primary,$secondary,$options) {
-(: TODO: is it an error for a empty match ? :)
 u:assert(exists($options/p:with-option[@name='select']/@select),'p:with-option match is required'),
 let $v := u:get-primary($primary)
 let $select := string(u:get-option('select',$options,$v))
-let $result := u:evalXPATH($select,$v)
+let $result := u:safe-evalXPATH($select,$v)
     return
         if(exists($result)) then
         	$result
@@ -296,7 +295,6 @@ return
       </c:response>
     else
         $response-body
-
 };
 
 
