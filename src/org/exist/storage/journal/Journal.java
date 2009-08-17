@@ -436,7 +436,7 @@ public class Journal {
 				if (file.isDirectory())
 					return false;
 				final String name = file.getName();
-				return name.endsWith(suffix) && !name.endsWith("_index." + suffix);
+				return name.endsWith(suffix) && !name.endsWith("_index" + suffix);
 			}
 		});
 		return files;
