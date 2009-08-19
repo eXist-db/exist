@@ -10,7 +10,8 @@
                 <root id="src.src.dir" name="Modules"/>
                 <root id="src.src2.dir" name="Index NGram"/>
                 <root id="src.src3.dir" name="Index Spatial"/>
-                <root id="src.src4.dir"/>
+                <root id="src.src4.dir" name="Index Lucene"/>
+                <root id="src.src5.dir" name="Versioning"/>
                 <root id="eXist-1.33.dir" name="Fluent"/>
                 <root id="eXist-1.32.dir" name="Samples"/>
             </source-roots>
