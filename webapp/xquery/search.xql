@@ -54,7 +54,7 @@ declare function dq:print-headings($section as element(section)*, $docXPath as x
 	$section/ancestor::chapter/title//text(),
 	for $s at $p in $section/ancestor-or-self::section
 	let $nodeId := util:node-id($s)
-	let $uri := concat(
+	let $uri := concat("../",
 		util:document-name(root($s)), "?q=",
 		escape-uri($docXPath, true()), "&amp;id=", $nodeId, "#", $nodeId
 	)
