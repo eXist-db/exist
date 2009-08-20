@@ -1806,28 +1806,19 @@ public class XQueryContext {
     /* Methods delegated to the watchdog */
 	
 	public void proceed() throws TerminatedException {
-	    proceed(null);
+	    getWatchDog().proceed(null);
 	}
 	
 	public void proceed(Expression expr) throws TerminatedException {
-	    watchdog.proceed(expr);
+	    getWatchDog().proceed(expr);
 	}
 	
 	public void proceed(Expression expr, MemTreeBuilder builder) throws TerminatedException {
-	    watchdog.proceed(expr, builder);
-	}
-	
-	public void recover() {
-	    watchdog.reset();
-	    builder = null;
+	    getWatchDog().proceed(expr, builder);
 	}
 	
 	public XQueryWatchDog getWatchDog() {
 	    return watchdog;
-	}
-	
-	protected void setWatchDog(XQueryWatchDog watchdog) {
-	    this.watchdog = watchdog;
 	}
 	
 	/**
