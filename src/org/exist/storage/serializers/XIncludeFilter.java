@@ -344,7 +344,7 @@ public class XIncludeFilter implements Receiver {
                     String path = externalUri.getSchemeSpecificPart();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
-                        f = new File(moduleLoadPath + '/' + path);
+                        f = new File(moduleLoadPath, path);
                         externalUri = f.toURI();
                     }
                 }

@@ -133,7 +133,10 @@ public class Transform extends BasicFunction {
             "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
             "if the XSL processor reports a warning or error. The fourth argument specifies serialization " +
             "options in the same way as if they " +
-            "were passed to \"declare option exist:serialize\" expression.",
+            "were passed to \"declare option exist:serialize\" expression. An additional serialization option, " +
+            "xinclude-path, is supported, which specifies a base path against which xincludes will be expanded " +
+            "(if there are xincludes in the document). A relative path will be relative to the current " +
+            "module load path.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (nodes tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
@@ -235,7 +238,14 @@ public class Transform extends BasicFunction {
                 serializer.setProperties(serializeOptions);
                 if (expandXIncludes) {
                     XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                    xinclude.setModuleLoadPath(context.getModuleLoadPath());
+                    String xipath = serializeOptions.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                    if (xipath != null) {
+                        File f = new File(xipath);
+                        if (!f.isAbsolute())
+                            xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
+                    } else
+                        xipath = context.getModuleLoadPath();
+                    xinclude.setModuleLoadPath(xipath);
                     receiver = xinclude;
                 }
                 serializer.setReceiver(receiver);
@@ -297,7 +307,14 @@ public class Transform extends BasicFunction {
                     serializer.setProperties(serializeOptions);
                     if (expandXIncludes) {
                         XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                        xinclude.setModuleLoadPath(context.getModuleLoadPath());
+                        String xipath = serializeOptions.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                        if (xipath != null) {
+                            File f = new File(xipath);
+                            if (!f.isAbsolute())
+                                xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
+                        } else
+                            xipath = context.getModuleLoadPath();
+                        xinclude.setModuleLoadPath(xipath);
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
