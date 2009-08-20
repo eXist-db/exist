@@ -401,7 +401,7 @@ public abstract class Serializer implements XMLReader {
         if (context != null)
             xinclude.setModuleLoadPath(context.getModuleLoadPath());
     }
-    
+
     public void parse(String systemId) throws IOException, SAXException {
 		try {
 			// try to load document from eXist
@@ -424,6 +424,7 @@ public abstract class Serializer implements XMLReader {
 	 */
 	public void reset() {
 		receiver = xinclude;
+        xinclude.setModuleLoadPath(null);
 		xinclude.setReceiver(null);
 		xslHandler = null;
 		templates = null;

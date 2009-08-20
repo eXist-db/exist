@@ -41,5 +41,7 @@ public class EXistOutputKeys {
 	public final static String COMPRESS_OUTPUT = "compress-output";
 
     public final static String ADD_EXIST_ID = "add-exist-id";
+
+    public final static String XINCLUDE_PATH = "xinclude-path";
 	
 }

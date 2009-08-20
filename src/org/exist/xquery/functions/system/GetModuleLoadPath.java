@@ -40,10 +40,12 @@ public class GetModuleLoadPath extends BasicFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-module-load-path", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Returns the module load path from the current context. The module load path " +
+			"Returns the module load path from the current query context. The module load path " +
             "corresponds to the location on the file system from where modules are loaded " +
             "into an XQuery. This is usually the directory from which the main XQuery was " +
-            "compiled.",
+            "compiled, or - when executing a stored XQuery - the collection in which the main " +
+            "query resides. The module load path " +
+            "is also used to resolve relative XInclude paths.",
 			FunctionSignature.NO_ARGS,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the load path"));
 
