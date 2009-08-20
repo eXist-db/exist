@@ -497,6 +497,55 @@ return
                 <para>Please be also aware that larger xml:id values cost performance as has been
                     reported by some users working with large databases.</para>
             </section>
+
+            <section>
+                <title>Defer output generation until really needed</title>
+
+                <para>When working with large result sets within a query, it is important to
+                    understand the <emphasis>differences between stored nodes and in-memory
+                        XML</emphasis>: if a node set consists of nodes which are stored in the
+                    database, eXist will usually never load those nodes into memory. Instead, it
+                    uses lightweight references for most processing steps. This way, even large node
+                    sets do not consume too much memory.</para>
+
+                <para>However, all new XML nodes created within an XQuery will reside in memory and
+                    you should be aware that the constructed XML fragments need to fit into the
+                    memory available to the Java VM. If a query generates too many nodes, the XQuery
+                    watchdog (if enabled) may step in and kill it.</para>
+
+                <para>A typical scenario: a query selects a large number of documents from the
+                    database and then iterates through each to generate some HTML output for
+                    display. However, only the first 10 results are really returned to the user, the
+                    rest is stored into an HTTP session for later viewing.</para>
+
+                <para>In this case it is important to limit the HTML generation to those items which
+                    are actually returned. Though the source XML documents may be large, eXist will
+                    not load them into memory, but just keep references to them. Storing those
+                    references into a session does not consume much memory.</para>
+
+                <example>
+                    <title>Limiting output generation</title>
+                    <programlisting language="xquery"><![CDATA[let $nodes := (: select some nodes in the db :)
+let $session := session:set-attribute("result", $nodes) (: store result into session :)
+(: only return the first 10 nodes :)
+for $node in subsequence($nodes, 1, 10)
+return
+    (: Generate HTML for output :)
+    <div>(: Create complex HTML markup using $node :)</div>]]></programlisting>
+                </example>
+
+                <para>Please note also that eXist uses <emphasis>lazy evaluation</emphasis> when
+                    constructing new XML fragments. For example:</para>
+
+                <synopsis language="xquery"><![CDATA[<book>{$node/title}</book>]]></synopsis>
+
+                <para>Assuming that $node references a node in the database, the query engine will
+                    not copy $node/title into the constructed <sgmltag>book</sgmltag> element.
+                    Instead, only a reference is inserted. The reference will not be expanded until
+                    the fragment is serialized or queried. So if you only need to wrap selected
+                    parts of an element into a new fragment, memory consumption will not be too
+                    high.</para>
+            </section>
         </section>
         <section>
             <title>Known Issues in the 1.2.x Series</title>
