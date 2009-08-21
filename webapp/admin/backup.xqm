@@ -8,7 +8,7 @@ import module namespace system="http://exist-db.org/xquery/system";
 declare variable $backup:BACKUP_DIR := "export";
 
 declare function backup:main() as element() {
-    let $action := request:get-parameter("action", "refresh")
+    let $action := lower-case(request:get-parameter("action", "refresh"))
     return
         <div class="panel">
             <h1>Backups</h1>
