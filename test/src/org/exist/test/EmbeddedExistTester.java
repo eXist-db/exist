@@ -119,6 +119,11 @@ public class EmbeddedExistTester {
         }
     }
 
+    @Before
+    public void before_test(){
+        System.out.println("\n-------------------------------------------------------\n");
+    }
+
     protected static Collection createCollection(Collection collection, String collectionName) throws XMLDBException {
         LOG.info("Create collection " + collectionName);
         Collection newCollection = collection.getChildCollection(collectionName);
