@@ -275,8 +275,10 @@ let $askPass :=
         let $adminPass := request:get-parameter("pass", ())
         return
             if ($generate) then
-                let $dummy := setup:setup($adminPass)
-                return false()
+                let $setup-result := util:catch("java.lang.Exception",
+                                     let $result := setup:setup($adminPass) return false(),
+                                     true())
+                return $setup-result
             else
                 true()
     else
