@@ -10,6 +10,7 @@
     <triggers>
         <trigger event="store,remove,update"
             class="org.exist.versioning.VersioningTrigger">
+            <parameter name="overwrite" value="no"/>
         </trigger>
     </triggers>
 </collection>
