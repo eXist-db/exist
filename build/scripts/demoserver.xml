@@ -51,7 +51,7 @@
             <replacefilter token="atompub.xml" value="atompub.html"/>
             <replacefilter token="credits.xml" value="credits.html"/>
             <replacefilter token="deployment.xml" value="deployment.html"/>
-
+			<replacefilter token="lucene.xml" value="lucene.html"/>
         	<replacefilter token="devguide.xml" value="devguide.html"/>
         	<replacefilter token="devguide_indexes.xml" value="devguide_indexes.html"/>
 			<replacefilter token="devguide_rest.xml" value="devguide_rest.html"/>
@@ -99,8 +99,8 @@
             <replacefilter token="cocoon/biblio.xq" value="${demo.host}/cocoon/biblio.xq"/>
             <replacefilter token="xquery/xquery.xql" value="${demo.host}/xquery/xquery.xql"/>
             <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
-            <replacefilter token="search.xql" value="${demo.host}/search.xql"/>
-            <replacefilter token="docs.xql" value="${demo.host}/docs.xql"/>
+            <replacefilter token="xquery/search.xql" value="${demo.host}/xquery/search.xql"/>
+            <replacefilter token="xquery/docs.xql" value="${demo.host}xquery/docs.xql"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
             <replacefilter token='="admin/admin.xql' value='="${demo.host}/admin/admin.xql'/>
@@ -212,6 +212,7 @@
             accept="*/*">
             <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
             <uris name="site" follow-links="false">
+				<uri type="append" src="lucene.xml"/>
                 <uri type="append" src="devguide.xml"/>	
 				<uri type="append" src="devguide_indexes.xml"/>
 				<uri type="append" src="devguide_soap.xml"/>
@@ -322,6 +323,7 @@
             <replacefilter token="credits.xml" value="${host}/credits.html"/>
             <replacefilter token="deployment.xml" value="${host}/deployment.html"/>
 
+			<replacefilter token="lucene.xml" value="${host}/lucene.html"/>
         	<replacefilter token="devguide.xml" value="${host}/devguide.html"/>
         	<replacefilter token="devguide_indexes.xml" value="${host}/devguide_indexes.html"/>
 			<replacefilter token="devguide_rest.xml" value="${host}/devguide_rest.html"/>
