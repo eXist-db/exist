@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sample collection.xconf which shows how to enable versioning
+     for a collection by configuring a trigger
+-->
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <fulltext default="none" attributes="no">
+        </fulltext>
+    </index>
+    <triggers>
+        <trigger event="store,remove,update"
+            class="org.exist.versioning.VersioningTrigger">
+        </trigger>
+    </triggers>
+</collection>
