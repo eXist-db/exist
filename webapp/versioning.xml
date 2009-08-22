@@ -1,4 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- $Id$ -->
 <book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Lucene Index Module</title>
+        <orgname>The eXist Project</orgname>
+        <date>August 2009</date>
+        <author>
+            <firstname>Wolfgang</firstname>
+            <surname>Meier</surname>
+        </author>
+    </bookinfo>
+    <chapter>
+        <title>Versioning Extensions</title>
+
+        <abstract>
+            <para>Since release 1.4, eXist provides a basic document versioning extension. The
+                extension will track all changes to a document by storing a diff between the
+                revisions. Older versions can be restored on the fly and even queried in memory.
+                There's also basic support to detect and intercept conflicting writes.</para>
+
+            <para>However, eXist has no control over the client. It does not know where a document
+                update comes from and cannot directly communicate with the user. The versioning
+                extension should be seen more like a toolbox than a complete solution. Advanced
+                functionality (e.g. merging and conflict resolution) will require support from the
+                end-user applications, which is outside of eXist's reach.</para>
+            
+            <para>The versioning extension has been created with human editors in mind, who will 
+                typically be changing a document through an editor or some form-based frontend.
+                It should work well with documents up to several megabytes in size. 
+                However, the versioning will not track machine-generated node-level edits using XUpdate or XQuery 
+                update extensions.</para>
+        </abstract>
+
+        <section>
+            <title>Components</title>
+
+            <para>The versioning extensions consist of the following components:</para>
+
+            <variablelist>
+                <varlistentry>
+                    <term>VersioningTrigger</term>
+                    <listitem>
+                        <para>a trigger which has to be registered with a collection and
+                        implements the core versioning functionality</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>VersioningFilter</term>
+                    <listitem>
+                        <para>a serialization filter which adds special version attributes to every
+                            serialized document. The attributes are used to detect conflicting writes.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><filename>versioning.xqm</filename></term>
+                    <listitem>
+                        <para>an XQuery module which provides a function library for end-user
+                            applications, including functions like v:doc (used to
+                            restore a given revision on the fly).</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+
+        <section>
+            <title>Setup</title>
+            
+            <para>Versioning can be enabled for any collection in the collection hierarchy. It
+                is not necessary to use versioning for all collections. To enable versioning,
+                a trigger has to be registered with the top-level collection. This is done
+                through the same collection configuration files that are used for defining
+                indexes.</para>
+            
+            <section>
+                <title>Register the versioning trigger</title>
+                
+                <para>To enable version for a collection, you have to edit the
+                collection's <filename>.xconf</filename> configuration file, which has to be 
+                stored below the <filename>/db/system/config</filename> collection. As described
+                in the <ulink url="indexing.xml">Configuring Indexes</ulink> document, the
+                <filename>/db/system/config</filename> collection mirrors the hierarchical
+                structure of the main collection tree.</para>
+                
+                <para>Within the collection's <filename>.xconf</filename>, you should register
+                    the trigger class <classname>org.exist.versioning.VersioningTrigger</classname>
+                    for the "store", "update" and "remove" events:</para>
+                
+                <example>
+                    <title>Registering trigger in collection.xconf</title>
+                    <programlisting language="xml"><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <fulltext default="none" attributes="no">
+        </fulltext>
+    </index>
+    <triggers>
+        <trigger event="store,remove,update"
+            class="org.exist.versioning.VersioningTrigger">
+        </trigger>
+    </triggers>
+</collection>]]></programlisting>
+                </example>
+                
+                <para>If you store above document into <filename>/db/system/config/db/collection.xconf</filename>,
+                    it will enable versioning for the entire database.</para>
+                
+                <note>
+                    <para>Note that a <filename>collection.xconf</filename> at a lower level in the hierarchy will
+                        <emphasis>overwrite</emphasis> any configuration on higher levels, including the
+                        trigger definitions. Triggers are not inherited from ancestor configurations. If the 
+                        new configuration doesn't define a trigger, the trigger map will be empy.</para>
+                    
+                    <para>When working with nested collection configurations,
+                        you need to make sure that the trigger definitions are present in all
+                        <filename>collection.xconf</filename> files.</para>
+                </note>
+            </section>
+            
+            <section>
+                <title>Enabling the serialization filter</title>
+                
+                <para>In order to detect conflicting writes, the versioning extension needs
+                    to keep track of the base revision to which changes were applied. It does this
+                    by inserting special metadata attributes into a document when it is retrieved
+                    from the database. For this purpose, a <emphasis>custom filter</emphasis> has
+                    to be registered with eXist's serializer. This is done in the <sgmltag>serializer</sgmltag>
+                    section in the main configuration file, <filename>conf.xml</filename>. Add a
+                    <sgmltag>custom-filter</sgmltag> child tag to the <sgmltag>serializer</sgmltag>
+                    element and set its <option>class</option> attribute to 
+                    <classname>org.exist.versioning.VersioningFilter</classname>:</para>
+                
+                <example>
+                    <title>Registering the versioning filter in conf.xml</title>
+                    <programlisting language="xml"><![CDATA[<serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
+            enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+            match-tagging-elements="no">
+    <custom-filter class="org.exist.versioning.VersioningFilter"/>
+</serializer>]]></programlisting>
+                </example>
+                
+            </section>
+            
+        </section>
+        
+    </chapter>
 </book>
