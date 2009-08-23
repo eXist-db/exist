@@ -33,12 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -107,11 +102,11 @@ public class ScheduleFunctions extends BasicFunction
             new SequenceType[]
             {
 				new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class."),
-                new FunctionParameterSequenceType("period", Type.STRING, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job"),
+                new FunctionParameterSequenceType("period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job"),
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
                 new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>"),
-                new FunctionParameterSequenceType("delay", Type.STRING, Cardinality.EXACTLY_ONE, "The period in milliseconds to delay the start of a job."),
-                new FunctionParameterSequenceType("repeat", Type.STRING, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution")
+                new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "The period in milliseconds to delay the start of a job."),
+                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution")
             },
             new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution"));
 	
@@ -157,11 +152,11 @@ public class ScheduleFunctions extends BasicFunction
             new SequenceType[]
             {
 				new FunctionParameterSequenceType("xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource"),
-                new FunctionParameterSequenceType("period", Type.STRING, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job"),
+                new FunctionParameterSequenceType("period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job"),
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
                 new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>"),
-                new FunctionParameterSequenceType("delay", Type.STRING, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job."),
-                new FunctionParameterSequenceType("repeat", Type.STRING, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution")
+                new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job."),
+                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution")
             },
             new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution"));
 
@@ -195,32 +190,21 @@ public class ScheduleFunctions extends BasicFunction
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
 		String resource = args[0].getStringValue();
-		String cronExpression = args[1].getStringValue();
 		long periodicValue = 0;
 		long delayValue = 0;
 		int repeatValue = -1;
         String jobName = args[2].getStringValue();
-        String delayString = "0";
-        String repeatString = "0";
         Properties properties = null;
-		if (getArgumentCount() >= 4) {
+		if (getArgumentCount() >= 4 && args[3].hasOne()) {
             Node options = ((NodeValue)args[3].itemAt(0)).getNode();
             properties = new Properties();
             parseParameters(options, properties);
         }
 		if (getArgumentCount() >= 5) {
-			delayString = args[4].getStringValue();
-			try {
-				delayValue = Long.parseLong(delayString);
-			} catch (NumberFormatException e) {
-			}
+            delayValue = ((IntegerValue)args[4].itemAt(0)).getLong();
 		}
 		if (getArgumentCount() >= 6) {
-			repeatString = args[5].getStringValue();
-			try {
-				repeatValue = Integer.parseInt(repeatString);
-			} catch (NumberFormatException e) {
-			}
+            repeatValue = ((IntegerValue)args[5].itemAt(0)).getInt();
 		}
 
 		User user = context.getUser();
@@ -241,16 +225,16 @@ public class ScheduleFunctions extends BasicFunction
 		}
 		else if(isCalledAs(SCHEDULE_XQUERY_PERIODIC_JOB))
 		{
-			periodicValue = Long.parseLong(cronExpression);
+            periodicValue = ((IntegerValue) args[1].itemAt(0)).getLong();
 			job = new UserXQueryJob(jobName, resource, user);
-			isCron = true;
+			isCron = false;
 		}
 		
 		//schedule-java-cron-job
 		else if(isCalledAs(SCHEDULE_JAVA_CRON_JOB) || isCalledAs(SCHEDULE_JAVA_PERIODIC_JOB))
 		{
 			if (isCalledAs(SCHEDULE_JAVA_PERIODIC_JOB)) {
-				periodicValue = Long.parseLong(cronExpression);
+                periodicValue = ((IntegerValue) args[1].itemAt(0)).getLong();
 			}
 			try
 			{
@@ -285,6 +269,7 @@ public class ScheduleFunctions extends BasicFunction
 		{
 			if (isCron) {
 				//schedule the job
+                String cronExpression = args[1].getStringValue();
 				if(scheduler.createCronJob(cronExpression, (UserJob)job, properties))
 				{
 					return(BooleanValue.TRUE);
