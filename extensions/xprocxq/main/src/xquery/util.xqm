@@ -204,11 +204,11 @@ declare function u:get-secondary($name as xs:string,$secondary){
 (: -------------------------------------------------------------------------- :)
 
 if($secondary/xproc:input[@port=$name]//t:document) then
-    for $child in $secondary/xproc:input[@port=$name]/t:document/*
+    for $child in $secondary/xproc:input[@port=$name]/t:document/node()
     return
         document{$child}
 else
-    for $child in $secondary/xproc:input[@port=$name]/*
+    for $child in $secondary/xproc:input[@port=$name]/node()
     return
         document{$child}
 };
@@ -218,12 +218,12 @@ else
 declare function u:get-primary($primary){
 (: -------------------------------------------------------------------------- :)
 if($primary//t:document) then
-	for $child in $primary/t:document/*
+	for $child in $primary/t:document/node()
 	return
 		    document{$child}
 else
 
-	for $child in $primary/*
+	for $child in $primary/node()
 	return
 		    document{$child}
 };
@@ -820,7 +820,7 @@ declare function u:printstep ($step,$meta,$value) {
 declare function u:strip-namespace($e as element()) as element() {
   
    element {QName((),local-name($e))} {
-    for $child in $e/(@*,*)
+    for $child in $e/(@*,node())
     return
       if ($child instance of element())
       then
