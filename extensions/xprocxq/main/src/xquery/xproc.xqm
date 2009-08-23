@@ -59,9 +59,9 @@ declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outpu
 (: -------------------------------------------------------------------------- :)
  let $v := u:get-primary($primary)
  let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
- let $subpipeline := $currentstep/*
+ let $subpipeline := $currentstep/node()
  return
-    for $child in $v/*
+    for $child in $v/node()
     let $iteration-source := <xproc:output step="{$defaultname}"
                    port-type="output"
                    primary="false"
@@ -86,7 +86,7 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
-                          (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/*}</p:declare-step>,$child,(),$outputs)/.)[last()]/node()
+                          (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$child,(),$outputs)/.)[last()]/node()
     			    else
                         xproc:replace-matching-elements($child,$select,$defaultname,$currentstep,$outputs)
                 else
@@ -108,7 +108,7 @@ declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outpu
      let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
      return
 
-        for $child in $v/*
+        for $child in $v/node()
         return
             xproc:replace-matching-elements($child,
                                             $matchresult,
@@ -138,7 +138,7 @@ declare function xproc:group($primary,$secondary,$options,$currentstep,$outputs)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
-        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/*}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
 };
 
 
@@ -162,7 +162,7 @@ declare function xproc:catch($primary,$secondary,$options,$currentstep,$outputs)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
-        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/*}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
  };
 
 
@@ -195,9 +195,9 @@ declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs
         )
     return
         if ($when) then
-            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$when/*}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$when/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
          else
-            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$otherwise/*}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$otherwise/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
 
  };
 
@@ -438,7 +438,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-inline-binding($child){
  (: -------------------------------------------------------------------------- :)
-    $child/*
+    $child/node()
  };
 
 
@@ -471,21 +471,21 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-stdin-binding($result,$current-step-name){
  (: -------------------------------------------------------------------------- :)
-    $result/xproc:output[@port eq 'stdin'][@step eq $current-step-name]/*
+    $result/xproc:output[@port eq 'stdin'][@step eq $current-step-name]/node()
  };
 
 
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-primary-input-binding($result,$pipeline-name){
  (: -------------------------------------------------------------------------- :)
-    $result/xproc:output[@port eq 'result'][@step=concat('!',$pipeline-name)]/*
+    $result/xproc:output[@port eq 'result'][@step=concat('!',$pipeline-name)]/node()
  };
 
 
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-non-primary-input-binding($result,$child,$pipeline-name){
  (: -------------------------------------------------------------------------- :)
-    $result/xproc:output[@port=$child/@port][@step=concat('!',$pipeline-name)]/*
+    $result/xproc:output[@port=$child/@port][@step=concat('!',$pipeline-name)]/node()
  };
 
 
@@ -493,12 +493,12 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  declare function xproc:resolve-pipe-binding($result,$child){
  (: -------------------------------------------------------------------------- :)
     if ($result/xproc:output[@port=$child/@port][@step=$child/@step]) then
-        $result/xproc:output[@port=$child/@port][@step=$child/@step]/*
+        $result/xproc:output[@port=$child/@port][@step=$child/@step]/node()
  (:	else if($result/xproc:output[@port=$child/@port][@step=$child/@xproc:defaultname]) then
-        $result/xproc:output[@port=$child/@port][@step=$child/@xproc:defaultname]/*
+        $result/xproc:output[@port=$child/@port][@step=$child/@xproc:defaultname]/node()
  :)
     else
-        $result/xproc:output[last()]/*
+        $result/xproc:output[last()]/node()
  };
 
 
@@ -539,13 +539,13 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  declare function xproc:eval-primary($pipeline,$step,$currentstep,$primaryinput,$result){
  (: -------------------------------------------------------------------------- :)
  let $primaryresult := document{
-     if($currentstep/p:input[@primary eq 'true']/*) then
+     if($currentstep/p:input[@primary eq 'true']/node()) then
         (: resolve each nested port binding :)
-         for $child in $currentstep/p:input[@primary eq 'true']/*
+         for $child in $currentstep/p:input[@primary eq 'true']/node()
              return
                 xproc:resolve-port-binding($child,$result,$pipeline,$currentstep)
      else
-            $primaryinput/* (: prev step is an atomic step output:)
+            $primaryinput/node() (: prev step is an atomic step output:)
      }
 
     let $select := string($currentstep/p:input[@primary='true']/@select)
@@ -571,7 +571,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
              <xproc:input port="{$input/@port}" select="{$input/@select}">
              {
                  let $primaryresult := document{
-                     for $child in $input/*
+                     for $child in $input/node()
                      return
                          xproc:resolve-port-binding($child,$result,$pipeline,$currentstep)
                         }
@@ -650,7 +650,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                            select="{$currentstep/p:input[1][@primary='true']/@select}"
                            port="{$currentstep/p:input[1][@primary='true']/@port}"
                            func="{$stepfuncname}">{
-                                    $primary/*
+                                    $primary/node()
                           }
              </xproc:output>
             let $secondaryinput: =(  for $child in $secondary/xproc:input
@@ -661,7 +661,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                                    select="{$child/@select}"
                                    port="{$child/@port}"
                                    func="{$stepfuncname}">{
-                                     $child/*
+                                     $child/node()
                                    }
                       </xproc:output>
                     )
@@ -767,7 +767,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
     return
     if ($binding/@port) then
         <xproc:output port-type="external" port="{$binding/@port}" step="{concat('!',$pipelinename)}">
-            {$binding/*}
+            {$binding/node()}
         </xproc:output>
     else
         let $port := substring-before($binding,'=')
