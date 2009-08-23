@@ -18,7 +18,7 @@ declare option exist:serialize "method=xml media-type=text/xml omit-xml-declarat
 (:~
 	Pretty print an XML fragment. Returns HTML to highlight the XML syntax.
 :)
-declare function sandbox:pretty-print($node as node()) {
+declare function sandbox:pretty-print($node as item()) {
 	typeswitch ($node)
 		case $elem as element(exist:match) return
 			<span class="xml-match">{$elem/node()}</span>
@@ -61,11 +61,16 @@ declare function sandbox:pretty-print($node as node()) {
 (:~ Retrieve a single query result. :)
 declare function sandbox:retrieve($num as xs:integer) as element() {
     let $cached := session:get-attribute("cached")
+	let $item := 
+		if ($cached[$num] instance of node()) then
+			util:expand($cached[$num], 'indent=yes')
+		else
+			$cached[$num]
 	return
 		<div class="{if ($num mod 2 eq 0) then 'even' else 'uneven'}">
 			<div class="pos">{$num}</div>
 			<div class="item">
-			{ sandbox:pretty-print(util:expand($cached[$num], 'indent=yes')) }
+			{ sandbox:pretty-print($item) }
 			</div>
 		</div>
 };
@@ -89,7 +94,5 @@ let $pos := xs:integer(request:get-parameter("num", ()))
 return
 	if ($pos) then
 		sandbox:retrieve($pos)
-	else if ($results) then
-		sandbox:store-in-session($results)
 	else
-		request:get-data()
+		sandbox:store-in-session($results)
