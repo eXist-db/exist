@@ -57,8 +57,8 @@ public class FunCompare extends CollatingFunction {
             "to $string-2, 1 if $string-1 is superior to $string-2. " + 
             "If either comparand is the empty sequence, the empty sequence is " +
             "returned. " +
-            "Remember to specify the collation in the context or as third " +
-            "argument if you dont want the system default.",
+            "Please remember to specify the collation in the context or use " +
+            "the three argument version if you don't want the system default.",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "The first string"),
                 new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "The second string")
@@ -66,7 +66,7 @@ public class FunCompare extends CollatingFunction {
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal to $string-2, 1 if $string-1 is superior to $string-2. If either comparand is the empty sequence, the empty sequence is returned.")),
 		new FunctionSignature (
 			new QName("compare", Function.BUILTIN_FUNCTION_NS),
-            "Returns the collatable comparison between $string-1 and $string-2, " +
+            "Returns the collatable comparison using $collation-uri between $string-1 and $string-2, " +
             "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal " +
             "to $string-2, 1 if $string-1 is superior to $string-2. " +
             "If either comparand is the empty sequence, the empty sequence is returned. " +

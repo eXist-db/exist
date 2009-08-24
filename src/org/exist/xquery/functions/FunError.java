@@ -54,7 +54,7 @@ public class FunError extends BasicFunction {
 		new FunctionSignature(
 			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
-				+ "script will terminate immediately with an exception using $qname and the default message,'An error has been raised by the query'.",
+				+ "script will terminate immediately with an exception using $qname and the default message, 'An error has been raised by the query'.",
             new SequenceType[] {
 				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "The qname")
 			},

@@ -45,11 +45,11 @@ public class FunEmpty extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("empty", Function.BUILTIN_FUNCTION_NS),
-			"Returns true() if the value of the argument, $item-sequence, is the empty sequence, false() otherwise.",
+			"Returns true() if the value of $items is the empty sequence, false() otherwise.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("item-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
+                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if empty sequence, false() otherwise"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the empty sequence, false() otherwise"));
 	
 	public FunEmpty(XQueryContext context) {
 		super(context, signature);

@@ -49,7 +49,7 @@ public class FunCodepointEqual extends BasicFunction {
 		new FunctionSignature(
 				new QName("codepoint-equal", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
 				"Returns true or false depending on whether the value of $string-1 is equal to the value of $string-2, " +
-				"according to the Unicode code point collation",
+				"according to the Unicode code point collation.",
 				new SequenceType[] {
                     new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "The first string"),
                     new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "The second string"),

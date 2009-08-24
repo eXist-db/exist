@@ -59,7 +59,7 @@ public class FunEndsWith extends CollatingFunction {
 			       "Returns true if the string value of $suffix is a suffix of the " +
 			       "string value of $source-string using collation $collation-uri, " + " false otherwise. If " +
 			       "either $source-string or $suffix is the empty sequence, the empty sequence" +
-			       " is returned." + THIRD_REL_COLLATION_ARG_EXAMPLE,
+			       " is returned. " + THIRD_REL_COLLATION_ARG_EXAMPLE,
 			       new SequenceType[] {
                        new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
                        new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "The suffix"),
