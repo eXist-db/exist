@@ -444,19 +444,101 @@
             </store>
         </setup>
         <thread name="thread1" connection="con">
-            <sequence repeat="20" description="query imdi resources">
-                <xquery collection="/db" query="//book[@id = 'book100.xml']"/>
-                <xquery collection="/db" query="//book[@id &lt; 'book100.xml']"/>
-                <xquery collection="/db" query="//book[@id &gt; 'book100.xml']"/>
-                <xquery collection="/db" query="//book[@n = 100]"/>
-                <xquery collection="/db" query="//book[@n &lt; 100]"/>
-                <xquery collection="/db" query="//book[@n &gt; 100]"/>
-                <xquery collection="/db" query="//chapter[title &amp;= 'k*']"/>
-                <xquery collection="/db" query="//chapter[.//para &amp;= 'is']"/>
-                <xquery collection="/db">
-                    for $chapter in //chapter[.//para &amp;= 'is'] order by $chapter/title
-                    return $chapter/title
-                </xquery>
+            <sequence repeat="20" description="query imdi resources (no index)">
+	      <!-- Number 1: 375 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[contains(imdi:Name, 'drum')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 2: 157 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[contains(imdi:Name, 'lake')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 3: 63 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[matches(imdi:Country, 'namibia')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 4: 43 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[contains(imdi:Name, 'shamanicsong01')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 5: 36 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[matches(imdi:Country, 'brazil')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 6: 30 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[contains(imdi:Title, 'kleve')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 7: 29 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		let $lang := //imdi:ContentLanguage
+		return
+		for $i in //imdi:Session[matches(imdi:Country, 'mexico')][matches(imdi:Genre, 'ritual/religious texts')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 8: 29 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		let $lang := //imdi:ContentLanguage
+		return
+		for $i in //imdi:Session[matches(imdi:Genre, 'ritual/religious texts')]		
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 9: 27 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[contains(imdi:Name, 'berries')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 10: 24 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[matches(imdi:Name, 'berries')]
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+	      <!-- Number 11: 23 -->
+	      <xquery collection="/db">
+		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
+		for $i in //imdi:Session[matches(imdi:Continent, 'middle-america')]
+(: MediaFile/type = video :)
+		order by $i/imdi:Name
+		return $i/imdi:Name
+	      </xquery>
+
+
             </sequence>
             <xquery collection="/db/test">
                 for $doc in xmldb:get-child-resources("/db/test")
