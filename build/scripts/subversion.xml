@@ -29,8 +29,9 @@
 
     <tstamp/>
 
-    <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="anonymous"
-      password="anonymous"/>
+<!-- url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="anonymous"
+      password="anonymous" -->
+    <svninfo />
 
     <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit)">
       <entry key="project.version" value="${project.version}"/>
@@ -45,7 +46,7 @@
     if the URL is updated in time. The download size is significantly larger.
   -->
   <target name="svn-download" description="Download latest SVN library.">
-    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.2.3.standalone.zip"
+    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.3.0.standalone.zip"
       dest="${svn.download.zip}" verbose="true"/>
 
     <unzip src="${svn.download.zip}" dest="${tools.ant}/lib">
