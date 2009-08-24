@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -47,11 +48,7 @@ public class FunDocAvailable extends Function {
 		new FunctionSignature(
 			new QName("doc-available", Function.BUILTIN_FUNCTION_NS),
 			"Returns whether or not the document, $document-uri, specified in the input sequence is available. " +
-            "The arguments are either document pathes like '" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
-			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
-            "standard URLs, starting with http://, file://, etc.",
+            XMLDBModule.ANY_URI,
 			new SequenceType[] { 
                 new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The document URI")
             },

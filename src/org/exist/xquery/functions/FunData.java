@@ -46,7 +46,7 @@ public class FunData extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("data", Function.BUILTIN_FUNCTION_NS),
-			"fn:data takes a sequence of items, $items, and returns a sequence of atomic values.",
+			"Returns the sequence of atomic values from the items in $items.",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items")
             },

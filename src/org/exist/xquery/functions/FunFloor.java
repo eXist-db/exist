@@ -42,7 +42,7 @@ public class FunFloor extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("floor", Function.BUILTIN_FUNCTION_NS),
-			"Returns the largets number not greater than the value of $number." + 
+			"Returns the largets number not greater than the value of $number. " + 
 			"If $number is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_MORE, "The number")

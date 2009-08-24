@@ -46,6 +46,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -69,11 +70,8 @@ public class ExtCollection extends Function {
 			new QName("collection", Function.BUILTIN_FUNCTION_NS),
             "Returns the documents contained in the collections " +
             "specified in the input sequence. " +           
-            "The arguments are either collection pathes like '" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays' or " +
-			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays'. " +
-			"Documents contained in subcollections are also included.",
+            XMLDBModule.COLLECTION_URI +
+			" Documents contained in subcollections are also included.",
 			new SequenceType[] {
 				//Different from the offical specs
                 new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ZERO_OR_MORE, "The collection-uris for which to include the documents")},

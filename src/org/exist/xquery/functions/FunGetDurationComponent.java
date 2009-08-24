@@ -60,11 +60,11 @@ public class FunGetDurationComponent extends BasicFunction {
 		new FunctionSignature(
 			new QName("days-from-duration", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the days component in the canonical lexical " +
-			"representation of the value of $duaration. The result may be negative.",
+			"representation of the value of $duration. The result may be negative.",
 			new SequenceType[] {
                 DAYTIME_DURA_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the days component of $duaration"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the days component of $duration"));
 	
 	public final static FunctionSignature fnHoursFromDuration =
 		new FunctionSignature(
@@ -74,7 +74,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			new SequenceType[] {
                 DAYTIME_DURA_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component of $duaration"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component of $duration"));
 	
 	public final static FunctionSignature fnMinutesFromDuration =
 		new FunctionSignature(
@@ -84,7 +84,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			new SequenceType[] {
                 DAYTIME_DURA_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component of $duaration"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component of $duration"));
 
 	public final static FunctionSignature fnSecondsFromDuration =
 		new FunctionSignature(
@@ -94,7 +94,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			new SequenceType[] {
                 DAYTIME_DURA_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component of $duaration"));
+			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component of $duration"));
 
    public final static FunctionSignature fnMonthsFromDuration = new FunctionSignature(
 			new QName("months-from-duration", Function.BUILTIN_FUNCTION_NS),
@@ -103,7 +103,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			new SequenceType[] {
                 YEARMONTH_DURA_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the months component of $duaration"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the months component of $duration"));
 
    public final static FunctionSignature fnYearsFromDuration = new FunctionSignature(
 			new QName("years-from-duration", Function.BUILTIN_FUNCTION_NS),
@@ -112,7 +112,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			new SequenceType[] {
                 YEARMONTH_DURA_01_PARAM
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the years component of $duaration"));
+			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the years component of $duration"));
 
    
 	public FunGetDurationComponent(XQueryContext context, FunctionSignature signature) {

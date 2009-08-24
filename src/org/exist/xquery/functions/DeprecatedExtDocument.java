@@ -70,14 +70,11 @@ public class DeprecatedExtDocument extends Function {
             "Returns the documents specified in the input sequence. " +  
             "This function is specific to eXist and " +
             "will be replaced with the corresponding fn:doc function. " +
-            "The arguments are either document pathes like '" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
-			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml'. " +  
-            "If the input sequence is empty, " +
+            XMLDBModule.COLLECTION_URI + 
+            " If the input sequence is empty, " +
             "the function will load all documents in the database.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of paths or uris of the documents")
+                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The document URIs")
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the documents"),
 			true,

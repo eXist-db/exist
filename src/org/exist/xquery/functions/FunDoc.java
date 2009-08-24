@@ -31,6 +31,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -51,16 +52,13 @@ public class FunDoc extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doc", Function.BUILTIN_FUNCTION_NS),
-			"Returns the document node of $document-uri specified. " +  
-            "The argument is either a document path like '" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
-			"XMLDB URI like 'xmldb:exist://localhost:8081/" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
-            "standard URL starting with http://, file://, etc.",
+			"Returns the document node of $document-uri. " +
+            XMLDBModule.ANY_URI,
 			new SequenceType[] {
                 new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The document URI")
             },
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the document node of $document-uri"));
+    // fixit! - security warning
 
     private UpdateListener listener = null;
 	
