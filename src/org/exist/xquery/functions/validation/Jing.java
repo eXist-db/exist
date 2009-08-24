@@ -27,6 +27,7 @@ import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
 
+import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import org.exist.dom.QName;
@@ -125,15 +126,17 @@ public class Jing extends BasicFunction  {
         }
 
         ValidationReport report = new ValidationReport();
+        InputSource instance=null;
+        InputSource grammar =null;
 
         try {
             report.start();
 
             // Get inputstream of XML instance document
-            InputSource instance=Shared.getInputSource(args[0].itemAt(0), context);
+            instance=Shared.getInputSource(args[0].itemAt(0), context);
 
             // Validate using resource specified in second parameter
-            InputSource grammar = Shared.getInputSource(args[1].itemAt(0), context);
+            grammar = Shared.getInputSource(args[1].itemAt(0), context);
 
             // Special setup for compact notation
             String grammarUrl = grammar.getSystemId();
@@ -167,6 +170,8 @@ public class Jing extends BasicFunction  {
             report.setException(ex);
 
         } finally {
+            closeInputSource(instance);
+            closeInputSource(grammar);
             report.stop();
         }
 
@@ -181,6 +186,25 @@ public class Jing extends BasicFunction  {
             NodeImpl result = Shared.writeReport(report, builder);
             return result;
         } 
+    }
+
+    private void closeInputSource(InputSource source){
+
+        if(source==null){
+            return;
+        }
+
+        InputStream is = source.getByteStream();
+        if(is==null){
+            return;
+        }
+
+        try {
+            is.close();
+        } catch (Exception ex){
+            LOG.error(ex.getMessage(), ex);
+        }
+
     }
 
 }
