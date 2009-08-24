@@ -101,7 +101,7 @@ public class JingOnvdlTest extends EmbeddedExistTester {
         String query = "let $a := " + XML_DATA1 +
                 "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                 "return " +
-                "validation:validate-report($a,$b)";
+                "validation:jing-report($a,$b)";
 
         executeAndEvaluate(query,"valid");
     }
@@ -112,7 +112,7 @@ public class JingOnvdlTest extends EmbeddedExistTester {
         String query = "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                     "return " +
-                    "validation:validate-report($a,$b)";
+                    "validation:jing-report($a,$b)";
         executeAndEvaluate(query,"invalid");
     }
 
