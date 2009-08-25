@@ -144,26 +144,52 @@ kwic:summarize($hit, <config width="40"/>, util:function(xs:QName("local:filter"
             <para>Using <function>kwic:summarize</function>, you will get one kwic-formatted item
                 for every match, even if the matches are in the same paragraph. Also, the context
                 from which the text is taken is always the same: the element you queried.</para>
-            
-            <para>To get more control over the output, you can directly call <function>kwic:get-summary</function>,
-                which is the module's core function. It expects 3 or 4 parameters, where the first two
-                parameters are: a) the current context root, b) the match object to process. Parameters
-                3 and 4 are the same as for <function>kwic:summarize</function>.</para>
-            
+
+            <para>To get more control over the output, you can directly call
+                    <function>kwic:get-summary</function>, which is the module's core function. It
+                expects 3 or 4 parameters, where the first two parameters are: a) the current
+                context root, b) the match object to process. Parameters 3 and 4 are the same as for
+                    <function>kwic:summarize</function>.</para>
+
             <para>Before passing nodes to <function>kwic:get-summary</function> you have to
-                <emphasis>expand</emphasis> them, which basically means to create an in-memory
+                    <emphasis>expand</emphasis> them, which basically means to create an in-memory
                 copy in which all matches are properly marked up with <sgmltag>exist:match</sgmltag>
                 tags. The main part of the query should look as follows:</para>
-            
+
             <programlisting language="xquery"><![CDATA[for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "'nature'")]
 let $expanded := kwic:expand($hit)
 order by ft:score($hit) descending
 return
     kwic:get-summary($expanded, ($expanded//exist:match)[1], <config width="40"/>,
         util:function(xs:QName("local:filter"), 2))]]></programlisting>
-            
+
             <para>In this example, we select the first <sgmltag>exist:match</sgmltag> only, thus
                 ignoring all other matches within <option>$expanded</option>.</para>
+
+            <para>Sometimes you may also want to change the context to restrict the kwic display to
+                certain elements within the larger query context, e.g. paragraphs within sections.
+                The following example still queries <sgmltag>SPEECH</sgmltag>, but displays a kwic
+                entry for each <sgmltag>LINE</sgmltag> with a match, grouped by speech:</para>
+
+            <programlisting language="xquery"><![CDATA[for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "nature")]
+let $expanded := kwic:expand($hit)
+order by ft:score($hit) descending
+return
+    <div class="speech">{
+        for $line in $expanded//LINE[.//exist:match]
+        return
+            kwic:get-summary($line, ($line/exist:match)[1], <config width="40"/>,
+                util:function(xs:QName("local:filter"), 2))
+    }</div>]]></programlisting>
+
+            <para>You may ask why we are not querying <sgmltag>LINE</sgmltag> directly to get a
+                different context, e.g. as in:</para>
+
+            <synopsis language="xquery">//SPEECH[ft:query(LINE, "nature")]</synopsis>
+
+            <para>Well, we want Lucene to compute the relevance of each match with respect to the
+                SPEECH context, not LINE. If we queried LINE, each single line would get a match
+                score and the matches would end up in a completely different order.</para>
         </section>
     </chapter>
 </book>
