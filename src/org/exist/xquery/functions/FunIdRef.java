@@ -68,23 +68,23 @@ public class FunIdRef extends Function {
 		new FunctionSignature(
 			new QName("idref", Function.BUILTIN_FUNCTION_NS),
 			"Returns the sequence of element or attributes nodes with an IDREF value matching the " +
-			"value of one or more of the ID values supplied in $id-sequence. " +
-			"If none is matching or $ied-sequence is the empty sequence, returns the empty sequence.",
+			"value of one or more of the ID values supplied in $ids. " +
+			"If none is matching or $ids is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "The id sequence"),
+                new FunctionParameterSequenceType("ids", Type.STRING, Cardinality.ZERO_OR_MORE, "The ID sequence"),
             },
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $id-sequence")),
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $ids")),
 
         new FunctionSignature(
             new QName("idref", Function.BUILTIN_FUNCTION_NS),
 			"Returns the sequence of element or attributes nodes with an IDREF value matching the " +
-			"value of one or more of the ID values supplied in $id-sequence. " +
-            "If none is matching or $id-sequence is the empty sequence, returns the empty sequence.",
+			"value of one or more of the ID values supplied in $ids. " +
+            "If none is matching or $ids is the empty sequence, returns the empty sequence.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("id-sequence", Type.STRING, Cardinality.ZERO_OR_MORE, "The id sequence"),
+                new FunctionParameterSequenceType("ids", Type.STRING, Cardinality.ZERO_OR_MORE, "The ID sequence"),
                 new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "The node in document")
             },
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $id-sequence in the same document as $node-in-document"))
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $ids in the same document as $node-in-document"))
     };
 				
 	/**
