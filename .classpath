@@ -2,6 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="extensions/fluent/src"/>
 	<classpathentry kind="src" path="extensions/fluent/test/src"/>
+	<classpathentry kind="src" path="extensions/versioning/src"/>
+	<classpathentry kind="src" path="extensions/versioning/test"/>
 	<classpathentry kind="src" path="extensions/indexes/lucene/src"/>
 	<classpathentry kind="src" path="extensions/indexes/lucene/test/src"/>
 	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
@@ -111,5 +113,6 @@
 	<classpathentry kind="lib" path="lib/user/jcommon-1.0.15.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.4.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.4.1.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>

@@ -175,7 +175,7 @@ public class XQTS_To_junit {
        		for (int i = 0; i < results.getSize(); i++) {
        			String groupName = (String) results.getResource(i).getContent();
        			
-       			allTests.write("		suite.addTestSuite("+adoptString(groupName)+".class);\n");
+       			allTests.write("		"+adoptString(groupName)+".class,\n");
        			testCases(groupName, folder, _package_);
        			
        			processGroups(groupName, subfolder, subPackage);
