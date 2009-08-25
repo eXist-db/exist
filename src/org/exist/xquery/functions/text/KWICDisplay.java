@@ -62,6 +62,8 @@ public class KWICDisplay extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("kwic-display", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+            "Deprecated: kwic functionality is now provided by an XQuery module, see " +
+            "http://exist-org/kwic.html." +
             "This function takes a sequence of text nodes in $a, containing matches from a fulltext search. " +
             "It highlights matching strings within those text nodes in the same way as the text:highlight-matches " +
             "function. However, only a defined portion of the text surrounding the first match (and maybe following matches) " +
@@ -80,7 +82,9 @@ public class KWICDisplay extends BasicFunction {
             "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
             "string; c) the length of the match as reported by the index.",
             new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, PARAMETERS_ARG },
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results")),
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"),
+            "Improved kwic functionality is now provided by a separate XQuery module, see " +
+            "http://exist-org/kwic.html."),
         new FunctionSignature(
                 new QName("kwic-display", TextModule.NAMESPACE_URI, TextModule.PREFIX),
                 "This function takes a sequence of text nodes in $a, containing matches from a fulltext search. " +
@@ -101,7 +105,9 @@ public class KWICDisplay extends BasicFunction {
                 "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
                 "string; c) the length of the match as reported by the index.",
                 new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, RESULT_CALLBACK_ARG, PARAMETERS_ARG },
-                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"))
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"),
+                "Improved kwic functionality is now provided by a separate XQuery module, see " +
+                "http://exist-org/kwic.html.")
     };
     
     public KWICDisplay(XQueryContext context, FunctionSignature signature) {
