@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2004-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -48,38 +47,36 @@ import org.exist.xquery.value.ValueSequence;
 /**
  * @author wolf
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class FunIndexOf extends BasicFunction {
 
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the sequence of positive integers giving the positions within the sequence");
 
-	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation");
+	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 
-	protected static final FunctionParameterSequenceType SEARCH_PARAM = new FunctionParameterSequenceType("srchParam", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The search component");
+	protected static final FunctionParameterSequenceType SEARCH_PARAM = new FunctionParameterSequenceType("search", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The search component");
 
-	protected static final FunctionParameterSequenceType SEQ_PARAM = new FunctionParameterSequenceType("seqParam", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence");
+	protected static final FunctionParameterSequenceType SEQ_PARAM = new FunctionParameterSequenceType("source", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The source sequence");
 
 	protected static final String FUNCTION_DESCRIPTION =
 
 		"Returns a sequence of positive integers giving the " + 
-		"positions within the sequence $seqParam of items " +  
-		"that are equal to $srchParam.\n\n" +
+		"positions within the sequence of atomic values $source " +  
+		"that are equal to $search.\n\n" +
 		"The collation used by the invocation of this function " + 
 		"is determined according to the rules in 7.3.1 Collations. " + 
 		"The collation is used when string comparison is required.\n\n" +
-		"The items in the sequence $seqParam are compared with " + 
-		"$srchParam under the rules for the eq operator. Values of " +  
+		"The items in the sequence $source are compared with " + 
+		"$search under the rules for the 'eq' operator. Values of " +  
 		"type xs:untypedAtomic are compared as if they were of " +  
 		"type xs:string. Values that cannot be compared, i.e. " + 
-		"the eq operator is not defined for their types, are " + 
+		"the 'eq' operator is not defined for their types, are " + 
 		"considered to be distinct. If an item compares equal, " +  
 		"then the position of that item in the sequence " + 
-		"$seqParam is included in the result.\n\n" +
+		"$source is included in the result.\n\n" +
 
-		"If the value of $seqParam is the empty sequence, or " + 
-		"if no item in $seqParam matches $srchParam, then the " + 
+		"If the value of $source is the empty sequence, or " + 
+		"if no item in $source matches $search, then the " + 
 		"empty sequence is returned.\n\n" +
 
 		"The first item in a sequence is at position 1, not position 0.\n\n" +
@@ -98,7 +95,8 @@ public class FunIndexOf extends BasicFunction {
 			),
 			new FunctionSignature(
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION,
+					FUNCTION_DESCRIPTION +
+                    " " + CollatingFunction.THIRD_REL_COLLATION_ARG_EXAMPLE,
 					new SequenceType[] {
 							SEQ_PARAM,
 							SEARCH_PARAM,

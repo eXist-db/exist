@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2005-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -57,7 +57,7 @@ public class FunInScopePrefixes extends BasicFunction {
 			"Returns the prefixes of the in-scope namespaces for $element. " +
 			"For namespaces that have a prefix, it returns the prefix as an " +
 			"xs:NCName. For the default namespace, which has no prefix, " +
-			"it returns the zero-length string",
+			"it returns the zero-length string.",
 			new SequenceType[] { new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The element") },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the prefixes"));
 	
