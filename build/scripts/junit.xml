@@ -338,6 +338,14 @@
         <echo>JUnit tests generated.</echo>
     </target>
 
+    <property name="ant.dir" value="tools/ant"/>
+
+    <path id="classpath.ant_launcher">
+        <fileset dir="${ant.dir}/lib">
+            <include name="ant-launcher.jar"/>
+        </fileset>
+    </path>
+
     <!-- Test XQTS : XML Query Test Suite -->
     <target name="test-xqts" depends="prepare-xqts, test-prepare">
         <echo message="--------------"/>
@@ -346,6 +354,8 @@
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.ant_launcher"/>
             <classpath refid="classpath.junit"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
