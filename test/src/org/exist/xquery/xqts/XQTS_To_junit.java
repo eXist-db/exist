@@ -138,12 +138,14 @@ public class XQTS_To_junit {
 			helper.parse(p, buildFile);
 			p.executeTarget("store");
 			p.fireBuildFinished(null);
+			Thread.sleep(60*1000);
 		} catch (BuildException e) {
 			p.fireBuildFinished(e);
+		} catch (InterruptedException e) {
 		}
 	}
 
-	private void processGroups(String parentName, File folder, String _package_) throws XMLDBException, IOException {
+	private boolean processGroups(String parentName, File folder, String _package_) throws XMLDBException, IOException {
 		XPathQueryService service = (XPathQueryService) collection.getService("XPathQueryService", "1.0");
 
        	String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
@@ -162,27 +164,36 @@ public class XQTS_To_junit {
        		File subfolder;
        		String subPackage;
        		
-       		if (parentName == null) {
-       			subfolder = folder;
-       			subPackage = _package_;
-       		} else {
-       			subfolder = new File(folder.getAbsolutePath()+sep+parentName);
-       			subPackage = _package_+"."+adoptString(parentName);
-       		}
+//       		if (parentName == null) {
+//       			subfolder = folder;
+//       			subPackage = _package_;
+//       		} else {
+//       			subfolder = new File(folder.getAbsolutePath()+sep+parentName);
+//       			subPackage = _package_+"."+adoptString(parentName);
+//       		}
+
        		
        		BufferedWriter allTests = startAllTests(folder, _package_);
+
+   			if (testCases(parentName, folder, _package_))
+       			allTests.write("		C_"+adoptString(parentName)+".class,\n");
        		
        		for (int i = 0; i < results.getSize(); i++) {
        			String groupName = (String) results.getResource(i).getContent();
        			
-       			allTests.write("		"+adoptString(groupName)+".class,\n");
-       			testCases(groupName, folder, _package_);
-       			
-       			processGroups(groupName, subfolder, subPackage);
+    			subfolder = new File(folder.getAbsolutePath()+sep+groupName);
+    			subPackage = _package_+"."+adoptString(groupName);
+
+       			if (processGroups(groupName, subfolder, subPackage)) 
+           			allTests.write("		org.exist.xquery.xqts"+subPackage+".AllTests.class,\n");
+       			else if (testCases(groupName, folder, _package_))
+           			allTests.write("		C_"+adoptString(groupName)+".class,\n");
        		}
        		
        		endAllTests(allTests);
+       		return true;
        	}
+		return false;
 	}
 	
 	private BufferedWriter startAllTests(File folder, String _package_) throws IOException {
@@ -196,7 +207,7 @@ public class XQTS_To_junit {
    	    		"import org.junit.runner.RunWith;\n" +
    	    		"import org.junit.runners.Suite;\n\n" +
    	    		"@RunWith(Suite.class)\n" +
-   	    		"@Suite.SuiteClasses({");
+   	    		"@Suite.SuiteClasses({\n");
 //   	    		"        XmldbLocalTests.class," +
    	    
    	    return out;
@@ -209,7 +220,7 @@ public class XQTS_To_junit {
 		out.close();
 	}
 	
-	private void testCases(String testGroup, File folder, String _package_) throws XMLDBException, IOException {
+	private boolean testCases(String testGroup, File folder, String _package_) throws XMLDBException, IOException {
 		XPathQueryService service = (XPathQueryService) collection.getService("XPathQueryService", "1.0");
 
        	String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
@@ -221,7 +232,7 @@ public class XQTS_To_junit {
 	       	
        	if (results.getSize() != 0) {
        		folder.mkdirs();
-       		File jTest = new File(folder.getAbsolutePath()+sep+adoptString(testGroup)+".java");
+       		File jTest = new File(folder.getAbsolutePath()+sep+"C_"+adoptString(testGroup)+".java");
 
    			FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
        	    BufferedWriter out = new BufferedWriter(fstream);
@@ -230,7 +241,7 @@ public class XQTS_To_junit {
        	    		"import org.exist.xquery.xqts.XQTS_case;\n" +
        	    		"import static org.junit.Assert.*;\n" +
        	    		"import org.junit.Test;\n\n" +
-       	    		"public class "+adoptString(testGroup)+" extends XQTS_case {\n" +
+       	    		"public class C_"+adoptString(testGroup)+" extends XQTS_case {\n" +
        	    		"	private String testGroup = \""+testGroup+"\";\n\n");
        	    
        	    for (int i = 0; i < results.getSize(); i++) {
@@ -244,7 +255,9 @@ public class XQTS_To_junit {
        		}
        	    out.write("}");
    	        out.close();
+   	        return true;
        	}
+       	return false;
 	}
 
 	private String adoptString(String caseName) {
