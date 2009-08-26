@@ -315,7 +315,7 @@
 
     <available file="${junit.reports}/src/org/exist/xquery/xqts/XQTS_1_0_2" property="xqts_junit.present"/>
 
-    <target name="prepare-xqts" depends="download-xqts, jar"> <!-- unless="xqts_junit.present"> -->
+    <target name="prepare-xqts" depends="download-xqts" unless="xqts_junit.present">
         <!--
         <delete>
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
