@@ -1,24 +1,24 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 the eXist team
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
+ *  
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * 
- * $Id$
+ *  
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -49,41 +49,44 @@ public class FunLang extends Function {
 	public static String queryString = "(ancestor-or-self::*/@xml:lang)[position() = last()]";
 	public CompiledXQuery query; 
 	
-	protected static final String FUNCTION_DESCRIPTION =
+    protected static final String FUNCTION_DESCRIPTION_1_PARAM =
+        "Tests whether the language of the context item ";
+	protected static final String FUNCTION_DESCRIPTION_2_PARAMS =
 
-		"This function tests whether the language of $node, or the context item if " +
-		"the second argument is omitted, as specified by xml:lang attributes is the " +
-		"same as, or is a sublanguage of, the language specified by $testlang. The " +
+		"Tests whether the language of $node ";
+	protected static final String FUNCTION_DESCRIPTION_BOTH =
+        "as specified by xml:lang attributes is the " +
+		"same as, or is a sublanguage of, the language specified by $lang. The " +
 		"behavior of the function if the second argument is omitted is exactly the " +
 		"same as if the context item (.) had been passed as the second argument. The " +
 		"language of the argument node, or the context item if the second argument is " +
 		"omitted, is determined by the value of the xml:lang attribute on the node, " + 
 		"or, if the node has no such attribute, by the value of the xml:lang attribute " +
 		"on the nearest ancestor of the node that has an xml:lang attribute. If there " +
-		"is no such ancestor, then the function returns false\n\n" +
+		"is no such ancestor, then the function returns false().\n\n" +
 		
 		"The following errors may be raised: if the context item is undefined [err:XPDY0002]XP; " +
 		"if the context item is not a node [err:XPTY0004]XP.\n\n" +
 
-		"If $testlang is the empty sequence it is interpreted as the zero-length string.";
+		"If $lang is the empty sequence it is interpreted as the zero-length string.";
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_BOTH,
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "The language code")
+				 new FunctionParameterSequenceType("lang", Type.STRING, Cardinality.ZERO_OR_ONE, "The language code")
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches")
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches, false otherwise")
 		),
 		new FunctionSignature(
 				new QName("lang", Function.BUILTIN_FUNCTION_NS),
-				FUNCTION_DESCRIPTION,
+				FUNCTION_DESCRIPTION_2_PARAMS + FUNCTION_DESCRIPTION_BOTH,
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("testLang", Type.STRING, Cardinality.ZERO_OR_ONE, "The language code"),
+					 new FunctionParameterSequenceType("lang", Type.STRING, Cardinality.ZERO_OR_ONE, "The language code"),
 					 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "The node")
 				},
-				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches")
+				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the language code matches, false otherwise")
 		)		
 	};
 

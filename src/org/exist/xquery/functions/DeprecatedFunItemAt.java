@@ -47,15 +47,15 @@ public class DeprecatedFunItemAt extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("item-at", Function.BUILTIN_FUNCTION_NS),
-			"Returns the item in the first argument sequence that is located at the position " +
-			"specified by the second argument.",
+			"Returns the item in $source that is located at the position " +
+			"specified by $index.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence to get the item from"),
-				 new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of the item in the sequence to return")
+				 new FunctionParameterSequenceType("source", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
+				 new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index of the item in the source sequence to return")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the item"),
 			"This function is eXist-specific and deprecated. It should not be in the standard functions namespace. " +
-            "Use $x[1] instead");
+            "Use e.g. $x[1] instead. ");
 	
 	public DeprecatedFunItemAt(XQueryContext context) {
 		super(context, signature);
