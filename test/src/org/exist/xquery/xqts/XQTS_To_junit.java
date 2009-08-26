@@ -174,9 +174,16 @@ public class XQTS_To_junit {
 
        		
        		BufferedWriter allTests = startAllTests(folder, _package_);
+       		
+       		boolean first = true;
 
-   			if (testCases(parentName, folder, _package_))
-       			allTests.write("		C_"+adoptString(parentName)+".class,\n");
+   			if (testCases(parentName, folder, _package_)) {
+   				if (!first)
+   	       			allTests.write(",\n");
+   				else
+   					first = false;
+       			allTests.write("		C_"+adoptString(parentName)+".class");
+   			}
        		
        		for (int i = 0; i < results.getSize(); i++) {
        			String groupName = (String) results.getResource(i).getContent();
@@ -184,10 +191,19 @@ public class XQTS_To_junit {
     			subfolder = new File(folder.getAbsolutePath()+sep+groupName);
     			subPackage = _package_+"."+adoptString(groupName);
 
-       			if (processGroups(groupName, subfolder, subPackage)) 
-           			allTests.write("		org.exist.xquery.xqts"+subPackage+".AllTests.class,\n");
-       			else if (testCases(groupName, folder, _package_))
-           			allTests.write("		C_"+adoptString(groupName)+".class,\n");
+       			if (processGroups(groupName, subfolder, subPackage)) { 
+       				if (!first)
+       	       			allTests.write(",\n");
+       				else
+       					first = false;
+           			allTests.write("		org.exist.xquery.xqts"+subPackage+".AllTests.class");
+       			} else if (testCases(groupName, folder, _package_)) {
+       				if (!first)
+       	       			allTests.write(",\n");
+       				else
+       					first = false;
+           			allTests.write("		C_"+adoptString(groupName)+".class");
+       			}
        		}
        		
        		endAllTests(allTests);
@@ -214,7 +230,7 @@ public class XQTS_To_junit {
 	}
 	
 	private void endAllTests(BufferedWriter out) throws IOException {
-		out.write("})\n\n"+
+		out.write("\n})\n\n"+
 				"public class AllTests {\n\n" +
 				"}");
 		out.close();
