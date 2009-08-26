@@ -386,45 +386,146 @@ return
             </variablelist>
 
             <para>Within an action element, parameters and attributes can be set as follows:</para>
-            
+
             <variablelist>
                 <varlistentry>
                     <term>add-parameter</term>
                     <listitem>
-                        <para>Add (or overwrite) a request parameter. The original HTTP request
-                            will be copied before the change is applied. Subsequent steps in
-                            the pipeline will not see the parameter. The name of the parameter
-                            is taken from attribute <option>name</option>, the value from attribute
-                            <option>value</option>.</para>
+                        <para>Add (or overwrite) a request parameter. The original HTTP request will
+                            be copied before the change is applied. Subsequent steps in the pipeline
+                            will not see the parameter. The name of the parameter is taken from
+                            attribute <option>name</option>, the value from attribute
+                                <option>value</option>.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>set-attribute</term>
                     <listitem>
                         <para>Set a request attribute to the given value. The name of the attribute
-                            is read from attribute <option>name</option>, the value from attribute 
-                            <option>value</option>. You can set arbitrary request attributes, e.g. to pass
-                            information between XQueries. However, some attributes may be reserved by
-                            the called servlet (see examples above).</para>
+                            is read from attribute <option>name</option>, the value from attribute
+                                <option>value</option>. You can set arbitrary request attributes,
+                            e.g. to pass information between XQueries. However, some attributes may
+                            be reserved by the called servlet (see examples above).</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>clear-attribute</term>
                     <listitem>
-                        <para>Clears a request attribute. Unlike parameters, request attributes will be visible to subsequent steps
-                            in the processing pipeline. They does need to be cleared once they are no longer needed.
-                            The name of the attribute is read from attribute <option>name</option>.</para>
+                        <para>Clears a request attribute. Unlike parameters, request attributes will
+                            be visible to subsequent steps in the processing pipeline. They does
+                            need to be cleared once they are no longer needed. The name of the
+                            attribute is read from attribute <option>name</option>.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>set-header</term>
                     <listitem>
                         <para>Set an HTTP response header field. The HTTP response is shared between
-                            all steps in the pipeline, so all following steps will be able to see the
-                            changed header.</para>
+                            all steps in the pipeline, so all following steps will be able to see
+                            the changed header.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
         </section>
+
+        <section>
+            <title>Special Attributes Accepted by eXist Servlets</title>
+
+            <para>eXist's XQueryServlet as well as the XSLTServlet will listen to a few, predefined
+                request attributes. The names of those attributes are listed below and should not be
+                used for other purposes.</para>
+            <section>
+                <title>XQueryServlet</title>
+
+                <variablelist>
+                    <varlistentry>
+                        <term>xquery.attribute</term>
+                        <listitem>
+                            <para>Should contain the name of a request attribute, if set. Instead of
+                                writing query results to the response output stream, XQueryServlet
+                                will store them into the named attribute. The value of the attribute
+                                will be an XQuery Sequence
+                                    (<classname>org.exist.xquery.Sequence</classname>). If no query
+                                results were returned, the attribute will contain an empty
+                                sequence.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>xquery.source</term>
+                        <listitem>
+                            <para>If set, the value of this attribute should contain the XQuery code
+                                to execute. Normally, XQueryServlet reads the XQuery from the file
+                                given in the request path. <option>xquery.source</option> is a way
+                                to overwrite this behaviour, e.g. if you want to evaluate an XQuery
+                                which was generated within the controller.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>xquery.report-errors</term>
+                        <listitem>
+                            <para>If set to "yes", an error in the XQuery will not result in an HTTP
+                                error. Instead, the string message of the error is enclosed in an
+                                element <sgmltag>error</sgmltag> which is then written to the
+                                response stream. The HTTP status is not changed.</para>
+                        </listitem>
+                    </varlistentry>
+
+                </variablelist>
+
+            </section>
+            <section>
+                <title>XSLTServlet</title>
+
+                <variablelist>
+                    <varlistentry>
+                        <term>xslt.stylesheet</term>
+                        <listitem>
+                            <para>The path to the XSL stylesheet. Relative paths will be resolved
+                                against the current servlet context.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>xslt.input</term>
+                        <listitem>
+                            <para>Contains the name of a request attribute from which the input to
+                                the transformation process should be taken. The input has to be a
+                                valid eXist XQuery sequence or an error will be thrown.</para>
+                            <para>This attribute is usually combined with
+                                    <option>xquery.attribute</option> provided by XQueryServlet and
+                                allows passing data between the two without additional
+                                serialization/parsing overhead.</para>
+                        </listitem>
+                    </varlistentry>
+
+                    <varlistentry>
+                        <term>xslt.user</term>
+                        <listitem>
+                            <para>The name of the eXist user which should be used to read and apply
+                                the stylesheet.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>xslt.password</term>
+                        <listitem>
+                            <para>Password for the user given in <option>xslt.user</option></para>
+                        </listitem>
+                    </varlistentry>
+
+                </variablelist>
+
+                <para>XSLTServlet will attempt to map all other request attributes into
+                        <emphasis>stylesheet parameters</emphasis>. So, for example, if you set a
+                    request attribute <option>myattr</option> it will be available within the
+                    stylesheet as parameter <option>$myattr</option>. For security reasons, this is
+                    the only way to pass request parameters into the stylesheet: use the controller
+                    query to transform the request parameter into a request attribute and pass that
+                    to the view.</para>
+
+                <para>However, depending on the XSLT engine used, automatic conversion of types
+                    between eXist/Java and the XSLT processor may not always work. It might be good
+                    to limit your attribute values to nodes or strings.</para>
+            </section>
+        </section>
+
     </chapter>
 </book>
