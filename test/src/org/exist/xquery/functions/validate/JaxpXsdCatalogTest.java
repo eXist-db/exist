@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: JingSchematronTest.java 9705 2009-08-08 13:52:37Z dizzzz $
+ * $Id$
  */
 package org.exist.xquery.functions.validate;
 

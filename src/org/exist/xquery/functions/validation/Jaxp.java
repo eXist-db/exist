@@ -145,7 +145,7 @@ public class Jaxp extends BasicFunction {
         Shared.xmlreportText)),
         new FunctionSignature(
         new QName("jaxp-parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
-        "Parse document in validating more, all defaults are filled in according to the " +
+        "Parse document in validating mode, all defaults are filled in according to the " +
         "grammar (xsd).",
         new SequenceType[]{
             new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
@@ -155,7 +155,7 @@ public class Jaxp extends BasicFunction {
             new FunctionParameterSequenceType("catalogs", Type.ITEM, Cardinality.ZERO_OR_MORE,
             catalogTxt),},
         new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-        "Parsed document"))
+        "the parsed document."))
     };
 
     public Jaxp(XQueryContext context, FunctionSignature signature) {
