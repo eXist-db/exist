@@ -18,7 +18,7 @@ public class QueryResult {
 	protected long queryTime = 0;
 	protected Sequence result;
     protected Properties serialization = null;
-	protected long timestamp = 0;
+	protected long timestamp = 0; 
 	
 	// set upon failure
 	protected XPathException exception = null;

@@ -2451,6 +2451,7 @@ public class RpcConnection implements RpcAPI {
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
         int id = factory.resultSets.add(queryResult);
         ret.put("id", new Integer(id));
+        ret.put("hash", new Integer(queryResult.hashCode()));
         ret.put("results", result);
         return ret;
     }
@@ -2561,7 +2562,13 @@ public class RpcConnection implements RpcAPI {
         LOG.debug("removed query result with handle " + handle);
         return true;
     }
-    
+
+    public boolean releaseQueryResult(int handle, int hash) {
+        factory.resultSets.remove(handle, hash);
+        LOG.debug("removed query result with handle " + handle);
+        return true;
+    }
+
     /**
      * The method <code>remove</code>
      *
@@ -2932,7 +2939,7 @@ public class RpcConnection implements RpcAPI {
 			broker = factory.getBrokerPool().get(user);
 			QueryResult qr = factory.resultSets.get(resultId);
 			if (qr == null)
-				throw new EXistException("result set unknown or timed out");
+				throw new EXistException("result set unknown or timed out: " + resultId);
 			qr.timestamp = System.currentTimeMillis();
 			Item item = qr.result.itemAt(num);
 			if (item == null)
