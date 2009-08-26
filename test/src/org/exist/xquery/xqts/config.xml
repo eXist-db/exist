@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: config.xml.tmpl 7575 2008-03-30 17:58:32Z wolfgang_m $ -->
+<config>
+    <!-- 
+    		A file system path pointing to the base directory where you 
+    		unzipped XQTS.
+    		
+    		Note:
+    		- basedir must end with a '/'.
+    		- please use '/' on wind32 too.
+    		- eXist 1.0 can execute upto XQTS revision 0_9_0.
+    		- eXist 1.1 can execute all XQTS versions.
+    		
+   	-->
+    <basedir>test/external/XQTS_1_0_2/</basedir>
+    <!--
+    	"database": store source documents in the database (default).
+    	"memory": test in-memory processing. Source documents will be kept in memory.
+    -->
+    <mode>database</mode>
+</config>

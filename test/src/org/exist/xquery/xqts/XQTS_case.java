@@ -21,77 +21,91 @@
  */
 package org.exist.xquery.xqts;
 
-
 import java.io.File;
-import java.io.IOException;
 
-import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.EXistException;
-import org.exist.TestUtils;
-import org.exist.security.SecurityManager;
-import org.exist.security.xacml.AccessContext;
+import junit.framework.Assert;
+
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DefaultLogger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.ProjectHelper;
 import org.exist.source.FileSource;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Sequence;
+import org.exist.xmldb.XQueryService;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.w3c.dom.Element;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
-public class XQTS_case extends XMLTestCase {
+public class XQTS_case {
 
-    public static Database database;
+	public static org.exist.start.Main database = null;
+	private static int inUse = 0;
+	protected static Collection testCollection = null;
 	
-	/**
-	 * @throws java.lang.Exception
-	 */
+	private static Thread shutdowner = null;
+
+	static class Shutdowner implements Runnable {
+
+		public void run() {
+			try {
+				Thread.sleep(2 * 60 * 1000);
+
+				if (inUse == 0) {
+					database.shutdown();
+
+					System.out.println("database was shutdown");
+					database = null;
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+		
+	}
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-        try {
-            // initialize driver
-            Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+		try {
+			if (database == null) {
+				database = new org.exist.start.Main("jetty");
+				database.run(new String[] { "jetty" });
 
-            Collection root =
-                    DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-            CollectionManagementService service =
-                    (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection testCollection = service.createCollection("test");
-            assertNotNull(testCollection);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+				testCollection = DatabaseManager.getCollection(
+						"xmldb:exist:///db/XQTS", "admin", null);
+				if (testCollection == null) {
+					loadXQTS();
+					testCollection = DatabaseManager.getCollection(
+							"xmldb:exist:///db/XQTS", "admin", null);
+					if (testCollection == null) {
+						Assert.fail("There is no XQTS data at database");
+					}
+				}
+				if (shutdowner == null) {
+					shutdowner = new Thread(new Shutdowner());
+					shutdowner.start();
+				}
+			}
+			inUse++;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("setUpBeforeClass PASSED");
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-        // testCollection.removeResource( testCollection .getResource(file_name));
-        TestUtils.cleanupDB();
-        DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) DatabaseManager.getCollection("xmldb:exist:///db", "admin", null).getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
-        DatabaseManager.deregisterDatabase(database);
-        database = null;
-
-        System.out.println("tearDown PASSED");
+		inUse--;
+		System.out.println("tearDownAfterClass PASSED");
 	}
 
 	/**
@@ -99,6 +113,7 @@ public class XQTS_case extends XMLTestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		// System.out.println("setUp PASSED");
 	}
 
 	/**
@@ -106,39 +121,59 @@ public class XQTS_case extends XMLTestCase {
 	 */
 	@After
 	public void tearDown() throws Exception {
+		// System.out.println("tearDown PASSED");
 	}
-	
-	protected void groupCase(String testGroup, String testCase) {
-		BrokerPool pool;
-		try {
-			pool = BrokerPool.getInstance();
-		
-			DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
-        
-			//execute an xquery
-			XQuery service = broker.getXQueryService();
-			assertNotNull(service);
-        
-			File buildFile = new File("webapp/xqts/xqts_test.xql");
 
-			CompiledXQuery compiled = service.compile(service.newContext(AccessContext.TEST), new FileSource(buildFile, "UTF-8", true));
-			assertNotNull(compiled);
-        
-//        compiled.
-			Sequence result = service.execute(compiled, null);
-			assertNotNull(result);
-       
-			assertEquals(0, result.getItemCount());
-        
-			System.out.println(result);
-		} catch (EXistException e) {
-			fail(e.toString());
-		} catch (IOException e) {
-			fail(e.toString());
-		} catch (XPathException e) {
-			fail(e.toString());
+	private static void loadXQTS() {
+		File buildFile = new File("webapp/xqts/build.xml");
+		Project p = new Project();
+		p.setUserProperty("ant.file", buildFile.getAbsolutePath());
+		p.setUserProperty("config.basedir", "../../test/external/XQTS_1_0_2");
+		DefaultLogger consoleLogger = new DefaultLogger();
+		consoleLogger.setErrorPrintStream(System.err);
+		consoleLogger.setOutputPrintStream(System.out);
+		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
+		p.addBuildListener(consoleLogger);
+
+		try {
+			p.fireBuildStarted();
+			p.init();
+			ProjectHelper helper = ProjectHelper.getProjectHelper();
+			p.addReference("ant.projectHelper", helper);
+			helper.parse(p, buildFile);
+			p.executeTarget("store");
+			p.fireBuildFinished(null);
+			Thread.sleep(60 * 1000);
+		} catch (BuildException e) {
+			p.fireBuildFinished(e);
+		} catch (InterruptedException e) {
 		}
 	}
 
+	protected void groupCase(String testGroup, String testCase) {
+		BrokerPool pool;
+		try {
+			XQueryService service = (XQueryService) testCollection.getService(
+					"XQueryService", "1.0");
+
+			File xqts = new File("test/src/org/exist/xquery/xqts/xqts.xql");
+
+			service.declareVariable("testGroup", testGroup);
+			service.declareVariable("testCase", testCase);
+
+			ResourceSet result = service.execute(new FileSource(xqts, "UTF8",
+					true));
+
+			Assert.assertEquals(1, result.getSize());
+
+			XMLResource resource = (XMLResource) result.getResource(0);
+
+			Element root = (Element) resource.getContentAsDOM();
+			Assert.assertEquals(resource.getContent().toString(), "pass", root.getAttribute("result"));
+
+		} catch (XMLDBException e) {
+			Assert.fail(e.toString());
+		}
+	}
 
 }
