@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="defaultTest" targetNamespace="defaultTest">
+
+    <xs:element name="root">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="color" type="xs:string" default="red"/>
+                <xs:element name="shoesize" default="43">
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:integer">
+                                <xs:attribute name="country" type="xs:string" default="nl"/>
+                            </xs:extension>
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
