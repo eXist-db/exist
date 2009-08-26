@@ -466,6 +466,11 @@
             <fileset dir="${src.webapp}/WEB-INF/logs" excludes=".DO_NOT_DELETE" includes="*"/>
         </delete>
 
+        <delete>
+            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts" includes="*" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
+            <fileset dir="${junit.reports}/external" includes="*"/>
+        </delete>
+
         <delete dir="${junit.reports}/junit"/>
         <delete dir="${junit.reports}/pmd"/>
         <delete dir="${junit.reports}/jdepend"/>
