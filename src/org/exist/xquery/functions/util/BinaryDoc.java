@@ -62,7 +62,7 @@ public class BinaryDoc extends BasicFunction {
         ),
         new FunctionSignature(
             new QName("binary-doc-available", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Checks if the binary resource identified by $a is available.",
+            "Checks if the binary resource identified by $binary-resource is available.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "The path to the binary resource")
             },
@@ -70,7 +70,7 @@ public class BinaryDoc extends BasicFunction {
         ),
         new FunctionSignature(
             new QName("is-binary-doc", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Checks if the resource identified by $a is a binary resource.",
+            "Checks if the resource identified by $binary-resource is a binary resource.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("binary-resource", Type.STRING, Cardinality.ZERO_OR_ONE, "The path to the binary resource")
             },
