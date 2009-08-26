@@ -371,6 +371,9 @@ return $m]]></programlisting>
                 the available indexes. All the rules and hints given in the <ulink url="tuning.xml"
                     >tuning</ulink> guide do fully apply to the Lucene index.</para>
 
+            <para>To present search results in a <emphasis>Keywords in Context</emphasis> format, you
+                may want to have a look at eXist's <ulink url="kwic.xml">KWIC</ulink> module.</para>
+
             <section>
                 <title>Describing Queries in XML</title>
 
