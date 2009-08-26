@@ -298,4 +298,31 @@
         <sleep seconds="10"/>
     </target>
 
+    <!-- External tests -->
+
+    <target name="download-xqts" description="Download XQTS file.">
+        <mkdir dir="${junit.reports}/external"/>
+
+        <!-- XML Query Test Suite -->
+        <!-- http://www.w3.org/XML/Query/test-suite/          -->
+        <get src="http://www.w3.org/XML/Query/test-suite/XQTS_1_0_2.zip"
+            dest="${junit.reports}/external/XQTS_1_0_2.zip" verbose="true" usetimestamp="true"/>
+
+        <unzip src="${junit.reports}/external/XQTS_1_0_2.zip" dest="${junit.reports}/external/XQTS_1_0_2"/>
+    </target>
+
+    <!-- Test XQTS : XML Query Test Suite -->
+    <target name="test-xqts" depends="download-xqts, jar">
+        <echo message="--------------"/>
+        <echo message="XQTS tests    "/>
+        <echo message="--------------"/>
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <test name="org.exist.xquery.xqts.XQTS_1_0_2.AllTests" todir="${junit.reports.dat}"/>
+        </junit>
+    </target>
 </project>
