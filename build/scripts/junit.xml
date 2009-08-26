@@ -300,7 +300,9 @@
 
     <!-- External tests -->
 
-    <target name="download-xqts" description="Download XQTS file.">
+    <available file="${junit.reports}/external/XQTS_1_0_2" property="xqts.present"/>
+
+    <target name="download-xqts" description="Download XQTS file." unless="xqts.present">
         <mkdir dir="${junit.reports}/external"/>
 
         <!-- XML Query Test Suite -->
@@ -311,8 +313,27 @@
         <unzip src="${junit.reports}/external/XQTS_1_0_2.zip" dest="${junit.reports}/external/XQTS_1_0_2"/>
     </target>
 
+    <available file="${junit.reports}/src/org/exist/xquery/xqts/XQTS_1_0_2" property="xqts_junit.present"/>
+
+    <target name="prepare-xqts" depends="download-xqts, jar" unless="xqts_junit.present">
+        <echo message="---------------------------------------"/>
+        <echo message="Generating junit tests from XQTS ......"/>
+        <echo message="---------------------------------------"/>
+        <delete failonerror="false">
+            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
+        </delete>
+        <java classname="org.exist.xquery.xqts.XQTS_To_junit">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.jmxagent" value="" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+        </java>
+        <echo>JUnit tests generated.</echo>
+    </target>
+
     <!-- Test XQTS : XML Query Test Suite -->
-    <target name="test-xqts" depends="download-xqts, jar">
+    <target name="test-xqts" depends="prepare-xqts, test-prepare">
         <echo message="--------------"/>
         <echo message="XQTS tests    "/>
         <echo message="--------------"/>
