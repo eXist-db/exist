@@ -19,6 +19,7 @@ declare variable $dq:FIELDS :=
 	<fields>
 		<field name="title">section[ft:query(.//title, '$q')]</field>
 		<field>section[ft:query(., '$q')]</field>
+		<!--field>chapter[ft:query(title, '$q')]</field-->
 	</fields>;
 
 declare variable $dq:CHARS_SUMMARY := 120;
@@ -40,9 +41,9 @@ as element()* {
 		<config xmlns="" width="{if ($mode eq 'summary') then $dq:CHARS_SUMMARY else $dq:CHARS_KWIC}"
 			table="{if ($mode eq 'summary') then 'no' else 'yes'}"
 			link="{$uri}"/>
-			
     let $matches := kwic:get-matches($hit)
-    for $ancestor in $matches/ancestor::para | $matches/ancestor::title | $matches/ancestor::td
+    for $ancestor in ($matches/ancestor::para | $matches/ancestor::title | $matches/ancestor::td |
+        $matches/ancestor::note)
     return
         kwic:get-summary($ancestor, ($ancestor//exist:match)[1], $config) 
 };
@@ -50,8 +51,8 @@ as element()* {
 (:~
 	Print the hierarchical context of a hit.
 :)
-declare function dq:print-headings($section as element(section)*, $docXPath as xs:string) {
-	$section/ancestor::chapter/title//text(),
+declare function dq:print-headings($section as element()*, $docXPath as xs:string) {
+	$section/ancestor-or-self::chapter/title//text(),
 	for $s at $p in $section/ancestor-or-self::section
 	let $nodeId := util:node-id($s)
 	let $uri := concat("../",

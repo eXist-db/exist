@@ -207,6 +207,16 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 };
 
 (:~
+    Expand the element in $hit. Creates an in-memory copy of the element and marks
+    all matches with an exist:match tag, which will be used by all other functions in
+    this module. You need to call kwic:expand before kwic:get-summary. 
+    kwic:summarize will call it automatically.
+:)
+declare function kwic:expand($hit as element()) as element() {
+    util:expand($hit, "expand-xincludes=no")
+};
+
+(:~
     Return all matches within the specified element, $hit. Matches are returned as
     exist:match elements. The returned nodes are part of a new document whose
     root element is a copy of the specified $hit element.
@@ -215,8 +225,12 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 		operations or an ngram search.
 :)
 declare function kwic:get-matches($hit as element()) as element(exist:match)* {
-    let $expanded := util:expand($hit, "expand-xincludes=no")
+    let $expanded := kwic:expand($hit)
 	return $expanded//exist:match
+};
+
+declare function kwic:summarize($hit as element(), $config as element(config)) as element()* {
+    kwic:summarize($hit, $config, ())
 };
 
 (:~
@@ -243,10 +257,10 @@ declare function kwic:get-matches($hit as element()) as element(exist:match)* {
 		operations or an ngram search.
 	@param $config configuration element to configure the behaviour of the function
 :)
-declare function kwic:summarize($hit as element(), $config as element(config))
-as element()* {
+declare function kwic:summarize($hit as element(), $config as element(config), 
+    $callback as function?) as element()* {
     let $expanded := util:expand($hit, "expand-xincludes=no")
 	for $match in $expanded//exist:match
 	return
-		kwic:get-summary($expanded, $match, $config)
+		kwic:get-summary($expanded, $match, $config, $callback)
 };
