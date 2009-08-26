@@ -42,7 +42,7 @@ public class DeprecatedExtRegexpOr extends DeprecatedExtRegexp {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("match-any", Function.BUILTIN_FUNCTION_NS),
-				"eXist-specific extension function. Tries to match each of the regular expression " +
+				"Tries to match each of the regular expression " +
 				"strings passed in $regular-expression and all following parameters against the keywords contained in " +
 				"the old fulltext index. The keywords found are then compared to the node set in $nodes. Every " +
 				"node containing any of the keywords is copied to the result sequence.",

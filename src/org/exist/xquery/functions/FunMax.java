@@ -52,7 +52,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunMax extends CollatingFunction {
 
-	protected static final String FUNCTION_DESCRIPTION =
+	protected static final String FUNCTION_DESCRIPTION_COMMON_1 =
 		"Selects an item from the input sequence $arg whose value is " +
 		"greater than or equal to the value of every other item in the " +
 		"input sequence. If there are two or more such items, then the " +
@@ -60,7 +60,7 @@ public class FunMax extends CollatingFunction {
 		"The following rules are applied to the input sequence:\n\n" +
 		"- Values of type xs:untypedAtomic in $arg are cast to xs:double.\n" +
 		"- Numeric and xs:anyURI values are converted to the least common " +
-		"type that supports the ge operator by a combination of type " +
+		"type that supports the 'ge' operator by a combination of type " +
 		"promotion and subtype substitution. See Section B.1 Type " +
 		"PromotionXP and Section B.2 Operator MappingXP.\n\n" +
 		"The items in the resulting sequence may be reordered in an arbitrary " +
@@ -69,7 +69,7 @@ public class FunMax extends CollatingFunction {
 		"rather than the input sequence.\n\n" +
 		"If the converted sequence is empty, the empty sequence is returned.\n\n" +
 		"All items in $arg must be numeric or derived from a single base type " + 
-		"for which the ge operator is defined. In addition, the values in the " +
+		"for which the 'ge' operator is defined. In addition, the values in the " +
 		"sequence must have a total order. If date/time values do not have a " +
 		"timezone, they are considered to have the implicit timezone provided " +
 		"by the dynamic context for purposes of comparison. Duration values " +
@@ -80,8 +80,11 @@ public class FunMax extends CollatingFunction {
 		"If the items in the value of $arg are of type xs:string or types " +
 		"derived by restriction from xs:string, then the determination of " + 
 		"the item with the largest value is made according to the collation " +
-		"that is used. If the type of the items in $arg is not xs:string " + 
-		"and $collation is specified, the collation is ignored.\n\n" +
+		"that is used.";
+	protected static final String FUNCTION_DESCRIPTION_2_PARAM =
+    "If the type of the items in $arg is not xs:string " + 
+		"and $collation-uri is specified, the collation is ignored.\n\n";
+    protected static final String FUNCTION_DESCRIPTION_COMMON_2 =
 		"The collation used by the invocation of this function is " +
 		"determined according to the rules in 7.3.1 Collations.";
 
@@ -89,7 +92,8 @@ public class FunMax extends CollatingFunction {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION,
+					FUNCTION_DESCRIPTION_COMMON_1 +
+                    FUNCTION_DESCRIPTION_COMMON_2,
 					new SequenceType[] {
 						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence")
 					},
@@ -97,10 +101,11 @@ public class FunMax extends CollatingFunction {
 			),
 			new FunctionSignature(
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION,
+					FUNCTION_DESCRIPTION_COMMON_1  + FUNCTION_DESCRIPTION_2_PARAM +
+                    FUNCTION_DESCRIPTION_COMMON_2,
 					new SequenceType[] {
 						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence"),
-						new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation")
+						new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 					},
 					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
 			)
