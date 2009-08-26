@@ -103,9 +103,12 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             
             Object[] resources = (Object[]) result.get("results");
             int handle = -1;
-            if(resources != null && resources.length > 0)
+            int hash = -1;
+            if(resources != null && resources.length > 0) {
             	handle = ((Integer)result.get("id")).intValue();
-            return new RemoteResourceSet( collection, outputProperties, resources, handle );
+                hash = ((Integer)result.get("hash")).intValue();
+            }
+            return new RemoteResourceSet( collection, outputProperties, resources, handle, hash );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -256,9 +259,12 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			
 			Object[] resources = (Object[]) result.get("results");
 			int handle = -1;
-			if(resources != null && resources.length > 0)
+            int hash = -1;
+			if(resources != null && resources.length > 0) {
 				handle = ((Integer) result.get("id")).intValue();
-			return new RemoteResourceSet(collection, outputProperties, resources, handle);
+                hash = ((Integer)result.get("hash")).intValue();
+            }
+			return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
         } catch (XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         } catch (IOException ioe) {

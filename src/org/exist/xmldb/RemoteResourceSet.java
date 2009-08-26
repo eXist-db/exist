@@ -29,13 +29,15 @@ public class RemoteResourceSet implements ResourceSet {
 
     protected RemoteCollection collection;
     protected int handle = -1;
+    protected int hash = -1;
     protected List resources;
     protected Properties outputProperties;
     
     private static Logger LOG = Logger.getLogger(RemoteResourceSet.class.getName());
 
-    public RemoteResourceSet( RemoteCollection col, Properties properties, Object[] resources, int handle ) {
+    public RemoteResourceSet(RemoteCollection col, Properties properties, Object[] resources, int handle, int hash) {
         this.handle = handle;
+        this.hash = hash;
         this.resources = new ArrayList(resources.length);
         for (int i = 0; i < resources.length; i++) {
             this.resources.add(resources[i]);
@@ -49,13 +51,19 @@ public class RemoteResourceSet implements ResourceSet {
     }
 
     public void clear() throws XMLDBException {
+        if (handle < 0)
+            return;
         List params = new ArrayList(1);
     	params.add(new Integer(handle));
+        if (hash > -1)
+            params.add(new Integer(hash));
         try {
             collection.getClient().execute("releaseQueryResult", params);
         } catch (XmlRpcException e) {
             System.err.println("Failed to release query result on server: " + e.getMessage());
         }
+        handle = -1;
+        hash = -1;
         resources.clear();
     }
 

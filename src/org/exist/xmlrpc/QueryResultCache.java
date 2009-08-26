@@ -49,6 +49,12 @@ public class QueryResultCache {
             results[pos] = null;
     }
 
+    public void remove(int pos, int hash) {
+        if (pos > -1 && pos < results.length && (results[pos] == null || results[pos].hashCode() == hash)) { 
+            results[pos] = null;
+        }
+    }
+
     public void checkTimestamps() {
         final long now = System.currentTimeMillis();
         for (int i = 0; i < results.length; i++) {
