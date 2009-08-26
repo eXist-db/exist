@@ -31,6 +31,7 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 
 rem try to guess (will be set by the installer)
 set EXIST_HOME=.
+
 if exist %EXIST_HOME%\start.jar goto gotExistHome
 set EXIST_HOME=..
 if exist %EXIST_HOME%\start.jar goto gotExistHome

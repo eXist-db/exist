@@ -1,5 +1,7 @@
 @echo off
 
+rem $Id$
+
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
 rem will be set by the installer

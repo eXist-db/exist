@@ -1,14 +1,16 @@
 @echo off
 
+rem $Id$
+
+if not "%JAVA_HOME%" == "" goto gotJavaHome
+set JAVA_HOME=$JDKPath
+
+:gotJavaHome
 rem will be set by the installer
 if not "%EXIST_HOME%" == "" goto gotExistHome
 set EXIST_HOME=$INSTALL_PATH
 
 :gotExistHome
-if not "%JAVA_HOME%" == "" goto gotJavaHome
-set JAVA_HOME=$JDKPath
-
-:gotJavaHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
 set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%ANT_HOME%\lib\junit-4.5.jar;%JAVA_HOME%\lib\tools.jar
 

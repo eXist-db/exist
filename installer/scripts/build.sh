@@ -1,9 +1,5 @@
 #!/bin/bash
-
-# will be set by the installer
-if [ -z "$EXIST_HOME" ]; then
-	EXIST_HOME="%{INSTALL_PATH}"
-fi
+# $Id$
 
 if [ -z "$JAVA_HOME" ]; then
     JAVA_HOME="%{JDKPath}"
@@ -13,7 +9,10 @@ if [ ! -d "$JAVA_HOME" ]; then
     JAVA_HOME="%{JAVA_HOME}"
 fi
 
-JAVA_CMD="$JAVA_HOME/bin/java"
+# will be set by the installer
+if [ -z "$EXIST_HOME" ]; then
+	EXIST_HOME="%{INSTALL_PATH}"
+fi
 
 ANT_HOME="$EXIST_HOME/tools/ant"
 
@@ -26,4 +25,4 @@ JAVA_OPTS="-Dant.home=$ANT_HOME -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist
 echo Starting Ant...
 echo
 
-$JAVA_HOME/bin/java -Xms128m -Xmx512m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
+$JAVA_HOME/bin/java -Xms512m -Xmx2048m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
