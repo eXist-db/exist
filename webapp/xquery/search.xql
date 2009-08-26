@@ -23,7 +23,7 @@ declare variable $dq:FIELDS :=
 	</fields>;
 
 declare variable $dq:CHARS_SUMMARY := 120;
-declare variable $dq:CHARS_KWIC := 40;
+declare variable $dq:CHARS_KWIC := 60;
 
 (:~
 	Display the hits: this function iterates through all hits and calls

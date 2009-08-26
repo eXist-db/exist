@@ -83,6 +83,27 @@ return
 }</toc>]]></code>
     </query>
     <query>
+        <description>Keywords in Context</description>
+        <code><![CDATA[import module namespace kwic="http://exist-db.org/xquery/kwic";
+
+declare function local:filter($node as node(), $mode as xs:string) as xs:string? {
+  if ($node/parent::SPEAKER or $node/parent::STAGEDIR) then 
+      ()
+  else if ($mode eq 'before') then 
+      concat($node, ' ')
+  else 
+      concat(' ', $node)
+};
+
+<table>{
+    for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "nature")]
+    order by ft:score($hit) descending
+    return
+        kwic:summarize($hit, <config width="40" table="yes"/>,
+            util:function(xs:QName("local:filter"), 2))
+}</table>]]></code>
+    </query>
+    <query>
             <description>Find books by author</description>
             <code><![CDATA[xquery version "1.0";
 declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
