@@ -9,6 +9,10 @@ if [ "$JAVA_HOME" = "" ] ; then
   exit 1
 fi
 
+if [ ! -d "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
+fi
+
 if [ -z "$EXIST_HOME" ]; then
     P=$(dirname $0)
 
