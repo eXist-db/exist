@@ -123,7 +123,7 @@ public class XQTS_To_junit {
 		File xqtsFile = new File("webapp/xqts/build.xml");
 		Project p = new Project();
 		p.setUserProperty("ant.file", buildFile.getAbsolutePath());		
-		p.setUserProperty("config.basedir", "../../test/external/XQTS");		
+		p.setUserProperty("config.basedir", "../../test/external/XQTS_1_0_2");		
 		DefaultLogger consoleLogger = new DefaultLogger();
 		consoleLogger.setErrorPrintStream(System.err);
 		consoleLogger.setOutputPrintStream(System.out);

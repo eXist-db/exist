@@ -99,13 +99,13 @@ public class XQTS_case {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("setUpBeforeClass PASSED");
+//		System.out.println("setUpBeforeClass PASSED");
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		inUse--;
-		System.out.println("tearDownAfterClass PASSED");
+//		System.out.println("tearDownAfterClass PASSED");
 	}
 
 	/**

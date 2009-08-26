@@ -302,7 +302,7 @@
 
     <available file="${junit.reports}/external/XQTS_1_0_2" property="xqts.present"/>
 
-    <target name="download-xqts" description="Download XQTS file." unless="xqts.present">
+    <target name="download-xqts" description="Download XQTS file." > <!-- unless="xqts.present" -->
         <mkdir dir="${junit.reports}/external"/>
 
         <!-- XML Query Test Suite -->
