@@ -20,6 +20,14 @@
  */
 package org.exist;
 
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Observer;
+import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.apache.log4j.Logger;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
@@ -28,17 +36,13 @@ import org.exist.util.SingleInstanceConfiguration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
+import org.exist.xquery.functions.system.GetVersion;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpListener;
 import org.mortbay.jetty.Server;
+import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.Observer;
-
-import org.mortbay.util.MultiException;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -48,6 +52,8 @@ import org.mortbay.util.MultiException;
  * @author wolf
  */
 public class JettyStart {
+	
+	protected static final Logger logger = Logger.getLogger(JettyStart.class);
 
 	public static void main(String[] args) {
 		JettyStart start = new JettyStart();
@@ -61,22 +67,57 @@ public class JettyStart {
 	
 	public void run(String[] args, Observer observer) {
 		if (args.length == 0) {
-			System.out.println("No configuration file specified!");
+			logger.info("No configuration file specified!");
 			return;
 		}
 		
 		String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
 		boolean registerShutdownHook = shutdownHookOption.equals("true");
 		
+		Properties sysProperties = new Properties();
+		try
+		{
+			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		
+		
 		// configure database
-		System.out.println("Configuring eXist from " + SingleInstanceConfiguration.getPath());
-        System.out.println();
-        System.out.println("Running with Java "+
+		logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
+        logger.info("");
+        logger.info("Running with Java "+
                 System.getProperty("java.version", "(unknown java.version)") + " [" +
                 System.getProperty("java.vendor", "(unknown java.vendor)") + " (" +
                 System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in " +
                 System.getProperty("java.home", "(unknown java.home)") +"]");
-        System.out.println();
+        logger.info("");
+        
+        String msg;
+        msg = "[eXist Version : " + sysProperties.get("product-version") + "]";
+        logger.info(msg);
+        msg = "[eXist Build : " + sysProperties.get("product-build") + "]";
+        logger.info(msg);
+        msg = "[eXist Home : " + System.getProperty("exist.home", "(unknown java.version)") + "]";
+        logger.info(msg);
+        msg = "[SVN Revision : " + sysProperties.get("svn-revision") + "]";
+        logger.info(msg);
+        msg = "[Operating System : " + 
+        		System.getProperty("os.name") +
+        		" " +
+        		System.getProperty("os.version") +
+                " " +
+                System.getProperty("os.arch") + 
+                "]";
+        logger.info(msg);
+        
+        msg = "[jetty.home : " + System.getProperty("jetty.home", "(unknown java.version)") + "]";
+        logger.info(msg);
+        msg = "[log4j.configuration : " + System.getProperty("log4j.configuration", "(unknown java.version)") + "]";
+        logger.info(msg);
         
 		try {
 			// we register our own shutdown hook
@@ -102,7 +143,7 @@ public class JettyStart {
             configureCluster(config);
 
         } catch (Exception e) {
-			System.err.println("configuration error: " + e.getMessage());
+			logger.error("configuration error: ", e);
 			e.printStackTrace();
 			return;
 		}
@@ -130,12 +171,12 @@ public class JettyStart {
             }
 
             HttpContext[] contexts = server.getContexts();
-            System.out.println("----------------------------------------------------------------");
-            System.out.println("eXist-db has started on port" + ports + ". Configured contexts:");
+            logger.info("----------------------------------------------------------------");
+            logger.info("eXist-db has started on port" + ports + ". Configured contexts:");
             for (int i = 0; i < contexts.length; i++) {
-                System.out.println("http://localhost:" + port + contexts[i].getContextPath());                
+                logger.info("http://localhost:" + port + contexts[i].getContextPath());                
             }
-            System.out.println("----------------------------------------------------------------");
+            logger.info("----------------------------------------------------------------");
             
             if (registerShutdownHook) {
 				// register a shutdown hook for the server
@@ -162,11 +203,11 @@ public class JettyStart {
             for(Object t : e.getExceptions()){
                 if(t instanceof java.net.BindException){
                     hasBindException=true;
-                    System.out.println("----------------------------------------------------------");
-                    System.out.println("ERROR: Could not start jetty, port "
+                    logger.info("----------------------------------------------------------");
+                    logger.info("ERROR: Could not start jetty, port "
                             + port + " is already in use.   ");
-                    System.out.println(t.toString());
-                    System.out.println("----------------------------------------------------------");
+                    logger.info(t.toString());
+                    logger.info("----------------------------------------------------------");
                 }
             }
 
@@ -197,7 +238,7 @@ public class JettyStart {
 		}
 
 		public void shutdown(String dbname, int remainingInstances) {
-			System.err.println("Database shutdown: stopping server in 1sec ...");
+			logger.error("Database shutdown: stopping server in 1sec ...");
 			if (remainingInstances == 0) {
 				// give the webserver a 1s chance to complete open requests
 				Timer timer = new Timer();

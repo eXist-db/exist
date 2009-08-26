@@ -109,6 +109,13 @@
     
     <!-- Section: CATEGORIES -->
     
+    <category name="org.exist.JettyStart" additivity="false">
+        <priority value="trace"/>
+        <appender-ref ref="console"/>
+        <appender-ref ref="exist.core"/>
+        <appender-ref ref="exist.xmldb"/>
+    </category>
+    
     <category name="xquery.profiling" additivity="false">
         <priority value="trace"/>
         <appender-ref ref="exist.profiling"/>
