@@ -51,9 +51,11 @@ public class CatchFunction extends Function {
 		new FunctionSignature(
 			new QName("catch", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"This function corresponds to a try-catch statement in Java. The code block " +
-			"in $b will be put inside a try-catch statement. If an exception is thrown while executing " +
-			"$b, the function checks the name of the exception and calls $c if it matches one of " +
-			"the fully qualified Java class names specified in $a.  A value of \"*\" in $a will catch all java exceptions",
+			"in $try-code-blocks will be put inside a try-catch statement. If an exception " +
+            "is thrown while executing $try-code-blocks, the function checks the name of " +
+            "the exception and calls $catch-code-blocks if it matches one of " +
+			"the fully qualified Java class names specified in $java-classnames.  " +
+            "A value of \"*\" in $java-classnames will catch all java exceptions",
 			new SequenceType[] {
 					new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
 					new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
