@@ -155,7 +155,7 @@ public class DescribeFunction extends Function {
             if(returnType != null){             
                 if (returnType instanceof FunctionReturnSequenceType) {
                     description.append("\n");
-                    description.append("Result:\n");
+                    description.append("Returns ");
                     FunctionReturnSequenceType fp
                                 = (FunctionReturnSequenceType) returnType;
                         description.append(fp.getDescription());
