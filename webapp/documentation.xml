@@ -161,9 +161,18 @@
                                 <td>describes command-line usage of the Java client</td>
                             </tr>
                             <tr>
+                                <td class="doclink"><ulink url="kwic.xml">KWIC display module</ulink>:</td>
+                                <td>an XQuery module to easily produce a Keywords in Context 
+                                    (KWIC) output of search results</td>
+                            </tr>
+                            <tr>
                                 <td class="doclink"><ulink url="ldap-security.xml">LDAP Security
                                         Manager</ulink>:</td>
                                 <td>configuring eXist to use LDAP for users and groups.</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="lucene.xml">Lucene-based Full Text Index</ulink>:</td>
+                                <td>Apache Lucene integrated into eXist's XQuery engine</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="scheduler.xml">Scheduler
