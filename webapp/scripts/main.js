@@ -12,15 +12,19 @@ YAHOO.util.Event.onDOMReady(function () {
 });
 
 function loadTwitter() {
-	var script = document.createElement("script");
-	script.setAttribute('src', 'xquery/twitter.xql?mode=json&user=existdb&max=3');
-    document.getElementsByTagName('head')[0].appendChild(script);
+    if (document.getElementById('news_content')) {
+    	var script = document.createElement("script");
+    	script.setAttribute('src', 'xquery/twitter.xql?mode=json&user=existdb&max=3');
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
 }
 
 function loadRss() {
-    var script = document.createElement("script");
-    script.setAttribute('src', 'feed.xql');
-    document.getElementsByTagName('head')[0].appendChild(script);
+    if (document.getElementById('news_content')) {
+        var script = document.createElement("script");
+        script.setAttribute('src', 'feed.xql');
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
 }
 
 function atomCallback(html) {
