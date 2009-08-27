@@ -181,15 +181,21 @@ public class ForExpr extends BindingExpression {
             } 
         }         
         
-		// Save the local variable stack
+		// Check if we can speed up the processing of the "order by" clause.
+		boolean fastOrderBy = false; // checkOrderSpecs(in);
+		
+		LocalVariable var;
+		Sequence in;
+
+        // Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
 		try {
 			// Evaluate the "in" expression
-			Sequence in = inputSequence.eval(contextSequence, null);
+			in = inputSequence.eval(contextSequence, null);
 			clearContext(getExpressionId(), in);
 			
 			// Declare the iteration variable
-			LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+			var = new LocalVariable(QName.parse(context, varName, null));
 			var.setSequenceType(sequenceType);
 			context.declareVariableBinding(var);      
 			
@@ -214,9 +220,6 @@ public class ForExpr extends BindingExpression {
 				var.setContextDocs(in.getDocumentSet());
 			} else
 				var.setContextDocs(null);
-			
-			// Check if we can speed up the processing of the "order by" clause.
-			boolean fastOrderBy = false; // checkOrderSpecs(in);
 			
 			// See if we can process the "where" clause in a single step (instead of
 			// calling the where expression for each item in the input sequence)
@@ -325,62 +328,63 @@ public class ForExpr extends BindingExpression {
 				}
 			}
 			
-			// bv : Special processing for groupBy : one return per group in groupedSequence 
-			//TODO : positional variable ! 
-			if(groupSpecs!=null){ 
-				for(Iterator it = groupedSequence.iterate(); it.hasNext(); ){ 
-					Object key = it.next();
-					GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(key); 
-					
-					context.proceed(this); 
-					//context.setContextPosition(k); //bv : not tested 
-					
-					// set the grouping variable to current group nodes 
-					groupVar.setValue(currentGroup); 
-					groupVar.checkType(); 
-					
-					//set value of grouping keys for the current group 
-					for(int i=0; i< groupKeyVar.length ; i ++){ 
-						groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence()); 
-					}
-					
-					//evaluate real return expression 
-					val = groupReturnExpr.eval(null); 
-					resultSequence.addAll(val);
-				}
-				//Reset the context position
-				context.setContextPosition(0);
-			}
-			
-			if(orderSpecs != null && !fastOrderBy)
-				((OrderedValueSequence)resultSequence).sort();
-			
-			clearContext(getExpressionId(), in);
-			
-			if (sequenceType != null) {    
-				//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-				//only a check on empty sequence is accurate here
-				if (resultSequence.isEmpty() && !Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY))
-					throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
-						". Expected " +
-						Cardinality.getDescription(sequenceType.getCardinality()) +
-						", got " + Cardinality.getDescription(Cardinality.EMPTY));
-				//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
-				if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {    		
-					if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
-						throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
-							". Expected " +
-							Type.getTypeName(sequenceType.getPrimaryType()) +
-							", got " +Type.getTypeName(resultSequence.getItemType()));
-					//trigger the old behaviour
-				} else var.checkType();
-			}
-			
-			actualReturnType = resultSequence.getItemType();
 		} finally {
 			// restore the local variable stack 
 			context.popLocalVariables(mark);
 		}
+
+		// bv : Special processing for groupBy : one return per group in groupedSequence 
+		//TODO : positional variable ! 
+		if(groupSpecs!=null){ 
+			for(Iterator it = groupedSequence.iterate(); it.hasNext(); ){ 
+				Object key = it.next();
+				GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(key); 
+				
+				context.proceed(this); 
+				//context.setContextPosition(k); //bv : not tested 
+				
+				// set the grouping variable to current group nodes 
+				groupVar.setValue(currentGroup); 
+				groupVar.checkType(); 
+				
+				//set value of grouping keys for the current group 
+				for(int i=0; i< groupKeyVar.length ; i ++){ 
+					groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence()); 
+				}
+				
+				//evaluate real return expression 
+				Sequence val = groupReturnExpr.eval(null); 
+				resultSequence.addAll(val);
+			}
+			//Reset the context position
+			context.setContextPosition(0);
+		}
+		
+		if(orderSpecs != null && !fastOrderBy)
+			((OrderedValueSequence)resultSequence).sort();
+		
+		clearContext(getExpressionId(), in);
+		
+		if (sequenceType != null) {    
+			//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+			//only a check on empty sequence is accurate here
+			if (resultSequence.isEmpty() && !Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY))
+				throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
+					". Expected " +
+					Cardinality.getDescription(sequenceType.getCardinality()) +
+					", got " + Cardinality.getDescription(Cardinality.EMPTY));
+			//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+			if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {    		
+				if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
+					throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
+						". Expected " +
+						Type.getTypeName(sequenceType.getPrimaryType()) +
+						", got " +Type.getTypeName(resultSequence.getItemType()));
+				//trigger the old behaviour
+			} else var.checkType();
+		}
+		
+		actualReturnType = resultSequence.getItemType();
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", resultSequence);
