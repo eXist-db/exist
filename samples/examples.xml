@@ -7,7 +7,7 @@
 <example-queries>
     <query>
         <description>Simple full text query on the Shakespeare plays</description>
-        <code><![CDATA[//SPEECH[ft:query(LINE, 'love')]]]></code>
+        <code><![CDATA[//SPEECH[ft:query(., 'love')]]]></code>
     </query>
     <query>
         <description>Full text query searching for phrase</description>
@@ -49,7 +49,7 @@ let $scene := $speech/ancestor::SCENE,
     </query>
     <query>
         <description>Group hits by play</description>
-        <code><![CDATA[let $speech := //SPEECH[ft:query(LINE, "passion*")]
+        <code><![CDATA[let $speech := //SPEECH[ft:query(., "passion*")]
 let $plays := (for $s in $speech return root($s))
 for $play in $plays/PLAY
 let $hits := $play//$speech
@@ -82,6 +82,21 @@ return
         </act>
 }</toc>]]></code>
     </query>
+	<query>
+		<description>Display Keywords in Context</description>
+		<code><![CDATA[import module namespace kwic="http://exist-db.org/xquery/kwic";
+
+let $config :=
+  <config xmlns="" width="30"
+    table="no"/>
+
+for $hit in //SPEECH[ft:query(., "hell")]
+let $matches := kwic:get-matches($hit)
+for $ancestor in $matches/ancestor::SPEECH
+return
+  kwic:get-summary($ancestor, ($ancestor//exist:match)[1], $config)
+]]></code>
+	</query>
     <query>
         <description>Keywords in Context</description>
         <code><![CDATA[import module namespace kwic="http://exist-db.org/xquery/kwic";

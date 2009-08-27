@@ -32,6 +32,7 @@ return
                     <set-attribute name="xquery.source" value="{$query}"/>
 					<!-- Results should be written into attribute 'results' -->
 					<set-attribute name="xquery.attribute" value="results"/>
+					<clear-attribute name="results"/>
 					<!-- Errors should be passed through instead of terminating the request -->
 					<set-attribute name="xquery.report-errors" value="yes"/>
                 </forward>

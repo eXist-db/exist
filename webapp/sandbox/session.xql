@@ -89,10 +89,13 @@ declare function sandbox:store-in-session($results as item()*) as element(result
 	can reference a result item in the session by passing parameter 'num'.
 :)
 session:create(),
+let $input := request:get-data()
 let $results := request:get-attribute("results")
 let $pos := xs:integer(request:get-parameter("num", ()))
 return
-	if ($pos) then
+    if (string-length($input) gt 0) then
+        $input
+	else if ($pos) then
 		sandbox:retrieve($pos)
 	else
 		sandbox:store-in-session($results)
