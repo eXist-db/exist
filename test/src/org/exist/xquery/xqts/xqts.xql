@@ -564,4 +564,4 @@ declare variable $testCase external;
 let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml'),
     $case := $XQTSCatalog//catalog:test-group[@name = $testGroup]/catalog:test-case[@name = $testCase]
 return
-xqts:execute-test-case($case, fn:false())
+xqts:execute-test-case($case, fn:true())
