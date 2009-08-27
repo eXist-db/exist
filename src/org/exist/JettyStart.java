@@ -101,7 +101,7 @@ public class JettyStart {
         logger.info(msg);
         msg = "[eXist Build : " + sysProperties.get("product-build") + "]";
         logger.info(msg);
-        msg = "[eXist Home : " + System.getProperty("exist.home", "(unknown java.version)") + "]";
+        msg = "[eXist Home : " + System.getProperty("exist.home") + "]";
         logger.info(msg);
         msg = "[SVN Revision : " + sysProperties.get("svn-revision") + "]";
         logger.info(msg);
@@ -114,9 +114,9 @@ public class JettyStart {
                 "]";
         logger.info(msg);
         
-        msg = "[jetty.home : " + System.getProperty("jetty.home", "(unknown java.version)") + "]";
+        msg = "[jetty.home : " + System.getProperty("jetty.home") + "]";
         logger.info(msg);
-        msg = "[log4j.configuration : " + System.getProperty("log4j.configuration", "(unknown java.version)") + "]";
+        msg = "[log4j.configuration : " + System.getProperty("log4j.configuration") + "]";
         logger.info(msg);
         
 		try {
