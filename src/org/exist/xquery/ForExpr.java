@@ -83,63 +83,65 @@ public class ForExpr extends BindingExpression {
                 LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, groupBy[i].getKeyVarName(),null)); 
                 groupKeyVar.setSequenceType(sequenceType); 
                 context.declareVariableBinding(groupKeyVar); 
-            } 
-        }        
-         
-        // Save the local variable stack
-		LocalVariable mark = context.markLocalVariables(false);
-		
-		contextInfo.setParent(this);
-        AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
-		inputSequence.analyze(varContextInfo);
-		
-		// Declare the iteration variable
-        LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
-        inVar.setSequenceType(sequenceType);
-        inVar.setStaticType(varContextInfo.getStaticReturnType());
-		context.declareVariableBinding(inVar);
-		
-		// Declare positional variable
-		if (positionalVariable != null) {
-			//could probably be detected by the parser
-			if (varName.equals(positionalVariable))
-				throw new XPathException(this, "XQST0089: bound variable and positional variable have the same name");
-			LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
-            posVar.setSequenceType(POSITIONAL_VAR_TYPE);
-            posVar.setStaticType(Type.INTEGER);
-            context.declareVariableBinding(posVar);
+            }
         }
         
-		if(whereExpr != null) {
-			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-			newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
-			newContextInfo.setContextId(getExpressionId());
-		    whereExpr.analyze(newContextInfo);
-		}
-		// the order by specs should be analyzed by the last binding expression
-		// in the chain to have access to all variables. So if the return expression
-		// is another binding expression, we just forward the order specs.
-		if(returnExpr instanceof BindingExpression) {
-			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
-			((BindingExpression)returnExpr).analyze(newContextInfo, orderBy, groupBy); 
-		} else {
-			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
-			//analyze the order specs and the group specs 
-			if(orderBy != null) {
-			    for(int i = 0; i < orderBy.length; i++)
-			        orderBy[i].analyze(newContextInfo);
+        // Save the local variable stack
+		LocalVariable mark = context.markLocalVariables(false);
+		try {
+			
+			contextInfo.setParent(this);
+			AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+			inputSequence.analyze(varContextInfo);
+			
+			// Declare the iteration variable
+			LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+			inVar.setSequenceType(sequenceType);
+			inVar.setStaticType(varContextInfo.getStaticReturnType());
+			context.declareVariableBinding(inVar);
+			
+			// Declare positional variable
+			if (positionalVariable != null) {
+				//could probably be detected by the parser
+				if (varName.equals(positionalVariable))
+					throw new XPathException(this, "XQST0089: bound variable and positional variable have the same name");
+				LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
+				posVar.setSequenceType(POSITIONAL_VAR_TYPE);
+				posVar.setStaticType(Type.INTEGER);
+				context.declareVariableBinding(posVar);
 			}
-            if(groupBy != null) { 
-                for(int i = 0; i < groupBy.length; i++) 
-                    groupBy[i].analyze(newContextInfo); 
-            }
-			returnExpr.analyze(newContextInfo);
+			
+			if(whereExpr != null) {
+				AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+				newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
+				newContextInfo.setContextId(getExpressionId());
+				whereExpr.analyze(newContextInfo);
+			}
+			// the order by specs should be analyzed by the last binding expression
+			// in the chain to have access to all variables. So if the return expression
+			// is another binding expression, we just forward the order specs.
+			if(returnExpr instanceof BindingExpression) {
+				AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+				newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
+				((BindingExpression)returnExpr).analyze(newContextInfo, orderBy, groupBy); 
+			} else {
+				AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+				newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
+				//analyze the order specs and the group specs 
+				if(orderBy != null) {
+					for(int i = 0; i < orderBy.length; i++)
+						orderBy[i].analyze(newContextInfo);
+				}
+				if(groupBy != null) { 
+					for(int i = 0; i < groupBy.length; i++) 
+						groupBy[i].analyze(newContextInfo); 
+				}
+				returnExpr.analyze(newContextInfo);
+			}
+		} finally {
+			// restore the local variable stack
+			context.popLocalVariables(mark);
 		}
-		
-		// restore the local variable stack
-		context.popLocalVariables(mark);
     }
     
 	/**
@@ -181,206 +183,204 @@ public class ForExpr extends BindingExpression {
         
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
-		
-		// Evaluate the "in" expression
-		Sequence in = inputSequence.eval(contextSequence, null);
-        clearContext(getExpressionId(), in);
-        
-        // Declare the iteration variable
-		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
-        var.setSequenceType(sequenceType);
-		context.declareVariableBinding(var);      
-
-        registerUpdateListener(in);
-        
-        // Declare positional variable
-		LocalVariable at = null;
-		if(positionalVariable != null) {
-			at = new LocalVariable(QName.parse(context, positionalVariable, null));
-            at.setSequenceType(POSITIONAL_VAR_TYPE);
-			context.declareVariableBinding(at);
-		}
-		
-		// Assign the whole input sequence to the bound variable.
-		// This is required if we process the "where" or "order by" clause
-		// in one step.
-		var.setValue(in);		
-		
-		// Save the current context document set to the variable as a hint
-		// for path expressions occurring in the "return" clause.
-		if(in instanceof NodeSet) {
-		    var.setContextDocs(in.getDocumentSet());
-		} else
-			var.setContextDocs(null);
-
-		// Check if we can speed up the processing of the "order by" clause.
-		boolean fastOrderBy = false; // checkOrderSpecs(in);
-		
-		// See if we can process the "where" clause in a single step (instead of
-		// calling the where expression for each item in the input sequence)
-		// This is possible if the input sequence is a node set and has no
-		// dependencies on the current context item.
-		boolean fastExec = 
-			whereExpr != null && at == null &&
-			!Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
-            in.isPersistentSet() &&
-            Type.subTypeOf(in.getItemType(), Type.NODE);
-		
-		// If possible, apply the where expression ahead of the iteration
-		if(fastExec) {
-			if(!in.isCached())
-				setContext(getExpressionId(), in);
-			in = applyWhereExpression(in);
-			if(!in.isCached())
-				clearContext(getExpressionId(), in);
-		}
-		
-		// PreorderedValueSequence applies the order specs to all items
-		// in one single processing step
-		if(fastOrderBy) {
-			in = new PreorderedValueSequence(orderSpecs, in, getExpressionId());
-		}
-
-		// Otherwise, if there's an order by clause, wrap the result into
-		// an OrderedValueSequence. OrderedValueSequence will compute
-		// order expressions for every item when it is added to the result sequence.
-		if(resultSequence == null) {
-			if(orderSpecs != null && !fastOrderBy)
-				resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());
-			else
-				resultSequence = new ValueSequence();
-		}
-
-		Sequence val = null;
-		int p = 1;
-		IntegerValue atVal = new IntegerValue(1);
-		if(positionalVariable != null)
-			at.setValue(atVal);
-		
-    	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
-		if (in.isEmpty() && sequenceType != null && 
+		try {
+			// Evaluate the "in" expression
+			Sequence in = inputSequence.eval(contextSequence, null);
+			clearContext(getExpressionId(), in);
+			
+			// Declare the iteration variable
+			LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+			var.setSequenceType(sequenceType);
+			context.declareVariableBinding(var);      
+			
+			registerUpdateListener(in);
+			
+			// Declare positional variable
+			LocalVariable at = null;
+			if(positionalVariable != null) {
+				at = new LocalVariable(QName.parse(context, positionalVariable, null));
+				at.setSequenceType(POSITIONAL_VAR_TYPE);
+				context.declareVariableBinding(at);
+			}
+			
+			// Assign the whole input sequence to the bound variable.
+			// This is required if we process the "where" or "order by" clause
+			// in one step.
+			var.setValue(in);		
+			
+			// Save the current context document set to the variable as a hint
+			// for path expressions occurring in the "return" clause.
+			if(in instanceof NodeSet) {
+				var.setContextDocs(in.getDocumentSet());
+			} else
+				var.setContextDocs(null);
+			
+			// Check if we can speed up the processing of the "order by" clause.
+			boolean fastOrderBy = false; // checkOrderSpecs(in);
+			
+			// See if we can process the "where" clause in a single step (instead of
+			// calling the where expression for each item in the input sequence)
+			// This is possible if the input sequence is a node set and has no
+			// dependencies on the current context item.
+			boolean fastExec = 
+				whereExpr != null && at == null &&
+				!Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
+				in.isPersistentSet() &&
+				Type.subTypeOf(in.getItemType(), Type.NODE);
+			
+			// If possible, apply the where expression ahead of the iteration
+			if(fastExec) {
+				if(!in.isCached())
+					setContext(getExpressionId(), in);
+				in = applyWhereExpression(in);
+				if(!in.isCached())
+					clearContext(getExpressionId(), in);
+			}
+			
+			// PreorderedValueSequence applies the order specs to all items
+			// in one single processing step
+			if(fastOrderBy) {
+				in = new PreorderedValueSequence(orderSpecs, in, getExpressionId());
+			}
+			
+			// Otherwise, if there's an order by clause, wrap the result into
+			// zan OrderedValueSequence. OrderedValueSequence will compute
+			// order expressions for every item when it is added to the result sequence.
+			if(resultSequence == null) {
+				if(orderSpecs != null && !fastOrderBy)
+					resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());
+				else
+					resultSequence = new ValueSequence();
+			}
+			
+			Sequence val = null;
+			int p = 1;
+			IntegerValue atVal = new IntegerValue(1);
+			if(positionalVariable != null)
+				at.setValue(atVal);
+			
+			//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
+			if (in.isEmpty() && sequenceType != null && 
 				!Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY)) {
 				throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
 					". Expected " + 
 					Cardinality.getDescription(sequenceType.getCardinality()) + 
 					", got " + Cardinality.getDescription(in.getCardinality()));
-	    }
-
-		// Loop through each variable binding
-		p = 0;
-		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
-		    context.proceed(this);
-			contextItem = i.nextItem();
-			context.setContextPosition(p);
+			}
 			
-//			atVal.setValue(p); // seb: this does not create a new Value. the old Value is referenced from results
-			if(positionalVariable != null)
-				at.setValue(new IntegerValue(p + 1));
-			 
-			contextSequence = contextItem.toSequence();
-
-			// set variable value to current item
-            var.setValue(contextSequence);
-            if (sequenceType == null)
-            	var.checkType(); //because it makes some conversions ! 
-			val = contextSequence;
+			// Loop through each variable binding
+			p = 0;
+			for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
+				context.proceed(this);
+				contextItem = i.nextItem();
+				context.setContextPosition(p);
+				
+//				atVal.setValue(p); // seb: this does not create a new Value. the old Value is referenced from results
+				if(positionalVariable != null)
+					at.setValue(new IntegerValue(p + 1));
+				
+				contextSequence = contextItem.toSequence();
+				
+				// set variable value to current item
+				var.setValue(contextSequence);
+				if (sequenceType == null)
+					var.checkType(); //because it makes some conversions ! 
+				val = contextSequence;
+				
+				// check optional where clause
+				if (whereExpr != null && (!fastExec)) {
+					if(contextItem instanceof NodeProxy)
+						((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);
+					Sequence bool = applyWhereExpression(null);
+					if(contextItem instanceof NodeProxy)
+						((NodeProxy)contextItem).clearContext(getExpressionId());
+					// if where returned false, continue
+					if(!bool.effectiveBooleanValue())
+						continue;
+				} else
+					val = contextItem.toSequence();
+				
+				//Reset the context position
+				context.setContextPosition(0);
+				
+				if(groupedSequence==null){                 
+					if(returnExpr instanceof BindingExpression) 
+						((BindingExpression)returnExpr).eval(null, null, resultSequence, null); 
+					// otherwise call the return expression and add results to resultSequence 
+					else {                 
+						val = returnExpr.eval(null); 
+						resultSequence.addAll(val); 
+					} 
+				} else { 
+					/* bv : special processing for groupby :
+                	if returnExpr is a Binding expression, pass the groupedSequence.  
+                	Else, add item to groupedSequence and don't evaluate here !  
+                */
+					if(returnExpr instanceof BindingExpression){ 
+						((BindingExpression)returnExpr).eval(null, null, resultSequence, groupedSequence); 
+					} else{ 
+						Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue(); 
+						groupedSequence.addAll(toGroupSequence);     
+					}
+				}
+			}
 			
-			// check optional where clause
-			if (whereExpr != null && (!fastExec)) {
-				if(contextItem instanceof NodeProxy)
-					((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);
-				Sequence bool = applyWhereExpression(null);
-				if(contextItem instanceof NodeProxy)
-					((NodeProxy)contextItem).clearContext(getExpressionId());
-				// if where returned false, continue
-				if(!bool.effectiveBooleanValue())
-					continue;
-			} else
-				val = contextItem.toSequence();
-        
-            //Reset the context position
-            context.setContextPosition(0);
+			// bv : Special processing for groupBy : one return per group in groupedSequence 
+			//TODO : positional variable ! 
+			if(groupSpecs!=null){ 
+				for(Iterator it = groupedSequence.iterate(); it.hasNext(); ){ 
+					Object key = it.next();
+					GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(key); 
+					
+					context.proceed(this); 
+					//context.setContextPosition(k); //bv : not tested 
+					
+					// set the grouping variable to current group nodes 
+					groupVar.setValue(currentGroup); 
+					groupVar.checkType(); 
+					
+					//set value of grouping keys for the current group 
+					for(int i=0; i< groupKeyVar.length ; i ++){ 
+						groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence()); 
+					}
+					
+					//evaluate real return expression 
+					val = groupReturnExpr.eval(null); 
+					resultSequence.addAll(val);
+				}
+				//Reset the context position
+				context.setContextPosition(0);
+			}
 			
-            if(groupedSequence==null){                 
-                if(returnExpr instanceof BindingExpression) 
-                    ((BindingExpression)returnExpr).eval(null, null, resultSequence, null); 
-                // otherwise call the return expression and add results to resultSequence 
-                else {                 
-                     val = returnExpr.eval(null); 
-                    resultSequence.addAll(val); 
-                } 
-            } 
-            else { 
-                /* bv : special processing for groupby :  
-                if returnExpr is a Binding expression, pass the groupedSequence.  
-                Else, add item to groupedSequence and don't evaluate here !  
-                */ 
-                if(returnExpr instanceof BindingExpression){ 
-                    ((BindingExpression)returnExpr).eval(null, null, resultSequence, groupedSequence); 
-                } 
-                else{ 
-                    Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue(); 
-                    groupedSequence.addAll(toGroupSequence);     
-                } 
-            } 
-        } 
-         
-        // restore the local variable stack 
-        context.popLocalVariables(mark); 
-         
-         
-        // bv : Special processing for groupBy : one return per group in groupedSequence 
-        //TODO : positional variable ! 
-        if(groupSpecs!=null){ 
-            for(Iterator it = groupedSequence.iterate(); it.hasNext(); ){ 
-            	Object key = it.next();
-                GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(key); 
-    	
-        	    context.proceed(this); 
-                //context.setContextPosition(k); //bv : not tested 
-                 
-                // set the grouping variable to current group nodes 
-                groupVar.setValue(currentGroup); 
-                groupVar.checkType(); 
-         
-                //set value of grouping keys for the current group 
-                for(int i=0; i< groupKeyVar.length ; i ++){ 
-                    groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence()); 
-                } 
- 
-                //evaluate real return expression 
-                val = groupReturnExpr.eval(null); 
-                resultSequence.addAll(val);
-            }
-            //Reset the context position
-            context.setContextPosition(0);
-        }
+			if(orderSpecs != null && !fastOrderBy)
+				((OrderedValueSequence)resultSequence).sort();
 			
-		if(orderSpecs != null && !fastOrderBy)
-			((OrderedValueSequence)resultSequence).sort();
-		
-        clearContext(getExpressionId(), in);
-
-        if (sequenceType != null) {    
-        	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-        	//only a check on empty sequence is accurate here
-    		if (resultSequence.isEmpty() && !Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY))
-				throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
+			clearContext(getExpressionId(), in);
+			
+			if (sequenceType != null) {    
+				//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
+				//only a check on empty sequence is accurate here
+				if (resultSequence.isEmpty() && !Cardinality.checkCardinality(sequenceType.getCardinality(), Cardinality.EMPTY))
+					throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
 						". Expected " +
 						Cardinality.getDescription(sequenceType.getCardinality()) +
 						", got " + Cardinality.getDescription(Cardinality.EMPTY));
-    		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
-    		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {    		
-	    		if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
-					throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
+				//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
+				if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {    		
+					if (!resultSequence.isEmpty() && !Type.subTypeOf(resultSequence.getItemType(), sequenceType.getPrimaryType()))
+						throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
 							". Expected " +
 							Type.getTypeName(sequenceType.getPrimaryType()) +
 							", got " +Type.getTypeName(resultSequence.getItemType()));
-	    	//trigger the old behaviour
-    		} else var.checkType();
-        }
-
-        actualReturnType = resultSequence.getItemType();
+					//trigger the old behaviour
+				} else var.checkType();
+			}
+			
+			actualReturnType = resultSequence.getItemType();
+		} finally {
+			// restore the local variable stack 
+			context.popLocalVariables(mark);
+		}
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", resultSequence);

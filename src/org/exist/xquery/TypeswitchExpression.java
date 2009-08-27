@@ -86,36 +86,37 @@ public class TypeswitchExpression extends AbstractExpression {
         Sequence result = null;
         
         LocalVariable mark = context.markLocalVariables(false);
-        
-        for (int i = 0; i < cases.size(); i++) {
-            Case next = (Case) cases.get(i);
-            if (checkType(next.type, opSeq)) {
-                if (next.variable != null) {
-                    LocalVariable var = new LocalVariable(next.variable);
-                    var.setSequenceType(next.type);
-                    var.setValue(opSeq);
-                    var.setContextDocs(operand.getContextDocSet());
-                    var.checkType();
-                    context.declareVariableBinding(var);
-                }
-                
-                result = next.returnClause.eval(contextSequence);
-                break;
-            }
+        try {
+        	for (int i = 0; i < cases.size(); i++) {
+        		Case next = (Case) cases.get(i);
+        		if (checkType(next.type, opSeq)) {
+        			if (next.variable != null) {
+        				LocalVariable var = new LocalVariable(next.variable);
+        				var.setSequenceType(next.type);
+        				var.setValue(opSeq);
+        				var.setContextDocs(operand.getContextDocSet());
+        				var.checkType();
+        				context.declareVariableBinding(var);
+        			}
+        			
+        			result = next.returnClause.eval(contextSequence);
+        			break;
+        		}
+        	}
+        	
+        	if (result == null) {
+        		if (defaultClause.variable != null) {
+        			LocalVariable var = new LocalVariable(defaultClause.variable);
+        			var.setValue(opSeq);
+        			var.setContextDocs(operand.getContextDocSet());
+        			context.declareVariableBinding(var);
+        		}
+        		
+        		result = defaultClause.returnClause.eval(contextSequence);
+        	}
+        } finally {
+        	context.popLocalVariables(mark);
         }
-        
-        if (result == null) {
-            if (defaultClause.variable != null) {
-                LocalVariable var = new LocalVariable(defaultClause.variable);
-                var.setValue(opSeq);
-                var.setContextDocs(operand.getContextDocSet());
-                context.declareVariableBinding(var);
-            }
-            
-            result = defaultClause.returnClause.eval(contextSequence);
-        }
-        
-        context.popLocalVariables(mark);
         
         return result;
     }
@@ -156,23 +157,29 @@ public class TypeswitchExpression extends AbstractExpression {
         
         LocalVariable mark0 = context.markLocalVariables(false);
         
-        for (int i = 0; i < cases.size(); i++) {
-            LocalVariable mark1 = context.markLocalVariables(false);
-            Case next = (Case) cases.get(i);
-            if (next.variable != null) {
-                LocalVariable var = new LocalVariable(next.variable);
-                var.setSequenceType(next.type);
-                context.declareVariableBinding(var);
-            }
-            next.returnClause.analyze(contextInfo);
-            context.popLocalVariables(mark1);
+        try {
+        	for (int i = 0; i < cases.size(); i++) {
+        		LocalVariable mark1 = context.markLocalVariables(false);
+        		try {
+        			Case next = (Case) cases.get(i);
+        			if (next.variable != null) {
+        				LocalVariable var = new LocalVariable(next.variable);
+        				var.setSequenceType(next.type);
+        				context.declareVariableBinding(var);
+        			}
+        			next.returnClause.analyze(contextInfo);
+        		} finally {
+        			context.popLocalVariables(mark1);
+        		}
+        	}
+        	if (defaultClause.variable != null) {
+        		LocalVariable var = new LocalVariable(defaultClause.variable);
+        		context.declareVariableBinding(var);
+        	}
+        	defaultClause.returnClause.analyze(contextInfo);
+        } finally {
+        	context.popLocalVariables(mark0);
         }
-        if (defaultClause.variable != null) {
-            LocalVariable var = new LocalVariable(defaultClause.variable);
-            context.declareVariableBinding(var);
-        }
-        defaultClause.returnClause.analyze(contextInfo);
-        context.popLocalVariables(mark0);
     }
 
     public void setContextDocSet(DocumentSet contextSet) {

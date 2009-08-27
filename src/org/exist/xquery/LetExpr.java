@@ -69,43 +69,45 @@ public class LetExpr extends BindingExpression {
         // Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(false);
 		
-		contextInfo.setParent(this);
-        AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
-		inputSequence.analyze(varContextInfo);
-		
-		// Declare the iteration variable
-        LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
-        inVar.setSequenceType(sequenceType);
-        inVar.setStaticType(varContextInfo.getStaticReturnType());
-		context.declareVariableBinding(inVar);
-		
-		if(whereExpr != null) {
-			AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-			newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
-		    whereExpr.analyze(newContextInfo);
-		}
-        
-        //Reset the context position
-        context.setContextPosition(0);
-        
-		if(returnExpr instanceof BindingExpression) {
-			((BindingExpression)returnExpr).analyze(contextInfo, orderBy,groupBy); 
-		} else {
-			if(orderBy != null) {
-			    for(int i = 0; i < orderBy.length; i++)
-			        orderBy[i].analyze(contextInfo);
+		try {
+			contextInfo.setParent(this);
+			AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+			inputSequence.analyze(varContextInfo);
+			
+			// Declare the iteration variable
+			LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+			inVar.setSequenceType(sequenceType);
+			inVar.setStaticType(varContextInfo.getStaticReturnType());
+			context.declareVariableBinding(inVar);
+			
+			if(whereExpr != null) {
+				AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+				newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
+				whereExpr.analyze(newContextInfo);
 			}
-            if(groupBy != null) { 
-                for(int i = 0; i < groupBy.length; i++) 
-                    groupBy[i].analyze(contextInfo); 
-            }			
-			returnExpr.analyze(contextInfo);
-		}		
-
-		// restore the local variable stack
-		context.popLocalVariables(mark);
+			
+			//Reset the context position
+			context.setContextPosition(0);
+			
+			if(returnExpr instanceof BindingExpression) {
+				((BindingExpression)returnExpr).analyze(contextInfo, orderBy,groupBy); 
+			} else {
+				if(orderBy != null) {
+					for(int i = 0; i < orderBy.length; i++)
+						orderBy[i].analyze(contextInfo);
+				}
+				if(groupBy != null) { 
+					for(int i = 0; i < groupBy.length; i++) 
+						groupBy[i].analyze(contextInfo); 
+				}
+				returnExpr.analyze(contextInfo);
+			}
+		} finally {
+			// restore the local variable stack
+			context.popLocalVariables(mark);
+		}
     }
-    
+
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */

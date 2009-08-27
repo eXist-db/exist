@@ -63,16 +63,18 @@ public class QuantifiedExpression extends BindingExpression {
      * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
      */
 	public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException { 
-        LocalVariable mark = context.markLocalVariables(false);
-		context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
-		
-		contextInfo.setParent(this);
-		inputSequence.analyze(contextInfo);
-		returnExpr.analyze(contextInfo);
-		
-		context.popLocalVariables(mark);
-    }
-    
+		LocalVariable mark = context.markLocalVariables(false);
+		try {
+			context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
+			
+			contextInfo.setParent(this);
+			inputSequence.analyze(contextInfo);
+			returnExpr.analyze(contextInfo);
+		} finally {
+			context.popLocalVariables(mark);
+		}
+	}
+
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceTable groupedSequence)   
         throws XPathException {
         
@@ -111,13 +113,18 @@ public class QuantifiedExpression extends BindingExpression {
             if (sequenceType == null) 
                 var.checkType(); //... because is makes some conversions
 			
+            Sequence satisfiesSeq;
+            
             //Binds the variable : now in scope
     		LocalVariable mark = context.markLocalVariables(false);
-            context.declareVariableBinding(var);
-            //Evaluate the return clause for the current value of the variable
-            Sequence satisfiesSeq = returnExpr.eval(contextSequence, contextItem);
-            //Unbind the variable until the next iteration : now out of scope
-    		context.popLocalVariables(mark);
+    		try {
+    			context.declareVariableBinding(var);
+    			//Evaluate the return clause for the current value of the variable
+    			satisfiesSeq = returnExpr.eval(contextSequence, contextItem);
+    		} finally {
+    			//Unbind the variable until the next iteration : now out of scope
+    			context.popLocalVariables(mark);
+    		}
             
             if (sequenceType != null) {
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
