@@ -82,22 +82,24 @@ public class UserDefinedFunction extends Function {
 			inRecursion = true;
 			// Save the local variable stack
 			LocalVariable mark = context.markLocalVariables(true);
-			QName varName;
-			LocalVariable var;
-			for(Iterator i = parameters.iterator(); i.hasNext(); ) {
-				varName = (QName)i.next();
-				var = new LocalVariable(varName);
-				context.declareVariableBinding(var);
+			try {
+				QName varName;
+				LocalVariable var;
+				for(Iterator i = parameters.iterator(); i.hasNext(); ) {
+					varName = (QName)i.next();
+					var = new LocalVariable(varName);
+					context.declareVariableBinding(var);
+				}
+				
+				contextInfo.setParent(this);
+				if (!bodyAnalyzed) {
+					body.analyze(contextInfo);
+					bodyAnalyzed = true;
+				}
+			} finally {
+				// restore the local variable stack
+				context.popLocalVariables(mark);
 			}
-			
-			contextInfo.setParent(this);
-            if (!bodyAnalyzed) {
-    			body.analyze(contextInfo);
-                bodyAnalyzed = true;
-            }
-			
-			// restore the local variable stack
-			context.popLocalVariables(mark);
 			inRecursion = false;
 		}
 	}
@@ -108,33 +110,34 @@ public class UserDefinedFunction extends Function {
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		// Save the local variable stack
 		LocalVariable mark = context.markLocalVariables(true);
-		
-		QName varName;
-		LocalVariable var;
-		int j = 0;
-        for (int i = 0; i < parameters.size(); i++, j++) {
-			varName = (QName)parameters.get(i);
-			var = new LocalVariable(varName);
-			var.setValue(currentArguments[j]);
-            if (contextDocs != null)
-                var.setContextDocs(contextDocs[i]);
-            context.declareVariableBinding(var);
-
-	        int actualCardinality;
-	        if (currentArguments[j].isEmpty()) actualCardinality = Cardinality.EMPTY;
-	        else if (currentArguments[j].hasMany()) actualCardinality = Cardinality.MANY;
-	        else actualCardinality = Cardinality.ONE;
-	
-			if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
- 				throw new XPathException(this, "Invalid cardinality for parameter $" + varName +  
+		try {
+			QName varName;
+			LocalVariable var;
+			int j = 0;
+			for (int i = 0; i < parameters.size(); i++, j++) {
+				varName = (QName)parameters.get(i);
+				var = new LocalVariable(varName);
+				var.setValue(currentArguments[j]);
+				if (contextDocs != null)
+					var.setContextDocs(contextDocs[i]);
+				context.declareVariableBinding(var);
+				
+				int actualCardinality;
+				if (currentArguments[j].isEmpty()) actualCardinality = Cardinality.EMPTY;
+				else if (currentArguments[j].hasMany()) actualCardinality = Cardinality.MANY;
+				else actualCardinality = Cardinality.ONE;
+				
+				if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
+					throw new XPathException(this, "Invalid cardinality for parameter $" + varName +  
  						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
  						", got " + currentArguments[j].getItemCount());
+			}
+			Sequence result = body.eval(contextSequence, contextItem);
+			return result;
+		} finally {
+			// restore the local variable stack
+			context.popLocalVariables(mark);
 		}
-		Sequence result = body.eval(contextSequence, contextItem);
-        
-		// restore the local variable stack
-		context.popLocalVariables(mark);
-		return result;
 	}
 	
 	/* (non-Javadoc)
