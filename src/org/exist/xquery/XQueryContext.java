@@ -2006,8 +2006,11 @@ public class XQueryContext {
 	 * @return last variable on the local variable stack
 	 */
 	public LocalVariable markLocalVariables(boolean newContext) {
-        if (newContext)
-            contextStack.push(lastVar);
+        if (newContext) {
+        	if (lastVar == null)
+        		lastVar = new LocalVariable(QName.EMPTY_QNAME);
+        	contextStack.push(lastVar);
+        }
 		variableStackSize++;
 		return lastVar;
 	}
