@@ -2243,7 +2243,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<xsl:value-of select="$lname2"/>
 				<xsl:text>_</xsl:text>
 				<xsl:value-of select="count(preceding::*[local-name()=$lname2 and namespace-uri()=$nsuri]|ancestor::*[local-name()=$lname2 and namespace-uri()=$nsuri])"/>
-				<xsl:text>,getId(evt.target),evt,false);});
+				<xsl:text>,getId(evt.target),evt,</xsl:text>
+				<xsl:choose>
+					<xsl:when test="@mode = 'synchronous'">true</xsl:when>
+					<xsl:otherwise>false</xsl:otherwise>
+				</xsl:choose>
+				<xsl:text>);});
 </xsl:text>
 		</xsl:for-each>
 	</xsl:template><xsl:template match="*" mode="xml2string">
