@@ -2,16 +2,14 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:sidebar="http://exist-db.org/NS/sidebar"
-    xmlns:exist="http://exist.sourceforge.net/NS/exist"
-    xmlns:xf="http://www.w3.org/2002/xforms"
     version="1.0">
     
     <xsl:output 
         method="xhtml" 
-        media-type="text/xml"
-        omit-xml-declaration="yes"
+        media-type="application/xhtml+xml"
+        omit-xml-declaration="no"
         doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-        doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+        doctype-system="resources/xhtml1-transitional.dtd"
     />
     
     <xsl:param name="path" select="''"/>
@@ -34,7 +32,7 @@
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>
                 <script type="text/JavaScript" src="styles/curvycorners.js"></script>
-                
+                <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">
@@ -228,7 +226,7 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
-            <xsl:if test="@exist:id">
+            <xsl:if xmlns:exist="http://exist.sourceforge.net/NS/exist" test="@exist:id">
                 <a name="{@exist:id}"/>
             </xsl:if>
             <xsl:apply-templates select="title"/>
@@ -254,7 +252,7 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
-            <xsl:if test="@exist:id">
+            <xsl:if xmlns:exist="http://exist.sourceforge.net/NS/exist" test="@exist:id">
                 <a name="{@exist:id}"/>
             </xsl:if>
             <xsl:apply-templates select="title"/>
@@ -281,7 +279,7 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
-            <xsl:if test="@exist:id">
+            <xsl:if xmlns:exist="http://exist.sourceforge.net/NS/exist" test="@exist:id">
                 <a name="{@exist:id}"/>
             </xsl:if>
             <xsl:apply-templates select="title"/>
@@ -304,7 +302,7 @@
     <xsl:template match="para">
         <p>
             <xsl:copy-of select="@class"/>
-            <xsl:if test="@exist:id">
+            <xsl:if xmlns:exist="http://exist.sourceforge.net/NS/exist" test="@exist:id">
                 <a name="{@exist:id}"/>
             </xsl:if>
             <xsl:apply-templates/>
@@ -606,7 +604,7 @@
             <xsl:apply-templates/>
         </div>
     </xsl:template>
-    <xsl:template match="exist:match">
+    <xsl:template xmlns:exist="http://exist.sourceforge.net/NS/exist" match="exist:match">
         <span class="hi">
             <xsl:apply-templates/>
         </span>
