@@ -1,33 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <book>
-    <bookinfo>
-        <graphic fileref="logo.jpg"/>
-
+    <bookinfo><graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-
         <title>Documentation</title>
         <date>August 2009</date>
-
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
-            </affiliation>
-        </author>
-    </bookinfo>
-
+            </affiliation></author></bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Documentation</title>
-
         <section>
             <title>Recommended Reading</title>
-
             <para>If you are new to eXist, we recommend to at least scan through the following
                 documents to get an overview of the most important features:</para>
-
             <itemizedlist>
                 <listitem>
                     <para>
@@ -51,21 +41,16 @@
                     </para>
                 </listitem>
             </itemizedlist>
-
             <para>Also, there are some <ulink url="articles">articles, tutorials and blog
                     posts</ulink> which may provide valuable information.</para>
         </section>
-
         <section>
             <title>Available Documentation</title>
-
             <para>We recommend to have a look at the <ulink url="quickstart.xml">Quick Start</ulink>
                 first, then maybe continue to read about <ulink url="xquery.xml">XQuery
                     support</ulink>, in particular eXist-specific extensions and features.</para>
-
             <section>
                 <title>General</title>
-
                 <table class="documentation">
                     <tgroup cols="2">
                         <tbody>
@@ -116,10 +101,8 @@
                     </tgroup>
                 </table>
             </section>
-
             <section>
                 <title>Documentation for Specific Features</title>
-
                 <table class="documentation">
                     <tgroup cols="2">
                         <tbody>
@@ -161,9 +144,10 @@
                                 <td>describes command-line usage of the Java client</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="kwic.xml">KWIC display module</ulink>:</td>
-                                <td>an XQuery module to easily produce a Keywords in Context 
-                                    (KWIC) output of search results</td>
+                                <td class="doclink"><ulink url="kwic.xml">KWIC display
+                                        module</ulink>:</td>
+                                <td>an XQuery module to easily produce a Keywords in Context (KWIC)
+                                    output of search results</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="ldap-security.xml">LDAP Security
@@ -171,7 +155,8 @@
                                 <td>configuring eXist to use LDAP for users and groups.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="lucene.xml">Lucene-based Full Text Index</ulink>:</td>
+                                <td class="doclink"><ulink url="lucene.xml">Lucene-based Full Text
+                                        Index</ulink>:</td>
                                 <td>Apache Lucene integrated into eXist's XQuery engine</td>
                             </tr>
                             <tr>
@@ -180,9 +165,11 @@
                                 <td>optional module for scheduling jobs.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="urlrewrite.xml">URL Rewriting and MVC Framework</ulink>:</td>
-                                <td>a simple, yet powerful module for URL rewriting and redirection with
-                                    some support for MVC (model-view-controller) and servlet-based pipelines</td>
+                                <td class="doclink"><ulink url="urlrewrite.xml">URL Rewriting and
+                                        MVC Framework</ulink>:</td>
+                                <td>a simple, yet powerful module for URL rewriting and redirection
+                                    with some support for MVC (model-view-controller) and
+                                    servlet-based pipelines</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="validation.xml"
@@ -242,49 +229,52 @@
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="devguide_indexes.xml">Developer's
-                                    Guide to Modularized Indexes</ulink>:</td>
+                                        Guide to Modularized Indexes</ulink>:</td>
                                 <td>describes, through a use case, how modularized indexes
                                     work.</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="eclipse.xml">Eclipse Setup
-                                    Notes</ulink>:</td>
+                                        Notes</ulink>:</td>
                                 <td>a few notes on how to setup eclipse to run eXist in a debugging
                                     mode ...</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="devguide_log4j.xml">Log4J Logging
+                                        Guide</ulink>:</td>
+                                <td>a few notes on how use Log4J within eXist code ...</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="devguide_codereview.xml">Code Review
+                                        Guide</ulink>:</td>
+                                <td>a few notes on reviewing code during development ...</td>
                             </tr>
                         </tbody>
                     </tgroup>
                 </table>
             </section>
-            
         </section>
-
         <section>
             <title>Documentation on the Wiki</title>
-
             <para>Further documentation can be found in the <ulink url="http://atomic.exist-db.org"
                     >Wiki</ulink>. Among other things, have a look at:</para>
-
             <itemizedlist>
                 <listitem>
                     <para>
                         <ulink url="http://atomic.exist-db.org/wiki/HowTo/">Various HowTos</ulink>
                     </para>
                 </listitem>
-
                 <!--listitem>
           <para>
             <ulink url="http://wiki.exist-db.org/space/FAQs">Some frequently asked questions</ulink>
           </para>
         </listitem-->
-
                 <listitem>
                     <para>
                         <ulink url="http://atomic.exist-db.org/wiki/articles/XMLPrague2006"
                             >XMLPrague 2006 papers and presentations</ulink>
                     </para>
                 </listitem>
-
             </itemizedlist>
         </section>
     </chapter>
