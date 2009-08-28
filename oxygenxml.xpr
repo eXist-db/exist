@@ -368,7 +368,6 @@
                 <file name="webapp/xforms/input.xml"/>
                 <file name="webapp/xforms/input-width.xml"/>
                 <file name="webapp/xforms/post-handler.xq"/>
-                <file name="webapp/xforms/run.xql"/>
                 <file name="webapp/xforms/secret.xml"/>
                 <file name="webapp/xforms/select.xml"/>
                 <file name="webapp/xforms/select1.xml"/>
@@ -665,7 +664,9 @@
             <file name="webapp/controller.xql"/>
             <file name="webapp/credits.xml"/>
             <file name="webapp/deployment.xml"/>
+            <file name="webapp/devguide_codereview.xml"/>
             <file name="webapp/devguide_indexes.xml"/>
+            <file name="webapp/devguide_log4j.xml"/>
             <file name="webapp/devguide_rest.xml"/>
             <file name="webapp/devguide_soap.xml"/>
             <file name="webapp/devguide_xmldb.xml"/>
@@ -683,12 +684,14 @@
             <file name="webapp/header.xml.tmpl"/>
             <file name="webapp/index.xml"/>
             <file name="webapp/indexing.xml"/>
+            <file name="webapp/installing-exist-on-amazon-ec2.xml"/>
             <file name="webapp/jmx.xml"/>
             <file name="webapp/journal.xml"/>
             <file name="webapp/kwic.xml"/>
             <file name="webapp/ldap-security.xml"/>
             <file name="webapp/lucene.xml"/>
             <file name="webapp/quickstart.xml"/>
+            <file name="webapp/readying-centos-for-exist.xml"/>
             <file name="webapp/roadmap.xml"/>
             <file name="webapp/scheduler.xml"/>
             <file name="webapp/security.xml"/>
@@ -708,7 +711,6 @@
             <file name="webapp/xinclude.xml"/>
             <file name="webapp/xmlprague06.xml"/>
             <file name="webapp/xquery.xml"/>
-            <file name="webapp/xq-url-rewrite.xml"/>
         </folder>
     </projectTree>
 </project>
