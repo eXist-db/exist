@@ -15,7 +15,7 @@ declare namespace system="http://exist-db.org/xquery/system";
 declare function setup:main() as element()
 {
     <div class="panel">
-        <div class="panel-head">Examples2 Setup</div>
+        <div class="panel-head">Examples Setup</div>
         {
 let $action := request:get-parameter("action", ()) return
 		if($action) then
