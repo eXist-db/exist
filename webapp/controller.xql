@@ -121,7 +121,7 @@ return
 				<view>
 					<forward servlet="XSLTServlet">
 						<set-attribute name="xslt.stylesheet" 
-							value="stylesheets/db2html.xsl"/>
+							value="stylesheets/db2xhtml.xsl"/>
 					</forward>
 				</view>
             	<cache-control cache="no"/>
