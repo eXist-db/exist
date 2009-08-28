@@ -8,7 +8,11 @@
     
     <xsl:output 
         method="xhtml" 
-        media-type="application/xhtml+xml"/>
+        media-type="text/xml"
+        omit-xml-declaration="yes"
+        doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+        doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+    />
     
     <xsl:param name="path" select="''"/>
     
@@ -26,7 +30,6 @@
                 <title>
                     <xsl:value-of select="(bookinfo|articleinfo)/title/text()"/>
                 </title>
-
                 <link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>

@@ -515,33 +515,33 @@ select.choose {
 
 .note {
     background-color: #fac783;
-}
-
-.note h1 {
-    background-color: #fac783;
-}
-
-.note .note_content {
-    background-color: #fde7ca;
     border-left: 4px solid #fac783;
     border-right: 4px solid #fac783;
     border-bottom: 4px solid #fac783;
+}
+
+.note h1 {
+    background-color: transparent;
+}
+
+.note .note_content {
     padding: 5px 0;
+    background-color: #fde7ca;
 }
     
 .example {
     background-color: #c3d9ff;
+    border-left: 4px solid #c3d9ff;
+    border-right: 4px solid #c3d9ff;
+    border-bottom: 4px solid #c3d9ff;
 }
 
 .example h1 {
-    background-color: #c3d9ff;
+    background-color: transparent;
 }
 
 .example .example_content {
     background-color: #e0ecff;
-    border-left: 4px solid #c3d9ff;
-    border-right: 4px solid #c3d9ff;
-    border-bottom: 4px solid #c3d9ff;
     padding: 0;
 }
 
