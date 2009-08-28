@@ -532,7 +532,7 @@ var I8N = {
         str = I8N._format(str, (loc ? date.getMinutes() : date.getUTCMinutes()), "mm");
         str = I8N._format(str, (loc ? date.getHours() : date.getUTCHours()), "hh");
 				o = date.getTimezoneOffset();
-				str = I8N._format(str, (loc ? (o < 0 ? "+" : "-")+zeros(Math.floor(Math.abs(o)/60),2)+":"+zeros(Math.abs(o) % 60,2) : "Z"), "zz");
+				str = I8N._format(str, (loc ? (o < 0 ? "+" : "-")+zeros(Math.floor(Math.abs(o)/60),2)+":"+zeros(Math.abs(o) % 60,2) : "Z"), "z");
 
         return str;
     },
@@ -587,7 +587,17 @@ var I8N = {
         var index = format.indexOf(el);
         
         if (index != -1) {
-            var val = str.substr(index, el.length);
+						format = format.replace(new RegExp("\\.", "g"), "\\.");
+						format = format.replace(new RegExp("\\(", "g"), "\\(");
+						format = format.replace(new RegExp("\\)", "g"), "\\)");
+						format = format.replace(new RegExp(el), "(.*)");
+						format = format.replace(new RegExp("yyyy"), ".*");
+						format = format.replace(new RegExp("MM"), ".*");
+						format = format.replace(new RegExp("dd"), ".*");
+						format = format.replace(new RegExp("hh"), ".*");
+						format = format.replace(new RegExp("mm"), ".*");
+						format = format.replace(new RegExp("ss"), ".*");
+						var val = str.replace(new RegExp(format), "$1");
             
             if (val.charAt(0) === '0') val = val.substring(1);
             
@@ -597,7 +607,9 @@ var I8N = {
                 throw "Error parsing date " + str + " with pattern " + format;
             }
 
-            date["set" + prop](prop == "Month"? val - 1 : val);
+						var n = new Date();
+						n = n.getFullYear() - 2000;
+            date["set" + prop](prop == "Month"? val - 1 : (prop == "Year" && val <= n+10 ? val+2000 : val));
         }
     }
 };
@@ -1753,6 +1765,19 @@ XFSubmission.prototype.submit = function() {
 			action += (action.indexOf('?') == -1? '?' : this.separator)
 				+ XFSubmission.toUrl_(node, this.separator);
 		}
+	}
+	
+	if (action.substr(0,7) == "file://") {
+		alert('XSLTForms Submission\n---------------------------\n\n'+action+'\n\nfile:// is not supported for security reasons.\n\nContents copied instead in clipboard if possible\nand displayed by the browser.');
+		var ser = Writer.toString(node);
+		if (window.clipboardData) {
+			window.clipboardData.setData('Text', ser);
+		}
+		w = window.open("about:blank","_blank");
+		w.document.write(ser);
+		w.document.close();
+		xforms.closeAction();
+		return;
 	}
 
 	var synchr = this.synchr;
@@ -3049,7 +3074,7 @@ XFInput.prototype.setValue = function(value) {
 
 	if (type["class"] == "boolean") {
 		this.input.checked = value == "true";
-	} else if (this.input.value != value) {
+	} else if (this.input.value != value && this != xforms.focus) {
 		this.input.value = value || "";
 	}
 };
@@ -3082,11 +3107,18 @@ XFInput.prototype.initEvents = function(input) {
 		
 
 XFInput.prototype.blur = function(target) {
+	xforms.focus = null;
+	var input = this.input;
 	if (!this.incremental) {
-		var input = this.input;
 		assert(input, this.element.id);
 		var value = input.type == "checkbox"? (input.checked? "true" : "false") : input.value;
 		this.valueChanged(value);
+	} else {
+		var node = this.element.node;
+		var value = input.value;
+		if (value != null && value.length > 0 && node.type.format) {
+			try { input.value = getValue(node, true); } catch(e) { }
+		}
 	}
 };
 
@@ -4042,7 +4074,7 @@ function Calendar() {
             }
 
 	        Calendar.close();
-    	    Event.dispatch(cal.input, "change");
+    	    Event.dispatch(cal.input, "keyup");
     	    cal.input.focus();
     	}
     };
@@ -5315,7 +5347,7 @@ TypeDefs.XForms = {
 	"url" : {
 		"base" : "xsd_:string",
 		"whiteSpace" : "collapse",
-		"patterns" : [ "^(ht|ft)tp(s?)://([a-z0-9]*:[a-z0-9]*@)?([a-z0-9.]*\\.[a-z]{2,7})$" ]
+		"patterns" : [ "^(ht|f)tp(s?)://([a-z0-9]*:[a-z0-9]*@)?([a-z0-9.]*\\.[a-z]{2,7})$" ]
 	},
 
 		
@@ -6603,7 +6635,6 @@ function ExprContext(node, position, nodelist, parent, nsresolver, current,
 						break;
 					}
 				}
-				node.repeat.index = position;
 			}
 		}
     this.position = position || 1;
@@ -7961,7 +7992,7 @@ XPathCoreFunctions = {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.nowInvalidArgumentsNumber;
 			}
-			return I8N.format(new Date(), "yyyy-MM-ddThh:mm:sszz", false);
+			return I8N.format(new Date(), "yyyy-MM-ddThh:mm:ssz", false);
 		} ),
 
 		
