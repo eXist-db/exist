@@ -70,7 +70,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
             return Sequence.EMPTY_SEQUENCE;
 
         //get the entry-filter function and check its types
-        if(!(args[1] instanceof FunctionReference))
+        if(!(args[1].itemAt(0) instanceof FunctionReference))
             throw new XPathException("No entry-filter function provided.");
         FunctionReference entryFilterFunctionRef = (FunctionReference)args[1].itemAt(0);
         entryFilterFunction = entryFilterFunctionRef.getFunctionCall();
@@ -86,7 +86,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
 
         //get the entry-data function and check its types
-        if(!(args[2] instanceof FunctionReference))
+        if(!(args[2].itemAt(0) instanceof FunctionReference))
             throw new XPathException("No entry-data function provided.");
         FunctionReference entryDataFunctionRef = (FunctionReference)args[2].itemAt(0);
         entryDataFunction = entryDataFunctionRef.getFunctionCall();
