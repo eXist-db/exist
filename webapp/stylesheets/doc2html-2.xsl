@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <xsl:stylesheet
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
         xmlns:exist="http://exist.sourceforge.net/NS/exist"
@@ -12,7 +11,7 @@
   <!-- used by multi-form pages -->
     <xsl:param name="page"/>
 
-    <xsl:output method="html" media-type="text/html"/>
+    <xsl:output method="xhtml" media-type="text/html"/>
 
     <xsl:variable name="showpage">
     <!-- ist Parameter $page gesetzt? -->
