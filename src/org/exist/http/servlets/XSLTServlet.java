@@ -21,64 +21,52 @@
  */
 package org.exist.http.servlets;
 
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.Constants;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathUtil;
-import org.exist.xslt.TransformerFactoryAllocator;
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.util.serializer.*;
 import org.exist.xmldb.XmldbURI;
-import org.exist.dom.DocumentImpl;
-import org.exist.collections.Collection;
-import org.exist.EXistException;
-import org.exist.memtree.NodeImpl;
-import org.exist.util.serializer.Receiver;
-import org.exist.util.serializer.ReceiverToSAX;
-import org.exist.util.serializer.SAXToReceiver;
+import org.exist.xquery.Constants;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Type;
+import org.exist.xslt.TransformerFactoryAllocator;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.InputSource;
-import org.apache.log4j.Logger;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
-import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Enumeration;
-import javax.servlet.ServletContext;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class XSLTServlet extends HttpServlet {
 
@@ -86,6 +74,7 @@ public class XSLTServlet extends HttpServlet {
     
     private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
     private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
+    private final static String REQ_ATTRIBUTE_PROPERTIES = "xslt.output.";
 
     private final static Logger LOG = Logger.getLogger(XSLTServlet.class);
 
@@ -132,25 +121,36 @@ public class XSLTServlet extends HttpServlet {
             }
 
             SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
-            Templates templates = getSource(user, request, factory, stylesheet);
+            Templates templates = getSource(user, response, factory, stylesheet);
+            if (templates == null)
+                return;
             //do the transformation
             DBBroker broker = null;
             try {
                 broker = pool.get(user);
-                OutputStream os = response.getOutputStream();
-                OutputStream bufferedOutputStream = new BufferedOutputStream(os);
-                StreamResult result = new StreamResult(bufferedOutputStream);
                 TransformerHandler handler = factory.newTransformerHandler(templates);
                 setParameters(request, handler.getTransformer());
-                handler.setResult(result);
-                String mediaType = handler.getTransformer().getOutputProperty("media-type");
-                String encoding = handler.getTransformer().getOutputProperty("encoding");
+                Properties properties = handler.getTransformer().getOutputProperties();
+                setOutputProperties(request, properties);
+
+                String mediaType = properties.getProperty("media-type");
+                String encoding = properties.getProperty("encoding");
+                if (encoding == null)
+                    encoding = "UTF-8";
+                response.setCharacterEncoding(encoding);
                 if (mediaType != null) {
                     if (encoding == null)
                         response.setContentType(mediaType);
                     else
                         response.setContentType(mediaType + "; charset=" + encoding);
                 }
+
+                SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                Writer writer = new BufferedWriter(response.getWriter());
+                sax.setOutput(writer, properties);
+                SAXResult result = new SAXResult(sax);
+                handler.setResult(result);
+                
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
                 Receiver receiver = new ReceiverToSAX(handler);
@@ -174,8 +174,10 @@ public class XSLTServlet extends HttpServlet {
                     }
                 } catch (SAXException e) {
                     throw new ServletException("SAX exception while transforming node: " + e.getMessage(), e);
+                } finally {
+                    SerializerPool.getInstance().returnObject(sax);
                 }
-                bufferedOutputStream.close();
+                writer.flush();
                 response.flushBuffer();
 
             } catch (IOException e) {
@@ -196,8 +198,8 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
-    private Templates getSource(User user, HttpServletRequest request, SAXTransformerFactory factory, String stylesheet)
-            throws ServletException {
+    private Templates getSource(User user, HttpServletResponse response, SAXTransformerFactory factory, String stylesheet)
+        throws ServletException, IOException {
         String base;
         if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
             File f = new File(stylesheet);
@@ -205,6 +207,10 @@ public class XSLTServlet extends HttpServlet {
                 stylesheet = f.toURI().toASCIIString();
             else {
                 stylesheet = getServletContext().getRealPath(stylesheet);
+                if (stylesheet == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found");
+                    return null;
+                }
                 f = new File(stylesheet);
                 stylesheet = f.toURI().toASCIIString();
             }
@@ -226,7 +232,7 @@ public class XSLTServlet extends HttpServlet {
         for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
             String name = (String) e.nextElement();
             if (name.startsWith(REQ_ATTRIBUTE_PREFIX) &&
-                !(REQ_ATTRIBUTE_INPUT.equals(name) || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
+                !(name.startsWith(REQ_ATTRIBUTE_PROPERTIES) || REQ_ATTRIBUTE_INPUT.equals(name) || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
                 Object value = request.getAttribute(name);
                 if (value instanceof NodeValue) {
                     NodeValue nv = (NodeValue) value;
@@ -235,6 +241,17 @@ public class XSLTServlet extends HttpServlet {
                     }
                 }
                 transformer.setParameter(name, value);
+            }
+        }
+    }
+
+    private void setOutputProperties(HttpServletRequest request, Properties properties) {
+        for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
+            String name = (String) e.nextElement();
+            if (name.startsWith(REQ_ATTRIBUTE_PROPERTIES)) {
+                Object value = request.getAttribute(name);
+                if (value != null)
+                    properties.setProperty(name.substring(REQ_ATTRIBUTE_PROPERTIES.length()), value.toString());
             }
         }
     }
