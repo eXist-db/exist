@@ -38,16 +38,20 @@ let $context := request:get-context-path()
 let $path := substring-after($uri, $context)
 let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
+    if (matches($path, '/xforms/?$')) then
+		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<redirect url="{$context}/xforms/examples.xml"/>
+		</dispatch>
     (: send docbook docs through the db2xhtml stylesheet :)
-   if (ends-with($uri, 'examples.xml') or ends-with($uri, 'xforms.xml')) then
+   else if (ends-with($uri, 'examples.xml') or ends-with($uri, 'xforms.xml')) then
          <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
  			<view>
  				<forward servlet="XSLTServlet">
  					<set-attribute name="xslt.stylesheet"
- 						value="/stylesheets/db2html.xsl"/>
+ 						value="/stylesheets/db2xhtml.xsl"/>
  				</forward>
  			</view>
-             <cache-control cache="no"/>
+             <cache-control cache="yes"/>
  		</dispatch>
     else if (ends-with($uri, ".xml")) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -62,6 +66,7 @@ return
     (: make sure the global css and js files are resolved :)
     else if ($name = ('default-style.css', 'curvycorners.js')) then
         let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        let $log := util:log("DEBUG", ("$newPath: ", $newPath))
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<forward url="{$newPath}"/>
