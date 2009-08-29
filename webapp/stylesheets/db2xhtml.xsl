@@ -2,14 +2,13 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:sidebar="http://exist-db.org/NS/sidebar"
+    xmlns:xf="http://www.w3.org/2002/xforms"
     version="1.0">
     
-    <xsl:output 
-        method="xhtml" 
-        media-type="application/xhtml+xml"
-        omit-xml-declaration="no"
-        doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-        doctype-system="resources/xhtml1-transitional.dtd"
+    <xsl:output
+        method="xhtml"
+        media-type="application/xml"
+        omit-xml-declaration="yes"
     />
     
     <xsl:param name="path" select="''"/>
@@ -31,8 +30,8 @@
                 <link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>
-                <script type="text/JavaScript" src="styles/curvycorners.js"></script>
-                <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
+                <script language="Javascript" type="text/javascript" 
+                    src="styles/curvycorners.js"></script>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">

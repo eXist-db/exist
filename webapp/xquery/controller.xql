@@ -20,9 +20,10 @@ return
 					<set-attribute name="xslt.input"
 						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2html.xsl"/>
+						value="stylesheets/db2xhtml.xsl"/>
 				</forward>
 			</view>
+			<cache-control cache="no"/>
 		</dispatch>
     else if ($name eq 'acronyms.xql') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -40,7 +41,7 @@ return
 					<set-attribute name="xslt.input"
 						value=""/>
 					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2html.xsl"/>
+						value="stylesheets/db2xhtml.xsl"/>
 				</forward>
 			</view>
 		</dispatch>
