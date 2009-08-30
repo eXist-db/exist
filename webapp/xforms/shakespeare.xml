@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<?css-conversion no?>
+<?oxygen NVDLSchema="../../../../../Development/Oxygen/samples/nvdl/xhtml-xforms.nvdl"?>
+<book xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xf="http://www.w3.org/2002/xforms">
+    <bookinfo>
+        <graphic fileref="../logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>eXist - Using XForms and KWIC Example</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+        </author>
+        <xf:model>
+            <xf:instance>
+                <search xmlns="">
+                    <query mode="any" slop="1"/>
+                </search>
+            </xf:instance>
+            <xf:instance id="queryMode">
+                <modes xmlns="">
+                    <mode label="All">all</mode>
+                    <mode label="Any">any</mode>
+                    <mode label="Phrase">phrase</mode>
+                    <mode label="Near">near</mode>
+                </modes>
+            </xf:instance>
+            <xf:bind id="slop" nodeset="query/@slop" 
+                relevant="../@mode = 'phrase' or ../@mode = 'near'"/>
+            <xf:submission id="execQuery" method="post" action="shakespeare.xql" replace="instance"
+            />
+        </xf:model>
+        <style type="text/css"><![CDATA[
+            .form { margin-left: 15px; }
+            .xforms-input, .xforms-select1, .xforms-submit { margin-right: 1em; } 
+            td { padding: 4px 16px; } 
+            .preceding { text-align: right; }
+            .hi { margin-left: 2em; margin-right: 2em; background-color: #EAEAEA; }
+            .hits { border-bottom: 1px solid black; margin: 8px 15px; }
+        ]]></style>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Using XForms and KWIC Example</title>
+        <div class="form">
+            <xf:input ref="query">
+                <xf:label>Query:</xf:label>
+            </xf:input>
+            <xf:select1 ref="query/@mode" appearance="minimal">
+                <xf:label>Mode:</xf:label>
+                <xf:itemset nodeset="instance('queryMode')//mode">
+                    <xf:label ref="@label"/>
+                    <xf:value ref="."/>
+                </xf:itemset>
+            </xf:select1>
+            <xf:input bind="slop">
+                <xf:label>Slop:</xf:label>
+            </xf:input>
+            <xf:submit submission="execQuery">
+                <xf:label>Send</xf:label>
+            </xf:submit>
+        </div>
+        <xf:group ref="hits">
+            <p class="hits">Found: <xf:output ref="."/></p>
+        </xf:group>
+        <table border="1">
+            <xf:repeat nodeset="p">
+                <tr>
+                    <td class="preceding">
+                        <xf:output ref="span[@class='previous']"/>
+                    </td>
+                    <td class="hi">
+                        <xf:output ref="span[@class='hi']"/>
+                    </td>
+                    <td class="following">
+                        <xf:output ref="span[@class='following']"/>
+                    </td>
+                </tr>
+            </xf:repeat>
+        </table>
+    </chapter>
+</book>

@@ -56,6 +56,10 @@
                 <listitem>
                     <para><ulink url="tasks/todo-list.xml">Task Manager</ulink></para>
                 </listitem>
+                <listitem>
+                    <para>Search <ulink url="shakespeare.xml">Shakespeare's plays</ulink>
+                        using XForms and the KWIC module</para>
+                </listitem>
             </itemizedlist>
         </section>
 
