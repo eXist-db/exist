@@ -8,9 +8,16 @@
         </fulltext>
         
         <lucene>
-            <text match="//SCENE/*"/>
+            <text qname="SPEECH">
+                <ignore qname="SPEAKER"/>
+            </text>
             <text qname="TITLE"/>
         </lucene>
         <ngram qname="SPEAKER"/>
     </index>
+    <triggers>
+        <trigger event="store,remove,update"
+            class="org.exist.versioning.VersioningTrigger">
+        </trigger>
+    </triggers>
 </collection>
