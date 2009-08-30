@@ -492,6 +492,12 @@
         </delete>
 
         <delete failonerror="no" dir="${dist}"/>
+        
+        <!-- XQTS files -->
+        <delete failonerror="no">
+            <fileset dir="${junit.reports}/external" includes="*.zip"/>
+        </delete>
+        
 
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
