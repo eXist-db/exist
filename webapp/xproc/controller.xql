@@ -15,8 +15,8 @@ return
 	    let $docName := replace($uri, '^.*/([^/]+)$', '$1')
 	    return
     	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    			<forward url="/rest/db/xproc/run.xql">
-    				<add-parameter name="xproc" value="/db/xproc/examples/{$docName}"/>
+    			<forward url="/rest/db/xproc/examples/{$docName}">
+    				<!--add-parameter name="xproc" value="/db/xproc/examples/{$docName}"/-->
     			</forward>
     		</dispatch>
     else if (ends-with($uri, '.xml')) then
@@ -24,7 +24,13 @@ return
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.stylesheet" 
-						value="/stylesheets/db2html.xsl"/>
+						value="/stylesheets/db2xhtml.xsl"/>
+				    <set-attribute name="xslt.output.media-type"
+                        value="text/html"/>
+                	<set-attribute name="xslt.output.doctype-public"
+                	    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+                	<set-attribute name="xslt.output.doctype-system"
+                	    value="resources/xhtml1-transitional.dtd"/>
 				</forward>
 			</view>
             <cache-control cache="no"/>

@@ -12,7 +12,7 @@ xquery version "1.0";
     the standard library of the Scheme programming language.
 :)
 
-import module namespace seq="http://exist-db.org/xquery/sequences" at "resource:org/exist/xquery/lib/sequences.xq";
+import module namespace seq="http://exist-db.org/xquery/sequences";
 
 declare namespace f="urn:my-functions";
 

@@ -21,6 +21,12 @@ return
 						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
 						value="stylesheets/db2xhtml.xsl"/>
+					<set-attribute name="xslt.output.media-type"
+					        value="text/html"/>
+					<set-attribute name="xslt.output.doctype-public"
+					    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+					<set-attribute name="xslt.output.doctype-system"
+					    value="resources/xhtml1-transitional.dtd"/>
 				</forward>
 			</view>
 			<cache-control cache="no"/>
@@ -42,6 +48,12 @@ return
 						value=""/>
 					<set-attribute name="xslt.stylesheet" 
 						value="stylesheets/db2xhtml.xsl"/>
+					<set-attribute name="xslt.output.media-type"
+					        value="text/html"/>
+					<set-attribute name="xslt.output.doctype-public"
+					    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+					<set-attribute name="xslt.output.doctype-system"
+					    value="resources/xhtml1-transitional.dtd"/>
 				</forward>
 			</view>
 		</dispatch>
