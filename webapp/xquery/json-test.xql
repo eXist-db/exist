@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace json="http://www.json.org" at "resource:org/exist/xquery/lib/json.xq";
+import module namespace json="http://www.json.org";
 
 declare option exist:serialize "method=xhtml media-type=text/html";
 
