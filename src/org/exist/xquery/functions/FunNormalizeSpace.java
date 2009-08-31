@@ -45,16 +45,23 @@ import org.exist.xquery.value.Type;
  */
 public class FunNormalizeSpace extends Function {
 	
-	protected static final String FUNCTION_DESCRIPTION = 
-		"Returns the value of $arg with whitespace normalized by stripping leading " +
+	protected static final String FUNCTION_DESCRIPTION_0_PARAM =
+
+		"Returns the calculated string value of the context item with whitespace normalized by stripping leading ";
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM =
+		"Returns the value of $arg with whitespace normalized by stripping leading ";
+	protected static final String FUNCTION_DESCRIPTION_COMMON_1 =
 		"and trailing whitespace and replacing sequences of one or more than one " +
 		"whitespace character with a single space, #x20.\n\n" +
 		"The whitespace characters are defined in the metasymbol S (Production 3) " +
 		"of [Extensible Markup Language (XML) 1.0 Recommendation (Third Edition)].\n\n" +
 		"Note:\n\n" +
 		"The definition of the metasymbol S (Production 3), is " +
-		"unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].\n\n" +
-		"If the value of $arg is the empty sequence, returns the zero-length string.\n\n" +
+		"unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].\n\n";
+
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM_1 =
+		"If the value of $arg is the empty sequence, returns the zero-length string.\n\n";
+	protected static final String FUNCTION_DESCRIPTION_COMMON_2 =
 		"If no argument is supplied, $arg defaults to the string value (calculated " +
 		"using fn:string()) of the context item (.). If no argument is supplied or " +
 		"if the argument is the context item and the context item is undefined an " +
@@ -65,13 +72,15 @@ public class FunNormalizeSpace extends Function {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
-				FUNCTION_DESCRIPTION,
+				FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +
+                FUNCTION_DESCRIPTION_COMMON_2,
 				new SequenceType[0],
 				RETURN_TYPE
 			),
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
-				FUNCTION_DESCRIPTION,
+				FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +
+                FUNCTION_DESCRIPTION_1_PARAM_1 + FUNCTION_DESCRIPTION_COMMON_2,
 				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to normalize") },
 				RETURN_TYPE
 			)

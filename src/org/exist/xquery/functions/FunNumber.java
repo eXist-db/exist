@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2009 The eXist team
- *  
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -16,9 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- * $Id$
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -42,15 +42,23 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FunNumber extends Function {
-	
-	protected static final String FUNCTION_DESCRIPTION =
+
+	protected static final String FUNCTION_DESCRIPTION_0_PARAM =    
+        "Returns the value of the context item after atomization, " + 
+        "converted to an xs:double.\n\n" +
+        "If the context item cannot be " +
+		"converted to an xs:double, the xs:double value NaN is returned. " +
+        "If the context item is undefined an error is raised: " + 
+        "[err:XPDY0002]XP.\n\n";	
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM =
 		"Returns the value indicated by $arg or, if $arg is not specified, " +
-		"the context item after atomization, converted to an xs:double\n\n" +
+		"the context item after atomization, converted to an xs:double.\n\n" +
 		"Calling the zero-argument version of the function is defined to " +
 		"give the same result as calling the single-argument version with " +
 		"the context item (.). That is, fn:number() is equivalent to fn:number(.).\n\n" +
 		"If $arg is the empty sequence or if $arg or the context item cannot be " +
-		"converted to an xs:double, the xs:double value NaN is returned. If the " +
+		"converted to an xs:double, the xs:double value NaN is returned. " +
+        "If the " +
 		"context item is undefined an error is raised: [err:XPDY0002]XP.\n\n" +
 		"If $arg is the empty sequence, NaN is returned. Otherwise, $arg, or " +
 		"the context item after atomization, is converted to an xs:double " +
@@ -58,18 +66,18 @@ public class FunNumber extends Function {
 		"to xs:double fails, the xs:double value NaN is returned.";
 
 	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The input item");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the numerical value converted from $arg");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the numerical value");
 	
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("number", Function.BUILTIN_FUNCTION_NS),
-				FUNCTION_DESCRIPTION,
+				FUNCTION_DESCRIPTION_0_PARAM,
 				new SequenceType[0],
 				RETURN_TYPE
 		),
 		new FunctionSignature(
 			new QName("number", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_1_PARAM,
 			new SequenceType[] { ARG_PARAM },
 			RETURN_TYPE
 		)
