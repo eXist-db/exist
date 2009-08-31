@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -51,7 +50,7 @@ public class FunTokenize extends FunMatches {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-			"This function breaks the input string $input into a sequence of strings, "
+			"Breaks the input string $input into a sequence of strings, "
 				+ "treating any substring that matches pattern $pattern as a separator. The "
 				+ "separators themselves are not returned.",
 			new SequenceType[] {
@@ -61,13 +60,13 @@ public class FunTokenize extends FunMatches {
 		),
 		new FunctionSignature(
 			new QName("tokenize", Function.BUILTIN_FUNCTION_NS),
-			"This function breaks the input string $input into a sequence of strings, "
-			+ "treating any substring that matches pattern $pattern as a separator. The "
+			"Breaks the input string $input into a sequence of strings, "
+			+ "treating any substring that matches pattern $pattern as a separator using $flags, see http://www.w3.org/TR/xpath-functions/#flags. The "
 			+ "separators themselves are not returned.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string"),
 				new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The tokenization pattern"),
-				new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flag.  See http://www.w3.org/TR/xpath-functions/#flags")},
+				new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags")},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the token sequence")
 		)
 	};

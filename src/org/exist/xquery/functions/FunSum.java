@@ -1,22 +1,23 @@
-
-/* eXist Open Source Native XML Database
- * Copyright (C) 2001-09,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- * $Id$
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery.functions;
 
@@ -49,23 +50,19 @@ public class FunSum extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
-			"Returns a value obtained by adding together the values in $arg. If the " +
-			"single-argument form of the function is used, then the value returned for " +
-			"an empty sequence is the xs:double value 0.0e0.",
+			"Returns a value obtained by adding together the values in $arg. " +
+            "If $arg is the the empty sequence the xs:double value 0.0e0 is returned.",
 			new SequenceType[] {
 				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up")},
 			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		),
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
-			"Returns a value obtained by adding together the values in $arg. If the " +
-			"single-argument form of the function is used, then the value returned for " +
-			"an empty sequence is the xs:double value 0.0e0. If the two-argument form " +
-			"is used, then the value returned for an empty sequence is the value of " +
-			"the $default argument.",
+			"Returns a value obtained by adding together the values in $arg. " +
+            "If $arg is the the empty sequence then $default is returned.",
 			new SequenceType[] {
 				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up"),
-				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The default value if $arg is an empty sequence")
+				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The default value if $arg computes to the empty sequence")
 				 },
 					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		)

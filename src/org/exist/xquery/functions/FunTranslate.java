@@ -49,18 +49,18 @@ public class FunTranslate extends Function {
 		new FunctionSignature(
 			new QName("translate", Function.BUILTIN_FUNCTION_NS),
 			"Returns the value of $arg modified so that every character in the value of $arg that occurs at some position N in the " +
-			"value of $mapString has been replaced by the character that occurs at position N in the value of $transString.\n\n" +
+			"value of $map has been replaced by the character that occurs at position N in the value of $trans.\n\n" +
 			"If the value of $arg is the empty sequence, the zero-length string is returned.\n\n" +
-			"Every character in the value of $arg that does not appear in the value of $mapString is unchanged.\n\n" +
-			"Every character in the value of $arg that appears at some position M in the value of $mapString, where the value of " +
-			"$transString is less than M characters in length, is omitted from the returned value. If $mapString is the zero-length " +
-			"string $arg is returned.\n\nIf a character occurs more than once in $mapString, then the first occurrence determines " +
-			"the replacement character. If $transString is longer than $mapString, the excess characters are ignored.\n\n" +
+			"Every character in the value of $arg that does not appear in the value of $map is unchanged.\n\n" +
+			"Every character in the value of $arg that appears at some position M in the value of $map, where the value of " +
+			"$trans is less than M characters in length, is omitted from the returned value. If $map is the zero-length " +
+			"string $arg is returned.\n\nIf a character occurs more than once in $map, then the first occurrence determines " +
+			"the replacement character. If $trans is longer than $map, the excess characters are ignored.\n\n" +
 			"i.e. fn:translate(\"bar\",\"abc\",\"ABC\") returns \"BAr\"",
 			new SequenceType[] { 
 				new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be translated"),
-				new FunctionParameterSequenceType("mapString", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
-				new FunctionParameterSequenceType("transString", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
+				new FunctionParameterSequenceType("map", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
+				new FunctionParameterSequenceType("trans", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the translated string"));
 				

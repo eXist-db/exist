@@ -43,14 +43,16 @@ public class DeprecatedExtXCollection extends ExtCollection {
 	public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("xcollection", Function.BUILTIN_FUNCTION_NS),
-            "Works like fn:collection(), but does not include documents " +
-            "found in sub-collections of the specified collections.",
+            "Returns the document nodes in the collections $collection-uris " +
+            "non-recursively, i.e. does not include document nodes found in " +
+            "sub-collections.\n\nC.f. fn:collection(). " +
+            XMLDBModule.COLLECTION_URI,
             new SequenceType[] {
-                new FunctionParameterSequenceType("document-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The set of paths or uris of the documents")
+                new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The collection URIs")
 			},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collection paths only, not including descendant collections"),
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collections excluding sub-collections"),
             true,
-            "Moved to the '" + XMLDBModule.NAMESPACE_URI + "' namespace.");
+            "This function is eXist-specific and deprecated. It should not be in the standard functions namespace. Please use " + XMLDBModule.NAMESPACE_URI + ":xcollection() instead.");
 				
 	/**
 	 * @param context
