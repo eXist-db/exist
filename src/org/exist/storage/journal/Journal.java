@@ -293,13 +293,14 @@ public class Journal {
                     while (currentBuffer.hasRemaining()) {
                         channel.write(currentBuffer);
                     }
-                    currentBuffer.clear();
                     
                     inFilePos += size;
                     lastLsnWritten = currentLsn;
                 }
             } catch (IOException e) {
                 LOG.warn("Flushing log file failed!", e);
+            } finally {
+                currentBuffer.clear();
             }
         }
     }
