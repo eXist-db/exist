@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2009 The eXist Project
+ * Copyright (C) 2006-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -40,18 +40,24 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+/**
+ * Implements the fn:resolve-uri() function.
+ *
+ * @author perig
+ *
+ */
+
+
 public class FunResolveURI extends Function {
 	
-	protected static final String FUNCTION_DESCRIPTION = 
-		"The purpose of this function is to enable a relative URI " +
-		"to be resolved against an absolute URI.\n\nThe first form " +
-		"of this function resolves $relative against the value of " +
-		"the base-uri property from the static context. If the " +
-		"base-uri property is not initialized in the static context " +
-		"an error is raised [err:FONS0005].\n\n" +
-		"If $relative is a relative URI reference, it is resolved " +
-		"against $base, or the base-uri property from the static " +
-		"context, using an algorithm such as the ones described " +
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM = 
+        "Resolves $relative against the value of " +
+		"the base-uri property from the static context ";
+	protected static final String FUNCTION_DESCRIPTION_2_PARAM = 
+        "Resolves $relative against $base ";
+
+	protected static final String FUNCTION_DESCRIPTION_COMMON = 
+        "using an algorithm such as the ones described " +
 		"in [RFC 2396] or [RFC 3986], and the resulting absolute " +
 		"URI reference is returned. An error may be raised " +
 		"[err:FORG0009] in the resolution process.\n\n" +
@@ -68,13 +74,13 @@ public class FunResolveURI extends Function {
     public final static FunctionSignature signatures [] = {
     	new FunctionSignature(
     		      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
-    		      FUNCTION_DESCRIPTION,
+    		      FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
 	      new SequenceType[] { RELATIVE_ARG },
 	      RETURN_TYPE
 	    ),
 	    new FunctionSignature (
 	  	      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
-		      FUNCTION_DESCRIPTION,
+		      FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_COMMON,
 		      new SequenceType[] { RELATIVE_ARG, BASE_ARG },
 		      RETURN_TYPE
 	  	 ),

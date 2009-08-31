@@ -46,19 +46,19 @@ public class FunQName extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("QName", Function.BUILTIN_FUNCTION_NS),
-			"Returns an xs:QName with the namespace URI given in $paramURI. If $paramURI is " +
+			"Returns an xs:QName with the namespace URI given in $uri. If $uri is " +
 			"the zero-length string or the empty sequence, it represents \"no namespace\"; in " +
-			"this case, if the value of $paramQName contains a colon (:), an error is " +
-			"raised [err:FOCA0002]. The prefix (or absence of a prefix) in $paramQName is " +
+			"this case, if the value of $qname contains a colon (:), an error is " +
+			"raised [err:FOCA0002]. The prefix (or absence of a prefix) in $qname is " +
 			"retained in the returned xs:QName value. The local name in the result is " +
-			"taken from the local part of $paramQName.\n\nIf $paramQName does not have " +
+			"taken from the local part of $qname.\n\nIf $qname does not have " +
 			"the correct lexical form for xs:QName an error is raised [err:FOCA0002].\n\n" +
 			"Note that unlike xs:QName this function does not require a xs:string literal as the argument.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("paramURI", Type.STRING, Cardinality.ZERO_OR_ONE, "The namespace URI"),
-				new FunctionParameterSequenceType("paramQName", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix")
+				new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The namespace URI"),
+				new FunctionParameterSequenceType("qname", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix")
 			},
-			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the xs:QName with the namespace URI given in $paramURI"));
+			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the xs:QName with the namespace URI given in $uri"));
 	
 	/**
 	 * @param context

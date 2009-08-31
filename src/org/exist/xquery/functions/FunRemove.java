@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2004-2009 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -51,7 +51,7 @@ public class FunRemove extends Function {
 		new FunctionSignature(
 			new QName("remove", Function.BUILTIN_FUNCTION_NS),
 			"Returns a new sequence constructed from the value of $target with the item " +
-			"at the position specified by the value of $position removed.\n\nIf $position " +
+			"at $position removed.\n\nIf $position " +
 			"is less than 1 or greater than the number of items in $target, $target is returned. " +
 			"Otherwise, the value returned by the function consists of all items of $target " +
 			"whose index is less than $position, followed by all items of $target whose index " +
@@ -61,7 +61,7 @@ public class FunRemove extends Function {
 					new FunctionParameterSequenceType("target", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence"),
 					new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.ONE, "The position of the value to be removed")
 			},
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the new sequence"));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the new sequence with the item at the position specified by the value of $position removed."));
 
 
 

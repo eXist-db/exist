@@ -50,46 +50,51 @@ import org.exist.xquery.value.Type;
  */
 public class FunReplace extends FunMatches {
 	
-	private static final String FUNCTION_DESCRIPTION = "The function returns the xs:string that is obtained by replacing each non-overlapping substring " +
-													   "of $input that matches the given $pattern with an occurrence of the $replacement string.\n\n" +
-													   "The effect of calling the first version of this function (omitting the argument $flags) is the " +
-													   "same as the effect of calling the second version with the $flags argument set to a zero-length " +
-													   "string.\n\nThe $flags argument is interpreted in the same manner as for the fn:matches() function.\n\n" +
-													   "If $input is the empty sequence, it is interpreted as the zero-length string.\n\nIf two overlapping " +
-													   "substrings of $input both match the $pattern, then only the first one (that is, the one whose first " +
-													   "character comes first in the $input string) is replaced.\n\nWithin the $replacement string, a variable " +
-													   "$N may be used to refer to the substring captured by the Nth parenthesized sub-expression in the " +
-													   "regular expression. For each match of the pattern, these variables are assigned the value of the " +
-													   "content matched by the relevant sub-expression, and the modified replacement string is then " +
-													   "substituted for the characters in $input that matched the pattern. $0 refers to the substring " +
-													   "captured by the regular expression as a whole.\n\nMore specifically, the rules are as follows, " +
-													   "where S is the number of parenthesized sub-expressions in the regular expression, and N is the " +
-													   "decimal number formed by taking all the digits that consecutively follow the $ character:\n\n" +
-													   "1.  If N=0, then the variable is replaced by the substring matched by the regular expression as a whole.\n\n" +
-													   "2.  If 1<=N<=S, then the variable is replaced by the substring captured by the Nth parenthesized " +
-													   "sub-expression. If the Nth parenthesized sub-expression was not matched, then the variable " +
-													   "is replaced by the zero-length string.\n\n" +
-													   "3.  If S<N<=9, then the variable is replaced by the zero-length string.\n\n" +
-													   "4.  Otherwise (if N>S and N>9), the last digit of N is taken to be a literal character to be " +
-													   "included \"as is\" in the replacement string, and the rules are reapplied using the number N " +
-													   "formed by stripping off this last digit.";
+	private static final String FUNCTION_DESCRIPTION_3_PARAM =
+        "The function returns the xs:string that is obtained by replacing each non-overlapping substring " +
+        "of $input that matches the given $pattern with an occurrence of the $replacement string.\n\n";
+	private static final String FUNCTION_DESCRIPTION_4_PARAM =
+        "The function returns the xs:string that is obtained by replacing each non-overlapping substring " +
+        "of $input that matches the given $pattern with an occurrence of the $replacement string.\n\n" + 
+        "The $flags argument is interpreted in the same manner as for the fn:matches() function.\n\n" +
+        "Calling the four argument version with the $flags argument set to a " +
+        "zero-length string gives the same effect as using the three argument version.\n\n";
+	private static final String FUNCTION_DESCRIPTION_COMMON = 
+        "If $input is the empty sequence, it is interpreted as the zero-length string.\n\nIf two overlapping " +
+        "substrings of $input both match the $pattern, then only the first one (that is, the one whose first " +
+        "character comes first in the $input string) is replaced.\n\nWithin the $replacement string, a variable " +
+        "$N may be used to refer to the substring captured by the Nth parenthesized sub-expression in the " +
+        "regular expression. For each match of the pattern, these variables are assigned the value of the " +
+        "content matched by the relevant sub-expression, and the modified replacement string is then " +
+        "substituted for the characters in $input that matched the pattern. $0 refers to the substring " +
+        "captured by the regular expression as a whole.\n\nMore specifically, the rules are as follows, " +
+        "where S is the number of parenthesized sub-expressions in the regular expression, and N is the " +
+        "decimal number formed by taking all the digits that consecutively follow the $ character:\n\n" +
+        "1.  If N=0, then the variable is replaced by the substring matched by the regular expression as a whole.\n\n" +
+        "2.  If 1<=N<=S, then the variable is replaced by the substring captured by the Nth parenthesized " +
+        "sub-expression. If the Nth parenthesized sub-expression was not matched, then the variable " +
+        "is replaced by the zero-length string.\n\n" +
+        "3.  If S<N<=9, then the variable is replaced by the zero-length string.\n\n" +
+        "4.  Otherwise (if N>S and N>9), the last digit of N is taken to be a literal character to be " +
+        "included \"as is\" in the replacement string, and the rules are reapplied using the number N " +
+        "formed by stripping off this last digit.";
 
 	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
 	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern to match");
 	protected static final FunctionParameterSequenceType REPLACEMENT_ARG = new FunctionParameterSequenceType("replacement", Type.STRING, Cardinality.EXACTLY_ONE, "The string to replace the pattern with");
-	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flag");
+	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the altered string");
 			
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("replace", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_3_PARAM + FUNCTION_DESCRIPTION_COMMON,
 			new SequenceType[] { INPUT_ARG, PATTERN_ARG, REPLACEMENT_ARG },
 			RETURN_TYPE
 		),
 		new FunctionSignature(
 			new QName("replace", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_4_PARAM + FUNCTION_DESCRIPTION_COMMON,
 			new SequenceType[] { INPUT_ARG, PATTERN_ARG, REPLACEMENT_ARG, FLAGS_ARG },
 			RETURN_TYPE
 		)

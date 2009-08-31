@@ -1,23 +1,24 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2000-2009,  The eXist team
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * 
- * $Id$
+ *  
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import java.text.Collator;
@@ -43,27 +44,27 @@ public class FunStartsWith extends CollatingFunction {
 	
 	protected static final String FUNCTION_DESCRIPTION =
 		"Returns an xs:boolean indicating whether or not " +
-		"the value of $arg1 starts with a sequence of collation " +
+		"the value of $source starts with a sequence of collation " +
 		"units that provides a minimal match to the collation " +
-		"units of $arg2 according to the collation that is used.\n\n" +
+		"units of $prefix according to the collation that is used.\n\n" +
 		"Note:\n\n" +
 		"\"Minimal match\" is defined in [Unicode Collation Algorithm].\n\n" +
-		"If the value of $arg1 or $arg2 is the empty sequence, or " +
+		"If the value of $source or $prefix is the empty sequence, or " +
 		"contains only ignorable collation units, it is interpreted " +
-		"as the zero-length string.\n\nIf the value of $arg2 is the " +
+		"as the zero-length string.\n\nIf the value of $prefix is the " +
 		"zero-length string, then the function returns true. If the " +
-		"value of $arg1 is the zero-length string and the value of " +
-		"$arg2 is not the zero-length string, then the function " +
+		"value of $source is the zero-length string and the value of " +
+		"$prefix is not the zero-length string, then the function " +
 		"returns false.\n\n" +
 		"The collation used by the invocation of this function is " +
 		"determined according to the rules in 7.3.1 Collations. " +
 		"If the specified collation does not support collation " +
-		"units an error may be raised [err:FOCH0004].";
+		"units an error may be raised [err:FOCH0004]. ";
 
-	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("arg1", Type.STRING, Cardinality.ZERO_OR_ONE, "The input test string");
-	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("arg2", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to deterine if it is at the beginning of $arg1");
-	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if $arg2 is at the beginning of the string $arg1");
+	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string");
+	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to determine if is a prefix of $source");
+	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if $prefix is a prefix of the string $source");
 	
     public final static FunctionSignature signatures[] = {
 	new FunctionSignature (
@@ -73,7 +74,7 @@ public class FunStartsWith extends CollatingFunction {
 			       RETURN_TYPE),
 	new FunctionSignature (
 			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
-			       FUNCTION_DESCRIPTION,
+			       FUNCTION_DESCRIPTION + THIRD_REL_COLLATION_ARG_EXAMPLE,
 			       new SequenceType[] { ARG1_PARAM, ARG2_PARAM, COLLATION_PARAM },
 			       RETURN_TYPE)
     };

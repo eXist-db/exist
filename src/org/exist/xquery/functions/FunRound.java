@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist team
- *  
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
@@ -16,9 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- * $Id$
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -43,7 +43,7 @@ public class FunRound extends Function {
 			new FunctionSignature(
 				new QName("round", Function.BUILTIN_FUNCTION_NS),
 				"Returns the number with no fractional part that is closest " +
-				"to the argument. If there are two such numbers, then the one " +
+				"to the argument $arg. If there are two such numbers, then the one " +
 				"that is closest to positive infinity is returned. If type of " +
 				"$arg is one of the four numeric types xs:float, xs:double, " +
 				"xs:decimal or xs:integer the type of the result is the same " +
