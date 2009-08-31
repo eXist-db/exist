@@ -141,8 +141,8 @@ xmldb.src = D:\\Sources\\eXist\\snapshot\\xapi\\src\\api
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="clean">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
    </target>
 
@@ -151,8 +151,8 @@ xmldb.src = D:\\Sources\\eXist\\snapshot\\xapi\\src\\api
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="all">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
       <tstamp><format property="exist.jdk15.end" pattern="hh:mm:ss"/></tstamp>
    </target>
@@ -175,20 +175,20 @@ xmldb.src = D:\\Sources\\eXist\\snapshot\\xapi\\src\\api
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="snapshot-installer">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-war">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-minimal">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
 
     </target>
@@ -198,20 +198,20 @@ xmldb.src = D:\\Sources\\eXist\\snapshot\\xapi\\src\\api
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="snapshot-installer">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-war">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
         <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-minimal">
             <property name="build.no" value="${label}"/>
             <property name="build.label" value="${cctimestamp}"/>
-            <property name="default.javac.source" value="1.4"/>
-            <property name="default.javac.target" value="1.4"/>
+            <property name="default.javac.source" value="1.5"/>
+            <property name="default.javac.target" value="1.5"/>
         </ant>
 
     </target>

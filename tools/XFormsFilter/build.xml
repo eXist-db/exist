@@ -109,7 +109,8 @@
             classpathref="compile.class.path"
             debug="${javac.debug}"
             deprecation="${javac.deprecation}"
-            optimize="${javac.optimize}">
+            optimize="${javac.optimize}"
+            source="${build.compiler.source}" target="${build.compiler.target}">
                 <src path="${src.dir}"/>
             </javac>
     </target>

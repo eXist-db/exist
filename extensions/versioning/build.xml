@@ -48,8 +48,7 @@
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.5">
-			<!-- jmv target="1.4" -->
+        	source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
             	<path refid="classpath.core"/>
             </classpath>
