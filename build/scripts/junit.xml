@@ -34,7 +34,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${junit.reports}/classes" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${junit.reports}/src"
-            source="1.5" target="1.5">
+            source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>

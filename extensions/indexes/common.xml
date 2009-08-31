@@ -56,7 +56,8 @@
     <target name="compile" depends="prepare">
         <javac debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
             encoding="UTF-8"
-            srcdir="${src}" destdir="${module.classes}" source="1.5" target="1.5">
+            srcdir="${src}" destdir="${module.classes}" 
+            source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -67,7 +68,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${test.classes}" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${test.src}"
-            source="1.5" target="1.5">
+            source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.junit"/>

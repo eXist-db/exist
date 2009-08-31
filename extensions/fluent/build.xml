@@ -63,8 +63,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
                destdir="${classes}" encoding="UTF-8"
                optimize="${build.optimize}" srcdir="${src}"
-               source="1.5"
-               target="1.5">
+               source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -76,7 +75,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
                destdir="${test}/classes" encoding="UTF-8"
                optimize="${build.optimize}" srcdir="${test}/src"
-               source="1.5" target="1.5">
+               source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
                 <pathelement path="${classes}"  />

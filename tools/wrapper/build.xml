@@ -60,8 +60,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.4">
-			<!-- jmv target="1.4" -->
+        	source="1.5" target="1.5">
             <classpath>
             	<path refid="classpath.wrapper"/>
             </classpath>
