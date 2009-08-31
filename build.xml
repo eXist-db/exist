@@ -8,40 +8,31 @@
 
 <project basedir="." default="all" name="eXist-DB">
 
-    <description>eXist Open Source Native XML Database</description>
-    
-    <!-- ugly patch to correctly tag the 1.1 version -->
-    <condition property="substitution.string" value="project.version = 1.1\1" else="project.version = 1.0\1">
-      <and><available file="src/org/exist/numbering/NodeId.java"/></and>
-    </condition>
-    <replaceregexp byline="true" file="build.properties">
-      <regexp pattern="project.version = 1.0(.*)"/>
-      <substitution expression="${substitution.string}"/>
-    </replaceregexp> 
-	
-    <!-- import default properties from file -->
-    <property file="build.properties"/>
+  <description>eXist Open Source Native XML Database</description>
 
-	<!-- set proxy if needed, use properties in build.properties  -->
-	<setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}" proxyport="${proxy.port}" 
-	proxypassword="${proxy.password}" proxyuser="${proxy.user}" socksproxyhost="${proxy.socks.host}"
-	socksproxyport="${proxy.socks.port}"/>
-	
-	<!-- Core build scripts -->
-    <import file="build/scripts/build-impl.xml" />
-    <import file="build/scripts/soap.xml" />
-    <import file="build/scripts/jarsigner.xml" />
-    <import file="build/scripts/installer.xml" />
-    <import file="build/scripts/dist.xml" />
-    
-    <!-- Specialties -->
-    <import file="build/scripts/minimal.xml" />
+  <!-- import default properties from file -->
+  <property file="build.properties"/>
 
-    <!-- Additional scripts -->
-    <import file="build/scripts/junit.xml" />
-    <import file="build/scripts/performance.xml" />
-    <import file="build/scripts/quality.xml" />
-    <import file="build/scripts/demoserver.xml" />
-    <import file="build/scripts/subversion.xml" />
+  <!-- set proxy if needed, use properties in build.properties  -->
+  <setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}" proxyport="${proxy.port}"
+    proxypassword="${proxy.password}" proxyuser="${proxy.user}" socksproxyhost="${proxy.socks.host}"
+    socksproxyport="${proxy.socks.port}"/>
+
+  <!-- Core build scripts -->
+  <import file="build/scripts/build-impl.xml"/>
+  <import file="build/scripts/soap.xml"/>
+  <import file="build/scripts/jarsigner.xml"/>
+  <import file="build/scripts/installer.xml"/>
+  <import file="build/scripts/dist.xml"/>
+
+  <!-- Specialties -->
+  <import file="build/scripts/minimal.xml"/>
+
+  <!-- Additional scripts -->
+  <import file="build/scripts/junit.xml"/>
+  <import file="build/scripts/performance.xml"/>
+  <import file="build/scripts/quality.xml"/>
+  <import file="build/scripts/demoserver.xml"/>
+  <import file="build/scripts/subversion.xml"/>
 
 </project>

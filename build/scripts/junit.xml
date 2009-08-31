@@ -16,12 +16,9 @@
         <pathelement path="${junit.reports}/classes"/>
     </path>
 
-    <condition property="java14-only">
-        <equals arg1="${ant.java.version}" arg2="1.4"/>
-    </condition>
 
     <target name="test"
-            depends="check-java-version, test-prepare, test-local,  test-fluent, test-indexing, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
+            depends="test-prepare, test-local,  test-fluent, test-indexing, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -29,7 +26,7 @@
     <property name="junit.reports.html" value="${junit.reports}/junit/html"/>
     <property name="junit.reports.temp" value="${junit.reports}/temp"/>
 
-    <target name="test-compile" unless="java14-only" >
+    <target name="test-compile">
         <mkdir dir="${junit.reports}/classes"/>
 
          <echo
@@ -49,14 +46,6 @@
         <copy todir="${junit.reports}/classes/org/exist/performance"
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/> 
-    </target>
-
-    <target name="check-java-version" if="java14-only">
-        <echo message="Java version warning"/>
-        <echo message="--------------------"/>
-        <echo message="Java 5 is required to compile and run the test suite. Your version is ${ant.java.version}."/>
-        <echo message="You can still run and compile eXist itself, but not the test cases."/>
-        <fail message="Cannot run test suite."/>
     </target>
 
     <!-- Seperate target for creating folders -->
