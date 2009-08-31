@@ -28,12 +28,18 @@ declare function status:main() as element()
                 status:status-line("eXist Build", system:get-build()),
                 status:status-line("eXist Home", system:get-exist-home()),
                 status:status-line("SVN Revision", system:get-revision()),
-                status:status-line("Java Vendor", util:system-property("java.vendor")),
-                status:status-line("Java Version", util:system-property("java.version")),
                 status:status-line("Operating System", 
                     concat(util:system-property("os.name"), " ", util:system-property("os.version"),
                         " ", util:system-property("os.arch"))
-                )
+                ),
+                status:status-line("File encoding", util:system-property("file.encoding"))
+            }
+            <tr><th colspan="2">Java</th></tr>
+            {
+                status:status-line("Vendor", util:system-property("java.vendor")),
+                status:status-line("Version", util:system-property("java.version")),
+                status:status-line("Implementation", util:system-property("java.vm.name")),
+                status:status-line("Installation", util:system-property("java.home"))
             }
             <tr><th colspan="2">Memory Usage</th></tr>
             {
