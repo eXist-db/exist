@@ -45,11 +45,13 @@ import org.w3c.dom.Node;
  */
 public class FunNamespaceURI extends Function {
 
-	protected static final String FUNCTION_DESCRIPTION =
-
+	protected static final String FUNCTION_DESCRIPTION_0_PARAM =
+		"Returns the namespace URI of the xs:QName of the context item.\n\n";
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM =
 		"Returns the namespace URI of the xs:QName of $arg.\n\n" +
+		"If the argument is omitted, it defaults to the context node (.). ";
 
-		"If the argument is omitted, it defaults to the context node (.). " +
+	protected static final String FUNCTION_DESCRIPTION_COMMON =
 		"The behavior of the function if the argument is omitted is exactly " + 
 		"the same as if the context item had been passed as the argument.\n\n" +
 
@@ -65,13 +67,13 @@ public class FunNamespaceURI extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,
 			new SequenceType[0],
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
 			false),
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
 			new SequenceType[] { 
 				new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") 
 			},

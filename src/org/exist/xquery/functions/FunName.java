@@ -1,23 +1,24 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2000-09,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2009 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * GNU Lesser General Public License for more details.
  * 
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -40,17 +41,20 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 /**
- * xpath-library function: string(object)
+ * xpath-library function: name()
  *
  */
 public class FunName extends Function {
 
-	protected static final String FUNCTION_DESCRIPTION =
+	protected static final String FUNCTION_DESCRIPTION_0_PARAM =
 
-		"Returns the name of a node, as an xs:string that is either " +
+		"Returns the name of the context item as an xs:string that is either " +
+		"the zero-length string, or has the lexical form of an xs:QName.\n\n";
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM =
+        "Returns the name of $arg as an xs:string that is either " +
 		"the zero-length string, or has the lexical form of an xs:QName.\n\n" +
-
-		"If the argument is omitted, it defaults to the context item (.). " + 
+		"If the argument is omitted, it defaults to the context item (.). "; 
+	protected static final String FUNCTION_DESCRIPTION_COMMON =
 		"The behavior of the function if the argument is omitted is exactly " + 
 		"the same as if the context item had been passed as the argument.\n\n" +
 
@@ -69,13 +73,13 @@ public class FunName extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("name", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,
 			new SequenceType[0],
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name")
 		),
 		new FunctionSignature(
 			new QName("name", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION,
+			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
 			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name")
 		)
