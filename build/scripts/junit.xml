@@ -31,6 +31,10 @@
 
     <target name="test-compile" unless="java14-only" >
         <mkdir dir="${junit.reports}/classes"/>
+
+         <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+            
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${junit.reports}/classes" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${junit.reports}/src"
