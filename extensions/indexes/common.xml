@@ -54,6 +54,10 @@
     </target>
 
     <target name="compile" depends="prepare">
+
+         <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+            
         <javac debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
             encoding="UTF-8"
             srcdir="${src}" destdir="${module.classes}" 
