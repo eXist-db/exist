@@ -48,37 +48,38 @@ import org.exist.xquery.value.Type;
  */
 public class FunSubstringBefore extends CollatingFunction {
 
-	protected static final FunctionParameterSequenceType COLLATOR_ARG = new FunctionParameterSequenceType("collator", Type.STRING, Cardinality.EXACTLY_ONE, "The collation is a specification of the manner in which character strings are compared and, by extension, ordered.");
-	protected static final FunctionParameterSequenceType SEARCH_ARG = new FunctionParameterSequenceType("searchString", Type.STRING, Cardinality.ZERO_OR_ONE, "The search string");
-	protected static final FunctionParameterSequenceType SOURCE_ARG = new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
+	protected static final FunctionParameterSequenceType COLLATOR_ARG = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
+	protected static final FunctionParameterSequenceType SEARCH_ARG = new FunctionParameterSequenceType("search", Type.STRING, Cardinality.ZERO_OR_ONE, "The search string");
+	protected static final FunctionParameterSequenceType SOURCE_ARG = new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
-			"Returns the substring of the value of $sourceString that precedes the first occurrence " +
-			"of a sequence of the value of $searchString. If the value of $sourceString or $searchString is the empty " +
+			"Returns the substring of the value of $source that precedes the first occurrence " +
+			"of a sequence of the value of $search. If the value of $source or $search is the empty " +
 			"sequence it is interpreted as the zero-length string. If the value of " +
-			"$searchString is the zero-length string, the zero-length string is returned. " +
-			"If the value of $sourceString does not contain a string that is equal to the value " +
-			"of $searchString, the zero-length string is returned.",
+			"$search is the zero-length string, the zero-length string is returned. " +
+			"If the value of $source does not contain a string that is equal to the value " +
+			"of $search, the zero-length string is returned.",
 			new SequenceType[] {
 				 SOURCE_ARG,
 				 SEARCH_ARG
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")),
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring before $search")),
 		new FunctionSignature(
 				new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
-			"Returns the substring of the value of $sourceString that precedes the first occurrence " +
-			"of a sequence of the value of $searchString in the collation $collation. If the value of $sourceString or $searchString is the empty " +
+			"Returns the substring of the value of $source that precedes the first occurrence " +
+			"of a sequence of the value of $search in the collation $collation-uri. If the value of $source or $search is the empty " +
 			"sequence it is interpreted as the zero-length string. If the value of " +
-			"$searchString is the zero-length string, the zero-length string is returned. " +
-			"If the value of $sourceString does not contain a string that is equal to the value " +
-			"of $searchString, the zero-length string is returned.",
+			"$search is the zero-length string, the zero-length string is returned. " +
+			"If the value of $source does not contain a string that is equal to the value " +
+			"of $search, the zero-length string is returned. " +
+                THIRD_REL_COLLATION_ARG_EXAMPLE,
 				new SequenceType[] {
 					 SOURCE_ARG,
 					 SEARCH_ARG,
 					 COLLATOR_ARG
 				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring"))
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring before $search"))
 	};
 
 	public FunSubstringBefore(XQueryContext context, FunctionSignature signature) {

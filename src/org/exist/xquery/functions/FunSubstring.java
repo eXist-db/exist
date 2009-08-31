@@ -19,7 +19,6 @@
  * 
  * $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -53,26 +52,26 @@ public class FunSubstring extends Function {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
-				"Returns the portion of the value of $sourceString beginning at the position indicated " +
-				"by the value of $startingLoc and continuing to the end of $sourceString. " +
-				"The characters returned do not extend beyond the end of $sourceString. If $startingLoc " +
+				"Returns the portion of the value of $source beginning at the position indicated " +
+				"by the value of $starting-at and continuing to the end of $source. " +
+				"The characters returned do not extend beyond the end of $source. If $starting-at " +
 				"is zero or negative, only those characters in positions greater than zero are returned." +
-				"If the value of $sourceString is the empty sequence, the zero-length string is returned.",
+				"If the value of $source is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
-					 new FunctionParameterSequenceType("startingLoc", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The beginning position")
+					 new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
+					 new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position")
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")
 			),
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
-				"Returns the portion of the value of $sourceString beginning at the position indicated by the value of $startingLoc " +
+				"Returns the portion of the value of $source beginning at the position indicated by the value of $starting-at " +
 				"and continuing for the number of characters indicated by the value of $length. The characters returned do not extend " +
-				"beyond the end of $sourceString. If $startingLoc is zero or negative, only those characters in positions greater " +
-				"than zero are returned. If the value of $sourceString is the empty sequence, the zero-length string is returned.",
+				"beyond the end of $source. If $starting-at is zero or negative, only those characters in positions greater " +
+				"than zero are returned. If the value of $source is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("sourceString", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
-					 new FunctionParameterSequenceType("startingLoc", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The beginning position"),
+					 new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
+					 new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position"),
 					 new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The number of characters in the substring")
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the substring")

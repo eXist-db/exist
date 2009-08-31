@@ -49,18 +49,18 @@ public class FunSubSequence extends Function {
                     + "items starting at the position, $starting-at, " 
                     + "up to the end of the sequence are included.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("source-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
-                            new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position in the $source-sequence")
+                            new FunctionParameterSequenceType("source", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
+                            new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position in the $source")
                             },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the subsequence")),
             new FunctionSignature(
                     new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
-                    "Returns a subsequence of the items in $source-sequence, "
+                    "Returns a subsequence of the items in $source, "
                             + "starting at the position, $starting-at,  "
                             + "including the number of items indicated by $length.",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("source-sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
-                        new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position in the $source-sequence"),
+                        new FunctionParameterSequenceType("source", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
+                        new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position in the $source"),
                         new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The length of the subsequence")
                         },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the subsequence")) };
