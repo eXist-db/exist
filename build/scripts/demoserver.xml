@@ -378,11 +378,11 @@
             <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
         </replace>
 
-		<replace dir="${build.docs.src}/sandbox2" summary="true">
+		<!--replace dir="${build.docs.src}/sandbox2" summary="true">
             <include name="sandbox.xql"/>
             <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
             <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
-        </replace>
+        </replace-->
 
 		<replace dir="${build.docs.src}/xqts" summary="true">
             <include name="report.xql"/>
