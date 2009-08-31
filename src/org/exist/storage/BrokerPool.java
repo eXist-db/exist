@@ -916,39 +916,37 @@ public class BrokerPool extends Observable {
 			LOG.warn(e.getMessage(), e);
             throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
         }
-    }*/  	
-
-    /**
-     * Initialise system collections, if it doesnt exist yet
-     *
-     * @param sysBroker The system broker from before the brokerpool is populated
-     * @param txn The transaction
-     * @param sysCollectionUri XmldbURI of the collection to create
-     */
-    private void initialiseSystemCollection(DBBroker sysBroker, Txn txn, XmldbURI sysCollectionUri) throws PermissionDeniedException, LockException, IOException
-    {
-        initialiseSystemCollection(sysBroker, txn, sysCollectionUri, 0770);
-    }
+    }*/
 
      /**
      * Initialise system collections, if it doesnt exist yet
      *
      * @param sysBroker The system broker from before the brokerpool is populated
-     * @param txn The transaction
      * @param sysCollectionUri XmldbURI of the collection to create
      * @param permissions The persmissions to set on the created collection
      */
-    private void initialiseSystemCollection(DBBroker sysBroker, Txn txn, XmldbURI sysCollectionUri, int permissions) throws PermissionDeniedException, LockException, IOException
-    {
+    private void initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException {
         //create /db/system
         Collection sysCollection = sysBroker.getCollection(sysCollectionUri);
         if (sysCollection == null)
         {
-            sysCollection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
-            if (sysCollection == null)
-                throw new IOException("Could not create system collection: " + sysCollectionUri);
-            sysCollection.setPermissions(permissions);
-            sysBroker.saveCollection(txn, sysCollection);
+            TransactionManager transact = getTransactionManager();
+            Txn txn = transact.beginTransaction();
+            try {
+                sysCollection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
+                if (sysCollection == null)
+                    throw new IOException("Could not create system collection: " + sysCollectionUri);
+                sysCollection.setPermissions(permissions);
+                sysBroker.saveCollection(txn, sysCollection);
+
+                transact.commit(txn);
+            } catch (Exception e) {
+                transact.abort(txn);
+                e.printStackTrace();
+                String msg = "Initialisation of system collections failed: " + e.getMessage();
+                LOG.error(msg, e);
+                throw new EXistException(msg, e);
+            }
         }
     }
 
@@ -961,24 +959,8 @@ public class BrokerPool extends Observable {
      */
     private void initialiseSystemCollections(DBBroker sysBroker) throws EXistException
     {
-        TransactionManager transact = getTransactionManager();
-        Txn txn = transact.beginTransaction();
-
-        try
-        {
-            //create /db/system
-            initialiseSystemCollection(sysBroker, txn, XmldbURI.SYSTEM_COLLECTION_URI);
-
-            transact.commit(txn);
-        }
-        catch(Exception e)
-        {
-            transact.abort(txn);
-            e.printStackTrace();
-            String msg = "Initialisation of system collections failed: " + e.getMessage();
-            LOG.error(msg, e);
-            throw new EXistException(msg, e);
-        }
+        //create /db/system
+        initialiseSystemCollection(sysBroker, XmldbURI.SYSTEM_COLLECTION_URI, 0770);
     }
 
     public long getReservedMem() {
