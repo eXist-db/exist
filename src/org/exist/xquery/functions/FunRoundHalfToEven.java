@@ -1,23 +1,24 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2000-2009,  The eXist team
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2009 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * 
- * $Id$
+ *  
+ *  $Id$
  */
-
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -37,12 +38,23 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+/**
+ * Implements the fn:roud-half-to-even() function.
+ *
+ * @author wolf
+ *
+ */
 public class FunRoundHalfToEven extends Function {
 	
-	protected static final String FUNCTION_DESCRIPTION = 
+	protected static final String FUNCTION_DESCRIPTION_1_PARAM = 
+        "The value returned is the nearest (that is, numerically closest) " +
+		"value to $arg that is a multiple of ten to the power of minus 0. ";
+	protected static final String FUNCTION_DESCRIPTION_2_PARAM = 
 		"The value returned is the nearest (that is, numerically closest) " +
 		"value to $arg that is a multiple of ten to the power of minus " +
-		"$precision. If two such values are equally near (e.g. if the " +
+		"$precision. ";
+    protected static final String FUNCTION_DESCRIPTION_COMMON = 
+        "If two such values are equally near (e.g. if the " +
 		"fractional part in $arg is exactly .500...), the function returns " +
 		"the one whose least significant digit is even.\n\nIf the type of " +
 		"$arg is one of the four numeric types xs:float, xs:double, " +
@@ -50,8 +62,8 @@ public class FunRoundHalfToEven extends Function {
 		"the type of $arg. If the type of $arg is a type derived from one " +
 		"of the numeric types, the result is an instance of the " +
 		"base numeric type.\n\n" +
-		"The first signature of this function produces the same result " +
-		"as the second signature with $precision=0.\n\n" +
+		"The three argument version of the function with $precision = 0 " +
+        "produces the same result as the two argument version.\n\n" +
 		"For arguments of type xs:float and xs:double, if the argument is " +
 		"NaN, positive or negative zero, or positive or negative infinity, " +
 		"then the result is the same as the argument. In all other cases, " +
@@ -72,13 +84,13 @@ public class FunRoundHalfToEven extends Function {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 					new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION,
+					FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
 					new SequenceType[] { ARG_PARAM }, 
 					RETURN_TYPE),
 			
 			new FunctionSignature(new QName("round-half-to-even",
 					Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION,
+					FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_COMMON,
 					new SequenceType[] { ARG_PARAM, PRECISION_PARAM }, 
 					RETURN_TYPE ) 
 	};
