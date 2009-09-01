@@ -170,7 +170,7 @@ public class Transform extends BasicFunction {
     };
 
 	private final Map cache = new HashMap();
-    private boolean caching = false;
+    private boolean caching = true;
 
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
