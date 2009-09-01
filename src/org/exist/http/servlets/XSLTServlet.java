@@ -81,6 +81,18 @@ public class XSLTServlet extends HttpServlet {
     private BrokerPool pool;
 
     private final Map cache = new HashMap();
+    private Boolean caching = null;
+    
+    private boolean isCaching() {
+    	if (caching == null) {
+    		Object property = pool.getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
+			if (property != null)
+				caching = (Boolean) property;
+			else 
+				caching = false;
+    	}
+    	return caching;
+    }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String stylesheet = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
@@ -279,7 +291,7 @@ public class XSLTServlet extends HttpServlet {
                 try {
                     broker = pool.get(user);
                     doc = broker.getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
-                    if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
+                    if (!isCaching() || (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified)))
                         templates = getSource(broker, doc);
                     lastModified = doc.getMetadata().getLastModified();
                 } catch (PermissionDeniedException e) {
@@ -295,7 +307,7 @@ public class XSLTServlet extends HttpServlet {
                     URL url = new URL(uri);
                     URLConnection connection = url.openConnection();
                     long modified = connection.getLastModified();
-                    if(templates == null || modified > lastModified || modified == 0) {
+                    if(!isCaching() || (templates == null || modified > lastModified || modified == 0)) {
                         LOG.debug("compiling stylesheet " + url.toString());
                         templates = factory.newTemplates(new StreamSource(connection.getInputStream()));
                     }

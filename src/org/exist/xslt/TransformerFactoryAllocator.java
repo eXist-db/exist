@@ -51,7 +51,10 @@ public class TransformerFactoryAllocator
 	
 	public final static String CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME = "attribute";
 	public final static String PROPERTY_TRANSFORMER_ATTRIBUTES 					= "transformer.attributes";
-	
+
+	public final static String TRANSFORMER_CACHING_ATTRIBUTE 					= "caching";
+	public final static String PROPERTY_CACHING_ATTRIBUTE 						= "transformer.caching";
+
 	//private constructor
 	private TransformerFactoryAllocator() 
 	{
