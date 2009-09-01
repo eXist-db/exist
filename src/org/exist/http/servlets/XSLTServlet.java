@@ -89,7 +89,7 @@ public class XSLTServlet extends HttpServlet {
 			if (property != null)
 				caching = (Boolean) property;
 			else 
-				caching = false;
+				caching = true;
     	}
     	return caching;
     }
