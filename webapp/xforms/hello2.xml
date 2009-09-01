@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<?oxygen NVDLSchema="../../../../Development/Oxygen%20XML%20Editor%2010/samples/nvdl/xhtml-xforms.nvdl"?>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:ev="http://www.w3.org/2001/xml-events">
+    <head>
+        <title>Submit Example</title>
+        <xf:model>
+            <!-- Try to load the default instance from the db. If no person exists in the
+                db, the query returns an empty <person/> element. Without that we would
+                receive an error. -->
+            <xf:instance id="default"
+            src="../rest/db?_query=&lt;person&gt;{/person/name}&lt;/person&gt;&amp;_wrap=no"/>
+            
+            <!-- Template data: will be copied into the default instance if the db
+                does not yet contain a person. -->
+            <xf:instance id="template">
+                <person xmlns="">
+                    <name></name>
+                </person>
+            </xf:instance>
+
+            <xf:submission id="put-to-db" method="put" replace="none"
+                action="../rest/db/simple-xforms.xhtml">
+                <xf:toggle case="case-busy" ev:event="xforms-submit"/>
+                <xf:toggle case="case-submit-done" ev:event="xforms-submit-done"/>
+                <xf:toggle case="case-submit-error" ev:event="xforms-submit-error"/>
+            </xf:submission>
+            
+            <xf:submission id="get-from-db" method="get" replace="instance"
+                action="../rest/db?_query=/person&amp;_wrap=no">
+                <xf:toggle case="case-busy" ev:event="xforms-submit"/>
+                <xf:toggle case="case-submit-error" ev:event="xforms-submit-error"/>
+                <xf:toggle case="case-submit-done" ev:event="xforms-submit-done"/>
+            </xf:submission>
+            
+            <!-- The following conditional action is fired after the form has initialized. 
+                If the default instance is empty, fill it with data from the
+                template instance. -->
+            <xf:action ev:event="xforms-ready" if="not(instance('default')/name)">
+                <xf:insert nodeset="instance('default')/name"
+                    origin="instance('template')/name"
+                    at="1"/>
+            </xf:action>
+        </xf:model>
+        
+        <style type="text/css">
+            ul { list-style: none; height: 2em; }
+            li { display: inline; float: left; }
+        </style>
+    </head>
+    <body>
+        <h3>Simple Load/Save Example</h3>
+        
+        <p>
+            <xf:submit submission="get-from-db">
+                <xf:label>Refresh from DB</xf:label>
+            </xf:submit>
+        </p>
+        
+        <ul>
+            <li>
+                <xf:input ref="/person/name">
+                    <xf:label>Enter your name: </xf:label>
+                </xf:input>
+            </li>
+            <li>
+                <xf:submit class="store" submission="put-to-db">
+                    <xf:label>Save</xf:label>
+                </xf:submit>
+            </li>
+        </ul>
+        <hr/>
+        <table border="1">
+            <td>Output:</td>
+            <td>
+                <b> <xf:output ref="/person/name"/></b> 
+            </td>
+        </table>
+        <br/>
+        <xf:switch>
+            <xf:case id="ready"/>
+            <xf:case id="case-busy">
+                <p>Waiting for results from server...</p>
+            </xf:case>
+            <xf:case id="case-submit-error">
+                <p>Submit error</p>
+            </xf:case>
+            <xf:case id="case-submit-done">
+                <p>Submit done</p>
+            </xf:case>
+        </xf:switch>
+    </body>
+</html>
