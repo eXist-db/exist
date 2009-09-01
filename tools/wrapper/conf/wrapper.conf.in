@@ -1,8 +1,12 @@
 #********************************************************************
 # Wrapper Properties
 #********************************************************************
+
 # Java Application
 wrapper.java.command=@java.vm@
+
+# EXIST_HOME
+set.EXIST_HOME=$INSTALL_PATH
 
 # Java Main class.  This class must implement the WrapperListener interface
 #  or guarantee that the WrapperManager class is initialized.  Helper
