@@ -192,10 +192,12 @@ public class Validation extends BasicFunction  {
 
         } finally {
             // Force release stream
-            try {
-                is.close();
-            } catch (IOException ex) {
-                LOG.debug("Attemted to close stream. ignore.", ex);
+            if(is != null){
+                try {
+                    is.close();
+                } catch (Exception ex) {
+                    LOG.debug("Attemted to close stream. ignore.", ex);
+                }
             }
         }
 
