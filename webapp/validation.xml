@@ -271,6 +271,10 @@
                         </varlistentry>
                     </variablelist>
                 </para>
+                <note>
+                    <para>A new version of the Jing library will be included in future revisions of eXist-db, providing 
+                        more solid support for schematron.</para>
+                </note>
             </section>
         </section>
         <section id="sect3a">
@@ -331,9 +335,13 @@
                             number of removed grammar</para>
                     </listitem>
                     <listitem>
+                        <para><emphasis>pre-parse-grammar(xs:anyURI)</emphasis> : parses the referenced 
+                            grammar and returns the namespace of the parsed XSD.</para>
+                    </listitem>
+                    <listitem>
                         <para><emphasis>show-grammar-cache()</emphasis> : returns an XML report about all cached
                             grammar</para>
-                    </listitem>
+                    </listitem>                   
                 </itemizedlist></para>
             <example>
                 <title>Cached grammars Report</title>
