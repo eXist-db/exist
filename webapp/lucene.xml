@@ -5,7 +5,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Lucene Index Module</title>
-        <date>August 2009</date>
+        <date>September 2009</date>
         <orgname>The eXist Project</orgname>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
