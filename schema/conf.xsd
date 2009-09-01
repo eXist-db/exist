@@ -246,6 +246,7 @@
                             </xs:element>
                         </xs:sequence>
                         <xs:attribute name="class" type="xs:string" default="org.apache.xalan.processor.TransformerFactoryImpl"/>
+                        <xs:attribute name="caching" type="xs:string"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="validation">
