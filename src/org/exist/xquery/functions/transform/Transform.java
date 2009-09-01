@@ -170,6 +170,7 @@ public class Transform extends BasicFunction {
     };
 
 	private final Map cache = new HashMap();
+    private boolean caching = false;
 
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
@@ -180,6 +181,10 @@ public class Transform extends BasicFunction {
 	 */
 	public Transform(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
+		
+		Object property = context.getBroker().getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
+		if (property != null)
+			caching = (Boolean) property;
 	}
 
 	/* (non-Javadoc)
@@ -491,7 +496,7 @@ public class Transform extends BasicFunction {
 				DocumentImpl doc = null;
 				try {
 					doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
-					if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
+					if (!caching || (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified)))
 						templates = getSource(doc);
 					lastModified = doc.getMetadata().getLastModified();
 				} catch (PermissionDeniedException e) {
@@ -503,7 +508,7 @@ public class Transform extends BasicFunction {
 				URL url = new URL(uri);
 				URLConnection connection = url.openConnection();
 				long modified = connection.getLastModified();
-				if(templates == null || modified > lastModified || modified == 0) {
+				if(!caching || (templates == null || modified > lastModified || modified == 0)) {
 					LOG.debug("compiling stylesheet " + url.toString());
                     InputStream is = connection.getInputStream();
                     try {

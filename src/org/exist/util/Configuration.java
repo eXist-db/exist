@@ -509,6 +509,12 @@ public class Configuration implements ErrorHandler
 			
 			config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTES, attributes );
         }
+
+        String cachingValue = transformer.getAttribute(TransformerFactoryAllocator.TRANSFORMER_CACHING_ATTRIBUTE);
+        if (cachingValue != null) {
+            config.put(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE, parseBoolean(cachingValue, false));
+            LOG.debug(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE + ": " + config.get(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE));
+        }
     }
     
     /**

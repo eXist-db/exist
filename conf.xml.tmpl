@@ -605,7 +605,9 @@
             
             for Xalan (XSLT 1.0 support):
             - "org.apache.xalan.processor.TransformerFactoryImpl"
-            
+        - caching:
+            You can enable or disable xsl caching by this option.     
+            By default, this option is set to "no".     
             
         For further details see - http://atomic.exist-db.org/wiki/HowTo/XSLT2/
         
@@ -624,7 +626,8 @@
         and "string".  Anything else will be treated as type "string".
         
     -->
-    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl"/>
+    <transformer
+        class="org.apache.xalan.processor.TransformerFactoryImpl" caching="yes"/>
 
     <!--
         Settings for XML validation
