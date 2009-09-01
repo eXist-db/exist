@@ -7,7 +7,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Credits</title>
-        <date>August 2009</date>
+        <date>September 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -76,7 +76,7 @@
                     <para>Pierrick Brihaye (developer)</para>
                 </listitem>
                 <listitem>
-                    <para>Loren Cahlander (developer)</para>
+                    <para>Loren Cahlander (developer, documentation)</para>
                 </listitem>
                 <listitem>
                     <para>Mark R. Diggory (tomcat realm)</para>
