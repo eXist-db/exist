@@ -125,16 +125,17 @@ public class Jaxv extends BasicFunction  {
 
 
         ValidationReport report = new ValidationReport();
+        StreamSource instance = null;
+        StreamSource grammars[] =null;
 
         try {
             report.start();
             
             // Get inputstream for instance document
-            StreamSource is=Shared.getStreamSource(args[0].itemAt(0), context);
+            instance=Shared.getStreamSource(args[0].itemAt(0), context);
 
             // Validate using resource speciefied in second parameter
-           
-            StreamSource grammars[] = Shared.getStreamSource(args[1], context);
+            grammars = Shared.getStreamSource(args[1], context);
            
             for(StreamSource grammar: grammars){
                 String grammarUrl = grammar.getSystemId();
@@ -155,7 +156,7 @@ public class Jaxv extends BasicFunction  {
             validator.setErrorHandler(report);      
 
             // Perform validation
-            validator.validate(is);
+            validator.validate(instance);
 
 
         } catch (MalformedURLException ex) {
@@ -172,6 +173,9 @@ public class Jaxv extends BasicFunction  {
 
         } finally {
             report.stop();
+
+            Shared.closeStreamSource(instance);
+            Shared.closeStreamSources(grammars);
         }
 
         // Create response

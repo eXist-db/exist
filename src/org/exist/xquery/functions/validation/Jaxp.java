@@ -176,6 +176,7 @@ public class Jaxp extends BasicFunction {
         ValidationReport report = new ValidationReport();
         ContentHandler contenthandler = null;
         MemTreeBuilder instanceBuilder = null;
+        InputSource instance = null;
 
         if (isCalledAs("jaxp-parse")) {
             instanceBuilder = context.getDocumentBuilder();
@@ -196,7 +197,7 @@ public class Jaxp extends BasicFunction {
             xmlReader.setErrorHandler(report);
 
             // Get inputstream for instance document
-            InputSource instance = Shared.getInputSource(args[0].itemAt(0), context);
+            instance = Shared.getInputSource(args[0].itemAt(0), context);
 
             // Handle catalog
             if (args.length == 2) {
@@ -267,6 +268,8 @@ public class Jaxp extends BasicFunction {
 
         } finally {
             report.stop();
+
+            Shared.closeInputSource(instance);
         }
 
         // Create response

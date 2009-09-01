@@ -170,8 +170,8 @@ public class Jing extends BasicFunction  {
             report.setException(ex);
 
         } finally {
-            closeInputSource(instance);
-            closeInputSource(grammar);
+            Shared.closeInputSource(instance);
+            Shared.closeInputSource(grammar);
             report.stop();
         }
 
@@ -186,25 +186,6 @@ public class Jing extends BasicFunction  {
             NodeImpl result = Shared.writeReport(report, builder);
             return result;
         } 
-    }
-
-    private void closeInputSource(InputSource source){
-
-        if(source==null){
-            return;
-        }
-
-        InputStream is = source.getByteStream();
-        if(is==null){
-            return;
-        }
-
-        try {
-            is.close();
-        } catch (Exception ex){
-            LOG.error(ex.getMessage(), ex);
-        }
-
     }
 
 }
