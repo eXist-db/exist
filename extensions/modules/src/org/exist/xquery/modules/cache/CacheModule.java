@@ -40,7 +40,7 @@ public class CacheModule extends AbstractInternalModule {
 
 	public final static String PREFIX = "cache";
     public final static String INCLUSION_DATE = "2009-03-04";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
         
 	private final static FunctionDef[] functions = {
 		new FunctionDef(PutFunction.signatures[0], PutFunction.class),

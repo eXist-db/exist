@@ -63,7 +63,7 @@ public class JNDIModule extends AbstractInternalModule
 
 	public final static String PREFIX = "jndi";
     public final static String INCLUSION_DATE = "2008-12-04";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
 	private final static FunctionDef[] functions = {
 			new FunctionDef( GetDirContextFunction.signatures[0], 	GetDirContextFunction.class ),
