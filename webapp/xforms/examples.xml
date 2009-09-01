@@ -29,18 +29,25 @@
 
 
         <section>
-            <title>Simple Examples from the XSLTForms distribution</title>
+            <title>Simple Examples</title>
 
-            <para>You first need to run the "Examples Setup" page from the <ulink url="../admin/"
-                    >admin web application</ulink> to run any of the following examples, as
-                xsltforms needs to be uploaded to eXist.</para>
-
-            <ul>
-                <li>
-                    <ulink url="hello.xml">hello</ulink>
-                </li>
-
-            </ul>
+            <variablelist>
+                <varlistentry>
+                    <term><ulink url="hello.xml">Hello world!</ulink></term>
+                    <listitem>
+                        <para>A very basic example.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><ulink url="hello2.xml">Hello world 2</ulink></term>
+                    <listitem>
+                        <para>Another "hello world" which actually stores some data into
+                            the db and retrieves it later. Also demonstrates incremental
+                            instance loading.</para>
+                    </listitem>
+                </varlistentry>
+                
+            </variablelist>
 
         </section>
         
