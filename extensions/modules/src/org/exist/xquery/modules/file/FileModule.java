@@ -44,7 +44,7 @@ public class FileModule extends AbstractInternalModule
 	
 	public final static String PREFIX = "file";
     public final static String INCLUSION_DATE = "2008-03-07";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
 	
 	private final static FunctionDef[] functions = {

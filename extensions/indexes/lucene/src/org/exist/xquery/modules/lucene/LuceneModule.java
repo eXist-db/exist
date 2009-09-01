@@ -37,7 +37,7 @@ public class LuceneModule extends AbstractInternalModule {
 
     public static final String PREFIX = "ft";
     public final static String INCLUSION_DATE = "2008-09-03";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signature, Query.class),

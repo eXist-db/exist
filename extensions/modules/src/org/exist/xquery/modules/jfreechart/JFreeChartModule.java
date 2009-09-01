@@ -37,7 +37,7 @@ public class JFreeChartModule extends AbstractInternalModule {
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/jfreechart";
     public final static String PREFIX = "jfreechart";
     public final static String INCLUSION_DATE = "2009-04-13";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
     public final static FunctionDef[] functions = {
         new FunctionDef(JFreeCharting.signatures[0], JFreeCharting.class),

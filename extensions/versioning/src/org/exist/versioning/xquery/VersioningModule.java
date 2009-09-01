@@ -39,7 +39,7 @@ public class VersioningModule extends AbstractInternalModule {
 
     public static final String PREFIX = "version";
     public final static String INCLUSION_DATE = "2008-12-29";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(PatchFunction.signatures[0], PatchFunction.class),
