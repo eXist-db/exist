@@ -349,4 +349,109 @@ public class Shared {
         return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
 
     }
+
+    /**
+     *  Safely close the input source and underlying inputstream.
+     */
+    public static void closeInputSource(InputSource source){
+
+        if(source==null){
+            return;
+        }
+
+        InputStream is = source.getByteStream();
+        if(is==null){
+            return;
+        }
+
+        try {
+            is.close();
+        } catch (Exception ex){
+            LOG.error("Problem while closing inputstream. ("
+                    + getDetails(source) + ") "
+                    + ex.getMessage(), ex);
+        }
+
+    }
+
+    /**
+     *  Safely close the stream source and underlying inputstream.
+     */
+    public static void closeStreamSource(StreamSource source){
+
+        if(source==null){
+            return;
+        }
+
+        InputStream is = source.getInputStream();
+        if(is==null){
+            return;
+        }
+
+        try {
+            is.close();
+        } catch (Exception ex) {
+            LOG.error("Problem while closing inputstream. (" 
+                    + getDetails(source) + ") "
+                    + ex.getMessage(), ex);
+        }
+
+    }
+
+    /**
+     *  Safely close the stream sources and underlying inputstreams.
+     */
+    public static void closeStreamSources(StreamSource sources[]){
+
+        if(sources==null){
+            return;
+        }
+
+        for(StreamSource source : sources){
+            closeStreamSource(source);
+        }
+
+    }
+
+    private static String getDetails(InputSource source) {
+        StringBuilder sb = new StringBuilder();
+
+        if(source.getPublicId()!=null){
+            sb.append("PublicId='");
+            sb.append(source.getPublicId());
+            sb.append("'  ");
+        }
+
+        if(source.getSystemId()!=null){
+            sb.append("SystemId='");
+            sb.append(source.getSystemId());
+            sb.append("'  ");
+        }
+
+        if(source.getEncoding()!=null){
+            sb.append("Encoding='");
+            sb.append(source.getEncoding());
+            sb.append("'  ");
+        }
+
+        return sb.toString();
+    }
+
+    private static String getDetails(StreamSource source) {
+        StringBuilder sb = new StringBuilder();
+
+        if(source.getPublicId()!=null){
+            sb.append("PublicId='");
+            sb.append(source.getPublicId());
+            sb.append("'  ");
+        }
+
+        if(source.getSystemId()!=null){
+            sb.append("SystemId='");
+            sb.append(source.getSystemId());
+            sb.append("'  ");
+        }
+
+        return sb.toString();
+    }
 }
