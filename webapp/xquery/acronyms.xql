@@ -91,9 +91,5 @@ declare function a:do-query() as element()
 			</table>
 		</form>
 		{ a:do-query() }
-		<para>
-			<small>View <a href="source/acronyms.xql">source code</a>
-			</small>
-		</para>
 	</chapter>
 </book>

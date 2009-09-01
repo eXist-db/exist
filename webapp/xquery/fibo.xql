@@ -25,10 +25,5 @@ declare function f:fibo($n as xs:integer) as item() {
 				</tr>
 			}
 		</table>
-
-		<p>
-			<small>View <a href="fibo.xql?_source=yes">source code</a>
-			</small>
-		</p>
 	</body>
 </html>

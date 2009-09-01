@@ -27,9 +27,4 @@ as xs:string {
 		}
 		</tr>
 	}</table>
-
-	<p>
-		<small>View <a href="table.xql?_source=yes">source code</a>
-		</small>
-	</p>
 </body>
