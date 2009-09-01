@@ -1028,7 +1028,7 @@ public abstract class Serializer implements XMLReader {
     private class ErrorListener implements javax.xml.transform.ErrorListener {
 
         public void warning(TransformerException exception) throws TransformerException {
-            throw exception;
+            LOG.warn("Warning while applying stylesheet: " + exception.getMessage(), exception);
         }
 
         public void error(TransformerException exception) throws TransformerException {
