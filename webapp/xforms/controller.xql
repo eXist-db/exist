@@ -59,7 +59,7 @@ return
  			</view>
              <cache-control cache="yes"/>
  		</dispatch>
-    else if (ends-with($uri, ".xml")) then
+    else if ($name = ('todo-list.xml', 'shakespeare.xml')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<view>
 				<forward servlet="XSLTServlet">

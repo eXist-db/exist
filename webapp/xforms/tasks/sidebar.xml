@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
-	<search href="../xquery/search.xql"/>
+	<search href="../../xquery/search.xql"/>
     <toolbar>
-        <link href="../index.xml">Home</link>
-        <link href="../download.xml">Download</link>
+        <link href="../../index.xml">Home</link>
+        <link href="../../download.xml">Download</link>
         <link href="http://atomic.exist-db.org">Wiki</link>
-        <link href="../examples.xml">Demo</link>
+        <link href="../../examples.xml">Demo</link>
     </toolbar>
 
     <group name="About Us">
         <item>
-            <link href="../credits.xml">Who we are</link>
+            <link href="../../credits.xml">Who we are</link>
         </item>
         <item>
-            <link href="../acknowledge.xml">Acknowledgements</link>
+            <link href="../../acknowledge.xml">Acknowledgements</link>
         </item>
     </group>
     <group name="Documentation">
         <item>
-            <link href="../quickstart.xml">Quick Start</link>
+            <link href="../../quickstart.xml">Quick Start</link>
         </item>
         <item>
-            <link href="../xquery/functions.xql">Function Library 222</link>
+            <link href="../../xquery/functions.xql">Function Library 222</link>
         </item>
         <item>
-            <link href="../extensions.xml">Extension Modules</link>
+            <link href="../../extensions.xml">Extension Modules</link>
         </item>
         <item>
-            <link href="../documentation.xml">Main Documentation</link>
+            <link href="../../documentation.xml">Main Documentation</link>
         </item>
         <item>
-            <link href="../facts.xml">Feature Sheet</link>
+            <link href="../../facts.xml">Feature Sheet</link>
         </item>
 		<item>
 			<link href="http://en.wikibooks.org/wiki/XQuery">XQuery Wikibook</link>
@@ -38,24 +38,24 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="../sandbox/sandbox.xql">XQuery Sandbox</link>
+            <link href="../../sandbox/sandbox.xql">XQuery Sandbox</link>
         </item>
         <item>
-            <link href="../xquery/acronyms.xql">XML Acronyms</link>
+            <link href="../../xquery/acronyms.xql">XML Acronyms</link>
         </item>
         <item>
-            <link href="../cocoon/biblio.xq">Bibliographic</link>
+            <link href="../../cocoon/biblio.xq">Bibliographic</link>
         </item>
         <item>
-            <link href="../examples.xml">All Examples</link>
+            <link href="../../examples.xml">All Examples</link>
         </item>
     </group>
     <group name="Community">
         <item>
-            <link href="../index.xml#mailing">Mailing List/IRC</link>
+            <link href="../../index.xml#mailing">Mailing List/IRC</link>
         </item>
         <item>
-            <link href="../applications.xml">Powered By eXist</link>
+            <link href="../../applications.xml">Powered By eXist</link>
         </item>
         <!--item>
             <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
@@ -65,10 +65,10 @@
     </group>
     <group name="Development">
         <item>
-            <link href="../roadmap.xml">Roadmap</link>
+            <link href="../../roadmap.xml">Roadmap</link>
         </item>
         <item>
-            <link href="../api/index.html">Javadocs</link>
+            <link href="../../api/index.html">Javadocs</link>
         </item>
         <item>
             <link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">ChangeLog</link>
@@ -88,17 +88,17 @@
     </group>
     <group name="Administration">
         <item>
-            <link href="../admin/admin.xql">Admin</link>
+            <link href="../../admin/admin.xql">Admin</link>
         </item>
         <item>
-            <link href="../cocoon/status">Server Status</link>
+            <link href="../../cocoon/status">Server Status</link>
         </item>
         <item>
-            <link href="../webstart/exist.jnlp">Webstart Client</link>
+            <link href="../../webstart/exist.jnlp">Webstart Client</link>
         </item>
         <item>
-            <link href="../webstart/exist.jnlp">
-                <img src="../resources/webstart.small.jpg" border="0"/>
+            <link href="../../webstart/exist.jnlp">
+                <img src="../../resources/webstart.small.jpg" border="0"/>
             </link>
         </item>
     </group>
