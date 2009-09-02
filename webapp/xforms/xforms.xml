@@ -15,128 +15,114 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
 
     <section>
-        <title>XForms Overview</title>
-        <para>
-            eXist now has support for xforms processing via the Alain Couthures
-            excellent <a href="http://www.agencexml.com">xsltforms</a> processor.
-        </para>
-    </section>
+        <title>XForms Support in eXist</title>
 
-    <section>
-        <title>Configuration &amp; Quick Start</title>
-        <para>
-            Since eXist v1.3, xsltxforms is built and configured by default with
-            eXist and should be ready to use. Check out some simple
-            <a href="examples.xml">examples</a> to check if your eXist is working.
-        </para>
-    </section>
+        <abstract>
+            <para>eXist now directly supports XForms via Alain Couthures' excellent <a
+                    href="http://www.agencexml.com">XSLTForms</a> processor. XSLTForms implements
+                the XForms standard within the browser and is thus easy to integrate. However, eXist
+                will also work with other XForms processors like <ulink url="http://www.orbeon.com"
+                    >Orbeon</ulink> or <ulink url="http://chiba-project.org">Chiba</ulink>. </para>
+        </abstract>
 
-    <section>
-        <title>Using xsltform inside of eXist</title>
-        <para>
-            Once you are sure xforms is working and installed for your version of
-            eXist, to use in your xforms just prepend with an XSL PI, pointing to
-            the /db/xforms/xsltforms/xsltforms.xsl stylesheet.
-        </para>
+        <para>XSLTForms transforms the XForms xml into an XHTML page with javascript that can
+            process XForms. As eXist has support for RESTful interactions the action of saving the
+            XML representation of data provided by XForms can be as easy as using HTTP PUT method
+            with an action attribute referencing an xml document in the XML Database. For more
+            complex tasks, you can submit your XForms instances to an XQuery, post-process it there
+            and get the results back into your XForms. Several <ulink url="examples.xml"
+                >examples</ulink> are provided.</para>
+
+        <section>
+            <title>Using xsltform inside of eXist</title>
+            <para> Once you are sure xforms is working and installed for your version of eXist, to
+                use in your xforms just prepend with an XSL PI, pointing to the
+                <filename>xsltforms/xsltforms.xsl</filename> stylesheet. </para>
 
             <example>
-            <title>Activate xforms by using xsl PI</title>
-            <programlisting>
-                <markup>
-                <![CDATA[
-<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:xf="http://www.w3.org/2002/xforms"
-      xmlns:sample="http://www.agencexml.com/sample">
+                <title>Activate xforms by using XSL PI</title>
+                <programlisting><markup><![CDATA[<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms">
     <head>
         <title>Hello World in XForms</title>
         <xf:model>
             <xf:instance>
-                <sample:data>
-                    <sample:PersonGivenName/>
-                </sample:data>
+                <f:data xmlns:f="http://foo.com">
+                    <f:PersonGivenName/>
+                </f:data>
             </xf:instance>
         </xf:model>
     </head>
     <body>
-        <div id="xformControl">
-            <span>
-                <input type="checkbox"
-                    onclick="$('console').style.display = this.checked? 'block' : 'none';"
-                    checked="checked"/>
-                Debug
-            </span>
-        </div>
-        <p>Type your first name in the input box. <br/>
-        If you are running XForms, the output should be displayed in the output area.</p>
-        <xf:input ref="sample:PersonGivenName" incremental="true">
-            <xf:label>Please enter your first name: </xf:label>
-        </xf:input>
-        <br/>
-        <xf:output value="concat('Hello ', 
-                                 sample:PersonGivenName, 
-                                 '. We hope you like XForms!')">
-            <xf:label>Output: </xf:label>
-        </xf:output>
-        <div id="console"/>
+        <p>Type your first name in the input box. If you are running XForms, the output should be
+            displayed in the output area.</p>
+        <p>
+            <xf:input ref="f:PersonGivenName" incremental="true">
+                <xf:label>Please enter your first name: </xf:label>
+            </xf:input>
+        </p>
+        <p>
+            <xf:output value="concat('Hello ', f:PersonGivenName, '. We hope you like XForms!')">
+                <xf:label>Output: </xf:label>
+            </xf:output>
+        </p>
     </body>
 </html>
-
-]]>            
-            </markup>
-        </programlisting>
-    </example>
-            
-    <para>
-        xsltforms transforms the XForms xml into an XHTML page with javascript
-            that can process XForms. As
-        eXist has support for RESTful interactions the action of saving the XML representation of data provided by XForms can be
-        as easy as using HTTP PUT method with an action attribute referencing an xml
-        document in the XML Database. The following example shows an example of this.
-    </para>
-
-    <example>
-    <title>Example of setting submission to save to eXistdb</title>
-    <programlisting>
-    <markup>
-    <![CDATA[
-<xf:submission id="s01" method="put" replace="all" action="/db/xforms/data/xf.xml">
-    <xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
-</xf:submission>
-    ]]>
-    </markup>
-    </programlisting>
-    </example>
-
+]]></markup></programlisting>
+            </example>
         </section>
+        
+        <section>
+            <title>Known Issues</title>
 
+            <para>Currently, the XForms will only work properly if the main xsltforms stylesheet is
+                applied on the client-side, i.e. within the web browser. We are working to change
+                this, but right now you will get errors if the stylesheet is applied on the
+                server.</para>
+
+            <para>In particular, storing the XForms into the database is problematic: eXist's REST
+                interface will see the xsl stylesheet processing instruction and automatically apply
+                the stylesheet server side. We hope to fix this for the final 1.4 release.</para>
+
+            <para>It is also important that the HTTP server reports the correct content type for the
+                XForms document (text/html).</para>
+        </section>
 
         <section>
             <title>Additional XForms Resources</title>
             <section>
                 <title>Mailing Lists</title>
-            <ul>
-            <li>xsltforms <a href="https://lists.sourceforge.net/lists/listinfo/xsltforms-support">mailing list</a></li>
-            </ul>
+                <ul>
+                    <li>XSLTForms <a
+                            href="https://lists.sourceforge.net/lists/listinfo/xsltforms-support"
+                            >mailing list</a></li>
+                </ul>
             </section>
 
             <section>
                 <title>XForms Specifications</title>
-            <ul>
-            <li><a href="http://www.w3.org/TR/xforms/">XForms v1.0 (Third Edition)</a></li>
+                <ul>
+                    <li>
+                        <a href="http://www.w3.org/TR/xforms/">XForms v1.0 (Third Edition)</a>
+                    </li>
 
-        </ul>
+                </ul>
             </section>
 
             <section>
                 <title>Useful</title>
-            <ul>
-            <li><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is a useful place to learn XForms</li>
-            <li><a href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/" target="_resource">xsltforms coverage of W3C test suite</a></li>
+                <ul>
+                    <li><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is
+                        a useful place to learn XForms</li>
+                    <li>
+                        <a
+                            href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/"
+                            target="_resource">XSLTForms coverage of W3C test suite</a>
+                    </li>
 
-        </ul>
+                </ul>
             </section>
 
+        </section>
     </section>
-
 </article>
