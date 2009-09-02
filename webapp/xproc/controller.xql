@@ -6,6 +6,7 @@ import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 let $uri := request:get-uri()
 let $context := request:get-context-path()
 let $path := substring-after($uri, $context)
+let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
     if ($path = "/xproc/") then
 	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -34,6 +35,13 @@ return
 				</forward>
 			</view>
             <cache-control cache="no"/>
+		</dispatch>
+    else if ($name = ('default-style.css', 'default-style2.css')) then
+        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<forward url="{$newPath}"/>
+			<cache-control cache="yes"/>
 		</dispatch>
     else
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">
