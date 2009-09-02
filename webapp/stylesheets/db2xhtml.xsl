@@ -79,6 +79,8 @@
                 <xsl:call-template name="analytics"/>
                 <script type="text/javascript">
                     SyntaxHighlighter.config.stripBrs = true;
+                    SyntaxHighlighter.defaults['auto-links'] = false;
+                    SyntaxHighlighter.defaults['wrap-lines'] = false;
                     SyntaxHighlighter.all();
                 </script>
             </body>
