@@ -14,7 +14,7 @@
                     Setup</a>.</p>
 
             <section title="XQueryServlet (just eXist, no Cocoon)">
-                <table border="0" width="100%" cellspacing="10">
+                <table border="0" cellspacing="10">
                     <tr>
                         <td width="30%" valign="top">
                             <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
@@ -42,7 +42,14 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="search.xql">Search the Documentation</link>
+                            <link href="xforms/shakespeare.xml">Simple Shakespeare Search</link>
+                        </td>
+                        <td width="70%">Search Shakespeare's plays using XForms and the KWIC
+                            display module.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/search.xql">Search the Documentation</link>
                         </td>
                         <td width="70%">
                             A not too complex example featuring full text queries and
@@ -84,20 +91,6 @@
                         </td>
                         <td width="70%"> Presents a login page. Only valid database users can log
                             in. User and password are stored in the HTTP session. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/hello.xql">Basic form example</link>
-                        </td>
-                        <td width="70%"> Presents a form page. The response echoes the name entered.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/hello-plural-db.xql">Form example with XUpdate</link>
-                        </td>
-                        <td width="70%"> Presents a form page. The response echoes all the names
-                            entered since database creation. </td>
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
