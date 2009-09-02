@@ -36,7 +36,7 @@ public class TestUtilModule extends AbstractInternalModule {
 
     public final static String PREFIX = "test";
     public final static String INCLUSION_DATE = "2008-12-03";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
     private final static FunctionDef functions[] = {
         new FunctionDef(PauseFunction.signature, PauseFunction.class)

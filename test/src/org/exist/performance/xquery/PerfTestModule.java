@@ -36,7 +36,7 @@ public class PerfTestModule extends AbstractInternalModule {
 
 	public final static String PREFIX = "pt";
     public final static String INCLUSION_DATE = "2006-12-29";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "exist-1.4";
 
     public final static FunctionDef[] functions = {
             new FunctionDef(RandomText.signature, RandomText.class)

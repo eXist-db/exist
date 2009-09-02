@@ -37,7 +37,7 @@ public class SVNModule extends AbstractInternalModule {
 
 	public final static String PREFIX = "svn";
     public final static String INCLUSION_DATE = "2008-04-05";
-    public final static String RELEASED_IN_VERSION = "trunk";
+    public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
 
 	private final static FunctionDef[] functions = {
