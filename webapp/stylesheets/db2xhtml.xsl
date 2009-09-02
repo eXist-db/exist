@@ -39,7 +39,7 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <link rel="stylesheet" type="text/css"
-                            href="/exist/styles/default-style2.css"/>
+                            href="../styles/default-style2.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
 				<xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
