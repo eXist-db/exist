@@ -117,10 +117,10 @@ declare function setup:importLocal() as element()+
 
                 setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xql", "application/xquery"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xml", "text/xml"),
-                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery"),
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery") (:,
 
                 (: Storing XForms in the db won't work right now :)
-                (:
+                
                 setup:create-collection("/db", "xforms"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xml", "text/html"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xq*", "application/xquery"),
