@@ -39,9 +39,19 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <link rel="stylesheet" type="text/css"
-                            href="../styles/default-style2.css"/>
+                            href="styles/default-style2.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"></script>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"></script>
+                
+                <link type="text/css" rel="stylesheet" href="{$pathToWebapp}styles/syntax/shCore.css"/>
+                <link type="text/css" rel="Stylesheet" href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme" />
+                
 				<xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
@@ -67,6 +77,10 @@
                     <xsl:apply-templates select="bookinfo|articleinfo" mode="backmatter"/>
                 </div>
                 <xsl:call-template name="analytics"/>
+                <script type="text/javascript">
+                    SyntaxHighlighter.config.stripBrs = true;
+                    SyntaxHighlighter.all();
+                </script>
             </body>
         </html>
     </xsl:template>

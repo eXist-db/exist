@@ -70,7 +70,7 @@ return
 			<cache-control cache="yes"/>
 		</dispatch>
     (: make sure the global css and js files are resolved :)
-    else if ($name = ('default-style.css', 'curvycorners.js')) then
+    else if ($name = ('default-style.css', 'default-style2.css', 'curvycorners.js')) then
         let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
         let $log := util:log("DEBUG", ("$newPath: ", $newPath))
         return
@@ -78,7 +78,14 @@ return
     			<forward url="{$newPath}"/>
     			<cache-control cache="yes"/>
     		</dispatch>
-
+    else if (matches($path, 'syntax/.*\.(css|js)')) then
+        let $newPath := replace($path, '^.*/([^/]+/syntax/[^/]+)$', '/$1')
+        let $log := util:log("DEBUG", ("$newPath: ", $newPath))
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="{$newPath}"/>
+    			<cache-control cache="yes"/>
+    		</dispatch>
     else
         (: everything else is passed through :)
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">

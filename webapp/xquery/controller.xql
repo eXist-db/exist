@@ -96,6 +96,20 @@ return
 	            <forward url="twitter-view.xql"/>
             </view>
 	    </dispatch>
+    else if ($name = ('default-style.css', 'default-style2.css')) then
+        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+        return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<forward url="{$newPath}"/>
+			<cache-control cache="yes"/>
+		</dispatch>
+	else if (matches($path, 'syntax/.*\.(css|js)')) then
+        let $newPath := replace($path, '^.*/([^/]+/syntax/[^/]+)$', '/$1')
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="{$newPath}"/>
+    			<cache-control cache="yes"/>
+    		</dispatch>
     else
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
