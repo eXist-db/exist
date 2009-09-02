@@ -124,6 +124,16 @@
                         </a>
                     </td>
                 </tr>
+                <tr>
+                    <td class="description">Jetbrains'<a
+                            href="http://www.jetbrains.com/teamcity/"
+                            >Team City</a> is used to ensures that new changes do not break the eXist codebase and build nightly installer snapshots.</td>
+                    <td align="center">
+                        <a href="http://www.jetbrains.com/teamcity/">
+                            <img border="0" src="resources/teamcity_small.gif"/>
+                        </a>
+                    </td>
+                </tr>
             </table>
         </section>
     </chapter>
