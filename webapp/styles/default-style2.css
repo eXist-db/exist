@@ -17,7 +17,7 @@ table {font-size:inherit;font:100%;}
  */
 pre,code,kbd,samp,tt {font-family:monospace;*font-size:108%;line-height:100%;}
 
-p, .synopsis, .note, .example, .important, .formaltable {
+p, .synopsis, .synopsis-lang, .note, .example, .important, .formaltable {
     margin: 0 15px 1em 15px;
 }
 

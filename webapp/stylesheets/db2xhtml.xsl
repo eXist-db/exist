@@ -393,9 +393,11 @@
     <xsl:template match="synopsis">
         <xsl:choose>
             <xsl:when test="@language">
-                <pre class="brush: xquery; gutter: false; wrap-lines: false;">
-                    <xsl:apply-templates/>
-                </pre>
+                <div class="synopsis-lang">
+                    <pre class="brush: xquery; gutter: false; wrap-lines: false;">
+                        <xsl:apply-templates/>
+                    </pre>
+                </div>
             </xsl:when>
             <xsl:otherwise>
                 <div class="synopsis">
