@@ -28,8 +28,8 @@
 
             <table cellspacing="0" cellpadding="15">
                 <tr>
-                    <td class="description"> The new indexing engine featured in eXist, for Versions
-                        1.1 and all subsequent releases, is made possible through the agency of the
+                    <td class="description"> The new indexing engine featured in eXist, since version
+                        1.1, was made possible through the agency of the
                             <a href="http://tapor.uvic.ca/home.php">University of Victoria</a> node
                         of the Canadian TAPoR consortium, who have made it available for general
                         use. </td>
@@ -85,8 +85,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="description"> The versioning extensions, which will be released with
-                        eXist 1.3, were kindly sponsored by the <a href="http://www.telota.de/"
+                    <td class="description"> The versioning extensions, which were released with
+                        eXist 1.4, were kindly sponsored by the <a href="http://www.telota.de/"
                             >Telota Initiative</a> of the <a href="http://www.bbaw.de"
                             >Berlin-Brandenburg Academy of Sciences and Humanities</a>. </td>
                     <td align="center">
@@ -125,7 +125,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="description">Jetbrains'<a
+                    <td class="description">Jetbrains' <a
                             href="http://www.jetbrains.com/teamcity/"
                             >Team City</a> is used to ensures that new changes do not break the eXist codebase and build nightly installer snapshots.</td>
                     <td align="center">
