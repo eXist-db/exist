@@ -248,6 +248,11 @@
     <section>
         <title>Building eXist as a Cocoon Block</title>
 
+        <note>
+            <para>The build scripts will not work with Cocoon 2.2. We are currently looking for
+                an experienced Cocoon user to help us updating the scripts.</para>
+        </note>
+        
         <para>The standard eXist distribution already ships with Apache Cocoon. However, the
             included version may not be up to date and it offers only a subset of the Cocoon modules
             available. If you work a lot with Cocoon, you might prefer to have eXist integrated into

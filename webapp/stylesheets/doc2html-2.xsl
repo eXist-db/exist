@@ -34,7 +34,7 @@
                 <xsl:when test="header/style/@href">
                     <xsl:value-of select="header/style/@href"/>
                 </xsl:when>
-                <xsl:otherwise>styles/default-style.css</xsl:otherwise>
+                <xsl:otherwise>styles/default-style2.css</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         <html>
@@ -51,7 +51,8 @@
                 <xsl:if test="header/script">
                     <xsl:copy-of select="header/script"/>
                 </xsl:if>
-                <script type="text/javascript" src="styles/niftycube.js"></script>
+                <script language="Javascript" type="text/javascript" 
+                    src="styles/curvycorners.js"></script>
                 <script language="Javascript" type="text/javascript" 
 					src="scripts/yui/yahoo-dom-event2.7.0.js"/>
                 <script language="Javascript" type="text/javascript" src="scripts/main.js"/>
@@ -134,10 +135,10 @@
     
     <xsl:template match="sidebar:group">
         <div class="block">
-            <div class="head">
+            <div class="head rounded-top">
                 <h3><xsl:value-of select="@name"/></h3>
             </div>            
-            <ul><xsl:apply-templates/></ul>
+            <ul class="rounded-bottom"><xsl:apply-templates/></ul>
         </div>
     </xsl:template>
 
@@ -188,7 +189,7 @@
     </xsl:template>
 
     <xsl:template match="body/section">
-        <h1 class="chaptertitle">
+        <h1 class="chaptertitle rounded">
             <xsl:if test="@id">
                 <a name="{@id}"></a>
             </xsl:if>
@@ -202,7 +203,7 @@
         <xsl:if test="@id">
             <a name="{@id}"></a>
         </xsl:if>
-        <h2>
+        <h2 class="rounded">
             <xsl:value-of select="@title"/>
         </h2>
         <xsl:apply-templates/>
@@ -440,14 +441,14 @@
     <xsl:template match="newsblock">
         <div id="news">
             <div class="block">
-                <div class="head"><h3>Blog Feed</h3></div>
-                <div id="news_content" class="news_content">
+                <div class="head rounded-top"><h3>Blog Feed</h3></div>
+                <div id="news_content" class="news_content rounded-bottom">
                     Loading News ...
                 </div>
             </div>
 			<div class="block">
-				<div class="head"><h3><a href="http://twitter.com/existdb">Twitter Feed</a></h3></div>
-				<div id="twitter_content" class="news_content">
+				<div class="head rounded-top"><h3><a href="http://twitter.com/existdb">Twitter Feed</a></h3></div>
+				<div id="twitter_content" class="news_content rounded-bottom">
 					Loading Twitter Feed ...
 				</div>
 			</div>

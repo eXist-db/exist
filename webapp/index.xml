@@ -22,7 +22,7 @@
                 technology. It stores XML data according to the XML data model and features
                 efficient, <a href="http://www.w3.org/TR/xquery/">index-based XQuery</a> processing.</p>
 
-            <a id="download" href="download.xml"><img src="resources/download.png"/></a>
+            <a id="download" href="download.xml"><img src="resources/download.jpg"/></a>
             
             <p>eXist-db supports many (<a href="http://en.wikipedia.org/wiki/Web_2">web</a>)
                 technology standards making it an excellent platform for developing web based applications: <ul>
