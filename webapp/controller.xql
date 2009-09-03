@@ -28,11 +28,6 @@ return
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
 		</ignore>
-	(: redirect sandbox root to sandbox.xql :)
-	else if (matches($uri, "sandbox/?$")) then
-		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<redirect url="sandbox.xql"/>
-		</dispatch>
 	else if ($name eq 'applications.xml') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<!-- query results are passed to XSLT servlet via request attribute -->
@@ -131,6 +126,16 @@ return
 					</forward>
 				</view>
             	<cache-control cache="no"/>
+			</dispatch>
+	else if (ends-with($path, '/dump')) then
+		let $newPath := substring-before($path, '/dump')
+		let $log := util:log("DEBUG", ("LOG: ", $newPath))
+		return
+        	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+				<forward url="{$newPath}"/>
+				<view>
+					<forward url="/xquery/dump.xql"/>
+				</view>
 			</dispatch>
 	else
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
