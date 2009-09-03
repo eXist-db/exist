@@ -322,7 +322,9 @@ public class XQueryURLRewrite implements Filter {
 
             if (modelView.hasViews()) {
                 int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
-                if (status < 400) {
+                if (status == HttpServletResponse.SC_NOT_MODIFIED) {
+                    response.flushBuffer();
+                } else if (status < 400) {
                     List views = modelView.views;
                     for (int i = 0; i < views.size(); i++) {
                         URLRewrite view = (URLRewrite) views.get(i);
