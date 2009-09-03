@@ -107,7 +107,7 @@
     </group>
     
     <banner>
-        <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
+        <script type="text/javascript" src="http://www.ohloh.net/p/252/widgets/project_thin_badge.js"></script>
     </banner>
     
 	<banner name="" empty="true">
@@ -115,11 +115,6 @@
     </banner>
     
     <banner>
-        <link href="http://www.java.net"><img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/></link>
+        <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
     </banner>
-    
-    <reference>
-        <link href="http://www.izforge.com/izpack/"><img src="resources/izpack-88x31.png" border="0" 
-            alt="IzPack Installer Generator"/></link>
-    </reference>            
 </sidebar>
