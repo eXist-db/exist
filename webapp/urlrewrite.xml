@@ -178,6 +178,11 @@ return
                 data of the previous step. XSLTServlet gets the path to the stylesheet from the
                 request attribute "xslt.stylesheet" and applies it to the data.</para>
 
+			<para>If any step in the pipeline generates an error or returns an HTTP status code
+			&gt;= 400, the pipeline processing will stop and the response is send back to the client
+			immediately. The same happens if the first step returns with an HTTP status 304 
+			(NOT MODIFIED), which indicates that the client can use the version it has cached.</para>
+
             <para>We can also pass a request through more than one "view". The following fragment
                 applies two stylesheets in sequence (code taken from
                     <filename>webapp/xquery/controller.xql</filename>):</para>
