@@ -64,17 +64,17 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.5-rev8668.jar"
-                                >eXist-setup-1.4rc-rev8668.jar</ulink>
+                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.4rc-rev10000.jar"
+                                >eXist-setup-1.4rc-rev10000.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4rc-rev8668.jar</code></td>
+                                eXist-1.4rc-rev10000.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.5-rev8668.exe"
-                                >eXist-setup-1.4rc-rev8668.exe</ulink>
+                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.4rc-rev10000.exe"
+                                >eXist-setup-1.4rc-rev10000.exe</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
@@ -115,25 +115,25 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.5-rev8668.jar"
-                                >eXist-setup-1.2.5-rev8668.jar</ulink>
+                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.6-rev9165.jar"
+                                >eXist-setup-1.2.6-rev9165.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.2.5-rev8668.jar</code></td>
+                                eXist-setup-1.2.6-rev9165.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.5-rev8668.exe"
-                                >eXist-setup-1.2.5-rev8668.exe</ulink>
+                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.6-rev9165.exe"
+                                >eXist-setup-1.2.6-rev9165.exe</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-1.2.5-rev8668.war"
-                                >eXist-1.2.5-rev8668.war</ulink>
+                                url="http://prdownloads.sourceforge.net/exist/eXist-1.2.6-rev9165.war"
+                                >eXist-1.2.6-rev9165.war</ulink>
                         </td>
                         <td>Web application archive, ready to be installed into an existing
                             servlet-engine like Tomcat or Jetty. </td>
@@ -155,8 +155,8 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/cocoon-2.1.11-with-eXist-1.2.5.war"
-                                > cocoon-2.1.11-with-eXist-1.2.5.war </ulink>
+                                url="http://prdownloads.sourceforge.net/exist/cocoon-2.1.11-with-eXist-1.2.6.war"
+                                > cocoon-2.1.11-with-eXist-1.2.6.war </ulink>
                         </td>
                         <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2
                             as a block. You should find eXist in
