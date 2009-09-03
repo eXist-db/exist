@@ -44,7 +44,7 @@
                     <para>
                         <emphasis>
                             <ulink url="#ftidx">Full Text Indexes</ulink>
-                        </emphasis>: These map specific text nodes and attributes of the documents
+                        </emphasis> (eXist 1.3/1.4): These map specific text nodes and attributes of the documents
                         in a collection to text tokens.</para>
                 </listitem>
                 <listitem>

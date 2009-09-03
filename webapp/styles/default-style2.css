@@ -627,18 +627,20 @@ td.doclink {
 }
 
 #download {
+    position: relative;
+    left: 50%;
     display: block;
     width: 212px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: -106px;
     margin-bottom: 1.5em;
 }
 
 #download:hover {
     border: 0;
+    background-color: transparent;
 }
 
 #download img {
     border: 0;
-    text-align: center;
+    background-color: transparent;
 }
