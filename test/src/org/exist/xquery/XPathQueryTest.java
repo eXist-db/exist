@@ -378,25 +378,25 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("XPath: "+query, 1, result.getSize() );
             System.out.println("testStarAxisConstraints : ========" );
 
-            query = "/t:test/*:section[. &= 'comment']";
+            query = "/t:test/*:section[contains(., 'comment')]";
             result = service.queryResource("namespaces.xml", query);
             printResult(result);
             assertEquals("XPath: "+query, 1, result.getSize());
             System.out.println("testStarAxisConstraints : ========" );
 
-            query = "/t:test/t:*[. &= 'comment']";
+            query = "/t:test/t:*[contains(., 'comment')]";
             result = service.queryResource("namespaces.xml", query);
             printResult(result);
             assertEquals("XPath: "+query, 1, result.getSize());
             System.out.println("testStarAxisConstraints : ========" );
 
-            query = "/t:test/t:section[. &= 'comment']";
+            query = "/t:test/t:section[contains(., 'comment')]";
             result = service.queryResource("namespaces.xml", query);
             printResult(result);
             assertEquals("XPath: "+query, 1, result.getSize());
             System.out.println("testStarAxisConstraints : ========" );
 
-            query = "/t:test/t:section/*[. &= 'comment']";
+            query = "/t:test/t:section/*[contains(., 'comment')]";
             result = service.queryResource("namespaces.xml", query);
             printResult(result); 
             assertEquals("XPath: "+query, 1, result.getSize());
@@ -461,12 +461,6 @@ public class XPathQueryTest extends XMLTestCase {
             service.setNamespace("t", "http://www.foo.com");
             
             query =  "// * [ . = 'Test Document' ]";
-            result = service.queryResource( "namespaces.xml", query );
-            System.out.println("testStarAxisConstraints3 : ========" );
-            printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() );
-            
-            query =  "// * [ . &= 'Test Document' ]";
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints3 : ========" );
             printResult(result);

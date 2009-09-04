@@ -24,6 +24,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.BasicConfigurator;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
@@ -78,7 +79,18 @@ public class BasicNodeSetTest extends TestCase {
                 "<para n='1.2.1'/>" +
             "</section>" +
         "</section>";
-	
+
+    private static String COLLECTION_CONFIG1 =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+    	"	<index>" +
+    	"		<fulltext default=\"none\">" +
+        "           <create qname=\"LINE\"/>" +
+        "           <create qname=\"SPEAKER\"/>" +
+        "           <create qname=\"TITLE\"/>" +
+        "		</fulltext>" +
+        "	</index>" +
+    	"</collection>";
+
 	private static String directory = "samples/shakespeare";
     
 //    private static File dir = new File(directory);
@@ -362,8 +374,6 @@ public class BasicNodeSetTest extends TestCase {
             executeQuery(broker, "//SCENE/*[LINE &= 'spirit']", 21, null);
             executeQuery(broker, "//SCENE/*[LINE &= 'the']", 1005, null);
             executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
-            executeQuery(broker, "//SPEECH[* &= 'the']", 1008, null);
-            executeQuery(broker, "//*[. &= 'me']", 584, null);
             executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
             executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
             
@@ -419,10 +429,13 @@ public class BasicNodeSetTest extends TestCase {
             transaction = transact.beginTransaction();
             assertNotNull(transaction);            
             System.out.println("BasicNodeSetTest#setUp ...");
-            
+
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.saveCollection(transaction, root);
+
+            CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG1);
             
             
             File files[] = dir.listFiles(new XMLFilenameFilter());
