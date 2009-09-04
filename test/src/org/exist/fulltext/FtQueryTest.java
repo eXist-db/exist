@@ -48,6 +48,14 @@ import org.xmldb.api.modules.XMLResource;
 
 public class FtQueryTest extends XMLTestCase {
 
+    private static String COLLECTION_CONFIG1 =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+    	"	<index>" +
+    	"		<fulltext default=\"all\">" +
+        "		</fulltext>" +
+        "	</index>" +
+    	"</collection>";
+
 	private final static String TEST_XML =
 		"<test-doc>" +
 			"<test-elem id=\"1\" attribute1=\"test some text\"/>" +
@@ -215,7 +223,7 @@ public class FtQueryTest extends XMLTestCase {
 
 	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        result = service.query(query);
-	        assertEquals(30, result.getSize());
+	        assertEquals(32, result.getSize());
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -597,8 +605,7 @@ public class FtQueryTest extends XMLTestCase {
             assertEquals("doc(6)", result.getResource(0).getContent().toString());
             assertEquals("level1(2)", result.getResource(1).getContent().toString());
             assertEquals("level1(2)", result.getResource(2).getContent().toString());
-            assertEquals("level2(1)", result.getResource(3).getContent().toString());	        
-	
+            assertEquals("level2(1)", result.getResource(3).getContent().toString());
 	    	} catch(Exception e) {
     		e.printStackTrace();
     		fail(e.getMessage());
@@ -634,6 +641,9 @@ public class FtQueryTest extends XMLTestCase {
             testCollection = service.createCollection(TEST_COLLECTION_NAME);
             assertNotNull(testCollection);
 
+            IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(COLLECTION_CONFIG1);
+            
             for (int i = 0; i < FILES.length; i++) {
                 XMLResource doc =
                     (XMLResource) testCollection.createResource(

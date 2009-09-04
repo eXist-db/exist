@@ -2,9 +2,9 @@
 <xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
 
     <!-- update a node value -->
-    <xu:update select="//address[lname |= 'Hyde']/fname/text()">Toby</xu:update>
+    <xu:update select="//address[lname = 'Hyde']/fname/text()">Toby</xu:update>
     
     <!-- update attribute -->
-    <xu:update select="//address[lname |= 'jekyll']/email/@type">home</xu:update>
+    <xu:update select="//address[lname = 'Jekyll']/email/@type">home</xu:update>
 
 </xu:modifications>    
