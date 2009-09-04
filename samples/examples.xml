@@ -83,7 +83,7 @@ return
 }</toc>]]></code>
     </query>
 	<query>
-		<description>Display Keywords in Context</description>
+		<description>Basic Keywords in Context Display</description>
 		<code><![CDATA[import module namespace kwic="http://exist-db.org/xquery/kwic";
 
 let $config :=
@@ -98,7 +98,7 @@ return
 ]]></code>
 	</query>
     <query>
-        <description>Keywords in Context</description>
+        <description>Keywords in Context with Callback</description>
         <code><![CDATA[import module namespace kwic="http://exist-db.org/xquery/kwic";
 
 declare function local:filter($node as node(), $mode as xs:string) as xs:string? {

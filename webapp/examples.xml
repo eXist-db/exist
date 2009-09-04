@@ -13,33 +13,8 @@
                     href="admin/admin.xql?user=admin&amp;pass=&amp;panel=setup"> Examples
                     Setup</a>.</p>
 
-            <section title="XQueryServlet (just eXist, no Cocoon)">
+            <section title="Basic XQuery Examples">
                 <table border="0" cellspacing="10">
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
-                        </td>
-                        <td width="70%"> A web interface to execute XQueries on the server. Uses
-                            AJAX technology to validate your XQuery while you type. Requires
-                            Javascript to be enabled. Demonstrates more advanced techniques for
-                            writing web applications with XQuery, XML/HTML, CSS and Javascript.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/guess.xql">Guess a Number</link>
-                        </td>
-                        <td width="70%"> Simple number guessing game to illustrate different
-                            servlet features. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/functions.xql">XQuery Function Library Search</link>
-                        </td>
-                        <td width="70%">The search interface for XQuery functions demonstrates usage of 
-                            the NGram index or AJAX. The function documentation is generated once from
-                            the Java classes and stored in XQDoc format.</td>
-                    </tr>
                     <tr>
                         <td width="30%" valign="top">
                             <link href="xforms/shakespeare.xml">Simple Shakespeare Search</link>
@@ -49,21 +24,10 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/search.xql">Search the Documentation</link>
+                            <link href="xquery/guess.xql">Guess a Number</link>
                         </td>
-                        <td width="70%">
-                            A not too complex example featuring full text queries and
-                            post-processing of query results to show keywords in context. 
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/transform.xql">Built-in functions</link>
-                        </td>
-                        <td width="70%">A simple example which lists all functions in the built-in XQuery function library.
-                            It uses the transform function to transform XML output into HTML using an XSL
-                            stylesheet (also check the <link href="xquery/functions.xql">function search</link>
-                            interface.</td>
+                        <td width="70%"> Simple number guessing game to illustrate different
+                            servlet features. </td>
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
@@ -79,14 +43,6 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/acronyms.xql">XML Acronyms</link>
-                        </td>
-                        <td width="70%"> XQuery version of the <a
-                                href="http://www.xml-acronym-demystifier.org/"> XML Acronym
-                                Demystifier</a>, entirely implemented in XQuery. </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
                             <link href="xquery/login.xql">Session example</link>
                         </td>
                         <td width="70%"> Presents a login page. Only valid database users can log
@@ -98,10 +54,58 @@
                         </td>
                         <td width="70%">A simple twitter client, which demonstrates
                             how to use the http client library to retrieve XML data
-                            from external data sources. For a more complex twitter example,
-                            see an 
-                            <a href="http://www.devx.com/webdev/Article/41337/0/page/1">article</a> 
-                            published on DevX.</td>
+                            from external data sources. There's also an 
+                            <a href="xproc/examples/twitter.xproc">XProc version</a> of this
+                            code.</td>
+                    </tr>
+                </table>
+            </section>
+            
+            <section title="More Complex Examples">
+                <table border="0" width="100%" cellspacing="10">
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
+                        </td>
+                        <td width="70%"> A web interface to execute XQueries on the server. Uses
+                            AJAX technology to validate your XQuery while you type. Requires
+                            Javascript to be enabled. Demonstrates more advanced techniques for
+                            writing web applications with XQuery, XML/HTML, CSS and Javascript.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/acronyms.xql">XML Acronyms</link>
+                        </td>
+                        <td width="70%"> XQuery version of the <a
+                            href="http://www.xml-acronym-demystifier.org/"> XML Acronym
+                            Demystifier</a>, entirely implemented in XQuery. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/search.xql">Search the Documentation</link>
+                        </td>
+                        <td width="70%">
+                            A not too complex example featuring full text queries and
+                            post-processing of query results to show keywords in context. 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/functions.xql">XQuery Function Library Search</link>
+                        </td>
+                        <td width="70%">The search interface for XQuery functions demonstrates usage of 
+                            the NGram index and AJAX. The function documentation is generated once from
+                            the Java classes and stored in XQDoc format.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xqts/report.xql">W3C XQuery Test suite (XQTS)</link>
+                        </td>
+                        <td width="70%"> Using this web application you can run the official XQuery test
+                            suite on eXist. You will need to download the test suite data (read
+                            the notice shown when you first access the page). The test runner is entirely written
+                            in XQuery and is a good example for a complex script using lots of AJAX.</td>
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
@@ -113,29 +117,13 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xqts/report.xql">W3C XQuery Test suite (XQTS)</link>
-                        </td>
-                        <td width="70%"> Using this web application you can run the official XQuery test
-                        suite on eXist. You will need to download the test suite data (read
-                        the notice shown when you first access the page). The test runner is entirely written
-                        in XQuery and is a good example for a complex script using lots of AJAX.</td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
                             <link href="xquery/json-test.xql">Transform XML fragments to JSON</link>
                         </td>
                         <td width="70%">An XQuery does not necessarily need to return XML.</td>
                     </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="xquery/biblio.xml">Bibliography 2</link>
-                        </td>
-                        <td width="70%"> Another bibliographic demo from
-                            previous releases of eXist. No AJAX.</td>
-                    </tr>
                 </table>
             </section>
-
+            
             <section title="Building Blocks for Web Applications">
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
