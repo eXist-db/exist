@@ -14,7 +14,7 @@
         <ant antfile="build.xml" dir="tools/izpack"/>
     </target>
 
-    <target depends="all,samples,javadocs" name="prepare-installer">
+    <target depends="all,samples" name="prepare-installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
                 classname="com.izforge.izpack.ant.IzPackTask"/>
         <tstamp/>
@@ -83,11 +83,11 @@
         <taskdef name="unsignjars" classname="nl.ow.dilemma.ant.jar.UnsignJarTask">
 		        <classpath refid="classpath.core"/>
 		    </taskdef>
-        <unsignjars>
+        <!--unsignjars>
             <fileset dir=".">
                 <include name="${inst-jar}"/>
             </fileset>
-        </unsignjars>
+        </unsignjars-->
         
         <!-- add main-class to jar-manifest -->
         <jar destfile="${inst-jar}"
