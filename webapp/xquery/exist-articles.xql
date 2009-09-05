@@ -161,8 +161,8 @@ declare function mods:list-articles() {
                     <ulink url="admin/admin.xql">admin interface</ulink> and launch
                     "Examples Setup".</para>
             else
-                <para>A collection of articles, blog posts, tutorials and papers which may help to get
-                started with eXist or provide information on special features. The references can
+                <para>A collection of articles, blog posts, tutorials and papers which mention eXist. They
+                may help to get started or provide information on special features. The references can
                 also be queried/sorted via the "<ulink url="cocoon/biblio.xq">Bibliographic</ulink>" 
                 demo.</para>
         }

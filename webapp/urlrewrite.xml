@@ -178,10 +178,11 @@ return
                 data of the previous step. XSLTServlet gets the path to the stylesheet from the
                 request attribute "xslt.stylesheet" and applies it to the data.</para>
 
-			<para>If any step in the pipeline generates an error or returns an HTTP status code
-			&gt;= 400, the pipeline processing will stop and the response is send back to the client
-			immediately. The same happens if the first step returns with an HTTP status 304 
-			(NOT MODIFIED), which indicates that the client can use the version it has cached.</para>
+            <para>If any step in the pipeline generates an error or returns an HTTP status code
+                &gt;= 400, the pipeline processing will stop and the response is send back to
+                the client immediately. The same happens if the first step returns with an HTTP
+                status 304 (NOT MODIFIED), which indicates that the client can use the version it
+                has cached.</para>
 
             <para>We can also pass a request through more than one "view". The following fragment
                 applies two stylesheets in sequence (code taken from
@@ -518,13 +519,14 @@ return
 
                 </variablelist>
 
-                <para>XSLTServlet will attempt to map all other request attributes into
-                        <emphasis>stylesheet parameters</emphasis>. So, for example, if you set a
-                    request attribute <option>myattr</option> it will be available within the
-                    stylesheet as parameter <option>$myattr</option>. For security reasons, this is
-                    the only way to pass request parameters into the stylesheet: use the controller
-                    query to transform the request parameter into a request attribute and pass that
-                    to the view.</para>
+                <para>XSLTServlet will attempt to map all other request attributes starting with the
+                    prefix <option>xslt.</option> into <emphasis>stylesheet parameters</emphasis>.
+                    So, for example, if you set a request attribute <option>xslt.myattr</option> it
+                    will be available within the stylesheet as parameter
+                        <option>$xslt.myattr</option>. For security reasons, this is the only way to
+                    pass request parameters into the stylesheet: use the controller query to
+                    transform the request parameter into a request attribute and pass that to the
+                    view.</para>
 
                 <para>However, depending on the XSLT engine used, automatic conversion of types
                     between eXist/Java and the XSLT processor may not always work. It might be good

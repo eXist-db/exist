@@ -391,7 +391,7 @@
       </section>
     </section>
     
-    <section>
+    <section id="spatial">
       <title>A use case : developing an indexing architecture for GML geometries</title>
       
       <section>

@@ -21,18 +21,27 @@
   <chapter>
     <title>A Short Introduction to the Atom Publishing Protocol</title>
 
-    <section>
-      <title>Overview</title>
-
-      <para>The <ulink
-      url="http://www.ietf.org/internet-drafts/draft-ietf-atompub-protocol-09.txt">Atom
-      Publishing Protocol</ulink> is a new protocol being developed at the
-      <ulink url="http://www.ietf.org/">IETF</ulink> as part of their <ulink
-      url="http://www.ietf.org/html.charters/atompub-charter.html">Atom
-      Publishing Format and Protocol</ulink> working group that lets you
-      manipulate Atom feeds over a REST-style HTTP interface. The RFC is still
-      in draft status but is nearing completion. </para>
-    </section>
+      <section>
+          <title>Introduction</title>
+          
+          <para>The <ulink
+          url="http://www.ietf.org/internet-drafts/draft-ietf-atompub-protocol-09.txt">Atom
+          Publishing Protocol</ulink> is a new protocol being developed at the
+          <ulink url="http://www.ietf.org/">IETF</ulink> as part of their <ulink
+              url="http://www.ietf.org/html.charters/atompub-charter.html">Atom
+              Publishing Format and Protocol</ulink> working group that lets you
+          manipulate Atom feeds over a REST-style HTTP interface. The RFC is still
+          in draft status but is nearing completion. Though Atom is often associated
+          with newsfeeds, it can be used for a much wider range of applications.</para>
+          
+          <para>eXist provides an implementation of the <ulink
+              url="http://www.ietf.org/internet-drafts/draft-ietf-atompub-protocol-09.txt">Atom
+              Publishing Protocol</ulink> sitting on top of the database. Feed and entry
+              data is stored into special collections. Our wiki and blog system,
+              <ulink url="http://code.google.com/p/atomicwiki">AtomicWiki</ulink>, which 
+              powers the <ulink url="http://atomic.exist-db.org/blogs/eXist/">eXist Wiki</ulink>
+              is completely based on eXist's Atom support.</para>
+      </section>
 
     <section>
       <title>Creating and Manipulating Atom Entries</title>
@@ -200,6 +209,24 @@ Location: http://example.org/edit/first-post.atom
       The colleciton URL is specified in the 'href' attribute on that
       element.</para>
     </section>
+      
+      <section>
+          <title>Setting Permissions</title>
+          
+          <para>When creating a feed or entry, you can specify which permissions should
+              be applied to the newly created resource within eXist. For this, the entry
+              or feed document should contain an empty element, <sgmltag>exist:permissions</sgmltag>,
+              in the "exist" namespace.</para>
+          
+          <synopsis language="xml"><![CDATA[<exist:permissions xmlns:exist="http://exist.sourceforge.net/NS/exist"
+              owner="myuser" group="mygroup" mode="755"/>]]></synopsis>
+          
+          <para>where <option>owner</option> and <option>group</option> should be valid database
+              users/groups and <option>mode</option> is an octal number defining the permissions
+              to be set. Please refer to the <ulink url="security.xml#octal">Security Guide</ulink>
+              for further information.</para>
+      </section>
+      
   </chapter>
 
   <chapter>

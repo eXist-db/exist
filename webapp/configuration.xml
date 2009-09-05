@@ -1014,12 +1014,25 @@
                     
                     <para>This section lists the XQuery modules which will be known to the query
                     engine. The modules in this list can be imported into a query without specifying
-                    a location. For example, one can import the "util" module as follows:</para>
+                    a location. For example, the following entry:</para>
                     
-                    <synopsis language="xquery">import module namespace util="http://exist-db.org/xquery/util";</synopsis>
+                    <synopsis language="xml"><![CDATA[<module class="org.exist.xquery.modules.file.FileModule"
+uri="http://exist-db.org/xquery/file" />]]></synopsis>
                     
-                    <para>This statement does not need an "at ..." clause since the location of the module (its class) is
-                        already known.</para>
+                    <para>establishes a static mapping between the module URI for the file module and
+                    the Java class which implements it. When using that module, it is sufficient to
+                    provide the correct URI in the import. Specifying a location is not needed:</para>
+                    
+                    <synopsis language="xquery">import module namespace file="http://exist-db.org/xquery/file";</synopsis>
+                    
+                    <para>Instead of providing a Java class, one can also specify a src URI which must
+                    point to the XQuery source code of the module, e.g.:</para>
+                    
+                    <synopsis language="xml"><![CDATA[<module src="resource:org/exist/xquery/lib/json.xq" 
+uri="http://www.json.org"/>]]></synopsis>
+                    
+                    <para>For the src attribute, eXist understands the <ulink url="http://localhost:8080/exist/xquery.xml#N10195">same types of URIs</ulink> as in an
+                        ordinary XQuery import statement.</para>
                 </section>
             </section>
         </section>

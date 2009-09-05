@@ -191,5 +191,27 @@ return
                 SPEECH context, not LINE. If we queried LINE, each single line would get a match
                 score and the matches would end up in a completely different order.</para>
         </section>
+        
+        <section id="highlight">
+            <title>Locating Matches without KWIC</title>
+            
+            <para>Sometimes you don't want to use the KWIC module, but you would still like to find
+                out where matches were found in the text. eXist's XML serializer can automatically highlight
+                matches when it writes out a piece of XML. All the matches will be surrounded by an
+                <sgmltag>exist:match</sgmltag> tag.</para>
+            
+            <para>You can achieve the same within an XQuery by calling the extension function
+                <funcsynopsis>util:expand</funcsynopsis>:</para>
+            
+            <example>
+                <title>Using util:expand</title>
+                <programlisting language="xquery"><![CDATA[let $expanded := util:expand($hit, "expand-xincludes=no")
+return $expanded//exist:match]]></programlisting>
+            </example>
+            
+            <para><function>util:expand</function> returns a copy of the XML fragment it received
+                in its first parameter, which - unless configured otherwise - has all matches
+                wrapped into <sgmltag>exist:match</sgmltag> tags.</para>
+        </section>
     </chapter>
 </book>

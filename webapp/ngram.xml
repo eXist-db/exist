@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: lucene.xml 9963 2009-09-01 14:48:09Z ixitar $ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>NGram Index</title>
+        <date>September 2009</date>
+        <orgname>The eXist Project</orgname>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>N-Gram Index</title>
+        
+        <section>
+            <title>Index Configuration</title>
+            
+            <para>To create an n-gram index, add a <sgmltag>ngram</sgmltag> element directly
+                below the root <sgmltag>index</sgmltag> node. The n-gram index only supports
+                index definitions by <option>qname</option>. The <option>path</option>
+                attribute is not supported (we currently don't see many real use cases for
+                it). Right now, the n-gram index has no additional parameters to be
+                specified; the default settings should just be ok for most cases (we may add
+                extra parameters in the future, e.g. for collapsing/normalizing
+                whitespace).</para>
+            
+            <example>
+                <title>collection.xconf</title>
+                <programlisting><markup><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <lucene>
+            <text qname="SPEECH">
+                <ignore qname="SPEAKER"/>
+            </text>
+            <text qname="TITLE"/>
+        </lucene>
+        <ngram qname="SPEAKER"/>
+    </index>
+</collection>
+]]></markup></programlisting>
+            </example>
+            
+        </section>
+    </chapter>
+</book>
