@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
@@ -73,6 +74,13 @@ public class RemoveCollectionTest {
             "   </chapter>" +
             "</book>";
 
+    private static String COLLECTION_CONFIG =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+    	"	<index>" +
+    	"		<fulltext default=\"all\"/>" +
+        "	</index>" +
+    	"</collection>";
+    
     private final static int COUNT = 300;
     
     @Test
@@ -198,6 +206,9 @@ public class RemoveCollectionTest {
         Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
         assertNotNull(test);
         broker.saveCollection(transaction, test);
+
+        CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
+        mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
         InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
         assertNotNull(is);

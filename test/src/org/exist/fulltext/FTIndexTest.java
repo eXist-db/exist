@@ -103,28 +103,6 @@ public class FTIndexTest {
     private static final QName[] QNITEM = new QName[]{ new QName("item", "", "") };
 
     @Test
-    public void defaultIndex() {
-        DocumentSet docs = configureAndStore(null, XML, "defaultIndex.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);
-            Occurrences[] occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), "a", "ax");
-            printOccurrences("Checking for 'a', 'ax'", occur);
-            assertEquals(2, occur.length);
-            assertEquals("aircraft", occur[0].getTerm());
-
-            occur = checkIndex(docs, broker, null, "power", 1);
-            assertEquals("power", occur[0].getTerm());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
-        }
-    }
-
-    @Test
     public void mixedIndexes() {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML, "mixedIndexes.xml");
         DBBroker broker = null;
