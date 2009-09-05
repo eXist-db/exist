@@ -5,7 +5,8 @@
     <xsl:output method="xhtml" media-type="application/xml" omit-xml-declaration="yes"/>
 
     <xsl:param name="xslt.table-of-contents" select="'yes'"/>
-
+    <xsl:param name="xslt.syntax-highlight" select="'yes'"/>
+    
     <xsl:param name="path" select="''"/>
 
     <xsl:variable name="pathToWebapp">
@@ -35,18 +36,20 @@
                         <link rel="stylesheet" type="text/css" href="styles/default-style2.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"/>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"/>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"/>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"/>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"/>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"/>
-
-                <link type="text/css" rel="stylesheet"
-                    href="{$pathToWebapp}styles/syntax/shCore.css"/>
-                <link type="text/css" rel="Stylesheet"
-                    href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme"/>
-
+                <xsl:if test="$xslt.syntax-highlight = 'yes'">
+                    <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"/>
+                    <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"/>
+                    <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"/>
+                    <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"/>
+                    <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"/>
+                    <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"/>
+                    
+                    <link type="text/css" rel="stylesheet"
+                        href="{$pathToWebapp}styles/syntax/shCore.css"/>
+                    <link type="text/css" rel="Stylesheet"
+                        href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme"/>
+                </xsl:if>
+                
                 <xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
@@ -72,11 +75,13 @@
                     <xsl:apply-templates select="bookinfo|articleinfo" mode="backmatter"/>
                 </div>
                 <xsl:call-template name="analytics"/>
-                <script type="text/javascript">
-                    SyntaxHighlighter.config.stripBrs = true;
-                    SyntaxHighlighter.defaults[ 'auto-links'] = false;
-                    SyntaxHighlighter.defaults[ 'wrap-lines'] = false;
-                    SyntaxHighlighter.all();</script>
+                <xsl:if test="$xslt.syntax-highlight = 'yes'">
+                    <script type="text/javascript">
+                        SyntaxHighlighter.config.stripBrs = true;
+                        SyntaxHighlighter.defaults[ 'auto-links'] = false;
+                        SyntaxHighlighter.defaults[ 'wrap-lines'] = false;
+                        SyntaxHighlighter.all();</script>
+                </xsl:if>
             </body>
         </html>
     </xsl:template>
