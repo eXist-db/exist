@@ -74,7 +74,7 @@
         </table>
 
         <note>
-	      <para>Files with the .xproc extension are identified by webapp/xproc/controller.xql and then processed by webapp/xproc/run.xql with xprocxq.</para>
+	      <para>Files with the .xproc extension are identified by the REST server and automatically forwarded to xprocxq for processing.</para>
 	    </note>
     </section>
 </article>

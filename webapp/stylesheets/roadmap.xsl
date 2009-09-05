@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:sidebar="http://exist-db.org/NS/sidebar" version="1.0">
-    <xsl:output method="html" media-type="text/html"/>
+    <xsl:output method="xhtml" media-type="text/html"/>
     <xsl:template match="roadmap">
         <html>
             <head>
@@ -9,17 +9,8 @@
                 <link rel="stylesheet" type="text/css" href="styles/roadmap.css"/>
             	<link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
             	<link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
-                <script type="text/javascript" src="styles/niftycube.js"/>
-                <script type="text/javascript">
-                    window.onload = function() {
-                    Nifty("h1.chaptertitle", "transparent");
-                    Nifty("div.note", "transparent");
-                    Nifty("div.example", "transparent");
-                    Nifty("div.important", "transparent");
-                    Nifty("div.block div.head", "top");
-                    Nifty("div.block ul", "bottom");
-                    }
-                </script>
+                <script language="Javascript" type="text/javascript" 
+                    src="styles/curvycorners.js"></script>
             </head>
 
             <body bgcolor="#FFFFFF">
@@ -49,7 +40,7 @@
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <div id="content2col">
                     <div class="chapter">
-                        <h1 class="chaptertitle">
+                        <h1 class="chaptertitle rounded">
                             <xsl:value-of select="title"/>
                         </h1>
                     </div>
@@ -299,12 +290,12 @@
 
     <xsl:template match="sidebar:group">
         <div class="block">
-            <div class="head">
+            <div class="head rounded-top">
                 <h3>
                     <xsl:value-of select="@name"/>
                 </h3>
             </div>
-            <ul>
+            <ul class="rounded-bottom">
                 <xsl:apply-templates/>
             </ul>
         </div>

@@ -90,7 +90,7 @@ var DocQuery = function () {
     this.print = function (ev) {
         Event.stopEvent(ev);
         var params = '?action=Print&' + this.getQuery();
-        window.open(params, 'f-print');
+        window.open(params);
     }
 
     /**

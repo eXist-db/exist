@@ -12,6 +12,10 @@
                 <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
             </affiliation>
         </author>
+		<author>
+			<firstname>Wolfgang M.</firstname>
+			<surname>Meier</surname>
+		</author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
