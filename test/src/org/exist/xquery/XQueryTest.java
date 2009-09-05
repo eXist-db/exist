@@ -1817,7 +1817,7 @@ public class XQueryTest extends XMLTestCase {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(file_name, xml);
 
-            query = "doc('" + file_name + "') / details/metadata[ @docid &= '" + large + "' ]";
+            query = "doc('" + file_name + "') / details/metadata[ @docid = '" + large + "' ]";
             result = service.queryResource(file_name, query);
             assertEquals("XQuery: " + query, nbElem, result.getSize());
         } catch (XMLDBException e) {

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.xmldb.concurrent.action.Action;
+import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -38,6 +39,13 @@ import junit.framework.TestCase;
  */
 public abstract class ConcurrentTestBase extends TestCase {
 
+    private static String COLLECTION_CONFIG =
+        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+    	"	<index>" +
+    	"		<fulltext default=\"all\"/>" +
+        "	</index>" +
+    	"</collection>";
+    
     protected String rootColURI;
 
     protected Collection rootCol;
@@ -111,6 +119,8 @@ public abstract class ConcurrentTestBase extends TestCase {
             }
             testCol = DBUtils.addCollection(rootCol, testColName);
             assertNotNull(testCol);
+            IndexQueryService idxConf = (IndexQueryService) testCol.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(COLLECTION_CONFIG);
             String existHome = System.getProperty("exist.home");
             File existDir = existHome==null ? new File(".") : new File(existHome);
             DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));

@@ -25,6 +25,7 @@ import org.exist.TestDataGenerator;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -43,6 +44,14 @@ import java.util.Random;
 
 public class ProtectedModeTest {
 
+    private final static String COLLECTION_CONFIG =
+		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		"	<index>" +
+		"		<fulltext default=\"all\" attributes=\"false\"/>" +
+		"		<create path=\"//section/@id\" type=\"xs:string\"/>" +
+		"	</index>" +
+		"</collection>";
+    
     private final static int COLLECTION_COUNT = 20;
     private final static int DOCUMENT_COUNT = 20;
 
@@ -131,7 +140,9 @@ public class ProtectedModeTest {
             Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
             CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             Collection collection = mgmt.createCollection("protected");
-            
+
+            IndexQueryService idxConf = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(COLLECTION_CONFIG);
             XMLResource hamlet = (XMLResource) collection.createResource("hamlet.xml", "XMLResource");
             hamlet.setContent(new File("samples/shakespeare/hamlet.xml"));
             collection.storeResource(hamlet);
