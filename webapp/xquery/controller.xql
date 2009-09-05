@@ -96,7 +96,7 @@ return
 	            <forward url="twitter-view.xql"/>
             </view>
 	    </dispatch>
-    else if ($name = ('default-style.css', 'default-style2.css')) then
+    else if ($name = ('default-style.css', 'default-style2.css', 'curvycorners.js')) then
         let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
         return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
