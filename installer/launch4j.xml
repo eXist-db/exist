@@ -16,9 +16,9 @@
     <path></path>
     <minVersion>1.5.0</minVersion>
     <maxVersion></maxVersion>
-    <dontUsePrivateJres>false</dontUsePrivateJres>
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>0</maxHeapSize>
+	<jdkPreference>jdkOnly</jdkPreference>
   </jre>
   <splash>
     <file>logo.bmp</file>
