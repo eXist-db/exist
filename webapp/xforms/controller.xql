@@ -65,6 +65,8 @@ return
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.stylesheet"
 						value="/stylesheets/db2xhtml.xsl"/>
+				    <set-attribute name="xslt.syntax-highlight"
+				        value="no"/>
 				</forward>
 			</view>
 			<cache-control cache="yes"/>
