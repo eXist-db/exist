@@ -20,7 +20,7 @@
 
             <p>eXist-db is an open source database management system built using XML
                 technology. It stores XML data according to the XML data model and features
-                efficient, <a href="http://www.w3.org/TR/xquery/">index-based XQuery</a> processing.</p>
+                efficient, index-based XQuery processing.</p>
 
             <a id="download" href="download.xml"><img src="resources/download.jpg"/></a>
             
@@ -38,21 +38,23 @@
                             href="http://en.wikipedia.org/wiki/XML-RPC">XMLRPC</a>, <a
                             href="http://en.wikipedia.org/wiki/Atom_(standard)">Atom Publishing
                             Protocol</a></li>
-                    <li>XML database specific: XMLDB, XQJ/<a
-                            href="http://jcp.org/en/jsr/detail?id=225">JSR-225</a> (under
-                        development), <a href="http://xmldb-org.sourceforge.net/xupdate/">XUpdate</a>,
+                    <li>XML database specific: XMLDB, <a href="http://xmldb-org.sourceforge.net/xupdate/">XUpdate</a>,
                         XQuery <a href="update_ext.xml">update extensions</a> (to be aligned with the new
-                        <a href="http://www.w3.org/TR/xquery-update-10/">XQuery Update Facility 1.0</a>
+                        <a href="http://www.w3.org/TR/xquery-update-10/">XQuery Update Facility 1.0)</a>
                     </li>
                 </ul>
             </p>
             
+            <p>The <a href="download.xml">1.4</a> version adds a new full text index based on 
+                Apache Lucene, a lightweight URL rewriting and MVC framework as well as support for XProc.
+                Most important, the XQuery engine has seen a major redesign, resulting in improved performance.</p>
+                
             <p>eXist-db is highly compliant with the <a href="http://www.w3.org/TR/xquery/"
                 >XQuery</a> standard (current <a href="http://www.w3.org/XML/Query/test-suite/"
                 >XQTS</a> score is <a
                     href="http://www.w3.org/XML/Query/test-suite/XQTSReportSimple.html">99.4%</a>).
                 The query engine is extensible and features a large collection of XQuery
-                Function Modules.</p>
+                <a href="xquery/functions.xql">Function Modules</a>.</p>
 
             <p>eXist-db provides a powerful environment for the development of web applications
                 based on XQuery and related standards. Entire web applications can be written in

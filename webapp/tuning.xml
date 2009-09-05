@@ -81,7 +81,7 @@
             </section>
 
             <section>
-                <title>Disable any default indexes</title>
+                <title>Disable any default indexes (pre 1.4)</title>
 
                 <para>If no other index <ulink url="indexing.xml">index configuration</ulink> is
                     found for a database collection, eXist will use the default settings specified

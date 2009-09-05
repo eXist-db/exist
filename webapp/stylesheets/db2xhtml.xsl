@@ -1,26 +1,21 @@
-<xsl:stylesheet
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:sidebar="http://exist-db.org/NS/sidebar"
-    xmlns:xf="http://www.w3.org/2002/xforms"
-    version="1.0">
-    
-    <xsl:output
-        method="xhtml"
-        media-type="application/xml"
-        omit-xml-declaration="yes"
-    />
-    
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:sidebar="http://exist-db.org/NS/sidebar"
+    xmlns:xf="http://www.w3.org/2002/xforms" version="1.0">
+
+    <xsl:output method="xhtml" media-type="application/xml" omit-xml-declaration="yes"/>
+
+    <xsl:param name="xslt.table-of-contents" select="'yes'"/>
+
     <xsl:param name="path" select="''"/>
-    
+
     <xsl:variable name="pathToWebapp">
         <xsl:call-template name="invertPath">
             <xsl:with-param name="str" select="$path"/>
         </xsl:call-template>
     </xsl:variable>
-    
+
     <xsl:variable name="include.analytics" select="false()"/>
-    
+
     <xsl:template match="book|article">
         <html>
             <head>
@@ -30,32 +25,32 @@
                 <link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>
-                <script language="Javascript" type="text/javascript" 
-                    src="styles/curvycorners.js"></script>
+                <script language="Javascript" type="text/javascript" src="styles/curvycorners.js"/>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
                     <xsl:when test="$styleref">
                         <link rel="stylesheet" type="text/css" href="{$styleref}"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <link rel="stylesheet" type="text/css"
-                            href="styles/default-style2.css"/>
+                        <link rel="stylesheet" type="text/css" href="styles/default-style2.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"></script>
-                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"></script>
-                
-                <link type="text/css" rel="stylesheet" href="{$pathToWebapp}styles/syntax/shCore.css"/>
-                <link type="text/css" rel="Stylesheet" href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme" />
-                
-				<xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shCore.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushCss.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushJScript.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushPlain.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXml.js"/>
+                <script type="text/javascript" src="{$pathToWebapp}scripts/syntax/shBrushXQuery.js"/>
+
+                <link type="text/css" rel="stylesheet"
+                    href="{$pathToWebapp}styles/syntax/shCore.css"/>
+                <link type="text/css" rel="Stylesheet"
+                    href="{$pathToWebapp}styles/syntax/shThemeDefault.css" id="theme"/>
+
+                <xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
                 <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
-                
+
                 <xsl:apply-templates select="(bookinfo|articleinfo)/xf:*"/>
             </head>
             <body bgcolor="#FFFFFF">
@@ -79,10 +74,9 @@
                 <xsl:call-template name="analytics"/>
                 <script type="text/javascript">
                     SyntaxHighlighter.config.stripBrs = true;
-                    SyntaxHighlighter.defaults['auto-links'] = false;
-                    SyntaxHighlighter.defaults['wrap-lines'] = false;
-                    SyntaxHighlighter.all();
-                </script>
+                    SyntaxHighlighter.defaults[ 'auto-links'] = false;
+                    SyntaxHighlighter.defaults[ 'wrap-lines'] = false;
+                    SyntaxHighlighter.all();</script>
             </body>
         </html>
     </xsl:template>
@@ -200,9 +194,9 @@
                 <xsl:when test="toc">
                     <xsl:apply-templates select="toc"/>
                 </xsl:when>
-                <xsl:otherwise>
+                <xsl:when test="$xslt.table-of-contents = 'yes'">
                     <xsl:call-template name="toc"/>
-                </xsl:otherwise>
+                </xsl:when>
             </xsl:choose>
             <xsl:apply-templates select="*[not(name()='title' or name() = 'toc')]"/>
         </div>
@@ -315,6 +309,9 @@
         <xsl:apply-templates/>
     </xsl:template-->
     <xsl:template match="para">
+        <xsl:if test="@id">
+            <a name="{@id}"></a>
+        </xsl:if>
         <p>
             <xsl:copy-of select="@class"/>
             <xsl:if xmlns:exist="http://exist.sourceforge.net/NS/exist" test="@exist:id">
@@ -338,14 +335,18 @@
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
             <a href="/exist" style="text-decoration: none">
-            <xsl:choose>
-                <xsl:when test="graphic/@fileref">
-                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
-                </xsl:otherwise>
-            </xsl:choose>
+                <xsl:choose>
+                    <xsl:when test="graphic/@fileref">
+                        <img src="{$pathToWebapp}{graphic/@fileref}"
+                            title="eXist-db: Open Source Native XML Database"
+                            style="border-style: none;text-decoration: none"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <img src="{$pathToWebapp}logo.jpg"
+                            title="eXist-db: Open Source Native XML Database"
+                            style="border-style: none;text-decoration: none"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </a>
             <div id="quicksearch">
                 <form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
@@ -430,23 +431,25 @@
         </div>
     </xsl:template>
     <xsl:template match="programlisting">
-        <xsl:choose>
-            <xsl:when test="markup">
-                <pre class="brush: xml;">
+        <div class="programlisting">
+            <xsl:choose>
+                <xsl:when test="markup">
+                    <pre class="brush: xml;">
                     <xsl:apply-templates select="markup/node()"/>
                 </pre>
-            </xsl:when>
-            <xsl:when test="@language">
-                <pre class="brush: xquery;">
+                </xsl:when>
+                <xsl:when test="@language">
+                    <pre class="brush: xquery;">
                     <xsl:apply-templates/>
                 </pre>
-            </xsl:when>
-            <xsl:otherwise>
-                <pre class="brush: plain;">
+                </xsl:when>
+                <xsl:otherwise>
+                    <pre class="brush: plain;">
                     <xsl:apply-templates/>
                 </pre>
-            </xsl:otherwise>
-        </xsl:choose>
+                </xsl:otherwise>
+            </xsl:choose>
+        </div>
     </xsl:template>
     <xsl:template match="note">
         <div class="note rounded">
@@ -523,7 +526,9 @@
                 <xsl:when test="count(*) = 1">
                     <xsl:apply-templates select="para/node()"/>
                 </xsl:when>
-                <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
+                <xsl:otherwise>
+                    <xsl:apply-templates/>
+                </xsl:otherwise>
             </xsl:choose>
         </li>
     </xsl:template>
@@ -553,11 +558,11 @@
             <xsl:otherwise> &lt;<xsl:apply-templates/>&gt; </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-	<xsl:template match="style">
-		<style type="text/css">
+    <xsl:template match="style">
+        <style type="text/css">
 			<xsl:apply-templates/>
 		</style>
-	</xsl:template>
+    </xsl:template>
     <xsl:template name="returns2br">
         <xsl:param name="string"/>
         <xsl:variable name="return" select="'&#xA;'"/>

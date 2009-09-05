@@ -35,11 +35,9 @@
                 may soon find it easier to write everything in XQuery (maybe with the help of some
                 XSLT) and stay within the XML world. The XSLT functions make it easy to prepare the
                 results of an XQuery for presentation (for transformations, XSLT is often more
-                convenient than XQuery, though XQuery could be used as well). eXist provides many
-                extension points. For example, you can implement missing functionality in Java and
-                deploy it as an XQuery <ulink url="xquery.xml#extension-modules">extension
-                module</ulink>, whose functions can then be called from your main XQuery application
-                logic.</para>
+                convenient than XQuery, though XQuery could be used as well). Version 1.4 even provides
+                a lightweight <ulink url="urlrewrite.xml">MVC (model-view-controller) framework</ulink> and allows you to properly customize 
+                and rewrite the URLs the user sees.</para>
 
             <para>Instead of directly producing HTML output, "XQuerylets" can also be designed as
                 self-contained services which deliver XML data to applications on the client.
@@ -106,6 +104,11 @@
             <section>
                 <title>XQueryServlet and XQueryGenerator</title>
 
+                <note>
+                    <para>TODO: release 1.4rc limits Cocoon to one directory within the
+                        distribution. All the Cocoon-related documentation should probably
+                        go into a separate document.</para>
+                </note>
                 <para>eXist generates HTML web pages from XQuery files in two ways: the
                     XQueryServlet and XQueryGenerator. With both the XQueryServlet and
                     XQueryGenerator the compiled XQuery script is stored in a cache for future use.
@@ -243,7 +246,7 @@
                     follows:</para>
                 <example>
                     <title>Guess a Number</title>
-                    <programlisting><markup><![CDATA[
+                    <programlisting language="xquery"><![CDATA[
 xquery version "1.0";
 (: $Id$ :)
 
@@ -315,7 +318,7 @@ declare function local:main() as node()?
         <p><small>View <a href="guess.xql?_source=yes">source code</a></small></p>
     </body>
 </html>
-]]></markup></programlisting>
+]]></programlisting>
                 </example>
 
                 <para>The mainline of this script simply creates an HTML document with a form. Since

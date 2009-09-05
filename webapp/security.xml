@@ -191,7 +191,7 @@ enter groups: users]]></screen>
                 display a list of all known database users.</para>
         </section>
 
-        <section>
+        <section id="permissions">
             <title>Resource Permissions</title>
             <para>The current version of eXist uses three different permissions:
                 <option>read</option>, <option>write</option> and <option>update</option>.</para>
@@ -253,6 +253,7 @@ exist:/db/shakespeare/plays>]]></screen>
                 three for others (i.e. anyone else who can access the database). Given the previous
                 example, we can see that all files except <filename>r_and_j.xml</filename> are owned
                 by user &quot;admin&quot; and group &quot;dba&quot;.</para>
+            
             <para>As mentioned in the previous section, the database root collection
                 <filename>/db</filename> initially has permissions set to
                 <option>drwurwurwu</option>, i.e. full access is granted to everyone. Also note that
@@ -260,7 +261,13 @@ exist:/db/shakespeare/plays>]]></screen>
                 resources, i.e. the group has read/update permissions, but not write permissions;
                 others are only allowed to read.</para>
 
-
+                <para id="octal">Some XQuery functions expect to get the permissions as an octal number.
+                    The <ulink url="http://en.wikipedia.org/wiki/File_system_permissions#Octal_notation">octal notation</ulink> 
+                    is quite common on Unix systems. In eXist, the first 3 bits correspond to the
+                    user permissions, the second 3 bits are for the group and the final 3 bits for
+                    others. In order to set the permissions to <option>-rwur-ur--</option> you would
+                    need to specify <option>0754</option> in octal notation.</para>
+            
             <section>
                 <title>Changing Resource Permissions</title>
                 <informaltable>

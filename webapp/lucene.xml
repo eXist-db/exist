@@ -14,8 +14,8 @@
         <section>
             <title>Introduction</title>
 
-            <para>The current SVN trunk version of eXist features a new full text indexing module
-                which will eventually replace eXist's builtin full text index. The new module is
+            <para>The 1.4 version of eXist features a new full text indexing module
+                which replaces eXist's built-in full text index. The new module is
                 faster, better configurable and more feature rich than eXist's old index. It will
                 also be the basis for an implementation of the W3C's fulltext extensions for
                 XQuery.</para>
@@ -34,7 +34,7 @@
         <section>
             <title>Enabling the Lucene Module</title>
 
-            <para>We will enable the Lucene index by default in all newer releases of eXist. If it
+            <para>The Lucene index is enabled by default in all newer releases of eXist. However, in case it
                 is not enabled in your installation, here's how to get it up and running:</para>
 
             <procedure>
@@ -99,11 +99,11 @@ include.index.lucene = true
         <lucene>
 	        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
             <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
-            <text match="//SPEECH//*"/>
 	        <text qname="TITLE" analyzer="ws"/>
 	        <text qname="p">
 	            <inline qname="em"/>
             </text>
+            <text match="//foo/*"/>
             <!-- "inline" and "ignore" can be specified globally or per-index as
                  shown above -->
 	        <inline qname="b"/>
@@ -115,36 +115,53 @@ include.index.lucene = true
             </example>
 
             <para>You can either define a lucene index on a single element or attribute name
-                (qname="...") or a node path with wildcards (match="..."). Please note that the
-                argument to match is a simple path pattern, not an XPath expression. It only allows
-                / and // to denote a child or descendant step, plus the wildcard to match an
-                arbitrary element.</para>
+                (qname="...") or a node path with wildcards (match="...", see below). It is
+                important make sure to <emphasis>choose the right context</emphasis> for an index,
+                which has to be the same as in your query. To better understand this, let's have a
+                look at how the index creation is handled by eXist and Lucene. The following
+                configuration:</para>
 
-            <synopsis>//SPEECH/LINE</synopsis>
+            <synopsis language="xml"><![CDATA[<text qname="SPEECH"/>]]></synopsis>
 
-            <para>only indexes <sgmltag>LINE</sgmltag> children of <sgmltag>SPEECH</sgmltag>
-                parents.</para>
+            <para>creates an index ONLY on SPEECH. What is passed to Lucene is the string value of
+                SPEECH, which includes the text of all its descendant text nodes (*except* those
+                filtered out by an optional <sgmltag>ignore</sgmltag>). For example, consider the
+                fragment:</para>
 
-            <synopsis>//SPEECH/*</synopsis>
+            <programlisting><markup><![CDATA[<SPEECH>
+    <SPEAKER>Second Witch</SPEAKER>
+    <LINE>Fillet of a fenny snake,</LINE>
+    <LINE>In the cauldron boil and bake;</LINE>
+</SPEECH>]]></markup></programlisting>
 
-            <para>will index all child elements of SPEECH, while</para>
+            <para>If you have an index on SPEECH, Lucene will create a "document" with the text
+                "Second Witch Fillet of a fenny snake, In the cauldron boil and bake;" and indexes
+                it. eXist internally links this Lucene document to the SPEECH node, but Lucene has
+                no knowledge of that (it doesn't know anything about XML nodes).</para>
 
-            <synopsis>//SPEECH//*</synopsis>
+            <para>The query:</para>
 
-            <para>indexes all descendants.</para>
+            <synopsis language="xquery">//SPEECH[ft:query(., 'cauldron')]</synopsis>
 
-            <para>Why can't we support full XPath syntax for the index configuration? Well, the
-                query engine often needs to decide at compile time if an index can be used or not,
-                which means that we have to limit the possible configuration choices.</para>
+            <para>searches the index and finds the "document" containing the SPEECH text, which
+                eXist can trace back to the SPEECH node in the XML document. However, it is required
+                that you use the same context (SPEECH) for creating and querying the index. The
+                query:</para>
 
-            <para>It is important to <emphasis>choose the right context</emphasis> for your index,
-                which has to be the same as in your query. In the two examples above, the index will
-                be created on the children or descendants of <sgmltag>SPEECH</sgmltag>, not the
-                SPEECH tag itself. This means you can query for the LINE, SPEAKER or STAGEDIR
-                children of SPEECH, but if you search for SPEECH, you won't get any results.</para>
+            <synopsis language="xquery">//SPEECH[ft:query(LINE, 'cauldron')]</synopsis>
 
-            <para>However, it is possible to define indexes on nested elements. For example, assume
-                you have a document with encoded place names:</para>
+            <para>will not return anything, even though LINE is a child of SPEECH and 'cauldron' was
+                indexed. This particular 'cauldron' is linked to its ancestor SPEECH node, not its
+                parent LINE.</para>
+
+            <para>However, you are free to give the user both options, i.e. use SPEECH and LINE as
+                context at the same time. How? Simply define a second index on LINE:</para>
+
+            <programlisting><markup><![CDATA[<text qname="SPEECH"/>
+<text qname="LINE"/>]]></markup></programlisting>
+
+            <para>Let's use a different example to illustrate that. Assume you have a document with
+                encoded place names:</para>
 
             <example>
                 <title>Paragraph with place name</title>
@@ -174,104 +191,146 @@ include.index.lucene = true
             <synopsis language="xquery">//p[ft:query(placeName, 'paris')]</synopsis>
 
             <section>
+                <title>Using match="..."</title>
+
+                <para>In addition to defining an index on a given qname, you may also specify a
+                    "path" with wildcards. <emphasis>This feature is subject to change</emphasis>,
+                    so please be careful when using it.</para>
+
+                <para>Assume you want to define an index on all the possible elements below SPEECH.
+                    You can do this by creating one index for every element:</para>
+
+                <programlisting><markup><![CDATA[<text qname="LINE"/>
+<text qname="SPEAKER"/>]]></markup></programlisting>
+
+                <para>As a shortcut, you can use a <option>match</option> attribute with a
+                    wildcard:</para>
+
+                <synopsis language="xml"><![CDATA[<text match="//SPEECH/*"/>]]></synopsis>
+
+                <para>which will create a separate index on each child element of SPEECH it
+                    encounters. Please note that the argument to match is a simple path pattern, not
+                    an XPath expression. It only allows / and // to denote a child or descendant
+                    step, plus the wildcard to match an arbitrary element.</para>
+
+                <para>As explained above, you have to figure out which parts of your document
+                    will likely be interesting as context for a full text query. The full text index
+                    will work best if the context isn't too narrow. For example, if you have a
+                    document structure with section divs, headings and paragraphs, I would probably
+                    want to create an index on the divs and maybe on the headings, so the user can
+                    differentiate between the two. In some cases, I could decide to put the index on
+                    the paragraph level, but then I don't need the index on the section since I can
+                    always get from the paragraph back to the section.</para>
+                
+                <para>If you query a larger context, you can use the <ulink url="kwic.xml">KWIC</ulink>
+                    module to show the user only a certain chunk of text <emphasis>surrounding</emphasis>
+                    each match. Or you can ask eXist to <ulink url="kwic.xml#highlight">highlight each match</ulink> with an <sgmltag>exist:match</sgmltag>
+                    tag, which you can later use to locate the matches within the text.</para>
+            </section>
+
+            <section>
                 <title>Whitespace Treatment and Ignored Content</title>
 
                 <section>
                     <title>Inlined elements</title>
-                    
-                    <para>By default, eXist's indexer assumes that element boundaries break a word or
-                    token. For example, if you have an element:</para>
 
-                <example>
-                    <title>Not a Mixed Content Element</title>
-                    <programlisting><markup><![CDATA[<size><width>12</width><height>8</height></size>]]></markup></programlisting>
-                </example>
+                    <para>By default, eXist's indexer assumes that element boundaries break a word
+                        or token. For example, if you have an element:</para>
 
-                <para>You want "12" and "8" to be indexed as separate tokens, even though there's no
-                    whitespace between the elements. By default, eXist will indeed pass the content
-                    of the two elements to Lucene as separate strings and Lucene will thus see two
-                    tokens instead of just "128".</para>
+                    <example>
+                        <title>Not a Mixed Content Element</title>
+                        <programlisting><markup><![CDATA[<size><width>12</width><height>8</height></size>]]></markup></programlisting>
+                    </example>
 
-                <para>However, you usually don't want this behaviour for mixed content nodes. For
-                    example:</para>
+                    <para>You want "12" and "8" to be indexed as separate tokens, even though
+                        there's no whitespace between the elements. By default, eXist will indeed
+                        pass the content of the two elements to Lucene as separate strings and
+                        Lucene will thus see two tokens instead of just "128".</para>
 
-                <example>
-                    <title>Mixed Content Node</title>
-                    <programlisting><markup><![CDATA[<p>This is <b>un</b>clear.</p>]]></markup></programlisting>
-                </example>
+                    <para>However, you usually don't want this behaviour for mixed content nodes.
+                        For example:</para>
 
-                <para>In this case, you want "unclear" to be indexed as one word. This can be done
-                    by telling eXist which nodes are "inline" nodes. The example configuration above
-                    defines:</para>
+                    <example>
+                        <title>Mixed Content Node</title>
+                        <programlisting><markup><![CDATA[<p>This is <b>un</b>clear.</p>]]></markup></programlisting>
+                    </example>
 
-                <synopsis><![CDATA[<inline qname="b"/>]]></synopsis></section>
+                    <para>In this case, you want "unclear" to be indexed as one word. This can be
+                        done by telling eXist which nodes are "inline" nodes. The example
+                        configuration above defines:</para>
 
-                <para>The <sgmltag>inline</sgmltag> option can be specified globally, which means it will
-                    be applied to all <sgmltag>b</sgmltag> elements, or per-index:</para>
-                
+                    <synopsis><![CDATA[<inline qname="b"/>]]></synopsis>
+                </section>
+
+                <para>The <sgmltag>inline</sgmltag> option can be specified globally, which means it
+                    will be applied to all <sgmltag>b</sgmltag> elements, or per-index:</para>
+
                 <synopsis language="xml"><![CDATA[<text qname="p">
     <inline qname="em"/>
 </text>]]></synopsis>
 
                 <section>
                     <title>Ignored elements</title>
-                    
+
                     <para>Also, it is sometimes necessary to skip the content of an inlined element,
-                    which can appear in the middle of a text sequence you want to index. Notes or
-                    are a good example:</para>
+                        which can appear in the middle of a text sequence you want to index. Notes
+                        are a good example:</para>
 
-                <example>
-                    <title>Paragraph With Inline Note</title>
-                    <programlisting><markup><![CDATA[<p>This is a paragraph
+                    <example>
+                        <title>Paragraph With Inline Note</title>
+                        <programlisting><markup><![CDATA[<p>This is a paragraph
 <note>containing an inline note</note>.</p>]]></markup></programlisting>
-                </example>
+                    </example>
 
-                <para>Use an <sgmltag>ignore</sgmltag> element in the collection configuration to
-                    have eXist ignore the note:</para>
+                    <para>Use an <sgmltag>ignore</sgmltag> element in the collection configuration
+                        to have eXist ignore the note:</para>
 
-                <synopsis><![CDATA[<ignore qname="note"/>]]></synopsis>
+                    <synopsis language="xml"><![CDATA[<ignore qname="note"/>]]></synopsis>
 
-                <para>Like the <sgmltag>inline</sgmltag> tag, <sgmltag>ignore</sgmltag> may appear
-                    globally or within a single index definition.</para>
-                
-                <para>The <sgmltag>ignore</sgmltag> only applies to descendants of an indexed
-                    element. You can still create another index on the ignored element itself. For
-                    example, you can have index definitions for <sgmltag>p</sgmltag> and
-                        <sgmltag>note</sgmltag>:</para>
+                    <para>Basically, <sgmltag>ignore</sgmltag> simply allows you to hide a chunk of
+                        text before Lucene sees it.</para>
 
-                <example>
-                    <title>collection.xconf fragment</title>
-                    <programlisting><markup><![CDATA[<lucene>
+                    <para>Like the <sgmltag>inline</sgmltag> tag, <sgmltag>ignore</sgmltag> may
+                        appear globally or within a single index definition.</para>
+
+                    <para>The <sgmltag>ignore</sgmltag> only applies to descendants of an indexed
+                        element. You can still create another index on the ignored element itself.
+                        For example, you can have index definitions for <sgmltag>p</sgmltag> and
+                            <sgmltag>note</sgmltag>:</para>
+
+                    <example>
+                        <title>collection.xconf fragment</title>
+                        <programlisting><markup><![CDATA[<lucene>
     <text qname="p"/>
     <text qname="note"/>
     <ignore qname="note"/>
 </lucene>]]></markup></programlisting>
-                </example>
+                    </example>
 
-                <para>If <sgmltag>note</sgmltag> appears within <sgmltag>p</sgmltag>, it will not be
-                    added to the index on <sgmltag>p</sgmltag>, but only to the index on
-                        <sgmltag>note</sgmltag>. This means that the query</para>
+                    <para>If <sgmltag>note</sgmltag> appears within <sgmltag>p</sgmltag>, it will
+                        not be added to the index on <sgmltag>p</sgmltag>, but only to the index on
+                            <sgmltag>note</sgmltag>. This means that the query</para>
 
-                <synopsis language="xquery">//p[ft:query(., "note")]</synopsis>
+                    <synopsis language="xquery">//p[ft:query(., "note")]</synopsis>
 
-                <para>may not return a hit if "note" occurs within a <sgmltag>note</sgmltag>,
-                    while</para>
+                    <para>may not return a hit if "note" occurs within a <sgmltag>note</sgmltag>,
+                        while</para>
 
-                <synopsis language="xquery">//p[ft:query(note, "note")] </synopsis>
+                    <synopsis language="xquery">//p[ft:query(note, "note")] </synopsis>
 
-                <para>may still find a match.</para></section>
-            
+                    <para>may still find a match.</para>
+                </section>
+
             </section>
 
             <section>
                 <title>Boost</title>
-                
-                <para>A boost value can be assigned to an index to give it a higher
-                    score. The score for each match will be multiplied by the boost
-                    factor (default is: 1.0). For example, you may want to rank
-                    matches in titles higher than other matches. Here's how we configure
-                    the documentation search indexes in eXist:</para>
-                
+
+                <para>A boost value can be assigned to an index to give it a higher score. The score
+                    for each match will be multiplied by the boost factor (default is: 1.0). For
+                    example, you may want to rank matches in titles higher than other matches.
+                    Here's how we configure the documentation search indexes in eXist:</para>
+
                 <example>
                     <title>collection.xconf using boost</title>
                     <programlisting><markup><![CDATA[<lucene>
@@ -285,21 +344,21 @@ include.index.lucene = true
     <text qname="title" boost="2.0"/>
 </lucene>]]></markup></programlisting>
                 </example>
-                
-                <para>The title index gets a boost of 2.0 to make sure that title matches
-                    get a higher score. Since the <sgmltag>title</sgmltag> element does occur
-                    within <sgmltag>section</sgmltag>, we add an ignore rule to the index definition
-                    on the section and create a separate index on title. Without this, title would
-                    be matched two times.</para>
-                
-                <para>Because the title is now indexed separately, we also need to query it explicitely.
-                    For example, to search the section and the title at the same time, the documentation
-                    search interface issues the following query:</para>
-                
+
+                <para>The title index gets a boost of 2.0 to make sure that title matches get a
+                    higher score. Since the <sgmltag>title</sgmltag> element does occur within
+                        <sgmltag>section</sgmltag>, we add an ignore rule to the index definition on
+                    the section and create a separate index on title. Without this, title would be
+                    matched two times.</para>
+
+                <para>Because the title is now indexed separately, we also need to query it
+                    explicitely. For example, to search the section and the title at the same time,
+                    the documentation search interface issues the following query:</para>
+
                 <synopsis language="xquery">for $sect in /book//section[ft:query(., "ngram")] | /book//section[ft:query(title, "ngram")]
 order by ft:score($sect) descending return $sect</synopsis>
             </section>
-        
+
             <section>
                 <title>Analyzers</title>
 
@@ -371,8 +430,9 @@ return $m]]></programlisting>
                 the available indexes. All the rules and hints given in the <ulink url="tuning.xml"
                     >tuning</ulink> guide do fully apply to the Lucene index.</para>
 
-            <para>To present search results in a <emphasis>Keywords in Context</emphasis> format, you
-                may want to have a look at eXist's <ulink url="kwic.xml">KWIC</ulink> module.</para>
+            <para>To present search results in a <emphasis>Keywords in Context</emphasis> format,
+                you may want to have a look at eXist's <ulink url="kwic.xml">KWIC</ulink>
+                module.</para>
 
             <section>
                 <title>Describing Queries in XML</title>
@@ -419,36 +479,40 @@ return
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><sgmltag>wildcard</sgmltag></term>
+                        <term>
+                            <sgmltag>wildcard</sgmltag>
+                        </term>
                         <listitem>
-                            <para>A string with a '*' wildcard in it, which will be matched 
-                                against the terms of a document. Can be used instead of a <sgmltag>term</sgmltag>
-                                element. For example:</para>
+                            <para>A string with a '*' wildcard in it, which will be matched against
+                                the terms of a document. Can be used instead of a
+                                    <sgmltag>term</sgmltag> element. For example:</para>
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <term>nation</term><wildcard>miser*</wildcard>
     </query>
 return
 //SPEECH[ft:query(., $query)]]]></synopsis>
-                            
+
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><sgmltag>regex</sgmltag></term>
+                        <term>
+                            <sgmltag>regex</sgmltag>
+                        </term>
                         <listitem>
-                            <para>A regular expression which will be matched against the terms
-                                of a document. Can be used instead of a <sgmltag>term</sgmltag>
-                                element. For example:</para>
+                            <para>A regular expression which will be matched against the terms of a
+                                document. Can be used instead of a <sgmltag>term</sgmltag> element.
+                                For example:</para>
                             <synopsis language="xquery"><![CDATA[let $query :=
     <query>
         <term>nation</term><regex>miser.*</regex>
     </query>
 return
 //SPEECH[ft:query(., $query)]]]></synopsis>
-                            
+
                         </listitem>
                     </varlistentry>
-                    
+
                     <varlistentry>
                         <term>
                             <sgmltag>bool</sgmltag>

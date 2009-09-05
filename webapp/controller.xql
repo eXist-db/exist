@@ -123,6 +123,13 @@ return
 						    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
 						<set-attribute name="xslt.output.doctype-system"
 						    value="resources/xhtml1-transitional.dtd"/>
+					    {
+					        if ($name eq 'download.xml') then
+					            <set-attribute name="xslt.table-of-contents"
+					                value="'no'"/>
+			                else
+			                    ()
+	                    }
 					</forward>
 				</view>
             	<cache-control cache="no"/>
