@@ -1,12 +1,4 @@
 YAHOO.util.Event.onDOMReady(function () {
-	Nifty("div.querybox", "transparent");
-    Nifty("h1.chaptertitle", "transparent");
-    Nifty("div.note", "transparent");
-    Nifty("div.example", "transparent");
-    Nifty("div.important", "transparent");
-    Nifty("div.block div.head", "top");
-    Nifty("div.block ul", "bottom");
-
     loadRss();
 	loadTwitter();
 });
@@ -29,8 +21,10 @@ function loadRss() {
 
 function atomCallback(html) {
 	document.getElementById('news_content').innerHTML = html;
+	YAHOO.util.Dom.setStyle('news-box', 'display', '');
 }
 
 function twitterCallback(html) {
 	document.getElementById('twitter_content').innerHTML = html;
+	YAHOO.util.Dom.setStyle('twitter-box', 'display', '');
 }

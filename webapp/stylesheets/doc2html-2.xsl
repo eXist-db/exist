@@ -203,7 +203,7 @@
         <xsl:if test="@id">
             <a name="{@id}"></a>
         </xsl:if>
-        <h2 class="rounded">
+        <h2>
             <xsl:value-of select="@title"/>
         </h2>
         <xsl:apply-templates/>
@@ -440,15 +440,15 @@
 
     <xsl:template match="newsblock">
         <div id="news">
-            <div class="block">
-                <div class="head rounded-top"><h3>Blog Feed</h3></div>
-                <div id="news_content" class="news_content rounded-bottom">
+            <div class="block" id="news-box" style="display: none;">
+                <div class="head rounded-top"><h3><a href="http://atomic.exist-db.org">News Blog</a></h3></div>
+                <div id="news_content" class="news_content">
                     Loading News ...
                 </div>
             </div>
-			<div class="block">
+			<div class="block" id="twitter-box" style="display: none;">
 				<div class="head rounded-top"><h3><a href="http://twitter.com/existdb">Twitter Feed</a></h3></div>
-				<div id="twitter_content" class="news_content rounded-bottom">
+				<div id="twitter_content" class="news_content">
 					Loading Twitter Feed ...
 				</div>
 			</div>

@@ -186,6 +186,10 @@ button, input, select {
     background-color: #fef7d6;
 }
 
+#twitter_content, #news_content {
+    overflow:visible;
+}
+
 .block li {
     display: inline;
     list-style-type: none;
