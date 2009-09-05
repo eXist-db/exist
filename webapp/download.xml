@@ -51,6 +51,8 @@
         <section id="download">
             <title>Downloads</title>
 
+            <para>For information concerning upgrades from previous versions, see our
+                <ulink url="upgrading.xml">Upgrade Guide</ulink>.</para>
             <section>
                 <title>Release Candidate 1.4 (Codename: <ulink
                         url="http://en.wikipedia.org/wiki/Eindhoven">Eindhoven</ulink>)</title>

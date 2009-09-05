@@ -60,6 +60,10 @@
                                 <td>getting started with eXist.</td>
                             </tr>
                             <tr>
+                                <td class="doclink"><ulink url="upgrading.xml">Upgrade Guide</ulink>:</td>
+                                <td>upgrading from previous versions.</td>
+                            </tr>
+                            <tr>
                                 <td class="doclink"><ulink url="articles">External
                                     Articles</ulink>:</td>
                                 <td>links to external articles, tutorials and blog posts.</td>

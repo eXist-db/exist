@@ -25,17 +25,16 @@
           <title>Introduction</title>
           
           <para>The <ulink
-          url="http://www.ietf.org/internet-drafts/draft-ietf-atompub-protocol-09.txt">Atom
+              url="http://www.ietf.org/rfc/rfc5023.txt">Atom
           Publishing Protocol</ulink> is a new protocol being developed at the
-          <ulink url="http://www.ietf.org/">IETF</ulink> as part of their <ulink
-              url="http://www.ietf.org/html.charters/atompub-charter.html">Atom
-              Publishing Format and Protocol</ulink> working group that lets you
+          <ulink url="http://www.ietf.org/">IETF</ulink> as part of their Atom
+              Publishing Format and Protocol working group that lets you
           manipulate Atom feeds over a REST-style HTTP interface. The RFC is still
           in draft status but is nearing completion. Though Atom is often associated
           with newsfeeds, it can be used for a much wider range of applications.</para>
           
           <para>eXist provides an implementation of the <ulink
-              url="http://www.ietf.org/internet-drafts/draft-ietf-atompub-protocol-09.txt">Atom
+              url="http://www.ietf.org/rfc/rfc5023.txt">Atom
               Publishing Protocol</ulink> sitting on top of the database. Feed and entry
               data is stored into special collections. Our wiki and blog system,
               <ulink url="http://code.google.com/p/atomicwiki">AtomicWiki</ulink>, which 
