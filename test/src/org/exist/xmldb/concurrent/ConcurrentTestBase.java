@@ -112,6 +112,8 @@ public abstract class ConcurrentTestBase extends TestCase {
         try {
             rootCol = DBUtils.setupDB(rootColURI);
             assertNotNull(rootCol);
+            IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(COLLECTION_CONFIG);
             testCol = rootCol.getChildCollection(testColName);
             if (testCol != null) {
                 CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
@@ -119,8 +121,7 @@ public abstract class ConcurrentTestBase extends TestCase {
             }
             testCol = DBUtils.addCollection(rootCol, testColName);
             assertNotNull(testCol);
-            IndexQueryService idxConf = (IndexQueryService) testCol.getService("IndexQueryService", "1.0");
-            idxConf.configureCollection(COLLECTION_CONFIG);
+
             String existHome = System.getProperty("exist.home");
             File existDir = existHome==null ? new File(".") : new File(existHome);
             DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
