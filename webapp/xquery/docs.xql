@@ -10,5 +10,5 @@ let $path := request:get-parameter("path", ())
 let $query := request:get-parameter("q", ())
 let $doc := util:eval(concat("doc($path)/*[", $query, "]"))
 return
-	transform:stream-transform($doc, "../stylesheets/db2html.xsl", (), 
+	transform:stream-transform($doc, "../stylesheets/db2xhtml.xsl", (), 
 		"expand-xincludes=yes add-exist-id=all highlight-matches=all xinclude-path=..")

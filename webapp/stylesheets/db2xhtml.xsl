@@ -415,7 +415,7 @@
         </xsl:choose>
     </xsl:template>
     <xsl:template match="example">
-        <div class="example rounded">
+        <div class="example">
             <h1>Example: <xsl:value-of select="title"/>
             </h1>
             <div class="example_content">
@@ -457,7 +457,7 @@
         </div>
     </xsl:template>
     <xsl:template match="note">
-        <div class="note rounded">
+        <div class="note">
             <h1>Note</h1>
             <div class="note_content">
                 <xsl:apply-templates/>
@@ -465,7 +465,7 @@
         </div>
     </xsl:template>
     <xsl:template match="important">
-        <div class="important rounded">
+        <div class="important">
             <h1>Important</h1>
             <div class="important_content">
                 <xsl:apply-templates/>

@@ -503,6 +503,7 @@ select.choose {
     color: black;
     border: 0;
     margin: 5px 0 0 10px;
+	padding: 5px;
 }
 
 .formaltable {
@@ -519,9 +520,9 @@ select.choose {
 
 .note {
     background-color: #fac783;
-    border-left: 4px solid #fac783;
-    border-right: 4px solid #fac783;
-    border-bottom: 4px solid #fac783;
+    border-left: 2px solid #fac783;
+    border-right: 2px solid #fac783;
+    border-bottom: 2px solid #fac783;
 }
 
 .note h1 {
@@ -535,9 +536,9 @@ select.choose {
     
 .example {
     background-color: #c3d9ff;
-    border-left: 4px solid #c3d9ff;
-    border-right: 4px solid #c3d9ff;
-    border-bottom: 4px solid #c3d9ff;
+    border-left: 2px solid #c3d9ff;
+    border-right: 2px solid #c3d9ff;
+    border-bottom: 2px solid #C3d9ff;
 }
 
 .example h1 {
@@ -549,8 +550,13 @@ select.choose {
     padding: 0;
 }
 
+.example_content .programlisting .syntaxhighlighter{
+    margin: 4px 0 !important;
+	padding: 0 1px;
+}
+
 .example_content .programlisting {
-    margin: 0 !important;
+	margin: 0 !important;
 }
 
 .important {
@@ -563,9 +569,9 @@ select.choose {
 
 .important .important_content {
     background-color: #f8cbcb;
-    border-left: 4px solid #f18b8b;
-    border-right: 4px solid #f18b8b;
-    border-bottom: 4px solid #f18b8b;
+    border-left: 2px solid #f18b8b;
+    border-right: 2px solid #f18b8b;
+    border-bottom: 2px solid #f18b8b;
     padding: 5px 0;
 }
 

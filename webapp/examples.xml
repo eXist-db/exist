@@ -202,19 +202,6 @@
                         <td width="70%">A database browser which uses Cocoon's <code>xmldb://</code>
                             pseudo-protocol and XSL stylesheets for the rendering.</td>
                     </tr>
-
-                    <tr>
-                        <th align="left" colspan="2"> eXist's XSP Logicsheet </th>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="cocoon/query.xsp">XML Acronyms</link>
-                        </td>
-                        <td width="70%"> An XSP-based version of the <link
-                                href="http://www.acronym-demystifier.org">XML Acronym
-                            Demystifier</link>
-                        </td>
-                    </tr>
                 </table>
             </section>
             

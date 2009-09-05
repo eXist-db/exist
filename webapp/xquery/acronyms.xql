@@ -5,22 +5,23 @@ declare namespace a="http://www.xml-acronym-demystifier.org";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace util="http://exist-db.org/xquery/util";
 
-declare function a:query-part($field as xs:string) as xs:string
+declare function a:query-part($field as xs:string, $term as xs:string) 
+as xs:string
 {
 	if($field = "acronym") then
-		"a:Acronym/@id"
+		concat("ngram:contains(a:Acronym/@id, '", $term, "')")
 	else if($field = "expansion") then
-		"a:Acronym/@expansion"
+		concat("ft:query(a:Acronym/@expansion, '", $term, "')")
 	else if($field = "definition") then
-		"a:Definition"
+		concat("ft:query(a:Definition, '", $term, "')")
 	else
-		"."
+		concat("ft:query(*, '", $term, "')")
 };
 
 declare function a:build-query($field as xs:string, $term as xs:string)
 as xs:string
 {
-	concat("//a:Entry[", a:query-part($field), " &amp;= """, $term, """]")
+	concat("//a:Entry[", a:query-part($field, $term), "]")
 };
 
 declare function a:do-query() as element()
