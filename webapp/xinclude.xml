@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="db2html.xsl" type="text/xsl"?>
-<!-- $Id$ -->
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <style href="styles/default-style.css"/>
         <title>Open Source XML Database</title>
-        <date>September 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -121,9 +119,7 @@
             <para>The result of the XInclude will be displayed below:</para>
 
             <synopsis language="xml">
-                <xi:include href="disclaimer.xml" xpointer="statement">
-					<xi:fallback><p>disclaimer.xml not found.</p></xi:fallback>
-				</xi:include>
+                <xi:include href="disclaimer.xml" xpointer="statement"/>
             </synopsis>
         </section>
         <section>
@@ -137,21 +133,21 @@
                 expression includes a section taken from Shakespeare's Macbeth:</para>
 
             <synopsis language="xml">&lt;xi:include href="/db/shakespeare/plays/macbeth.xml"
-            xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/&gt;</synopsis>
+            xpointer="xpointer(//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '&quot;fenny snake&quot;')])"/&gt;</synopsis>
 
             <para>As before, the results are included below:</para>
 
             <synopsis language="xml">
-                <xi:include href="/db/shakespeare/plays/macbeth.xml" xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/>
+                <xi:include href="/db/shakespeare/plays/macbeth.xml" xpointer="xpointer(//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '&quot;fenny snake&quot;')])"/>
             </synopsis>
 
             <para>An XPath expression will be applied to the entire collection if the path in href
                 points to a collection and not a single document:</para>
 
-            <synopsis language="xml">&lt;xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[near(LINE, 'cursed spite')])"/&gt;</synopsis>
+            <synopsis language="xml">&lt;xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])"/&gt;</synopsis>
 
             <synopsis language="xml">
-                <xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[near(LINE, 'cursed spite')])"/>
+                <xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])"/>
 			</synopsis>
 
             <para>Concerning namespaces: all namespace/prefix mappings declared in the source
@@ -161,9 +157,7 @@
             <synopsis language="xml">&lt;xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/&gt;</synopsis>
 
             <synopsis language="xml">
-				<xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)">
-					<xi:fallback><p>disclaimer.xml not found.</p></xi:fallback>
-				</xi:include>
+				<xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/>
 			</synopsis>
         </section>
         <section>
@@ -180,9 +174,7 @@
             <para>Calls a query without parameters. The result is shown below:</para>
 
             <synopsis language="xml">
-                <xi:include href="display-collection.xq">
-					<xi:fallback><p>display-collection.xq not found.</p></xi:fallback>
-				</xi:include>
+                <xi:include href="display-collection.xq"/>
             </synopsis>
 
             <para>The XInclude processor declares two variables in the XQuery's static context:</para>
@@ -215,9 +207,7 @@ declare variable $var2 external;</synopsis>
             <para>The result of the call is included below:</para>
 
             <synopsis language="xml">
-                <xi:include href="testvars.xq?var1=Hello&amp;var2=World">
-					<xi:fallback><p>testvars.xq not found.</p></xi:fallback>
-				</xi:include>
+                <xi:include href="testvars.xq?var1=Hello&amp;var2=World"/>
             </synopsis>
         </section>
 
