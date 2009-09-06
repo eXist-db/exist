@@ -24,8 +24,6 @@ echo the home of your JDK.
 goto :eof
 
 :gotJavaHome
-if not "%EXIST_HOME%" == "" goto gotExistHome
-
 rem will be set by the installer
 set EXIST_HOME=$INSTALL_PATH
 
