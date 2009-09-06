@@ -15,9 +15,9 @@
         <item>
             <link href="../acknowledge.xml">Acknowledgements</link>
         </item>
-        <item>
+        <!--item>
             <link href="http://atomic.exist-db.org/blogs/eXist/Press/">Press/Contact</link>
-        </item>
+        </item-->
     </group>
     <group name="Documentation">
         <item>
