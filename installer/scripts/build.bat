@@ -7,7 +7,6 @@ set JAVA_HOME=$JDKPath
 
 :gotJavaHome
 rem will be set by the installer
-if not "%EXIST_HOME%" == "" goto gotExistHome
 set EXIST_HOME=$INSTALL_PATH
 
 :gotExistHome
