@@ -133,21 +133,21 @@
                 expression includes a section taken from Shakespeare's Macbeth:</para>
 
             <synopsis language="xml">&lt;xi:include href="/db/shakespeare/plays/macbeth.xml"
-            xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/&gt;</synopsis>
+            xpointer="xpointer(//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '&quot;fenny snake&quot;')])"/&gt;</synopsis>
 
             <para>As before, the results are included below:</para>
 
             <synopsis language="xml">
-                <xi:include href="/db/shakespeare/plays/macbeth.xml" xpointer="xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/>
+                <xi:include href="/db/shakespeare/plays/macbeth.xml" xpointer="xpointer(//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '&quot;fenny snake&quot;')])"/>
             </synopsis>
 
             <para>An XPath expression will be applied to the entire collection if the path in href
                 points to a collection and not a single document:</para>
 
-            <synopsis language="xml">&lt;xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[near(LINE, 'cursed spite')])"/&gt;</synopsis>
+            <synopsis language="xml">&lt;xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])"/&gt;</synopsis>
 
             <synopsis language="xml">
-                <xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[near(LINE, 'cursed spite')])"/>
+                <xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])"/>
 			</synopsis>
 
             <para>Concerning namespaces: all namespace/prefix mappings declared in the source
