@@ -32,7 +32,8 @@
   <import file="build/scripts/junit.xml"/>
   <import file="build/scripts/performance.xml"/>
   <import file="build/scripts/quality.xml"/>
-  <import file="build/scripts/demoserver.xml"/>
+  <!--import file="build/scripts/demoserver.xml"/-->
+  <import file="build/scripts/static-docs.xml"/>
   <import file="build/scripts/subversion.xml"/>
 
 </project>
