@@ -46,6 +46,9 @@
         <test:benchmark outputFile="${benchmark.output}/large-docs-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="large-documents"/>
+       <test:benchmark outputFile="${benchmark.output}/imdi-result.xml"
+                source="${benchmark.src}/org/exist/performance/test.xml"
+                group="imdi-tests"/>
         <!--test:benchmark outputFile="${benchmark.output}/updates-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="updates"/-->
