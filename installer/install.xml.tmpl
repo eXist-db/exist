@@ -82,6 +82,19 @@
                 <exclude name="**/*.log*"/>
                 <exclude name="**/.*"/>
             </fileset>
+            <fileset targetdir="$INSTALL_PATH/extensions" dir="extensions">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+                <exclude name="**/src/"/>
+                <exclude name="**/classes/"/>
+                <exclude name="**/javadoc/"/>
+                <!-- preferred to have explicit one explicit include but .... -->
+                <exclude name="indexes/**/lib/g*.jar"/>
+                <exclude name="indexes/**/lib/j*.jar"/>
+                <exclude name="indexes/**/lib/v*.jar"/>
+            </fileset>
             <fileset targetdir="$INSTALL_PATH/build/scripts" dir="build/scripts">
                 <exclude name="**/.*"/>
                 <exclude name="**/*~"/>
@@ -188,16 +201,11 @@
                 <exclude name=".*"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/extensions" dir="extensions">
+                <include name="**/src/"/>
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>
                 <exclude name=".*"/>
-                <exclude name="**/classes/"/>
-                <exclude name="**/javadoc/"/>
-                <!-- preferred to have explicit one explicit include but .... -->
-                <exclude name="indexes/**/lib/g*.jar"/>
-                <exclude name="indexes/**/lib/j*.jar"/>
-                <exclude name="indexes/**/lib/v*.jar"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/test/src" dir="test/src">
                 <exclude name="**/*~"/>
