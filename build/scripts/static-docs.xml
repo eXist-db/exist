@@ -38,14 +38,23 @@
             <regexp pattern='href="(?!http)([^"]*)\.xml'/>
             <substitution expression='href="\1.html'/>
             <fileset dir="${dir}">
-                <include name="*.html"/>
+                <include name="**/*.html"/>
             </fileset>      
         </replaceregexp>
         <replace dir="${dir}" summary="true"
-            includes="*.html">
+            includes="**/*.html">
+            <replacefilter token="../examples.html" value="${demo.host}/examples.xml"/>
             <replacefilter token="examples.html" value="${demo.host}/examples.xml"/>
-            <replacefilter token="webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
+            <replacefilter token="../webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
+            <replacefilter token='href="webstart/exist.jnlp' value='href="${webstart.host}/webstart/exist.jnlp'/>
             <replacefilter token='href="cocoon/status"' value='href="${demo.host}/cocoon/status"'/>
+            <replacefilter token='href="../cocoon/status"' value='href="${demo.host}/cocoon/status"'/>
+            <replacefilter token='href="articles"' value='href="${demo.host}/articles"'/>
+            <replacefilter token='href="../articles"' value='href="${demo.host}/articles"'/>
+        </replace>
+        <replace file="${dir}/scripts/main.js">
+            <replacefilter token="xquery/twitter.xql" value="${demo.host}/xquery/twitter.xql"/>
+            <replacefilter token="feed.xql" value="${demo.host}/feed.xql"/>
         </replace>
         <replaceregexp flags="g">
             <regexp pattern='action="(.*)\.xql'/>
@@ -59,7 +68,25 @@
             <substitution expression='href="${demo.host}/\1'/>
             <fileset dir="${dir}">
                 <include name="*.html"/>
-            </fileset>      
+            </fileset>
+        </replaceregexp>
+        <replace file="${dir}/xforms/xforms.html">
+            <replacefilter token="scripts/" value="../scripts/"/>
+            <replacefilter token="styles/" value="../styles/"/>
+        </replace>
+        <replace file="${dir}/xproc/xproc.html">
+            <replacefilter token="scripts/" value="../scripts/"/>
+            <replacefilter token="styles/" value="../styles/"/>
+        </replace>
+        <replaceregexp flags="g">
+            <regexp pattern='href="(?!http)../([^"]*\.xql?)'/>
+            <substitution expression='href="${demo.host}/\1'/>
+            <fileset dir="${dir}/xforms">
+                <include name="*.html"/>
+            </fileset>
+            <fileset dir="${dir}/xproc">
+                <include name="*.html"/>
+            </fileset>
         </replaceregexp>
     </target>
     
@@ -81,6 +108,11 @@
         <antcall target="fix-html-links">
             <param name="dir" value="${build.docs.html}"/>
         </antcall>
+        <zip zipfile="${build.docs}/docs.zip">
+            <fileset dir="${build.docs.html}">
+                <include name="**/*"/>
+            </fileset>
+        </zip>
     </target>
     
     <target name="demoserver">
@@ -156,7 +188,10 @@
         <get src='${url}/xmlprague06.xml' dest='${build.docs.html}/xmlprague06.html'/>
         <get src='${url}/xquery.xml' dest='${build.docs.html}/xquery.html'/>
         
-        <get src='${url}/articles' dest='${build.docs.html}/articles'/>
+        <mkdir dir="${build.docs.html}/xforms"/>
+        <get src='${url}/xforms/xforms.xml' dest='${build.docs.html}/xforms/xforms.html'/>
+        <mkdir dir="${build.docs.html}/xproc"/>
+        <get src='${url}/xproc/xproc.xml' dest='${build.docs.html}/xproc/xproc.html'/>
         <mkdir dir="${build.docs.html}/gsoc"/>
         <mkdir dir="${build.docs.html}/gsoc/2008"/>
         <get src='${url}/gsoc/2008/summer.xml' dest='${build.docs.html}/gsoc/2008/summer.html'/>
