@@ -57,9 +57,6 @@
         <item>
             <link href="../index.xml#mailing">Mailing List/IRC</link>
         </item>
-        <item>
-            <link href="../applications.xml">Powered By eXist</link>
-        </item>
         <!--item>
             <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
                 Third Party Tools
