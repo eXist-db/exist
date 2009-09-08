@@ -26,6 +26,7 @@
                 <link rel="shortcut icon" href="{$pathToWebapp}resources/exist_icon_16x16.ico"/>
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>
+                <meta http-equiv="Content-Type" content="charset=utf-8"/>
                 <script language="Javascript" type="text/javascript" src="styles/curvycorners.js"/>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
@@ -339,7 +340,7 @@
     </xsl:template>
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
-            <a href="/exist" style="text-decoration: none">
+            <a href="{$pathToWebapp}/index.xml" style="text-decoration: none">
                 <xsl:choose>
                     <xsl:when test="graphic/@fileref">
                         <img src="{$pathToWebapp}{graphic/@fileref}"

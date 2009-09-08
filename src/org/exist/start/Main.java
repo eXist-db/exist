@@ -290,12 +290,14 @@ public class Main {
                 String invalidJar = (String) it.next();
                 nonexistentJars.append("    " + invalidJar + "\n");
             }
+			/*
             System.err.println(
                 "\nWARN: The following JAR file entries from '"
                 + startConfigFileName + "' aren't available (this may NOT be a "
                 + "problem):\n"
                 + nonexistentJars
             );
+			*/
         }
     }
 
