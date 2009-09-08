@@ -66,11 +66,20 @@
                                 </listitem>
                                 <listitem>
                                     <para>the index is unspecific. The query engine cannot use it as efficiently
-                                        as a dedicated index on a set of named elements or attributes (<ulink
-                                            url="#idxdefs">see below</ulink>).</para>
+                                        as a dedicated index on a set of named elements or attributes. Carefully creating 
+                                        your indexes by hand will result in much better performance.</para>
                                 </listitem>
                             </orderedlist>
-                            <para>Please consider using the new Lucene-based full text index.</para>
+                            <para>Please consider using the new Lucene-based full text index. However, if you need
+                                to switch back to the old behaviour to ensure backwards compatibility, just edit
+                                the system-wide defaults in conf.xml:</para>
+                            
+                            <programlisting>
+                                <markup><![CDATA[<index>
+    <fulltext attributes="false" default="none">
+        <exclude path="/auth"/>
+    </fulltext>
+</index>]]></markup></programlisting>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
