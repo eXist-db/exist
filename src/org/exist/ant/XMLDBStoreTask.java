@@ -115,7 +115,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 	      String relDir, prevDir = null, resourceType = "XMLResource";
 	      if (srcFile != null)
 	      {
-	        log("Storing single file " + srcFile.getAbsolutePath(), Project.MSG_DEBUG);
+	        log("Storing " + srcFile.getName());
 		
 		MimeType mime = getMimeTable().getContentTypeFor(srcFile.getName());
 		String baseMimeType;
