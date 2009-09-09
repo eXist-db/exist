@@ -85,9 +85,8 @@
                             as we would like to encourage new users to start with the stand alone
                             distribution. Running eXist within an isolated environment helps to
                             identify issues and avoid unnecessary problems. However, experienced
-                            users can always <ulink url="building.xml">build</ulink> a
-                                <filename>.war</filename> package from the standard
-                            distribution.</td>
+                            users can always <ulink url="building.xml#war">repackage</ulink> the standard
+                            distribution. It only takes seconds.</td>
                     </tr>
                     <tr>
                         <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as

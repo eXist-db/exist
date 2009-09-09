@@ -16,51 +16,93 @@
     <section>
         <title>Quick Instructions</title>
 
-        <para>Building eXist is quite easy and requires 3 simple steps:</para>
+        <section id="war">
+            <title>Building a WAR from the Standard Distribution</title>
 
-        <procedure>
-            <step>
-                <title>Check out from SVN</title>
+            <para>If you would like to deploy eXist into an existing servlet engine (e.g. tomcat),
+                you will need a <filename>.war</filename> file. We no longer distribute a
+                    <filename>.war</filename> build, but it is easy to create one from the standard
+                distribution by <emphasis>repackaging</emphasis> (not building) it:</para>
 
-                <para>The SVN URL for the development trunk is:</para>
+            <procedure>
+                <step>
+                    <title>Install the standard distribution</title>
 
-                <synopsis>https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</synopsis>
+                    <para>Get a standard distribution from the <ulink url="download.xml">download
+                            page</ulink>. Install it into a directory of your choice. Make sure you
+                        include the <emphasis>source package</emphasis>.</para>
+                </step>
+                <step>
+                    <title>Generate the WAR</title>
 
-                <para>You need an SVN client to check out the source code. Examples for SVN clients
-                    are Tortoise SVN on the windows platform or the command line SVN tools on Unix
-                    (see <ulink url="#checkout">below</ulink>). The <ulink
-                        url="http://oxygenxml.com">oXygen XML editor</ulink> ships with its own SVN
-                    client.</para>
-            </step>
+                    <para>Open a command line prompt and change to the directory where you just
+                        installed eXist. Call</para>
 
-            <step>
-                <title>Set JAVA_HOME</title>
+                    <synopsis>build.sh dist-war</synopsis>
 
-                <para>Before starting the build, your JAVA_HOME environment variable should be set
-                    to point to the root directory of the JAVA JDK (note: JDK, not JRE!). Open a
-                    console or a DOS box on windows and type:</para>
+                    <para>or</para>
 
-                <synopsis>set JAVA_HOME=c:\path\to\jdk</synopsis>
+                    <synopsis>build.bat dist-war</synopsis>
 
-                <para>on windows or</para>
+                    <para>once. This will generate a <filename>.war</filename> archive into
+                        directory <filename>dist</filename>.</para>
+                </step>
+            </procedure>
 
-                <synopsis>export JAVA_HOME=/path/to/jdk</synopsis>
+            <para>Note that generating a WAR archive does only repackage the files in the
+                distribution, so if the distribution worked properly for you, the WAR should as
+                well. You don't need to recompile eXist or sign any jars.</para>
+        </section>
 
-                <para>on unix.</para>
-            </step>
+        <section>
+            <title>Building eXist from SVN</title>
 
-            <step>
-                <title>Build eXist</title>
+            <para>Building eXist is quite easy and requires 3 simple steps:</para>
 
-                <para>Change into the eXist directory you just checked out and call</para>
+            <procedure>
+                <step>
+                    <title>Check out from SVN</title>
 
-                <synopsis>build.bat</synopsis>
+                    <para>The SVN URL for the development trunk is:</para>
 
-                <para>on windows or on unix:</para>
+                    <synopsis>https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</synopsis>
 
-                <synopsis>build.sh</synopsis>
-            </step>
-        </procedure>
+                    <para>You need an SVN client to check out the source code. Examples for SVN
+                        clients are Tortoise SVN on the windows platform or the command line SVN
+                        tools on Unix (see <ulink url="#checkout">below</ulink>). The <ulink
+                            url="http://oxygenxml.com">oXygen XML editor</ulink> ships with its own
+                        SVN client.</para>
+                </step>
+
+                <step>
+                    <title>Set JAVA_HOME</title>
+
+                    <para>Before starting the build, your JAVA_HOME environment variable should be
+                        set to point to the root directory of the JAVA JDK (note: JDK, not JRE!).
+                        Open a console or a DOS box on windows and type:</para>
+
+                    <synopsis>set JAVA_HOME=c:\path\to\jdk</synopsis>
+
+                    <para>on windows or</para>
+
+                    <synopsis>export JAVA_HOME=/path/to/jdk</synopsis>
+
+                    <para>on unix.</para>
+                </step>
+
+                <step>
+                    <title>Build eXist</title>
+
+                    <para>Change into the eXist directory you just checked out and call</para>
+
+                    <synopsis>build.bat</synopsis>
+
+                    <para>on windows or on unix:</para>
+
+                    <synopsis>build.sh</synopsis>
+                </step>
+            </procedure>
+        </section>
     </section>
 
     <section>
@@ -249,10 +291,10 @@
         <title>Building eXist as a Cocoon Block</title>
 
         <note>
-            <para>The build scripts will not work with Cocoon 2.2. We are currently looking for
-                an experienced Cocoon user to help us updating the scripts.</para>
+            <para>The build scripts will not work with Cocoon 2.2. We are currently looking for an
+                experienced Cocoon user to help us updating the scripts.</para>
         </note>
-        
+
         <para>The standard eXist distribution already ships with Apache Cocoon. However, the
             included version may not be up to date and it offers only a subset of the Cocoon modules
             available. If you work a lot with Cocoon, you might prefer to have eXist integrated into
