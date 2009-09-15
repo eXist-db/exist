@@ -522,8 +522,7 @@
         <servlet-name>XQueryServlet</servlet-name>
         <url-pattern>*.xqy</url-pattern>
     </servlet-mapping>
-      
-    <!--XQueryURLRewrite is disabled by default, uncomment the following and the filter definition above to enable it -->
+
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/*</url-pattern>
