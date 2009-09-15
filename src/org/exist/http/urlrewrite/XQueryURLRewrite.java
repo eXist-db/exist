@@ -491,29 +491,30 @@ public class XQueryURLRewrite implements Filter {
                 Collection subColl = collection;
                 DocumentImpl controllerDoc = null;
                 for (int i = 0; i < components.length; i++) {
-                    if (components[i].length() > 0) {
-                        if (subColl.hasChildCollection(XmldbURI.createInternal(components[i]))) {
-                            DocumentImpl doc = null;
-                            try {
-                                subColl = broker.openCollection(subColl.getURI().append(components[i]), Lock.READ_LOCK);
-                                if (subColl != null) {
-                                    XmldbURI docUri = subColl.getURI().append("controller.xql");
-                                    doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
-                                    if (doc != null)
-                                        controllerDoc = doc;
-                                } else
-                                    break;
-                            } catch (PermissionDeniedException e) {
-                                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " +
-                                    e.getMessage(), e);
-                            } finally {
+                    if (components[i].length() > 0 && subColl.hasChildCollection(XmldbURI.createInternal(components[i]))) {
+                        DocumentImpl doc = null;
+                        try {
+                            subColl = broker.openCollection(subColl.getURI().append(components[i]), Lock.READ_LOCK);
+                            if (subColl != null) {
+                                XmldbURI docUri = subColl.getURI().append("controller.xql");
+                                doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
                                 if (doc != null)
-                                    doc.getUpdateLock().release(Lock.READ_LOCK);
-                                if (subColl != null)
-                                    subColl.getLock().release(Lock.READ_LOCK);
-                            }
-                        } else
-                            break;
+                                    controllerDoc = doc;
+                            } else
+                                break;
+                        } catch (PermissionDeniedException e) {
+                            LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " +
+                                e.getMessage(), e);
+                        } finally {
+                            if (doc != null)
+                                doc.getUpdateLock().release(Lock.READ_LOCK);
+                            if (subColl != null)
+                                subColl.getLock().release(Lock.READ_LOCK);
+                        }
+                    } else {
+                        if (subColl != null)
+                            subColl.getLock().release(Lock.READ_LOCK);
+                        break;
                     }
                 }
                 if (controllerDoc == null) {
