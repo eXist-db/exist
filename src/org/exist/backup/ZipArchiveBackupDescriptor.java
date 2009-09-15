@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Date;
 
@@ -24,9 +25,35 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor
 		throws ZipException,IOException,FileNotFoundException
 	{
 		archive=new ZipFile(fileArchive);
+		
+		//is it full backup?
 		base="db/";
 		descriptor=archive.getEntry(base+BackupDescriptor.COLLECTION_DESCRIPTOR);
 		if(descriptor==null || descriptor.isDirectory()) {
+			
+			base = null;
+			//looking for highest collection
+			//TODO: better to put some information on top? 
+			ZipEntry item = null;
+			Enumeration zipEnum = archive.entries();
+			while(zipEnum.hasMoreElements()) {
+				item = (ZipEntry) zipEnum.nextElement();
+
+				if (!item.isDirectory()) {
+					if (item.getName().endsWith(BackupDescriptor.COLLECTION_DESCRIPTOR)) {
+						if (base == null || base.length() > item.getName().length()) {
+							descriptor = item;
+							base = item.getName();
+						}
+					}
+				}
+			}
+			
+			if (base != null)
+				base = base.substring(0, base.length() - BackupDescriptor.COLLECTION_DESCRIPTOR.length());
+		}
+
+		if (descriptor == null) {
 			throw new FileNotFoundException("Archive "+fileArchive.getAbsolutePath()+" is not a valid eXist backup archive");
 		}
 	}
