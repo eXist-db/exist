@@ -112,7 +112,7 @@ import java.util.TreeMap;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XQueryContext {
+public class XQueryContext implements DebuggeeJoint {
 
 	public static final String CONFIGURATION_ELEMENT_NAME = "xquery";
 	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
@@ -1803,7 +1803,20 @@ public class XQueryContext {
             sharedNamePool = new NamePool();
         return sharedNamePool;
     }
-    
+
+    /* DebuggeeJoint methods */
+
+    public XQueryContext getContext() {
+        return null;
+    }
+
+    public void expressionStart(Expression expr) {
+
+    }
+
+    public void expressionEnd(Expression expr) {
+    }
+
     /* Methods delegated to the watchdog */
 	
 	public void proceed() throws TerminatedException {

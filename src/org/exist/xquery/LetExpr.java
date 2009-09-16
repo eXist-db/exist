@@ -124,7 +124,8 @@ public class LetExpr extends BindingExpression {
             if (resultSequence != null)        
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
         }
-        
+        context.expressionStart(this);
+
         context.pushDocumentContext();
         try {
         	//bv : Declare grouping variables and initiate grouped sequence 
@@ -302,6 +303,7 @@ public class LetExpr extends BindingExpression {
     		return resultSequence;
         } finally {
             context.popDocumentContext();
+            context.expressionEnd(this);
         }
 	}
 
