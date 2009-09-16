@@ -54,7 +54,9 @@ public class UnTarFunction extends AbstractExtractFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("tar-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The tar file data"),
                 new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for filtering resources from the tar file. The function takes 2 parameters e.g. user:untar-entry-filter($path as xs:anyURI, $data-type as xs:string) as xs:boolean. $type may be 'resource' or 'folder'. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped."),
-                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:untar-entry-data($path as xs:anyURI, $data-type as xs:string, $data as item()?). $type may be 'resource' or 'folder'"),
+                new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the tar file. The function takes 3 parameters e.g. user:untar-entry-data($path as xs:anyURI, $data-type as xs:string, $data as item()?). $type may be 'resource' or 'folder'."),
+                new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
         )
@@ -78,7 +80,7 @@ public class UnTarFunction extends AbstractExtractFunction {
 
             while((entry = tis.getNextEntry()) != null)
             {
-                Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis);
+                Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis, filterParam, storeParam);
 
                 results.addAll(processCompressedEntryResults);
             }

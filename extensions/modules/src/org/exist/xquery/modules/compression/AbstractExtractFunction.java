@@ -52,7 +52,9 @@ import org.xml.sax.SAXException;
 public abstract class AbstractExtractFunction extends BasicFunction
 {
     private FunctionCall entryFilterFunction = null;
+    protected Sequence filterParam = null;
     private FunctionCall entryDataFunction = null;
+    protected Sequence storeParam = null;
     private Sequence contextSequence;
 
 
@@ -75,32 +77,36 @@ public abstract class AbstractExtractFunction extends BasicFunction
         FunctionReference entryFilterFunctionRef = (FunctionReference)args[1].itemAt(0);
         entryFilterFunction = entryFilterFunctionRef.getFunctionCall();
         FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
-        if(entryFilterFunctionSig.getArgumentCount() < 2)
-            throw new XPathException("entry-filter function must take at least 2 arguments.");
+        if(entryFilterFunctionSig.getArgumentCount() < 3)
+            throw new XPathException("entry-filter function must take at least 3 arguments.");
         SequenceType[] argTypes = entryFilterFunctionSig.getArgumentTypes();
         if(
             argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
             argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
+            argTypes[2].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[2].getPrimaryType()) ||
             !Type.subTypeOf(Type.BOOLEAN, entryFilterFunctionSig.getReturnType().getPrimaryType())
         ) throw new XPathException("entry-filter function does not match the expected function signature.");
 
-
+        filterParam = args[2];
+        
         //get the entry-data function and check its types
-        if(!(args[2].itemAt(0) instanceof FunctionReference))
+        if(!(args[3].itemAt(0) instanceof FunctionReference))
             throw new XPathException("No entry-data function provided.");
-        FunctionReference entryDataFunctionRef = (FunctionReference)args[2].itemAt(0);
+        FunctionReference entryDataFunctionRef = (FunctionReference)args[3].itemAt(0);
         entryDataFunction = entryDataFunctionRef.getFunctionCall();
         FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
-        if(entryDataFunctionSig.getArgumentCount() < 3)
-            throw new XPathException("entry-data function must take at least 3 arguments");
+        if(entryDataFunctionSig.getArgumentCount() < 4)
+            throw new XPathException("entry-data function must take at least 4 arguments");
         argTypes = entryDataFunctionSig.getArgumentTypes();
         if(
                 argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
                 argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
-                argTypes[2].getCardinality() != Cardinality.ZERO_OR_ONE || !Type.subTypeOf(Type.ITEM, argTypes[2].getPrimaryType())
+                argTypes[2].getCardinality() != Cardinality.ZERO_OR_ONE || !Type.subTypeOf(Type.ITEM, argTypes[2].getPrimaryType()) ||
+                argTypes[3].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[3].getPrimaryType())
         ) throw new XPathException("entry-data function does not match the expected function signature.");
 
-
+        storeParam = args[4];
+        
         Base64Binary compressedData = ((Base64Binary)args[0].itemAt(0));
         
         return processCompressedData(compressedData);
@@ -119,16 +125,19 @@ public abstract class AbstractExtractFunction extends BasicFunction
      *
      * @param name The name of the entry
      * @param isDirectory true if the entry is a directory, false otherwise
-     * @param is An InputStream for reading the uncompressed data of the entry
+     * @param is an InputStream for reading the uncompressed data of the entry
+     * @param filterParam is an additional param for entry filtering function  
+     * @param storeParam is an additional param for entry storing function
      */
-    protected Sequence processCompressedEntry(String name, boolean isDirectory, InputStream is) throws IOException, XPathException
+    protected Sequence processCompressedEntry(String name, boolean isDirectory, InputStream is, Sequence filterParam, Sequence storeParam) throws IOException, XPathException
     {
         String dataType = isDirectory ? "folder" : "resource";
 
         //call the entry-filter function
-        Sequence filterParams[] = new Sequence[2];
+        Sequence filterParams[] = new Sequence[3];
         filterParams[0] = new AnyURIValue(name);
         filterParams[1] = new StringValue(dataType);
+        filterParams[2] = filterParam;
         Sequence entryFilterFunctionResult = entryFilterFunction.evalFunction(contextSequence, null, filterParams);
 
         if(BooleanValue.FALSE == entryFilterFunctionResult.itemAt(0))
@@ -162,9 +171,10 @@ public abstract class AbstractExtractFunction extends BasicFunction
             }
 
             //call the entry-data function
-            Sequence dataParams[] = new Sequence[3];
+            Sequence dataParams[] = new Sequence[4];
             System.arraycopy(filterParams, 0, dataParams, 0, 2);
             dataParams[2] = uncompressedData;
+            dataParams[3] = storeParam;
             Sequence entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
             
             return entryDataFunctionResult;
