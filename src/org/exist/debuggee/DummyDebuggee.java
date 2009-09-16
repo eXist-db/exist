@@ -25,6 +25,13 @@ package org.exist.debuggee;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface DebuggeeConnection {
+public class DummyDebuggee implements Debuggee {
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.Debuggee#joint()
+	 */
+	public DebuggeeJoint joint() {
+		return null;
+	}
 
 }
