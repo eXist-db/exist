@@ -34,6 +34,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
+import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -2828,5 +2829,16 @@ public class XQueryContext {
 			}
 		}
 		
+	}
+
+    private DebuggeeJoint debuggeeJoint = null;
+    
+	public void setDebuggeeJoint(DebuggeeJoint joint) {
+		//XXX: if (debuggeeJoint != null) ???
+		debuggeeJoint = joint;
+	}
+
+	public DebuggeeJoint getDebuggeeJoint() {
+		return debuggeeJoint;
 	}
 }

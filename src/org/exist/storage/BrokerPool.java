@@ -41,6 +41,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.debuggee.Debuggee;
+import org.exist.debuggee.DebuggeeImpl;
 import org.exist.dom.SymbolTable;
 import org.exist.indexing.IndexManager;
 import org.exist.management.AgentFactory;
@@ -1722,4 +1724,16 @@ public class BrokerPool extends Observable {
             checkpoint = true;
         }
     }
+    
+    private Debuggee debuggee = null;
+    
+    public Debuggee getDebuggee() {
+    	synchronized (this) {
+    		if (debuggee == null)
+    			debuggee = new DebuggeeImpl(); 
+    	}
+    	
+    	return debuggee;
+    }
+    
 }

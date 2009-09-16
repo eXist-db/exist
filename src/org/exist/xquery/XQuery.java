@@ -26,6 +26,8 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 import com.sun.xacml.ctx.RequestCtx;
 import org.apache.log4j.Logger;
+import org.exist.debuggee.Debuggee;
+import org.exist.debuggee.DebuggeeJoint;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
@@ -216,6 +218,15 @@ public class XQuery {
         	context.setBroker(broker);
         	context.getWatchDog().reset();
         }
+
+        //XXX: limit what to debug
+		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
+		if (debuggee != null) {
+			DebuggeeJoint joint = debuggee.joint();
+		
+			if (joint != null)
+				context.setDebuggeeJoint(joint);
+		}
         
         //do any preparation before execution
         context.prepare();
