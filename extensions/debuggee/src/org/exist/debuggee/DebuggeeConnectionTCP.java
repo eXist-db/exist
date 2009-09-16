@@ -26,7 +26,9 @@ import java.net.InetSocketAddress;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.exist.debuggee.dgbp.DGBPCodecFactory;
 import org.exist.debuggee.dgbp.DGBPProtocolHandler;
 
 /**
@@ -49,8 +51,12 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 		connector = new NioSocketConnector();
 		
 		// Set connect timeout for 30 seconds.
+		//XXX: find the best timeout ???
 		connector.setConnectTimeoutMillis(30*1000L);
 
+		connector.getFilterChain().addLast(
+				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
+		
 		// Start communication.
 		connector.setHandler(new DGBPProtocolHandler());
 	}
