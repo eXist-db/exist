@@ -112,7 +112,7 @@ import java.util.TreeMap;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XQueryContext implements DebuggeeJoint {
+public class XQueryContext {
 
 	public static final String CONFIGURATION_ELEMENT_NAME = "xquery";
 	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
@@ -1811,10 +1811,15 @@ public class XQueryContext implements DebuggeeJoint {
     }
 
     public void expressionStart(Expression expr) {
-
+        if (debuggeeJoint != null) {
+            debuggeeJoint.expressionStart(expr);
+        }
     }
 
     public void expressionEnd(Expression expr) {
+        if (debuggeeJoint != null) {
+            debuggeeJoint.expressionEnd(expr);
+        }
     }
 
     /* Methods delegated to the watchdog */
