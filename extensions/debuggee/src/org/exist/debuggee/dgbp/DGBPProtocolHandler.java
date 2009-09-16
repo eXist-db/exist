@@ -25,6 +25,7 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.dgbp.packets.Init;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -34,10 +35,12 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		// Set reader idle time to 10 seconds.
+		// Set reader idle time to 20 seconds.
 		// sessionIdle(...) method will be invoked when no data is read
-		// for 10 seconds.
-		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 10);
+		// for 20 seconds.
+		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 20);
+		 
+		session.write(new Init());
 	}
 
 	@Override
@@ -62,5 +65,9 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 			System.out.print((char) buf.get());
 		}
 		System.out.flush();
+	}
+	
+	public void exceptionCaught(IoSession session, Throwable cause) {
+		System.out.println(cause);
 	}
 }
