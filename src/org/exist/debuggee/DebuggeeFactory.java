@@ -22,9 +22,6 @@
 package org.exist.debuggee;
 
 import org.apache.log4j.Logger;
-import org.exist.management.Agent;
-import org.exist.management.AgentFactory;
-import org.exist.management.DummyAgent;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

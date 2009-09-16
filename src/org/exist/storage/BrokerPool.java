@@ -42,6 +42,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.debuggee.Debuggee;
+import org.exist.debuggee.DebuggeeFactory;
 import org.exist.debuggee.DebuggeeImpl;
 import org.exist.dom.SymbolTable;
 import org.exist.indexing.IndexManager;
@@ -1730,7 +1731,7 @@ public class BrokerPool extends Observable {
     public Debuggee getDebuggee() {
     	synchronized (this) {
     		if (debuggee == null)
-    			debuggee = new DebuggeeImpl(); 
+    			debuggee = DebuggeeFactory.getInstance(); 
     	}
     	
     	return debuggee;
