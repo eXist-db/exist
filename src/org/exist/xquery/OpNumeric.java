@@ -102,75 +102,80 @@ public class OpNumeric extends BinaryOp {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		Sequence lseq = getLeft().eval(contextSequence, contextItem);		
-		Sequence rseq = getRight().eval(contextSequence, contextItem);
-        
-        if (lseq.hasMany()) 
-        	throw new XPathException(this, "XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
-        if (rseq.hasMany()) 
-        	throw new XPathException(this, "XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
-		
-        Sequence result;
-        if (rseq.isEmpty()) 
-            result = Sequence.EMPTY_SEQUENCE;
-        else if (lseq.isEmpty()) 
-            result = Sequence.EMPTY_SEQUENCE;
-        else {
-    		Item lvalue = lseq.itemAt(0);
-            Item rvalue = rseq.itemAt(0);
-    		try {
-    			if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC) 
-    				lvalue = lvalue.convertTo(Type.NUMBER);
-    			if (rvalue.getType() == Type.UNTYPED_ATOMIC || rvalue.getType() == Type.ATOMIC) 
-    				rvalue = rvalue.convertTo(Type.NUMBER);
-    			if (!(lvalue instanceof ComputableValue))
-    				throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
-    			if (!(rvalue instanceof ComputableValue))
-    				throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+        context.expressionStart(this);
 
-    			//TODO : move to implementations
-    			if (operator == Constants.IDIV) {    				
-    				if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
-        				throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
-    				if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
-    					throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
-					//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
-    				if (((NumericValue)rvalue).isZero())
-    				    throw new XPathException(this, "FOAR0001: division by zero");
-    				//If either operand is NaN then an error is raised [err:FOAR0002].
-    				if (((NumericValue)lvalue).isNaN())
-    				    throw new XPathException(this, "FOAR0002: division of " + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
-    				//If either operand is NaN then an error is raised [err:FOAR0002].
-    				if (((NumericValue)rvalue).isNaN())
-    				    throw new XPathException(this, "FOAR0002: division of " + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")'");
-					//If $arg1 is INF or -INF then an error is raised [err:FOAR0002].
-    				if (((NumericValue)lvalue).isInfinite())
-    					throw new XPathException(this, "FOAR0002: division of " + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
-                    result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
-    			} else {
-                    result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
-    			}
-    			
-    			//TODO : type-checks on MOD operator : maybe the same ones than above -pb
-    			
-    		} catch (XPathException e) {
-                e.setLocation(line, column);
-    			throw e;
-    		}
+        try {
+            Sequence lseq = getLeft().eval(contextSequence, contextItem);
+            Sequence rseq = getRight().eval(contextSequence, contextItem);
+
+            if (lseq.hasMany())
+                throw new XPathException(this, "XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
+            if (rseq.hasMany())
+                throw new XPathException(this, "XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
+
+            Sequence result;
+            if (rseq.isEmpty())
+                result = Sequence.EMPTY_SEQUENCE;
+            else if (lseq.isEmpty())
+                result = Sequence.EMPTY_SEQUENCE;
+            else {
+                Item lvalue = lseq.itemAt(0);
+                Item rvalue = rseq.itemAt(0);
+                try {
+                    if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC)
+                        lvalue = lvalue.convertTo(Type.NUMBER);
+                    if (rvalue.getType() == Type.UNTYPED_ATOMIC || rvalue.getType() == Type.ATOMIC)
+                        rvalue = rvalue.convertTo(Type.NUMBER);
+                    if (!(lvalue instanceof ComputableValue))
+                        throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+                    if (!(rvalue instanceof ComputableValue))
+                        throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+
+                    //TODO : move to implementations
+                    if (operator == Constants.IDIV) {
+                        if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
+                            throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+                        if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
+                            throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+                        //If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
+                        if (((NumericValue)rvalue).isZero())
+                            throw new XPathException(this, "FOAR0001: division by zero");
+                        //If either operand is NaN then an error is raised [err:FOAR0002].
+                        if (((NumericValue)lvalue).isNaN())
+                            throw new XPathException(this, "FOAR0002: division of " + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
+                        //If either operand is NaN then an error is raised [err:FOAR0002].
+                        if (((NumericValue)rvalue).isNaN())
+                            throw new XPathException(this, "FOAR0002: division of " + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")'");
+                        //If $arg1 is INF or -INF then an error is raised [err:FOAR0002].
+                        if (((NumericValue)lvalue).isInfinite())
+                            throw new XPathException(this, "FOAR0002: division of " + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
+                        result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
+                    } else {
+                        result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
+                    }
+
+                    //TODO : type-checks on MOD operator : maybe the same ones than above -pb
+
+                } catch (XPathException e) {
+                    e.setLocation(line, column);
+                    throw e;
+                }
+            }
+
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().end(this, "", result);
+
+            //Sets the return type if not already set
+            if (returnType == Type.ATOMIC)
+                //TODO : refine previously set type ? -pb
+                returnType = result.getItemType();
+
+            return result;
+        } finally {
+            context.expressionEnd(this);
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
-        
-        //Sets the return type if not already set
-        if (returnType == Type.ATOMIC)
-        	//TODO : refine previously set type ? -pb
-        	returnType = result.getItemType();
-        
-        return result;
-        
-	}
+
+    }
 
 	public ComputableValue applyOperator(ComputableValue left, ComputableValue right)
 		throws XPathException {
