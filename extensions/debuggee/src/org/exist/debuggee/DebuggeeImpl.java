@@ -52,19 +52,22 @@ public class DebuggeeImpl implements Debuggee {
         FEATURES.put("max_depth", "1");
     }
     
-    //ID -> Session
-	private Map<String, DebuggeeJoint> sessions = new HashMap<String, DebuggeeJoint>(); 
+    DebuggeeConnectionTCP connection = null; 
     
 	public DebuggeeImpl() {
 	}
 	
 	public DebuggeeJoint joint() {
-		DebuggeeConnectionTCP connection = new DebuggeeConnectionTCP();
-		if (connection.isConnected()) {
-			//put to map
+		DebuggeeJoint joint = null;
+		
+		synchronized (this) {
+			if (connection == null) {
+				connection = new DebuggeeConnectionTCP();
+			}
+			if (connection.connect())
+				joint = new DebuggeeJointImpl();
 		}
 		
-		DebuggeeJoint joint = new DebuggeeJointImpl();
 		return joint;
 	}
 }
