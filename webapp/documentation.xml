@@ -266,6 +266,10 @@
                                 <td class="doclink"><ulink url="production_good_practice.xml">Production use Good Practice</ulink>:</td>
                                 <td>Points of Good Practice for using eXist in a production environment.</td>
                             </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="production_web_proxying.xml">Proxying eXist behind a Web Server</ulink>:</td>
+                                <td>Details of how to proxy eXist behind various web servers.</td>
+                            </tr>
                         </tbody>
                     </tgroup>
                 </table>
