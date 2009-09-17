@@ -265,18 +265,17 @@
             <itemizedlist>
                 <listitem>
                     <para>
-                        <ulink url="http://atomic.exist-db.org/wiki/HowTo/">Various HowTos</ulink>
+                        <ulink url="http://atomic.exist-db.org/HowTo/">Various HowTos</ulink>
                     </para>
                 </listitem>
-                <!--listitem>
-          <para>
-            <ulink url="http://wiki.exist-db.org/space/FAQs">Some frequently asked questions</ulink>
-          </para>
-        </listitem-->
+                <listitem>
+                     <para>
+                       <ulink url="http://wiki.exist-db.org/FAQs">Some frequently asked questions</ulink>
+                     </para>
+                   </listitem>
                 <listitem>
                     <para>
-                        <ulink url="http://atomic.exist-db.org/wiki/articles/XMLPrague2006"
-                            >XMLPrague 2006 papers and presentations</ulink>
+                        <ulink url="http://atomic.exist-db.org/articles/XMLPrague2006">XMLPrague 2006 papers and presentations</ulink>
                     </para>
                 </listitem>
             </itemizedlist>
