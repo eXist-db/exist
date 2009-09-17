@@ -257,6 +257,19 @@
                     </tgroup>
                 </table>
             </section>
+            <section>
+                <title>Production use</title>
+                <table class="documentation">
+                    <tgroup cols="2">
+                        <tbody>
+                            <tr>
+                                <td class="doclink"><ulink url="production_good_practice.xml">Production use Good Practice</ulink>:</td>
+                                <td>Points of Good Practice for using eXist in a production environment.</td>
+                            </tr>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </section>
         </section>
         <section>
             <title>Documentation on the Wiki</title>
