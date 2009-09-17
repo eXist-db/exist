@@ -19,41 +19,53 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
-
-import java.nio.charset.Charset;
-
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
-import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.exist.debuggee.dgbp.packets.Command;
+package org.exist.debuggee.dgbp.packets;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DGBPRequestDecoder extends CumulativeProtocolDecoder {
+public class StackGet extends Command {
 
-	private String sCommand = "";
+	private int stackDepth = 0;
 	
-	@Override
-	protected boolean doDecode(IoSession session, IoBuffer in,
-			ProtocolDecoderOutput out) throws Exception {
-		
-		byte b;
-		while (true) {
-			if (in.remaining() > 0) {
-				b = in.get();
-				if (b == (byte)0) {
-					out.write(Command.parse(sCommand));
-					sCommand = "";
-					continue;
-				}
-				sCommand += (char)b; 
-			} else {
-				return false;
-			}
-		}
+	public StackGet(String args) {
+		super(args);
 	}
+
+	protected void setArgument(String arg, String val) {
+		if (arg.equals("d"))
+			stackDepth = Integer.parseInt(val);
+		else
+			super.setArgument(arg, val);
+	}
+	
+	public byte[] toBytes() {
+		String response = "" +
+			"<response " +
+					"command=\"stack_get\" " +
+					"transaction_id=\""+transactionID+"\">" +
+				"<stack level=\""+String.valueOf(stackDepth)+"\" " +
+						"type=\"file\" " +
+						"filename=\"file:///home/dmitriy/projects/eXist-svn/trunk/eXist/webapp/admin/admin.xql\" " +
+						"lineno=\"5\" " +
+						"where=\"\" " +
+						"cmdbegin=\"5:5\" " +
+						"cmdend=\"5:10\"/>" +
+			"</response>";
+		
+		return response.getBytes();
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
+	 */
+	@Override
+	public void exec() {
+		// TODO Auto-generated method stub
+
+	}
+
+	
 }

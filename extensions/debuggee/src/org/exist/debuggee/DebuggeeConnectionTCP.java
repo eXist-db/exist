@@ -52,7 +52,7 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 		
 		// Set connect timeout for 30 seconds.
 		//XXX: find the best timeout ???
-		connector.setConnectTimeoutMillis(30*1000L);
+//		connector.setConnectTimeoutMillis(3000*1000L);
 
 		connector.getFilterChain().addLast(
 				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
@@ -79,7 +79,7 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 			System.out.println("connected");
 			status = 1;
 			
-			start();
+//			start();
 			return true;
 		}
 	}
