@@ -30,6 +30,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.exist.debuggee.dgbp.DGBPCodecFactory;
 import org.exist.debuggee.dgbp.DGBPProtocolHandler;
+import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -46,7 +47,7 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 	private int status = 0;
 	private Object lock = new Object();
 	
-	public DebuggeeConnectionTCP() {
+	public DebuggeeConnectionTCP(XACMLSource source) {
 		// Create TCP/IP connector.
 		connector = new NioSocketConnector();
 		
@@ -58,7 +59,7 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
 		
 		// Start communication.
-		connector.setHandler(new DGBPProtocolHandler());
+		connector.setHandler(new DGBPProtocolHandler(source));
 	}
 	
 	public boolean connect() {

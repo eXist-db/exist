@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.exist.xquery.CompiledXQuery;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -55,16 +56,18 @@ public class DebuggeeImpl implements Debuggee {
 	public DebuggeeImpl() {
 	}
 	
-	public DebuggeeJoint joint() {
+	public DebuggeeJoint joint(CompiledXQuery compiledXQuery) {
 		DebuggeeJoint joint = null;
 		
 		synchronized (this) {
 			if (connection == null) {
-				connection = new DebuggeeConnectionTCP();
+				connection = new DebuggeeConnectionTCP(compiledXQuery.getSource());
 			}
 			if (connection.connect())
 				joint = new DebuggeeJointImpl();
 		}
+		
+		compiledXQuery.getContext().setDebuggeeJoint(joint);
 		
 		return joint;
 	}

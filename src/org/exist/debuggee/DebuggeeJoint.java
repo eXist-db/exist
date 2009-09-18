@@ -28,11 +28,14 @@ import org.exist.xquery.XQueryContext;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+//TODO: rename DebuggeeRuntime ?
 public interface DebuggeeJoint {
 	
 	public XQueryContext getContext();
 	
 	public void expressionStart(Expression expr);
 	public void expressionEnd(Expression expr);
+
+	public void reset();
 
 }

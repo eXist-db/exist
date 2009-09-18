@@ -27,12 +27,21 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.dgbp.packets.Command;
 import org.exist.debuggee.dgbp.packets.Init;
+import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class DGBPProtocolHandler extends IoHandlerAdapter {
+
+	private XACMLSource source;
+	
+	public DGBPProtocolHandler(XACMLSource source) {
+		super();
+		
+		this.source = source;
+	}
 
 	@Override
 	public void sessionOpened(IoSession session) {
@@ -42,7 +51,7 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 		//XXX: fix -> 30 ???
 		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 3000);
 		 
-		session.write(new Init());
+		session.write(new Init(source));
 	}
 
 	@Override

@@ -219,14 +219,14 @@ public class XQuery {
         	context.getWatchDog().reset();
         }
 
-        //XXX: limit what to debug
-        if (context.getDebuggeeJoint() == null) {
-        	Debuggee debuggee = broker.getBrokerPool().getDebuggee();
-        	if (debuggee != null) {
-        		DebuggeeJoint joint = debuggee.joint();
-		
-        		if (joint != null)
-        			context.setDebuggeeJoint(joint);
+        if (context.isDebugMode()) {
+        	if (context.getDebuggeeJoint() != null) {
+        		context.getDebuggeeJoint().reset();
+        	} else {
+        		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
+        		if (debuggee != null) {
+        			debuggee.joint(expression);
+        		}
         	}
 		}
         
