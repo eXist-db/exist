@@ -220,12 +220,14 @@ public class XQuery {
         }
 
         //XXX: limit what to debug
-		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
-		if (debuggee != null) {
-			DebuggeeJoint joint = debuggee.joint();
+        if (context.getDebuggeeJoint() == null) {
+        	Debuggee debuggee = broker.getBrokerPool().getDebuggee();
+        	if (debuggee != null) {
+        		DebuggeeJoint joint = debuggee.joint();
 		
-			if (joint != null)
-				context.setDebuggeeJoint(joint);
+        		if (joint != null)
+        			context.setDebuggeeJoint(joint);
+        	}
 		}
         
         //do any preparation before execution
