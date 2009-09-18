@@ -21,11 +21,13 @@
  */
 package org.exist.debuggee;
 
+import org.exist.xquery.CompiledXQuery;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public interface Debuggee {
 
-	public DebuggeeJoint joint();
+	public DebuggeeJoint joint(CompiledXQuery compiledXQuery);
 }

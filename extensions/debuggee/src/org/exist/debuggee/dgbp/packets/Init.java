@@ -24,6 +24,7 @@ package org.exist.debuggee.dgbp.packets;
 import java.nio.ByteBuffer;
 
 import org.exist.debuggee.dgbp.DGBPPacket;
+import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -31,25 +32,36 @@ import org.exist.debuggee.dgbp.DGBPPacket;
  */
 public class Init extends DGBPPacket {
 
-	String init_message = "<init " +
-		"appid=\"7035\" " +
-		"idekey=\"1\" " +
-		"session=\"1\" " +
-		"thread=\"1\" " +
-		"parent=\"1\" " +
-		"language=\"XQuery\" " +
-		"protocol_version=\"1.0\" " +
-		"fileuri=\"file:///home/dmitriy/projects/eXist-svn/trunk/eXist/webapp/admin/admin.xql\"></init>";
+
+	private XACMLSource fileuri;
+	
+	
+	public Init(XACMLSource source) {
+		fileuri = source;
+	}
 
 	public int getLength() {
-		return init_message.length();
+		return toBytes().length;
 	}
 
 	public byte[] toBytes() {
+		String init_message = "<init " +
+			"appid=\"7035\" " +
+			"idekey=\"1\" " +
+			"session=\"1\" " +
+			"thread=\"1\" " +
+			"parent=\"1\" " +
+			"language=\"XQuery\" " +
+			"protocol_version=\"1.0\" " +
+			"fileuri=\""+getFileuri()+"\"></init>";
+
 		return init_message.getBytes();
 	}
 	
-	public String toString() {
-		return init_message;
+	private String getFileuri() {
+		if (fileuri.getType().equals("file"))
+			return "file://"+fileuri.getKey();
+		else
+			return "dbgp:"+fileuri.getType()+"://"+fileuri.getKey();
 	}
 }

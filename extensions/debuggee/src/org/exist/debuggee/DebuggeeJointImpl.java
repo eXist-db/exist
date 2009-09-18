@@ -61,4 +61,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint {
 		return null;
 	}
 
+	public void reset() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

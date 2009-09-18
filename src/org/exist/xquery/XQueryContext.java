@@ -2859,4 +2859,14 @@ public class XQueryContext {
 	public DebuggeeJoint getDebuggeeJoint() {
 		return debuggeeJoint;
 	}
+	
+	private boolean isDebugMode = false;
+
+	public void setDebugMode(boolean isDebugMode) {
+		this.isDebugMode = isDebugMode;
+	}
+	
+	public boolean isDebugMode() {
+		return isDebugMode;
+	}
 }
