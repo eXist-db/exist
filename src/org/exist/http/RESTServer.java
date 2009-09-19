@@ -1202,7 +1202,7 @@ public class RESTServer {
 		}
 		
 		String xdebug = request.getParameter("XDEBUG_SESSION_START");
-		if (xdebug != null && xdebug.equals("1"))
+		if (xdebug != null)
 			compiled.getContext().setDebugMode(true);
 		
 		try {
