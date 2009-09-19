@@ -467,6 +467,11 @@ public class XQueryURLRewrite implements Filter {
 				throw new ServletException("Failed to read query from " + query, e);
 			}
 		}
+        
+		String xdebug = request.getParameter("XDEBUG_SESSION_START");
+		if (xdebug != null)
+			compiled.getContext().setDebugMode(true);
+
         try {
 			return xquery.execute(compiled, null);
 		} finally {
