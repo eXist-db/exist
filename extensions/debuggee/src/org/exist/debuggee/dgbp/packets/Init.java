@@ -59,7 +59,7 @@ public class Init extends DGBPPacket {
 	}
 	
 	private String getFileuri() {
-		if (fileuri.getType().equals("file"))
+		if (fileuri.getType().toLowerCase().equals("file"))
 			return "file://"+fileuri.getKey();
 		else
 			return "dbgp:"+fileuri.getType()+"://"+fileuri.getKey();
