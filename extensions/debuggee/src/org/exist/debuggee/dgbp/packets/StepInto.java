@@ -29,7 +29,7 @@ import org.exist.debuggee.DebuggeeJoint;
  */
 public class StepInto extends Command {
 
-	private String status;
+	private String status = null;
 
 	public StepInto(DebuggeeJoint joint, String args) {
 		super(joint, args);
@@ -39,16 +39,16 @@ public class StepInto extends Command {
 	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
 	 */
 	@Override
-	public void exec() {
+	public synchronized void exec() {
+		System.out.println("StepInto.exec thread = "+Thread.currentThread());
 		status = joint.stepInto();
-
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public byte[] toBytes() {
+	public synchronized byte[] toBytes() {
 		String responce = "<response " +
 				"command=\"step_into\" " +
 				"status=\""+status+"\" " +
