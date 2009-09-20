@@ -21,6 +21,8 @@
  */
 package org.exist.debuggee;
 
+import java.util.List;
+
 import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 
@@ -37,5 +39,13 @@ public interface DebuggeeJoint {
 	public void expressionEnd(Expression expr);
 
 	public void reset();
+
+	public boolean featureSet(String name, String value);
+
+	public String stepInto();
+	public String stepOut();
+	public String stepOver();
+
+	public List stackGet();
 
 }
