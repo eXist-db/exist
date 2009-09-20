@@ -104,6 +104,6 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 
 	public boolean isConnected() {
 		//XXX: resolve concurrency problem here!!!
-		return (status == 2);
+		return (status == 2 && connector.isActive());
 	}
 }

@@ -24,6 +24,7 @@ package org.exist.xmldb;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.debuggee.Debuggee;
 import org.exist.dom.*;
 import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
@@ -170,6 +171,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				    context = compiled.getContext();
 				//context.setBackwardsCompatibility(xpathCompatible);
 				context.setStaticallyKnownDocuments(docs);
+
+				if (variableDecls.containsKey(Debuggee.PREFIX+":session")) {
+					variableDecls.remove(Debuggee.PREFIX+":session");
+					context.setDebugMode(true);
+				}
+
 				setupContext(context);
 				
 				if(compiled == null)
