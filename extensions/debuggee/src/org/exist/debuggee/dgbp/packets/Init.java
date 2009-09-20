@@ -37,6 +37,7 @@ public class Init extends DGBPPacket {
 	
 	
 	public Init(XACMLSource source) {
+		System.out.println("Init: source = "+source.getKey());
 		fileuri = source;
 	}
 

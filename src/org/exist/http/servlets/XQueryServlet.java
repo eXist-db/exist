@@ -54,6 +54,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
+import org.exist.debuggee.Debuggee;
 import org.exist.dom.XMLUtil;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -383,6 +384,11 @@ public class XQueryServlet extends HttpServlet {
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
                 service.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
             }
+
+    		String xdebug = request.getParameter("XDEBUG_SESSION_START");
+    		if (xdebug != null)
+    			service.declareVariable(Debuggee.PREFIX+":session",  xdebug);
+            
 
             ResourceSet result = service.execute(source);
             String mediaType = service.getProperty(OutputKeys.MEDIA_TYPE);
