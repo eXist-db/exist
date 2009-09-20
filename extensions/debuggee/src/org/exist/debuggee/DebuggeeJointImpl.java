@@ -73,17 +73,18 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 				command = WAIT;
 				break;
 			}
+			
+			waitCommand();
 		}
 	}
 	
-	private void waitCommand() {
+	private synchronized void waitCommand() {
+		System.out.println("DebuggeeJoint.waitCommand notifyAll thread = "+Thread.currentThread());
+		notifyAll();
 		try {
-			synchronized (this) {
-				this.notifyAll();
-			}
-			synchronized (currentExpr) {
-				currentExpr.wait();
-			}
+			System.out.println("DebuggeeJoint.waitCommand wait thread = "+Thread.currentThread());
+			wait();
+			System.out.println("DebuggeeJoint.waitCommand wait passed thread = "+Thread.currentThread());
 		} catch (InterruptedException e) {
 			//UNDERSTAND: what to do?
 		}
@@ -102,18 +103,16 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		
 	}
 	
-	public String stepInto() {
+	public synchronized String stepInto() {
 		command = STEP_INTO;
 
-		synchronized (currentExpr) {
-			if (currentExpr != null)
-				currentExpr.notifyAll();
-		}
+		System.out.println("DebuggeeJoint.stepInto notifyAll thread = "+Thread.currentThread());
+		notifyAll();
 		
 		try {
-			synchronized (this) {
-				this.wait();
-			}
+			System.out.println("DebuggeeJoint.stepInto wait thread = "+Thread.currentThread());
+			wait();
+			System.out.println("DebuggeeJoint.stepInto wait passed thread = "+Thread.currentThread());
 		} catch (InterruptedException e) {
 			return "error";
 		}

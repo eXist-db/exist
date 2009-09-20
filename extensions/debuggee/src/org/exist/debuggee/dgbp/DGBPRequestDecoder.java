@@ -46,7 +46,11 @@ public class DGBPRequestDecoder extends CumulativeProtocolDecoder {
 			if (in.remaining() > 0) {
 				b = in.get();
 				if (b == (byte)0) {
-					out.write(Command.parse(session, sCommand));
+					Command command = Command.parse(session, sCommand);
+					
+					command.exec();
+					
+					out.write(command);
 					sCommand = "";
 					continue;
 				}
