@@ -61,10 +61,11 @@ public class DebuggeeImpl implements Debuggee {
 		
 		synchronized (this) {
 			if (connection == null) {
-				connection = new DebuggeeConnectionTCP(compiledXQuery.getSource());
-			}
-			if (connection.connect())
 				joint = new DebuggeeJointImpl();
+				connection = new DebuggeeConnectionTCP(joint, compiledXQuery.getSource());
+			}
+			if (!connection.connect())
+				joint = null;
 		}
 		
 		compiledXQuery.getContext().setDebuggeeJoint(joint);

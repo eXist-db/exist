@@ -21,6 +21,8 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.exist.debuggee.DebuggeeJoint;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -32,8 +34,8 @@ public class FeatureSet extends Command {
 	
 	boolean success = false; 
 	
-	public FeatureSet(String args) {
-		super(args);
+	public FeatureSet(DebuggeeJoint joint, String args) {
+		super(joint, args);
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -70,6 +72,6 @@ public class FeatureSet extends Command {
 
 	@Override
 	public void exec() {
-		success = true;
+		success = joint.featureSet(name, value);
 	}
 }

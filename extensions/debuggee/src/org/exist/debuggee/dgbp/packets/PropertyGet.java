@@ -21,6 +21,8 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.exist.debuggee.DebuggeeJoint;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -62,8 +64,8 @@ public class PropertyGet extends Command {
 	 */
 	private String propertyAddress;
 	
-	public PropertyGet(String args) {
-		super(args);
+	public PropertyGet(DebuggeeJoint joint, String args) {
+		super(joint, args);
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -97,7 +99,7 @@ public class PropertyGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		// TODO Auto-generated method stub
+//		joint.getProperty();
 
 	}
 
