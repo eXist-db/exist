@@ -21,6 +21,10 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import java.util.List;
+
+import org.exist.debuggee.DebuggeeJoint;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -29,8 +33,10 @@ public class StackGet extends Command {
 
 	private int stackDepth = 0;
 	
-	public StackGet(String args) {
-		super(args);
+	private List stacks;
+	
+	public StackGet(DebuggeeJoint joint, String args) {
+		super(joint, args);
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -63,8 +69,7 @@ public class StackGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		// TODO Auto-generated method stub
-
+		stacks = joint.stackGet();
 	}
 
 	

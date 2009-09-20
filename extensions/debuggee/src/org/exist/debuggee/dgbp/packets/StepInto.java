@@ -21,14 +21,18 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.exist.debuggee.DebuggeeJoint;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class StepInto extends Command {
 
-	public StepInto(String args) {
-		super(args);
+	private String status;
+
+	public StepInto(DebuggeeJoint joint, String args) {
+		super(joint, args);
 	}
 
 	/* (non-Javadoc)
@@ -36,7 +40,7 @@ public class StepInto extends Command {
 	 */
 	@Override
 	public void exec() {
-		// TODO Auto-generated method stub
+		status = joint.stepInto();
 
 	}
 
@@ -47,7 +51,7 @@ public class StepInto extends Command {
 	public byte[] toBytes() {
 		String responce = "<response " +
 				"command=\"step_into\" " +
-				"status=\"starting\" " +
+				"status=\""+status+"\" " +
 				"reason=\"ok\" " +
 				"transaction_id=\""+transactionID+"\"/>";
 

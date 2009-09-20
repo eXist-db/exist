@@ -47,7 +47,7 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 	private int status = 0;
 	private Object lock = new Object();
 	
-	public DebuggeeConnectionTCP(XACMLSource source) {
+	public DebuggeeConnectionTCP(DebuggeeJoint joint, XACMLSource source) {
 		// Create TCP/IP connector.
 		connector = new NioSocketConnector();
 		
@@ -59,7 +59,7 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
 		
 		// Start communication.
-		connector.setHandler(new DGBPProtocolHandler(source));
+		connector.setHandler(new DGBPProtocolHandler(joint, source));
 	}
 	
 	public boolean connect() {

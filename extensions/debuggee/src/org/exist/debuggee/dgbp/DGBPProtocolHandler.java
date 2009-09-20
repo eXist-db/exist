@@ -25,6 +25,7 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.packets.Command;
 import org.exist.debuggee.dgbp.packets.Init;
 import org.exist.security.xacml.XACMLSource;
@@ -35,11 +36,13 @@ import org.exist.security.xacml.XACMLSource;
  */
 public class DGBPProtocolHandler extends IoHandlerAdapter {
 
+	private DebuggeeJoint joint;
 	private XACMLSource source;
 	
-	public DGBPProtocolHandler(XACMLSource source) {
+	public DGBPProtocolHandler(DebuggeeJoint joint, XACMLSource source) {
 		super();
 		
+		this.joint = joint;
 		this.source = source;
 	}
 
@@ -51,6 +54,7 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 		//XXX: fix -> 30 ???
 		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 3000);
 		 
+		session.setAttribute("joint", joint);
 		session.write(new Init(source));
 	}
 
