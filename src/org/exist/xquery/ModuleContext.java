@@ -35,6 +35,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -352,12 +353,16 @@ public class ModuleContext extends XQueryContext {
 
         // check if the variable is declared global
         if (var == null)
-            var = (Variable) globalVariables.get(qname);
+            var = globalVariables.get(qname);
         //if (var == null)
         //	throw new XPathException("variable $" + qname + " is not bound");
         return var;
     }
 
+    public Map<QName, Variable> getVariables() {
+    	return parentContext.getVariables();
+    }
+    
     public int getCurrentStackSize() {
         return parentContext.getCurrentStackSize();
     }
