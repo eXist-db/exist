@@ -24,6 +24,7 @@ package org.exist.debuggee;
 import java.util.List;
 
 import org.exist.xquery.Expression;
+import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
 
 /**
@@ -46,6 +47,6 @@ public interface DebuggeeJoint {
 	public String stepOut();
 	public String stepOver();
 
-	public List stackGet();
+	public List<PathExpr> stackGet();
 
 }
