@@ -52,7 +52,7 @@ public class StackGet extends Command {
 		String response = "" +
 			"<response " +
 					"command=\"stack_get\" " +
-					"transaction_id=\""+transactionID+"\">" +
+					"transaction_id=\""+transactionID+"\">\n" +
 				stackToString() + 
 			"</response>";
 		
@@ -68,8 +68,8 @@ public class StackGet extends Command {
 		
 		return "<stack level=\""+String.valueOf(stackDepth)+"\" " +
 					"type=\"file\" " +
-					"filename=\"file://"+getFileuri(expr.getSource())+"\" " +
-					"lineno=\""+expr.getLine()+"\" ";
+					"filename=\""+getFileuri(expr.getSource())+"\" " +
+					"lineno=\""+expr.getLine()+"\" />";
 //					+
 //					"where=\"\" " +
 //					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +

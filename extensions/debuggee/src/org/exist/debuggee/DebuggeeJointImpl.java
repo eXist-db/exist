@@ -34,12 +34,11 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	
-	private String status = FIRST_RUN;
-	
 	private List<Expression> stack = new ArrayList<Expression>();
 	private int stackDepth = 1;
 	
 	private int command = STOP_ON_FIRST_LINE;
+	private String status = FIRST_RUN;
 	
 	public DebuggeeJointImpl() {
 	}
@@ -57,13 +56,10 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	public void expressionStart(Expression expr) {
 		System.out.println("expressionStart expr = "+expr.toString());
 		
-		if (expr instanceof PathExpr) {
-			PathExpr pathExpr = (PathExpr) expr;
-			if (stack.size() == stackDepth)
-				stack.set(stackDepth-1, pathExpr);
-			else
-				stack.add(pathExpr);
-		}
+		if (stack.size() == stackDepth)
+			stack.set(stackDepth-1, expr);
+		else
+			stack.add(expr);
 		
 		while (true) {
 			if (command == STOP_ON_FIRST_LINE && status == FIRST_RUN)
