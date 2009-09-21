@@ -369,7 +369,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-fluent,extension-xprocxq,extension-debugger,extension-debuggee,test-compile"
+        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-fluent,extension-xprocxq,extension-debuggee,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -504,7 +504,6 @@
         <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
         <ant antfile="xprocxq.xml" dir="extensions" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/debugger" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
@@ -560,10 +559,6 @@
 
     <target name="extension-versioning" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/versioning" inheritall="false"/>
-    </target>
-    
-    <target name="extension-debugger" depends="jar">
-        <ant antfile="build.xml" dir="extensions/debugger" inheritall="false"/>
     </target>
     
     <target name="extension-debuggee" depends="jar">
