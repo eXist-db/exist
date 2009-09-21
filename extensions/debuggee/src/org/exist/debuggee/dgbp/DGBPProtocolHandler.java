@@ -76,7 +76,7 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 	public void messageReceived(IoSession session, Object message) {
 		Command command = (Command) message;
 		
-		command.exec();
+//		command.exec();
 		
 		session.write(command);
 	}
