@@ -19,14 +19,19 @@
  *  
  *  $Id:$
  */
-package org.exist.debugger;
+package org.exist.debugger.model;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Debugger {
+public interface Location {
 
-	public DebuggingSource source(String fileURI);
-
+	public String getFileURI();
+	
+	public int getLineBegin();
+	public int getColumnBegin();
+	
+	//public int getLineEnd();
+	//public int getColumnEnd();
 }
