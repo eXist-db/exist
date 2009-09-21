@@ -24,6 +24,8 @@ package org.exist.debuggee.dgbp.packets;
 import java.util.List;
 
 import org.exist.debuggee.DebuggeeJoint;
+import org.exist.xquery.Expression;
+import org.exist.xquery.PathExpr;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -33,7 +35,7 @@ public class StackGet extends Command {
 
 	private int stackDepth = 0;
 	
-	private List stacks;
+	private List<PathExpr> stacks;
 	
 	public StackGet(DebuggeeJoint joint, String args) {
 		super(joint, args);
@@ -51,18 +53,30 @@ public class StackGet extends Command {
 			"<response " +
 					"command=\"stack_get\" " +
 					"transaction_id=\""+transactionID+"\">" +
-				"<stack level=\""+String.valueOf(stackDepth)+"\" " +
-						"type=\"file\" " +
-						"filename=\"file:///home/dmitriy/projects/eXist-svn/trunk/eXist/webapp/admin/admin.xql\" " +
-						"lineno=\"5\" " +
-						"where=\"\" " +
-						"cmdbegin=\"5:5\" " +
-						"cmdend=\"5:10\"/>" +
+				stackToString() + 
 			"</response>";
 		
 		return response.getBytes();
 
 	}
+	
+	private String stackToString() {
+		if (stacks == null || stacks.size() == 0)
+			return "";
+		
+		PathExpr expr = stacks.get(0);
+		
+		return "<stack level=\""+String.valueOf(stackDepth)+"\" " +
+					"type=\"file\" " +
+					"filename=\""+getFileuri(expr.getSource())+"\" " +
+					"lineno=\""+expr.getLine()+"\" " +
+					"where=\"\" " +
+					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +
+					"cmdend=\""+(expr.getLine())+":"+(expr.getColumn()+1)+"\"/>";
+
+	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see org.exist.debuggee.dgbp.packets.Command#exec()

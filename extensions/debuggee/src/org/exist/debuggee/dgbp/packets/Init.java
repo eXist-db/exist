@@ -32,9 +32,7 @@ import org.exist.security.xacml.XACMLSource;
  */
 public class Init extends DGBPPacket {
 
-
 	private XACMLSource fileuri;
-	
 	
 	public Init(XACMLSource source) {
 		System.out.println("Init: source = "+source.getKey());
@@ -54,15 +52,8 @@ public class Init extends DGBPPacket {
 			"parent=\"1\" " +
 			"language=\"XQuery\" " +
 			"protocol_version=\"1.0\" " +
-			"fileuri=\""+getFileuri()+"\"></init>";
+			"fileuri=\""+Command.getFileuri(fileuri)+"\"></init>";
 
 		return init_message.getBytes();
-	}
-	
-	private String getFileuri() {
-		if (fileuri.getType().toLowerCase().equals("file"))
-			return "file://"+fileuri.getKey();
-		else
-			return "dbgp:"+fileuri.getType()+"://"+fileuri.getKey();
 	}
 }

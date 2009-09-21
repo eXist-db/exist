@@ -24,6 +24,7 @@ package org.exist.debuggee.dgbp.packets;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.DGBPPacket;
+import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -106,5 +107,12 @@ public abstract class Command extends DGBPPacket {
 		
 		throw new ParsingCommandException(command);
 		
+	}
+
+	protected static String getFileuri(XACMLSource fileuri) {
+		if (fileuri.getType().toLowerCase().equals("file"))
+			return "file://"+fileuri.getKey();
+		else
+			return "dbgp:"+fileuri.getType()+"://"+fileuri.getKey();
 	}
 }

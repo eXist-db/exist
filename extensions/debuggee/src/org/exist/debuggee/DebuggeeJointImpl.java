@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.exist.xquery.Expression;
+import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
 
 /**
@@ -39,7 +40,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	private int status = FIRST_RUN;
 	
 	private Expression currentExpr = null;
-	private List<Expression> stack = new ArrayList<Expression>();
+	private List<PathExpr> stack = new ArrayList<PathExpr>();
+	private int stackDepth = 1;
 	
 	private int command = STOP_ON_FIRST_LINE;
 	
@@ -59,8 +61,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	public void expressionStart(Expression expr) {
 		System.out.println("expressionStart expr = "+expr.toString());
 		
-		if (status == FIRST_RUN)
-			stack.add(expr);
+		if (expr instanceof PathExpr) {
+			PathExpr pathExpr = (PathExpr) expr;
+			if (stack.size() == stackDepth)
+				stack.set(stackDepth-1, pathExpr);
+			else
+				stack.add(pathExpr);
+		}
 		
 		currentExpr = expr;
 		
@@ -135,8 +142,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		return false;
 	}
 
-	public List stackGet() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PathExpr> stackGet() {
+		return stack;
 	}
 }
