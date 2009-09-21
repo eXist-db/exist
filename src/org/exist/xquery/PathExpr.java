@@ -185,6 +185,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (var != null) 
                     contextDocs = var.getContextDocs();
             }
+            boolean debug = getLastExpression() instanceof Step;
+            if (debug)
+                context.expressionStart(this);
+
             //contextDocs == null *is* significant
             setContextDocSet(contextDocs);
             
@@ -265,6 +269,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
                 throw new XPathException(this, "XPTY0018: Cannot mix nodes and atomic values in the result of a path expression.");
             }
+            if (debug)
+                context.expressionEnd(this);
         }
         
         if (context.getProfiler().isEnabled()) 
@@ -406,13 +412,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     public int getLine() {
-        if (line < 0 && steps.size() ==1)
+        if (line < 0 && steps.size() > 0)
             return steps.get(0).getLine();
         return line;
     }
 
     public int getColumn() {
-        if (column < 0 && steps.size() ==1)
+        if (column < 0 && steps.size() > 0)
             return steps.get(0).getColumn();
         return column;
     }
