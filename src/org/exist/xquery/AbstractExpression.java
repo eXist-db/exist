@@ -142,4 +142,8 @@ public abstract class AbstractExpression implements Expression {
     public XACMLSource getSource() {
         return context.getSource();
     }
+
+    public XQueryContext getContext() {
+        return null;
+    }
 }
