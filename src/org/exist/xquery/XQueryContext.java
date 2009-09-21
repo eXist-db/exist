@@ -51,6 +51,7 @@ import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.security.xacml.NullAccessContextException;
+import org.exist.security.xacml.XACMLSource;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -366,10 +367,8 @@ public class XQueryContext {
     private boolean raiseErrorOnFailedRetrieval = XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT;
 
     private boolean isShared = false;
-    
-    private String  sourceKey = "unknown";
-    
-    private String  sourceType = "unknown";
+
+    private XACMLSource source = null;
     
     private XQueryContext() {}
 	
@@ -585,18 +584,15 @@ public class XQueryContext {
     public int getExpressionCount() {
         return expressionCounter;
     }
+
+    public void setSource(XACMLSource source) {
+        this.source = source;
+    }
+
+    public XACMLSource getSource() {
+        return source;
+    }
     
-    /**
-	 * Called from the XQuery compiler to set the XQuery Source key value
-	 * for this context.
-	 * 
-	 * @param key
-	 */
-	public void setSourceKey( String key ) 
-	{
-		this.sourceKey = key;
-	}
-	
 	/**
 	 * Returns the Source Key of the XQuery associated with
 	 * this context.
@@ -605,20 +601,9 @@ public class XQueryContext {
 	 */
 	public String getSourceKey() 
 	{
-		return( sourceKey );
+		return source.getKey();
 	}
-	
-	 /**
-	 * Called from the XQuery compiler to set the XQuery Source type value
-	 * for this context.
-	 * 
-	 * @param type
-	 */
-	public void setSourceType( String type ) 
-	{
-		this.sourceType = type;
-	}
-	
+
 	/**
 	 * Returns the Source Type of the XQuery associated with
 	 * this context.
@@ -627,10 +612,9 @@ public class XQueryContext {
 	 */
 	public String getSourceType() 
 	{
-		return( sourceType );
+		return source.getType();
 	}
 	
-    
 	/**
 	 * Declare a user-defined static prefix/namespace mapping.
 	 * 
@@ -2258,10 +2242,11 @@ public class XQueryContext {
         		throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + 
         			") does not match namespace URI in import statement, which was: " + namespaceURI);
             // Set source information on module context
-            String sourceClassName = source.getClass().getName();
-            modContext.setSourceKey(source.getKey().toString());
+//            String sourceClassName = source.getClass().getName();
+            modContext.setSource(XACMLSource.getInstance(source));
+//            modContext.setSourceKey(source.getKey().toString());
             // Extract the source type from the classname by removing the package prefix and the "Source" suffix
-            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
+//            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
             
             modExternal.setSource(source);
         	modExternal.setContext(modContext);

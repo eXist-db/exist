@@ -58,20 +58,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     protected boolean staticContext = false;
 
     protected boolean inPredicate = false;
-    
-    protected XACMLSource source;
 
     protected Expression parent;
 
     public PathExpr(XQueryContext context) {
         super(context);
-    }
-    
-    public void setSource(XACMLSource source) {
-    	this.source = source;
-    }
-    public XACMLSource getSource() {
-    	return source;
     }
 
     /**

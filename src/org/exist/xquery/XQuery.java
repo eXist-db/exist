@@ -91,19 +91,12 @@ public class XQuery {
     
     public CompiledXQuery compile(XQueryContext context, Source source, boolean xpointer) 
     throws XPathException, IOException {
-    
-    	String sourceClassName = source.getClass().getName();
-    	
-    	context.setSourceKey( source.getKey().toString() );
-    	
-    	// Extract the source type from the classname by removing the package prefix and the "Source" suffix
-    	context.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );    	
+
+        context.setSource(XACMLSource.getInstance(source));
 		
-    	XACMLSource xsource = XACMLSource.getInstance(source);
         Reader reader = source.getReader();
         try {
         	CompiledXQuery compiled = compile(context, reader, xpointer);
-        	compiled.setSource(xsource);
             return compiled;
 		} finally {
             if (reader != null)
