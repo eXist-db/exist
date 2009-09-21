@@ -210,5 +210,7 @@ public interface Expression {
 
     public int getColumn();
 
+    public XQueryContext getContext();
+    
     public XACMLSource getSource();
 }
