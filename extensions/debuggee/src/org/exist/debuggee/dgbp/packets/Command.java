@@ -91,6 +91,9 @@ public abstract class Command extends DGBPPacket {
 		if (command.equals("feature_set")) {
 			return new FeatureSet(joint, args);
 		
+		} else if (command.equals("run")) {
+			return new Run(joint, args);
+		
 		} else if (command.equals("step_into")) {
 			return new StepInto(joint, args);
 		

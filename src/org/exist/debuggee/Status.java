@@ -27,7 +27,7 @@ package org.exist.debuggee;
  */
 public interface Status {
 	
-	public String FIRST_RUN = "";
+	public String FIRST_RUN = "FIRST_RUN";
 	
 	/**
 	 * State prior to execution of any code
