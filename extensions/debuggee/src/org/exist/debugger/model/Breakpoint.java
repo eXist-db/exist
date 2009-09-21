@@ -125,4 +125,7 @@ public interface Breakpoint {
 	 */
 	public String getException();
 	public void setException(String exception);
+
+	public int getId();
+	public void setId(int breakpointNo);
 }

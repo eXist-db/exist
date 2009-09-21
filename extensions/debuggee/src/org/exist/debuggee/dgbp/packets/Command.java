@@ -109,6 +109,9 @@ public abstract class Command extends DGBPPacket {
 		} else if (command.equals("context_get")) {
 			return new ContextGet(joint, args);
 		
+		} else if (command.equals("breakpoint_set")) {
+			return new BreakpointSet(joint, args);
+		
 		}
 		
 		throw new ParsingCommandException(command);

@@ -24,6 +24,7 @@ package org.exist.debuggee;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
@@ -52,5 +53,7 @@ public interface DebuggeeJoint {
 	
 	public Map<QName, Variable> getVariables();
 	public Variable getVariable(String name);
+	
+	public int setBreakpoint(Breakpoint breakpoint);
 
 }
