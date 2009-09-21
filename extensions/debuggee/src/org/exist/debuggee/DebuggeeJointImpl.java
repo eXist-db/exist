@@ -21,12 +21,9 @@
  */
 package org.exist.debuggee;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.mina.core.future.ConnectFuture;
-import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
@@ -37,10 +34,9 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	
-	private int status = FIRST_RUN;
+	private String status = FIRST_RUN;
 	
-	private Expression currentExpr = null;
-	private List<PathExpr> stack = new ArrayList<PathExpr>();
+	private List<Expression> stack = new ArrayList<Expression>();
 	private int stackDepth = 1;
 	
 	private int command = STOP_ON_FIRST_LINE;
@@ -69,14 +65,12 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 				stack.add(pathExpr);
 		}
 		
-		currentExpr = expr;
-		
 		while (true) {
 			if (command == STOP_ON_FIRST_LINE && status == FIRST_RUN)
 				waitCommand();
 			
 			if (command == STEP_INTO) {
-				status = DEBUGGING;
+				status = STARTING;
 				command = WAIT;
 				break;
 			}
@@ -124,7 +118,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 			return "error";
 		}
 		
-		return "starting";
+		return status;
 	}
 
 	public String stepOut() {
@@ -142,7 +136,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		return false;
 	}
 
-	public List<PathExpr> stackGet() {
+	public List<Expression> stackGet() {
 		return stack;
 	}
 }

@@ -35,7 +35,7 @@ public class StackGet extends Command {
 
 	private int stackDepth = 0;
 	
-	private List<PathExpr> stacks;
+	private List<Expression> stacks;
 	
 	public StackGet(DebuggeeJoint joint, String args) {
 		super(joint, args);
@@ -64,15 +64,16 @@ public class StackGet extends Command {
 		if (stacks == null || stacks.size() == 0)
 			return "";
 		
-		PathExpr expr = stacks.get(0);
+		Expression expr = stacks.get(0);
 		
 		return "<stack level=\""+String.valueOf(stackDepth)+"\" " +
 					"type=\"file\" " +
-					"filename=\""+getFileuri(expr.getSource())+"\" " +
-					"lineno=\""+expr.getLine()+"\" " +
-					"where=\"\" " +
-					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +
-					"cmdend=\""+(expr.getLine())+":"+(expr.getColumn()+1)+"\"/>";
+					"filename=\"file://"+getFileuri(expr.getSource())+"\" " +
+					"lineno=\""+expr.getLine()+"\" ";
+//					+
+//					"where=\"\" " +
+//					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +
+//					"cmdend=\""+(expr.getLine())+":"+(expr.getColumn()+1)+"\"/>";
 
 	}
 	
