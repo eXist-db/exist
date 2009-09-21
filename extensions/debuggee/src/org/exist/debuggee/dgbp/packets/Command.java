@@ -48,7 +48,7 @@ public abstract class Command extends DGBPPacket {
 				continue;
 			
 			String arg = splited[i].substring(0, 1);
-			String val = splited[i].substring(2);
+			String val = splited[i].substring(2).trim();
 			setArgument(arg, val);
 		}
 		System.out.println(new String(toBytes()));
@@ -91,17 +91,23 @@ public abstract class Command extends DGBPPacket {
 		if (command.equals("feature_set")) {
 			return new FeatureSet(joint, args);
 		
-		} if (command.equals("step_into")) {
+		} else if (command.equals("step_into")) {
 			return new StepInto(joint, args);
 		
-		} if (command.equals("step_over")) {
+		} else if (command.equals("step_over")) {
 			return new StepOver(joint, args);
 		
-		} if (command.equals("step_out")) {
+		} else if (command.equals("step_out")) {
 			return new StepOut(joint, args);
 		
-		} if (command.equals("stack_get")) {
+		} else if (command.equals("stack_get")) {
 			return new StackGet(joint, args);
+		
+		} else if (command.equals("property_get")) {
+			return new PropertyGet(joint, args);
+		
+		} else if (command.equals("context_get")) {
+			return new ContextGet(joint, args);
 		
 		}
 		

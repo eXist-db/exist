@@ -22,9 +22,12 @@
 package org.exist.debuggee;
 
 import java.util.List;
+import java.util.Map;
 
+import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.Variable;
 import org.exist.xquery.XQueryContext;
 
 /**
@@ -33,8 +36,6 @@ import org.exist.xquery.XQueryContext;
  */
 //TODO: rename DebuggeeRuntime ?
 public interface DebuggeeJoint {
-	
-	public XQueryContext getContext();
 	
 	public void expressionStart(Expression expr);
 	public void expressionEnd(Expression expr);
@@ -48,5 +49,8 @@ public interface DebuggeeJoint {
 	public String stepOver();
 
 	public List<Expression> stackGet();
+	
+	public Map<QName, Variable> getVariables();
+	public Variable getVariable(String name);
 
 }

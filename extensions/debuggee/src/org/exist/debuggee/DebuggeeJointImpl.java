@@ -22,10 +22,15 @@
 package org.exist.debuggee;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.Variable;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
 /**
@@ -134,5 +139,25 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 
 	public List<Expression> stackGet() {
 		return stack;
+	}
+
+	public Map<QName, Variable> getVariables() {
+		if (stack.size() == 0)
+			return new HashMap<QName, Variable>();
+			
+		Expression expr = stack.get(0);
+		return expr.getContext().getVariables();
+	}
+
+	public Variable getVariable(String name) {
+		if (stack.size() == 0)
+			return null;
+			
+		Expression expr = stack.get(0);
+		try {
+			return expr.getContext().resolveVariable(name);
+		} catch (XPathException e) {
+			return null;
+		}
 	}
 }

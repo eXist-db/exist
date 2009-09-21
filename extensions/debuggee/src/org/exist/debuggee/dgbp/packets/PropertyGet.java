@@ -21,7 +21,11 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import java.util.Map;
+
 import org.exist.debuggee.DebuggeeJoint;
+import org.exist.dom.QName;
+import org.exist.xquery.Variable;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -42,7 +46,7 @@ public class PropertyGet extends Command {
 	/**
 	 * -n property long name (required)
 	 */
-	private String nameLong = "";
+	private String nameLong;
 			
 	/**
 	 * -m max data size to retrieve (optional)
@@ -63,6 +67,8 @@ public class PropertyGet extends Command {
 	 * -a property address as retrieved in a property element, optional, used for property_set/value
 	 */
 	private String propertyAddress;
+	
+	private Variable variable;
 	
 	public PropertyGet(DebuggeeJoint joint, String args) {
 		super(joint, args);
@@ -99,8 +105,7 @@ public class PropertyGet extends Command {
 	 */
 	@Override
 	public void exec() {
-//		joint.getProperty();
-
+		variable = joint.getVariable(nameLong);
 	}
 
 	/* (non-Javadoc)
@@ -112,10 +117,27 @@ public class PropertyGet extends Command {
 			"<response " +
 					"command=\"property_get\" " +
 					"transaction_id=\""+transactionID+"\">" +
-				"<property/>"+
+				getPropertyString()+
 			"</response>";
 
 		return responce.getBytes();
+	}
+
+	private String getPropertyString() {
+		String property = "";
+		if (variable == null)
+			return property; //XXX: error?
+		
+		String value = variable.getValue().toString();
+			
+		property += "<property " +
+				"name=\""+variable.getQName().toString()+"\" " +
+				"size=\""+value.length()+"\" " +
+				"encoding=\"none\">" +
+			value+
+		"</property>";
+
+		return property;
 	}
 
 }
