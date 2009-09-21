@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
@@ -44,6 +45,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	
 	private int command = STOP_ON_FIRST_LINE;
 	private String status = FIRST_RUN;
+	
+	private int breakpointNo = 0;
+	//<fileName, Map<line, breakpoint>>
+	private Map<String, Map<Integer, Breakpoint>> breakpoints = 
+		new HashMap<String, Map<Integer, Breakpoint>>();
+	
+	
 	
 	public DebuggeeJointImpl() {
 	}
@@ -159,5 +167,23 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		} catch (XPathException e) {
 			return null;
 		}
+	}
+
+	public int setBreakpoint(Breakpoint breakpoint) {
+		breakpointNo++;
+		
+		breakpoint.setId(breakpointNo);
+
+		Map<Integer, Breakpoint> fileBreakpoints;
+		String fileName = breakpoint.getFilename();
+		if (breakpoints.containsKey(fileName))
+			fileBreakpoints = breakpoints.get(fileName);
+		else {
+			fileBreakpoints = new HashMap<Integer, Breakpoint>();
+			breakpoints.put(fileName, fileBreakpoints);
+		}
+		fileBreakpoints.put(breakpoint.getLineno(), breakpoint);
+
+		return 1;//TODO: do throw constant
 	}
 }
