@@ -21,32 +21,17 @@
  */
 package org.exist.debuggee;
 
-import java.util.List;
-
-import org.exist.xquery.Expression;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
-
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-//TODO: rename DebuggeeRuntime ?
-public interface DebuggeeJoint {
+public interface Reasons {
+
+	public String OK = "ok";
 	
-	public XQueryContext getContext();
+	public String ERROR = "error";
 	
-	public void expressionStart(Expression expr);
-	public void expressionEnd(Expression expr);
-
-	public void reset();
-
-	public boolean featureSet(String name, String value);
-
-	public String stepInto();
-	public String stepOut();
-	public String stepOver();
-
-	public List<Expression> stackGet();
-
+	public String ABORTED = "aborted";
+	
+	public String EXCEPTION = "exception";
 }

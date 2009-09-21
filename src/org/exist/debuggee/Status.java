@@ -27,7 +27,30 @@ package org.exist.debuggee;
  */
 public interface Status {
 	
-	public int FIRST_RUN = 0;
-	public int DEBUGGING = 0;
+	public String FIRST_RUN = "";
+	
+	/**
+	 * State prior to execution of any code
+	 */
+	public String STARTING = "starting";
 
+	/**
+	 * State after completion of code execution. This typically happens at the end of code execution, allowing the IDE to further interact with the debugger engine (for example, to collect performance data, or use other extended commands).
+	 */
+	public String STOPPING = "stopping";
+
+	/**
+	 * IDE is detached from process, no further interaction is possible.
+	 */
+	public String STOPPED = "stopped";
+		  
+	/**
+	 * Code is currently executing. Note that this state would only be seen with async support turned on, otherwise the typical state during IDE/debugger interaction would be 'break'
+	 */
+	public String RUNNING = "running";
+
+	/**
+	 * Code execution is paused, for whatever reason (see below), and the IDE/debugger can pass information back and forth.
+	 */
+	public String BREAK = "break";
 }
