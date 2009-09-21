@@ -44,7 +44,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	private int stackDepth = 1;
 	
 	private int command = STOP_ON_FIRST_LINE;
-	private String status = FIRST_RUN;
+	private String status = "";
 	
 	private int breakpointNo = 0;
 	//<fileName, Map<line, breakpoint>>
@@ -75,7 +75,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 			stack.add(expr);
 		
 		while (true) {
-			if (command == STOP_ON_FIRST_LINE && status == FIRST_RUN)
+			if (command == STEP_INTO && status == FIRST_RUN)
 				waitCommand();
 			
 			if (command == STEP_INTO) {
@@ -89,12 +89,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	}
 	
 	private synchronized void waitCommand() {
-		System.out.println("DebuggeeJoint.waitCommand notifyAll thread = "+Thread.currentThread());
 		notifyAll();
 		try {
-			System.out.println("DebuggeeJoint.waitCommand wait thread = "+Thread.currentThread());
 			wait();
-			System.out.println("DebuggeeJoint.waitCommand wait passed thread = "+Thread.currentThread());
 		} catch (InterruptedException e) {
 			//UNDERSTAND: what to do?
 		}
@@ -112,32 +109,44 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public synchronized String run() {
+		command = RUN;
+		status = STARTING;
+
+		notifyAll();
+		
+		return "starting";
+	}
 	
 	public synchronized String stepInto() {
 		command = STEP_INTO;
+		if (status == "")
+			status = FIRST_RUN;
+		else
+			status = STARTING;
 
-		System.out.println("DebuggeeJoint.stepInto notifyAll thread = "+Thread.currentThread());
 		notifyAll();
-		
-		try {
-			System.out.println("DebuggeeJoint.stepInto wait thread = "+Thread.currentThread());
-			wait();
-			System.out.println("DebuggeeJoint.stepInto wait passed thread = "+Thread.currentThread());
-		} catch (InterruptedException e) {
-			return "error";
-		}
-		
+
 		return status;
 	}
 
-	public String stepOut() {
-		// TODO Auto-generated method stub
-		return null;
+	public synchronized String stepOut() {
+		command = STEP_OUT;
+		status = STARTING;
+
+		notifyAll();
+
+		return status;
 	}
 
-	public String stepOver() {
-		// TODO Auto-generated method stub
-		return null;
+	public synchronized String stepOver() {
+		command = STEP_OVER;
+		status = STARTING;
+
+		notifyAll();
+
+		return status;
 	}
 
 	public boolean featureSet(String name, String value) {

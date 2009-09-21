@@ -19,21 +19,43 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee;
+package org.exist.debuggee.dgbp.packets;
+
+import org.exist.debuggee.DebuggeeJoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Commands {
+public class Run extends Command {
 
-	public int WAIT = 0;
+	private String status;
 
-	public int STOP_ON_FIRST_LINE = 1;
+	public Run(DebuggeeJoint joint, String args) {
+		super(joint, args);
+	}
 
-	public int RUN = 2;
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
+	 */
+	@Override
+	public void exec() {
+		status = joint.run();
 
-	public int STEP_INTO = 3;
-	public int STEP_OUT = 4;
-	public int STEP_OVER = 5;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
+	 */
+	@Override
+	public byte[] toBytes() {
+		String responce = "<response " +
+				"command=\"run\" " +
+				"status=\""+status+"\" " +
+				"reason=\"ok\" " +
+				"transaction_id=\""+transactionID+"\"/>";
+
+		return responce.getBytes();
+	}
+
 }

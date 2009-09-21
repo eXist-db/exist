@@ -45,6 +45,8 @@ public interface DebuggeeJoint {
 
 	public boolean featureSet(String name, String value);
 
+	public String run();
+
 	public String stepInto();
 	public String stepOut();
 	public String stepOver();
