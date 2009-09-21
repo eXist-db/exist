@@ -74,13 +74,34 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		else
 			stack.add(expr);
 		
+		String fileName = expr.getSource().getKey();
+
+		Map<Integer, Breakpoint> fileBreakpoints = null;
+		Integer lineNo = expr.getLine();
+
 		while (true) {
-			if (command == STEP_INTO && status == FIRST_RUN)
-				waitCommand();
+			if (breakpoints.containsKey(fileName)) {
+				fileBreakpoints = breakpoints.get(fileName);
+				
+				if (fileBreakpoints.containsKey(lineNo)) {
+					Breakpoint breakpoint = fileBreakpoints.get(lineNo);
+					
+					if (breakpoint.getState() && breakpoint.getType().equals(breakpoint.TYPE_LINE)) {
+						status = STOPPED;
+					}
+				}
+			}
 			
-			if (command == STEP_INTO) {
-				status = STARTING;
-				command = WAIT;
+			if (command == STEP_INTO && status == FIRST_RUN)
+				;
+			else if (command == STEP_INTO && status == RUNNING)
+				status = STOPPED;
+
+			else if (command == RUN && status == RUNNING)
+				break;
+
+			else if (command >= RUN && status == STARTING) {
+				status = RUNNING;
 				break;
 			}
 			
