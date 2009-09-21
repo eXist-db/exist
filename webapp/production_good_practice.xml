@@ -16,12 +16,12 @@
     <chapter>
         <title>Production use - Good Practice</title>
         <abstract>
-            <para>From our and our clients experiences of developing and using eXist in production environments there are a number of lessons which we have learned. This Good Practice guide is an attempt to cover some of the considerations that should be taken into account when deploying eXist for use in a production environment.</para>
+            <para>From our and our clients' experiences of developing and using eXist in production environments there are a number of lessons which we have learned. This Good Practice guide is an attempt to cover some of the considerations that should be taken into account when deploying eXist for use in a production environment.</para>
             <para>The concepts laid out within this document should not be considered absolute or accepted wholesale, more that they should be used as suggestions to guide users in their eXist deployments.</para>
         </abstract>
         <section>
             <title>The Server</title>
-            <para>Ensure that your server is up-to-date and patched with any nessecary security fixes.</para>
+            <para>Ensure that your server is up-to-date and patched with any necessary security fixes.</para>
             <para>eXist is written in Java - so for performance and security reasons, please ensure that you have the latest and greatest Java JDK release installed. At present this is the 1.6 branch, details of the latest version can always be found here - <ulink url="http://java.sun.com">http://java.sun.com</ulink></para>
         </section>
         <section>
