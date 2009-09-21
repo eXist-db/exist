@@ -242,4 +242,12 @@ public class BreakpointSet extends Command implements Breakpoint {
 		this.id = breakpointNo;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 }

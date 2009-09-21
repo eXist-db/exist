@@ -59,6 +59,9 @@ public interface Breakpoint {
 	 */
 	public String TYPE_WATCH = "watch";
 	
+	public String getType();
+	public void setType(String type);
+
 	/**
 	 * The file the breakpoint is effective in. This must be a "file://" or "dbgp:" (See 6.7 Dynamic code and virtual files) URI.
 	 * @return
