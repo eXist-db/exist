@@ -144,6 +144,6 @@ public abstract class AbstractExpression implements Expression {
     }
 
     public XQueryContext getContext() {
-        return null;
+        return context;
     }
 }
