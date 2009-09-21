@@ -25,6 +25,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.security.xacml.XACMLSource;
 
 public abstract class AbstractExpression implements Expression {
 
@@ -136,5 +137,9 @@ public abstract class AbstractExpression implements Expression {
 
     public int getColumn() {
         return column;
+    }
+
+    public XACMLSource getSource() {
+        return context.getSource();
     }
 }

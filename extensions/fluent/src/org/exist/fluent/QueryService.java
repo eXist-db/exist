@@ -347,7 +347,7 @@ public class QueryService implements Cloneable {
 		if (wrapperFactory == null) return expr;
 		Function wrapper = wrapperFactory.createWrapper(context);
 		wrapper.setArguments(Collections.singletonList(expr));
-		wrapper.setSource(expr.getSource());
+//		wrapper.setSource(expr.getSource());
 		return wrapper;
 	}
 	
