@@ -174,12 +174,12 @@ public class XQueryContext {
 	protected TreeMap declaredFunctions = new TreeMap();
 
     // Globally declared variables
-	protected TreeMap globalVariables = new TreeMap();
+	protected Map<QName, Variable> globalVariables = new TreeMap<QName, Variable>();
 
 	// The last element in the linked list of local in-scope variables
 	protected LocalVariable lastVar = null;
 	
-    protected Stack contextStack = new Stack();
+    protected Stack<LocalVariable> contextStack = new Stack<LocalVariable>();
     
     protected Stack callStack = new Stack();
     
@@ -471,7 +471,7 @@ public class XQueryContext {
         ctx.orderEmptyGreatest = this.orderEmptyGreatest;
 
         ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
-        ctx.globalVariables = new TreeMap(this.globalVariables);
+        ctx.globalVariables = new TreeMap<QName, Variable>(this.globalVariables);
         // make imported modules available in the new context
         ctx.modules = new HashMap();
         for (Iterator i = this.modules.values().iterator(); i.hasNext(); ) {
@@ -1548,7 +1548,7 @@ public class XQueryContext {
 			return var;
 		}
 		Sequence val = XPathUtil.javaObjectToXPath(value, this);
-		var = (Variable)globalVariables.get(qn);
+		var = globalVariables.get(qn);
 		if(var == null) {			
 			var = new Variable(qn);
 			globalVariables.put(qn, var);
@@ -1631,7 +1631,7 @@ public class XQueryContext {
 	}
     
 	protected Variable resolveLocalVariable(QName qname) throws XPathException {
-        LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable) contextStack.peek();
+        LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 		for(LocalVariable var = lastVar; var != null; var = var.before) {
             if (var == end)
                 return null;
@@ -1648,6 +1648,23 @@ public class XQueryContext {
                 return true;
         }
         return globalVariables.get(qname) != null;
+    }
+    
+    public Map<QName, Variable> getVariables() {
+    	
+    	Map<QName, Variable> variables = new HashMap<QName, Variable>();
+    	
+    	variables.putAll(globalVariables);
+    	
+        LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable) contextStack.peek();
+		for(LocalVariable var = lastVar; var != null; var = var.before) {
+            if (var == end)
+                break;
+            
+            variables.put(var.getQName(), var);
+		}
+
+    	return variables;
     }
     
 	/**
@@ -2275,8 +2292,8 @@ public class XQueryContext {
 
     private void declareModuleVars(Module module) {
         String moduleNS = module.getNamespaceURI();
-        for (Iterator i = globalVariables.values().iterator(); i.hasNext(); ) {
-            Variable var = (Variable) i.next();
+        for (Iterator<Variable> i = globalVariables.values().iterator(); i.hasNext(); ) {
+            Variable var = i.next();
             if (moduleNS.equals(var.getQName().getNamespaceURI())) {
                 module.declareVariable(var);
 				i.remove();
