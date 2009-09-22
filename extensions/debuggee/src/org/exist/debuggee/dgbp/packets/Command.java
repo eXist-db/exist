@@ -117,8 +117,7 @@ public abstract class Command extends DGBPPacket {
 		
 		}
 		
-		throw new ParsingCommandException(command);
-		
+		return new Error(command, joint, args);
 	}
 
 	protected static String getFileuri(XACMLSource fileuri) {
