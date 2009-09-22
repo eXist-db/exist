@@ -22,11 +22,18 @@
  */
 package org.exist.xupdate;
 
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggerUnary;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
@@ -56,13 +63,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
-
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Base class for all XUpdate modifications.
@@ -312,12 +312,12 @@ public abstract class Modification {
 	private void prepareTrigger(Txn transaction, DocumentImpl doc)
 	{
 		CollectionConfiguration config = doc.getCollection().getConfiguration(broker);
-        DocumentTrigger trigger = null;
+        DocumentTriggerUnary trigger = null;
         if(config != null)
         {
             //get the UPDATE_DOCUMENT_EVENT trigger
             try {
-                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, doc.getCollection());
+                trigger = (DocumentTriggerUnary)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, doc.getCollection());
             } catch (CollectionConfigurationException e) {
                 LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
             }
@@ -349,12 +349,12 @@ public abstract class Modification {
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc)
 	{
-        DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());
+        DocumentTriggerUnary trigger = (DocumentTriggerUnary) triggers.get(doc.getDocId());
         if(trigger != null)
         {
             try
             {
-                trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
+            	trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
             }
             catch(Exception e)
             {

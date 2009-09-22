@@ -21,11 +21,24 @@
  */
 package org.exist.collections;
 
-import org.apache.log4j.Logger;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
-import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggerUnary;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
@@ -47,9 +60,9 @@ import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.ProcessMonitor;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.ProcessMonitor;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
@@ -68,26 +81,10 @@ import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
-
 import org.w3c.dom.Node;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeMap;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of
@@ -780,18 +777,19 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
 	            throw new PermissionDeniedException("Permission to remove document denied");
 	        
-	        DocumentTrigger trigger = null;
-	        if (!CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
-	            if (triggersEnabled) {
-	                CollectionConfiguration config = getConfiguration(broker);
-	                if (config != null)
-                        try {
-                            trigger = (DocumentTrigger) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
-                        } catch (CollectionConfigurationException e) {
-                            LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                        }
-                }
-	        } else {
+	        DocumentTriggerUnary trigger = null;
+	        
+            if (triggersEnabled) {
+                CollectionConfiguration config = getConfiguration(broker);
+                if (config != null)
+                    try {
+                        trigger = (DocumentTriggerUnary) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                    }
+            }
+            
+	        if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
 	            // we remove a collection.xconf configuration file: tell the configuration manager to
 	            // reload the configuration.
 	            CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
@@ -799,7 +797,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        }
 	        
 	        if (trigger != null) {
-	            trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction,
+	        	trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction,
 	                    getURI().append(docUri), doc);
 	        }
 	        
@@ -807,7 +805,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             documents.remove(docUri.getRawCollectionPath());
 	        
 	        if (trigger != null) {
-	            trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, getURI().append(docUri), null);
+	        	trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, getURI().append(docUri), null);
 	        }
 	        
 	        broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
@@ -864,12 +862,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
             if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
                 throw new PermissionDeniedException("permission to remove document denied");
             
-            DocumentTrigger trigger = null;
+            DocumentTriggerUnary trigger = null;
             if (triggersEnabled) {
                 CollectionConfiguration config = getConfiguration(broker);
                 if (config != null) {
                     try {
-                        trigger = (DocumentTrigger) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
+                        trigger = (DocumentTriggerUnary) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
                     } catch (CollectionConfigurationException e) {
                         LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
                     }
@@ -877,7 +875,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             }
             
             if (trigger != null)
-                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
+            	trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
             
             try {
                broker.removeBinaryResource(transaction, (BinaryDocument) doc);
@@ -887,7 +885,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             documents.remove(doc.getFileURI().getRawCollectionPath());
             
             if (trigger != null) {
-                trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), null);
+            	trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), null);
             }
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
@@ -1349,7 +1347,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
                     "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
     }
     
-    private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
+    private DocumentTriggerUnary setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
         
         //TODO : is this the right place for such a task ? -pb
         if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
@@ -1365,12 +1363,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
         if (config == null)
             return null;
         
-        DocumentTrigger trigger = null;
+        DocumentTriggerUnary trigger = null;
         try {
             if (update)
-                trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, this);
+                trigger = (DocumentTriggerUnary) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, this);
             else
-                trigger = (DocumentTrigger) config.newTrigger(Trigger.STORE_DOCUMENT_EVENT, broker, this);
+                trigger = (DocumentTriggerUnary) config.newTrigger(Trigger.STORE_DOCUMENT_EVENT, broker, this);
         } catch (CollectionConfigurationException e) {
             LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
         }
@@ -1426,7 +1424,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
         	getLock().acquire(Lock.WRITE_LOCK);
 	        
 	        checkPermissions(transaction, broker, oldDoc);
-	        DocumentTrigger trigger = null;
+	        DocumentTriggerUnary trigger = null;
 	        int event = 0;
 /*
 	        if (triggersEnabled) {
@@ -1434,7 +1432,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	            if (config != null) {
 	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
                     try {
-                        trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
+                        trigger = (DocumentTriggerUnary) config.newTrigger(event, broker, this);
                     } catch (CollectionConfigurationException e) {
                         LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
                     }
@@ -1468,17 +1466,18 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        addDocument(transaction, broker, blob);
 	        
 	        broker.storeXMLResource(transaction, blob);
+	        
 	        if (triggersEnabled) {
 	            CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
 	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
                     try {
-                        trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
+                        trigger = (DocumentTriggerUnary) config.newTrigger(event, broker, this);
                     } catch (CollectionConfigurationException e) {
                         LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
                     }
                     if (trigger != null) {
-	                    trigger.prepare(event, broker, transaction, blob.getURI(), blob);
+                    	trigger.prepare(event, broker, transaction, blob.getURI(), blob);
 	                }
 	            }
 	        }
@@ -1488,8 +1487,9 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        //broker.closeDocument();
 	        
 	        if (trigger != null) {
-	            trigger.finish(event, broker, transaction, blob.getURI(), blob);
+	        	trigger.finish(event, broker, transaction, blob.getURI(), blob);
 	        }
+	        
 	        return blob;
 	        
         } finally {
@@ -1637,6 +1637,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
         } finally {
             getLock().release(Lock.WRITE_LOCK);
         }
+    }
+    
+    public boolean isTtriggersEnabled(){
+    	return this.triggersEnabled;
     }
     
     

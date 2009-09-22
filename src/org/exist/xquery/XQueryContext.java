@@ -22,16 +22,37 @@
  */
 package org.exist.xquery;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.SimpleTimeZone;
+import java.util.Stack;
+import java.util.TimeZone;
+import java.util.TreeMap;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggerUnary;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.debuggee.DebuggeeJoint;
@@ -72,7 +93,13 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.pragmas.*;
+import org.exist.xquery.pragmas.BatchTransactionPragma;
+import org.exist.xquery.pragmas.ForceIndexUse;
+import org.exist.xquery.pragmas.NoIndexPragma;
+import org.exist.xquery.pragmas.Optimize;
+import org.exist.xquery.pragmas.ProfilePragma;
+import org.exist.xquery.pragmas.TimerPragma;
+import org.exist.xquery.update.Modification;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.JavaObjectValue;
@@ -80,32 +107,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeUtils;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.update.Modification;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 
 /**
  * The current XQuery execution context. Contains the static as well
@@ -2602,9 +2609,9 @@ public class XQueryContext {
     	        CollectionConfiguration config = doc.getCollection().getConfiguration(getBroker());
     	        if(config != null)
     	        {
-                    DocumentTrigger trigger = null;
+                    DocumentTriggerUnary trigger = null;
                     try {
-                        trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, getBroker(), doc.getCollection());
+                        trigger = (DocumentTriggerUnary)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, getBroker(), doc.getCollection());
                     } catch (CollectionConfigurationException e) {
                         LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
                     }

@@ -17,38 +17,38 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id: CollectionTrigger.java 1974 2005-11-07 17:43:31Z wolfgang_m $
  */
 package org.exist.collections.triggers;
 
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Interface for triggers that can be registered with collection-related events.
  * 
  * @author wolf
+ * @author gev
  */
-public interface CollectionTrigger extends Trigger {
+public interface CollectionTriggerUnary extends Trigger {
 
     /**
-     * This method is called once before the database will actually create, remove or rename a collection. You may 
+     * This method is called once before the database will actually create or remove a collection. You may 
      * take any action here, using the supplied broker instance.
      * 
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
-     * @param collection the {@link Collection} which fired this event.
-     * @param newName optional: if event is a {@link Trigger#RENAME_COLLECTION_EVENT},
-     *  this parameter contains the new name of the collection. It is null otherwise.
+     * @param collectionPath the {@link Collection} which fired this event.
      * @throws TriggerException throwing a TriggerException will abort the current action.
      */
     public void prepare(
         int event,
         DBBroker broker,
         Txn transaction,
-        Collection collection,
-        String newName)
+        XmldbURI collectionPath,
+        Collection collection)
         throws TriggerException;
     
     /**
@@ -59,6 +59,6 @@ public interface CollectionTrigger extends Trigger {
         int event,
         DBBroker broker,
         Txn transaction,
-        Collection collection,
-        String newName);
+        XmldbURI collectionPath,
+        Collection collection);
 }

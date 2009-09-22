@@ -44,7 +44,7 @@ import org.exist.xquery.value.DateTimeValue;
  * @author Mark Spanbroek
  * @see org.exist.collections.triggers.Trigger
  */
-public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
+public class HistoryTrigger extends FilteringTrigger  implements DocumentTriggerUnary
 {
 
     protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
@@ -107,7 +107,8 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
    	  	}
     }
     
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
     {
     }
+
 }

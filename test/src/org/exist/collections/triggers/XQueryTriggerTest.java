@@ -53,7 +53,7 @@ public class XQueryTriggerTest {
     private final String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
-		"     <exist:trigger event='store'" +
+		"     <exist:trigger event='store-document'" +
 		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
 		"	     <exist:parameter name='query' " +
 		"			value=\"import module namespace log = 'log' at '" +
@@ -63,7 +63,7 @@ public class XQueryTriggerTest {
 		"        />" +
 		"     </exist:trigger>" +
 		
-		"     <exist:trigger event='update'" +
+		"     <exist:trigger event='update-document'" +
 		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
 		"	     <exist:parameter name='query' " +
 		"			value=\"import module namespace log = 'log' at '" +
@@ -73,7 +73,7 @@ public class XQueryTriggerTest {
 		"        />" +
 		"     </exist:trigger>" +
 
-		"     <exist:trigger event='remove'" +
+		"     <exist:trigger event='remove-document'" +
 		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
 		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
 					URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
@@ -128,11 +128,11 @@ public class XQueryTriggerTest {
     private final static String MODULE =
     	"module namespace log='log'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
-    	"declare variable $log:eventType external;" +
-    	"declare variable $log:collectionName external;" +    	
-    	"declare variable $log:documentName external;" +
-    	"declare variable $log:triggerEvent external;" +
-    	"declare variable $log:document external;" +
+    	"import module namespace util='http://exist-db.org/xquery/util'; " +
+    	"declare variable $log:type external;" +
+    	"declare variable $log:collection external;" +    	
+    	"declare variable $log:uri external;" +
+    	"declare variable $log:event external;" +
     	"declare function log:log($id as xs:string?) {" +
     	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
@@ -142,11 +142,11 @@ public class XQueryTriggerTest {
                 "<xu:element name='event'>" +
                   "<xu:attribute name='id'>{$id}</xu:attribute>" +
                   "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
-                  "<xu:attribute name='type'>{$log:eventType}</xu:attribute>" +
-                  "<xu:element name='collectionName'>{$log:collectionName}</xu:element>" +
-                  "<xu:element name='documentName'>{$log:documentName}</xu:element>" +
-                  "<xu:element name='triggerEvent'>{$log:triggerEvent}</xu:element>" +                 
-                  "<xu:element name='document'>{$log:document}</xu:element>" +   
+                  "<xu:attribute name='type'>{$log:type}</xu:attribute>" +
+                  "<xu:element name='collection'>{$log:collection}</xu:element>" +
+                  "<xu:element name='uri'>{$log:uri}</xu:element>" +
+                  "<xu:element name='event'>{$log:event}</xu:element>" +                 
+                  "<xu:element name='document'>{if (util:is-binary-doc($log:uri)) then util:binary-doc($log:uri) else doc($log:uri)}</xu:element>" +   
                 "</xu:element>" +            
               "</xu:append>" +
             "</xu:modifications>" +
@@ -159,11 +159,10 @@ public class XQueryTriggerTest {
     private final static String INVALID_MODULE =
     	"module namespace log='log'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
-    	"declare variable $log:eventType external;" +
-    	"declare variable $log:collectionName external;" +
-    	"declare variable $log:documentName external;" +
-    	"declare variable $log:triggerEvent external;" +
-    	"declare variable $log:document external;" +
+    	"declare variable $log:type external;" +
+    	"declare variable $log:collection external;" +
+    	"declare variable $log:uri external;" +
+    	"declare variable $log:event external;" +
     	"declare function log:log($id as xs:string?) {" +
     	"   undeclared-function-causes-trigger-error()" +
         "};";
@@ -259,15 +258,15 @@ public class XQueryTriggerTest {
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
+	        result = service.query("/events/event[@id = 'trigger1'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
+	        result = service.query("/events/event[@id = 'trigger1'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][triggerEvent = 'STORE']");
+	        result = service.query("/events/event[@id = 'trigger1'][event = 'STORE-DOCUMENT']");
 	        assertEquals(2, result.getSize());	        
 	        
 	        //TODO : consistent URI !	        
@@ -308,15 +307,15 @@ public class XQueryTriggerTest {
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
+	        result = service.query("/events/event[@id = 'trigger2'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
+	        result = service.query("/events/event[@id = 'trigger2'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][triggerEvent = 'UPDATE']");
+	        result = service.query("/events/event[@id = 'trigger2'][event = 'UPDATE-DOCUMENT']");
 	        assertEquals(2, result.getSize());	        
 	        
 	        //TODO : consistent URI !	        
@@ -355,15 +354,15 @@ public class XQueryTriggerTest {
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
+	        result = service.query("/events/event[@id = 'trigger3'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
+	        result = service.query("/events/event[@id = 'trigger3'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
 	        assertEquals(2, result.getSize());	        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][triggerEvent = 'REMOVE']");
+	        result = service.query("/events/event[@id = 'trigger3'][event = 'REMOVE-DOCUMENT']");
 	        assertEquals(2, result.getSize());	        
 	        
 	        //TODO : consistent URI !	        
@@ -404,11 +403,11 @@ public class XQueryTriggerTest {
 	        service.setProperty(OutputKeys.INDENT, "no");
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'STORE']");
+	        result = service.query("/events/event[@id = 'trigger1'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'STORE-DOCUMENT']");
 	        assertEquals(2, result.getSize());
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'STORE']/document");
+	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'STORE-DOCUMENT']/document");
 	        assertEquals(1, result.getSize());
 	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
 	        
@@ -441,11 +440,11 @@ public class XQueryTriggerTest {
 	        service.setProperty(OutputKeys.INDENT, "no");        
 
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'REMOVE']");
+	        result = service.query("/events/event[@id = 'trigger3'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'REMOVE-DOCUMENT']");
 	        assertEquals(2, result.getSize());	        
 	        
 	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collectionName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][documentName = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][triggerEvent = 'REMOVE']/document");
+	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'REMOVE-DOCUMENT']/document");
 	        assertEquals(1, result.getSize());
 	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());        
 			
