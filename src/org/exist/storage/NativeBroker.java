@@ -21,21 +21,57 @@
  */
 package org.exist.storage;
 
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
+import java.util.Iterator;
+import java.util.Observer;
+import java.util.Stack;
+import java.util.StringTokenizer;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.triggers.CollectionTriggerUnary;
+import org.exist.collections.triggers.CollectionTriggerBinary;
+import org.exist.collections.triggers.DocumentTriggerBinary;
+import org.exist.collections.triggers.DocumentTriggerUnary;
+import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeHandle;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
-import org.exist.security.*;
+import org.exist.security.MessageDigester;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
@@ -43,8 +79,8 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Paged;
-import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.btree.Value;
+import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
 import org.exist.storage.dom.NodeIterator;
@@ -70,27 +106,12 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.TerminatedException;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Observer;
-import java.util.Stack;
-import java.util.StringTokenizer;
 
 /**
  *  Main class for the native XML storage backend.
@@ -624,6 +645,24 @@ public class NativeBroker extends DBBroker {
                             throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to write to collection '" + current.getURI() + "'");
                         }
                         LOG.debug("Creating collection '" + path + "'...");
+                        
+                    	int event = Trigger.CREATE_COLLECTION_EVENT;
+                    	DocumentImpl newDoc;
+                    	CollectionTriggerUnary trigger = null;
+            	        if (current.isTtriggersEnabled()) {
+            	            CollectionConfiguration config = current.getConfiguration(this);
+            	            if (config != null) {
+                                try {
+                                    trigger = (CollectionTriggerUnary) config.newTrigger(event, this, current);
+                                } catch (CollectionConfigurationException e) {
+                                    LOG.debug("An error occurred while initializing a trigger for collection " + current.getURI() + ": " + e.getMessage(), e);
+                                }
+                                if (trigger != null) {
+                                	trigger.prepare(event, this, transaction, path, null);
+            	                }
+            	            }
+            	        }
+            	        
                         sub = new Collection(path);
                         sub.setId(getNextCollectionId(transaction));
                         if (transaction != null)
@@ -631,6 +670,11 @@ public class NativeBroker extends DBBroker {
                         //TODO : acquire lock manually if transaction is null ?
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
+                        
+            	        if (trigger != null) {
+            	        	trigger.finish(event, this, transaction, path, sub);
+            	        }
+                        
                         current = sub;
                     }
                 }
@@ -640,7 +684,9 @@ public class NativeBroker extends DBBroker {
                 return null;                
             } catch (ReadOnlyException e) {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-            }                
+            } catch (TriggerException e) {
+                throw new PermissionDeniedException(e.getMessage());
+			}                
         }
     }    
 
@@ -754,17 +800,6 @@ public class NativeBroker extends DBBroker {
             if(newUri == null) {
                 newUri = collection.getURI().lastSegment();
             }
-            //  check if another collection with the same name exists at the destination
-            //TODO : resolve URIs !!! (destination.getURI().resolve(newURI))
-            Collection old = openCollection(destination.getURI().append(newUri), Lock.WRITE_LOCK);
-            if(old != null) {
-                LOG.debug("removing old collection: " + newUri);
-                try {
-                    removeCollection(transaction, old);
-                } finally {
-                    old.release(Lock.WRITE_LOCK);
-                }
-            }
             Collection destCollection = null;
             Lock lock = collectionsDb.getLock();
             try {
@@ -775,29 +810,7 @@ public class NativeBroker extends DBBroker {
                 destCollection = getOrCreateCollection(transaction, newUri);
                 for(Iterator i = collection.iterator(this); i.hasNext(); ) {
                     DocumentImpl child = (DocumentImpl) i.next();
-                    LOG.debug("Copying resource: '" + child.getURI() + "'");
-                    if (child.getResourceType() == DocumentImpl.XML_FILE) {
-                        //TODO : put a lock on newDoc ?
-                        DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
-                        newDoc.copyOf(child);
-                        newDoc.setDocId(getNextResourceId(transaction, destination));
-                        copyXMLResource(transaction, child, newDoc);
-                        storeXMLResource(transaction, newDoc);
-                        destCollection.addDocument(transaction, this, newDoc);
-                    } else {
-                        BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
-                        newDoc.copyOf(child);
-                        newDoc.setDocId(getNextResourceId(transaction, destination));
-                        /*
-                        byte[] data = getBinaryResource((BinaryDocument) child);
-                        storeBinaryResource(transaction, newDoc, data);
-                         */
-                        InputStream is = getBinaryResource((BinaryDocument)child);
-                        storeBinaryResource(transaction,newDoc,is);
-                        is.close();
-                        storeXMLResource(transaction, newDoc);
-                        destCollection.addDocument(transaction, this, newDoc);
-                    }
+                    copyResource(transaction, child, destCollection, child.getFileURI());
                 }
                 saveCollection(transaction, destCollection);
             } finally {
@@ -828,18 +841,51 @@ public class NativeBroker extends DBBroker {
     
     public void moveCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
 	throws PermissionDeniedException, LockException, IOException {
+    	
         pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, collection.getURI());
+        
         try {
+        	
+        	int event = 0;
+        	XmldbURI srcName = collection.getURI();
+        	String dstName = destination.getURI().append(newName).toString();
+        	CollectionTriggerBinary trigger = null;
+        	XmldbURI parentName = collection.getParentURI();
+        	Collection parent = parentName == null ? collection : getCollection(collection.getParentURI());
+        	boolean renameOnly = parent.equals(destination);
+	        if (parent.isTtriggersEnabled()) {
+	            CollectionConfiguration config = parent.getConfiguration(this);
+	            if (config != null) {
+                    try {
+                    	event = renameOnly ? Trigger.RENAME_COLLECTION_EVENT : Trigger.MOVE_COLLECTION_EVENT; 
+                        trigger = (CollectionTriggerBinary) config.newTrigger(event, this, parent);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + parentName + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
+                    	trigger.prepare(event, this, transaction, srcName, collection, dstName);
+	                }
+	            }
+	        }
+            
             // sourceDir must be known in advance, because once moveCollectionRecursive
-	    // is called, both collection and destination can point to the same resource
+	        // is called, both collection and destination can point to the same resource
             File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
             // Need to move each collection in the source tree individually, so recurse.
             moveCollectionRecursive(transaction, collection, destination, newName);
             // For binary resources, though, just move the top level directory and all descendants come with it.
             moveBinaryFork(transaction, sourceDir, destination, newName);
-        } finally {
+            
+	        if (trigger != null) {
+	        	trigger.finish(event, this, transaction, srcName, collection, dstName);
+	        }
+	        
+        } catch (TriggerException e) {
+            throw new PermissionDeniedException(e.getMessage());
+		} finally {
             pool.getProcessMonitor().endJob();
         }
+		
     }
 
 	private void moveBinaryFork(Txn transaction, File sourceDir, Collection destination, XmldbURI newName) throws IOException {
@@ -976,7 +1022,27 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
 
         try {
+
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
+            
+        	int event = Trigger.REMOVE_COLLECTION_EVENT;
+        	CollectionTriggerUnary trigger = null;
+        	XmldbURI parentName = collection.getParentURI();
+        	Collection parent = parentName == null ? collection : getCollection(collection.getParentURI());
+	        if (parent.isTtriggersEnabled()) {
+	            CollectionConfiguration config = parent.getConfiguration(this);
+	            if (config != null) {
+                    try {
+                        trigger = (CollectionTriggerUnary) config.newTrigger(event, this, parent);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + parentName + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
+                    	trigger.prepare(event, this, transaction, collection.getURI(), collection);
+	                }
+	            }
+	        }
+            
             long start = System.currentTimeMillis();
             final CollectionCache collectionsCache = pool.getCollectionsCache();
             File sourceDir = getCollectionFile(fsDir,collection.getURI(),false);
@@ -1179,9 +1245,16 @@ public class NativeBroker extends DBBroker {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
 
+    	        if (trigger != null) {
+    	        	trigger.finish(event, this, transaction, collection.getURI(), null);
+    	        }
+    	        
                 return true;
+                
             }
-        } finally {
+        } catch (TriggerException e) {
+            throw new PermissionDeniedException(e.getMessage());
+		} finally {
             pool.getProcessMonitor().endJob();
         }
     }
@@ -2019,9 +2092,6 @@ public class NativeBroker extends DBBroker {
         try {
             
             lock.acquire(Lock.WRITE_LOCK);
-            // check if the move would overwrite a collection
-            if(getCollection(destination.getURI().append(newName)) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
             DocumentImpl oldDoc = destination.getDocument(this, newName);
             if(oldDoc != null) {
                 if(doc.getDocId() == oldDoc.getDocId())
@@ -2032,40 +2102,62 @@ public class NativeBroker extends DBBroker {
                 if(!oldDoc.getPermissions().validate(getUser(), Permission.UPDATE))
                     throw new PermissionDeniedException("Resource with same name exists in target " +
 							"collection and update is denied");
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-                    destination.removeBinaryResource(transaction, this, oldDoc);
-                else
-                    destination.removeXMLResource(transaction, this, oldDoc.getFileURI());
             } else {
                 if(!destination.getPermissions().validate(getUser(), Permission.WRITE))
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
 							destination.getURI());
             }
+            
+        	int event = 0;
+        	DocumentImpl newDoc;
+        	DocumentTriggerUnary trigger = null;
+	        if (destination.isTtriggersEnabled()) {
+	            CollectionConfiguration config = destination.getConfiguration(this);
+	            if (config != null) {
+	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
+                    try {
+                        trigger = (DocumentTriggerUnary) config.newTrigger(event, this, destination);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + destination.getURI() + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
+                    	trigger.prepare(event, this, transaction, destination.getURI().append(newName), oldDoc);
+	                }
+	            }
+	        }
+	        
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
-                InputStream is = getBinaryResource((BinaryDocument) doc); 
-                destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
-            } else {
-                DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
+                newDoc = new BinaryDocument(pool, destination, doc.getFileURI());
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
-                newDoc.setPermissions(doc.getPermissions());
+                InputStream is = getBinaryResource((BinaryDocument)doc);
                 newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-                try {
-	                copyXMLResource(transaction, doc, newDoc);
-	                destination.addDocument(transaction, this, newDoc);
-	                storeXMLResource(transaction, newDoc);
-                } finally {
-               	 newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-                }
+                storeBinaryResource(transaction,(BinaryDocument)newDoc,is);
+                is.close();
+                storeXMLResource(transaction, newDoc);
+            } else {
+                newDoc = new DocumentImpl(pool, destination, newName);
+                newDoc.copyOf(doc);
+                newDoc.setDocId(getNextResourceId(transaction, destination));
+                newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                copyXMLResource(transaction, doc, newDoc);
+                storeXMLResource(transaction, newDoc);
             }
+            
+            newDoc.setPermissions(doc.getPermissions());
+            destination.addDocument(transaction, this, newDoc);
+            
+          	newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+         	 
+	        if (trigger != null) {
+	        	trigger.finish(event, this, transaction, newDoc.getURI(), newDoc);
+	        }
 	    //          saveCollection(destination);
-        } catch (EXistException e) {
-            LOG.warn("An error occurred while copying resource", e);
         } catch (IOException e) {
             LOG.warn("An error occurred while copying resource", e);
         } catch (TriggerException e) {
             throw new PermissionDeniedException(e.getMessage());
-        } finally {
+		} finally {
             lock.release(Lock.WRITE_LOCK);
         }
     }
@@ -2112,14 +2204,15 @@ public class NativeBroker extends DBBroker {
 						    " because is locked by getUser() '" + docUser.getName() + "'");
         }
         
+        
+        XmldbURI oldName = doc.getFileURI();
         if ( newName==null) {
-        	newName = doc.getFileURI();
+        	newName = oldName;
         }
+        
         try {
             // check if the move would overwrite a collection
         	//TODO : resolve URIs : destination.getURI().resolve(newName)
-            if(getCollection(destination.getURI().append(newName)) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
             DocumentImpl oldDoc = destination.getDocument(this, newName);
             if(oldDoc != null) {
                 if (doc.getDocId() == oldDoc.getDocId())
@@ -2130,17 +2223,33 @@ public class NativeBroker extends DBBroker {
                 if (!oldDoc.getPermissions().validate(getUser(), Permission.UPDATE))
                     throw new PermissionDeniedException("Resource with same name exists in target " +
 							"collection and update is denied");
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-                    destination.removeBinaryResource(transaction, this, oldDoc);
-                else
-                    destination.removeXMLResource(transaction, this, oldDoc.getFileURI());
             } else
                 if (!destination.getPermissions().validate(getUser(), Permission.WRITE))
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
 							destination.getURI());
 
-            
             boolean renameOnly = collection.getId() == destination.getId();
+            
+            XmldbURI oldURI = doc.getURI();
+            XmldbURI newURI = destination.getURI().append(newName);
+
+        	int event = 0;
+        	DocumentTriggerBinary trigger = null;
+            if (collection.isTtriggersEnabled()) {
+                CollectionConfiguration config = collection.getConfiguration(this);
+                if (config != null) {
+                    event = renameOnly ? Trigger.RENAME_DOCUMENT_EVENT : Trigger.MOVE_DOCUMENT_EVENT;
+                    try {
+                        trigger = (DocumentTriggerBinary) config.newTrigger(event, this, collection);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + collection.getURI() + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
+                    	trigger.prepare(event, this, transaction, oldURI, newURI, doc);
+                    }
+                }
+            }
+            
             collection.unlinkDocument(doc);
             removeResourceMetadata(transaction, doc);
             
@@ -2182,6 +2291,11 @@ public class NativeBroker extends DBBroker {
             }
             storeXMLResource(transaction, doc);
             saveCollection(transaction, destination);
+            
+            if (trigger != null) {
+            	trigger.finish(event, this, transaction, oldURI, newURI, doc);
+            }
+            
         } catch (TriggerException e) {
             throw new PermissionDeniedException(e.getMessage());
         } catch (ReadOnlyException e) {

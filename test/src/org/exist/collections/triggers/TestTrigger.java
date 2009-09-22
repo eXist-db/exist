@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Test trigger to check if trigger configuration is working properly.
  */
-public class TestTrigger extends FilteringTrigger {
+public class TestTrigger extends FilteringTrigger implements DocumentTriggerUnary {
 
     private final static String TEMPLATE = "<?xml version=\"1.0\"?><events></events>";
 
@@ -63,7 +63,7 @@ public class TestTrigger extends FilteringTrigger {
                         "<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
                         "   <xu:append select='/events'>" +
                         "       <xu:element name='event'>" +
-                        "           <xu:attribute name='id'>STORE</xu:attribute>" +
+                        "           <xu:attribute name='id'>STORE-DOCUMENT</xu:attribute>" +
                         "           <xu:attribute name='collection'>" + doc.getCollection().getURI() + "</xu:attribute>" +
                         "       </xu:element>" +
                         "   </xu:append>" +
@@ -74,7 +74,7 @@ public class TestTrigger extends FilteringTrigger {
                         "<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
                         "   <xu:append select='/events'>" +
                         "       <xu:element name='event'>" +
-                        "           <xu:attribute name='id'>REMOVE</xu:attribute>" +
+                        "           <xu:attribute name='id'>REMOVE-DOCUMENT</xu:attribute>" +
                         "           <xu:attribute name='collection'>" + doc.getCollection().getURI() + "</xu:attribute>" +
                         "       </xu:element>" +
                         "   </xu:append>" +
@@ -106,6 +106,6 @@ public class TestTrigger extends FilteringTrigger {
     }
 
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-		// TODO Auto-generated method stub
 	}
+	
 }

@@ -106,12 +106,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 
 	@Test public void listenDocumentsBeforeCreateDocument1() {
 		final String docPath = "/top/test.xml";
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_CREATE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_STORE, docPath, null);
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		top.documents().listeners().add(Trigger.BEFORE_CREATE, documentListener);
+		top.documents().listeners().add(Trigger.BEFORE_STORE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 		createDocument("/top/deeper/test.xml");
@@ -123,7 +123,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		context.checking(new Expectations() {{
 			never(documentListener).handle(with(any(Document.Event.class)));
 		}});
-		top.documents().listeners().add(Trigger.BEFORE_CREATE, documentListener);
+		top.documents().listeners().add(Trigger.BEFORE_STORE, documentListener);
 		top.documents().listeners().remove(documentListener);
 		createDocument(docPath);
 	}
@@ -131,13 +131,13 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenDocumentsAfterCreateDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_CREATE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_STORE, docPath, doc);
 		doc.delete();
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(with(eqDelayedDoc(ev))); will(checkDocumentExists(docPath, true));
 		}});
-		top.documents().listeners().add(Trigger.AFTER_CREATE, documentListener);
+		top.documents().listeners().add(Trigger.AFTER_STORE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 		createDocument("/top/deeper/test.xml");
@@ -149,19 +149,19 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		context.checking(new Expectations() {{
 			never(documentListener).handle(with(any(Document.Event.class)));
 		}});
-		top.documents().listeners().add(Trigger.AFTER_CREATE, documentListener);
+		top.documents().listeners().add(Trigger.AFTER_STORE, documentListener);
 		top.documents().listeners().remove(documentListener);
 		createDocument(docPath);
 	}
 
 	@Test public void listenFolderBeforeCreateDocument1() {
 		final String docPath = "/top/test2.xml";
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_CREATE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_STORE, docPath, null);
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		top.listeners().add(Trigger.BEFORE_CREATE, documentListener);
+		top.listeners().add(Trigger.BEFORE_STORE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 	}
@@ -172,7 +172,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		context.checking(new Expectations() {{
 			never(documentListener).handle(with(any(Document.Event.class)));
 		}});
-		top.listeners().add(Trigger.BEFORE_CREATE, documentListener);
+		top.listeners().add(Trigger.BEFORE_STORE, documentListener);
 		top.listeners().remove(documentListener);
 		createDocument(docPath);
 	}
@@ -180,13 +180,13 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenFolderAfterCreateDocument1() {
 		final String docPath = "/top/test2.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_CREATE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_STORE, docPath, doc);
 		doc.delete();
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(with(eqDelayedDoc(ev))); will(checkDocumentExists(docPath, true));
 		}});
-		top.listeners().add(Trigger.AFTER_CREATE, documentListener);
+		top.listeners().add(Trigger.AFTER_STORE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 	}
@@ -197,7 +197,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		context.checking(new Expectations() {{
 			never(documentListener).handle(with(any(Document.Event.class)));
 		}});
-		top.listeners().add(Trigger.AFTER_CREATE, documentListener);
+		top.listeners().add(Trigger.AFTER_STORE, documentListener);
 		top.listeners().remove(documentListener);
 		createDocument(docPath);
 	}
@@ -258,12 +258,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 
 	@Test public void listenFolderDeepBeforeCreateDocument1() {
 		final String docPath = "/top/middle/test2.xml";
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_CREATE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_STORE, docPath, null);
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		top.listeners().add(Trigger.BEFORE_CREATE, documentListener);
+		top.listeners().add(Trigger.BEFORE_STORE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 	}
@@ -297,12 +297,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenDocumentsBeforeDeleteDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_DELETE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_REMOVE, docPath, doc);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, true));
 		}});
 		Folder top = db.createFolder("/top");
-		top.documents().listeners().add(Trigger.BEFORE_DELETE, documentListener);
+		top.documents().listeners().add(Trigger.BEFORE_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 		createDocument("/top/deeper/test.xml").delete();
@@ -312,12 +312,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath, "before");
 		doc.delete();
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_DELETE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_REMOVE, docPath, doc);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(with(eqDelayedDoc(ev))); will(checkDocumentExists(docPath, true));
 		}});
 		Folder top = db.createFolder("/top");
-		top.documents().listeners().add(Trigger.BEFORE_DELETE, documentListener);
+		top.documents().listeners().add(Trigger.BEFORE_REMOVE, documentListener);
 		createDocument(docPath).delete();
 		createDocument("/elsewhere/test.xml").delete();
 		createDocument("/top/deeper/test.xml").delete();
@@ -325,12 +325,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 
 	@Test public void listenDocumentsAfterDeleteDocument1() {
 		final String docPath = "/top/test.xml";
-		final Document.Event ev = new Document.Event(Trigger.AFTER_DELETE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_REMOVE, docPath, null);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
 		Folder top = db.createFolder("/top");
-		top.documents().listeners().add(Trigger.AFTER_DELETE, documentListener);
+		top.documents().listeners().add(Trigger.AFTER_REMOVE, documentListener);
 		createDocument(docPath).delete();
 		createDocument("/elsewhere/test.xml").delete();
 		createDocument("/top/deeper/test.xml").delete();
@@ -339,12 +339,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenFolderBeforeDeleteDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_DELETE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_REMOVE, docPath, doc);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, true));
 		}});
 		Folder top = db.createFolder("/top");
-		top.listeners().add(Trigger.BEFORE_DELETE, documentListener);
+		top.listeners().add(Trigger.BEFORE_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 	}
@@ -352,12 +352,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenFolderBeforeDeleteDocument2() {
 		final String docPath = "/top/deeper/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_DELETE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_REMOVE, docPath, doc);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, true));
 		}});
 		Folder top = db.createFolder("/top");
-		top.listeners().add(Trigger.BEFORE_DELETE, documentListener);
+		top.listeners().add(Trigger.BEFORE_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 	}
@@ -365,12 +365,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenFolderAfterDeleteDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_DELETE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_REMOVE, docPath, null);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
 		Folder top = db.createFolder("/top");
-		top.listeners().add(Trigger.AFTER_DELETE, documentListener);
+		top.listeners().add(Trigger.AFTER_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 	}
@@ -378,12 +378,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenFolderAfterDeleteDocument2() {
 		final String docPath = "/top/deeper/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_DELETE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_REMOVE, docPath, null);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
 		Folder top = db.createFolder("/top");
-		top.listeners().add(Trigger.AFTER_DELETE, documentListener);
+		top.listeners().add(Trigger.AFTER_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 	}
@@ -391,11 +391,11 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenDocumentBeforeDeleteDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_DELETE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_REMOVE, docPath, doc);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, true));
 		}});
-		doc.listeners().add(Trigger.BEFORE_DELETE, documentListener);
+		doc.listeners().add(Trigger.BEFORE_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 		createDocument("/top/deeper/test.xml").delete();
@@ -405,11 +405,11 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenDocumentAfterDeleteDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_DELETE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_REMOVE, docPath, null);
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		doc.listeners().add(Trigger.AFTER_DELETE, documentListener);
+		doc.listeners().add(Trigger.AFTER_REMOVE, documentListener);
 		doc.delete();
 		createDocument("/elsewhere/test.xml").delete();
 		createDocument("/top/deeper/test.xml").delete();

@@ -22,11 +22,13 @@
  */
 package org.exist.xquery.update;
 
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggerUnary;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
@@ -63,8 +65,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-
-import java.util.Iterator;
 
 /**
  * @author wolf
@@ -286,12 +286,12 @@ public abstract class Modification extends AbstractExpression
 
 		//prepare the trigger
 		CollectionConfiguration config = doc.getCollection().getConfiguration(context.getBroker());
-        DocumentTrigger trigger = null;
+        DocumentTriggerUnary trigger = null;
         if(config != null)
         {
         	//get the UPDATE_DOCUMENT_EVENT trigger
             try {
-                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), doc.getCollection());
+                trigger = (DocumentTriggerUnary)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), doc.getCollection());
             } catch (CollectionConfigurationException e) {
                 LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
             }
@@ -331,7 +331,7 @@ public abstract class Modification extends AbstractExpression
 		else
 		{
 			//finish the trigger
-            DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());
+            DocumentTriggerUnary trigger = (DocumentTriggerUnary) triggers.get(doc.getDocId());
             if(trigger != null)
             {
                 try

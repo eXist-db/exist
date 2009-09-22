@@ -21,45 +21,48 @@
  */
 package org.exist.versioning;
 
-import org.exist.collections.triggers.FilteringTrigger;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.CollectionConfigurationException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.Txn;
-import org.exist.xmldb.XmldbURI;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.QName;
-import org.exist.security.*;
-import org.exist.util.LockException;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
-import org.exist.util.serializer.Receiver;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.XPathException;
-import org.apache.log4j.Logger;
-import org.xml.sax.SAXException;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.AttributesImpl;
-
-import javax.xml.transform.OutputKeys;
-import java.io.IOException;
-import java.io.File;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
-public class VersioningTrigger extends FilteringTrigger {
+import javax.xml.transform.OutputKeys;
+
+import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.DocumentTriggerUnary;
+import org.exist.collections.triggers.FilteringTrigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
+import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+public class VersioningTrigger extends FilteringTrigger implements DocumentTriggerUnary {
 
     public final static Logger LOG = Logger.getLogger(VersioningTrigger.class);
 
@@ -149,7 +152,7 @@ public class VersioningTrigger extends FilteringTrigger {
             broker.setUser(activeUser);
         }
     }
-
+    
     public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
         if (documentPath.startsWith(VERSIONS_COLLECTION))
             return;
