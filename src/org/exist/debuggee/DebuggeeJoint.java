@@ -28,6 +28,7 @@ import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XQueryContext;
 
@@ -38,7 +39,7 @@ import org.exist.xquery.XQueryContext;
 //TODO: rename DebuggeeRuntime ?
 public interface DebuggeeJoint {
 	
-	public void expressionStart(Expression expr);
+	public void expressionStart(Expression expr) throws TerminatedException;
 	public void expressionEnd(Expression expr);
 
 	public void reset();
@@ -51,11 +52,12 @@ public interface DebuggeeJoint {
 	public String stepOut();
 	public String stepOver();
 
+	public String stop();
+
 	public List<Expression> stackGet();
 	
 	public Map<QName, Variable> getVariables();
 	public Variable getVariable(String name);
 	
 	public int setBreakpoint(Breakpoint breakpoint);
-
 }

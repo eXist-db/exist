@@ -30,6 +30,7 @@ import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -66,7 +67,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	/* (non-Javadoc)
 	 * @see org.exist.debuggee.DebuggeeJoint#expressionStart(org.exist.xquery.Expression)
 	 */
-	public void expressionStart(Expression expr) {
+	public void expressionStart(Expression expr) throws TerminatedException {
 		System.out.println("expressionStart expr = "+expr.toString());
 		
 		if (stack.size() == stackDepth)
@@ -80,6 +81,12 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		Integer lineNo = expr.getLine();
 
 		while (true) {
+			if (command == STOP && status != STOPPED) {
+				status = STOPPED;
+	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
+			}
+				
+
 			if (breakpoints.containsKey(fileName)) {
 				fileBreakpoints = breakpoints.get(fileName);
 				
@@ -87,7 +94,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 					Breakpoint breakpoint = fileBreakpoints.get(lineNo);
 					
 					if (breakpoint.getState() && breakpoint.getType().equals(breakpoint.TYPE_LINE)) {
-						status = STOPPED;
+						status = BREAK;
 					}
 				}
 			}
@@ -95,7 +102,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 			if (command == STEP_INTO && status == FIRST_RUN)
 				;
 			else if (command == STEP_INTO && status == RUNNING)
-				status = STOPPED;
+				status = BREAK;
 
 			else if (command == RUN && status == RUNNING)
 				break;
@@ -170,6 +177,15 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		return status;
 	}
 
+	public synchronized String stop() {
+		command = STOP;
+		status = STARTING;
+
+		notifyAll();
+
+		return status;
+	}
+	
 	public boolean featureSet(String name, String value) {
 		// TODO Auto-generated method stub
 		return false;
@@ -216,4 +232,5 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 
 		return 1;//TODO: do throw constant
 	}
+
 }

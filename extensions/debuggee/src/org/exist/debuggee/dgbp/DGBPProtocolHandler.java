@@ -60,6 +60,9 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionClosed(IoSession session) {
+		DebuggeeJoint joint = (DebuggeeJoint) session.getAttribute("joint");
+		joint.stop();
+
 		// Print out total number of bytes read from the remote peer.
 		System.err.println("Total " + session.getReadBytes() + " byte(s)");
 	}

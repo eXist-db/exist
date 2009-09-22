@@ -19,23 +19,43 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee;
+package org.exist.debuggee.dgbp.packets;
+
+import org.exist.debuggee.DebuggeeJoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Commands {
+public class Error extends Command {
 
-	public int WAIT = 0;
+	private String name;
 
-	public int STOP_ON_FIRST_LINE = 1;
+	public Error(String name, DebuggeeJoint joint, String args) {
+		super(joint, args);
+		
+		this.name = name;
+	}
 
-	public int RUN = 2;
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
+	 */
+	@Override
+	public void exec() {
+	}
 
-	public int STEP_INTO = 3;
-	public int STEP_OUT = 4;
-	public int STEP_OVER = 5;
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
+	 */
+	@Override
+	public byte[] toBytes() {
+		String responce = "<response " +
+					"command=\""+name+"\" " +
+					"transaction_id=\""+transactionID+"\">" +
+				"<error code=\"999\"><message>Unknown error</message></error>" +
+			"</response>";
 
-	public int STOP = 8;
+		return responce.getBytes();
+	}
+
 }

@@ -1818,7 +1818,7 @@ public class XQueryContext {
         return null;
     }
 
-    public void expressionStart(Expression expr) {
+    public void expressionStart(Expression expr) throws TerminatedException {
         if (debuggeeJoint != null) {
             debuggeeJoint.expressionStart(expr);
         }
