@@ -50,9 +50,7 @@
 
             <para>Check <ulink url="building.xml">Building eXist</ulink> for documentation on how
             to access the subversion repository. To become an active committer, start to post patches to the 
-            mailing list. You should also read the doc about 
-            <ulink href="developper.html">bug reporting and junit
-            tests</ulink>. You will get write access to the Subversion repository if your patches
+            mailing list. You will get write access to the Subversion repository if your patches
             are ok.</para>
         </section>
 
