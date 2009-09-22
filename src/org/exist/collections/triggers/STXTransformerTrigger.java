@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
@@ -40,6 +41,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
@@ -109,4 +111,19 @@ public class STXTransformerTrigger extends FilteringTrigger {
 			}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
+	 */
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
+			SAXResult result = new SAXResult();
+			result.setHandler(getOutputHandler());
+			result.setLexicalHandler(getLexicalOutputHandler());
+			handler.setResult(result);
+			setOutputHandler(handler);
+			setLexicalOutputHandler(handler);
+	}
+
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+		// TODO Auto-generated method stub
+	}
 }

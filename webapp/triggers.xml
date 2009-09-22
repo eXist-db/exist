@@ -11,82 +11,40 @@
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter id="configuring-db-triggers">
         <title>Configuring Database Triggers</title>
-	<para>This document has been reviewed for eXist 1.4.</para>
+	<para>This document has been reviewed for eXist 1.2.</para>
         <section>
             <title>Overview</title>
             <para>In this section, we discuss the types of database events that may be Triggered by eXist, as well
                 as how Triggers are created and configured. It assumes readers have a basic
                 understanding of XML, Java and XQuery.</para>
             <para>Triggers may be configured by the User to respond to document and/or collection events.
-            The current version of eXist defines nine events, all of which are applicable to the collection configured with the Trigger:</para>
+            The current version of eXist defines six events, all of which are applicable to the collection configured with the Trigger:</para>
             <itemizedlist>
                 <listitem>
                     <para>
-                        <emphasis>store-document</emphasis>: Fired when a document is stored to the collection or sub-collection</para>
+                        <emphasis>store</emphasis>: Fired when a document is stored to the collection or sub-collection</para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>update-document</emphasis>: Fired when a document is updated in the collection or sub-collection</para>
+                        <emphasis>update</emphasis>: Fired when a document is updated in the collection or sub-collection</para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>rename-document</emphasis>: Fired when a document is renamed in the collection or sub-collection</para>
+                        <emphasis>remove</emphasis>: Fired when a document is removed from the collection or sub-collection</para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>move-document</emphasis>: Fired when a document is moved from the collection or sub-collection</para>
+                        <emphasis>create</emphasis>: Fired when a sub-collection is created</para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>remove-document</emphasis>: Fired when a document is removed from the collection or sub-collection</para>
+                        <emphasis>rename</emphasis>: Fired when a sub-collection is renamed</para>
                 </listitem>
-                <listitem>
+            	<listitem>
                     <para>
-                        <emphasis>create-collection</emphasis>: Fired when a sub-collection is created</para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <emphasis>rename-collection</emphasis>: Fired when a sub-collection is renamed</para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <emphasis>move-collection</emphasis>: Fired when a sub-collection is moved</para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <emphasis>remove-collection</emphasis>: Fired when a sub-collection is removed</para>
+                        <emphasis>delete</emphasis>: Fired when a sub-collection is deleted</para>
                 </listitem>
             </itemizedlist>
-            <note>
-                <para>The old trigger event's names:</para>
-                <itemizedlist>
-                    <listitem>
-                        <para>
-                            <emphasis>store</emphasis>: Fired when a document is stored to the collection or sub-collection</para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <emphasis>update</emphasis>: Fired when a document is updated in the collection or sub-collection</para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <emphasis>remove</emphasis>: Fired when a document is removed from the collection or sub-collection</para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <emphasis>create-collection</emphasis>: Fired when a sub-collection is created</para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <emphasis>rename-collection</emphasis>: Fired when a sub-collection is renamed</para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <emphasis>delete-collection</emphasis>: Fired when a sub-collection is deleted</para>
-                    </listitem>
-                </itemizedlist>
-                <para>are still supported, but will be removed in next relases</para>
-            </note>
         </section>
         <section>
             <title>Trigger Types</title>
@@ -99,33 +57,22 @@
                 The XQuery to be executed when the trigger is fired may either be placed in the collection.xconf itself or indicated by a URL.</para>
                 <para>The XQuery may make use of a number of external variables to determine why and for what the trigger was fired -</para>
                 <itemizedlist>
-                    <listitem>
-                        <para><emphasis>event</emphasis>: The event for which the Trigger was fired. 
-                            Old variable name is <emphasis>triggeredEvent</emphasis></para>
-                    </listitem>
-                    <listitem>
-                        <para><emphasis>type</emphasis>: The type of the Trigger event. Either "prepare" or "finish". 
-                            Old variable name is <emphasis>eventType</emphasis></para>
-                    </listitem>
-                    <listitem>
-                        <para><emphasis>collection</emphasis>: The name of the collection for which the Trigger was fired. 
-                            Old variable name is <emphasis>collectionName</emphasis></para>
-                    </listitem>
-                    <listitem>
-                        <para><emphasis>uri</emphasis>: The uri of the document or subcollection for which the Trigger was fired. 
-                            Old variable name is <emphasis>documentName</emphasis> for document's triggers. The collection's triggers were not implemented in old releases.</para>
-                    </listitem>
-                    <listitem>
-                        <para><emphasis>new-uri</emphasis>: The new uri of the document or collection after renaming or moving one. 
-                            There is no analog in old releases.</para>
-                    </listitem>
+                	<listitem>
+	                	<para><emphasis>triggeredEvent</emphasis>: The event for which the Trigger was fired</para>
+	                </listitem>
+	                <listitem>
+	                	<para><emphasis>eventType</emphasis>: The type of the Trigger event. Either "prepare" or "finish"</para>
+					</listitem>
+	                <listitem>
+	                	<para><emphasis>collectionName</emphasis>: The name of the collection for which the Trigger was fired</para>
+	                </listitem>
+	                <listitem>
+	                	<para><emphasis>documentName</emphasis>: The name of the document for which the Trigger was fired</para>
+	                </listitem>
+	                <listitem>
+	                	<para><emphasis>document</emphasis>: The document that triggered the event. If this is a Binary document then it will be Base64 Encoded</para>
+                	</listitem>
                 </itemizedlist>
-                <note>
-                    <para>The external variable <emphasis>document</emphasis> is not defined more, becouse performance was lost for streaming a Binary document</para>
-                </note>
-                <note>
-                    <para>Old external variables, exclude <emphasis>document</emphasis> are still supported, but will be removed in future releases</para>
-                </note>
             </section>
             <section>
                 <title>Java Triggers</title>
@@ -210,11 +157,11 @@
                     	<title>XQuery Trigger Configuration</title>
 	                    <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
     <triggers>
-		<trigger event="store-document,update-document,remove-document" class="org.exist.collections.triggers.XQueryTrigger">
+		<trigger event="store,update,remove" class="org.exist.collections.triggers.XQueryTrigger">
 			<parameter name="url" value="xmldb:exist://localhost/db/myTrigger.xql"/>
 		</trigger>
 		
-		<trigger event="store-document,update-document,remove-document" class="org.exist.collections.triggers.XQueryTrigger">
+		<trigger event="store,update,remove" class="org.exist.collections.triggers.XQueryTrigger">
 			<parameter name="query" value="util:log('debug', concat('Trigger fired at ', current-dateTime()))" />
 		</trigger>
     </triggers>
@@ -230,7 +177,7 @@
                    	 <title>Java Trigger Configuration</title>
                     	<programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
     <triggers>
-		<trigger event="store-document,update-document,remove-document" class="my.domain.testTrigger">
+		<trigger event="store,update,remove" class="my.domain.testTrigger">
 			<parameter name="myParam" value="myValue"/>
 		</trigger>
     </triggers>
@@ -256,14 +203,13 @@ xquery version "1.0";
 	in the file /db/triggersLogs.xml
 :)
 
-declare namespace  util="http://exist-db.org/xquery/util";
 declare namespace  xmldb="http://exist-db.org/xquery/xmldb";
 
-declare variable $local:event external;
-declare variable $local:type external;
-declare variable $local:collection external;
-declare variable $local:uri external;
-declare variable $local:document := if (util:is-binary-doc($uri) then util:binary-doc($uri) else doc($uri));
+declare variable $local:triggerEvent external;
+declare variable $local:eventType external;
+declare variable $local:collectionName external;
+declare variable $local:documentName external;
+declare variable $local:document external;
 
 declare variable $local:triggersLogFile := "triggersLog.xml";
 
@@ -276,7 +222,7 @@ if(not(doc-available($local:triggersLogFile)))then
 else(),
 
 (: log the trigger details to the log file :)
-update insert <trigger event="{$local:event}" type="{$local:type}" collection="{$local:collection}" uri="{$local:uri}" timestamp="{current-dateTime()}">{$local:document}</trigger>  into doc("/db/triggersLog.xml")/triggers
+update insert <trigger event="{$local:triggerEvent}" eventType="{$local:eventType}" collectionName="{$local:collectionName}" documentName="{$local:documentName}" timestamp="{current-dateTime()}">{$local:document}</trigger>  into doc("/db/triggersLog.xml")/triggers
 ]]>
         			</programlisting>
         		</example>
@@ -360,12 +306,12 @@ public class loggingTrigger extends FilteringTrigger
     {
     	switch(event)
     	{
-    		case STORE_DOCUMENT_EVENT : return "STORE-DOCUMENT"; 
-    		case UPDATE_DOCUMENT_EVENT : return "UPDATE-DOCUMENT";
-    		case REMOVE_DOCUMENT_EVENT : return "REMOVE-DOCUMENT";
-    		case CREATE_COLLECTION_EVENT : return "CREATE-COLLECTION";
-    		case RENAME_COLLECTION_EVENT : return "RENAME-COLLECTION";
-    		case REMOVE_COLLECTION_EVENT : return "REMOVE-COLLECTION";
+    		case STORE_DOCUMENT_EVENT : return "STORE"; 
+    		case UPDATE_DOCUMENT_EVENT : return "UPDATE";
+    		case REMOVE_DOCUMENT_EVENT : return "REMOVE";
+    		case CREATE_COLLECTION_EVENT : return "CREATE";
+    		case RENAME_COLLECTION_EVENT : return "RENAME";
+    		case DELETE_COLLECTION_EVENT : return "DELETE";
     		default : return null;
     	}
     }

@@ -69,7 +69,7 @@ public class CollectionConfiguration {
 	
 	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
-	private TriggerConfig[] triggers = new TriggerConfig[Trigger.EVENTS.length];
+	private TriggerConfig[] triggers = new TriggerConfig[6];
 
 	private IndexSpec indexSpec = null;
     
@@ -326,21 +326,7 @@ public class CollectionConfiguration {
             while(tok.hasMoreTokens()) {
                 event = tok.nextToken();
                 LOG.debug("Registering trigger '" + classAttr + "' for event '" + event + "'");
-                
-                int i=0;
-                while (i<Trigger.EVENTS.length){
-                	if (event.equalsIgnoreCase(Trigger.EVENTS[i])){
-                        if (triggers[i] != null)
-                            LOG.warn("Trigger '" + classAttr + "' already registered");
-                        break;
-                	}
-                	i++;
-                }
-                
-                if (i < Trigger.EVENTS.length)
-                	triggers[i] = trigger;
-               // for backward compatibility
-                else if(event.equalsIgnoreCase("store")) {
+                if(event.equalsIgnoreCase("store")) {
                     if (triggers[Trigger.STORE_DOCUMENT_EVENT] != null)
                         LOG.warn("Trigger '" + classAttr + "' already registered");
                     triggers[Trigger.STORE_DOCUMENT_EVENT] = trigger;
@@ -361,11 +347,11 @@ public class CollectionConfiguration {
                         LOG.warn("Trigger '" + classAttr + "' already registered");
                     triggers[Trigger.RENAME_COLLECTION_EVENT] = trigger;
                 } else if(event.equalsIgnoreCase("delete-collection")) {
-                    if (triggers[Trigger.REMOVE_COLLECTION_EVENT] != null)
+                    if (triggers[Trigger.DELETE_COLLECTION_EVENT] != null)
                         LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.REMOVE_COLLECTION_EVENT] = trigger;
-                } else LOG.warn("Unknown event type '" + event + "' in trigger '" + classAttr + "'");
-                
+                    triggers[Trigger.DELETE_COLLECTION_EVENT] = trigger;
+                } else
+                    LOG.warn("Unknown event type '" + event + "' in trigger '" + classAttr + "'");
             }
         }
     }
@@ -418,7 +404,14 @@ public class CollectionConfiguration {
 		for (int i = 0 ; i < triggers.length; i++) {
 			TriggerConfig trigger = triggers[i];
 			if (trigger != null) {
-				result.append(Trigger.EVENTS[i]);
+				switch (i) {
+					case Trigger.STORE_DOCUMENT_EVENT : result.append("store document trigger");
+					case Trigger.UPDATE_DOCUMENT_EVENT : result.append("update document trigger");
+					case Trigger.REMOVE_DOCUMENT_EVENT : result.append("remove document trigger");
+					case Trigger.CREATE_COLLECTION_EVENT : result.append("create collection trigger");		
+					case Trigger.RENAME_COLLECTION_EVENT : result.append("rename collection trigger");
+					case Trigger.DELETE_COLLECTION_EVENT : result.append("delete collection trigger");		
+				}			
 				result.append('\t').append(trigger.toString()).append('\n');
 			}
 		}		
