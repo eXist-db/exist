@@ -121,10 +121,10 @@
                     </listitem>
                 </itemizedlist>
                 <note>
-                    <para>The external variable <emphasis>document</emphasis> is not defined more, becouse perfomance was lost for streaming a Binary document</para>
+                    <para>The external variable <emphasis>document</emphasis> is not defined more, becouse performance was lost for streaming a Binary document</para>
                 </note>
                 <note>
-                    <para>Old external variables, exclude <emphasis>document</emphasis> are still suported, but will be removed in future releases</para>
+                    <para>Old external variables, exclude <emphasis>document</emphasis> are still supported, but will be removed in future releases</para>
                 </note>
             </section>
             <section>
