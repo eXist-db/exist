@@ -65,7 +65,7 @@ import org.exist.storage.DBBroker;
  * </table>
  * 
  * The document-related events are handled by the sub-interface {@link org.exist.collections.triggers.DocumentTrigger},
- * collection-related events are handled by {@link org.exist.collections.triggers.CollectionTriggerBinary}.
+ * collection-related events are handled by {@link org.exist.collections.triggers.CollectionTrigger}.
  * 
  * The collection configuration file looks as follows:
  * 
@@ -87,31 +87,12 @@ import org.exist.storage.DBBroker;
  */
 public interface Trigger {
 
-	public final static int STORE_DOCUMENT_EVENT 	= 0;
-	public final static int CREATE_COLLECTION_EVENT = 1;
-	
-	public final static int UPDATE_DOCUMENT_EVENT 	= 2;
-
-	public final static int RENAME_DOCUMENT_EVENT 	= 3;
+	public final static int STORE_DOCUMENT_EVENT = 0;
+	public final static int UPDATE_DOCUMENT_EVENT = 1;
+	public final static int REMOVE_DOCUMENT_EVENT = 2;
+	public final static int CREATE_COLLECTION_EVENT = 3;
 	public final static int RENAME_COLLECTION_EVENT = 4;
-	
-	public final static int MOVE_DOCUMENT_EVENT 	= 5;
-	public final static int MOVE_COLLECTION_EVENT 	= 6;
-
-	public final static int REMOVE_DOCUMENT_EVENT 	= 7;
-	public final static int REMOVE_COLLECTION_EVENT = 8;
-	
-	public final static String [] EVENTS = {
-		"STORE-DOCUMENT",
-		"CREATE-COLLECTION",
-		"UPDATE-DOCUMENT",
-		"RENAME-DOCUMENT",
-		"RENAME-COLLECTION",
-		"MOVE-DOCUMENT",
-		"MOVE-COLLECTION",
-		"REMOVE-DOCUMENT",
-		"REMOVE-COLLECTION"
-	};
+	public final static int DELETE_COLLECTION_EVENT = 5;
 
 	/**
 	 * The configure method is called once whenever the collection configuration is loaded. Use it to

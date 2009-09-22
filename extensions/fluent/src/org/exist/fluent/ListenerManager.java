@@ -23,7 +23,7 @@ import org.xml.sax.ext.LexicalHandler;
 public class ListenerManager {
 	
 	static String getTriggerConfigXml() {
-		return "<triggers><trigger event='store-document create-collection update-document rename-document rename-collection move-document move-collection remove-document remove-collection' class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
+		return "<triggers><trigger event='store update remove create-collection rename-collection delete-collection' class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
 	}
 	
 	static class EventKey implements Comparable<EventKey> {
@@ -39,20 +39,14 @@ public class ListenerManager {
 		private static Trigger toTrigger(int code, boolean before) {
 			switch(code) {
 				case org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT:
-					return before ? Trigger.BEFORE_STORE : Trigger.AFTER_STORE;
 				case org.exist.collections.triggers.Trigger.CREATE_COLLECTION_EVENT:
 					return before ? Trigger.BEFORE_CREATE : Trigger.AFTER_CREATE;
 				case org.exist.collections.triggers.Trigger.UPDATE_DOCUMENT_EVENT:
-					return before ? Trigger.BEFORE_UPDATE : Trigger.AFTER_UPDATE;
-				case org.exist.collections.triggers.Trigger.RENAME_DOCUMENT_EVENT:
 				case org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT:
-					return before ? Trigger.BEFORE_RENAME : Trigger.AFTER_RENAME;
-				case org.exist.collections.triggers.Trigger.MOVE_DOCUMENT_EVENT:
-				case org.exist.collections.triggers.Trigger.MOVE_COLLECTION_EVENT:
-					return before ? Trigger.BEFORE_MOVE : Trigger.AFTER_MOVE;
+					return before ? Trigger.BEFORE_UPDATE : Trigger.AFTER_UPDATE;
 				case org.exist.collections.triggers.Trigger.REMOVE_DOCUMENT_EVENT:
-				case org.exist.collections.triggers.Trigger.REMOVE_COLLECTION_EVENT:
-					return before ? Trigger.BEFORE_REMOVE : Trigger.AFTER_REMOVE;
+				case org.exist.collections.triggers.Trigger.DELETE_COLLECTION_EVENT:
+					return before ? Trigger.BEFORE_DELETE : Trigger.AFTER_DELETE;
 				default:
 					throw new IllegalArgumentException("unknown exist trigger code " + code);
 			}
@@ -243,7 +237,7 @@ public class ListenerManager {
 	 *
 	 * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
 	 */
-	public static class TriggerDispatcher implements DocumentTriggerUnary, DocumentTriggerBinary, CollectionTriggerUnary, CollectionTriggerBinary  {
+	public static class TriggerDispatcher implements DocumentTrigger, CollectionTrigger {
 		private static final Logger LOG = Logger.getLogger(TriggerDispatcher.class);
 		private boolean validating;
 		private ContentHandler contentHandler;
@@ -257,29 +251,17 @@ public class ListenerManager {
 			EventKey key = new EventKey(documentPath.getCollectionPath(), event, true);
 			INSTANCE.fire(key, existingDocument);
 		}
-		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI srcDocumentPath, XmldbURI dstDocumentPath, DocumentImpl existingDocument) throws TriggerException {
-			prepare(event, broker, txn, srcDocumentPath, existingDocument);
-		}
 		public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
 			EventKey key = new EventKey(documentPath.getCollectionPath(), event, false);
-			INSTANCE.fire(key, key.trigger == Trigger.AFTER_REMOVE ? null : document);
+			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : document);
 		}
-		public void finish(int event, DBBroker broker, Txn txn, XmldbURI srcDocumentPath, XmldbURI dstDocumentPath, DocumentImpl existingDocument) {
-			finish(event, broker, txn, srcDocumentPath, existingDocument);
-		}
-		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI collectionPath, org.exist.collections.Collection collection) throws TriggerException {
-			prepare(event, broker, txn, collectionPath, collection, null);
-		}
-		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI collectionPath, org.exist.collections.Collection collection, String newName) throws TriggerException {
-			EventKey key = new EventKey(collectionPath.getCollectionPath(), event, true);
+		public void prepare(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, String newName) throws TriggerException {
+			EventKey key = new EventKey(newName, event, true);
 			INSTANCE.fire(key, collection);
 		}
-		public void finish(int event, DBBroker broker, Txn txn, XmldbURI collectionPath, org.exist.collections.Collection collection) {
-			finish(event, broker, txn, collectionPath, collection, null);
-		}
-		public void finish(int event, DBBroker broker, Txn txn, XmldbURI collectionPath, org.exist.collections.Collection collection, String newName) {
-			EventKey key = new EventKey(collectionPath.getCollectionPath(), event, false);
-			INSTANCE.fire(key, key.trigger == Trigger.AFTER_REMOVE ? null : collection);
+		public void finish(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, String newName) {
+			EventKey key = new EventKey(newName, event, false);
+			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : collection);
 		}
 		public boolean isValidating() {
 			return validating;

@@ -77,6 +77,44 @@ import org.xml.sax.ext.LexicalHandler;
 public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler {
 
     /**
+     * This method is called once before the database will actually parse the input data. You may take any action
+     * here, using the supplied broker instance.
+     * 
+     * @param event the type of event that triggered this call (see the constants defined in this interface). The ContentHandler instance for the output.
+     * @param broker the database instance used to process the current action.
+     * @param transaction the current transaction context
+     * @param documentPath the full absolute path of the document currently processed.
+     * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT},
+     *  existingDocument will contain the Document object for the old document, which will be overwritten. Otherwise, the parameter
+     *  is null.
+     * @throws TriggerException throwing a TriggerException will abort the current action.
+     */
+    public void prepare(
+        int event,
+        DBBroker broker,
+        Txn transaction,
+        XmldbURI documentPath,
+        DocumentImpl existingDocument)
+        throws TriggerException;
+
+    /**
+     * This method is called after the operation completed. At this point, the document has already
+     * been stored.
+     * 
+     * @param event the type of event that triggered this call (see the constants defined in this interface).
+     * @param broker the database instance used to process the current action.
+     * @param transaction the current transaction context
+     * @param documentPath the path of the document, if removed the old path of the document
+     * @param document the stored document or null if the document is removed
+     **/
+    public void finish(
+        int event,
+        DBBroker broker,
+        Txn transaction,
+        XmldbURI documentPath,
+        DocumentImpl document);
+    
+    /**
      * Returns true if the SAX parser is currently in validation phase. During validation phase, the trigger
      * may safely throw a SAXException. However, if is {@link #isValidating() isValidating} returns false, no exceptions should be
      * thrown.

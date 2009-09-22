@@ -28,7 +28,6 @@ import java.util.Map;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.DocumentTriggerUnary;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
@@ -56,7 +55,7 @@ import org.xml.sax.InputSource;
  * 
  * @author wolf
  */
-public class ExampleTrigger extends FilteringTrigger implements DocumentTriggerUnary {
+public class ExampleTrigger extends FilteringTrigger {
 
 	private DocumentImpl doc;
 	
@@ -145,7 +144,9 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTriggerU
 	}
 
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+		// TODO Auto-generated method stub
 	}
+	
 	
 
 }

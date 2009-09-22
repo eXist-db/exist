@@ -7,16 +7,10 @@ package org.exist.fluent;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public enum Trigger {
-	BEFORE_STORE,
-	AFTER_STORE,
 	BEFORE_CREATE,
 	AFTER_CREATE,
 	BEFORE_UPDATE,
 	AFTER_UPDATE,
-	BEFORE_RENAME,
-	AFTER_RENAME,
-	BEFORE_MOVE,
-	AFTER_MOVE,
-	BEFORE_REMOVE,
-	AFTER_REMOVE
+	BEFORE_DELETE,
+	AFTER_DELETE
 }

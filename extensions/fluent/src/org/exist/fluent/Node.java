@@ -1,30 +1,18 @@
 package org.exist.fluent;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.*;
 
-import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.triggers.DocumentTriggerUnary;
+import org.exist.collections.*;
+import org.exist.collections.triggers.*;
 import org.exist.collections.triggers.Trigger;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NodeList;
+import org.exist.xquery.value.*;
+import org.w3c.dom.*;
 
 /**
  * A node in the database.  Nodes are most often contained in XML documents, but can also
@@ -208,7 +196,7 @@ public class Node extends Item {
 					Transaction tx = db.requireTransactionWithBroker();
 					try {
 						tx.lockWrite(node.getDocument());
-						DocumentTriggerUnary trigger = fireTriggerBefore(tx);
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						node.appendChildren(tx.tx, toNodeList(nodes), 0);
 						StoredNode result = (StoredNode) node.getLastChild();
 						touchDefragAndFireTriggerAfter(tx, trigger);
@@ -256,7 +244,7 @@ public class Node extends Item {
 			Transaction tx = db.requireTransactionWithBroker();
 			try {
 				if (parent instanceof StoredNode) tx.lockWrite(((StoredNode) parent).getDocument());
-				DocumentTriggerUnary trigger = fireTriggerBefore(tx);
+				DocumentTrigger trigger = fireTriggerBefore(tx);
 				parent.removeChild(tx.tx, child);
 				touchDefragAndFireTriggerAfter(tx, trigger);
 				tx.commit();
@@ -312,7 +300,7 @@ public class Node extends Item {
 					try {
 						DocumentImpl doc = (DocumentImpl) oldNode.getOwnerDocument();
 						tx.lockWrite(doc);
-						DocumentTriggerUnary trigger = fireTriggerBefore(tx);
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						((NodeImpl) oldNode.getParentNode()).replaceChild(tx.tx, nodes[0], oldNode);
 						touchDefragAndFireTriggerAfter(tx, trigger);
 						tx.commit();
@@ -352,7 +340,7 @@ public class Node extends Item {
 					try {
 						DocumentImpl doc = (DocumentImpl) elem.getOwnerDocument();
 						tx.lockWrite(doc);
-						DocumentTriggerUnary trigger = fireTriggerBefore(tx);
+						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
 						touchDefragAndFireTriggerAfter(tx, trigger);
 						tx.commit();
@@ -372,13 +360,13 @@ public class Node extends Item {
 		}
 	}
 	
-	private DocumentTriggerUnary fireTriggerBefore(Transaction tx) throws TriggerException {
+	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
 		try {
 			CollectionConfiguration config = docimpl.getCollection().getConfiguration(tx.broker);
 			if (config == null) return null;
-			DocumentTriggerUnary trigger = (DocumentTriggerUnary) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, docimpl.getCollection());
+			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, docimpl.getCollection());
 			if (trigger == null) return null;
 			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, tx.tx, docimpl.getURI(), docimpl);
 			return trigger;
@@ -387,7 +375,7 @@ public class Node extends Item {
 		}
 	}
 	
-	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTriggerUnary trigger) {
+	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
 		DocumentImpl doc = ((NodeProxy) item).getDocument();
 		doc.getMetadata().setLastModified(System.currentTimeMillis());
       tx.broker.storeXMLResource(tx.tx, doc);

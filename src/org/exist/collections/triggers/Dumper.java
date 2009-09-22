@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * @author wolf
  */
-public class Dumper extends FilteringTrigger implements DocumentTriggerUnary{
+public class Dumper extends FilteringTrigger {
 
 	/* (non-Javadoc)
 	 * @see org.exist.collections.FilteringTrigger#configure(java.util.Map)
@@ -72,7 +72,9 @@ public class Dumper extends FilteringTrigger implements DocumentTriggerUnary{
 			System.out.println("\t" + docs.getDocumentAt(i).getFileURI());
 	}
 
+    /* (non-Javadoc)
+     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
+     */
     public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
     }
-
 }

@@ -23,7 +23,6 @@ package org.exist.collections;
 import org.exist.Indexer;
 import org.exist.Namespaces;
 import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.DocumentTriggerUnary;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
@@ -48,7 +47,7 @@ public class IndexInfo {
 
 	private Indexer indexer;
 	private DOMStreamer streamer;
-	private DocumentTriggerUnary trigger;
+	private DocumentTrigger trigger;
     private int event;
 	private CollectionConfiguration collectionConfig;
     
@@ -98,7 +97,7 @@ public class IndexInfo {
         return collectionConfig;
     }
 
-    void setTrigger(DocumentTriggerUnary trigger, int event) {
+    void setTrigger(DocumentTrigger trigger, int event) {
 		this.trigger = trigger;
 		this.event = event;
 	}
