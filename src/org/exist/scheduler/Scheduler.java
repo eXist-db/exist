@@ -514,7 +514,7 @@ public class Scheduler
 			Configuration.JobConfig jobConfig = jobList[i];
 			JobDescription job = null;
 			
-			if(jobConfig.getResourceName().startsWith("/db/"))
+			if(jobConfig.getResourceName().startsWith("/db/") || jobConfig.getResourceName().indexOf(':') > 0)
 			{
 				
 				if(jobConfig.getType().equals(JOB_TYPE_SYSTEM))

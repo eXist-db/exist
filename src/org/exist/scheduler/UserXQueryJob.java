@@ -30,6 +30,7 @@ import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -47,6 +48,7 @@ import org.quartz.JobExecutionException;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.net.MalformedURLException;
 
 /**
  * Class to represent a User's XQuery Job
@@ -133,12 +135,16 @@ public class UserXQueryJob extends UserJob
 		try {
 			//get the xquery
 			broker = pool.get(user);
-			XmldbURI pathUri = XmldbURI.create(xqueryresource);
-			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+            if (xqueryresource.indexOf(':') > 0)
+                source = SourceFactory.getSource(broker, "", xqueryresource, true);
+            else {
+                XmldbURI pathUri = XmldbURI.create(xqueryresource);
+                resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-            if(resource != null) {
-				source = new DBSource(broker, (BinaryDocument)resource, true);
-				
+                if(resource != null)
+                    source = new DBSource(broker, (BinaryDocument)resource, true);
+            }
+            if (source != null) {
 				//execute the xquery
 				XQuery xquery = broker.getXQueryService();
 		        xqPool = xquery.getXQueryPool();
@@ -153,15 +159,17 @@ public class UserXQueryJob extends UserJob
 		        }
 		        
 		        //TODO: don't hardcode this?
-		        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
-		        context.setStaticallyKnownDocuments( new XmldbURI[] { resource.getCollection().getURI() } );
+                if (resource != null) {
+                    context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
+                    context.setStaticallyKnownDocuments( new XmldbURI[] { resource.getCollection().getURI() } );
+                }
 		        
 		        if(compiled == null) {
 		            try {
 		                compiled = xquery.compile(context, source);
 		            }
 		            catch(IOException e) {
-		                abort("Failed to read query from " + resource.getURI());
+		                abort("Failed to read query from " + xqueryresource);
 		            }
 		        }
 
@@ -194,7 +202,11 @@ public class UserXQueryJob extends UserJob
 		catch(XPathException xpe) {
 			abort("XPathException in the Job: " + xpe.getMessage() + "!");
 		}
-		finally {
+        catch (MalformedURLException e) {
+            abort("Could not load XQuery: " + e.getMessage());
+        } catch (IOException e) {
+            abort("Could not load XQuery: " + e.getMessage());
+        } finally {
 
             //return the compiled query to the pool
             if(xqPool != null && source != null && compiled != null)
