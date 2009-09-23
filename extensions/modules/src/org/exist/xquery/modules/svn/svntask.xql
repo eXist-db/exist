@@ -7,14 +7,15 @@ xquery version "1.0";
     are available, they are appended to the existing document.
     
     For an example configuration (to be added to conf.xml) see below:
-    
-    <job type="user" class="/db/svn/svntask.xql"
-        cron-trigger="40 * * * * ?">
+
+    <job name="eXist-stable-1.2" xquery="resource:org/exist/xquery/modules/svn/svntask.xql" type="user"
+        cron-trigger="* 43 * * * ?">
         <parameter name="bindingPrefix" value="svnu"/>
         <parameter name="collection" value="/db/svn"/>
-        <parameter name="adminPasswd" value=""/>
-        <parameter name="uri" value="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist"/>
-        <parameter name="startRevision" value="7233"/>
+        <parameter name="adminPasswd" value="eXistance"/>
+        <parameter name="uri"
+            value="https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-stable-1.2"/>
+        <parameter name="startRevision" value="8072"/>
     </job>
 :)
 
@@ -56,5 +57,6 @@ declare function svnu:update() {
         )
 };
 
+util:log("DEBUG", ("Updating ", $svnu:uri)),
 xdb:login($svnu:collection, "admin", $svnu:adminPasswd),
 svnu:update()
