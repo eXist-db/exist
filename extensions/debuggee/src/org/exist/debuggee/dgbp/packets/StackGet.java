@@ -23,6 +23,7 @@ package org.exist.debuggee.dgbp.packets;
 
 import java.util.List;
 
+import org.exist.debuggee.CommandContinuation;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;

@@ -249,5 +249,4 @@ public class BreakpointSet extends Command implements Breakpoint {
 	public void setType(String type) {
 		this.type = type;
 	}
-
 }

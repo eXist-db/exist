@@ -21,13 +21,14 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.exist.debuggee.CommandContinuation;
 import org.exist.debuggee.DebuggeeJoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class StepOut extends Command {
+public class StepOut extends Command implements CommandContinuation {
 
 	private String status;
 
@@ -40,7 +41,7 @@ public class StepOut extends Command {
 	 */
 	@Override
 	public void exec() {
-		status = joint.stepOut();
+		joint.continuation(this);
 
 	}
 
@@ -58,4 +59,23 @@ public class StepOut extends Command {
 		return responce.getBytes();
 	}
 
+	public String getStatus() {
+		return status;
+	}
+
+	public int getType() {
+		return STEP_OUT;
+	}
+
+	public boolean is(int type) {
+		return (type == STEP_OUT);
+	}
+
+	public boolean isStatus(String status) {
+		return status.equals(this.status);
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
 }

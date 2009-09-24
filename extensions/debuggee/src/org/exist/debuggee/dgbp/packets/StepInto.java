@@ -21,13 +21,14 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.exist.debuggee.CommandContinuation;
 import org.exist.debuggee.DebuggeeJoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class StepInto extends Command {
+public class StepInto extends Command implements CommandContinuation {
 
 	private String status = null;
 
@@ -40,8 +41,7 @@ public class StepInto extends Command {
 	 */
 	@Override
 	public synchronized void exec() {
-		System.out.println("StepInto.exec thread = "+Thread.currentThread());
-		status = joint.stepInto();
+		joint.continuation(this);
 	}
 
 	/* (non-Javadoc)
@@ -57,5 +57,23 @@ public class StepInto extends Command {
 
 		return responce.getBytes();
 	}
+	public String getStatus() {
+		return status;
+	}
 
+	public int getType() {
+		return STEP_INTO;
+	}
+
+	public boolean is(int type) {
+		return (type == STEP_INTO);
+	}
+
+	public boolean isStatus(String status) {
+		return status.equals(this.status);
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
 }

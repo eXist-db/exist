@@ -28,11 +28,11 @@ import org.exist.debuggee.DebuggeeJoint;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class StepOver extends Command implements CommandContinuation {
+public class Stop extends Command implements CommandContinuation {
 
 	private String status;
 
-	public StepOver(DebuggeeJoint joint, String args) {
+	public Stop(DebuggeeJoint joint, String args) {
 		super(joint, args);
 	}
 
@@ -42,7 +42,6 @@ public class StepOver extends Command implements CommandContinuation {
 	@Override
 	public void exec() {
 		joint.continuation(this);
-
 	}
 
 	/* (non-Javadoc)
@@ -51,14 +50,14 @@ public class StepOver extends Command implements CommandContinuation {
 	@Override
 	public byte[] toBytes() {
 		String responce = "<response " +
-				"command=\"step_over\" " +
+				"command=\"stop\" " +
 				"status=\""+status+"\" " +
 				"reason=\"ok\" " +
 				"transaction_id=\""+transactionID+"\"/>";
 
 		return responce.getBytes();
 	}
-
+	
 	public String getStatus() {
 		return status;
 	}
@@ -78,5 +77,4 @@ public class StepOver extends Command implements CommandContinuation {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-
 }
