@@ -34,9 +34,9 @@ import org.exist.debuggee.dgbp.DGBPCodecFactory;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DebuggeeServer extends IoHandlerAdapter {
+public class DebuggerServer extends IoHandlerAdapter {
 
-    protected final static Logger LOG = Logger.getLogger(DebuggeeServer.class);
+    protected final static Logger LOG = Logger.getLogger(DebuggerServer.class);
 
     private NioSocketAcceptor acceptor;
 
@@ -44,7 +44,7 @@ public class DebuggeeServer extends IoHandlerAdapter {
 
     Debugger debuger;
     
-	public DebuggeeServer(Debugger debuger) throws IOException {
+	public DebuggerServer(Debugger debuger) throws IOException {
 		this.debuger = debuger;
 		
 		acceptor = new NioSocketAcceptor();
