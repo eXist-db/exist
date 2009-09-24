@@ -21,7 +21,7 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
-import org.exist.debuggee.DebuggeeJoint;
+import org.apache.mina.core.session.IoSession;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -34,8 +34,8 @@ public class FeatureSet extends Command {
 	
 	boolean success = false; 
 	
-	public FeatureSet(DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public FeatureSet(IoSession session, String args) {
+		super(session, args);
 	}
 
 	protected void setArgument(String arg, String val) {

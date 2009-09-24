@@ -21,7 +21,7 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
-import org.exist.debuggee.DebuggeeJoint;
+import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.model.Breakpoint;
 
 /**
@@ -82,8 +82,8 @@ public class BreakpointSet extends Command implements Breakpoint {
 	
 	private int status = -1;
 
-	public BreakpointSet(DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public BreakpointSet(IoSession session, String args) {
+		super(session, args);
 	}
 
 	protected void setArgument(String arg, String val) {

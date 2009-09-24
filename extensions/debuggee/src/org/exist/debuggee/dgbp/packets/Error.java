@@ -21,7 +21,7 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
-import org.exist.debuggee.DebuggeeJoint;
+import org.apache.mina.core.session.IoSession;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -31,8 +31,8 @@ public class Error extends Command {
 
 	private String name;
 
-	public Error(String name, DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public Error(String name, IoSession session, String args) {
+		super(session, args);
 		
 		this.name = name;
 	}

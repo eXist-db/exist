@@ -21,10 +21,7 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
-import java.util.Map;
-
-import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.QName;
+import org.apache.mina.core.session.IoSession;
 import org.exist.xquery.Variable;
 
 /**
@@ -70,8 +67,8 @@ public class PropertyGet extends Command {
 	
 	private Variable variable;
 	
-	public PropertyGet(DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public PropertyGet(IoSession session, String args) {
+		super(session, args);
 	}
 
 	protected void setArgument(String arg, String val) {
