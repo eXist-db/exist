@@ -24,14 +24,11 @@ package org.exist.debuggee;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
-import org.exist.xquery.XQueryContext;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
