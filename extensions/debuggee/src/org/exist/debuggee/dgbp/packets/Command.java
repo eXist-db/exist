@@ -82,7 +82,6 @@ public abstract class Command extends DGBPPacket {
 	public abstract void exec();
 
 	public static Command parse(IoSession session, String message) throws ParsingCommandException {
-		System.out.println(" parsig - "+message);
 		
 		int pos = message.indexOf(" ");
 		String command = message.substring(0, pos);
