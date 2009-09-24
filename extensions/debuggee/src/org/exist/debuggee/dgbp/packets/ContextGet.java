@@ -23,7 +23,7 @@ package org.exist.debuggee.dgbp.packets;
 
 import java.util.Map;
 
-import org.exist.debuggee.DebuggeeJoint;
+import org.apache.mina.core.session.IoSession;
 import org.exist.dom.QName;
 import org.exist.xquery.Variable;
 
@@ -45,8 +45,8 @@ public class ContextGet extends Command {
 	
 	private Map<QName, Variable> variables;
 
-	public ContextGet(DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public ContextGet(IoSession session, String args) {
+		super(session, args);
 	}
 
 	protected void setArgument(String arg, String val) {

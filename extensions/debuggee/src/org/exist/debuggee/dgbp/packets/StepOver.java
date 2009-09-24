@@ -21,8 +21,8 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.CommandContinuation;
-import org.exist.debuggee.DebuggeeJoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -32,8 +32,8 @@ public class StepOver extends Command implements CommandContinuation {
 
 	private String status;
 
-	public StepOver(DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public StepOver(IoSession session, String args) {
+		super(session, args);
 	}
 
 	/* (non-Javadoc)
@@ -77,6 +77,7 @@ public class StepOver extends Command implements CommandContinuation {
 
 	public void setStatus(String status) {
 		this.status = status;
+		session.write(this);
 	}
 
 }

@@ -23,10 +23,8 @@ package org.exist.debuggee.dgbp.packets;
 
 import java.util.List;
 
-import org.exist.debuggee.CommandContinuation;
-import org.exist.debuggee.DebuggeeJoint;
+import org.apache.mina.core.session.IoSession;
 import org.exist.xquery.Expression;
-import org.exist.xquery.PathExpr;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -38,8 +36,8 @@ public class StackGet extends Command {
 	
 	private List<Expression> stacks;
 	
-	public StackGet(DebuggeeJoint joint, String args) {
-		super(joint, args);
+	public StackGet(IoSession session, String args) {
+		super(session, args);
 	}
 
 	protected void setArgument(String arg, String val) {
