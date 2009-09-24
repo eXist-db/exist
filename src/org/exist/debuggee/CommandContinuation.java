@@ -25,7 +25,7 @@ package org.exist.debuggee;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Commands {
+public interface CommandContinuation {
 
 	public int WAIT = 0;
 
@@ -38,4 +38,12 @@ public interface Commands {
 	public int STEP_OVER = 5;
 
 	public int STOP = 8;
+	
+	public boolean is(int type);
+	public int getType();
+
+	public boolean isStatus(String status);
+	
+	public String getStatus();
+	public void setStatus(String status);
 }

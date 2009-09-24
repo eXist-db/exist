@@ -21,13 +21,14 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
+import org.exist.debuggee.CommandContinuation;
 import org.exist.debuggee.DebuggeeJoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Run extends Command {
+public class Run extends Command implements CommandContinuation {
 
 	private String status;
 
@@ -40,8 +41,7 @@ public class Run extends Command {
 	 */
 	@Override
 	public void exec() {
-		status = joint.run();
-
+		joint.continuation(this);
 	}
 
 	/* (non-Javadoc)
@@ -56,6 +56,26 @@ public class Run extends Command {
 				"transaction_id=\""+transactionID+"\"/>";
 
 		return responce.getBytes();
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public int getType() {
+		return RUN;
+	}
+
+	public boolean is(int type) {
+		return (type == RUN);
+	}
+
+	public boolean isStatus(String status) {
+		return status.equals(this.status);
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

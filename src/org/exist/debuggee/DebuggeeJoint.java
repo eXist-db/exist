@@ -24,6 +24,7 @@ package org.exist.debuggee;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
@@ -42,17 +43,22 @@ public interface DebuggeeJoint {
 	public void expressionStart(Expression expr) throws TerminatedException;
 	public void expressionEnd(Expression expr);
 
+	public void stackEnter(Expression expr) throws TerminatedException;
+	public void stackLeave(Expression expr);
+
 	public void reset();
 
 	public boolean featureSet(String name, String value);
 
-	public String run();
+	public void continuation(CommandContinuation command);
 
-	public String stepInto();
-	public String stepOut();
-	public String stepOver();
-
-	public String stop();
+//	public String run();
+//
+//	public String stepInto();
+//	public String stepOut();
+//	public String stepOver();
+//
+//	public String stop();
 
 	public List<Expression> stackGet();
 	

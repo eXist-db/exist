@@ -26,10 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.dgbp.packets.Stop;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
@@ -39,29 +40,29 @@ import org.exist.xquery.XQueryContext;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
+public class DebuggeeJointImpl implements DebuggeeJoint, Status {
+	
+	private Expression firstExpression = null;
 	
 	private List<Expression> stack = new ArrayList<Expression>();
 	private int stackDepth = 1;
 	
-	private int command = STOP_ON_FIRST_LINE;
-	private String status = "";
+	private CommandContinuation command = null;
 	
 	private int breakpointNo = 0;
 	//<fileName, Map<line, breakpoint>>
 	private Map<String, Map<Integer, Breakpoint>> breakpoints = 
 		new HashMap<String, Map<Integer, Breakpoint>>();
 	
-	
-	
 	public DebuggeeJointImpl() {
 	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.DebuggeeJoint#expressionEnd(org.exist.xquery.Expression)
-	 */
-	public void expressionEnd(Expression expr) {
-		System.out.println("expressionEnd expr = "+expr.toString());
+	
+	public void stackEnter(Expression expr) {
+		
+	}
+	
+	public void stackLeave(Expression expr) {
+		
 	}
 
 	/* (non-Javadoc)
@@ -69,6 +70,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
 		System.out.println("expressionStart expr = "+expr.toString());
+		
+		if (firstExpression == null)
+			firstExpression = expr;
 		
 		if (stack.size() == stackDepth)
 			stack.set(stackDepth-1, expr);
@@ -81,8 +85,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		Integer lineNo = expr.getLine();
 
 		while (true) {
-			if (command == STOP && status != STOPPED) {
-				status = STOPPED;
+			if (command == null) {
+				waitCommand();
+				continue;
+			}
+			
+			if (command.is(command.STOP) && !command.isStatus(STOPPED)) {
+				command.setStatus(STOPPED);
 	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
 			}
 				
@@ -94,26 +103,39 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 					Breakpoint breakpoint = fileBreakpoints.get(lineNo);
 					
 					if (breakpoint.getState() && breakpoint.getType().equals(breakpoint.TYPE_LINE)) {
-						status = BREAK;
+						command.setStatus(BREAK);
 					}
 				}
 			}
 			
-			if (command == STEP_INTO && status == FIRST_RUN)
+			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(FIRST_RUN))
 				;
-			else if (command == STEP_INTO && status == RUNNING)
-				status = BREAK;
+			else if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING))
+				command.setStatus(BREAK);
 
-			else if (command == RUN && status == RUNNING)
+			else if (command.is(CommandContinuation.RUN) && command.isStatus(RUNNING))
 				break;
 
-			else if (command >= RUN && status == STARTING) {
-				status = RUNNING;
+			else if (command.getType() >= CommandContinuation.RUN && command.isStatus(STARTING)) {
+				command.setStatus(RUNNING);
 				break;
 			}
 			
 			waitCommand();
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.DebuggeeJoint#expressionEnd(org.exist.xquery.Expression)
+	 */
+	public void expressionEnd(Expression expr) {
+		System.out.println("expressionEnd expr = "+expr.toString());
+
+		if (firstExpression == expr) {
+			firstExpression = null;
+			command.setStatus(STOPPED);
+		}
+		
 	}
 	
 	private synchronized void waitCommand() {
@@ -138,52 +160,19 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 		
 	}
 
-	public synchronized String run() {
-		command = RUN;
-		status = STARTING;
-
-		notifyAll();
-		
-		return "starting";
-	}
-	
-	public synchronized String stepInto() {
-		command = STEP_INTO;
-		if (status == "")
-			status = FIRST_RUN;
+	public synchronized void continuation(CommandContinuation command) {
+		if (this.command == null)
+			command.setStatus(FIRST_RUN);
 		else
-			status = STARTING;
+			command.setStatus(STARTING);
+
+		if (firstExpression == null)
+			command.setStatus(STOPPED);
+		else
+			command.setStatus(STARTING);
+		this.command = command;
 
 		notifyAll();
-
-		return status;
-	}
-
-	public synchronized String stepOut() {
-		command = STEP_OUT;
-		status = STARTING;
-
-		notifyAll();
-
-		return status;
-	}
-
-	public synchronized String stepOver() {
-		command = STEP_OVER;
-		status = STARTING;
-
-		notifyAll();
-
-		return status;
-	}
-
-	public synchronized String stop() {
-		command = STOP;
-		status = STARTING;
-
-		notifyAll();
-
-		return status;
 	}
 	
 	public boolean featureSet(String name, String value) {
@@ -232,5 +221,4 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Commands, Status {
 
 		return 1;//TODO: do throw constant
 	}
-
 }

@@ -28,6 +28,7 @@ import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.packets.Command;
 import org.exist.debuggee.dgbp.packets.Init;
+import org.exist.debuggee.dgbp.packets.Stop;
 import org.exist.security.xacml.XACMLSource;
 
 /**
@@ -55,13 +56,14 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 3000);
 		 
 		session.setAttribute("joint", joint);
+		
 		session.write(new Init(source));
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) {
 		DebuggeeJoint joint = (DebuggeeJoint) session.getAttribute("joint");
-		joint.stop();
+		joint.continuation(new Stop(joint, ""));
 
 		// Print out total number of bytes read from the remote peer.
 		System.err.println("Total " + session.getReadBytes() + " byte(s)");
