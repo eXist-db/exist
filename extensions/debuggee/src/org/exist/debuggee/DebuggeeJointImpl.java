@@ -58,11 +58,12 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 	
 	public void stackEnter(Expression expr) {
+		stack.add(expr);
 		
 	}
 	
 	public void stackLeave(Expression expr) {
-		
+		stack.remove(stack.size()-1);
 	}
 
 	/* (non-Javadoc)
@@ -85,17 +86,26 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		Integer lineNo = expr.getLine();
 
 		while (true) {
+			//didn't receive any command, wait for any 
 			if (command == null) {
 				waitCommand();
 				continue;
 			}
 			
+			//the status is break, wait for changes
+			if (command.isStatus(BREAK)) {
+				waitCommand();
+				continue;
+			}
+
+			//stop command, terminate
 			if (command.is(command.STOP) && !command.isStatus(STOPPED)) {
 				command.setStatus(STOPPED);
 	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
 			}
 				
 
+			//checking breakpoints
 			if (breakpoints.containsKey(fileName)) {
 				fileBreakpoints = breakpoints.get(fileName);
 				
@@ -108,14 +118,19 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				}
 			}
 			
+			//break on first line
 			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(FIRST_RUN))
 				;
+
+			//step-into is done
 			else if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING))
 				command.setStatus(BREAK);
 
+			//RUS command with status RUNNING can be break only on breakpoints
 			else if (command.is(CommandContinuation.RUN) && command.isStatus(RUNNING))
 				break;
 
+			//any continuation command with status RUNNING
 			else if (command.getType() >= CommandContinuation.RUN && command.isStatus(STARTING)) {
 				command.setStatus(RUNNING);
 				break;
