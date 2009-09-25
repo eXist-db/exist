@@ -63,4 +63,5 @@ public interface DebuggeeJoint {
 	public Variable getVariable(String name);
 	
 	public int setBreakpoint(Breakpoint breakpoint);
+	public Breakpoint getBreakpoint(int breakpointID);
 }

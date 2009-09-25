@@ -131,4 +131,6 @@ public interface Breakpoint {
 
 	public int getId();
 	public void setId(int breakpointNo);
+	
+	public String toXMLString();
 }
