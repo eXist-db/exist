@@ -84,9 +84,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			stack.add(expr);
 		
 		String fileName = expr.getSource().getKey();
+		Integer lineNo = expr.getLine();
 
 		Map<Integer, Breakpoint> fileBreakpoints = null;
-		Integer lineNo = expr.getLine();
 
 		while (true) {
 			//didn't receive any command, wait for any 
@@ -109,14 +109,16 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				
 
 			//checking breakpoints
-			if (filesBreakpoints.containsKey(fileName)) {
-				fileBreakpoints = filesBreakpoints.get(fileName);
-				
-				if (fileBreakpoints.containsKey(lineNo)) {
-					Breakpoint breakpoint = fileBreakpoints.get(lineNo);
+			synchronized (breakpoints) {
+				if (filesBreakpoints.containsKey(fileName)) {
+					fileBreakpoints = filesBreakpoints.get(fileName);
 					
-					if (breakpoint.getState() && breakpoint.getType().equals(breakpoint.TYPE_LINE)) {
-						command.setStatus(BREAK);
+					if (fileBreakpoints.containsKey(lineNo)) {
+						Breakpoint breakpoint = fileBreakpoints.get(lineNo);
+						
+						if (breakpoint.getState() && breakpoint.getType().equals(breakpoint.TYPE_LINE)) {
+							command.setStatus(BREAK);
+						}
 					}
 				}
 			}
@@ -227,22 +229,55 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		breakpoint.setId(breakpointNo);
 		
-		breakpoints.put(breakpointNo, breakpoint);
+		synchronized (breakpoints) {
 
-		Map<Integer, Breakpoint> fileBreakpoints;
-		String fileName = breakpoint.getFilename();
-		if (filesBreakpoints.containsKey(fileName))
-			fileBreakpoints = filesBreakpoints.get(fileName);
-		else {
-			fileBreakpoints = new HashMap<Integer, Breakpoint>();
-			filesBreakpoints.put(fileName, fileBreakpoints);
+			breakpoints.put(breakpointNo, breakpoint);
+
+			Map<Integer, Breakpoint> fileBreakpoints;
+			String fileName = breakpoint.getFilename();
+
+			if (filesBreakpoints.containsKey(fileName))
+				fileBreakpoints = filesBreakpoints.get(fileName);
+			else {
+				fileBreakpoints = new HashMap<Integer, Breakpoint>();
+				filesBreakpoints.put(fileName, fileBreakpoints);
+			}
+			fileBreakpoints.put(breakpoint.getLineno(), breakpoint);
 		}
-		fileBreakpoints.put(breakpoint.getLineno(), breakpoint);
 
 		return 1;//TODO: do throw constant
 	}
 
 	public Breakpoint getBreakpoint(int breakpointID) {
 		return breakpoints.get(breakpointID);
+	}
+
+	public Breakpoint removeBreakpoint(int breakpointID) {
+		Breakpoint breakpoint = breakpoints.get(breakpointID);
+		if (breakpoint == null)
+			return breakpoint;
+		
+		String fileName = breakpoint.getFilename();
+		Integer lineNo = breakpoint.getLineno();
+
+		Map<Integer, Breakpoint> fileBreakpoints = null;
+
+		synchronized (breakpoints) {
+			if (filesBreakpoints.containsKey(fileName)) {
+				fileBreakpoints = filesBreakpoints.get(fileName);
+				
+				if (fileBreakpoints.containsKey(lineNo)) {
+					fileBreakpoints.remove(lineNo);
+					
+					if (fileBreakpoints.isEmpty()) {
+						filesBreakpoints.remove(fileName);
+					}
+				}
+			}
+			
+			breakpoints.remove(breakpointID);
+		}
+		
+		return breakpoint;
 	}
 }
