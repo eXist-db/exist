@@ -3409,10 +3409,12 @@ inputState.guessing--;
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST inVarBinding_AST = null;
+		org.exist.xquery.parser.XQueryAST v_AST = null;
 		String varName;
 		
 		match(DOLLAR);
 		varName=qName();
+		v_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 		{
 		switch ( LA(1)) {
 		case LITERAL_as:
@@ -3455,7 +3457,10 @@ inputState.guessing--;
 		astFactory.addASTChild(currentAST, returnAST);
 		if ( inputState.guessing==0 ) {
 			inVarBinding_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			inVarBinding_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,varName)).add(inVarBinding_AST));
+			
+					inVarBinding_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,varName)).add(inVarBinding_AST));
+					inVarBinding_AST.copyLexInfo(v_AST);
+				
 			currentAST.root = inVarBinding_AST;
 			currentAST.child = inVarBinding_AST!=null &&inVarBinding_AST.getFirstChild()!=null ?
 				inVarBinding_AST.getFirstChild() : inVarBinding_AST;
@@ -3470,10 +3475,12 @@ inputState.guessing--;
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST letVarBinding_AST = null;
+		org.exist.xquery.parser.XQueryAST v_AST = null;
 		String varName;
 		
 		match(DOLLAR);
 		varName=qName();
+		v_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 		{
 		switch ( LA(1)) {
 		case LITERAL_as:
@@ -3498,7 +3505,10 @@ inputState.guessing--;
 		astFactory.addASTChild(currentAST, returnAST);
 		if ( inputState.guessing==0 ) {
 			letVarBinding_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			letVarBinding_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,varName)).add(letVarBinding_AST));
+			
+					letVarBinding_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,varName)).add(letVarBinding_AST)); 
+					letVarBinding_AST.copyLexInfo(v_AST);
+				
 			currentAST.root = letVarBinding_AST;
 			currentAST.child = letVarBinding_AST!=null &&letVarBinding_AST.getFirstChild()!=null ?
 				letVarBinding_AST.getFirstChild() : letVarBinding_AST;
