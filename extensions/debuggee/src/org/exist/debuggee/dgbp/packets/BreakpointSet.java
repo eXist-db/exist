@@ -23,6 +23,7 @@ package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.BreakpointImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,55 +31,7 @@ import org.exist.debugger.model.Breakpoint;
  */
 public class BreakpointSet extends Command implements Breakpoint {
 
-	/**
-	 * breakpoint type, see above for valid values [required]
-	 */
-	private String type;
-
-	/**
-	 * breakpoint state [optional, defaults to "enabled"]
-	 */
-	private boolean state = true;
-
-	/**
-	 * the filename to which the breakpoint belongs [optional]
-	 */
-	private String fileName;
-	
-	/**
-	 * the line number (lineno) of the breakpoint [optional]
-	 */
-	private int lineNo;
-
-	/**
-	 * function name [required for call or return breakpoint types]
-	 */
-	private String function;
-
-	/**
-	 * EXCEPTION exception name [required for exception breakpoint types] 
-	 */
-	private String exception;
-
-	/**
-	 * hit value (hit_value) used with the hit condition to determine if should break; a value of zero indicates hit count processing is disabled for this breakpoint [optional, defaults to zero (i.e. disabled)]
-	 */
-	private int hitValue;
-	
-	/**
-	 * hit condition string (hit_condition); see HIT_CONDITION hit_condition documentation above; BTW 'o' stands for 'operator' [optional, defaults to '>=']
-	 */
-	private String hitCondition;
-	
-	/**
-	 * Boolean value indicating if this breakpoint is temporary. [optional, defaults to false]
-	 */
-	private boolean temporary = false;
-
-	/**
-	 * code expression, in the language of the debugger engine. The breakpoint should activate when the evaluated code evaluates to true. [required for conditional breakpoint types]
-	 */
-	private String expression;
+	BreakpointImpl breakpoint = new BreakpointImpl();
 	
 	private int status = -1;
 
@@ -88,31 +41,31 @@ public class BreakpointSet extends Command implements Breakpoint {
 
 	protected void setArgument(String arg, String val) {
 		if (arg.equals("t")) {
-			type = val;
+			breakpoint.setType(val);
 			
 		} else if (arg.equals("s")) {
-			state = true; //TODO: parsing required
+			breakpoint.setState(true); //TODO: parsing required
 			
 		} else if (arg.equals("f")) {
-			fileName = val;
+			breakpoint.setFilename(val);
 			
 		} else if (arg.equals("n")) {
-			lineNo = Integer.parseInt(val);
+			breakpoint.setLineno(Integer.parseInt(val));
 			
 		} else if (arg.equals("m")) {
-			function = val;
+			breakpoint.setFunction(val);
 			
 		} else if (arg.equals("x")) {
-			exception = val;
+			breakpoint.setException(val);
 			
 		} else if (arg.equals("h")) {
-			hitValue = Integer.parseInt(val);
+			breakpoint.setHitValue(Integer.parseInt(val));
 			
 		} else if (arg.equals("o")) {
-			hitCondition = val;
+			breakpoint.setHitCondition(val);
 			
 		} else if (arg.equals("r")) {
-			temporary = true; //TODO: parsing required
+			breakpoint.setTemporary(true); //TODO: parsing required
 			
 		} else {
 			super.setArgument(arg, val);
@@ -137,7 +90,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 			String responce = "<response " +
 				"command=\"breakpoint_set\" " +
 				"state=\""+getStateString()+"\" " +
-				"id=\""+String.valueOf(id)+"\" " +
+				"id=\""+String.valueOf(getId())+"\" " +
 				"transaction_id=\""+transactionID+"\"/>";
 
 			return responce.getBytes();
@@ -148,7 +101,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 	}
 	
 	private String getStateString() {
-		if (state)
+		if (breakpoint.getState())
 			return "enabled";
 		
 		return "disabled";
@@ -158,111 +111,117 @@ public class BreakpointSet extends Command implements Breakpoint {
 	// Breakpoint's methods
 	///////////////////////////////////////////////////////////////////
 
-	private int hitCount = 0;
-	
 	public String getException() {
-		return exception;
+		return breakpoint.getException();
 	}
 
 	public String getFilename() {
-		return fileName;
+		return breakpoint.getFilename();
 	}
 
 	public String getFunction() {
-		return function;
+		return breakpoint.getFunction();
 	}
 
 	public String getHitCondition() {
-		return hitCondition;
+		return breakpoint.getHitCondition();
 	}
 
 	public int getHitCount() {
-		return hitCount;
+		return breakpoint.getHitCount();
 	}
 
 	public int getHitValue() {
-		return 0;
+		return breakpoint.getHitValue();
 	}
 
 	public int getLineno() {
-		return lineNo;
+		return breakpoint.getLineno();
 	}
 
 	public boolean getState() {
-		return state;
+		return breakpoint.getState();
 	}
 
 	public boolean getTemporary() {
-		return temporary;
+		return breakpoint.getTemporary();
 	}
 
 	public void setException(String exception) {
-		this.exception = exception;
+		breakpoint.setException(exception);
 	}
 
 	public void setFilename(String filename) {
-		fileName = filename;
+		breakpoint.setFilename(filename);
 	}
 
 	public void setFunction(String function) {
-		this.function = function;
+		breakpoint.setFunction(function);
 	}
 
 	public void setHitCondition(String condition) {
-		hitCondition = condition;
+		breakpoint.setHitCondition(condition);
 	}
 
 	public void setHitCount(int count) {
-		hitCount = count;
+		breakpoint.setHitCount(count);
 	}
 
 	public void setHitValue(int value) {
-		hitValue = value;
+		breakpoint.setHitValue(value);
 	}
 
 	public void setLineno(int lineno) {
-		lineNo = lineno;
+		breakpoint.setLineno(lineno);
 	}
 
 	public void setState(boolean state) {
-		this.state = state;
+		breakpoint.setState(state);
 	}
 
 	public void setTemporary(boolean temporary) {
-		this.temporary = temporary;
+		breakpoint.setTemporary(temporary);
 	}
 
-	private int id;
-	
 	public int getId() {
-		return id;
+		return breakpoint.getId();
 	}
 
 	public void setId(int breakpointNo) {
-		this.id = breakpointNo;
+		breakpoint.setId(breakpointNo);
 	}
 
 	public String getType() {
-		return type;
+		return breakpoint.getType();
 	}
 
 	public void setType(String type) {
-		this.type = type;
+		breakpoint.setType(type);
 	}
 	
+	public String getExpression() {
+		//TODO: implement
+		return "";
+	}
+	
+	public void setExpression(String expression) {
+		//TODO: implement
+		;
+	}
+
 	public String toXMLString() {
 		return "<breakpoint " +
-				"id=\""+String.valueOf(id)+"\" " +
-				"type=\""+type+"\" "+
-				"state=\""+state+"\" "+
-				"filename=\""+fileName+"\" " +
-				"lineno=\""+String.valueOf(lineNo)+"\" " +
-		        "function=\""+function+"\" " +
-		        "exception=\""+exception+"\" " +
-		        "hit_value=\""+String.valueOf(hitValue)+"\" " +
-		        "hit_condition=\""+hitCondition+"\" " +
-		        "hit_count=\""+String.valueOf(hitCount)+"\" >"+
-		      "<expression>"+expression+"</expression>"+
+				"id=\""+String.valueOf(getId())+"\" " +
+				"type=\""+getType()+"\" "+
+				"state=\""+getStateString()+"\" "+
+				"filename=\""+getFilename()+"\" " +
+				"lineno=\""+String.valueOf(getLineno())+"\" " +
+		        "function=\""+getFunction()+"\" " +
+		        "exception=\""+getException()+"\" " +
+		        "hit_value=\""+String.valueOf(getHitValue())+"\" " +
+		        "hit_condition=\""+getHitCondition()+"\" " +
+		        "hit_count=\""+String.valueOf(getHitCount())+"\" >"+
+		      "<expression>"+getExpression()+"</expression>"+
 		      "</breakpoint>";
 	}
 }

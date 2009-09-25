@@ -21,6 +21,8 @@
  */
 package org.exist.debugger;
 
+import org.exist.debugger.model.Breakpoint;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -28,5 +30,9 @@ package org.exist.debugger;
 public interface Debugger {
 
 	public DebuggingSource source(String fileURI);
+
+	public void sessionClosed();
+
+	public Breakpoint addBreakpoint(Breakpoint breakpoint);
 
 }
