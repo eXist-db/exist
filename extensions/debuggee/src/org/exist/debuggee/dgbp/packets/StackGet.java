@@ -66,9 +66,9 @@ public class StackGet extends Command {
 		Expression expr = stacks.get(0);
 		
 		return "<stack level=\""+String.valueOf(stackDepth)+"\" " +
+					"lineno=\""+expr.getLine()+"\" " +
 					"type=\"file\" " +
-					"filename=\""+getFileuri(expr.getSource())+"\" " +
-					"lineno=\""+expr.getLine()+"\" />";
+					"filename=\""+getFileuri(expr.getSource())+"\" />";
 //					+
 //					"where=\"\" " +
 //					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +
