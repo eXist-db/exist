@@ -71,8 +71,20 @@ public abstract class Command extends DGBPPacket {
 		String response = "<response " +
 				"command=\"command_name\" " +
 				"transaction_id=\""+transactionID+"\">" +
-					"<error code=\"error_code\" apperr=\"app_specific_error_code\">"+
-					"<message>UI Usable Message</message>"+
+					"<error code=\"999\">"+
+					"<message>Unknown error</message>"+
+					"</error>"+
+					"</response>";
+		
+		return response.getBytes();
+	}
+
+	public byte[] errorBytes(String commandName) {
+		String response = "<response " +
+				"command=\""+commandName+"\" " +
+				"transaction_id=\""+transactionID+"\">" +
+					"<error code=\"999\">"+
+					"<message>Unknown error</message>"+
 					"</error>"+
 					"</response>";
 		
@@ -113,6 +125,9 @@ public abstract class Command extends DGBPPacket {
 		
 		} else if (command.equals("breakpoint_set")) {
 			return new BreakpointSet(session, args);
+		
+		} else if (command.equals("breakpoint_get")) {
+			return new BreakpointGet(session, args);
 		
 		}
 		

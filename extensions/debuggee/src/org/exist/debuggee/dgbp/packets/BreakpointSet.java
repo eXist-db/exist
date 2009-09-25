@@ -249,4 +249,20 @@ public class BreakpointSet extends Command implements Breakpoint {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+	public String toXMLString() {
+		return "<breakpoint " +
+				"id=\""+String.valueOf(id)+"\" " +
+				"type=\""+type+"\" "+
+				"state=\""+state+"\" "+
+				"filename=\""+fileName+"\" " +
+				"lineno=\""+String.valueOf(lineNo)+"\" " +
+		        "function=\""+function+"\" " +
+		        "exception=\""+exception+"\" " +
+		        "hit_value=\""+String.valueOf(hitValue)+"\" " +
+		        "hit_condition=\""+hitCondition+"\" " +
+		        "hit_count=\""+String.valueOf(hitCount)+"\" >"+
+		      "<expression>"+expression+"</expression>"+
+		      "</breakpoint>";
+	}
 }

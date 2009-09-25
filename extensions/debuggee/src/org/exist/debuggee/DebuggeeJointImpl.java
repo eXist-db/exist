@@ -51,9 +51,12 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
 	private int breakpointNo = 0;
 	//<fileName, Map<line, breakpoint>>
-	private Map<String, Map<Integer, Breakpoint>> breakpoints = 
+	private Map<String, Map<Integer, Breakpoint>> filesBreakpoints = 
 		new HashMap<String, Map<Integer, Breakpoint>>();
 	
+	//id, breakpoint
+	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
+
 	public DebuggeeJointImpl() {
 	}
 	
@@ -106,8 +109,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				
 
 			//checking breakpoints
-			if (breakpoints.containsKey(fileName)) {
-				fileBreakpoints = breakpoints.get(fileName);
+			if (filesBreakpoints.containsKey(fileName)) {
+				fileBreakpoints = filesBreakpoints.get(fileName);
 				
 				if (fileBreakpoints.containsKey(lineNo)) {
 					Breakpoint breakpoint = fileBreakpoints.get(lineNo);
@@ -223,17 +226,23 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		breakpointNo++;
 		
 		breakpoint.setId(breakpointNo);
+		
+		breakpoints.put(breakpointNo, breakpoint);
 
 		Map<Integer, Breakpoint> fileBreakpoints;
 		String fileName = breakpoint.getFilename();
-		if (breakpoints.containsKey(fileName))
-			fileBreakpoints = breakpoints.get(fileName);
+		if (filesBreakpoints.containsKey(fileName))
+			fileBreakpoints = filesBreakpoints.get(fileName);
 		else {
 			fileBreakpoints = new HashMap<Integer, Breakpoint>();
-			breakpoints.put(fileName, fileBreakpoints);
+			filesBreakpoints.put(fileName, fileBreakpoints);
 		}
 		fileBreakpoints.put(breakpoint.getLineno(), breakpoint);
 
 		return 1;//TODO: do throw constant
+	}
+
+	public Breakpoint getBreakpoint(int breakpointID) {
+		return breakpoints.get(breakpointID);
 	}
 }
