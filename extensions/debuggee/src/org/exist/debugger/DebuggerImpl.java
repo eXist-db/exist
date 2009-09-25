@@ -23,6 +23,7 @@ package org.exist.debugger;
 
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
+import org.exist.debugger.model.Breakpoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -36,6 +37,16 @@ public class DebuggerImpl implements Debugger {
 	public DebuggingSource source(String fileURI) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public Breakpoint addBreakpoint(Breakpoint breakpoint) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void sessionClosed() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

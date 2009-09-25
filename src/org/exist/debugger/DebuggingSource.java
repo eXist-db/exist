@@ -72,8 +72,5 @@ public interface DebuggingSource {
 
 	public Location[] getStackFrames();
 
-	public void addBreakpoint(Breakpoint breakpoint);
-	public void addBreakpoints(List<Breakpoint> breakpoints);
-	public void removeBreakpoint(Breakpoint breakpoint);
-	public void removeBreakpoints();
+	public Breakpoint newBreakpoint();
 }

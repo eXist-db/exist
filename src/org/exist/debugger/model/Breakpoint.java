@@ -67,7 +67,7 @@ public interface Breakpoint {
 	 * @return
 	 */
 	public String getFilename();
-	public void setFilename(String filename);
+//	public void setFilename(String filename);
 	
 	/**
 	 * Line number on which breakpoint is effective. Line numbers are 1-based. If an implementation requires a numeric value to indicate that lineno is not set, it is suggested that -1 be used, although this is not enforced.
