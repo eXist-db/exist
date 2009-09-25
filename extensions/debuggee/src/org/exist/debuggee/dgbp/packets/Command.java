@@ -87,14 +87,14 @@ public abstract class Command extends DGBPPacket {
 					"<message>Unknown error</message>"+
 					"</error>"+
 					"</response>";
-		
+
 		return response.getBytes();
 	}
 
 	public abstract void exec();
 
 	public static Command parse(IoSession session, String message) throws ParsingCommandException {
-		
+
 		int pos = message.indexOf(" ");
 		String command = message.substring(0, pos);
 		String args = message.substring(command.length()+1);
@@ -122,7 +122,10 @@ public abstract class Command extends DGBPPacket {
 		
 		} else if (command.equals("context_get")) {
 			return new ContextGet(session, args);
-		
+
+        } else if (command.equals("context_names")) {
+            return new ContextNames(session, args);
+            
 		} else if (command.equals("breakpoint_set")) {
 			return new BreakpointSet(session, args);
 		
@@ -138,8 +141,20 @@ public abstract class Command extends DGBPPacket {
 		} else if (command.equals("breakpoint_list")) {
 			return new BreakpointList(session, args);
 		
-		}
-		
+		} else if (command.equals("status")) {
+            return new Status(session, args);
+
+        } else if (command.equals("stdout")) {
+            return new StdOut(session, args);
+
+        } else if (command.equals("stderr")) {
+            return new StdErr(session, args);
+            
+        } else if (command.equals("source")) {
+            return new Source(session, args);
+
+        }
+
 		return new Error(command, session, args);
 	}
 
