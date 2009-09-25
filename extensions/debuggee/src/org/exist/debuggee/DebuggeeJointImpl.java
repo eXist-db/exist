@@ -73,7 +73,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 * @see org.exist.debuggee.DebuggeeJoint#expressionStart(org.exist.xquery.Expression)
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
-		System.out.println("expressionStart expr = "+expr.toString());
+		System.out.println("expressionStart " + expr.getLine() + " expr = "+ expr.toString());
 		
 		if (firstExpression == null)
 			firstExpression = expr;
