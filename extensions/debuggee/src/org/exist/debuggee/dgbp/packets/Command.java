@@ -135,6 +135,9 @@ public abstract class Command extends DGBPPacket {
 		} else if (command.equals("breakpoint_remove")) {
 			return new BreakpointRemove(session, args);
 		
+		} else if (command.equals("breakpoint_list")) {
+			return new BreakpointList(session, args);
+		
 		}
 		
 		return new Error(command, session, args);

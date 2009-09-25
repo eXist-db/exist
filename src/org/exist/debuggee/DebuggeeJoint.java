@@ -62,7 +62,11 @@ public interface DebuggeeJoint {
 	public Map<QName, Variable> getVariables();
 	public Variable getVariable(String name);
 	
+	//breakpoints methods
 	public int setBreakpoint(Breakpoint breakpoint);
+	
 	public Breakpoint getBreakpoint(int breakpointID);
+	public Map<Integer, Breakpoint> getBreakpoints();
+
 	public Breakpoint removeBreakpoint(int breakpointID);
 }

@@ -280,4 +280,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		return breakpoint;
 	}
+
+	public Map<Integer, Breakpoint> getBreakpoints() {
+		return breakpoints;
+	}
 }
