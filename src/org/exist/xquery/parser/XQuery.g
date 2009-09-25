@@ -536,10 +536,13 @@ letClause throws XPathException
 inVarBinding throws XPathException
 { String varName; }
 :
-	DOLLAR! varName=qName! ( typeDeclaration )?
+	DOLLAR! varName=v:qName! ( typeDeclaration )?
 	( positionalVar )?
 	"in"! exprSingle
-	{ #inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding); }
+	{ 
+		#inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding);
+		#inVarBinding.copyLexInfo(#v);
+	}
 	;
 
 positionalVar
@@ -552,9 +555,12 @@ positionalVar
 letVarBinding throws XPathException
 { String varName; }
 :
-	DOLLAR! varName=qName! ( typeDeclaration )?
+	DOLLAR! varName=v:qName! ( typeDeclaration )?
 	COLON! EQ! exprSingle
-	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding); }
+	{ 
+		#letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding); 
+		#letVarBinding.copyLexInfo(#v);
+	}
 	;
 
 orderByClause throws XPathException

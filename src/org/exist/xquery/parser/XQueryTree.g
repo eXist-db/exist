@@ -976,7 +976,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						varName:VARIABLE_BINDING
 						{
 							ForLetClause clause= new ForLetClause();
-							clause.ast = f;
+							clause.ast = varName;
 							PathExpr inputSequence= new PathExpr(context);
 						}
 						(
@@ -1007,7 +1007,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						letVarName:VARIABLE_BINDING
 						{
 							ForLetClause clause= new ForLetClause();
-							clause.ast = l;
+							clause.ast = letVarName;
 							clause.isForClause= false;
 							PathExpr inputSequence= new PathExpr(context);
 						}

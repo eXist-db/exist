@@ -687,7 +687,7 @@ public XQueryTreeParser() {
 							_t = _t.getFirstChild();
 							
 														ForLetClause clause= new ForLetClause();
-														clause.ast = f;
+														clause.ast = varName;
 														PathExpr inputSequence= new PathExpr(context);
 													
 							{
@@ -963,7 +963,7 @@ public XQueryTreeParser() {
 							_t = _t.getFirstChild();
 							
 														ForLetClause clause= new ForLetClause();
-														clause.ast = l;
+														clause.ast = letVarName;
 														clause.isForClause= false;
 														PathExpr inputSequence= new PathExpr(context);
 													

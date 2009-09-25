@@ -164,7 +164,8 @@ public class ForExpr extends BindingExpression {
             if (resultSequence != null)        
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
         }
-        
+        context.expressionStart(this);
+
         // bv - Declare grouping variables and initiate grouped sequence 
         LocalVariable groupVar = null; 
         LocalVariable groupKeyVar[] = null; 
@@ -386,6 +387,8 @@ public class ForExpr extends BindingExpression {
 		
 		actualReturnType = resultSequence.getItemType();
 
+        context.expressionEnd(this);
+        
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", resultSequence);
 
