@@ -24,6 +24,7 @@ package org.exist.debuggee.dgbp.packets;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.DGBPPacket;
+import org.exist.debugger.Debugger;
 import org.exist.security.xacml.XACMLSource;
 
 /**
@@ -44,7 +45,7 @@ public abstract class Command extends DGBPPacket {
 		this.session = session;
 		this.joint = (DebuggeeJoint) session.getAttribute("joint");
 		
-		String[] splited = args.split("-");
+		String[] splited = args.split(" -");
 		for (int i = 0; i < splited.length; i++) {
 			if (splited[i].length() < 3)
 				continue;
@@ -93,11 +94,20 @@ public abstract class Command extends DGBPPacket {
 
 	public abstract void exec();
 
-	public static Command parse(IoSession session, String message) throws ParsingCommandException {
 
+	public Response toDebuggee() {
+		session.write(this);
+		
+		Debugger debugger = (Debugger) session.getAttribute("debugger");
+		return debugger.getResponse(transactionID);
+	}
+	
+	public static Command parse(IoSession session, String message) throws ParsingCommandException {
+		System.out.println("get message = "+message);
+		
 		int pos = message.indexOf(" ");
 		String command = message.substring(0, pos);
-		String args = message.substring(command.length()+1);
+		String args = message.substring(command.length());
 		
 		if (command.equals("feature_set")) {
 			return new FeatureSet(session, args);
