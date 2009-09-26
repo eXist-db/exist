@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.debuggee.dgbp.packets.Response;
+import org.exist.debuggee.dgbp.packets.ResponseImpl;
 import org.exist.debuggee.dgbp.packets.Source;
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
@@ -83,14 +83,14 @@ public class DebuggerImpl implements Debugger {
 		
 	}
 	
-	private Map<String, Response> responses = new HashMap<String, Response>();
+	private Map<String, ResponseImpl> responses = new HashMap<String, ResponseImpl>();
 	
-	protected synchronized void addResponse(Response response) {
+	protected synchronized void addResponse(ResponseImpl response) {
 		responses.put(response.getTransactionID(), response);
 		notifyAll();
 	}
 
-	public synchronized Response getResponse(String transactionID) {
+	public synchronized ResponseImpl getResponse(String transactionID) {
 		while (!responses.containsKey(transactionID)) {
 			try {
 				wait(30 * 1000); //30s
@@ -99,7 +99,7 @@ public class DebuggerImpl implements Debugger {
 		}
 		
 		if (responses.containsKey(transactionID)) {
-			Response response = responses.get(transactionID);
+			ResponseImpl response = responses.get(transactionID);
 			responses.remove(transactionID);
 			
 			return response;

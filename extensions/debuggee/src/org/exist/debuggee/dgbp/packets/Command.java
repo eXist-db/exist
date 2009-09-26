@@ -26,6 +26,7 @@ import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.DGBPPacket;
 import org.exist.debuggee.dgbp.Errors;
 import org.exist.debugger.Debugger;
+import org.exist.debugger.Response;
 import org.exist.security.xacml.XACMLSource;
 
 /**

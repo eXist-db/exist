@@ -21,20 +21,15 @@
  */
 package org.exist.debugger;
 
-import org.exist.debugger.model.Breakpoint;
-
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Debugger {
+public interface Response {
 
-	public DebuggingSource source(String fileURI);
+	public String getTransactionID();
 
-	public void sessionClosed();
+	public String getAttribute(String attr);
 
-	public Breakpoint addBreakpoint(Breakpoint breakpoint);
-
-	public Response getResponse(String transactionID);
-
+	public String getText();
 }
