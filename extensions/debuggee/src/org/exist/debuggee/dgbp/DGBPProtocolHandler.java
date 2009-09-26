@@ -48,11 +48,10 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionOpened(IoSession session) {
-		// Set reader idle time to 30 seconds.
+		// Set reader idle time to 10 minutes.
 		// sessionIdle(...) method will be invoked when no data is read
-		// for 30 seconds.
-		//XXX: fix -> 30 ???
-		//session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 3000);
+		// for 10 minutes.
+		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 10 * 60 * 1000);
 		 
 		session.setAttribute("joint", joint);
 		
@@ -70,10 +69,10 @@ public class DGBPProtocolHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
-//		// Close the connection if reader is idle.
-//		if (status == IdleStatus.READER_IDLE) {
-//			session.close(true);
-//		}
+		// Close the connection if reader is idle.
+		if (status == IdleStatus.READER_IDLE) {
+			session.close(true);
+		}
 	}
 
 	@Override
