@@ -22,14 +22,15 @@
 package org.exist.debuggee.dgbp.packets;
 
 import org.exist.debuggee.dgbp.DGBPPacket;
+import org.exist.debugger.Response;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Response extends DGBPPacket {
+public class ResponseImpl extends DGBPPacket implements Response {
 
-	public Response() {
+	public ResponseImpl() {
 	}
 
 	public String getTransactionID() {
