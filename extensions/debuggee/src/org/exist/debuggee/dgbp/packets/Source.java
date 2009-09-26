@@ -34,13 +34,16 @@ import java.io.IOException;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class Source extends Command {
 
     String uri;
     byte[] source;
-
+    
+    boolean success = false;
+    
     public Source(IoSession session, String args) {
         super(session, args);
     }
@@ -56,6 +59,7 @@ public class Source extends Command {
     @Override
     public void exec() {
         try {
+        	//TODO: rewrite to handle REST source url (dbgp:database or something)
             URL url = new URL(uri);
             URLConnection conn = url.openConnection();
             InputStream is = conn.getInputStream();
@@ -66,6 +70,9 @@ public class Source extends Command {
                 baos.write(buf, 0, c);
             }
             source = baos.toByteArray();
+            
+            success = true;
+        
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -79,7 +86,7 @@ public class Source extends Command {
             try {
                 String head = "<response " +
                     "command=\"source\" " +
-                    "success=\"1\" " +
+                    "success=\""+getSuccessString()+"\" " +
                     "transaction_id=\""+transactionID+"\">";
                 String tail = "</response>";
 
@@ -98,5 +105,12 @@ public class Source extends Command {
         } else {
             return errorBytes("source");
         }
+    }
+    
+    private String getSuccessString() {
+    	if (success)
+    		return "1";
+    	
+    	return "0";
     }
 }
