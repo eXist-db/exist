@@ -21,8 +21,6 @@
  */
 package org.exist.debuggee.dgbp;
 
-import java.nio.ByteBuffer;
-
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *

@@ -21,6 +21,8 @@
  */
 package org.exist.debugger.model;
 
+import org.exist.debugger.Debugger;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -186,5 +188,11 @@ public class BreakpointImpl implements Breakpoint {
 		        "hit_count=\""+String.valueOf(hitCount)+"\" >"+
 		      "<expression>"+expression+"</expression>"+
 		      "</breakpoint>";
+	}
+
+	private Debugger debugger;
+	
+	public void setDebuggingSource(Debugger debugger) {
+		this.debugger = debugger;
 	}
 }
