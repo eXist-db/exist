@@ -21,12 +21,9 @@
  */
 package org.exist.debugger;
 
-import java.util.List;
-
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
-import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

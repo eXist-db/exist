@@ -30,6 +30,10 @@ import org.exist.debugger.model.Breakpoint;
  *
  */
 public class DebuggerImpl implements Debugger {
+	
+	public DebuggerImpl() {
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.Debugger#source(java.lang.String)

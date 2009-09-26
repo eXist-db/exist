@@ -21,8 +21,6 @@
  */
 package org.exist.debuggee.dgbp;
 
-import java.nio.charset.Charset;
-
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
