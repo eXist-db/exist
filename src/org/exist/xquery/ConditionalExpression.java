@@ -93,6 +93,7 @@ public class ConditionalExpression extends AbstractExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+        context.expressionStart(this);
 		Sequence testSeq = testExpr.eval(contextSequence, contextItem);
         try {
     		if (testSeq.effectiveBooleanValue()) {
@@ -104,6 +105,8 @@ public class ConditionalExpression extends AbstractExpression {
             if (e.getLine() == 0)
                 e.setLocation(line, column);
             throw e;
+        } finally {
+            context.expressionEnd(this);
         }
 	}
 

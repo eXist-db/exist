@@ -95,41 +95,39 @@ public class OpNumeric extends BinaryOp {
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        context.expressionStart(this);
 
-        try {
-            Sequence lseq = getLeft().eval(contextSequence, contextItem);
-            Sequence rseq = getRight().eval(contextSequence, contextItem);
+        Sequence lseq = getLeft().eval(contextSequence, contextItem);
+        Sequence rseq = getRight().eval(contextSequence, contextItem);
 
-            if (lseq.hasMany())
-                throw new XPathException(this, "XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
-            if (rseq.hasMany())
-                throw new XPathException(this, "XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
+        if (lseq.hasMany())
+            throw new XPathException(this, "XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
+        if (rseq.hasMany())
+            throw new XPathException(this, "XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
 
-            Sequence result;
-            if (rseq.isEmpty())
-                result = Sequence.EMPTY_SEQUENCE;
-            else if (lseq.isEmpty())
-                result = Sequence.EMPTY_SEQUENCE;
-            else {
-                Item lvalue = lseq.itemAt(0);
-                Item rvalue = rseq.itemAt(0);
-                try {
-                    if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC)
-                        lvalue = lvalue.convertTo(Type.NUMBER);
-                    if (rvalue.getType() == Type.UNTYPED_ATOMIC || rvalue.getType() == Type.ATOMIC)
-                        rvalue = rvalue.convertTo(Type.NUMBER);
-                    if (!(lvalue instanceof ComputableValue))
-                        throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
-                    if (!(rvalue instanceof ComputableValue))
-                        throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+        Sequence result;
+        if (rseq.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
+        else if (lseq.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
+        else {
+            Item lvalue = lseq.itemAt(0);
+            Item rvalue = rseq.itemAt(0);
+            try {
+                if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC)
+                    lvalue = lvalue.convertTo(Type.NUMBER);
+                if (rvalue.getType() == Type.UNTYPED_ATOMIC || rvalue.getType() == Type.ATOMIC)
+                    rvalue = rvalue.convertTo(Type.NUMBER);
+                if (!(lvalue instanceof ComputableValue))
+                    throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+                if (!(rvalue instanceof ComputableValue))
+                    throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
 
                     //TODO : move to implementations
                     if (operator == Constants.IDIV) {
@@ -171,9 +169,6 @@ public class OpNumeric extends BinaryOp {
                 returnType = result.getItemType();
 
             return result;
-        } finally {
-            context.expressionEnd(this);
-        }
 
     }
 
