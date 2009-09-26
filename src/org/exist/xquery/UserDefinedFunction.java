@@ -108,8 +108,10 @@ public class UserDefinedFunction extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		// Save the local variable stack
-		LocalVariable mark = context.markLocalVariables(true);
+        context.expressionStart(this);
+        context.stackEnter(this);
+        // Save the local variable stack
+        LocalVariable mark = context.markLocalVariables(true);
 		try {
 			QName varName;
 			LocalVariable var;
@@ -136,8 +138,10 @@ public class UserDefinedFunction extends Function {
 			return result;
 		} finally {
 			// restore the local variable stack
-			context.popLocalVariables(mark);
-		}
+            context.popLocalVariables(mark);
+            context.stackLeave(this);
+            context.expressionEnd(this);
+        }
 	}
 	
 	/* (non-Javadoc)

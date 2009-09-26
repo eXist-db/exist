@@ -168,6 +168,7 @@ public class ElementConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+        context.expressionStart(this);
 		context.pushInScopeNamespaces();
         if (newDocumentContext)
             context.pushDocumentContext();
@@ -180,7 +181,7 @@ public class ElementConstructor extends NodeConstructor {
                         // TODO: the specs are unclear here: should we throw XQST0085 or not?
                     //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
-//		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+//		        		throw new XPathException(getAS      TNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                     //} else
                         context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
                 }
@@ -272,6 +273,7 @@ public class ElementConstructor extends NodeConstructor {
             context.popInScopeNamespaces();
             if (newDocumentContext)
                 context.popDocumentContext();
+            context.expressionEnd(this);
         }
     }
 	

@@ -1823,6 +1823,18 @@ public class XQueryContext {
         }
     }
 
+    public void stackEnter(Expression expr) throws TerminatedException {
+        if (debuggeeJoint != null) {
+            debuggeeJoint.stackEnter(expr);
+        }
+    }
+
+    public void stackLeave(Expression expr) {
+        if (debuggeeJoint != null) {
+            debuggeeJoint.stackLeave(expr);
+        }
+    }
+
     /* Methods delegated to the watchdog */
 	
 	public void proceed() throws TerminatedException {
