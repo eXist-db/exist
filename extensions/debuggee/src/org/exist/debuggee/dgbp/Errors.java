@@ -66,6 +66,7 @@ public interface Errors {
 	 * source file can't be opened)
 	 */
 	public int ERR_100 = 100;
+	public String ERR_100_STR = "can not open file (as a reply to a \"source\" command if the requested source file can't be opened)";
 
 	/**
 	 * stream redirect failed
@@ -151,15 +152,18 @@ public interface Errors {
 	 * Encoding not supported
 	 */
 	public int ERR_900 = 900;
+	public String ERR_900_STR = "Encoding not supported";
 
 	/**
 	 * An internal exception in the debugger occurred
 	 */
 	public int ERR_998 = 998;
+	public String ERR_998_STR = "An internal exception in the debugger occurred";
 
 	/**
 	 * Unknown error
 	 */
 	public int ERR_999 = 999;
+	public String ERR_999_STR = "Unknown error";
 
 }
