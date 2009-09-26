@@ -70,4 +70,7 @@ public interface DebuggingSource {
 	public Location[] getStackFrames();
 
 	public Breakpoint newBreakpoint();
+
+	public String getData();
+	public void setData(String text);
 }

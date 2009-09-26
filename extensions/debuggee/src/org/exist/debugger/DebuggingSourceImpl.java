@@ -158,4 +158,14 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		return null;
 	}
 
+	public String getData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setData(String text) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
