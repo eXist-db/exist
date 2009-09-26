@@ -24,6 +24,7 @@ package org.exist.debuggee.dgbp.packets;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.DGBPPacket;
+import org.exist.debuggee.dgbp.Errors;
 import org.exist.debugger.Debugger;
 import org.exist.security.xacml.XACMLSource;
 
@@ -68,24 +69,18 @@ public abstract class Command extends DGBPPacket {
 		return toBytes().length;
 	}
 	
-	public byte[] toBytes() {
-		String response = "<response " +
-				"command=\"command_name\" " +
-				"transaction_id=\""+transactionID+"\">" +
-					"<error code=\"999\">"+
-					"<message>Unknown error</message>"+
-					"</error>"+
-					"</response>";
-		
-		return response.getBytes();
-	}
+	public abstract byte[] toBytes();
 
 	public byte[] errorBytes(String commandName) {
+		return errorBytes(commandName, Errors.ERR_999, Errors.ERR_999_STR);
+	}
+
+	public byte[] errorBytes(String commandName, int errorCode, String errorMessage) {
 		String response = "<response " +
 				"command=\""+commandName+"\" " +
 				"transaction_id=\""+transactionID+"\">" +
-					"<error code=\"999\">"+
-					"<message>Unknown error</message>"+
+					"<error code=\""+String.valueOf(errorCode)+"\">"+
+					"<message>"+errorMessage+"</message>"+
 					"</error>"+
 					"</response>";
 

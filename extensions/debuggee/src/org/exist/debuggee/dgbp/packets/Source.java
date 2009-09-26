@@ -23,6 +23,7 @@
 package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.dgbp.Errors;
 import org.exist.util.Base64Encoder;
 
 import java.net.URL;
@@ -107,7 +108,7 @@ public class Source extends Command {
                 return errorBytes("source");
             }
         } else {
-            return errorBytes("source");
+            return errorBytes("source", Errors.ERR_100, Errors.ERR_100_STR);
         }
     }
     
