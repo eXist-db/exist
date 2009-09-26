@@ -479,7 +479,7 @@ throws PermissionDeniedException, EXistException, XPathException
             try {
                 if (uriList.size() > 0) {
 			    for (Iterator j= uriList.iterator(); j.hasNext();) {
-                    try {
+                   try {
                         location= ((AnyURIValue) j.next()).getStringValue();
                        context.importModule(moduleURI.getText(), modulePrefix, location);
                         staticContext.declareNamespace(modulePrefix, moduleURI.getText());
@@ -847,10 +847,14 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr elseExpr= new PathExpr(context);
 		}
 		step=expr [testExpr]
-		step=expr [thenExpr]
-		step=expr [elseExpr]
+		step=astThen:expr [thenExpr]
+		step=astElse:expr [elseExpr]
 		{
-			ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
+            thenExpr.setASTNode(astThen);
+            elseExpr.setASTNode(astElse);
+			ConditionalExpression cond = 
+                new ConditionalExpression(context, testExpr, thenExpr, 
+                                          new DebuggableExpression(elseExpr));
 			cond.setASTNode(astIf);
 			path.add(cond);
 			step = cond;
@@ -1127,7 +1131,6 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
             //bv : save the "real" return expression (used in groupBy) 
             PathExpr groupReturnExpr = (PathExpr) action; 
-  
 			for (int i= clauses.size() - 1; i >= 0; i--) {
 				ForLetClause clause= (ForLetClause) clauses.get(i);
 				BindingExpression expr;
@@ -1139,11 +1142,14 @@ throws PermissionDeniedException, EXistException, XPathException
 				expr.setVariable(clause.varName);
 				expr.setSequenceType(clause.sequenceType);
 				expr.setInputSequence(clause.inputSequence);
-				expr.setReturnExpression(action);
+                if (!(action instanceof BindingExpression))
+                    expr.setReturnExpression(new DebuggableExpression(action));
+                else
+                    expr.setReturnExpression(action);
 				if (clause.isForClause)
 					 ((ForExpr) expr).setPositionalVariable(clause.posVar);
 				if (whereExpr != null) {
-					expr.setWhereExpression(whereExpr);
+					expr.setWhereExpression(new DebuggableExpression(whereExpr));
 					whereExpr= null;
 				}
 				action= expr;

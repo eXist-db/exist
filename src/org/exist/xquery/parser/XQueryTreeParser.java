@@ -190,6 +190,8 @@ public XQueryTreeParser() {
 		org.exist.xquery.parser.XQueryAST eof = null;
 		org.exist.xquery.parser.XQueryAST c = null;
 		org.exist.xquery.parser.XQueryAST astIf = null;
+		org.exist.xquery.parser.XQueryAST astThen = null;
+		org.exist.xquery.parser.XQueryAST astElse = null;
 		org.exist.xquery.parser.XQueryAST someVarName = null;
 		org.exist.xquery.parser.XQueryAST everyVarName = null;
 		org.exist.xquery.parser.XQueryAST r = null;
@@ -271,12 +273,18 @@ public XQueryTreeParser() {
 					
 			step=expr(_t,testExpr);
 			_t = _retTree;
+			astThen = _t==ASTNULL ? null : (org.exist.xquery.parser.XQueryAST)_t;
 			step=expr(_t,thenExpr);
 			_t = _retTree;
+			astElse = _t==ASTNULL ? null : (org.exist.xquery.parser.XQueryAST)_t;
 			step=expr(_t,elseExpr);
 			_t = _retTree;
 			
-						ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
+			thenExpr.setASTNode(astThen);
+			elseExpr.setASTNode(astElse);
+						ConditionalExpression cond = 
+			new ConditionalExpression(context, testExpr, thenExpr, 
+			new DebuggableExpression(elseExpr));
 						cond.setASTNode(astIf);
 						path.add(cond);
 						step = cond;
@@ -1962,7 +1970,6 @@ public XQueryTreeParser() {
 			
 			//bv : save the "real" return expression (used in groupBy) 
 			PathExpr groupReturnExpr = (PathExpr) action; 
-			
 						for (int i= clauses.size() - 1; i >= 0; i--) {
 							ForLetClause clause= (ForLetClause) clauses.get(i);
 							BindingExpression expr;
@@ -1974,11 +1981,14 @@ public XQueryTreeParser() {
 							expr.setVariable(clause.varName);
 							expr.setSequenceType(clause.sequenceType);
 							expr.setInputSequence(clause.inputSequence);
-							expr.setReturnExpression(action);
+			if (!(action instanceof BindingExpression))
+			expr.setReturnExpression(new DebuggableExpression(action));
+			else
+			expr.setReturnExpression(action);
 							if (clause.isForClause)
 								 ((ForExpr) expr).setPositionalVariable(clause.posVar);
 							if (whereExpr != null) {
-								expr.setWhereExpression(whereExpr);
+								expr.setWhereExpression(new DebuggableExpression(whereExpr));
 								whereExpr= null;
 							}
 							action= expr;

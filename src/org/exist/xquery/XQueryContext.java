@@ -1825,13 +1825,13 @@ public class XQueryContext {
 
     public void stackEnter(Expression expr) throws TerminatedException {
         if (debuggeeJoint != null) {
-            debuggeeJoint.stackEnter(expr);
+//            debuggeeJoint.stackEnter(expr);
         }
     }
 
     public void stackLeave(Expression expr) {
         if (debuggeeJoint != null) {
-            debuggeeJoint.stackLeave(expr);
+//            debuggeeJoint.stackLeave(expr);
         }
     }
 
