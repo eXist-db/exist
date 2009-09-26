@@ -21,6 +21,12 @@
  */
 package org.exist.debugger;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.dgbp.packets.Response;
+import org.exist.debuggee.dgbp.packets.Source;
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
 import org.exist.debugger.model.Breakpoint;
@@ -31,15 +37,39 @@ import org.exist.debugger.model.Breakpoint;
  */
 public class DebuggerImpl implements Debugger {
 	
+	private IoSession session;
+	
+	//uri, source
+	private Map<String, DebuggingSource> sources = new HashMap<String, DebuggingSource>();
+	
 	public DebuggerImpl() {
 		
+	}
+	
+	protected void setSession(IoSession session) {
+		this.session = session;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.Debugger#source(java.lang.String)
 	 */
 	public DebuggingSource source(String fileURI) {
-		// TODO Auto-generated method stub
+		if (sources.containsKey(fileURI))
+			return sources.get(fileURI);
+
+		Source command = new Source(session, "");
+		command.setFileURI(fileURI);
+		Response response = command.toDebuggee();
+		
+		if ("1".equals(response.getAttribute("success"))) {
+			DebuggingSource source = new DebuggingSourceImpl(this, fileURI);
+			source.setData(response.getText());
+			
+			sources.put(fileURI, source);
+			
+			return source;
+		}
+		
 		return null;
 	}
 
@@ -51,6 +81,31 @@ public class DebuggerImpl implements Debugger {
 	public void sessionClosed() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private Map<String, Response> responses = new HashMap<String, Response>();
+	
+	protected synchronized void addResponse(Response response) {
+		responses.put(response.getTransactionID(), response);
+		notifyAll();
+	}
+
+	public synchronized Response getResponse(String transactionID) {
+		while (!responses.containsKey(transactionID)) {
+			try {
+				wait(30 * 1000); //30s
+			} catch (InterruptedException e) {
+			} 
+		}
+		
+		if (responses.containsKey(transactionID)) {
+			Response response = responses.get(transactionID);
+			responses.remove(transactionID);
+			
+			return response;
+		}
+
+		return null;
 	}
 
 }

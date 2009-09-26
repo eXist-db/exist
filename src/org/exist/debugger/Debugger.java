@@ -21,6 +21,7 @@
  */
 package org.exist.debugger;
 
+import org.exist.debuggee.dgbp.packets.Response;
 import org.exist.debugger.model.Breakpoint;
 
 /**
@@ -34,5 +35,7 @@ public interface Debugger {
 	public void sessionClosed();
 
 	public Breakpoint addBreakpoint(Breakpoint breakpoint);
+
+	public Response getResponse(String transactionID);
 
 }

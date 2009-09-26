@@ -39,10 +39,14 @@ import java.io.IOException;
  */
 public class Source extends Command {
 
-    String uri;
-    byte[] source;
-    
+	/**
+	 * file URI 
+	 */
+	String fileURI;
+
     boolean success = false;
+
+    byte[] source;
     
     public Source(IoSession session, String args) {
         super(session, args);
@@ -51,7 +55,7 @@ public class Source extends Command {
     @Override
     protected void setArgument(String arg, String val) {
         if (arg.equals("f"))
-            uri = val;
+            fileURI = val;
         else
             super.setArgument(arg, val);
     }
@@ -60,7 +64,7 @@ public class Source extends Command {
     public void exec() {
         try {
         	//TODO: rewrite to handle REST source url (dbgp:database or something)
-            URL url = new URL(uri);
+            URL url = new URL(fileURI);
             URLConnection conn = url.openConnection();
             InputStream is = conn.getInputStream();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -112,5 +116,9 @@ public class Source extends Command {
     		return "1";
     	
     	return "0";
+    }
+    
+    public void setFileURI(String fileURI) {
+    	this.fileURI = fileURI;
     }
 }
