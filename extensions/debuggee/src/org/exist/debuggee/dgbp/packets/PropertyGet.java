@@ -140,7 +140,7 @@ public class PropertyGet extends Command {
 	}
 	
 	private String getTypeString() {
-		if (variable.isInitialized())
+		if (!variable.isInitialized())
 			return "uninitialized";
 		
 		return Type.getTypeName(variable.getType());
