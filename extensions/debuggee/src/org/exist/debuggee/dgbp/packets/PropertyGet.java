@@ -23,6 +23,7 @@ package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.xquery.Variable;
+import org.exist.xquery.value.Type;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -110,6 +111,9 @@ public class PropertyGet extends Command {
 	 */
 	@Override
 	public byte[] toBytes() {
+		if (variable == null)
+			return errorBytes("property_get");
+		
 		String responce = "" +
 			"<response " +
 					"command=\"property_get\" " +
@@ -121,20 +125,25 @@ public class PropertyGet extends Command {
 	}
 
 	private String getPropertyString() {
-		String property = "";
-		if (variable == null)
-			return property; //XXX: error?
-		
 		String value = variable.getValue().toString();
 			
-		property += "<property " +
+		String property = "<property " +
 				"name=\""+variable.getQName().toString()+"\" " +
+				"fullname=\""+variable.getQName().toString()+"\" " +
+				"type=\""+getTypeString()+"\" " +
 				"size=\""+value.length()+"\" " +
 				"encoding=\"none\">" +
 			value+
 		"</property>";
 
 		return property;
+	}
+	
+	private String getTypeString() {
+		if (variable.isInitialized())
+			return "uninitialized";
+		
+		return Type.getTypeName(variable.getType());
 	}
 
 }
