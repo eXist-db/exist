@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.mina.core.session.IoSession;
-import org.exist.debuggee.dgbp.packets.Stop;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
@@ -102,7 +100,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			}
 
 			//stop command, terminate
-			if (command.is(command.STOP) && !command.isStatus(STOPPED)) {
+			if (command.is(CommandContinuation.STOP) && !command.isStatus(STOPPED)) {
 				command.setStatus(STOPPED);
 	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
 			}
@@ -116,7 +114,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 					if (fileBreakpoints.containsKey(lineNo)) {
 						Breakpoint breakpoint = fileBreakpoints.get(lineNo);
 						
-						if (breakpoint.getState() && breakpoint.getType().equals(breakpoint.TYPE_LINE)) {
+						if (breakpoint.getState() && breakpoint.getType().equals(Breakpoint.TYPE_LINE)) {
 							command.setStatus(BREAK);
 						}
 					}
@@ -183,13 +181,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	public synchronized void continuation(CommandContinuation command) {
 		if (this.command == null)
 			command.setStatus(FIRST_RUN);
+
+		else if (firstExpression == null)
+			command.setStatus(STOPPED);
+		
 		else
 			command.setStatus(STARTING);
 
-		if (firstExpression == null)
-			command.setStatus(STOPPED);
-		else
-			command.setStatus(STARTING);
 		this.command = command;
 
 		notifyAll();
