@@ -32,7 +32,7 @@ import org.exist.xquery.Expression;
  */
 public class StackGet extends Command {
 
-	private int stackDepth = 0;
+	private Integer stackDepth = null;
 	
 	private List<Expression> stacks;
 	
@@ -53,8 +53,13 @@ public class StackGet extends Command {
 					"command=\"stack_get\" " +
 					"transaction_id=\""+transactionID+"\">\n";
 
-		for (int depth = 0; depth < stacks.size(); depth++) {
-			response += stackToString(depth);
+		if (stackDepth != null) {
+			int index = stacks.size() - 1 - stackDepth;
+			if (index >=0 && index < stacks.size())
+				response += stackToString(index);
+		} else {
+			for (int index = stacks.size()-1; index >= 0; index--)
+				response += stackToString(index);
 		}
 			
 		response += "</response>";
@@ -63,13 +68,15 @@ public class StackGet extends Command {
 
 	}
 	
-	private String stackToString(int stackDepth) {
+	private String stackToString(int index) {
 		if (stacks == null || stacks.size() == 0)
 			return "";
 		
-		Expression expr = stacks.get(stackDepth);
+		Expression expr = stacks.get(index);
 		
-		return "<stack level=\""+String.valueOf(stackDepth+1)+"\" " +
+		int level = stacks.size() - index - 1;
+		
+		return "<stack level=\""+String.valueOf(level)+"\" " +
 					"lineno=\""+expr.getLine()+"\" " +
 					"type=\"file\" " +
 					"filename=\""+getFileuri(expr.getSource())+"\" />";
