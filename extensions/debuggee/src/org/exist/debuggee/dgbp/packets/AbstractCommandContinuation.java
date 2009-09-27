@@ -22,44 +22,35 @@
 package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.CommandContinuation;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class StepOver extends AbstractCommandContinuation {
+public abstract class AbstractCommandContinuation extends Command implements CommandContinuation {
 
-	public StepOver(IoSession session, String args) {
+	private String status;
+
+	public AbstractCommandContinuation(IoSession session, String args) {
 		super(session, args);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
-	 */
-	@Override
-	public void exec() {
-		getJoint().continuation(this);
+	public boolean isStatus(String status) {
+		return status.equals(getStatus());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
-	@Override
-	public byte[] toBytes() {
-		String responce = "<response " +
-				"command=\"step_over\" " +
-				"status=\""+getStatus()+"\" " +
-				"reason=\"ok\" " +
-				"transaction_id=\""+transactionID+"\"/>";
-
-		return responce.getBytes();
+	public String getStatus() {
+		return status;
 	}
 
-	public int getType() {
-		return RUN;
+	public void setStatus(String status) {
+		this.status = status;
+		
+		session.write(this);
 	}
 
-	public boolean is(int type) {
-		return (type == RUN);
+	public void disconnect() {
+		session.close(true);
 	}
 }
