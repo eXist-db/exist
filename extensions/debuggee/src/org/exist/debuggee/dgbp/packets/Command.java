@@ -61,6 +61,10 @@ public abstract class Command extends DGBPPacket {
 			transactionID = val;
 	}
 	
+	public IoSession getSession() {
+		return session;
+	}
+
 	protected DebuggeeJoint getJoint() {
 		if (session == null)
 			return null;
@@ -166,8 +170,6 @@ public abstract class Command extends DGBPPacket {
 
         }
 			
-
-
 		return new Error(command, session, args);
 	}
 

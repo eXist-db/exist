@@ -32,5 +32,5 @@ public interface Debuggee {
 	public static final String NAMESPACE_URI = "http://www.xdebug.org/";
 	public static final String PREFIX = "dbgp";
 	
-	public DebuggeeJoint joint(CompiledXQuery compiledXQuery);
+	public void joint(CompiledXQuery compiledXQuery);
 }

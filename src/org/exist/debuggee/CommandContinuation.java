@@ -29,7 +29,7 @@ public interface CommandContinuation {
 
 	public int WAIT = 0;
 
-	public int STOP_ON_FIRST_LINE = 1;
+	public int INIT = 1;
 
 	public int RUN = 2;
 
@@ -46,4 +46,7 @@ public interface CommandContinuation {
 	
 	public String getStatus();
 	public void setStatus(String status);
+	
+	//close session
+	public void disconnect();
 }

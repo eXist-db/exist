@@ -30,7 +30,6 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.exist.debuggee.dgbp.DGBPCodecFactory;
 import org.exist.debuggee.dgbp.DGBPProtocolHandler;
-import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -42,16 +41,8 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 	private int port = 9000;
 	
 	private NioSocketConnector connector;
-	private IoSession session;
 	
-	private int status = 0;
-	private Object lock = new Object();
-	
-	private DebuggeeJoint joint;
-	
-	public DebuggeeConnectionTCP(DebuggeeJoint joint, XACMLSource source) {
-		this.joint = joint;
-		
+	public DebuggeeConnectionTCP(Debuggee debuggee) {
 		// Create TCP/IP connector.
 		connector = new NioSocketConnector();
 		
@@ -63,41 +54,19 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
 		
 		// Start communication.
-		connector.setHandler(new DGBPProtocolHandler(joint, source));
+		connector.setHandler(new DGBPProtocolHandler(debuggee));
 	}
 	
-	public boolean connect() {
-		synchronized (lock) {
-			if (isConnected())
-				return true;
-
-			//TODO: should we close session?
-			
-			status = 0;
-
+	public IoSession connect() {
+		synchronized (connector) {
 			try {
 				ConnectFuture future = connector.connect(new InetSocketAddress(host, port));
 				future.awaitUninterruptibly();
-				session = future.getSession();
+				return future.getSession();
 			} catch (RuntimeIoException e) {
 				System.err.println("Failed to connect.");
-				status = 0;
-				return false;
+				return null;
 			}
-
-			joint.reset();
-			status = 1;
-			
-			return true;
 		}
-	}
-	
-	public boolean isConnected() {
-		//XXX: resolve concurrency problem here!!!
-		return (status == 2 && connector.isActive());
-	}
-
-	public DebuggeeJoint getJoint() {
-		return joint;
 	}
 }

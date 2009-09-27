@@ -24,6 +24,7 @@ package org.exist.debuggee;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.debuggee.dgbp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
@@ -71,5 +72,5 @@ public interface DebuggeeJoint {
 
 	public Breakpoint removeBreakpoint(int breakpointID);
 	
-	public void sessionClosed();
+	public void sessionClosed(boolean disconnect);
 }

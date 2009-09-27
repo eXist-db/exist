@@ -24,10 +24,10 @@ package org.exist.debuggee.dgbp;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dgbp.packets.Command;
 import org.exist.debuggee.dgbp.packets.Init;
-import org.exist.debuggee.dgbp.packets.Stop;
 import org.exist.security.xacml.XACMLSource;
 
 /**
@@ -36,30 +36,25 @@ import org.exist.security.xacml.XACMLSource;
  */
 public class DGBPProtocolHandler extends IoHandlerAdapter {
 
-	private DebuggeeJoint joint;
-	private XACMLSource source;
+	private Debuggee debuggee;
 	
-	public DGBPProtocolHandler(DebuggeeJoint joint, XACMLSource source) {
+	public DGBPProtocolHandler(Debuggee debuggee) {
 		super();
 		
-		this.joint = joint;
-		this.source = source;
+		this.debuggee = debuggee;
 	}
 
 	@Override
 	public void sessionOpened(IoSession session) {
 		// Set reader idle time to 10 minutes.
 		session.getConfig().setIdleTime(IdleStatus.READER_IDLE, 10 * 60 * 1000);
-		 
-		session.setAttribute("joint", joint);
-		
-		session.write(new Init(source));
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) {
 		DebuggeeJoint joint = (DebuggeeJoint) session.getAttribute("joint");
-		joint.sessionClosed();
+		if (joint != null)
+			joint.sessionClosed(false);
 
 		// Print out total number of bytes read from the remote peer.
 		System.err.println("Total " + session.getReadBytes() + " byte(s)");

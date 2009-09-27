@@ -32,8 +32,7 @@ public class DummyDebuggee implements Debuggee {
 	/* (non-Javadoc)
 	 * @see org.exist.debuggee.Debuggee#joint()
 	 */
-	public DebuggeeJoint joint(CompiledXQuery compiledXQuery) {
-		return null;
+	public void joint(CompiledXQuery compiledXQuery) {
 	}
 
 }
