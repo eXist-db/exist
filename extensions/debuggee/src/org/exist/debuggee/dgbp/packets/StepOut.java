@@ -22,15 +22,12 @@
 package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.debuggee.CommandContinuation;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class StepOut extends Command implements CommandContinuation {
-
-	private String status;
+public class StepOut extends AbstractCommandContinuation {
 
 	public StepOut(IoSession session, String args) {
 		super(session, args);
@@ -51,15 +48,11 @@ public class StepOut extends Command implements CommandContinuation {
 	public byte[] toBytes() {
 		String responce = "<response " +
 				"command=\"step_out\" " +
-				"status=\""+status+"\" " +
+				"status=\""+getStatus()+"\" " +
 				"reason=\"ok\" " +
 				"transaction_id=\""+transactionID+"\"/>";
 
 		return responce.getBytes();
-	}
-
-	public String getStatus() {
-		return status;
 	}
 
 	public int getType() {
@@ -68,14 +61,5 @@ public class StepOut extends Command implements CommandContinuation {
 
 	public boolean is(int type) {
 		return (type == STEP_OUT);
-	}
-
-	public boolean isStatus(String status) {
-		return status.equals(this.status);
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-		session.write(this);
 	}
 }
