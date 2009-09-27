@@ -206,6 +206,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public String featureGet(String name) {
+		if (DebuggeeImpl.GET_FEATURES.containsKey(name))
+			return DebuggeeImpl.GET_FEATURES.get(name);
+		
 		return features.get(name);
 	}
 	
