@@ -65,8 +65,10 @@ public class DebuggeeImpl implements Debuggee {
 			if (connection == null) {
 				joint = new DebuggeeJointImpl();
 				connection = new DebuggeeConnectionTCP(joint, compiledXQuery.getSource());
-			}
-			if (!connection.connect())
+			} else if (connection.isConnected()) {
+				//debugging session is active, for now only one debugging session possible
+				joint = null;
+			} else if (!connection.connect())
 				joint = null;
 		}
 		
