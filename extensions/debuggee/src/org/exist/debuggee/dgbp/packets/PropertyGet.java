@@ -118,19 +118,21 @@ public class PropertyGet extends Command {
 			"<response " +
 					"command=\"property_get\" " +
 					"transaction_id=\""+transactionID+"\">" +
-				getPropertyString()+
+				getPropertyString(variable)+
 			"</response>";
 
 		return responce.getBytes();
 	}
 
-	private String getPropertyString() {
-		String value = variable.getValue().toString();
+	protected static String getPropertyString(Variable variable) {
+		String value = "";
+		if (variable.getValue() != null)
+			value = variable.getValue().toString();
 			
 		String property = "<property " +
 				"name=\""+variable.getQName().toString()+"\" " +
 				"fullname=\""+variable.getQName().toString()+"\" " +
-				"type=\""+getTypeString()+"\" " +
+				"type=\""+getTypeString(variable)+"\" " +
 				"size=\""+value.length()+"\" " +
 				"encoding=\"none\">" +
 			value+
@@ -139,7 +141,7 @@ public class PropertyGet extends Command {
 		return property;
 	}
 	
-	private String getTypeString() {
+	protected static String getTypeString(Variable variable) {
 		if (!variable.isInitialized())
 			return "uninitialized";
 		

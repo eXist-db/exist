@@ -85,14 +85,8 @@ public class ContextGet extends Command {
 			return properties; //XXX: error?
 		
 		for (Variable variable : variables.values()) {
-			String value = variable.getValue().toString();
 			
-			properties += "<property " +
-					"name=\""+variable.getQName().toString()+"\" " +
-					"size=\""+value.length()+"\" " +
-					"encoding=\"none\">" +
-				value+
-			"</property>";
+			properties += PropertyGet.getPropertyString(variable);
 		}
 		return properties;
 	}
