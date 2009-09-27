@@ -29,6 +29,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
+import org.exist.xquery.XQueryContext;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -37,6 +38,8 @@ import org.exist.xquery.Variable;
 //TODO: rename DebuggeeRuntime ?
 public interface DebuggeeJoint {
 	
+	public XQueryContext getContext();
+
 	public void expressionStart(Expression expr) throws TerminatedException;
 	public void expressionEnd(Expression expr);
 
