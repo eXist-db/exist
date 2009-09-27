@@ -56,7 +56,6 @@ public abstract class Command extends DGBPPacket {
 			String val = splited[i].substring(2).trim();
 			setArgument(arg, val);
 		}
-		System.out.println(new String(toBytes()));
 	}
 
 
