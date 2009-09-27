@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.mina.core.session.IoSession;
 import org.exist.dom.QName;
 import org.exist.xquery.Variable;
+import org.exist.xquery.XQueryContext;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -83,10 +84,10 @@ public class ContextGet extends Command {
 		String properties = "";
 		if (variables == null)
 			return properties; //XXX: error?
-		
+
+        XQueryContext ctx = getJoint().getContext();
 		for (Variable variable : variables.values()) {
-			
-			properties += PropertyGet.getPropertyString(variable);
+			properties += PropertyGet.getPropertyString(variable, ctx);
 		}
 		return properties;
 	}

@@ -23,7 +23,12 @@ package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.xquery.Variable;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.*;
+import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -118,28 +123,62 @@ public class PropertyGet extends Command {
 			"<response " +
 					"command=\"property_get\" " +
 					"transaction_id=\""+transactionID+"\">" +
-				getPropertyString(variable)+
+				getPropertyString(variable, getJoint().getContext())+
 			"</response>";
 
 		return responce.getBytes();
 	}
 
-	protected static String getPropertyString(Variable variable) {
-		String value = "";
-		if (variable.getValue() != null)
-			value = variable.getValue().toString();
-			
-		String property = "<property " +
-				"name=\""+variable.getQName().toString()+"\" " +
-				"fullname=\""+variable.getQName().toString()+"\" " +
-				"type=\""+getTypeString(variable)+"\" " +
-				"size=\""+value.length()+"\" " +
-				"encoding=\"none\">" +
-			value+
-		"</property>";
+	protected static String getPropertyString(Variable variable, XQueryContext context) {
+        Sequence value = variable.getValue();
+        Serializer serializer = context.getBroker().getSerializer();
+        serializer.reset();
 
-		return property;
-	}
+        try {
+            String property;
+            if (value.hasOne()) {
+                String strVal = getPropertyValue(value.itemAt(0), serializer);
+                String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "node" :
+                    Type.getTypeName(value.getItemType());
+                property = "<property " +
+                        "name=\"" + variable.getQName().toString() + "\" " +
+                        "fullname=\"" + variable.getQName().toString() + "\" " +
+                        "type=\"" + type + "\" " +
+                        "size=\""+ strVal.length() + "\" " +
+                        "encoding=\"none\">" +
+                    strVal +
+                "</property>";
+            } else {
+                property = "<property " +
+                    "name=\"" + variable.getQName().toString() + "\" " +
+                    "fullname=\"" + variable.getQName().toString() + "\" " +
+                    "type=\"array\" " +
+                    "children=\"true\" " +
+                    "numchildren=\"" + value.getItemCount() + "\">";
+                int idx = 0;
+                for (SequenceIterator si = value.iterate(); si.hasNext(); idx++) {
+                    Item item = si.nextItem();
+                    String strVal = getPropertyValue(item, serializer);
+                    String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "xs:string" :
+                        Type.getTypeName(value.getItemType());
+                    property += "<property " +
+                        "name=\"" + idx + "\" " +
+                        "type=\"" + type + "\" " +
+                        "size=\""+ strVal.length() + "\" " +
+                        "encoding=\"none\">" +
+                        strVal +
+                        "</property>";
+                }
+                property += "</property>";
+            }
+            return property;
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (XPathException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 	
 	protected static String getTypeString(Variable variable) {
 		if (!variable.isInitialized())
@@ -148,4 +187,11 @@ public class PropertyGet extends Command {
 		return Type.getTypeName(variable.getType());
 	}
 
+    protected static String getPropertyValue(Item item, Serializer serializer) throws SAXException, XPathException {
+        if (Type.subTypeOf(item.getType(), Type.NODE)) {
+            return "<![CDATA[" + serializer.serialize((NodeValue) item) + "]]>";
+        } else {
+            return item.getStringValue();
+        }
+    }
 }
