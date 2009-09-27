@@ -60,6 +60,6 @@ public class StepOver extends AbstractCommandContinuation {
 	}
 
 	public boolean is(int type) {
-		return (type == RUN);
+		return (type == STEP_OVER);
 	}
 }

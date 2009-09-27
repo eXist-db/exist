@@ -154,15 +154,21 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			}
 			
 			//step-into is done
-			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING))
+			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING)) {
+				command.setStatus(BREAK);
+
+			//step-over should stop on same call's stack depth
+			} else if (command.is(CommandContinuation.STEP_OVER)  
+					&& command.getCallStackDepth() == stackDepth
+					&& command.isStatus(RUNNING)) {
 				command.setStatus(BREAK);
 
 			//RUS command with status RUNNING can be break only on breakpoints
-			else if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING))
+			} else if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING)) {
 				break;
 
 			//any continuation command with status RUNNING
-			else if (command.getType() >= CommandContinuation.RUN && command.isStatus(STARTING)) {
+			} else if (command.getType() >= CommandContinuation.RUN && command.isStatus(STARTING)) {
 				command.setStatus(RUNNING);
 				break;
 			}
