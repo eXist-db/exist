@@ -72,6 +72,6 @@ public class FeatureGet extends Command {
 
 	@Override
 	public void exec() {
-		value = joint.featureGet(name);
+		value = getJoint().featureGet(name);
 	}
 }

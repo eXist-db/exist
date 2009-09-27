@@ -35,7 +35,6 @@ import org.exist.security.xacml.XACMLSource;
  */
 public abstract class Command extends DGBPPacket {
 
-	protected DebuggeeJoint joint;
 	protected IoSession session;
 
 	/**
@@ -45,7 +44,6 @@ public abstract class Command extends DGBPPacket {
 	
 	public Command(IoSession session, String args) {
 		this.session = session;
-		this.joint = (DebuggeeJoint) session.getAttribute("joint");
 		
 		String[] splited = args.split(" -");
 		for (int i = 0; i < splited.length; i++) {
@@ -58,12 +56,17 @@ public abstract class Command extends DGBPPacket {
 		}
 	}
 
-
 	protected void setArgument(String arg, String val) {
 		if (arg.equals("i"))
 			transactionID = val;
 	}
-
+	
+	protected DebuggeeJoint getJoint() {
+		if (session == null)
+			return null;
+		
+		return (DebuggeeJoint) session.getAttribute("joint");
+	}
 
 	public int getLength() {
 		return toBytes().length;

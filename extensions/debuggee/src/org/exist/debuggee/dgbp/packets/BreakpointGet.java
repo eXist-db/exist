@@ -55,8 +55,7 @@ public class BreakpointGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = joint.getBreakpoint(breakpointID);
-
+		breakpoint = getJoint().getBreakpoint(breakpointID);
 	}
 
 	/* (non-Javadoc)

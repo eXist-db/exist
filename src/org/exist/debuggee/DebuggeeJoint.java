@@ -70,4 +70,6 @@ public interface DebuggeeJoint {
 	public Map<Integer, Breakpoint> getBreakpoints();
 
 	public Breakpoint removeBreakpoint(int breakpointID);
+	
+	public void sessionClosed();
 }

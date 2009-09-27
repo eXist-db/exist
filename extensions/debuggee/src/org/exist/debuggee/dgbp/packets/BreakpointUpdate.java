@@ -87,7 +87,7 @@ public class BreakpointUpdate extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = joint.getBreakpoint(breakpointID);
+		breakpoint = getJoint().getBreakpoint(breakpointID);
 		
 		if (breakpoint == null)
 			return;

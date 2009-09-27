@@ -64,7 +64,7 @@ public class ContextGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		variables = joint.getVariables();
+		variables = getJoint().getVariables();
 	}
 
 	@Override

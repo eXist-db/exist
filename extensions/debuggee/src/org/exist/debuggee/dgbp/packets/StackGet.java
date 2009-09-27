@@ -83,7 +83,7 @@ public class StackGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		stacks = joint.stackGet();
+		stacks = getJoint().stackGet();
 	}
 
 	
