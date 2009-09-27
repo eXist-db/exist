@@ -64,9 +64,11 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 	
 	public boolean connect() {
 		synchronized (lock) {
-			if (status == 2)
+			if (isConnected())
 				return true;
-				
+
+			status = 0;
+
 			try {
 				ConnectFuture future = connector.connect(new InetSocketAddress(host, port));
 				future.awaitUninterruptibly();
