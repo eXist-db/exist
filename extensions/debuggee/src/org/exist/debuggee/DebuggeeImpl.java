@@ -35,20 +35,22 @@ public class DebuggeeImpl implements Debuggee {
 
     protected final static Logger LOG = Logger.getLogger(Debuggee.class);
 
-	private static final Map<String, String> FEATURES = new HashMap<String, String>();
+	protected static final Map<String, String> GET_FEATURES = new HashMap<String, String>();
+	protected static final Map<String, String> SET_GET_FEATURES = new HashMap<String, String>();
 
     static {
-    	FEATURES.put("language_supports_threads", "0");
-    	FEATURES.put("language_name", "XQuery");
-    	FEATURES.put("language_version", "1.0");
-    	FEATURES.put("encoding", "UTF-8");
-    	FEATURES.put("protocol_version", "1");
-    	FEATURES.put("supports_async", "1");
-        FEATURES.put("breakpoint_types", "line");
-        FEATURES.put("multiple_sessions", "0");
-        FEATURES.put("max_children", "32");
-        FEATURES.put("max_data", "1024");
-        FEATURES.put("max_depth", "1");
+    	GET_FEATURES.put("language_supports_threads", "0");
+    	GET_FEATURES.put("language_name", "XQuery");
+    	GET_FEATURES.put("language_version", "1.0");
+    	GET_FEATURES.put("protocol_version", "1");
+    	GET_FEATURES.put("supports_async", "1");
+    	GET_FEATURES.put("breakpoint_types", "line");
+    	
+    	SET_GET_FEATURES.put("multiple_sessions", "0");
+    	SET_GET_FEATURES.put("encoding", "UTF-8");
+    	SET_GET_FEATURES.put("max_children", "32");
+    	SET_GET_FEATURES.put("max_data", "1024");
+    	SET_GET_FEATURES.put("max_depth", "1");
     }
     
     DebuggeeConnectionTCP connection = null; 

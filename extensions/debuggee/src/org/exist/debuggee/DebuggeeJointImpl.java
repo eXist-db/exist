@@ -40,6 +40,8 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
+	private Map<String, String> features = new HashMap<String, String>(DebuggeeImpl.SET_GET_FEATURES);
+	
 	private Expression firstExpression = null;
 	
 	private List<Expression> stack = new ArrayList<Expression>();
@@ -194,10 +196,19 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 	
 	public boolean featureSet(String name, String value) {
-		// TODO Auto-generated method stub
+		if (features.containsKey(name)) {
+			features.put(name, value);
+			
+			return true;
+		}
+		
 		return false;
 	}
 
+	public String featureGet(String name) {
+		return features.get(name);
+	}
+	
 	public List<Expression> stackGet() {
 		return stack;
 	}
@@ -282,4 +293,5 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	public Map<Integer, Breakpoint> getBreakpoints() {
 		return breakpoints;
 	}
+
 }
