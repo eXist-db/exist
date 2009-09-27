@@ -41,7 +41,7 @@ public class Stop extends Command implements CommandContinuation {
 	 */
 	@Override
 	public void exec() {
-		joint.continuation(this);
+		getJoint().continuation(this);
 	}
 
 	/* (non-Javadoc)

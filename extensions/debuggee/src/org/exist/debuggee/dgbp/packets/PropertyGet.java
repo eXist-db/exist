@@ -103,7 +103,7 @@ public class PropertyGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		variable = joint.getVariable(nameLong);
+		variable = getJoint().getVariable(nameLong);
 	}
 
 	/* (non-Javadoc)

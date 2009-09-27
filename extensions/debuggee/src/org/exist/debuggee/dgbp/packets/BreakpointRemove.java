@@ -55,8 +55,7 @@ public class BreakpointRemove extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = joint.removeBreakpoint(breakpointID);
-
+		breakpoint = getJoint().removeBreakpoint(breakpointID);
 	}
 
 	/* (non-Javadoc)

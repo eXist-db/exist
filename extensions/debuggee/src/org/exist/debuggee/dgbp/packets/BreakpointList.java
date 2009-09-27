@@ -47,8 +47,7 @@ public class BreakpointList extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoints = joint.getBreakpoints();
-
+		breakpoints = getJoint().getBreakpoints();
 	}
 
 	/* (non-Javadoc)

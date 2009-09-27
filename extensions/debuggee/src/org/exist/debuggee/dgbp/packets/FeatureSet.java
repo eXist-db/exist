@@ -72,6 +72,6 @@ public class FeatureSet extends Command {
 
 	@Override
 	public void exec() {
-		success = joint.featureSet(name, value);
+		success = getJoint().featureSet(name, value);
 	}
 }

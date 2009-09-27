@@ -41,7 +41,7 @@ public class StepInto extends Command implements CommandContinuation {
 	 */
 	@Override
 	public synchronized void exec() {
-		joint.continuation(this);
+		getJoint().continuation(this);
 	}
 
 	/* (non-Javadoc)

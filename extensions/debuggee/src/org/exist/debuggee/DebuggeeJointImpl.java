@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.debuggee.dgbp.packets.Run;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
@@ -176,8 +177,17 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public void reset() {
-		// TODO Auto-generated method stub
+		firstExpression = null;
 		
+		stack = new ArrayList<Expression>();
+		stackDepth = 1;
+		
+		command = null;
+		
+		breakpointNo = 0;
+		filesBreakpoints = new HashMap<String, Map<Integer, Breakpoint>>();
+		
+		breakpoints = new HashMap<Integer, Breakpoint>();
 	}
 
 	public synchronized void continuation(CommandContinuation command) {
@@ -295,6 +305,10 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 	public Map<Integer, Breakpoint> getBreakpoints() {
 		return breakpoints;
+	}
+
+	public void sessionClosed() {
+		continuation(new Run(null, ""));
 	}
 
 }

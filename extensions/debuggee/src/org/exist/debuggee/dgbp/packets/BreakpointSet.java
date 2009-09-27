@@ -77,8 +77,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 	 */
 	@Override
 	public void exec() {
-		status = joint.setBreakpoint(this);
-
+		status = getJoint().setBreakpoint(this);
 	}
 
 	/* (non-Javadoc)

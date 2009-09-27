@@ -36,7 +36,7 @@ import org.exist.security.xacml.XACMLSource;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection, Runnable {
+public class DebuggeeConnectionTCP implements DebuggeeConnection {
 	
 	private String host = "127.0.0.1";
 	private int port = 9000;
@@ -47,7 +47,11 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 	private int status = 0;
 	private Object lock = new Object();
 	
+	private DebuggeeJoint joint;
+	
 	public DebuggeeConnectionTCP(DebuggeeJoint joint, XACMLSource source) {
+		this.joint = joint;
+		
 		// Create TCP/IP connector.
 		connector = new NioSocketConnector();
 		
@@ -67,6 +71,8 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 			if (isConnected())
 				return true;
 
+			//TODO: should we close session?
+			
 			status = 0;
 
 			try {
@@ -79,33 +85,19 @@ public class DebuggeeConnectionTCP extends Thread implements DebuggeeConnection,
 				return false;
 			}
 
-			System.out.println("connected");
+			joint.reset();
 			status = 1;
 			
-//			start();
 			return true;
 		}
 	}
 	
-	public void run() {
-		try {
-		
-			// wait until the summation is done
-			session.getCloseFuture().awaitUninterruptibly();
-
-			connector.dispose();
-
-			System.out.println("disconnected");
-
-		} finally {
-			synchronized (lock) {
-				status = 0; 
-			}
-		}
-	}
-
 	public boolean isConnected() {
 		//XXX: resolve concurrency problem here!!!
 		return (status == 2 && connector.isActive());
+	}
+
+	public DebuggeeJoint getJoint() {
+		return joint;
 	}
 }

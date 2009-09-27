@@ -41,7 +41,7 @@ public class Run extends Command implements CommandContinuation {
 	 */
 	@Override
 	public void exec() {
-		joint.continuation(this);
+		getJoint().continuation(this);
 	}
 
 	/* (non-Javadoc)
@@ -76,7 +76,9 @@ public class Run extends Command implements CommandContinuation {
 
 	public void setStatus(String status) {
 		this.status = status;
-		session.write(this);
+		
+		if (session != null)
+			session.write(this);
 	}
 
 }
