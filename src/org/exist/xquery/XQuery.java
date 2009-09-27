@@ -213,14 +213,10 @@ public class XQuery {
         }
 
         if (context.isDebugMode()) {
-        	if (context.getDebuggeeJoint() != null) {
-        		context.getDebuggeeJoint().reset();
-        	} else {
-        		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
-        		if (debuggee != null) {
-        			debuggee.joint(expression);
-        		}
-        	}
+       		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
+       		if (debuggee != null) {
+       			debuggee.joint(expression);
+       		}
 		}
         
         //do any preparation before execution
