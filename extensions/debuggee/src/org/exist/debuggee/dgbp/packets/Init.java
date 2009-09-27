@@ -21,21 +21,22 @@
  */
 package org.exist.debuggee.dgbp.packets;
 
-import java.nio.ByteBuffer;
-
-import org.exist.debuggee.dgbp.DGBPPacket;
+import org.apache.mina.core.session.IoSession;
 import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Init extends DGBPPacket {
+public class Init extends AbstractCommandContinuation {
 
 	private XACMLSource fileuri;
 	
-	public Init(XACMLSource source) {
-		System.out.println("Init: source = "+source.getKey());
+	public Init(IoSession session) {
+		super(session, "");
+	}
+
+	public void setFileURI(XACMLSource source){
 		fileuri = source;
 	}
 
@@ -55,5 +56,17 @@ public class Init extends DGBPPacket {
 			"fileuri=\""+Command.getFileuri(fileuri)+"\"></init>";
 
 		return init_message.getBytes();
+	}
+
+	@Override
+	public void exec() {
+	}
+
+	public int getType() {
+		return INIT;
+	}
+
+	public boolean is(int type) {
+		return (type == INIT);
 	}
 }

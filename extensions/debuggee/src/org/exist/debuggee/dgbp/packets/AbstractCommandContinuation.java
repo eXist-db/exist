@@ -30,7 +30,7 @@ import org.exist.debuggee.CommandContinuation;
  */
 public abstract class AbstractCommandContinuation extends Command implements CommandContinuation {
 
-	private String status;
+	private String status = null;
 
 	public AbstractCommandContinuation(IoSession session, String args) {
 		super(session, args);
@@ -47,7 +47,8 @@ public abstract class AbstractCommandContinuation extends Command implements Com
 	public void setStatus(String status) {
 		this.status = status;
 		
-		session.write(this);
+		if (!session.isClosing())
+			session.write(this);
 	}
 
 	public void disconnect() {

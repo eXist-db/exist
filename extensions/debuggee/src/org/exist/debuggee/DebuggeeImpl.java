@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.dgbp.packets.Init;
 import org.exist.xquery.CompiledXQuery;
 
 /**
@@ -56,31 +58,21 @@ public class DebuggeeImpl implements Debuggee {
     DebuggeeConnectionTCP connection = null; 
     
 	public DebuggeeImpl() {
+		connection = new DebuggeeConnectionTCP(this);
 	}
 	
-	public DebuggeeJoint joint(CompiledXQuery compiledXQuery) {
-		DebuggeeJoint joint = null;
-		
+	public void joint(CompiledXQuery compiledXQuery) {
 		synchronized (this) {
-			if (connection == null) {
-				joint = new DebuggeeJointImpl();
-				connection = new DebuggeeConnectionTCP(joint, compiledXQuery.getSource());
-			}
+			IoSession session = connection.connect();
+
+			//link debugger session & script
+			DebuggeeJointImpl joint = new DebuggeeJointImpl();
+
+			joint.setCompiledScript(compiledXQuery);
+			compiledXQuery.getContext().setDebuggeeJoint(joint);
 			
-			if (connection.isConnected()) {
-				//debugging session is active, for now only one debugging session possible
-				joint = null;
-			} else if (!connection.connect()) {
-				joint = null;
-			} else {
-				joint = connection.getJoint();
-			}
-			
-			
+			joint.continuation(new Init(session));
 		}
 		
-		compiledXQuery.getContext().setDebuggeeJoint(joint);
-		
-		return joint;
 	}
 }

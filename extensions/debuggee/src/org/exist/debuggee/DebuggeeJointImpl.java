@@ -26,9 +26,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.debuggee.dgbp.packets.Run;
+import org.exist.debuggee.dgbp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
@@ -58,9 +59,15 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	//id, breakpoint
 	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
 
+	private CompiledXQuery compiledXQuery;
+	
 	public DebuggeeJointImpl() {
 	}
 	
+	protected void setCompiledScript(CompiledXQuery compiledXQuery) {
+		this.compiledXQuery = compiledXQuery;
+	}
+
 	public void stackEnter(Expression expr) {
 		stack.add(expr);
 		
@@ -75,6 +82,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
 		System.out.println("expressionStart " + expr.getLine() + " expr = "+ expr.toString());
+		
+		if (compiledXQuery == null)
+			return;
 		
 		if (firstExpression == null)
 			firstExpression = expr;
@@ -91,17 +101,27 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 		while (true) {
 			//didn't receive any command, wait for any 
-			if (command == null) {
-				waitCommand();
-				continue;
-			}
-			
-			//the status is break, wait for changes
-			if (command.isStatus(BREAK)) {
+			if (command == null &&
+					//the status is break, wait for changes
+					command.isStatus(BREAK)) {
 				waitCommand();
 				continue;
 			}
 
+			//wait for connection
+			if (command.is(CommandContinuation.INIT) && command.isStatus(STARTING)) {
+				Init init = (Init)command;
+				init.getSession().setAttribute("joint", this);
+				init.setFileURI(compiledXQuery.getSource());
+				
+				//break on first line
+				command.setStatus(BREAK);
+			}
+			
+			//disconnected
+			if (compiledXQuery == null)
+				return;
+			
 			//stop command, terminate
 			if (command.is(CommandContinuation.STOP) && !command.isStatus(STOPPED)) {
 				command.setStatus(STOPPED);
@@ -124,12 +144,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				}
 			}
 			
-			//break on first line
-			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(FIRST_RUN))
-				;
-
 			//step-into is done
-			else if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING))
+			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING))
 				command.setStatus(BREAK);
 
 			//RUS command with status RUNNING can be break only on breakpoints
@@ -154,7 +170,10 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 		if (firstExpression == expr) {
 			firstExpression = null;
+			
 			command.setStatus(STOPPED);
+			
+			sessionClosed(true);
 		}
 		
 	}
@@ -191,10 +210,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public synchronized void continuation(CommandContinuation command) {
-		if (this.command == null)
-			command.setStatus(FIRST_RUN);
-
-		else if (firstExpression == null)
+		if (firstExpression == null && !command.is(CommandContinuation.INIT))
 			command.setStatus(STOPPED);
 		
 		else
@@ -222,7 +238,14 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		return features.get(name);
 	}
 	
-	public List<Expression> stackGet() {
+	public synchronized List<Expression> stackGet() {
+		//wait, script didn't started
+		while (stack.size() == 0)
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		
 		return stack;
 	}
 
@@ -307,8 +330,22 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		return breakpoints;
 	}
 
-	public void sessionClosed() {
-		continuation(new Run(null, ""));
-	}
+	public synchronized void sessionClosed(boolean disconnect) {
+		System.out.println("sessionClosed");
 
+		//disconnected already
+		if (compiledXQuery == null)
+			return;
+		
+		//disconnect debuggee & compiled source
+		XQueryContext context = compiledXQuery.getContext();
+		context.setDebugMode(false);
+		context.setDebuggeeJoint(null);
+		compiledXQuery = null;
+		
+		if (command != null && disconnect)
+			command.disconnect();
+		
+		notifyAll();
+	}
 }
