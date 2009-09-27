@@ -46,6 +46,7 @@ public interface DebuggeeJoint {
 	public void reset();
 
 	public boolean featureSet(String name, String value);
+	public String featureGet(String name);
 
 	public void continuation(CommandContinuation command);
 

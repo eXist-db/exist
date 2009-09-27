@@ -104,10 +104,7 @@ public abstract class Command extends DGBPPacket {
 		String command = message.substring(0, pos);
 		String args = message.substring(command.length());
 		
-		if (command.equals("feature_set")) {
-			return new FeatureSet(session, args);
-		
-		} else if (command.equals("run")) {
+		if (command.equals("run")) {
 			return new Run(session, args);
 		
 		} else if (command.equals("step_into")) {
@@ -158,7 +155,15 @@ public abstract class Command extends DGBPPacket {
         } else if (command.equals("source")) {
             return new Source(session, args);
 
+        } else if (command.equals("feature_set")) {
+			return new FeatureSet(session, args);
+
+        } else if (command.equals("feature_get")) {
+			return new FeatureGet(session, args);
+
         }
+			
+
 
 		return new Error(command, session, args);
 	}
