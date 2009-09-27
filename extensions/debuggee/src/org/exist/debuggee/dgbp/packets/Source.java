@@ -23,13 +23,10 @@
 package org.exist.debuggee.dgbp.packets;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.EXistException;
 import org.exist.debuggee.dgbp.Errors;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.Base64Encoder;
@@ -84,8 +81,7 @@ public class Source extends Command {
         	if (fileURI.toLowerCase().startsWith("dbgp:database")) {
         		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(16) , "UTF-8" ) );
 
-        		//TODO: authorization ??? add command to DBGP?
-        		DBBroker broker = BrokerPool.getInstance().get(User.DEFAULT);
+        		DBBroker broker = getJoint().getContext().getBroker();
     			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
     			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -115,8 +111,6 @@ public class Source extends Command {
         } catch (IOException e) {
             exception = e;
         } catch (PermissionDeniedException e) {
-            exception = e;
-		} catch (EXistException e) {
             exception = e;
         } finally {
         	if (is != null)

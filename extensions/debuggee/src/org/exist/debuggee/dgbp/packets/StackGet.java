@@ -51,21 +51,25 @@ public class StackGet extends Command {
 		String response = "" +
 			"<response " +
 					"command=\"stack_get\" " +
-					"transaction_id=\""+transactionID+"\">\n" +
-				stackToString() + 
-			"</response>";
+					"transaction_id=\""+transactionID+"\">\n";
+
+		for (int depth = 0; depth < stacks.size(); depth++) {
+			response += stackToString(depth);
+		}
+			
+		response += "</response>";
 		
 		return response.getBytes();
 
 	}
 	
-	private String stackToString() {
+	private String stackToString(int stackDepth) {
 		if (stacks == null || stacks.size() == 0)
 			return "";
 		
-		Expression expr = stacks.get(0);
+		Expression expr = stacks.get(stackDepth);
 		
-		return "<stack level=\""+String.valueOf(stackDepth)+"\" " +
+		return "<stack level=\""+String.valueOf(stackDepth+1)+"\" " +
 					"lineno=\""+expr.getLine()+"\" " +
 					"type=\"file\" " +
 					"filename=\""+getFileuri(expr.getSource())+"\" />";
@@ -73,7 +77,6 @@ public class StackGet extends Command {
 //					"where=\"\" " +
 //					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +
 //					"cmdend=\""+(expr.getLine())+":"+(expr.getColumn()+1)+"\"/>";
-
 	}
 	
 	

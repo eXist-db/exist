@@ -69,11 +69,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public void stackEnter(Expression expr) {
+		System.out.println("stackEnter " + expr.getLine() + " expr = "+ expr.toString());
 		stack.add(expr);
 		
 	}
 	
 	public void stackLeave(Expression expr) {
+		System.out.println("stackLeave " + expr.getLine() + " expr = "+ expr.toString());
 		stack.remove(stack.size()-1);
 	}
 
@@ -191,8 +193,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 * @see org.exist.debuggee.DebuggeeJoint#getContext()
 	 */
 	public XQueryContext getContext() {
-		// TODO Auto-generated method stub
-		return null;
+		return compiledXQuery.getContext();
 	}
 
 	public void reset() {

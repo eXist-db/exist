@@ -47,8 +47,7 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 		connector = new NioSocketConnector();
 		
 		// Set connect timeout for 30 seconds.
-		//XXX: find the best timeout ???
-//		connector.setConnectTimeoutMillis(3000*1000L);
+		connector.setConnectTimeoutMillis(30*1000L);
 
 		connector.getFilterChain().addLast(
 				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
