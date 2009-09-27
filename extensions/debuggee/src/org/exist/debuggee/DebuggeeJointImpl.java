@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.debuggee.dgbp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dgbp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
@@ -47,7 +48,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private Expression firstExpression = null;
 	
 	private List<Expression> stack = new ArrayList<Expression>();
-	private int stackDepth = 1;
+	private int stackDepth = 0;
 	
 	private CommandContinuation command = null;
 	
@@ -66,17 +67,26 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
 	protected void setCompiledScript(CompiledXQuery compiledXQuery) {
 		this.compiledXQuery = compiledXQuery;
+		stack.add(null);
 	}
 
 	public void stackEnter(Expression expr) {
 		System.out.println("stackEnter " + expr.getLine() + " expr = "+ expr.toString());
 		stack.add(expr);
+		stackDepth++;
 		
 	}
 	
 	public void stackLeave(Expression expr) {
 		System.out.println("stackLeave " + expr.getLine() + " expr = "+ expr.toString());
 		stack.remove(stack.size()-1);
+		stackDepth--;
+		
+		if (command.is(CommandContinuation.STEP_OUT) 
+				&& command.getCallStackDepth() > stackDepth
+				&& command.isStatus(RUNNING)) {
+			command.setStatus(BREAK);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -91,10 +101,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		if (firstExpression == null)
 			firstExpression = expr;
 		
-		if (stack.size() == stackDepth)
-			stack.set(stackDepth-1, expr);
-		else
-			stack.add(expr);
+		stack.set(stackDepth, expr);
 		
 		String fileName = expr.getSource().getKey();
 		Integer lineNo = expr.getLine();
@@ -103,7 +110,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 		while (true) {
 			//didn't receive any command, wait for any 
-			if (command == null &&
+			if (command == null ||
 					//the status is break, wait for changes
 					command.isStatus(BREAK)) {
 				waitCommand();
@@ -151,7 +158,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				command.setStatus(BREAK);
 
 			//RUS command with status RUNNING can be break only on breakpoints
-			else if (command.is(CommandContinuation.RUN) && command.isStatus(RUNNING))
+			else if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING))
 				break;
 
 			//any continuation command with status RUNNING
@@ -200,7 +207,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		firstExpression = null;
 		
 		stack = new ArrayList<Expression>();
-		stackDepth = 1;
+		stackDepth = 0;
 		
 		command = null;
 		
@@ -217,6 +224,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		else
 			command.setStatus(STARTING);
 
+		((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
+		
 		this.command = command;
 
 		notifyAll();

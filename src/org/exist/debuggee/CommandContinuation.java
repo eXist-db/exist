@@ -47,6 +47,8 @@ public interface CommandContinuation {
 	public String getStatus();
 	public void setStatus(String status);
 	
+	public int getCallStackDepth();
+
 	//close session
 	public void disconnect();
 }
