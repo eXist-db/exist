@@ -31,6 +31,8 @@ import org.exist.debuggee.CommandContinuation;
 public abstract class AbstractCommandContinuation extends Command implements CommandContinuation {
 
 	private String status = null;
+	
+	private int callStackDepth = 0;
 
 	public AbstractCommandContinuation(IoSession session, String args) {
 		super(session, args);
@@ -51,6 +53,14 @@ public abstract class AbstractCommandContinuation extends Command implements Com
 			session.write(this);
 	}
 
+	public int getCallStackDepth() {
+		return callStackDepth;
+	}
+
+	public void setCallStackDepth(int callStackDepth) {
+		this.callStackDepth = callStackDepth;
+	}
+	
 	public void disconnect() {
 		session.close(true);
 	}
