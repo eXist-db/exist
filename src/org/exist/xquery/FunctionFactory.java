@@ -242,6 +242,7 @@ public class FunctionFactory {
 					}
 					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);
+                    func.setASTNode(ast);
 					step = new InternalFunctionCall(func);
 				} else {
                     // function is from an imported XQuery module
