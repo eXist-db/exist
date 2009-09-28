@@ -38,6 +38,8 @@ public class DebuggableExpression implements Expression {
     
     public DebuggableExpression(Expression expression) {
         this.expression = expression;
+        this.line = expression.getLine();
+        this.column = expression.getColumn();
     }
 
     public int getExpressionId() {

@@ -664,7 +664,13 @@ defaultVar throws XPathException
 	{ #defaultVar = #[VARIABLE_BINDING, varName]; }
 	;
 
-ifExpr throws XPathException: "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
+ifExpr throws XPathException: 
+        "if"^ LPAREN! expr RPAREN! t:"then"! thenExpr:exprSingle e:"else"! elseExpr:exprSingle
+        {
+            #thenExpr.copyLexInfo(#t);
+            #elseExpr.copyLexInfo(#e);
+        }
+    ;
 
 // === Logical ===
 	

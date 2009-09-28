@@ -49,6 +49,7 @@ public class InternalFunctionCall extends Function
         long start = System.currentTimeMillis();
         if (context.getProfiler().traceFunctions())
             context.getProfiler().traceFunctionStart(this);
+        context.expressionStart(this);
         try {
             return function.eval(contextSequence, contextItem);
         } catch (XPathException e) {
@@ -56,6 +57,7 @@ public class InternalFunctionCall extends Function
                 e.setLocation(line, column);
             throw e;
         } finally {
+            context.expressionEnd(this);
             if (context.getProfiler().traceFunctions())
                 context.getProfiler().traceFunctionEnd(this, System.currentTimeMillis() - start);
         }
