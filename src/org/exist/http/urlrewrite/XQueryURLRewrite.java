@@ -659,7 +659,7 @@ public class XQueryURLRewrite implements Filter {
 
     public static class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
-        Map addedParams = new HashMap();
+        Map<String, String[]> addedParams = new HashMap<String, String[]>();
 
         Map attributes = new HashMap();
         
@@ -677,10 +677,7 @@ public class XQueryURLRewrite implements Filter {
             for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
                 String key = (String) e.nextElement();
                 String[] value = request.getParameterValues(key);
-                if (value.length == 1)
-                    addedParams.put(key, value[0]);
-                else
-                    addedParams.put(key, value);
+                addedParams.put(key, value);
             }
 
             contentType = request.getContentType();
@@ -704,11 +701,14 @@ public class XQueryURLRewrite implements Filter {
         }
 
         public void addParameter(String name, String value) {
-            addedParams.put(name, value);
+            addedParams.put(name, new String[] { value });
         }
 
         public String getParameter(String name) {
-            return (String) addedParams.get(name);
+            String[] param = addedParams.get(name);
+            if (param != null && param.length > 0)
+                return param[0];
+            return null;
         }
 
         public Map getParameterMap() {
@@ -725,14 +725,7 @@ public class XQueryURLRewrite implements Filter {
         }
 
         public String[] getParameterValues(String s) {
-            Object value = addedParams.get(s);
-            if (value != null) {
-                if (value instanceof String[])
-                    return (String[]) value;
-                else
-                    return new String[] { value.toString() };
-            }
-            return null;
+            return addedParams.get(s);
         }
 
         public ServletInputStream getInputStream() throws IOException {
