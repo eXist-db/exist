@@ -34,7 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 		
 function $(id) {
-    return document.getElementById(id);
+	return document.getElementById(id);
 }
 
 
@@ -470,7 +470,7 @@ var I8N = {
      'status' : '... Loading ...'},
 		 */
     lang : null,
-    langs : ["fr" , "es", "gl", "nn-NO", "nb-NO", "ru"],
+    langs : ["cz", "es", "fr" , "gl", "it", "nb-NO", "nl", "nn-NO", "ru"],
 
 		
 
@@ -1292,6 +1292,9 @@ function XFModel(id, schemas) {
 	this.defaultInstance = null;
 	xforms.models.push(this);
 	xforms.defaultModel = xforms.defaultModel || this;
+	$(id).getInstanceDocument = function(modid) {
+		return this.xfElement.getInstanceDocument(modid);
+	};
 
 	if (schemas) {
 		schemas = schemas.split(" ");
@@ -1495,7 +1498,7 @@ XFInstance.prototype.construct = function() {
                     "Fatal error loading " + this.src, e.toString());
 	        }
 	    } else {
-		   	this.setDoc(xmlResolveEntities(this.srcXML));
+		   	this.setDoc(this.srcXML);
 		}
 	}
 };
@@ -2429,15 +2432,29 @@ XFToggle.prototype = new XFAbstractAction();
 
 		
 
-XFToggle.prototype.run = function() {
-	XFToggle.toggle(this.caseId);
+XFToggle.prototype.run = function(element, ctx) {
+	XFToggle.toggle(this.caseId, ctx);
 };
 
 
 		
 
-XFToggle.toggle = function(caseId) {
+XFToggle.toggle = function(caseId, ctx) {
 	xforms.openAction();
+	if (typeof caseId == 'object') {
+		if (!ctx) {
+			ctx = xforms.defaultModel.getInstanceDocument() ? xforms.defaultModel.getInstanceDocument().documentElement : null;
+		}
+		var xp = caseId.xpath.evaluate(ctx);
+		if (typeof xp == 'string') {
+			caseId = xp;
+		} else {
+			caseId = '';
+			if (xp[0]) {
+				caseId = getValue(xp[0]);
+			}
+		}
+	}
 	var element = IdManager.find(caseId);
 	var childs = element.parentNode.childNodes;
 	var ul;
@@ -2452,7 +2469,7 @@ XFToggle.toggle = function(caseId) {
 
 		if (child == element) {
 			index = i - 1;
-		} else if (child.style.display != "none") {
+		} else if (child.style && child.style.display != "none") {
 			XMLEvents.dispatch(child, "xforms-deselect");
 			child.style.display = "none";
                  
@@ -3057,7 +3074,7 @@ XFInput.prototype.initInput = function(type) {
 		}
 	}
 
-//	this.initFocus(input, true);
+	this.initFocus(input, true);
 	this.input = input;
 };
 
@@ -5367,7 +5384,7 @@ TypeDefs.XSLTForms = {
 		
 
 	"decimal" : {
-		"patterns" : [ "^[-+]?\\(*[-+]?[0-9]*(\\.[0-9]*)?(([+-/]|\\*)\\(*[0-9]*(\\.[0-9]*)?\\)*)*$" ],
+		"patterns" : [ "^[-+]?\\(*[-+]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(([+-/]|\\*)\\(*([0-9]+(\\.[0-9]*)?|\\.[0-9]+)\\)*)*$" ],
 		"class" : "number",
 		"eval" : "xsd:decimal"
 	},
@@ -5885,6 +5902,21 @@ function XNode(type, ns, name, value, owner) {
     XNode.init.call(this, type, ns, name, value, owner);
 }
 
+		
+
+XNode.prototype.getElementsByTagName = function(name) {
+	var targets = this.nodeName == name ? [this] : [];
+	for (var i = 0; i < this.childNodes.length; ++i) {
+		targets = targets.concat(this.childNodes[i].getElementsByTagName(name));
+	}
+	return targets;
+};
+
+		
+
+XNode.prototype.getTextContent = function() {
+	return getValue(this);
+};
 
 		
 
@@ -6209,13 +6241,11 @@ XDocument.prototype.appendChild = function(node) {
     this.documentElement = this.childNodes[0];
 };
 
-
 		
 
 XDocument.prototype.createElementNS = function(ns, name) {
     return XNode.create(NodeType.ELEMENT, ns, name, null, this);
 };
-
 
 		
 
@@ -6223,13 +6253,17 @@ XDocument.prototype.createTextNode = function(value) {
     return XNode.create(NodeType.TEXT, null, '#text', value, this);
 };
 
-
 		
 
 XDocument.prototype.createAttributeNS = function(ns, name) {
     return XNode.create(NodeType.ATTRIBUTE, ns, name, null, this);
 };
 
+		
+
+XDocument.prototype.getElementsByTagName = function(name) {
+	return this.documentElement.getElementsByTagName(name);
+};
 
 		
 
@@ -6257,7 +6291,6 @@ XDocument.prototype.transformToText = function(xslt) {
 	}
 };
 
-
 		
 
 XDocument.unescape = function(xml) {
@@ -6269,7 +6302,6 @@ XDocument.unescape = function(xml) {
 		}
 		return xml;
 }
-
 
 		
 
@@ -6388,7 +6420,6 @@ XDocument.parseName_ = function(parent, nsList, name, att) {
     
     return [ns, name];
 };
-
 
 		
 
@@ -7210,7 +7241,9 @@ function xmlValue(node) {
             ret += arguments.callee(node.childNodes[i]);
         }
 				if(node.type.eval) {
-					ret = ret == "" ? 0 : eval(ret);
+					try {
+						ret = ret == "" ? 0 : eval(ret);
+					} catch (e) {}
 				}
     }
 
@@ -7394,7 +7427,7 @@ XPathCoreFunctions = {
 
 		
 
-	"last" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions last" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
 		function(ctx) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.lastInvalidArgumentsNumber;
@@ -7404,7 +7437,7 @@ XPathCoreFunctions = {
 
 		
 
-	"position" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions position" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
 		function(ctx) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.positionInvalidArgumentsNumber;
@@ -7414,7 +7447,17 @@ XPathCoreFunctions = {
 
 		
 
-	"count" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms context" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
+		function(ctx) {
+			if (arguments.length != 1) {
+				throw XPathCoreFunctionsExceptions.positionInvalidArgumentsNumber;
+			}
+			return [ctx.node];
+		} ),
+
+		
+
+	"http://www.w3.org/2005/xpath-functions count" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(nodeSet) { 
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.countInvalidArgumentsNumber;
@@ -7427,7 +7470,7 @@ XPathCoreFunctions = {
 
 		
 
-	"id" : new XPathFunction(true, XPathFunction.DEFAULT_NODE, false,
+	"http://www.w3.org/2005/xpath-functions id" : new XPathFunction(true, XPathFunction.DEFAULT_NODE, false,
 		function(context, object) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.idInvalidArgumentsNumber;
@@ -7439,7 +7482,7 @@ XPathCoreFunctions = {
 
 			if (typeof(object.length) != "undefined") {
 				for (var i = 0; i < object.length; ++i) {
-					var res = XPathCoreFunctions.id.evaluate(context, object[i]);
+					var res = XPathCoreFunctions['http://www.w3.org/2005/xpath-functions id'].evaluate(context, object[i]);
 
 					for (i = 0; i < res.length; i++) {
 						result.push(res[i]);
@@ -7458,7 +7501,7 @@ XPathCoreFunctions = {
 
 		
 
-	"local-name" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions local-name" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(nodeSet) {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.localNameInvalidArgumentsNumber;
@@ -7474,7 +7517,7 @@ XPathCoreFunctions = {
 
 		
 
-	"namespace-uri" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions namespace-uri" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(nodeSet) {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.namespaceUriInvalidArgumentsNumber;
@@ -7487,7 +7530,7 @@ XPathCoreFunctions = {
 
 		
 
-	"name" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions name" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(nodeSet) {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.nameInvalidArgumentsNumber;
@@ -7500,7 +7543,7 @@ XPathCoreFunctions = {
 
 		
 
-	"string" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions string" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(object) {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.stringInvalidArgumentsNumber;
@@ -7510,7 +7553,7 @@ XPathCoreFunctions = {
 
 		
 
-	"concat" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions concat" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length <2) {
 				throw XPathCoreFunctionsExceptions.concatInvalidArgumentsNumber;
@@ -7526,7 +7569,7 @@ XPathCoreFunctions = {
 
 		
 
-	"starts-with" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions starts-with" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string, prefix) {   
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.startsWithInvalidArgumentsNumber;
@@ -7536,7 +7579,7 @@ XPathCoreFunctions = {
 
 		
 
-	"contains" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions contains" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string, substring) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.containsInvalidArgumentsNumber;
@@ -7546,7 +7589,7 @@ XPathCoreFunctions = {
 
 		
 
-	"substring-before" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions substring-before" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string, substring) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.substringBeforeInvalidArgumentsNumber;
@@ -7557,7 +7600,7 @@ XPathCoreFunctions = {
 
 		
 
-	"substring-after" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions substring-after" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string, substring) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.substringAfterInvalidArgumentsNumber;
@@ -7570,7 +7613,7 @@ XPathCoreFunctions = {
 
 		
 
-	"substring" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions substring" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string, index, length) {
 			if (arguments.length != 2 && arguments.length != 3) {
 				throw XPathCoreFunctionsExceptions.substringInvalidArgumentsNumber;
@@ -7588,7 +7631,7 @@ XPathCoreFunctions = {
 
 		
 
-	"compare" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions compare" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string1, string2) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.compareInvalidArgumentsNumber;
@@ -7600,7 +7643,7 @@ XPathCoreFunctions = {
 
 		
 
-	"string-length" : new XPathFunction(false, XPathFunction.DEFAULT_STRING, false,
+	"http://www.w3.org/2005/xpath-functions string-length" : new XPathFunction(false, XPathFunction.DEFAULT_STRING, false,
 		function(string) {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.stringLengthInvalidArgumentsNumber;
@@ -7610,7 +7653,7 @@ XPathCoreFunctions = {
 
 		
 
-	"normalize-space" : new XPathFunction(false, XPathFunction.DEFAULT_STRING, false,
+	"http://www.w3.org/2005/xpath-functions normalize-space" : new XPathFunction(false, XPathFunction.DEFAULT_STRING, false,
 		function(string) {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.normalizeSpaceLengthInvalidArgumentsNumber;
@@ -7621,7 +7664,7 @@ XPathCoreFunctions = {
 
 		
 
-	"translate" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions translate" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string, from, to) {
 			if (arguments.length != 3) {
 				throw XPathCoreFunctionsExceptions.translateInvalidArgumentsNumber;
@@ -7642,7 +7685,7 @@ XPathCoreFunctions = {
 
 		
 
-	"boolean" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions boolean" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(object) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.booleanInvalidArgumentsNumber;
@@ -7652,7 +7695,7 @@ XPathCoreFunctions = {
 
 		
 
-	"not" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions not" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(condition) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.notInvalidArgumentsNumber;
@@ -7662,7 +7705,7 @@ XPathCoreFunctions = {
 
 		
 
-	"true" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions true" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.trueInvalidArgumentsNumber;
@@ -7672,7 +7715,7 @@ XPathCoreFunctions = {
 
 		
 
-	"false" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions false" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.falseInvalidArgumentsNumber;
@@ -7682,7 +7725,7 @@ XPathCoreFunctions = {
 
 		
 
-	"lang" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions lang" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
 		function(context, language) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.langInvalidArgumentsNumber;
@@ -7710,7 +7753,7 @@ XPathCoreFunctions = {
 
 		
 
-	"number" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions number" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(object) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.numberInvalidArgumentsNumber;
@@ -7720,7 +7763,7 @@ XPathCoreFunctions = {
 
 		
 
-	"sum" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions sum" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(nodeSet) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.sumInvalidArgumentsNumber;
@@ -7739,7 +7782,7 @@ XPathCoreFunctions = {
 
 		
 
-	"floor" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions floor" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(number) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.floorInvalidArgumentsNumber;
@@ -7749,7 +7792,7 @@ XPathCoreFunctions = {
 
 		
 
-	"ceiling" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions ceiling" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(number) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.ceilingInvalidArgumentsNumber;
@@ -7759,7 +7802,7 @@ XPathCoreFunctions = {
 
 		
 
-	"round" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions round" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(number) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.roundInvalidArgumentsNumber;
@@ -7769,7 +7812,7 @@ XPathCoreFunctions = {
 
 		
 
-	"power" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms power" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(x, y) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.powerInvalidArgumentsNumber;
@@ -7779,7 +7822,7 @@ XPathCoreFunctions = {
 
 		
 
-	"random" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms random" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length > 1) {
 				throw XPathCoreFunctionsExceptions.randomInvalidArgumentsNumber;
@@ -7789,7 +7832,7 @@ XPathCoreFunctions = {
 
 		
 
-	"boolean-from-string" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms boolean-from-string" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.booleanFromStringInvalidArgumentsNumber;
@@ -7805,7 +7848,7 @@ XPathCoreFunctions = {
 
 		
 
-	"if" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, true,
+	"http://www.w3.org/2002/xforms if" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, true,
 		function(condition, onTrue, onFalse) {
 			if (arguments.length != 3) {
 				throw XPathCoreFunctionsExceptions.ifInvalidArgumentsNumber;
@@ -7815,7 +7858,7 @@ XPathCoreFunctions = {
 
 		
 
-	"choose" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, true,
+	"http://www.w3.org/2002/xforms choose" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, true,
 		function(condition, onTrue, onFalse) {
 			if (arguments.length != 3) {
 				throw XPathCoreFunctionsExceptions.chooseInvalidArgumentsNumber;
@@ -7825,7 +7868,7 @@ XPathCoreFunctions = {
 
 		
 
-	"avg" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions avg" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(nodeSet) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.avgInvalidArgumentsNumber;
@@ -7833,14 +7876,14 @@ XPathCoreFunctions = {
 			if (typeof nodeSet != "object") {
 				throw XPathCoreFunctionsExceptions.avgInvalidArgumentType;
 			}
-			var sum = XPathCoreFunctions.sum.evaluate(nodeSet);
-			var quant = XPathCoreFunctions.count.evaluate(nodeSet);
+			var sum = XPathCoreFunctions['http://www.w3.org/2005/xpath-functions sum'].evaluate(nodeSet);
+			var quant = XPathCoreFunctions['http://www.w3.org/2005/xpath-functions count'].evaluate(nodeSet);
 			return sum / quant;
 		} ),
 
 		
 
-	"min" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions min" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function (nodeSet) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.minInvalidArgumentsNumber;
@@ -7871,7 +7914,7 @@ XPathCoreFunctions = {
 
 		
 
-	"max" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2005/xpath-functions max" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function (nodeSet) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.maxInvalidArgumentsNumber;
@@ -7902,7 +7945,7 @@ XPathCoreFunctions = {
 
 		
 
-	"count-non-empty" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms count-non-empty" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(nodeSet) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.countNonEmptyInvalidArgumentsNumber;
@@ -7923,7 +7966,7 @@ XPathCoreFunctions = {
 
 		
 
-	"index" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms index" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
 		function(ctx, id) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.indexInvalidArgumentsNumber;
@@ -7935,7 +7978,7 @@ XPathCoreFunctions = {
 
 		
 
-	"nodeindex" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms nodeindex" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, false,
 		function(ctx, id) {
 			if (arguments.length != 2) {
 				throw XPathCoreFunctionsExceptions.nodeIndexInvalidArgumentsNumber;
@@ -7954,7 +7997,7 @@ XPathCoreFunctions = {
 
 		
 
-	"property" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms property" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(name) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.propertyInvalidArgumentsNumber;
@@ -7970,7 +8013,7 @@ XPathCoreFunctions = {
 
 		
 
-	"instance" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, true,
+	"http://www.w3.org/2002/xforms instance" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, true,
 		function(ctx, idRef) {
 			if (arguments.length > 2) {
 				throw XPathCoreFunctionsExceptions.instanceInvalidArgumentsNumber;
@@ -7987,7 +8030,7 @@ XPathCoreFunctions = {
 
 		
 
-	"now" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms now" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.nowInvalidArgumentsNumber;
@@ -7997,17 +8040,17 @@ XPathCoreFunctions = {
 
 		
 
-	"local-date" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms local-date" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.localDateInvalidArgumentsNumber;
 			}
-			return I8N.format(new Date(), "yyyy-MM-dd", true);
+			return I8N.format(new Date(), "yyyy-MM-ddz", true);
 		} ),
 
 		
 
-	"local-dateTime" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms local-dateTime" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function() {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.localDateTimeInvalidArgumentsNumber;
@@ -8017,7 +8060,7 @@ XPathCoreFunctions = {
 
 		
 
-	"days-from-date" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms days-from-date" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.daysFromDateInvalidArgumentsNumber;
@@ -8034,7 +8077,7 @@ XPathCoreFunctions = {
 
 		
 
-	"days-to-date" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms days-to-date" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(number) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.daysToDateInvalidArgumentsNumber;
@@ -8050,7 +8093,7 @@ XPathCoreFunctions = {
 
 		
 
-	"seconds-from-dateTime" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms seconds-from-dateTime" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(string) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.secondsFromDateTimeInvalidArgumentsNumber;
@@ -8070,7 +8113,7 @@ XPathCoreFunctions = {
 
 		
 
-	"seconds-to-dateTime" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms seconds-to-dateTime" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(number) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.secondsToDateTimeInvalidArgumentsNumber;
@@ -8086,7 +8129,7 @@ XPathCoreFunctions = {
 
 		
 
-	"current" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, true,
+	"http://www.w3.org/2002/xforms current" : new XPathFunction(true, XPathFunction.DEFAULT_NONE, true,
 		function(ctx) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.currentInvalidArgumentsNumber;
@@ -8098,7 +8141,7 @@ XPathCoreFunctions = {
 
 		
 
-	"is-valid" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2002/xforms is-valid" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(nodeSet) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.isValidInvalidArgumentsNumber;
@@ -8117,7 +8160,7 @@ XPathCoreFunctions = {
 
 		
 
-	"is-card-number" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2002/xforms is-card-number" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(string) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.isCardNumberInvalidArgumentsNumber;
@@ -8138,7 +8181,7 @@ XPathCoreFunctions = {
 
 		
 
-	"digest" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+	"http://www.w3.org/2002/xforms digest" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(str, algo, enco) {
 			if (arguments.length != 2 && arguments.length != 3) {
 				throw XPathCoreFunctionsExceptions.digestInvalidArgumentsNumber;
@@ -8228,7 +8271,7 @@ XPathCoreFunctions = {
 
 		
 
-	"upper-case" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions upper-case" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(str) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.upperCaseInvalidArgumentsNumber;
@@ -8239,7 +8282,7 @@ XPathCoreFunctions = {
 
 		
 
-	"lower-case" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+	"http://www.w3.org/2005/xpath-functions lower-case" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
 		function(str) {
 			if (arguments.length != 1) {
 				throw XPathCoreFunctionsExceptions.lowerCaseInvalidArgumentsNumber;
@@ -8588,7 +8631,9 @@ function xmlValue(node) {
             ret += arguments.callee(node.childNodes[i]);
         }
 				if(node.type.eval) {
-					ret = ret == "" ? 0 : eval(ret);
+					try {
+						ret = ret == "" ? 0 : eval(ret);
+					} catch (e) {}
 				}
     }
 

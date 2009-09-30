@@ -1,0 +1,13 @@
+<txs:scriptsheet xmlns:txs="http://www.agencexml.com/txs" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:stylesheet version="1.0" txs:name="main">
+		<xsl:template match="/">
+			<txs:return contenttype="application/xml" format="xml">
+				<dummy xmlns="">
+					<txs:save filename="myfile.xml" format="xml">
+						<xsl:copy-of select="/"/>
+					</txs:save>
+				</dummy>
+			</txs:return>
+		</xsl:template>
+	</xsl:stylesheet>
+</txs:scriptsheet>
