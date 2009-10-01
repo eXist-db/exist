@@ -261,8 +261,10 @@ public class FunctionCall extends Function {
 //            LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
             return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem);
         } else {
-            context.expressionStart(this);
-            context.functionStart(functionDef.getSignature());
+            
+        	context.stackEnter(this);
+            
+        	context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
             try {
                 if (context.getProfiler().traceFunctions())
@@ -288,7 +290,8 @@ public class FunctionCall extends Function {
     		} finally {
     			context.popLocalVariables(mark);
                 context.functionEnd();
-                context.expressionEnd(this);
+                
+                context.stackLeave(this);
     		}
         }
     }
@@ -331,8 +334,10 @@ public class FunctionCall extends Function {
         
         protected Sequence execute() throws XPathException {
             context.pushDocumentContext();
+            
+            context.stackEnter(expression);
+
             context.functionStart(functionDef.getSignature());
-            context.expressionStart(expression);
             LocalVariable mark = context.markLocalVariables(true);
             try {
                 Sequence returnSeq = expression.eval(contextSequence, contextItem);
@@ -347,7 +352,9 @@ public class FunctionCall extends Function {
             } finally {
                 context.popLocalVariables(mark);
                 context.functionEnd();
-                context.expressionEnd(expression);
+                
+                context.stackLeave(expression);
+                
                 context.popDocumentContext();
             }
         }
