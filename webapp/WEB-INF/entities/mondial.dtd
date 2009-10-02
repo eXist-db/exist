@@ -73,7 +73,7 @@
 <!ELEMENT located_on EMPTY>
 <!ATTLIST located_on island IDREF #REQUIRED>
 
-<!ELEMENT organization (name?,abbrev,established?,members*)>
+<!ELEMENT organization (name,abbrev,established?,members*)>
 <!ATTLIST organization id ID #REQUIRED
                        headq IDREF #IMPLIED>
 <!ELEMENT abbrev (#PCDATA)>
@@ -99,7 +99,7 @@
 <!ELEMENT source (mountains?,located*,from?,altitude?,longitude?,latitude?)>
 <!ATTLIST source country IDREFS #REQUIRED>
 <!ELEMENT estuary (located*,longitude?,latitude?)>
-<!ATTLIST estuary country CDATA #REQUIRED>
+<!ATTLIST estuary country IDREFS #REQUIRED>
 <!ELEMENT length (#PCDATA)>
 <!ELEMENT height (#PCDATA)>
 <!ELEMENT altitude (#PCDATA)>
@@ -118,8 +118,8 @@
              water IDREF #REQUIRED>
 
 <!ELEMENT located EMPTY>
-<!ATTLIST located country CDATA #REQUIRED
-                  province CDATA #IMPLIED>
+<!ATTLIST located country IDREF #REQUIRED
+                  province IDREFS #IMPLIED>
 
 <!ELEMENT lake (name,located*,to*,area?,altitude?,depth?,longitude?,latitude?)>
 <!ATTLIST lake id ID #REQUIRED
