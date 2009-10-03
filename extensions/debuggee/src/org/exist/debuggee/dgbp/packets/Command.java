@@ -45,6 +45,8 @@ public abstract class Command extends DGBPPacket {
 	public Command(IoSession session, String args) {
 		this.session = session;
 		
+		init();
+		
 		String[] splited = args.split(" -");
 		for (int i = 0; i < splited.length; i++) {
 			if (splited[i].length() < 3)
@@ -54,6 +56,10 @@ public abstract class Command extends DGBPPacket {
 			String val = splited[i].substring(2).trim();
 			setArgument(arg, val);
 		}
+	}
+	
+	protected void init() {
+		
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -173,7 +179,7 @@ public abstract class Command extends DGBPPacket {
 		return new Error(command, session, args);
 	}
 
-	protected static String getFileuri(XACMLSource fileuri) {
+	public static String getFileuri(XACMLSource fileuri) {
 		if (fileuri.getType().toLowerCase().equals("file"))
 			return "file://"+fileuri.getKey();
 		else

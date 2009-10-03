@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.debuggee.dgbp.packets.AbstractCommandContinuation;
+import org.exist.debuggee.dgbp.packets.Command;
 import org.exist.debuggee.dgbp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
@@ -103,7 +104,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		stack.set(stackDepth, expr);
 		
-		String fileName = expr.getSource().getKey();
+		String fileName = Command.getFileuri(expr.getSource());
 		Integer lineNo = expr.getLine();
 
 		Map<Integer, Breakpoint> fileBreakpoints = null;
@@ -136,8 +137,19 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				command.setStatus(STOPPED);
 	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
 			}
-				
 
+			//step-into is done
+			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING)) {
+				command.setStatus(BREAK);
+
+			//step-over should stop on same call's stack depth
+			} else if (command.is(CommandContinuation.STEP_OVER)  
+					&& command.getCallStackDepth() == stackDepth
+					&& command.isStatus(RUNNING)) {
+				command.setStatus(BREAK);
+
+			}
+			
 			//checking breakpoints
 			synchronized (breakpoints) {
 				if (filesBreakpoints.containsKey(fileName)) {
@@ -153,18 +165,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				}
 			}
 			
-			//step-into is done
-			if (command.is(CommandContinuation.STEP_INTO) && command.isStatus(RUNNING)) {
-				command.setStatus(BREAK);
-
-			//step-over should stop on same call's stack depth
-			} else if (command.is(CommandContinuation.STEP_OVER)  
-					&& command.getCallStackDepth() == stackDepth
-					&& command.isStatus(RUNNING)) {
-				command.setStatus(BREAK);
-
 			//RUS command with status RUNNING can be break only on breakpoints
-			} else if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING)) {
+			if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING)) {
 				break;
 
 			//any continuation command with status RUNNING
@@ -286,12 +288,10 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public int setBreakpoint(Breakpoint breakpoint) {
-		breakpointNo++;
-		
-		breakpoint.setId(breakpointNo);
-		
 		synchronized (breakpoints) {
-
+			breakpointNo++;
+			breakpoint.setId(breakpointNo);
+			
 			breakpoints.put(breakpointNo, breakpoint);
 
 			Map<Integer, Breakpoint> fileBreakpoints;

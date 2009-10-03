@@ -63,7 +63,7 @@ public class BreakpointRemove extends Command {
 	 */
 	@Override
 	public byte[] toBytes() {
-		if (breakpoint == null) {
+		if (breakpoint != null) {
 			String responce = "<response " +
 				"command=\"breakpoint_remove\" " +
 				"transaction_id=\""+transactionID+"\"/>"; 
