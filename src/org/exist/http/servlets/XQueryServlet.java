@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -385,9 +386,27 @@ public class XQueryServlet extends HttpServlet {
                 service.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
             }
 
+            //if get "start new session" request
     		String xdebug = request.getParameter("XDEBUG_SESSION_START");
     		if (xdebug != null)
     			service.declareVariable(Debuggee.PREFIX+":session",  xdebug);
+    		else {
+    			//if have session
+    			xdebug = request.getParameter("XDEBUG_SESSION");
+    			if (xdebug != null) {
+    				service.declareVariable(Debuggee.PREFIX+":session",  xdebug);
+    			} else {
+    				//looking for session in cookies (FF XDebug Helper add-ons)
+        			Cookie[] cookies = request.getCookies();
+        			for (int i = 0; i < cookies.length; i++) {
+        				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
+        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
+            				service.declareVariable(Debuggee.PREFIX+":session",  cookies[i].getValue());
+            				break;
+        				}
+        			}
+    			}
+    		}
             
 
             ResourceSet result = service.execute(source);
