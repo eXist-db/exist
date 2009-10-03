@@ -398,12 +398,14 @@ public class XQueryServlet extends HttpServlet {
     			} else {
     				//looking for session in cookies (FF XDebug Helper add-ons)
         			Cookie[] cookies = request.getCookies();
-        			for (int i = 0; i < cookies.length; i++) {
-        				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
-        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
-            				service.declareVariable(Debuggee.PREFIX+":session",  cookies[i].getValue());
-            				break;
-        				}
+        			if (cookies != null) {
+            			for (int i = 0; i < cookies.length; i++) {
+            				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
+            					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
+                				service.declareVariable(Debuggee.PREFIX+":session",  cookies[i].getValue());
+                				break;
+            				}
+            			}
         			}
     			}
     		}
