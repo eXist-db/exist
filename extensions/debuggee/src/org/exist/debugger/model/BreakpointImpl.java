@@ -125,7 +125,7 @@ public class BreakpointImpl implements Breakpoint {
 	}
 
 	public void setFilename(String filename) {
-		fileName = filename;
+		this.fileName = filename;
 	}
 
 	public void setFunction(String function) {
@@ -133,19 +133,19 @@ public class BreakpointImpl implements Breakpoint {
 	}
 
 	public void setHitCondition(String condition) {
-		hitCondition = condition;
+		this.hitCondition = condition;
 	}
 
 	public void setHitCount(int count) {
-		hitCount = count;
+		this.hitCount = count;
 	}
 
 	public void setHitValue(int value) {
-		hitValue = value;
+		this.hitValue = value;
 	}
 
 	public void setLineno(int lineno) {
-		lineNo = lineno;
+		this.lineNo = lineno;
 	}
 
 	public void setState(boolean state) {
