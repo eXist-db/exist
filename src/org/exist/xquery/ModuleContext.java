@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
@@ -449,5 +450,13 @@ public class ModuleContext extends XQueryContext {
 	
 	protected void clearUpdateListeners() {
 		// will be cleared by the parent context
+	}
+
+	public DebuggeeJoint getDebuggeeJoint() {
+		return parentContext.getDebuggeeJoint();
+	}
+	
+	public boolean isDebugMode() {
+		return parentContext.isDebugMode();
 	}
 }
