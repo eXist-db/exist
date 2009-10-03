@@ -31,45 +31,54 @@ import org.exist.debugger.model.BreakpointImpl;
  */
 public class BreakpointSet extends Command implements Breakpoint {
 
-	BreakpointImpl breakpoint = new BreakpointImpl();
+	private BreakpointImpl breakpoint;
 	
 	private int status = -1;
 
 	public BreakpointSet(IoSession session, String args) {
 		super(session, args);
+		System.out.println("breakpoint = "+breakpoint);
 	}
 
+	protected void init() {
+		breakpoint = new BreakpointImpl();
+	}
+	
 	protected void setArgument(String arg, String val) {
 		if (arg.equals("t")) {
-			breakpoint.setType(val);
+			setType(val);
 			
 		} else if (arg.equals("s")) {
-			breakpoint.setState(true); //TODO: parsing required
+			setState(true); //TODO: parsing required ("enabled" or "disabled")
 			
 		} else if (arg.equals("f")) {
-			breakpoint.setFilename(val);
+			setFilename(val);
 			
 		} else if (arg.equals("n")) {
-			breakpoint.setLineno(Integer.parseInt(val));
+			setLineno(Integer.parseInt(val));
 			
 		} else if (arg.equals("m")) {
-			breakpoint.setFunction(val);
+			setFunction(val);
 			
 		} else if (arg.equals("x")) {
-			breakpoint.setException(val);
+			setException(val);
 			
 		} else if (arg.equals("h")) {
-			breakpoint.setHitValue(Integer.parseInt(val));
+			setHitValue(Integer.parseInt(val));
 			
 		} else if (arg.equals("o")) {
-			breakpoint.setHitCondition(val);
+			setHitCondition(val);
 			
 		} else if (arg.equals("r")) {
-			breakpoint.setTemporary(true); //TODO: parsing required
+			setTemporary(true); //TODO: parsing required ("0" or "?")
 			
 		} else {
 			super.setArgument(arg, val);
 		}
+	}
+
+	private BreakpointImpl getBreakpoint() {
+		return breakpoint;
 	}
 
 	/* (non-Javadoc)
@@ -100,7 +109,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 	}
 	
 	private String getStateString() {
-		if (breakpoint.getState())
+		if (getBreakpoint().getState())
 			return "enabled";
 		
 		return "disabled";
@@ -111,91 +120,91 @@ public class BreakpointSet extends Command implements Breakpoint {
 	///////////////////////////////////////////////////////////////////
 
 	public String getException() {
-		return breakpoint.getException();
+		return getBreakpoint().getException();
 	}
 
 	public String getFilename() {
-		return breakpoint.getFilename();
+		return getBreakpoint().getFilename();
 	}
 
 	public String getFunction() {
-		return breakpoint.getFunction();
+		return getBreakpoint().getFunction();
 	}
 
 	public String getHitCondition() {
-		return breakpoint.getHitCondition();
+		return getBreakpoint().getHitCondition();
 	}
 
 	public int getHitCount() {
-		return breakpoint.getHitCount();
+		return getBreakpoint().getHitCount();
 	}
 
 	public int getHitValue() {
-		return breakpoint.getHitValue();
+		return getBreakpoint().getHitValue();
 	}
 
 	public int getLineno() {
-		return breakpoint.getLineno();
+		return getBreakpoint().getLineno();
 	}
 
 	public boolean getState() {
-		return breakpoint.getState();
+		return getBreakpoint().getState();
 	}
 
 	public boolean getTemporary() {
-		return breakpoint.getTemporary();
+		return getBreakpoint().getTemporary();
 	}
 
 	public void setException(String exception) {
-		breakpoint.setException(exception);
+		getBreakpoint().setException(exception);
 	}
 
 	public void setFilename(String filename) {
-		breakpoint.setFilename(filename);
+		getBreakpoint().setFilename(filename);
 	}
 
 	public void setFunction(String function) {
-		breakpoint.setFunction(function);
+		getBreakpoint().setFunction(function);
 	}
 
 	public void setHitCondition(String condition) {
-		breakpoint.setHitCondition(condition);
+		getBreakpoint().setHitCondition(condition);
 	}
 
 	public void setHitCount(int count) {
-		breakpoint.setHitCount(count);
+		getBreakpoint().setHitCount(count);
 	}
 
 	public void setHitValue(int value) {
-		breakpoint.setHitValue(value);
+		getBreakpoint().setHitValue(value);
 	}
 
 	public void setLineno(int lineno) {
-		breakpoint.setLineno(lineno);
+		getBreakpoint().setLineno(lineno);
 	}
 
 	public void setState(boolean state) {
-		breakpoint.setState(state);
+		getBreakpoint().setState(state);
 	}
 
 	public void setTemporary(boolean temporary) {
-		breakpoint.setTemporary(temporary);
+		getBreakpoint().setTemporary(temporary);
 	}
 
 	public int getId() {
-		return breakpoint.getId();
+		return getBreakpoint().getId();
 	}
 
 	public void setId(int breakpointNo) {
-		breakpoint.setId(breakpointNo);
+		getBreakpoint().setId(breakpointNo);
 	}
 
 	public String getType() {
-		return breakpoint.getType();
+		return getBreakpoint().getType();
 	}
 
 	public void setType(String type) {
-		breakpoint.setType(type);
+		getBreakpoint().setType(type);
 	}
 	
 	public String getExpression() {

@@ -111,7 +111,7 @@ public class BreakpointUpdate extends Command {
 	 */
 	@Override
 	public byte[] toBytes() {
-		if (breakpoint == null) {
+		if (breakpoint != null) {
 			String responce = "<response " +
 				"command=\"breakpoint_update\" " +
 				"transaction_id=\""+transactionID+"\"/>"; 
