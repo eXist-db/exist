@@ -25,6 +25,8 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.exist.debuggee.CommandContinuation;
+import org.exist.debuggee.dgbp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dgbp.packets.Command;
 
 /**
@@ -48,7 +50,9 @@ public class DGBPRequestDecoder extends CumulativeProtocolDecoder {
 					
 					command.exec();
 					
-					out.write(command);
+					if (!(command instanceof CommandContinuation)) {
+						out.write(command);
+					}
 					sCommand = "";
 					continue;
 				}
