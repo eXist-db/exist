@@ -69,7 +69,7 @@
     <task id="21" name="REST Architecture" note="" work="0" duration="576000" start="20080501T000000Z" end="20080526T150000Z" work-start="20080501T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
       <constraint type="start-no-earlier-than" time="20080501T000000Z"/>
     </task>
-    <task id="22" name="XQuery Debugger" note="" work="0" duration="1440000" start="20080315T000000Z" end="20080516T120000Z" work-start="20080317T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+    <task id="22" name="XQuery Debugger" note="" work="0" duration="1440000" start="20080315T000000Z" end="20080516T120000Z" work-start="20080317T080000Z" percent-complete="75" priority="0" type="normal" scheduling="fixed-duration">
       <constraint type="start-no-earlier-than" time="20080315T000000Z"/>
     </task>
     <task id="23" name="Index Statistics" note="" work="0" duration="576000" start="20080515T000000Z" end="20080609T150000Z" work-start="20080515T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
@@ -92,6 +92,7 @@
     <resource id="6" name="Adam Retter" short-name="delirium" type="1" units="0" email="adam@exist-db.org" note="" std-rate="0"/>
     <resource id="7" name="Pierrick Brihaye" short-name="perig" type="1" units="0" email="perig@exist-db.org" note="" std-rate="0"/>
     <resource id="8" name="Wolfgang Meier" short-name="wolf" type="1" units="0" email="wolfgang@exist-db.org" note="" std-rate="0"/>
+    <resource id="9" name="Dmitriy Shabanov" short-name="dmitriy" type="1" units="0" email="shabanovd@gmail.com" note="" std-rate="0"/>
   </resources>
   <allocations>
     <allocation task-id="17" resource-id="1" units="0"/>
