@@ -133,7 +133,9 @@
             <name>XQuery and XPath Full Text 1.0</name>
             <status>Open</status>
             <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
             <progress>15</progress>
+            <who></who>
             <remark>
                 <p>Implement the W3C's full text extensions to XQuery, probably based on the new
                     Lucene index module (see above). Many features could be easily implemented on
@@ -699,12 +701,12 @@
             <status>Open</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <progress>75</progress>
             <event start="20080315T000000Z" end="20080516T120000Z" duration="1440000" task="22"
                 isDuration="true"/>
-            <who>ljo</who>
+            <who>ljo, dmitriy</who>
             <remark>
-                <p>Remote debugging protocol.</p>
+                <p>Remote debugging protocol - <a href="http://www.xdebug.org">DBGp</a></p>
                 <p>Command line debugger similar to jdb as prototype</p>
                 <p>Decide which functionality to expose.</p>
             </remark>
