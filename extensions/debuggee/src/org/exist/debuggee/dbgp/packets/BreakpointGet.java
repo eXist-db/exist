@@ -63,7 +63,7 @@ public class BreakpointGet extends Command {
 	 */
 	@Override
 	public byte[] responseBytes() {
-		if (breakpoint == null) {
+		if (breakpoint != null) {
 			String responce = "<response " +
 				"command=\"breakpoint_get\" " +
 				"transaction_id=\""+transactionID+"\">" + 
