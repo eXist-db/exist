@@ -28,8 +28,8 @@ import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.exist.debuggee.dgbp.DGBPCodecFactory;
-import org.exist.debuggee.dgbp.DGBPProtocolHandler;
+import org.exist.debuggee.dbgp.CodecFactory;
+import org.exist.debuggee.dbgp.ProtocolHandler;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -50,10 +50,10 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 		connector.setConnectTimeoutMillis(30*1000L);
 
 		connector.getFilterChain().addLast(
-				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
+				"protocol", new ProtocolCodecFilter(new CodecFactory()));
 		
 		// Start communication.
-		connector.setHandler(new DGBPProtocolHandler(debuggee));
+		connector.setHandler(new ProtocolHandler(debuggee));
 	}
 	
 	public IoSession connect() {

@@ -26,9 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.debuggee.dgbp.packets.AbstractCommandContinuation;
-import org.exist.debuggee.dgbp.packets.Command;
-import org.exist.debuggee.dgbp.packets.Init;
+import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
+import org.exist.debuggee.dbgp.packets.Command;
+import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.CompiledXQuery;
