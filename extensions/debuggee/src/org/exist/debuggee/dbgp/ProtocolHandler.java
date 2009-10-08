@@ -19,26 +19,26 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
+package org.exist.debuggee.dbgp;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.debuggee.dgbp.packets.Command;
-import org.exist.debuggee.dgbp.packets.Init;
+import org.exist.debuggee.dbgp.packets.Command;
+import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DGBPProtocolHandler extends IoHandlerAdapter {
+public class ProtocolHandler extends IoHandlerAdapter {
 
 	private Debuggee debuggee;
 	
-	public DGBPProtocolHandler(Debuggee debuggee) {
+	public ProtocolHandler(Debuggee debuggee) {
 		super();
 		
 		this.debuggee = debuggee;

@@ -19,24 +19,43 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
+package org.exist.debuggee.dbgp.packets;
+
+import org.apache.mina.core.session.IoSession;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public abstract class DGBPPacket {
+public class Error extends Command {
 
-	public int getLength() {
-		return 0;
+	private String name;
+
+	public Error(String name, IoSession session, String args) {
+		super(session, args);
+		
+		this.name = name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
+	 */
+	@Override
+	public void exec() {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
+	 */
+	@Override
 	public byte[] responseBytes() {
-		return null;
-	}
+		String responce = "<response " +
+					"command=\""+name+"\" " +
+					"transaction_id=\""+transactionID+"\">" +
+				"<error code=\"999\"><message>Unknown error</message></error>" +
+			"</response>";
 
-	public byte[] commandBytes() {
-		return null;
+		return responce.getBytes();
 	}
 
 }

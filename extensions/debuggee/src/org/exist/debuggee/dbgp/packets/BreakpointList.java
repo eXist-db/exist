@@ -19,47 +19,54 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
+package org.exist.debuggee.dbgp.packets;
 
-import org.apache.mina.core.buffer.IoBuffer;
+import java.util.Map;
+
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
-import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.exist.debuggee.CommandContinuation;
-import org.exist.debuggee.dgbp.packets.AbstractCommandContinuation;
-import org.exist.debuggee.dgbp.packets.Command;
+import org.exist.debugger.model.Breakpoint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DGBPRequestDecoder extends CumulativeProtocolDecoder {
+public class BreakpointList extends Command {
 
-	private String sCommand = "";
+	private Map<Integer, Breakpoint> breakpoints;
 	
-	@Override
-	protected boolean doDecode(IoSession session, IoBuffer in,
-			ProtocolDecoderOutput out) throws Exception {
-		
-		byte b;
-		while (true) {
-			if (in.remaining() > 0) {
-				b = in.get();
-				if (b == (byte)0) {
-					Command command = Command.parse(session, sCommand);
-					
-					command.exec();
-					
-					if (!(command instanceof CommandContinuation)) {
-						out.write(command);
-					}
-					sCommand = "";
-					continue;
-				}
-				sCommand += (char)b; 
-			} else {
-				return false;
-			}
-		}
+	public BreakpointList(IoSession session, String args) {
+		super(session, args);
 	}
+
+	protected void setArgument(String arg, String val) {
+		super.setArgument(arg, val);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
+	 */
+	@Override
+	public void exec() {
+		breakpoints = getJoint().getBreakpoints();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
+	 */
+	@Override
+	public byte[] responseBytes() {
+		if (breakpoints == null) {
+			String responce = "<response " +
+				"command=\"breakpoint_list\" " +
+				"transaction_id=\""+transactionID+"\">";
+			for (Breakpoint breakpoint : breakpoints.values()) 
+				responce += breakpoint.toXMLString();
+				
+			responce += "</response>";
+
+			return responce.getBytes();
+		}
+		return errorBytes("breakpoint_list");
+	}
+	
 }

@@ -28,8 +28,8 @@ import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.exist.debuggee.dgbp.DGBPCodecFactory;
-import org.exist.debugger.dgbp.DGBPProtocolHandler;
+import org.exist.debuggee.dbgp.CodecFactory;
+import org.exist.debugger.dbgp.ProtocolHandler;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -50,8 +50,8 @@ public class DebuggerServer extends IoHandlerAdapter {
 		
 		acceptor = new NioSocketAcceptor();
 		acceptor.getFilterChain().addLast(
-				"protocol", new ProtocolCodecFilter(new DGBPCodecFactory()));
-		acceptor.setHandler(new DGBPProtocolHandler(debuger));
+				"protocol", new ProtocolCodecFilter(new CodecFactory()));
+		acceptor.setHandler(new ProtocolHandler(debuger));
 		acceptor.bind(new InetSocketAddress(eventPort));
 
 		LOG.info("Debuggee is listenig at port "+eventPort);

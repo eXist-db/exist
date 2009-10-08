@@ -19,34 +19,16 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
-
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
-import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+package org.exist.debuggee.dbgp.packets;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DGBPResponseEncoder extends ProtocolEncoderAdapter {
+public class ParsingCommandException extends Exception {
 
-	public void encode(IoSession session, Object message, ProtocolEncoderOutput out)
-			throws Exception {
-		DGBPPacket packet = (DGBPPacket) message;
-		
-		byte[] response = packet.responseBytes();
-		String length = String.valueOf(response.length);
-		
-		IoBuffer buffer = IoBuffer.allocate(response.length+length.length()+2, false);
-		buffer.put(length.getBytes());
-		buffer.put((byte)0);
-		buffer.put(response);
-		buffer.put((byte)0);
-		buffer.flip();
-		
-		out.write(buffer);
+	public ParsingCommandException(String message) {
+		super(message);
 	}
 
 }

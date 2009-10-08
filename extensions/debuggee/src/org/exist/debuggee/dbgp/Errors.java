@@ -19,7 +19,7 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
+package org.exist.debuggee.dbgp;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
