@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2005-09 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -45,9 +45,10 @@ public class FunctionFunction extends BasicFunction {
             "This allows for higher-order functions to be implemented in XQuery. A higher-order " +
             "function is a function that takes another function as argument. " +
             "The first argument represents the name of the function, which should be" +
-            "a valid QName. The second argument is the arity (number of parameters) of the function. If no" +
-            "function can be found that matches the name and arity, an error is thrown. " +
-            "Please note: due to the special character of util:function, the arguments to this function " +
+            "a valid QName. The second argument is the arity (number of parameters) of " +
+            "the function. If no function can be found that matches the name and arity, " +
+            "an error is thrown. " +
+            "Please note: the arguments to this function " +
             "have to be literals or need to be resolvable at compile time at least.",
             new SequenceType[] { functionName, arity },
             result
@@ -101,8 +102,10 @@ public class FunctionFunction extends BasicFunction {
 			if (func == null)
 				throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
 	    } else {
-	        if(module.isInternalModule())
-	            throw new XPathException(this, "Cannot create a reference to an internal Java function");
+	        if(module.isInternalModule()) {
+                logger.error("Cannot create a reference to an internal Java function");
+                throw new XPathException(this, "Cannot create a reference to an internal Java function");
+            }
 	        func = ((ExternalModule)module).getFunction(qname, arity);
 	    }
 	    FunctionCall funcCall = new FunctionCall(context, func);
