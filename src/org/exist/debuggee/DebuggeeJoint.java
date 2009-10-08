@@ -24,7 +24,6 @@ package org.exist.debuggee;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
