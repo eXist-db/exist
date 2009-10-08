@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
-import org.exist.debuggee.dgbp.packets.Init;
+import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.xquery.CompiledXQuery;
 
 /**
