@@ -68,7 +68,7 @@ public class BreakpointList extends Command {
 	
 	@Override
 	public byte[] commandBytes() {
-		String responce = "breakpoint_list -i "+transactionID;
-		return responce.getBytes();
+		String command = "breakpoint_list -i "+transactionID;
+		return command.getBytes();
 	}
 }

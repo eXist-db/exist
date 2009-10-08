@@ -55,8 +55,15 @@ public class StepOver extends AbstractCommandContinuation {
 		return responce.getBytes();
 	}
 
+    @Override
+	public byte[] commandBytes() {
+		String command = "step_over -i "+transactionID;
+		
+		return command.getBytes();
+	}
+	
 	public int getType() {
-		return RUN;
+		return STEP_OVER;
 	}
 
 	public boolean is(int type) {

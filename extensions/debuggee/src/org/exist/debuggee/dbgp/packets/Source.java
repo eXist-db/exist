@@ -51,6 +51,16 @@ public class Source extends Command {
 	 * file URI 
 	 */
 	private String fileURI;
+	
+	/**
+	 * begin line
+	 */
+	private Integer lineBegin = null; 
+
+	/**
+	 * end line
+	 */
+	private Integer lineEnd = null; 
 
 	private boolean success = false;
     private Exception exception = null;
@@ -66,6 +76,13 @@ public class Source extends Command {
     protected void setArgument(String arg, String val) {
         if (arg.equals("f"))
             fileURI = val;
+        
+        else if (arg.equals("b"))
+            lineBegin = Integer.valueOf(val);
+        
+        else if (arg.equals("e"))
+            lineEnd = Integer.valueOf(val);
+        
         else
             super.setArgument(arg, val);
     }
@@ -100,6 +117,7 @@ public class Source extends Command {
     		byte[] buf = new byte[256];
     		int c;
     		while ((c = is.read(buf)) > -1) {
+    			//TODO: begin & end line should affect 
     			baos.write(buf, 0, c);
     		}
     		
@@ -158,6 +176,21 @@ public class Source extends Command {
     	
     	return "0";
     }
+
+    @Override
+	public byte[] commandBytes() {
+		String command = "source" +
+				" -i "+transactionID+
+				" -f "+fileURI;
+
+		if (lineBegin != null)
+			command += " -b "+String.valueOf(lineBegin);
+
+		if (lineEnd != null)
+			command += " -e "+String.valueOf(lineEnd);
+		
+		return command.getBytes();
+	}
     
     public void setFileURI(String fileURI) {
     	this.fileURI = fileURI;

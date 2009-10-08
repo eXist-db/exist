@@ -55,6 +55,13 @@ public class Run extends AbstractCommandContinuation {
 		return responce.getBytes();
 	}
 
+    @Override
+	public byte[] commandBytes() {
+		String command = "run -i "+transactionID;
+		
+		return command.getBytes();
+	}
+
 	public int getType() {
 		return RUN;
 	}

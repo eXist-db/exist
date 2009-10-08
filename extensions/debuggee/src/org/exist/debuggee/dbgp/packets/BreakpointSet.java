@@ -130,7 +130,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 	@Override
 	public byte[] commandBytes() {
 		if (breakpoint != null) {
-			String responce = "breakpoint_set" +
+			String command = "breakpoint_set" +
 					" -i " + transactionID +
 					" -t " + getType() +
 					" -s " + getStateString() + 
@@ -140,17 +140,17 @@ public class BreakpointSet extends Command implements Breakpoint {
 					" -r " + getTemporaryString(); 
 
 			if (getLineno() != null)
-				responce += " -s " + getLineno(); 
+				command += " -s " + getLineno(); 
 					
 			if (getFunction() != null)
-				responce += " -m " + getFunction(); 
+				command += " -m " + getFunction(); 
 
 			if (getException() != null)
-				responce += " -x " + getException(); 
+				command += " -x " + getException(); 
 
 			//TODO: EXPRESSION
 
-			return responce.getBytes();
+			return command.getBytes();
 		}
 		return null;
 	}

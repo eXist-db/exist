@@ -73,9 +73,9 @@ public class BreakpointRemove extends Command {
 	@Override
 	public byte[] commandBytes() {
 		if (breakpoint != null) {
-			String responce = "breakpoint_remove -i "+transactionID+" -d "+breakpoint.getId();
+			String command = "breakpoint_remove -i "+transactionID+" -d "+breakpoint.getId();
 
-			return responce.getBytes();
+			return command.getBytes();
 		}
 		return null;
 	}

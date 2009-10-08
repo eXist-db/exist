@@ -56,4 +56,11 @@ public class Status extends Command {
     	}
     	return errorBytes("status");
 	}
+
+    @Override
+	public byte[] commandBytes() {
+		String command = "status -i "+transactionID;
+		
+		return command.getBytes();
+	}
 }

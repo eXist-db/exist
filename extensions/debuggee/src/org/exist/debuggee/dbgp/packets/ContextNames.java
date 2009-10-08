@@ -26,15 +26,25 @@ import org.apache.mina.core.session.IoSession;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class ContextNames extends Command {
 
-    public ContextNames(IoSession session, String args) {
+	private Integer stackDepth = null;
+
+	public ContextNames(IoSession session, String args) {
         super(session, args);
     }
 
-    @Override
+	protected void setArgument(String arg, String val) {
+		if (arg.equals("d"))
+			stackDepth = Integer.parseInt(val);
+		else
+			super.setArgument(arg, val);
+	}
+
+	@Override
     public void exec() {
     }
 
@@ -49,5 +59,15 @@ public class ContextNames extends Command {
             "</response>";
 
 		return response.getBytes();
+	}
+
+    @Override
+	public byte[] commandBytes() {
+		String command = "context_names -i "+transactionID;
+		
+		if (stackDepth != null)
+			command += " -d "+String.valueOf(stackDepth);
+		
+		return command.getBytes();
 	}
 }

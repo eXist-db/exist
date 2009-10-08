@@ -55,6 +55,13 @@ public class StepInto extends AbstractCommandContinuation {
 		return responce.getBytes();
 	}
 
+    @Override
+	public byte[] commandBytes() {
+		String command = "step_into -i "+transactionID;
+		
+		return command.getBytes();
+	}
+	
 	public int getType() {
 		return STEP_INTO;
 	}
