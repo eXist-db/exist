@@ -364,4 +364,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		notifyAll();
 	}
+
+	public CommandContinuation getCurrentCommand() {
+		return command;
+	}
 }

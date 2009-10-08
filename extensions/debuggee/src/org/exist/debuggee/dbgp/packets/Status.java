@@ -23,6 +23,7 @@
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
+import org.exist.debuggee.CommandContinuation;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -30,22 +31,29 @@ import org.apache.mina.core.session.IoSession;
  */
 public class Status extends Command {
 
+	private CommandContinuation command = null;
+	
     public Status(IoSession session, String args) {
         super(session, args);
     }
 
     @Override
     public void exec() {
+    	//XXX: get values @responseBytes time?
+		command = getJoint().getCurrentCommand();
     }
 
     @Override
 	public byte[] responseBytes() {
-		String response = "<response " +
-            "command=\"status\" " +
-            "status=\"break\" " +
-            "reason=\"ok\" " +
-            "transaction_id=\""+transactionID+"\"/>";
+    	if (command != null) {
+    		String response = "<response " +
+            	"command=\"status\" " +
+            	"status=\""+command.getStatus()+"\" " +
+            	"reason=\"ok\" " +
+            	"transaction_id=\""+transactionID+"\"/>";
 
-		return response.getBytes();
+    		return response.getBytes();
+    	}
+    	return errorBytes("status");
 	}
 }
