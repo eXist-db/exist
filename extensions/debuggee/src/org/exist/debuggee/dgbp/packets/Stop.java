@@ -45,7 +45,7 @@ public class Stop extends AbstractCommandContinuation {
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String responce = "<response " +
 				"command=\"stop\" " +
 				"status=\""+getStatus()+"\" " +

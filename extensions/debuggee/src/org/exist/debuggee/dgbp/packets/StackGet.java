@@ -47,7 +47,7 @@ public class StackGet extends Command {
 			super.setArgument(arg, val);
 	}
 	
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String response = "" +
 			"<response " +
 					"command=\"stack_get\" " +

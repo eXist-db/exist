@@ -93,7 +93,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		if (status == 1) {
 			String responce = "<response " +
 				"command=\"breakpoint_set\" " +

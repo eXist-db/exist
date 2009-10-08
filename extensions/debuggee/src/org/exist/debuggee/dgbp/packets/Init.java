@@ -41,10 +41,10 @@ public class Init extends AbstractCommandContinuation {
 	}
 
 	public int getLength() {
-		return toBytes().length;
+		return responseBytes().length;
 	}
 
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String init_message = "<init " +
 			"appid=\"7035\" " +
 			"idekey=\"1\" " +

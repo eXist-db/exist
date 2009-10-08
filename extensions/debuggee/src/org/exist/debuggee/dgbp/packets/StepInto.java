@@ -45,7 +45,7 @@ public class StepInto extends AbstractCommandContinuation {
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public synchronized byte[] toBytes() {
+	public synchronized byte[] responseBytes() {
 		String responce = "<response " +
 				"command=\"step_into\" " +
 				"status=\""+getStatus()+"\" " +

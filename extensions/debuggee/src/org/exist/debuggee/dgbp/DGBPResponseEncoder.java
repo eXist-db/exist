@@ -36,7 +36,7 @@ public class DGBPResponseEncoder extends ProtocolEncoderAdapter {
 			throws Exception {
 		DGBPPacket packet = (DGBPPacket) message;
 		
-		byte[] response = packet.toBytes();
+		byte[] response = packet.responseBytes();
 		String length = String.valueOf(response.length);
 		
 		IoBuffer buffer = IoBuffer.allocate(response.length+length.length()+2, false);

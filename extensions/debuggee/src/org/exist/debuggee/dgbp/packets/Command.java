@@ -79,10 +79,10 @@ public abstract class Command extends DGBPPacket {
 	}
 
 	public int getLength() {
-		return toBytes().length;
+		return responseBytes().length;
 	}
 	
-	public abstract byte[] toBytes();
+	public abstract byte[] responseBytes();
 
 	public byte[] errorBytes(String commandName) {
 		return errorBytes(commandName, Errors.ERR_999, Errors.ERR_999_STR);

@@ -39,7 +39,7 @@ public class StdOut extends Command {
     }
 
     @Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"stdout\" " +
 				"success=\"0\" " +
