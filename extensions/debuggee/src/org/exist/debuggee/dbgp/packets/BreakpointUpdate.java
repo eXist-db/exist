@@ -120,5 +120,32 @@ public class BreakpointUpdate extends Command {
 		}
 		return errorBytes("breakpoint_update");
 	}
-	
+
+	@Override
+	public byte[] commandBytes() {
+		if (breakpoint != null) {
+			String responce = "breakpoint_update" +
+					" -i " + transactionID +
+//					" -t " + getType() +
+//					" -s " + getStateString() + 
+//					" -f " + getFilename() + 
+					" -h " + breakpoint.getHitValue() + 
+					" -o " + breakpoint.getHitCondition();
+//					" -r " + getTemporaryString(); 
+
+			if (breakpoint.getLineno() != null)
+				responce += " -s " + breakpoint.getLineno(); 
+					
+//			if (getFunction() != null)
+//				responce += " -m " + getFunction(); 
+//
+//			if (getException() != null)
+//				responce += " -x " + getException(); 
+
+			//TODO: EXPRESSION
+
+			return responce.getBytes();
+		}
+		return null;
+	}
 }

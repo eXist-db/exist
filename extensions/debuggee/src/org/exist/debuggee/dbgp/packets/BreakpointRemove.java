@@ -58,9 +58,6 @@ public class BreakpointRemove extends Command {
 		breakpoint = getJoint().removeBreakpoint(breakpointID);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
 	@Override
 	public byte[] responseBytes() {
 		if (breakpoint != null) {
@@ -73,4 +70,13 @@ public class BreakpointRemove extends Command {
 		return errorBytes("breakpoint_remove");
 	}
 	
+	@Override
+	public byte[] commandBytes() {
+		if (breakpoint != null) {
+			String responce = "breakpoint_remove -i "+transactionID+" -d "+breakpoint.getId();
+
+			return responce.getBytes();
+		}
+		return null;
+	}
 }

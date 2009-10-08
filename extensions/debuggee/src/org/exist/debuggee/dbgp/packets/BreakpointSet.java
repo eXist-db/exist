@@ -49,7 +49,12 @@ public class BreakpointSet extends Command implements Breakpoint {
 			setType(val);
 			
 		} else if (arg.equals("s")) {
-			setState(true); //TODO: parsing required ("enabled" or "disabled")
+			if (val.equals("enabled"))
+				setState(true);
+			else if (val.equals("disabled"))
+				setState(false);
+
+			//TODO: exception???
 			
 		} else if (arg.equals("f")) {
 			setFilename(val);
@@ -70,8 +75,13 @@ public class BreakpointSet extends Command implements Breakpoint {
 			setHitCondition(val);
 			
 		} else if (arg.equals("r")) {
-			setTemporary(true); //TODO: parsing required ("0" or "?")
-			
+			if (val.equals("1"))
+				setTemporary(true);
+			else if (val.equals("0"))
+				setTemporary(false);
+
+			//TODO: exception???
+		
 		} else {
 			super.setArgument(arg, val);
 		}
@@ -89,9 +99,6 @@ public class BreakpointSet extends Command implements Breakpoint {
 		status = getJoint().setBreakpoint(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
 	@Override
 	public byte[] responseBytes() {
 		if (status == 1) {
@@ -103,9 +110,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 
 			return responce.getBytes();
 		}
-		//error
-		String responce = "<error/>";
-		return responce.getBytes();
+		return errorBytes("breakpoint_set");
 	}
 	
 	private String getStateString() {
@@ -115,6 +120,41 @@ public class BreakpointSet extends Command implements Breakpoint {
 		return "disabled";
 	}
 	
+	private String getTemporaryString() {
+		if (getTemporary())
+			return "1";
+		
+		return "0";
+	}
+
+	@Override
+	public byte[] commandBytes() {
+		if (breakpoint != null) {
+			String responce = "breakpoint_set" +
+					" -i " + transactionID +
+					" -t " + getType() +
+					" -s " + getStateString() + 
+					" -f " + getFilename() + 
+					" -h " + getHitValue() + 
+					" -o " + getHitCondition() +
+					" -r " + getTemporaryString(); 
+
+			if (getLineno() != null)
+				responce += " -s " + getLineno(); 
+					
+			if (getFunction() != null)
+				responce += " -m " + getFunction(); 
+
+			if (getException() != null)
+				responce += " -x " + getException(); 
+
+			//TODO: EXPRESSION
+
+			return responce.getBytes();
+		}
+		return null;
+	}
+
 	///////////////////////////////////////////////////////////////////
 	// Breakpoint's methods
 	///////////////////////////////////////////////////////////////////
@@ -143,7 +183,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 		return getBreakpoint().getHitValue();
 	}
 
-	public int getLineno() {
+	public Integer getLineno() {
 		return getBreakpoint().getLineno();
 	}
 
@@ -179,7 +219,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 		getBreakpoint().setHitValue(value);
 	}
 
-	public void setLineno(int lineno) {
+	public void setLineno(Integer lineno) {
 		getBreakpoint().setLineno(lineno);
 	}
 
