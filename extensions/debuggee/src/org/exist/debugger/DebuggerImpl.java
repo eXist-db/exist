@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.debuggee.dgbp.packets.ResponseImpl;
-import org.exist.debuggee.dgbp.packets.Source;
+import org.exist.debuggee.dbgp.packets.ResponseImpl;
+import org.exist.debuggee.dbgp.packets.Source;
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
 import org.exist.debugger.model.Breakpoint;

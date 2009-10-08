@@ -19,7 +19,7 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dgbp;
+package org.exist.debuggee.dbgp;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +33,12 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DGBPCodecFactory implements ProtocolCodecFactory {
+public class CodecFactory implements ProtocolCodecFactory {
 
 	private Map<IoSession, ProtocolEncoder> encoders = new HashMap<IoSession, ProtocolEncoder>();
 	private Map<IoSession, ProtocolDecoder> decoders = new HashMap<IoSession, ProtocolDecoder>();
 
-	public DGBPCodecFactory() {
+	public CodecFactory() {
 	}
 	
 	public ProtocolDecoder getDecoder(IoSession ioSession) throws Exception {
@@ -46,7 +46,7 @@ public class DGBPCodecFactory implements ProtocolCodecFactory {
 			if (decoders.containsKey(ioSession))
 				return decoders.get(ioSession);
 			
-			ProtocolDecoder decoder = new DGBPRequestDecoder();
+			ProtocolDecoder decoder = new RequestDecoder();
 			decoders.put(ioSession, decoder);
 			
 			return decoder;
@@ -58,7 +58,7 @@ public class DGBPCodecFactory implements ProtocolCodecFactory {
 			if (encoders.containsKey(ioSession))
 				return encoders.get(ioSession);
 			
-			ProtocolEncoder encoder = new DGBPResponseEncoder();
+			ProtocolEncoder encoder = new ResponseEncoder();
 			encoders.put(ioSession, encoder);
 			
 			return encoder;

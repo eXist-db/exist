@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.debuggee.dgbp.packets.BreakpointSet;
+import org.exist.debuggee.dbgp.packets.BreakpointSet;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.BreakpointImpl;
 import org.exist.debugger.model.Location;
