@@ -75,9 +75,9 @@ public class BreakpointGet extends Command {
 	@Override
 	public byte[] commandBytes() {
 		if (breakpoint != null) {
-			String responce = "breakpoint_get -i "+transactionID+" -d "+breakpoint.getId();
+			String command = "breakpoint_get -i "+transactionID+" -d "+breakpoint.getId();
 
-			return responce.getBytes();
+			return command.getBytes();
 		}
 		return null;
 	}

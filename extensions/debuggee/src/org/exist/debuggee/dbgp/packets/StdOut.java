@@ -26,12 +26,30 @@ import org.apache.mina.core.session.IoSession;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class StdOut extends Command {
 
+	/**
+	 * [0|1|2] 0 - disable, 1 - copy data, 2 - redirection
+	 * 0 (disable)   stdout/stderr output goes to regular place, but not to IDE
+	 * 1 (copy)      stdout/stderr output goes to both regular destination and IDE
+	 * 2 (redirect)  stdout/stderr output goes to IDE only.
+	 */
+	private Short outputGoes;
+	
     public StdOut(IoSession session, String args) {
         super(session, args);
+    }
+
+    @Override
+    protected void setArgument(String arg, String val) {
+        if (arg.equals("c"))
+        	outputGoes = Short.valueOf(val);
+
+        else
+            super.setArgument(arg, val);
     }
 
     @Override
@@ -46,5 +64,14 @@ public class StdOut extends Command {
 				"transaction_id=\""+transactionID+"\"/>";
 
 		return response.getBytes();
+	}
+
+    @Override
+	public byte[] commandBytes() {
+		String command = "stdout" +
+				" -i "+transactionID+
+				" -c "+String.valueOf(outputGoes);
+		
+		return command.getBytes();
 	}
 }

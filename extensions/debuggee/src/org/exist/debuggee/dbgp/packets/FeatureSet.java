@@ -74,4 +74,11 @@ public class FeatureSet extends Command {
 	public void exec() {
 		success = getJoint().featureSet(name, value);
 	}
+
+	@Override
+	public byte[] commandBytes() {
+		String command = "feature_set -i "+transactionID+" -n "+name+" -v "+value;
+		
+		return command.getBytes();
+	}
 }

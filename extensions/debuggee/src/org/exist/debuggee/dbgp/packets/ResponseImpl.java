@@ -28,6 +28,7 @@ import org.exist.debugger.Response;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+//TODO: delete?
 public class ResponseImpl extends Packet implements Response {
 
 	public ResponseImpl() {

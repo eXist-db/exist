@@ -37,7 +37,7 @@ public class ContextGet extends Command {
 	/**
 	 * stack depth (optional)
 	 */
-	private int stackDepth = 0;
+	private Integer stackDepth = null;
 	
 	/**
 	 * context id (optional, retrieved by context-names)
@@ -65,6 +65,7 @@ public class ContextGet extends Command {
 	 */
 	@Override
 	public void exec() {
+		//TODO: different stack depth & context id
 		variables = getJoint().getVariables();
 	}
 
@@ -90,5 +91,18 @@ public class ContextGet extends Command {
 			properties += PropertyGet.getPropertyString(variable, ctx);
 		}
 		return properties;
+	}
+
+    @Override
+	public byte[] commandBytes() {
+		String command = "context_get -i "+transactionID;
+		
+		if (stackDepth != null)
+			command += " -d "+String.valueOf(stackDepth);
+
+		if (contextID != null && contextID.equals(""))
+			command += " -c "+String.valueOf(contextID);
+		
+		return command.getBytes();
 	}
 }

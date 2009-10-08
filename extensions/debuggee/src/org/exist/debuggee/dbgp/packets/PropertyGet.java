@@ -26,7 +26,6 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
-import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.xml.sax.SAXException;
 
@@ -54,22 +53,22 @@ public class PropertyGet extends Command {
 	/**
 	 * -m max data size to retrieve (optional)
 	 */
-	private int maxDataSize;
+	private Integer maxDataSize = null;
 			
 	/**
 	 * -p data page (property_get, property_value: optional for arrays, hashes, objects, etc.; property_set: not required; debugger engine should assume zero if not provided)
 	 */
-	private String dataPage;
+	private String dataPage = null;
 			   
 	/**
 	 * -k property key as retrieved in a property element, optional, used for property_get of children and property_value, required if it was provided by the debugger engine.
 	 */
-	private String propertyKey;
+	private String propertyKey = null;
 	
 	/**
 	 * -a property address as retrieved in a property element, optional, used for property_set/value
 	 */
-	private String propertyAddress;
+	private String propertyAddress = null;
 	
 	private Variable variable;
 	
@@ -194,4 +193,27 @@ public class PropertyGet extends Command {
             return item.getStringValue();
         }
     }
+
+    @Override
+	public byte[] commandBytes() {
+		String command = "property_get" +
+				" -i "+transactionID+
+				" -n "+nameLong+
+				" -d "+String.valueOf(stackDepth)+
+				" -c "+String.valueOf(contextID);
+
+		if (maxDataSize != null)
+			command += " -m "+String.valueOf(maxDataSize);
+
+		if (dataPage != null)
+			command += " -p "+String.valueOf(dataPage);
+
+		if (propertyKey != null)
+			command += " -k "+propertyKey;
+
+		if (propertyAddress != null)
+			command += " -a "+propertyAddress;
+
+		return command.getBytes();
+	}
 }

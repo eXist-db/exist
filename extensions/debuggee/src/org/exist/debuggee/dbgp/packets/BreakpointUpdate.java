@@ -124,7 +124,7 @@ public class BreakpointUpdate extends Command {
 	@Override
 	public byte[] commandBytes() {
 		if (breakpoint != null) {
-			String responce = "breakpoint_update" +
+			String command = "breakpoint_update" +
 					" -i " + transactionID +
 //					" -t " + getType() +
 //					" -s " + getStateString() + 
@@ -134,7 +134,7 @@ public class BreakpointUpdate extends Command {
 //					" -r " + getTemporaryString(); 
 
 			if (breakpoint.getLineno() != null)
-				responce += " -s " + breakpoint.getLineno(); 
+				command += " -s " + breakpoint.getLineno(); 
 					
 //			if (getFunction() != null)
 //				responce += " -m " + getFunction(); 
@@ -144,7 +144,7 @@ public class BreakpointUpdate extends Command {
 
 			//TODO: EXPRESSION
 
-			return responce.getBytes();
+			return command.getBytes();
 		}
 		return null;
 	}

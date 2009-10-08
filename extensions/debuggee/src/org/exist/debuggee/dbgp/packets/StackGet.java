@@ -96,5 +96,13 @@ public class StackGet extends Command {
 		stacks = getJoint().stackGet();
 	}
 
+	public byte[] commandBytes() {
+		String command = "stack_get -i "+transactionID;
+		
+		if (stackDepth != null)
+			command += " -d "+String.valueOf(stackDepth);
+		
+		return command.getBytes();
+	}
 	
 }

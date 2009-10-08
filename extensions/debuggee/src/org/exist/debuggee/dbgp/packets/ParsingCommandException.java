@@ -25,6 +25,7 @@ package org.exist.debuggee.dbgp.packets;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+//TODO: delete?
 public class ParsingCommandException extends Exception {
 
 	public ParsingCommandException(String message) {
