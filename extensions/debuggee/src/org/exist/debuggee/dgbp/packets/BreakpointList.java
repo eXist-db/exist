@@ -54,7 +54,7 @@ public class BreakpointList extends Command {
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		if (breakpoints == null) {
 			String responce = "<response " +
 				"command=\"breakpoint_list\" " +

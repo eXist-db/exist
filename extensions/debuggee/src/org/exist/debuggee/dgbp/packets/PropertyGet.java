@@ -115,7 +115,7 @@ public class PropertyGet extends Command {
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		if (variable == null)
 			return errorBytes("property_get");
 		

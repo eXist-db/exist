@@ -48,7 +48,7 @@ public class Error extends Command {
 	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
 	 */
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String responce = "<response " +
 					"command=\""+name+"\" " +
 					"transaction_id=\""+transactionID+"\">" +

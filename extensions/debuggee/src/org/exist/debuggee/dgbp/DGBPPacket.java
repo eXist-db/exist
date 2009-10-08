@@ -31,7 +31,7 @@ public abstract class DGBPPacket {
 		return 0;
 	}
 
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		return null;
 	}
 

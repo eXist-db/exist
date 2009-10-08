@@ -69,7 +69,7 @@ public class ContextGet extends Command {
 	}
 
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"context_get\" " +
 				"context=\""+contextID+"\" " +

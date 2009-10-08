@@ -49,11 +49,11 @@ public class FeatureSet extends Command {
 	}
 	
 	public int getLength() {
-		return toBytes().length;
+		return responseBytes().length;
 	}
 
 	@Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"feature_set\" " +
 				"feature=\""+name+"\" " +

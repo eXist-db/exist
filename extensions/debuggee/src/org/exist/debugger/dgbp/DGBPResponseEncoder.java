@@ -38,7 +38,7 @@ public class DGBPResponseEncoder extends ProtocolEncoderAdapter {
 		DGBPPacket packet = (DGBPPacket) message;
 		
 		IoBuffer buffer = IoBuffer.allocate(packet.getLength()+1, false);
-		buffer.put(packet.toBytes());
+		buffer.put(packet.responseBytes());
 		buffer.put((byte)0);
 		buffer.flip();
 		

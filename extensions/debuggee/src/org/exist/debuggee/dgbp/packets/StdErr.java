@@ -39,7 +39,7 @@ public class StdErr extends Command {
     }
 
     @Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"stderr\" " +
 				"success=\"0\" " +

@@ -39,7 +39,7 @@ public class ContextNames extends Command {
     }
 
     @Override
-	public byte[] toBytes() {
+	public byte[] responseBytes() {
 		String response = "<response " +
             "command=\"context_names\" " +
             "transaction_id=\""+transactionID+"\">" +

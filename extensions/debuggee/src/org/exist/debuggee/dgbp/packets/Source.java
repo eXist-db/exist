@@ -124,7 +124,7 @@ public class Source extends Command {
     }
 
     @Override
-    public byte[] toBytes() {
+    public byte[] responseBytes() {
     	if (response == null) {
     		if (source != null) {
     			try {
