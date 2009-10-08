@@ -35,4 +35,8 @@ public abstract class DGBPPacket {
 		return null;
 	}
 
+	public byte[] commandBytes() {
+		return null;
+	}
+
 }

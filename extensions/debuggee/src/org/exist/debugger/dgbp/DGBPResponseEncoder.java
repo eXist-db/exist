@@ -36,9 +36,11 @@ public class DGBPResponseEncoder extends ProtocolEncoderAdapter {
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out)
 			throws Exception {
 		DGBPPacket packet = (DGBPPacket) message;
+
+		byte[] response = packet.commandBytes();
 		
-		IoBuffer buffer = IoBuffer.allocate(packet.getLength()+1, false);
-		buffer.put(packet.responseBytes());
+		IoBuffer buffer = IoBuffer.allocate(response.length+1, false);
+		buffer.put(response);
 		buffer.put((byte)0);
 		buffer.flip();
 		
