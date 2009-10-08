@@ -153,8 +153,12 @@ public class XSLTServlet extends HttpServlet {
                 if (mediaType != null) {
                     if (encoding == null)
                         response.setContentType(mediaType);
-                    else
+                    
+                    //check, do mediaType have "charset"
+                    else if (mediaType.indexOf("charset") == -1)
                         response.setContentType(mediaType + "; charset=" + encoding);
+                    else 
+                        response.setContentType(mediaType);
                 }
 
                 SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
