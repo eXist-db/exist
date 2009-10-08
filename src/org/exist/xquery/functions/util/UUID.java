@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2007-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -49,19 +49,19 @@ public class UUID extends BasicFunction {
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(
                     new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Generate a version 4 (random) Universally Unique Identifier string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
+                    "Generate a version 4 (random) universally unique identifier (UUID) string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
                     FunctionSignature.NO_ARGS,
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated UUID string")
                 ),
 
             new FunctionSignature (
                     new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Generate a version 3 Universally Unique Identifier string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
+                    "Generate a version 3 universally unique identifier (UUID) string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
                     new SequenceType[]{
                         new FunctionParameterSequenceType("name", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "The input value for UUID calculation."),
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated Universally Unique IDentifier string")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "a generated UUID string")
                 )
     };
 
@@ -86,7 +86,8 @@ public class UUID extends BasicFunction {
             result.add(new StringValue(uuid));
 
         } else {
-            throw new XPathException("Not supported nr of parameters");
+            logger.error("Not a supported number of parameters");
+            throw new XPathException("Not a supported number of parameters");
         }
 
         return result;
