@@ -50,9 +50,6 @@ public class BreakpointList extends Command {
 		breakpoints = getJoint().getBreakpoints();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
 	@Override
 	public byte[] responseBytes() {
 		if (breakpoints != null) {
@@ -69,4 +66,9 @@ public class BreakpointList extends Command {
 		return errorBytes("breakpoint_list");
 	}
 	
+	@Override
+	public byte[] commandBytes() {
+		String responce = "breakpoint_list -i "+transactionID;
+		return responce.getBytes();
+	}
 }
