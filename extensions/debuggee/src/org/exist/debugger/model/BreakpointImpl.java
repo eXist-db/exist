@@ -47,7 +47,7 @@ public class BreakpointImpl implements Breakpoint {
 	/**
 	 * the line number (lineno) of the breakpoint [optional]
 	 */
-	private int lineNo;
+	private Integer lineNo;
 
 	/**
 	 * function name [required for call or return breakpoint types]
@@ -60,14 +60,18 @@ public class BreakpointImpl implements Breakpoint {
 	private String exception;
 
 	/**
-	 * hit value (hit_value) used with the hit condition to determine if should break; a value of zero indicates hit count processing is disabled for this breakpoint [optional, defaults to zero (i.e. disabled)]
+	 * hit value (hit_value) used with the hit condition to determine if should break; 
+	 * a value of zero indicates hit count processing is disabled for this breakpoint 
+	 * [optional, defaults to zero (i.e. disabled)]
 	 */
-	private int hitValue;
+	private int hitValue = 0;
 	
 	/**
-	 * hit condition string (hit_condition); see HIT_CONDITION hit_condition documentation above; BTW 'o' stands for 'operator' [optional, defaults to '>=']
+	 * hit condition string (hit_condition); 
+	 * see HIT_CONDITION hit_condition documentation above; 
+	 * BTW 'o' stands for 'operator' [optional, defaults to '>=']
 	 */
-	private String hitCondition;
+	private String hitCondition = ">=";
 	
 	/**
 	 * Boolean value indicating if this breakpoint is temporary. [optional, defaults to false]
@@ -108,7 +112,7 @@ public class BreakpointImpl implements Breakpoint {
 		return 0;
 	}
 
-	public int getLineno() {
+	public Integer getLineno() {
 		return lineNo;
 	}
 
@@ -144,7 +148,7 @@ public class BreakpointImpl implements Breakpoint {
 		this.hitValue = value;
 	}
 
-	public void setLineno(int lineno) {
+	public void setLineno(Integer lineno) {
 		this.lineNo = lineno;
 	}
 

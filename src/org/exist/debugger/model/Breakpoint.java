@@ -73,8 +73,8 @@ public interface Breakpoint {
 	 * Line number on which breakpoint is effective. Line numbers are 1-based. If an implementation requires a numeric value to indicate that lineno is not set, it is suggested that -1 be used, although this is not enforced.
 	 * @return
 	 */
-	public int getLineno();
-	public void setLineno(int lineno);
+	public Integer getLineno();
+	public void setLineno(Integer lineno);
 	
 	/**
 	 * Current state of the breakpoint. This must be one of enabled, disabled.
