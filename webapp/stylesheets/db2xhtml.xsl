@@ -340,7 +340,7 @@
     </xsl:template>
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
-            <a href="{$pathToWebapp}/index.xml" style="text-decoration: none">
+            <a href="{$pathToWebapp}index.xml" style="text-decoration: none">
                 <xsl:choose>
                     <xsl:when test="graphic/@fileref">
                         <img src="{$pathToWebapp}{graphic/@fileref}"
