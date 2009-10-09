@@ -288,6 +288,13 @@ public class BrokerPool extends Observable {
         	throw new EXistException("database instance '" + instanceName + "' is not available");
     }
 
+	/** Returns the class that exposes the API for creating, destroying and incrementing counters.
+	 * @return Counters
+	 */
+	public Counters getCounters() {
+		return this.counters;
+	}
+	
 	/** Returns an iterator over the database instances.
 	 * @return The iterator
 	 */
@@ -399,6 +406,8 @@ public class BrokerPool extends Observable {
 	 * The number of active brokers for the database instance 
 	 */	
 	private Map activeBrokers = new HashMap();
+	
+	private Counters counters;
 	
 	/** The configuration object for the database instance
      */
@@ -573,6 +582,8 @@ public class BrokerPool extends Observable {
 		this.maxShutdownWait = DEFAULT_MAX_SHUTDOWN_WAIT;
 		//TODO : read from configuration
 		this.transactionsEnabled = true;
+		
+		this.counters = Counters.getInstance();
 		
 		this.minBrokers = minBrokers;
 		this.maxBrokers = maxBrokers;
