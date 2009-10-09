@@ -41,6 +41,30 @@
                     <homepage>http://exist-db.org</homepage>
                 </file>
                 <file>
+                    <title>exist-versioning</title>
+                    <description>Optional libraries for the eXist native XML db:
+                        versioning module.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/exist-versioning.jar</lib>
+                    <homepage>http://exist-db.org</homepage>
+                </file>
+                <file>
+                    <title>exist-xprocxq</title>
+                    <description>Optional libraries for the eXist native XML db:
+                        XProc module.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xprocxq.jar</lib>
+                    <homepage>http://exist-db.org</homepage>
+                </file>
+                <file>
+                    <title>exist-lucene</title>
+                    <description>Optional libraries for the eXist native XML db:
+                        lucene index module.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/exist-lucene-module.jar</lib>
+                    <homepage>http://exist-db.org</homepage>
+                </file>
+                <file>
                     <title>eXist bootstrap loader</title>
                     <description>Bootstrap loader for the eXist native XML db</description>
                     <used-by>exist</used-by>
@@ -72,7 +96,7 @@
                     <title>JGroups</title>
                     <description>JGroups</description>
                     <used-by>exist</used-by>
-                    <lib>optional/jgroups-all.jar</lib>
+                    <lib>optional/jgroups-all-2.2.6.jar</lib>
                     <homepage>http://jgroups.org/</homepage>
                 </file>
                 <file>
@@ -86,7 +110,7 @@
                     <title>JLine</title>
                     <description>JLine</description>
                     <used-by>exist</used-by>
-                    <lib>optional/jline-0.9.5.jar</lib>
+                    <lib>optional/jline-0.9.94.jar</lib>
                     <homepage>http://jline.sourceforge.net/</homepage>
                 </file>
                 <file>
@@ -103,6 +127,41 @@
                     <lib>endorsed/stax-api-1.0.1.jar</lib>
 					<homepage>http://stax.codehaus.org/</homepage>
                 </file>
+                <file>
+                    <title>XML-RPC Common</title>
+                    <description>Java implementation of XML-RPC, a popular protocol that uses XML over
+                        HTTP to implement remote procedure calls.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xmlrpc-common-3.1.2.jar</lib>
+                    <homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>XML-RPC Server</title>
+                    <description>Java implementation of XML-RPC, a popular protocol that uses XML over
+                        HTTP to implement remote procedure calls.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xmlrpc-server-3.1.2.jar</lib>
+                    <homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>XML-RPC Client</title>
+                    <description>Java implementation of XML-RPC, a popular protocol that uses XML over
+                        HTTP to implement remote procedure calls.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/xmlrpc-client-3.1.2.jar</lib>
+                    <homepage>http://ws.apache.org/xmlrpc/</homepage>
+                </file>
+                <file>
+                    <title>Lucene utils</title>
+                    <description>
+                        jakarta-lucene is a search engine toolkit designed for indexing and
+                        searching of documents.
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/lucene-regex-2.4.1.jar</lib>
+                    <homepage>http://lucene.apache.org/</homepage>
+                </file>
+                
             </xsl:if>
         </jars>
     </xsl:template>
@@ -112,10 +171,21 @@
     </xsl:template>
 
     <!-- Use patched jar for XML-RPC -->
-    <xsl:template match="file[title = 'XML-RPC']/lib">
-        <lib>optional/xmlrpc-1.2-patched.jar</lib>
+    <xsl:template match="file[title = 'XML-RPC']">
     </xsl:template>
 
+    <xsl:template match="file[contains(title, 'Antlr')]/lib">
+        <lib>optional/antlr-2.7.7.jar</lib>
+    </xsl:template>
+    
+    <xsl:template match="file[contains(title, 'Commons Pool')]/lib">
+        <lib>optional/commons-pool-1.5.1.jar</lib>
+    </xsl:template>
+    
+    <xsl:template match="file[title = 'Search engine']/lib">
+        <lib>optional/lucene-core-2.4.1.jar</lib>
+    </xsl:template>
+    
     <!-- Use patched jar for XML-RPC -->
     <xsl:template match="file[title = 'Log4j']/lib">
         <lib>core/log4j-1.2.15.jar</lib>
