@@ -88,7 +88,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"document. If $contents is of type xs:anyURI, the resource is loaded " +
 			"from that URI. " + 
             "Returns the path to the new document if successfully stored, " + 
-            "otherwise the empty sequence.",
+            "otherwise an XPathException is thrown.",
 			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS },
 			RETURN_TYPE),
 		new FunctionSignature(
@@ -109,7 +109,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             "a mime type.  If the mime-type is not a xml based type, the " +
             "resource will be stored as a binary resource." +
             "Returns the path to the new document if successfully stored, " + 
-		   "otherwise the empty sequence.",
+		    "otherwise an XPathException is thrown.",
 			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE },
 			RETURN_TYPE)
 	};
@@ -141,6 +141,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
 		    if (mime != null)
 			binary = !mime.isXMLType();
+            
 		} else if (docName != null){
 		    MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
             if (mime != null) {
@@ -160,23 +161,29 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					throw new XPathException(this, "Passed java object should be a File");
                 }
 				resource = loadFromFile(collection, (File)obj, docName, binary, mimeType);
+
 			} else if(Type.subTypeOf(item.getType(), Type.ANY_URI)) {
 				try {
 					URI uri = new URI(item.getStringValue());
 					resource = loadFromURI(collection, uri, docName, binary, mimeType);
+
 				} catch (URISyntaxException e) {
                     logger.error("Invalid URI: " + item.getStringValue());
 					throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
 				}
+
 			} else {
 				if(binary) {
 					resource = collection.createResource(docName, "BinaryResource");
                 } else
 					resource = collection.createResource(docName, "XMLResource");
+
 				if(Type.subTypeOf(item.getType(), Type.STRING)) {
 					resource.setContent(item.getStringValue());
+
 				} else if(item.getType() == Type.BASE64_BINARY) {
 					resource.setContent(item.toJavaObject(byte[].class));
+
 				} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
 					if(binary) {
 						StringWriter writer = new StringWriter();
@@ -198,19 +205,20 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 ((EXistResource) resource).setMimeType(mimeType);
 				collection.storeResource(resource);
 			}
+            
 		} catch (XMLDBException e) {
             logger.error(e.getMessage());
 			throw new XPathException(this,
-				"XMLDB reported an exception while storing document" + e,
-				e);
+				"XMLDB reported an exception while storing document" + e, e);
+
 		} catch (SAXException e) {
             logger.error(e.getMessage());
-			throw new XPathException(this,
-				"SAX reported an exception while storing document",
-				e);
+			throw new XPathException(this, "SAX reported an exception while storing document",	e);
 		}
+
 		if (resource == null) {
 			return Sequence.EMPTY_SEQUENCE;
+
         } else {
 			try {
                 //TODO : use dedicated function in XmldbURI
@@ -235,6 +243,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			if(!file.canRead())
 				throw new XPathException(this, "Cannot read path: " + path);
 			resource = loadFromFile(collection, file, docName, binary, mimeType);
+
 		} else {
 			try {
 				File temp = File.createTempFile("existDBS", ".xml");
@@ -251,8 +260,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				os.close();
 				resource = loadFromFile(collection, temp, docName, binary, mimeType);
 				temp.delete();
+
 			} catch (MalformedURLException e) {
 				throw new XPathException(this, "Malformed URL: " + uri.toString(), e);
+
 			} catch (IOException e) {
 				throw new XPathException(this, "IOException while reading from URL: " +
 						uri.toString(), e);
@@ -276,10 +287,12 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				resource.setContent(file);
 				collection.storeResource(resource);
 				return resource;
+
 			} catch (XMLDBException e) {
 				throw new XPathException(this, "Could not store file " + file.getAbsolutePath() +
 						": " + e.getMessage(), e);
 			}
+            
 		} else
 			throw new XPathException(this, file.getAbsolutePath() + " does not point to a file");
 	}
