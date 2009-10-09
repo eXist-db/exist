@@ -78,6 +78,9 @@
         <delete file="${cocoon.home}/lib/optional/xmldb-xupdate-20040205.jar"/>
         <delete file="${cocoon.home}/lib/optional/xmlrpc-1.1.jar"/>
         <delete file="${cocoon.home}/lib/core/log4j-1.2.14.jar"/>
+        <delete file="${cocoon.home}/lib/optional/antlr-2.7.6.jar"/>
+        <delete file="${cocoon.home}/lib/optional/commons-pool-1.2.jar"/>
+        <delete file="${cocoon.home}/lib/optional/lucene-1.4.3.jar"/>
 
         <!-- Copy eXist jars to Cocoon lib dir -->
         <copy todir="${cocoon.libs}/endorsed" overwrite="yes">
@@ -109,8 +112,17 @@
                 <include name="commons-fileupload*.jar"/>
             </fileset>
             <fileset dir="${exist.home}/lib/extensions">
-                <exclude name="exist-spatial-module.jar"/>
-                <exclude name="exist-jmx.jar"/>
+                <include name="exist-modules.jar"/>
+                <include name="exist-lucene-module.jar"/>
+                <include name="exist-ngram-module.jar"/>
+                <include name="exist-versioning.jar"/>
+                <include name="xprocxq.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${cocoon.libs}/optional" overwrite="yes">
+            <fileset dir="${exist.home}/extensions/indexes/lucene/lib">
+                <include name="lucene-core-2.4.1.jar"/>
+                <include name="lucene-regex-2.4.1.jar"/>
             </fileset>
         </copy>
         <copy todir="${cocoon.libs}/core" overwrite="yes">
