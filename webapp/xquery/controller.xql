@@ -20,7 +20,7 @@ return
 					<set-attribute name="xslt.input"
 						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2xhtml.xsl"/>
+						value="/stylesheets/db2xhtml.xsl"/>
 					<set-attribute name="xslt.output.media-type"
 					        value="text/html"/>
 					<set-attribute name="xslt.output.doctype-public"
@@ -41,13 +41,13 @@ return
 					<set-attribute name="xslt.input"
 						value="model"/>
 					<set-attribute name="xslt.stylesheet"
-						value="xquery/stylesheets/acronyms.xsl"/>
+						value="stylesheets/acronyms.xsl"/>
 				</forward>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.input"
 						value=""/>
 					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2xhtml.xsl"/>
+						value="/stylesheets/db2xhtml.xsl"/>
 					<set-attribute name="xslt.output.media-type"
 					        value="text/html"/>
 					<set-attribute name="xslt.output.doctype-public"
@@ -92,6 +92,7 @@ return
 			</dispatch>
 	else if ($name eq 'twitter.xql') then
 	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+	       <forward url="twitter.xql"/>
 	        <view>
 	            <forward url="twitter-view.xql"/>
             </view>

@@ -60,7 +60,7 @@ return
 					<set-attribute name="xslt.input"
 						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
-						value="stylesheets/db2xhtml.xsl"/>
+						value="/stylesheets/db2xhtml.xsl"/>
 				</forward>
 			</view>
 		</dispatch>
