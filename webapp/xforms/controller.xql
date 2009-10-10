@@ -85,6 +85,22 @@ return
     			</view>
     			<cache-control cache="yes"/>
     		</dispatch>
+    else if ($name eq 'test.xql') then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    		<view>
+    		    <forward servlet="XSLTServlet">
+    		        (: Apply xsltforms.xsl stylesheet :)
+    				<set-attribute name="xslt.stylesheet"
+    					value="xsltforms/xsltforms.xsl"/>
+    			    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
+    			    <set-attribute name="xslt.output.indent" value="no"/>
+    			    <set-attribute name="xslt.output.media-type" value="text/html"/>
+    			    <set-attribute name="xslt.output.method" value="xhtml"/>
+    			    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
+    			</forward>
+    		</view>
+    		<cache-control cache="yes"/>
+    	</dispatch>
     (: make sure the global css and js files are resolved :)
     else if ($name = ('default-style.css', 'default-style2.css', 'curvycorners.js')
         or matches($path, 'resources/')) then

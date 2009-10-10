@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <article>
-    <articleinfo>
-        <graphic fileref="../logo.jpg"/>
+    <articleinfo><graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>XForms Introduction</title>
-        <author>
+        <title>XForms Introduction</title><author>
             <firstname>James</firstname>
             <surname>Fuller</surname>
             <affiliation>
                 <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
-            </affiliation>
-        </author>
-    </articleinfo>
+            </affiliation></author><author><firstname>Wolfgang</firstname><surname>Meier</surname></author></articleinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
-
     <section>
         <title>XForms Support in eXist</title>
-
         <abstract>
             <para>eXist now directly supports XForms via Alain Couthures' excellent <a
                     href="http://www.agencexml.com">XSLTForms</a> processor. XSLTForms implements
@@ -24,7 +18,6 @@
                 will also work with other XForms processors like <ulink url="http://www.orbeon.com"
                     >Orbeon</ulink> or <ulink url="http://chiba-project.org">Chiba</ulink>. </para>
         </abstract>
-
         <para>XSLTForms transforms the XForms xml into an XHTML page with javascript that can
             process XForms. As eXist has support for RESTful interactions the action of saving the
             XML representation of data provided by XForms can be as easy as using HTTP PUT method
@@ -32,85 +25,92 @@
             complex tasks, you can submit your XForms instances to an XQuery, post-process it there
             and get the results back into your XForms. Several <ulink url="examples.xml"
                 >examples</ulink> are provided.</para>
-
         <section>
             <title>Using xsltform inside of eXist</title>
-            <para> Once you are sure xforms is working and installed for your version of eXist, to
-                use in your xforms just prepend with an XSL PI, pointing to the
-                <filename>xsltforms/xsltforms.xsl</filename> stylesheet. </para>
-
+            <para>XSLTForms mainly consists of two components:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>the XSLT stylesheet <filename>xsltforms.xsl</filename> which transforms
+                        the XForms markup into HTML and javascript understood by the browser</para>
+                </listitem>
+                <listitem>
+                    <para>a javascript library</para>
+                </listitem>
+            </itemizedlist>
+            <para>The XSLT stylesheet can either be applied <emphasis role="bold"
+                    >server-side</emphasis> or within the <emphasis role="bold">client</emphasis>,
+                i.e. the browser. To let the browser do the job, all you have to do is to prepend an
+                XSL PI to your XForms document, pointing to the <filename
+                    >xsltforms/xsltforms.xsl</filename> stylesheet:</para>
             <example>
                 <title>Activate xforms by using XSL PI</title>
                 <programlisting><markup><![CDATA[<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms">
-    <head>
-        <title>Hello World in XForms</title>
-        <xf:model>
-            <xf:instance>
-                <f:data xmlns:f="http://foo.com">
-                    <f:PersonGivenName/>
-                </f:data>
-            </xf:instance>
-        </xf:model>
-    </head>
-    <body>
-        <p>Type your first name in the input box. If you are running XForms, the output should be
-            displayed in the output area.</p>
-        <p>
-            <xf:input ref="f:PersonGivenName" incremental="true">
-                <xf:label>Please enter your first name: </xf:label>
-            </xf:input>
-        </p>
-        <p>
-            <xf:output value="concat('Hello ', f:PersonGivenName, '. We hope you like XForms!')">
-                <xf:label>Output: </xf:label>
-            </xf:output>
-        </p>
-    </body>
+    ...
 </html>
 ]]></markup></programlisting>
             </example>
+            <para>Please have a look at <ulink url="hello.xml">hello.xml</ulink> for a very basic
+                example using client-side transformation.</para>
+            <para>When applying the stylesheet server-side, you need to make sure serialization
+                parameters are correctly set. For example, you can apply the stylesheet within an
+                    <ulink url="urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
+            <example>
+                <title>Applying the stylesheet server-side via controller.xql</title>
+                <programlisting><markup><![CDATA[<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <view>
+        <forward servlet="XSLTServlet">
+            (: Apply xsltforms.xsl stylesheet :)
+    		<set-attribute name="xslt.stylesheet"
+    			value="xsltforms/xsltforms.xsl"/>
+    	    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
+    	    <set-attribute name="xslt.output.indent" value="no"/>
+    	    <set-attribute name="xslt.output.media-type" value="text/html"/>
+    	    <set-attribute name="xslt.output.method" value="xhtml"/>
+    	    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
+    	</forward>
+    </view>
+    <cache-control cache="yes"/>
+</dispatch>]]></markup></programlisting>
+            </example>
+            <para>It is important to set the <option>indent</option> serialization parameter to
+                "no", otherwise you'll get javascript errors when viewing the page. Also, if you
+                apply the stylesheet server-side, make sure you removed the processing instruction
+                from the source file or the browser will try to run the stylesheet as well (which
+                most likely leads to errors).</para>
+            <para>The <ulink url="tasks/todo-list.xml">"task manager"</ulink> and <ulink
+                    url="shakespeare.xml">Shakespeare</ulink> examples are both using a server-side
+                transformation. Please have a look at the corresponding controller.xql in <filename
+                    >webapp/xforms/controller.xql</filename> to see how it is done.</para>
         </section>
-        
         <section>
             <title>Known Issues</title>
-
-            <para>Currently, the XForms will only work properly if the main xsltforms stylesheet is
-                applied on the client-side, i.e. within the web browser. We are working to change
-                this, but right now you will get errors if the stylesheet is applied on the
-                server.</para>
-
-            <para>In particular, storing the XForms into the database is problematic: eXist's REST
-                interface will see the xsl stylesheet processing instruction and automatically apply
-                the stylesheet server side. We hope to fix this for the final 1.4 release.</para>
-
-            <para>It is also important that the HTTP server reports the correct content type for the
-                XForms document (text/html).</para>
+            <para>Loading an XForms document through eXist's REST interface: when the REST server
+                finds an xsl-stylesheet processing instruction in a document, it tries to apply the
+                referenced stylesheet server-side. Unfortunately, the default serialization settings
+                of the REST interface set <option>indent="yes"</option>, which leads to problems
+                with the XForms javascript library.</para>
+            <para>As a workaround, you can append a request parameter <option>?_indent=no</option>
+                to the REST URI. However, the recommended approach would be to use XQueryURLRewrite
+                to properly handle those requests and apply the stylesheet.</para>
         </section>
-
         <section>
             <title>Additional XForms Resources</title>
-            <section>
-                <title>Mailing Lists</title>
+            <section><title>Mailing Lists</title>
                 <ul>
                     <li>XSLTForms <a
                             href="https://lists.sourceforge.net/lists/listinfo/xsltforms-support"
                             >mailing list</a></li>
                 </ul>
             </section>
-
-            <section>
-                <title>XForms Specifications</title>
+            <section><title>XForms Specifications</title>
                 <ul>
                     <li>
                         <a href="http://www.w3.org/TR/xforms/">XForms v1.0 (Third Edition)</a>
                     </li>
-
                 </ul>
             </section>
-
-            <section>
-                <title>Useful</title>
+            <section><title>Useful</title>
                 <ul>
                     <li><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is
                         a useful place to learn XForms</li>
@@ -119,10 +119,8 @@
                             href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/"
                             target="_resource">XSLTForms coverage of W3C test suite</a>
                     </li>
-
                 </ul>
             </section>
-
         </section>
     </section>
 </article>
