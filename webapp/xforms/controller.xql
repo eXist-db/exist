@@ -59,14 +59,26 @@ return
  			</view>
              <cache-control cache="yes"/>
  		</dispatch>
+    (:  for the following examples, the xsltforms.xsl stylesheet is applied
+        on the *server*, not the client :)
     else if ($name = ('todo-list.xml', 'shakespeare.xml')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<view>
-				<forward servlet="XSLTServlet">
+			    <forward servlet="XSLTServlet">
 					<set-attribute name="xslt.stylesheet"
 						value="/stylesheets/db2xhtml.xsl"/>
 				    <set-attribute name="xslt.syntax-highlight"
 				        value="no"/>
+				</forward>
+			    <forward servlet="XSLTServlet">
+			        (: Apply xsltforms.xsl stylesheet :)
+					<set-attribute name="xslt.stylesheet"
+						value="{concat(if ($name eq 'todo-list.xml') then '../' else '', 'xsltforms/xsltforms.xsl')}"/>
+				    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
+				    <set-attribute name="xslt.output.indent" value="no"/>
+				    <set-attribute name="xslt.output.media-type" value="text/html"/>
+				    <set-attribute name="xslt.output.method" value="xhtml"/>
+				    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
 				</forward>
 			</view>
 			<cache-control cache="yes"/>
