@@ -75,7 +75,8 @@ public class XSLTServlet extends HttpServlet {
     private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
     private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
     private final static String REQ_ATTRIBUTE_PROPERTIES = "xslt.output.";
-
+    private final static String REQ_ATTRIBUTE_BASE = "xslt.base";
+    
     private final static Logger LOG = Logger.getLogger(XSLTServlet.class);
 
     private BrokerPool pool;
@@ -98,7 +99,6 @@ public class XSLTServlet extends HttpServlet {
         String stylesheet = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
         if (stylesheet == null)
             throw new ServletException("No stylesheet source specified!");
-
         Item inputNode = null;
         String sourceAttrib = (String) request.getAttribute(REQ_ATTRIBUTE_INPUT);
         if (sourceAttrib != null) {
@@ -133,7 +133,7 @@ public class XSLTServlet extends HttpServlet {
             }
 
             SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
-            Templates templates = getSource(user, response, factory, stylesheet);
+            Templates templates = getSource(user, request, response, factory, stylesheet);
             if (templates == null)
                 return;
             //do the transformation
@@ -173,11 +173,12 @@ public class XSLTServlet extends HttpServlet {
                 try {
                     XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
                     receiver = xinclude;
-                    String requestPath = request.getRequestURI();
-                    int p = requestPath.lastIndexOf("/");
-                    if(p != Constants.STRING_NOT_FOUND)
-                        requestPath = requestPath.substring(0, p);
-                    String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
+                    String moduleLoadPath;
+                    String base = (String) request.getAttribute(REQ_ATTRIBUTE_BASE);
+                    if (base != null)
+                        moduleLoadPath = getServletContext().getRealPath(base);
+                    else
+                        moduleLoadPath = getCurrentDir(request).getAbsolutePath();
                     xinclude.setModuleLoadPath(moduleLoadPath);
                     serializer.setReceiver(receiver);
                     if (inputNode != null)
@@ -214,7 +215,8 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
-    private Templates getSource(User user, HttpServletResponse response, SAXTransformerFactory factory, String stylesheet)
+    private Templates getSource(User user, HttpServletRequest request, HttpServletResponse response,
+                                SAXTransformerFactory factory, String stylesheet)
         throws ServletException, IOException {
         String base;
         if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
@@ -222,13 +224,17 @@ public class XSLTServlet extends HttpServlet {
             if (f.canRead())
                 stylesheet = f.toURI().toASCIIString();
             else {
-                stylesheet = getServletContext().getRealPath(stylesheet);
-                if (stylesheet == null) {
+                if (f.isAbsolute()) {
+                    f = new File(getServletContext().getRealPath(stylesheet));
+                    stylesheet = f.toURI().toASCIIString();
+                } else {
+                    f = new File(getCurrentDir(request), stylesheet);
+                    stylesheet = f.toURI().toASCIIString();
+                }
+                if (!f.canRead()) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found");
                     return null;
                 }
-                f = new File(stylesheet);
-                stylesheet = f.toURI().toASCIIString();
             }
         }
         int p = stylesheet.lastIndexOf("/");
@@ -244,6 +250,22 @@ public class XSLTServlet extends HttpServlet {
         return cached.getTemplates(user);
     }
 
+    private File getCurrentDir(HttpServletRequest request) {
+        String path = request.getPathTranslated();
+        if (path == null) {
+            path = request.getRequestURI().substring(request.getContextPath().length());
+            int p = path.lastIndexOf(';');
+            if(p != Constants.STRING_NOT_FOUND)
+                path = path.substring(0, p);
+            path = getServletContext().getRealPath(path);
+        }
+        File file = new File(path);
+        if (file.isDirectory())
+            return file;
+        else
+            return file.getParentFile();
+    }
+
     private void setParameters(HttpServletRequest request, Transformer transformer) throws XPathException {
         for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
             String name = (String) e.nextElement();
@@ -257,6 +279,7 @@ public class XSLTServlet extends HttpServlet {
                     }
                 }
                 transformer.setParameter(name, value);
+                transformer.setParameter(name.substring(REQ_ATTRIBUTE_PREFIX.length()), value);
             }
         }
     }
