@@ -470,7 +470,7 @@ var I8N = {
      'status' : '... Loading ...'},
 		 */
     lang : null,
-    langs : ["cz", "es", "fr" , "gl", "it", "nb-NO", "nl", "nn-NO", "ru"],
+    langs : ["cz", "de", "en_UK", "es", "fr" , "gl", "it", "nb-NO", "nl", "nn-NO", "pt", "ro", "ru", "sk"],
 
 		
 
@@ -865,8 +865,10 @@ String.prototype.trim = function() {
 		
 
 function copyArray(source, dest) {
-	for (var i = 0; i < source.length; i++) {
-		dest[i] = source[i];
+	if( dest ) {
+		for (var i = 0; i < source.length; i++) {
+			dest[i] = source[i];
+		}
 	}
 }
     
@@ -1160,7 +1162,11 @@ var xforms = {
 function Binding(xpath, model, bind) {
 	this.bind = bind? bind : null;
 	this.xpath = xpath? XPath.get(xpath) : null;
-	this.model = model? (typeof model == "string"? $(model) : model).xfElement : null;
+	var modelelt = model;
+	if( typeof model == "string" ) {
+		modelelt = $(model);
+	}
+	this.model = model? (modelelt != null ? modelelt.xfElement : model) : null;
 }
 
 
@@ -1176,7 +1182,7 @@ Binding.prototype.evaluate = function(ctx, depsNodes, depsElements) {
 		copyArray(this.bind.depsNodes, depsNodes);
 		copyArray(this.bind.depsElements, depsElements);
 	} else {
-		var exprCtx = new ExprContext(this.model? this.model.getInstanceDocument().documentElement : ctx,
+		var exprCtx = new ExprContext(!ctx || (this.model && this.model != ctx.ownerDocument.model) ? this.model ? this.model.getInstanceDocument().documentElement : xforms.defaultModel.getInstanceDocument(): ctx,
 			null, null, null, null, ctx);
 		exprCtx.initDeps(depsNodes, depsElements);
 		result = this.xpath.evaluate(exprCtx);
@@ -1294,6 +1300,21 @@ function XFModel(id, schemas) {
 	xforms.defaultModel = xforms.defaultModel || this;
 	$(id).getInstanceDocument = function(modid) {
 		return this.xfElement.getInstanceDocument(modid);
+	};
+	$(id).rebuild = function() {
+		return this.xfElement.rebuild();
+	};
+	$(id).recalculate = function() {
+		return this.xfElement.recalculate();
+	};
+	$(id).revalidate = function() {
+		return this.xfElement.revalidate();
+	};
+	$(id).refresh = function() {
+		return this.xfElement.refresh();
+	};
+	$(id).reset = function() {
+		return this.xfElement.reset();
 	};
 
 	if (schemas) {
@@ -1694,7 +1715,7 @@ XFBind.prototype.recalculate = function() {
 function XFSubmission(id, model, ref, bind, action, method, version, indent,
 			mediatype, encoding, omitXmlDeclaration, cdataSectionElements,
 			replace, instance, separator, includenamespaceprefixes, validate,
-			synchr) {
+			synchr, show) {
 	this.init(id, model, "xforms-submission");
 	this.model = model;
 	this.action = action;
@@ -1704,6 +1725,7 @@ function XFSubmission(id, model, ref, bind, action, method, version, indent,
 	this.indent = indent;
 	this.validate = validate;
 	this.synchr = synchr;
+	this.show = show;
 
 	if (mediatype != null) {
 		var lines = mediatype.split(";");
@@ -1756,6 +1778,15 @@ XFSubmission.prototype.submit = function() {
 	} else {
 		action = this.action;
 	}
+	var method = "post";
+	if(this.method.evaluate) {
+		var n = this.method.evaluate()[0];
+		if (n) {
+			method = getValue(n);
+		}
+	} else {
+		method = this.method;
+	}
 
 	if (node) {
 		if (this.validate && !validate_(node)) {
@@ -1764,9 +1795,10 @@ XFSubmission.prototype.submit = function() {
 			return;
 		}
 
-		if (this.method == "get") {
+		if (method == "get" || method == "delete") {
+			var tourl = XFSubmission.toUrl_(node, this.separator);
 			action += (action.indexOf('?') == -1? '?' : this.separator)
-				+ XFSubmission.toUrl_(node, this.separator);
+				+ tourl.substr(0, tourl.length - this.separator.length);
 		}
 	}
 	
@@ -1786,21 +1818,29 @@ XFSubmission.prototype.submit = function() {
 	var synchr = this.synchr;
 	var instance = this.instance;
 
-	if(this.method == "xml-urlencoded-post") {
-		var outForm = document.createElement("form");
-		outForm.setAttribute("method", "post");
-		outForm.setAttribute("action", action);
-		var txt = document.createElement("input");
-		txt.setAttribute("type", "hidden");
-		txt.setAttribute("name", "postdata");
-		txt.setAttribute("value", Writer.toString(node));
-		outForm.appendChild(txt);
-		document.getElementsByTagName("body")[0].appendChild(outForm); 
+	if(method == "xml-urlencoded-post") {
+		var outForm = document.getElementById("xsltforms_form");
+		if(outForm) {
+			outForm.firstChild.value = Writer.toString(node);
+		} else {
+			outForm = document.createElement("form");
+			outForm.setAttribute("method", "post");
+			outForm.setAttribute("action", action);
+			outForm.setAttribute("id", "xsltforms_form");
+			var txt = document.createElement("input");
+			txt.setAttribute("type", "hidden");
+			txt.setAttribute("name", "postdata");
+			txt.setAttribute("value", Writer.toString(node));
+			outForm.appendChild(txt);
+			body = document.getElementsByTagName("body")[0];
+			body.insertBefore(outForm, body.firstChild);
+		}
  		outForm.submit(); 	
+		xforms.closeAction();
 	} else {
 	
 		try {
-			var req = Core.openRequest(this.method, action, !synchr);
+			var req = Core.openRequest(method, action, !synchr);
 			var subm = this;
 		
 			var func = function() {
@@ -1822,19 +1862,25 @@ XFSubmission.prototype.submit = function() {
 					xforms.closeAction();
 					
 					if (subm.replace == "all") {
-						Dialog.hide("statusPanel");
-						xforms.close();
-						if(document.write) {
-							document.write(req.responseText);
-							document.close();
+						if( subm.show == "new" ) {
+							w = window.open("about:blank","_blank");
+							w.document.write(req.responseText);
+							w.document.close();
 						} else {
-							//document.documentElement.parentNode.replaceChild(req.responseXML.documentElement,document.documentElement);
-							var sData = req.responseText;
-							if (sData.indexOf("<?", 0) === 0) {
-								sData = sData.substr(sData.indexOf("?>")+2);
-							}                       
-							//alert(sData);
-							document.documentElement.innerHTML=sData;
+							Dialog.hide("statusPanel");
+							xforms.close();
+							if(document.write) {
+								document.write(req.responseText);
+								document.close();
+							} else {
+								//document.documentElement.parentNode.replaceChild(req.responseXML.documentElement,document.documentElement);
+								var sData = req.responseText;
+								if (sData.indexOf("<?", 0) === 0) {
+									sData = sData.substr(sData.indexOf("?>")+2);
+								}                       
+								//alert(sData);
+								document.documentElement.innerHTML=sData;
+							}
 						}
 					}
 				} catch(e) {
@@ -1856,7 +1902,7 @@ XFSubmission.prototype.submit = function() {
 			DebugConsole.write("Submit " + this.method + " - " + media + " - "
 				+ action + " - " + synchr);
 
-			if (this.method == "get") {
+			if (method == "get" || method == "delete") {
 				if (media == XFSubmission.SOAP_) {
 					req.setRequestHeader("Accept", mt);
 				}
@@ -2053,7 +2099,9 @@ XFAbstractAction.prototype.execute = function(element, ctx, evt) {
 
 	if (this.whileexpr) {
 		while(booleanValue(this.whileexpr.evaluate(ctx))) {
-			this.exec_(element, ctx, evt);
+			if(!this.exec_(element, ctx, evt)) {
+				break;
+			}
 		}
 	} else {
 		this.exec_(element, ctx, evt);
@@ -2067,10 +2115,13 @@ XFAbstractAction.prototype.exec_ = function(element, ctx, evt) {
 	if (this.ifexpr) {
 		if (booleanValue(this.ifexpr.evaluate(ctx))) {
 			this.run(element, ctx, evt);
+		} else {
+			return false;
 		}
 	} else {
 		this.run(element, ctx, evt);
 	}
+	return true;
 };
 
 
@@ -2207,7 +2258,10 @@ XFInsert.prototype.run = function(element, ctx) {
     
 	if (!ctx) { return; }
 
-	var nodes = this.binding.evaluate(ctx);
+	var nodes = [];
+	if( this.binding.bind || this.binding.xpath ) {
+		nodes = this.binding.evaluate(ctx);
+	}
 	var index = 0;
 	var node = null;
 	var originNodes = [];
@@ -2260,7 +2314,7 @@ XFInsert.prototype.run = function(element, ctx) {
 				parent.appendChild(clone);
 			} else {
 				nodeAfter = nodes[index];
-				parent.insertBefore(clone, nodeAfter);
+				nodeAfter.parentNode.insertBefore(clone, nodeAfter);
 			}
 
 			var repeat = nodes.length > 0? nodes[0].repeat : null;
@@ -4962,7 +5016,7 @@ TypeDefs.Default = {
 
 	"anyURI" : {
 		"base" : "xsd_:token",
-		"patterns" : [ "^(([a-zA-Z][0-9a-zA-Z+\\-\\.]*:)?/{0,2}[0-9a-zA-Z;/?:@&=+$\\.\\>> -_!~*'()%]+)?(>> #[0-9a-zA-Z;/?:@&=+$\\.\\-_!~*'()%]+)?$" ]
+		"patterns" : [ "^(([^:\\/?#]+):)?(\\/\\/([^\\/\\?#]*))?([^\\?#]*)(\\?([^#]*))?(#([^\\:#\\[\\]\\@\\!\\$\\&\\\\'\(\\)\\*\\+\\,\\;\\=]*))?$" ]
 	},
 
 		
@@ -5082,10 +5136,10 @@ TypeDefs.XForms = {
 		"class" : "datetime",
 		"displayLength" : 20,
 		"format" : function(value) {
-			return I8N.format(I8N.parse(value, "yyyy-MM-ddThh:mm:ss"));
+			return I8N.format(I8N.parse(value, "yyyy-MM-ddThh:mm:ssz"), null, true);
 		},
 		"parse" : function(value) {
-			return I8N.format(I8N.parse(value), "yyyy-MM-ddThh:mm:ss");
+			return I8N.format(I8N.parse(value), "yyyy-MM-ddThh:mm:ssz", true);
 		}
 	},
 
@@ -5385,6 +5439,7 @@ TypeDefs.XSLTForms = {
 
 	"decimal" : {
 		"patterns" : [ "^[-+]?\\(*[-+]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(([+-/]|\\*)\\(*([0-9]+(\\.[0-9]*)?|\\.[0-9]+)\\)*)*$" ],
+		"displayLength" : 8,
 		"class" : "number",
 		"eval" : "xsd:decimal"
 	},
@@ -5524,6 +5579,7 @@ function Listener(observer, name, phase, handler) {
 	    if (!document.addEventListener) {
 	        event = event || window.event;
 	        event.target = event.srcElement;
+					event.currentTarget = observer;
 
 	        if (event.trueName && event.trueName != name) {
 	            return;
@@ -8055,7 +8111,7 @@ XPathCoreFunctions = {
 			if (arguments.length != 0) {
 				throw XPathCoreFunctionsExceptions.localDateTimeInvalidArgumentsNumber;
 			}
-			return I8N.format(new Date(), "yyyy-MM-ddThh:mm:sszz", true);
+			return I8N.format(new Date(), "yyyy-MM-ddThh:mm:ssz", true);
 		} ),
 
 		
@@ -8124,7 +8180,7 @@ XPathCoreFunctions = {
 			}
 			d = new Date();
 			d.setTime(Math.floor(number + 0.000001) * 1000);
-			return I8N.format(d, "yyyy-MM-ddThh:mm:sszz", false);
+			return I8N.format(d, "yyyy-MM-ddThh:mm:ssz", false);
 		} ),
 
 		
