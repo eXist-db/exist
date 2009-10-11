@@ -1840,13 +1840,21 @@ public class NativeBroker extends DBBroker {
             }
         }.run();
         */
-       InputStream is = getBinaryResource(blob);
-       byte [] buffer = new byte[65536];
-       int len;
-       while ((len=is.read(buffer))>=0) {
-          os.write(buffer,0,len);
+       InputStream is = null;
+       try
+       {
+           is = getBinaryResource(blob);
+           byte [] buffer = new byte[65536];
+           int len;
+           while ((len=is.read(buffer))>=0) {
+              os.write(buffer,0,len);
+           }
        }
-       is.close();
+       finally
+       {
+           if(is != null)
+               is.close();
+       }
     }
     
     public long getBinaryResourceSize(final BinaryDocument blob) 
@@ -2041,10 +2049,22 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
 							destination.getURI());
             }
-            if (doc.getResourceType() == DocumentImpl.BINARY_FILE)  {
-                InputStream is = getBinaryResource((BinaryDocument) doc); 
-                destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
-            } else {
+            if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
+            {
+                InputStream is = null;
+                try
+                {
+                    is = getBinaryResource((BinaryDocument) doc);
+                    destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
+                }
+                finally
+                {
+                    if(is != null)
+                        is.close();
+                }
+            }
+            else
+            {
                 DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
