@@ -207,7 +207,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			}
             
 		} catch (XMLDBException e) {
-            logger.error(e.getMessage());
+                        logger.error(e.getMessage(), e);
 			throw new XPathException(this,
 				"XMLDB reported an exception while storing document" + e, e);
 
