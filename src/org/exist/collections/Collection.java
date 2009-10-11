@@ -1428,22 +1428,21 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        checkPermissions(transaction, broker, oldDoc);
 	        DocumentTrigger trigger = null;
 	        int event = 0;
-/*
+
 	        if (triggersEnabled) {
 	            CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
 	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
-                    try {
-                        trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
-                    } catch (CollectionConfigurationException e) {
-                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                    }
-                    if (trigger != null) {
-	                    trigger.prepare(event, broker, transaction, blob.getURI(), blob);
+                        try {
+                            trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
+                        } catch (CollectionConfigurationException e) {
+                            LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                        }
+                        if (trigger != null) {
+	                    trigger.prepare(event, broker, transaction, getURI().append(docUri), oldDoc);
 	                }
 	            }
 	        }
-*/
 	        
 	        manageDocumentInformation(broker, oldDoc, blob );
 	        DocumentMetadata metadata = blob.getMetadata();
@@ -1468,7 +1467,9 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	        addDocument(transaction, broker, blob);
 	        
 	        broker.storeXMLResource(transaction, blob);
-	        if (triggersEnabled) {
+	        
+                /*
+                if (triggersEnabled) {
 	            CollectionConfiguration config = getConfiguration(broker);
 	            if (config != null) {
 	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
@@ -1481,7 +1482,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 	                    trigger.prepare(event, broker, transaction, blob.getURI(), blob);
 	                }
 	            }
-	        }
+	        }*/
 	        
 	        
                 // This is no longer needed as the dom.dbx isn't used
