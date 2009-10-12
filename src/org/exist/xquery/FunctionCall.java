@@ -262,6 +262,7 @@ public class FunctionCall extends Function {
             return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem);
         } else {
             
+        	//XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
         	context.stackEnter(this);
             
         	context.functionStart(functionDef.getSignature());
