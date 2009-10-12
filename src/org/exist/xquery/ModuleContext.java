@@ -459,4 +459,20 @@ public class ModuleContext extends XQueryContext {
 	public boolean isDebugMode() {
 		return parentContext.isDebugMode();
 	}
+
+    public void expressionStart(Expression expr) throws TerminatedException {
+       	parentContext.expressionStart(expr);
+    }
+
+    public void expressionEnd(Expression expr) {
+       	parentContext.expressionEnd(expr);
+    }
+
+    public void stackEnter(Expression expr) throws TerminatedException {
+       	parentContext.stackEnter(expr);
+    }
+
+    public void stackLeave(Expression expr) {
+       	parentContext.stackLeave(expr);
+    }
 }
