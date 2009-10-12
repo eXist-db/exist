@@ -14,7 +14,7 @@ var timer = null;
 // the currently edited resource
 var currentResource = null;
 
-// add keyboard shortcut to enable ctrl+enter to submit
+// add keyboard shortcut to enable ctrl+enter to submit (submitted by František Kučera)
 // var executeQueryOnCtrlEnter = new YAHOO.util.KeyListener(document, { ctrl:true, keys:13 }, { fn:execQuery});
 // executeQueryOnCtrlEnter.enable();
 
