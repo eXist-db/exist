@@ -44,11 +44,11 @@ public class DebuggeeFactory {
                     instance = (Debuggee) clazz.newInstance();
                 }
             } catch (ClassNotFoundException e) {
-                LOG.warn("Class not found for JMX agent: " + className);
+                LOG.warn("Class not found for debuggee: " + className);
             } catch (IllegalAccessException e) {
-                LOG.warn("Failed to instantiate class for JMX agent: " + className);
+                LOG.warn("Failed to instantiate class for debuggee: " + className);
             } catch (InstantiationException e) {
-                LOG.warn("Failed to instantiate class for JMX agent: " + className);
+                LOG.warn("Failed to instantiate class for debuggee: " + className);
             }
             if (instance == null)
                 instance = new DummyDebuggee();
