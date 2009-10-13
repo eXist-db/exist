@@ -470,7 +470,8 @@ public abstract class Serializer implements XMLReader {
 	                String params[] = ((ProcessingInstructionImpl)node).getData().split(" ");
 	                for(String param : params) {
 	                    String opt[] = Option.parseKeyValuePair(param);
-	                    outputProperties.setProperty(opt[0], opt[1]);
+	                    if (opt != null)
+	                    	outputProperties.setProperty(opt[0], opt[1]);
 	                }
 	    		}
 	    	}
