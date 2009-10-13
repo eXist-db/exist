@@ -21,16 +21,21 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
@@ -166,8 +171,10 @@ public class POSTFunction extends BaseHTTPClientFunction
 			Node nPayload = ((NodeValue)payload).getNode();
 			if (nPayload instanceof Element && nPayload.getNamespaceURI().equals(HTTPClientModule.NAMESPACE_URI) && nPayload.getLocalName().equals("fields"))
 			{
-				NameValuePair[] nvPairs = parseFields((Element)nPayload);
-				post.setRequestBody(nvPairs);
+				Part[] parts = parseFields((Element)nPayload);
+				post.setRequestEntity(
+					      new MultipartRequestEntity(parts, post.getParams())
+					      );
 			}
 			else
 			{
@@ -205,21 +212,28 @@ public class POSTFunction extends BaseHTTPClientFunction
         return(response);
     }
     
-    private NameValuePair[] parseFields(Element fields)
+    private Part[] parseFields(Element fields) throws XPathException
     {
     	NodeList nlField = fields.getElementsByTagNameNS(HTTPClientModule.NAMESPACE_URI, "field");
     	
-    	NameValuePair[] nameValuePairs = new NameValuePair[nlField.getLength()];
+    	Part[] parts = new Part[nlField.getLength()];
     	
     	for(int i = 0; i < nlField.getLength(); i++)
     	{
     		Element field = (Element)nlField.item(i);
     		
-    		nameValuePairs[i] = new NameValuePair(field.getAttribute("name"), field.getAttribute("value"));
+    		if (field.hasAttribute("type") && field.getAttribute("type").equals("file")) {
+    			File file = new File(field.getAttribute("value"));
+    			try {
+					parts[i] = new FilePart(field.getAttribute("name"), file);
+				} catch (FileNotFoundException e) {
+					throw new XPathException(e);				}
+    		} else
+    			parts[i] = new StringPart(field.getAttribute("name"), field.getAttribute("value"));
     		
     	}
     	
-    	return nameValuePairs;
+    	return parts;
     }
     
 }
