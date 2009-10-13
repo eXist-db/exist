@@ -51,7 +51,9 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.dom.XMLUtil;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
@@ -72,6 +74,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -456,9 +459,25 @@ public abstract class Serializer implements XMLReader {
         }
 		if (templates != null)
 			applyXSLHandler(writer);
-		else
+		else {
+			//looking for serializer properties in <?exist-serialize?> 
+	    	NodeList children = doc.getChildNodes();
+	    	for (int i = 0; i < children.getLength(); i++) {
+	    		StoredNode node = (StoredNode) children.item(i);
+	    		if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE 
+	    				&& node.getNodeName().equals("exist-serialize")) {
+
+	                String params[] = ((ProcessingInstructionImpl)node).getData().split(" ");
+	                for(String param : params) {
+	                    String opt[] = Option.parseKeyValuePair(param);
+	                    outputProperties.setProperty(opt[0], opt[1]);
+	                }
+	    		}
+	    	}
+
 			setPrettyPrinter(writer, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"),
                     null, true); //setPrettyPrinter(writer, false);
+		}
 		
 		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
