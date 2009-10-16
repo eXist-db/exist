@@ -103,12 +103,14 @@ public class RpcConnection implements RpcAPI {
         this.user = user;
     }
 
-    private void handleException(Exception e) throws EXistException, PermissionDeniedException {
+    private void handleException(Throwable e) throws EXistException, PermissionDeniedException {
         LOG.debug(e.getMessage(), e);
         if (e instanceof EXistException)
             throw (EXistException) e;
+
         else if (e instanceof PermissionDeniedException)
             throw (PermissionDeniedException) e;
+        
         else {
             //System.out.println(e.getClass().getName());
             throw new EXistException(e);
@@ -162,9 +164,11 @@ public class RpcConnection implements RpcAPI {
             //broker.sync();
             LOG.info("collection " + collUri + " has been created");
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
+            
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -405,8 +409,10 @@ public class RpcConnection implements RpcAPI {
             StringWriter writer = new StringWriter();
             compiled.dump(writer);
             return writer.toString();
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -473,8 +479,10 @@ public class RpcConnection implements RpcAPI {
                 throw result.getException();
             result.queryTime = System.currentTimeMillis() - startTime;
             return factory.resultSets.add(result);
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -523,7 +531,7 @@ public class RpcConnection implements RpcAPI {
     public HashMap getCollectionDesc(String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return getCollectionDesc((rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             handleException(e);
         }
         return null;
@@ -594,7 +602,7 @@ public class RpcConnection implements RpcAPI {
     throws EXistException, PermissionDeniedException {
         try {
             return describeResource(XmldbURI.xmldbUriFor(resourceName));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             handleException(e);
         }
         return null;
@@ -654,7 +662,7 @@ public class RpcConnection implements RpcAPI {
     public HashMap describeCollection(String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return describeCollection((rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -735,7 +743,7 @@ public class RpcConnection implements RpcAPI {
                 }
 
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -753,7 +761,8 @@ public class RpcConnection implements RpcAPI {
     public String getDocumentAsString(String docName, HashMap parametri) throws EXistException, PermissionDeniedException {
         try {
             return getDocumentAsString(XmldbURI.xmldbUriFor(docName), parametri);
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -909,9 +918,11 @@ public class RpcConnection implements RpcAPI {
                 }
                 return result;
             }
-        } catch (Exception e) {
+            
+        } catch (Throwable e) {
             handleException(e);
             return null;
+
         } finally {
             if(collection != null) {
                 collection.releaseDocument(doc, Lock.READ_LOCK);
@@ -948,7 +959,8 @@ public class RpcConnection implements RpcAPI {
             } else
                 result.put("offset", new Integer((int)nextChunk));
             return result;
-        } catch (Exception e) {
+            
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -982,7 +994,8 @@ public class RpcConnection implements RpcAPI {
             } else
                 result.put("offset", Long.toString(nextChunk));
             return result;
-        } catch (Exception e) {
+            
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -1076,7 +1089,8 @@ public class RpcConnection implements RpcAPI {
     public int xupdate(String collectionName, byte[] xupdate) throws PermissionDeniedException, EXistException {
         try {
             return xupdate(XmldbURI.xmldbUriFor(collectionName), new String(xupdate, "UTF-8"));
-        } catch (Exception e) {
+            
+        } catch (Throwable e) {
             handleException(e);
             return -1;
         }
@@ -1145,7 +1159,7 @@ public class RpcConnection implements RpcAPI {
     public int xupdateResource(String resource, byte[] xupdate, String encoding) throws PermissionDeniedException, EXistException {
         try {
             return xupdateResource(XmldbURI.xmldbUriFor(resource), new String(xupdate, encoding));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             handleException(e);
             return -1;
         }
@@ -1876,10 +1890,12 @@ public class RpcConnection implements RpcAPI {
             
             LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
             return false;
+            
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2059,9 +2075,11 @@ public class RpcConnection implements RpcAPI {
             
             // generic
             transact.commit(transaction);
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2158,10 +2176,12 @@ public class RpcConnection implements RpcAPI {
             if (modified != null)
                 doc.getMetadata().setLastModified(modified.getTime());
             transact.commit(transaction);
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
             return false;
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2286,14 +2306,17 @@ public class RpcConnection implements RpcAPI {
             XQuery xquery = broker.getXQueryService();
             pool = xquery.getXQueryPool();
             compiled = compile(broker, source, parameters);
+            
         } catch (XPathException e) {
             ret.put(RpcAPI.ERROR, e.getMessage());
             if(e.getLine() != 0) {
                 ret.put(RpcAPI.LINE, new Integer(e.getLine()));
                 ret.put(RpcAPI.COLUMN, new Integer(e.getColumn()));
             }
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
+
         } finally {
             factory.getBrokerPool().release(broker);
             if(compiled != null && pool != null)
@@ -2329,8 +2352,10 @@ public class RpcConnection implements RpcAPI {
             
             result = printAll(broker, qr.result, howmany, start, parameters,
                     (System.currentTimeMillis() - startTime));
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2441,12 +2466,15 @@ public class RpcConnection implements RpcAPI {
                 }
             } else
                 LOG.debug("result sequence is null. Skipping it...");
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
+        
         queryResult.result = resultSeq;
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
         int id = factory.resultSets.add(queryResult);
@@ -2538,9 +2566,11 @@ public class RpcConnection implements RpcAPI {
                 }
             } else
                 LOG.debug("result sequence is null. Skipping it...");
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2613,9 +2643,11 @@ public class RpcConnection implements RpcAPI {
                 collection.removeXMLResource(transaction, broker, docUri.lastSegment());
             transact.commit(transaction);
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return false;
+            
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2658,10 +2690,12 @@ public class RpcConnection implements RpcAPI {
             boolean removed = broker.removeCollection(transaction, collection);
             transact.commit(transaction);
             return removed;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
             return false;
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2701,7 +2735,8 @@ public class RpcConnection implements RpcAPI {
                 LOG.warn(uee);
                 return xml.getBytes();
             }
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -2745,9 +2780,11 @@ public class RpcConnection implements RpcAPI {
             serializer.reset();
             serializer.setProperties(parameters);
             return serializer.serialize(node);
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -2831,11 +2868,13 @@ public class RpcConnection implements RpcAPI {
 				tempFile.delete();
                 	}
                 	return result;
-        	} catch (Exception e) {
-			handleException(e);
-			return null;
+
+        	} catch (Throwable e) {
+                handleException(e);
+                return null;
+
         	} finally {
-			factory.getBrokerPool().release(broker);
+                factory.getBrokerPool().release(broker);
         	}
 	}
 
@@ -2869,7 +2908,8 @@ public class RpcConnection implements RpcAPI {
                     return Compressor.compress(xml.getBytes());
                 }
             }
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -3007,11 +3047,13 @@ public class RpcConnection implements RpcAPI {
 				tempFile.delete();
                 	}
                 	return result;
-        	} catch (Exception e) {
-			handleException(e);
-			return null;
+
+        	} catch (Throwable e) {
+                handleException(e);
+                return null;
+
         	} finally {
-			factory.getBrokerPool().release(broker);
+                factory.getBrokerPool().release(broker);
         	}
 	}
 
@@ -3029,7 +3071,8 @@ public class RpcConnection implements RpcAPI {
                 LOG.warn(uee);
                 return xml.getBytes();
             }
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
         }
@@ -3205,11 +3248,13 @@ public class RpcConnection implements RpcAPI {
 				tempFile.delete();
                 	}
                 	return result;
-        	} catch (Exception e) {
-			handleException(e);
-			return null;
+
+        	} catch (Throwable e) {
+                handleException(e);
+                return null;
+
         	} finally {
-			factory.getBrokerPool().release(broker);
+                factory.getBrokerPool().release(broker);
         	}
 	}
 
@@ -3311,12 +3356,15 @@ public class RpcConnection implements RpcAPI {
         } catch (SyntaxException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
+
         } catch (PermissionDeniedException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
+
         } catch (IOException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
+            
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -3415,12 +3463,15 @@ public class RpcConnection implements RpcAPI {
             }
             transact.abort(transaction);
             throw new PermissionDeniedException("not allowed to change permissions");
+
         } catch (PermissionDeniedException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
+
         } catch (IOException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
+            
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -3602,10 +3653,12 @@ public class RpcConnection implements RpcAPI {
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
             return false;
+
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -3644,9 +3697,11 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Resource " + docURI + " not found");
             User u = doc.getUserLock();
             return u == null ? "" : u.getName();
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return null;
+
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -3696,9 +3751,11 @@ public class RpcConnection implements RpcAPI {
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return false;
+
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -3780,9 +3837,11 @@ public class RpcConnection implements RpcAPI {
             }
             result.put("doctypes", dtypes);
             return result;
-        } catch(Exception e) {
+
+        } catch(Throwable e) {
             handleException(e);
             return null;
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -4191,11 +4250,14 @@ public class RpcConnection implements RpcAPI {
             transact.commit(transaction);
             return true;
         } catch (LockException e) {
+
             transact.abort(transaction);
             throw new PermissionDeniedException("Could not acquire lock on document " + docUri);
+
         } catch (IOException e) {
             transact.abort(transaction);
             throw new EXistException("Could not acquire lock on document " + docUri);
+            
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -4307,8 +4369,10 @@ public class RpcConnection implements RpcAPI {
             broker = factory.getBrokerPool().get(user);
             broker.reindexCollection(collUri);
             LOG.debug("collection " + collUri + " and sub collection reindexed");
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
+
         } finally {
             factory.getBrokerPool().release(broker);
         }
@@ -4333,7 +4397,8 @@ public class RpcConnection implements RpcAPI {
                     destcollection+"-backup",
                     XmldbURI.xmldbUriFor(XmldbURI.EMBEDDED_SERVER_URI.toString() + collection));
                 backup.backup(false, null);
-            } catch (Exception e) {
+
+            } catch (Throwable e) {
                 handleException(e);
 			}
         return true;
@@ -4377,7 +4442,7 @@ public class RpcConnection implements RpcAPI {
             // Return validation result
             isValid = report.isValid();
             
-        } catch (Exception e) {
+        } catch (Throwable e) {
             handleException(e);
             return false;
         }
@@ -4507,10 +4572,12 @@ public class RpcConnection implements RpcAPI {
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             transact.abort(transaction);
             handleException(e);
             return false;
+
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -4583,7 +4650,8 @@ public class RpcConnection implements RpcAPI {
             }
 
             return true;
-        } catch (Exception e) {
+
+        } catch (Throwable e) {
             handleException(e);
             return false;
         }
@@ -4656,6 +4724,7 @@ public class RpcConnection implements RpcAPI {
     public boolean parse(String xml, String docName) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
             return parse(xml.getBytes("UTF-8"), docName, 0);
+            
         } catch (UnsupportedEncodingException e) {
             handleException(e);
             return false;
@@ -4665,6 +4734,7 @@ public class RpcConnection implements RpcAPI {
     public boolean parse(String xml, String docName, int overwrite) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
             return parse(xml.getBytes("UTF-8"), docName, overwrite);
+
         } catch (UnsupportedEncodingException e) {
             handleException(e);
             return false;
@@ -4685,6 +4755,7 @@ public class RpcConnection implements RpcAPI {
         try {
             String result = query(new String(xquery, "UTF-8"), howmany, start, parameters);
             return result.getBytes("UTF-8");
+
         } catch (UnsupportedEncodingException e) {
             handleException(e);
             return null;
@@ -4703,6 +4774,7 @@ public class RpcConnection implements RpcAPI {
     public HashMap queryP(byte[] xpath, HashMap parameters) throws EXistException, PermissionDeniedException {
         try {
             return queryP(new String(xpath, "UTF-8"), (XmldbURI) null, null, parameters);
+            
         } catch (UnsupportedEncodingException e) {
             handleException(e);
             return null;
@@ -4712,6 +4784,7 @@ public class RpcConnection implements RpcAPI {
     public HashMap compile(byte[] xquery, HashMap parameters) throws EXistException, PermissionDeniedException {
         try {
             return compile(new String(xquery, "UTF-8"), parameters);
+            
         } catch (UnsupportedEncodingException e) {
             handleException(e);
             return null;
