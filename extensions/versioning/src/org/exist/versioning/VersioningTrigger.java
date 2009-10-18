@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Date;
 import java.util.Map;
+import org.exist.dom.BinaryDocument;
 
 public class VersioningTrigger extends FilteringTrigger {
 
@@ -68,12 +69,17 @@ public class VersioningTrigger extends FilteringTrigger {
     public final static String BASE_SUFFIX = ".base";
     public final static String TEMP_SUFFIX = ".tmp";
     public final static String DELETED_SUFFIX = ".deleted";
+    public final static String BINARY_SUFFIX = ".binary";
+    public final static String XML_SUFFIX = ".xml";
 
     public final static String PARAM_OVERWRITE = "overwrite";
 
     public final static QName ELEMENT_VERSION = new QName("version", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
     public final static QName ELEMENT_REMOVED = new QName("removed", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
     public final static QName PROPERTIES_ELEMENT = new QName("properties", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ELEMENT_REPLACED_BINARY = new QName("replaced-binary", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+    public final static QName ATTRIBUTE_REF = new QName("ref");
+    public final static QName ELEMENT_REPLACED_XML = new QName("replaced-xml", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
 
     private final static Object latch = new Object();
 
@@ -102,22 +108,27 @@ public class VersioningTrigger extends FilteringTrigger {
 
     public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument)
     throws TriggerException {
+
         this.broker = broker;
         this.documentPath = documentPath;
         User activeUser = broker.getUser();
+
         try {
             broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
-            if (event == UPDATE_DOCUMENT_EVENT || event == REMOVE_DOCUMENT_EVENT) {
+
+            if(event == UPDATE_DOCUMENT_EVENT || event == REMOVE_DOCUMENT_EVENT)
+            {
                 Collection collection = existingDocument.getCollection();
                 if (collection.getURI().startsWith(VERSIONS_COLLECTION))
                     return;
-                vCollection = getCollection(broker, transaction, documentPath.removeLastSegment());
+                vCollection = getVersionsCollection(broker, transaction, documentPath.removeLastSegment());
 
                 String existingURI = existingDocument.getFileURI().toString();
                 XmldbURI baseURI = XmldbURI.create(existingURI + BASE_SUFFIX);
                 DocumentImpl baseRev = vCollection.getDocument(broker, baseURI);
 
                 String vFileName;
+
                 if (baseRev == null) {
                     vFileName = baseURI.toString();
                     removeLast = false;
@@ -134,10 +145,20 @@ public class VersioningTrigger extends FilteringTrigger {
                 // deleted when the orignal document is removed.
                 existingDocument.getMetadata().setReferenced(true);
 
-                vDoc = new DocumentImpl(broker.getBrokerPool(), vCollection, XmldbURI.createInternal(vFileName));
-                vDoc.copyOf(existingDocument);
-                vDoc.copyChildren(existingDocument);
 
+                if(existingDocument instanceof BinaryDocument)
+                {
+                    XmldbURI binUri = XmldbURI.createInternal(vFileName);
+                    broker.copyResource(transaction, existingDocument, vCollection, binUri);
+                    vDoc = vCollection.getDocument(broker, binUri);
+                }
+                else
+                {
+                    vDoc = new DocumentImpl(broker.getBrokerPool(), vCollection, XmldbURI.createInternal(vFileName));
+                    vDoc.copyOf(existingDocument);
+                    vDoc.copyChildren(existingDocument);
+                }
+                
                 if (event != REMOVE_DOCUMENT_EVENT)
                     lastRev = vDoc;
             }
@@ -151,26 +172,34 @@ public class VersioningTrigger extends FilteringTrigger {
     }
 
     public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+
         if (documentPath.startsWith(VERSIONS_COLLECTION))
             return;
+        
         User activeUser = broker.getUser();
+
         try {
             broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
+
             if (vDoc != null && !removeLast) {
-                try {
-                    vDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-                    vCollection.addDocument(transaction, broker, vDoc);
-                    broker.storeXMLResource(transaction, vDoc);
-                } catch (LockException e) {
-                    LOG.warn("Versioning trigger could not store base document: " + vDoc.getFileURI() +
-                            e.getMessage(), e);
-                } finally {
-                    vDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                if(!(vDoc instanceof BinaryDocument))
+                {
+                    try {
+                        vDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                        vCollection.addDocument(transaction, broker, vDoc);
+                        broker.storeXMLResource(transaction, vDoc);
+                    } catch (LockException e) {
+                        LOG.warn("Versioning trigger could not store base document: " + vDoc.getFileURI() +
+                                e.getMessage(), e);
+                    } finally {
+                        vDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                    }
                 }
             }
+
             if (event == STORE_DOCUMENT_EVENT) {
                 try {
-                    vCollection = getCollection(broker, transaction, documentPath.removeLastSegment());
+                    vCollection = getVersionsCollection(broker, transaction, documentPath.removeLastSegment());
 
                     String existingURI = document.getFileURI().toString();
                     XmldbURI deletedURI = XmldbURI.create(existingURI + DELETED_SUFFIX);
@@ -186,23 +215,18 @@ public class VersioningTrigger extends FilteringTrigger {
                     LOG.warn("Permission denied in VersioningTrigger: " + e.getMessage(), e);
                 }
             }
-            if (lastRev != null || event == REMOVE_DOCUMENT_EVENT) {
-                Diff diff = new StandardDiff(broker);
-                if (documentPath.isCollectionPathAbsolute())
-                    documentPath = documentPath.lastSegment();
-                DocumentImpl base = null;
-                try {
+
+            if (lastRev != null || event == REMOVE_DOCUMENT_EVENT)
+            {
+                try{
+
+                    long revision = newRevision(broker.getBrokerPool());
+                    if (documentPath.isCollectionPathAbsolute())
+                            documentPath = documentPath.lastSegment();
+                    XmldbURI diffUri = XmldbURI.createInternal(documentPath.toString() + '.' + revision);
+
                     vCollection.setTriggersEnabled(false);
 
-                    long rev = newRevision(broker.getBrokerPool());
-                    Properties properties = new Properties();
-                    properties.setProperty("document", documentPath.toString());
-                    properties.setProperty("revision", Long.toString(rev));
-                    properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
-                    properties.setProperty("user", broker.getUser().getName());
-                    if (documentKey != null) {
-                        properties.setProperty("key", documentKey);
-                    }
                     StringWriter writer = new StringWriter();
                     SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
                             SAXSerializer.class);
@@ -210,42 +234,101 @@ public class VersioningTrigger extends FilteringTrigger {
                     outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
                     outputProperties.setProperty(OutputKeys.INDENT, "no");
                     sax.setOutput(writer, outputProperties);
-                    sax.startDocument();
 
+                    sax.startDocument();
                     sax.startElement(ELEMENT_VERSION, null);
-                    writeProperties(sax, properties);
-                    if (event == REMOVE_DOCUMENT_EVENT) {
+                    writeProperties(sax, getVersionProperties(revision, documentPath));
+
+                    if(event == REMOVE_DOCUMENT_EVENT)
+                    {
                         sax.startElement(ELEMENT_REMOVED, null);
                         sax.endElement(ELEMENT_REMOVED);
-                    } else {
-                        diff.diff(lastRev, document);
-                        diff.diff2XML(sax);
                     }
-                    sax.endElement(ELEMENT_VERSION);
+                    else
+                    {
 
-                    sax.endDocument();
-                    String editscript = writer.toString();
+                        //Diff
+                        if(document instanceof BinaryDocument)
+                        {
+                            //create a copy of the last Binary revision
+                            XmldbURI binUri = XmldbURI.create(diffUri.toString() + BINARY_SUFFIX);
+                            broker.copyResource(transaction, document, vCollection, binUri);
 
-//                    System.out.println("documentPath: " + documentPath);
-//                    System.out.println(editscript);
+                            //Create metadata about the last Binary Version
+                            sax.startElement(ELEMENT_REPLACED_BINARY, null);
+                            sax.attribute(ATTRIBUTE_REF, binUri.toString());
+                            sax.endElement(ELEMENT_REPLACED_BINARY);
+                        }
+                        else if(lastRev instanceof BinaryDocument)
+                        {
+                            //create a copy of the last XML revision
+                            XmldbURI xmlUri = XmldbURI.create(diffUri.toString() + XML_SUFFIX);
+                            broker.copyResource(transaction, document, vCollection, xmlUri);
 
-                    if (removeLast)
-                        vCollection.removeXMLResource(transaction, broker, lastRev.getFileURI());
+                            //Create metadata about the last Binary Version
+                            sax.startElement(ELEMENT_REPLACED_XML, null);
+                            sax.attribute(ATTRIBUTE_REF, xmlUri.toString());
+                            sax.endElement(ELEMENT_REPLACED_BINARY);
+                        }
+                        else
+                        {
+                            //Diff the XML versions
+                            Diff diff = new StandardDiff(broker);
+                            diff.diff(lastRev, document);
+                            diff.diff2XML(sax);
+                        }
 
-                    XmldbURI diffUri = XmldbURI.createInternal(documentPath.toString() + '.' + rev);
-                    IndexInfo info = vCollection.validateXMLResource(transaction, broker, diffUri, editscript);
-                    vCollection.store(transaction, broker, info, editscript, false);
-                } catch (Exception e) {
+                        sax.endElement(ELEMENT_VERSION);
+
+                        sax.endDocument();
+                        String editscript = writer.toString();
+
+    //                    System.out.println("documentPath: " + documentPath);
+    //                    System.out.println(editscript);
+
+                        if (removeLast)
+                        {
+                           if(lastRev instanceof BinaryDocument)
+                           {
+                                vCollection.removeBinaryResource(transaction, broker, lastRev.getFileURI());
+                           }
+                           else
+                           {
+                                vCollection.removeXMLResource(transaction, broker, lastRev.getFileURI());
+                           }
+                        }
+
+                        
+                        IndexInfo info = vCollection.validateXMLResource(transaction, broker, diffUri, editscript);
+                        vCollection.store(transaction, broker, info, editscript, false);
+                        
+                    }
+                }
+                catch (Exception e) {
                     LOG.warn("Caught exception in VersioningTrigger: " + e.getMessage(), e);
                 } finally {
-                    if (base != null)
-                        base.getUpdateLock().release(Lock.READ_LOCK);
                     vCollection.setTriggersEnabled(true);
                 }
             }
+
         } finally {
             broker.setUser(activeUser);
         }
+    }
+
+    private Properties getVersionProperties(long revision, XmldbURI documentPath) throws XPathException
+    {
+        Properties properties = new Properties();
+
+        properties.setProperty("document", documentPath.toString());
+        properties.setProperty("revision", Long.toString(revision));
+        properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
+        properties.setProperty("user", broker.getUser().getName());
+        if (documentKey != null) {
+            properties.setProperty("key", documentKey);
+        }
+        
+        return properties;
     }
 
     public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
@@ -260,7 +343,7 @@ public class VersioningTrigger extends FilteringTrigger {
         receiver.endElement(PROPERTIES_ELEMENT);
     }
 
-    private Collection getCollection(DBBroker broker, Txn transaction, XmldbURI collectionPath) throws IOException, PermissionDeniedException {
+    private Collection getVersionsCollection(DBBroker broker, Txn transaction, XmldbURI collectionPath) throws IOException, PermissionDeniedException {
         XmldbURI path = VERSIONS_COLLECTION.append(collectionPath);
         Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
         if (collection == null) {
@@ -280,25 +363,55 @@ public class VersioningTrigger extends FilteringTrigger {
             File f = new File(dataDir, "versions.dbx");
             long rev = 0;
             if (f.canRead()) {
+                DataInputStream is = null;
                 try {
-                    DataInputStream is = new DataInputStream(new FileInputStream(f));
+                    is = new DataInputStream(new FileInputStream(f));
                     rev = is.readLong();
-                    is.close();
                 } catch (FileNotFoundException e) {
                     LOG.warn("Failed to read versions.dbx: " + e.getMessage(), e);
                 } catch (IOException e) {
                     LOG.warn("Failed to read versions.dbx: " + e.getMessage(), e);
                 }
+                finally
+                {
+                    if(is != null)
+                    {
+                        try
+                        {
+                            is.close();
+                        }
+                        catch(IOException ioe)
+                        {
+                            LOG.warn("Failed to close InputStream for versions.dbx: " + ioe.getMessage(), ioe);
+                        }
+                    }
+                }
             }
+            
             ++rev;
+
+            DataOutputStream os = null;
             try {
-                DataOutputStream os = new DataOutputStream(new FileOutputStream(f));
+                os = new DataOutputStream(new FileOutputStream(f));
                 os.writeLong(rev);
-                os.close();
             } catch (FileNotFoundException e) {
                 LOG.warn("Failed to write versions.dbx: " + e.getMessage(), e);
             } catch (IOException e) {
                 LOG.warn("Failed to write versions.dbx: " + e.getMessage(), e);
+            }
+            finally
+            {
+                if(os != null)
+                {
+                    try
+                    {
+                        os.close();
+                    }
+                    catch(IOException ioe)
+                    {
+                         LOG.warn("Failed to close OutputStream for versions.dbx: " + ioe.getMessage(), ioe);
+                    }
+                }
             }
             return rev;
         }
