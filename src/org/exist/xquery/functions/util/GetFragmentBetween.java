@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Team
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2009 The eXist Project
+ * http://exist-db.org
  *
- *  http://exist-db.org
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -70,17 +69,17 @@ public class GetFragmentBetween extends BasicFunction {
   public final static FunctionSignature signature =
     new FunctionSignature(
       new QName("get-fragment-between", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-        "A function which delivers the xml fragment between two elements (normally milestone elements)" +
-        "The first argument represents the first node/milestone element, the second argument the second" +
-        "node/milestone element between which the fragment should be determined. The third argument is " +
-        "a boolean value for the path completion. If the third argument is set to true() open and " +
-        "closing tags before and after the two nodes/milestones are appended. " +
-        "Example call of the function for getting the fragment between two page breaks: " +
+        "Returns an xml fragment or a sequence of nodes between two elements (normally milestone elements). " +
+        "The $beginning-node represents the first node/milestone element, $ending-node, the second one. " +
+        "The third argument, $make-fragment, is " +
+        "a boolean value for the path completion. If it is set to true() the " +
+        "result sequence is wrapped into a parent element node. " +
+        "Example call of the function for getting the fragment between two TEI page break element nodes: " +
         "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true())" ,
         new SequenceType[] { 
                              new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The first node/milestone element"),
                              new FunctionParameterSequenceType("ending-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The second node/milestone element"),
-                             new FunctionParameterSequenceType("add-open-close-tags", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag indicating if open and closing tags before and after the two node/milestones are appended.")
+                             new FunctionParameterSequenceType("make-fragment", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag make a fragment.")
                            },
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the string containing the fragments between the two node/milestone elements."));
 
