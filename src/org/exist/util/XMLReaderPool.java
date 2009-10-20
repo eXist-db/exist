@@ -22,9 +22,12 @@ package org.exist.util;
 
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
+import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.GrammarPool;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
 
@@ -35,6 +38,8 @@ import org.xml.sax.ext.DefaultHandler2;
  * @author wolf
  */
 public class XMLReaderPool extends StackObjectPool {
+
+    private final static Logger LOG = Logger.getLogger(XMLReaderPool.class);
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
@@ -72,7 +77,8 @@ public class XMLReaderPool extends StackObjectPool {
             
             // DIZZZ; workaround Xerces bug. Cached DTDs cause for problems during validation parsing.
             GrammarPool grammarPool =
-               (GrammarPool) reader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
+               (GrammarPool) getReaderProperty(reader,
+                                    XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
             if(grammarPool!=null){
                 grammarPool.clearDTDs();
             }
@@ -81,5 +87,20 @@ public class XMLReaderPool extends StackObjectPool {
         } catch (Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
+    }
+
+    private Object getReaderProperty(XMLReader xmlReader, String propertyName){
+
+        Object object = null;
+        try {
+            object=xmlReader.getProperty(propertyName);
+
+        } catch (SAXNotRecognizedException ex) {
+            LOG.error("SAXNotRecognizedException: " + ex.getMessage());
+
+        } catch (SAXNotSupportedException ex) {
+            LOG.error("SAXNotSupportedException:" + ex.getMessage());
+        }
+        return object;
     }
 }

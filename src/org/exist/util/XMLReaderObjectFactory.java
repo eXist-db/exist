@@ -47,23 +47,23 @@ import org.xml.sax.XMLReader;
 public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
     private final static Logger LOG = Logger.getLogger(XMLReaderObjectFactory.class);
-    
+
     public final static int VALIDATION_UNKNOWN = -1;
     public final static int VALIDATION_ENABLED = 0;
     public final static int VALIDATION_AUTO = 1;
     public final static int VALIDATION_DISABLED = 2;
-    
+
     public final static String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
     public final static String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
     public final static String CONFIGURATION_ELEMENT_NAME = "validation";
-    
+
     //TOO : move elsewhere ?
     public final static String VALIDATION_MODE_ATTRIBUTE = "mode";
     public final static String PROPERTY_VALIDATION_MODE = "validation.mode";
     public final static String CATALOG_RESOLVER = "validation.resolver";
     public final static String CATALOG_URIS = "validation.catalog_uris";
     public final static String GRAMMER_POOL = "validation.grammar_pool";
-    
+
     // Xerces feature and property names
     public final static String APACHE_FEATURES_VALIDATION_SCHEMA
             ="http://apache.org/xml/features/validation/schema";
@@ -76,11 +76,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
     public final static String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
             ="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
-    
+
     private BrokerPool pool;
 
-   
-    
+
+
     /**
      *
      */
@@ -88,35 +88,35 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         super();
         this.pool = pool;
     }
-    
+
     /**
      * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
      */
     public Object makeObject() throws Exception {
         Configuration config = pool.getConfiguration();
-        
-        // Get validation settings        
+
+        // Get validation settings
         String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
         int validation = convertValidationMode(option);
-        
-        GrammarPool grammarPool = 
+
+        GrammarPool grammarPool =
                 (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-        eXistXMLCatalogResolver resolver = 
+        eXistXMLCatalogResolver resolver =
                 (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
-                
+
         XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
-        
+
         setReaderValidationMode(validation, xmlReader);
-    
+
         return xmlReader;
     }
-    
+
     /**
      * Create Xmlreader and setup validation
      */
-    public static XMLReader createXmlReader(int validation, GrammarPool grammarPool, 
+    public static XMLReader createXmlReader(int validation, GrammarPool grammarPool,
             eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
-        
+
         // Create a xmlreader
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED){
@@ -125,42 +125,42 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             saxFactory.setValidating(false);
         }
         saxFactory.setNamespaceAware(true);
-        
+
         SAXParser saxParser = saxFactory.newSAXParser();
         XMLReader xmlReader = saxParser.getXMLReader();
-        
+
         // Setup grammar cache
         if(grammarPool!=null){
-            xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
         }
 
         // Setup xml catalog resolver
         if(resolver!=null){
-            xmlReader.setProperty(APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+           setReaderProperty(xmlReader,APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
         }
-        
+
         return xmlReader;
     }
-    
+
     /**
-     * Convert configuration text (yes,no,true,false,auto) into a magic number.  
+     * Convert configuration text (yes,no,true,false,auto) into a magic number.
      */
     public static int convertValidationMode(String option) {
         int validation = VALIDATION_AUTO;
         if (option != null) {
             if (option.equals("true") || option.equals("yes")) {
                 validation = VALIDATION_ENABLED;
-                
+
             } else if (option.equals("auto")) {
                 validation = VALIDATION_AUTO;
-                
+
             } else {
                 validation = VALIDATION_DISABLED;
             }
         }
         return validation;
     }
-    
+
     /**
      * Setup validation mode of xml reader.
      */
@@ -194,10 +194,22 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             xmlReader.setFeature(featureName, value);
 
         } catch (SAXNotRecognizedException ex) {
-            LOG.error(ex.getMessage());
+            LOG.error("SAXNotRecognizedException: " + ex.getMessage());
 
         } catch (SAXNotSupportedException ex) {
-            LOG.error(ex.getMessage());
+            LOG.error("SAXNotSupportedException:" + ex.getMessage());
+        }
+    }
+
+    private static void setReaderProperty(XMLReader xmlReader, String propertyName, Object object){
+        try {
+            xmlReader.setProperty(propertyName, object);
+
+        } catch (SAXNotRecognizedException ex) {
+            LOG.error("SAXNotRecognizedException: " + ex.getMessage());
+
+        } catch (SAXNotSupportedException ex) {
+            LOG.error("SAXNotSupportedException:" + ex.getMessage());
         }
     }
 
