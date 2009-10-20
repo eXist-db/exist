@@ -39,7 +39,7 @@ public class XMLDBModule extends AbstractInternalModule {
     
     public final static String PREFIX = "xmldb";
     public final static String INCLUSION_DATE = "2004-09-12";
-    public final static String RELEASED_IN_VERSION = "&lt; eXist-1.0";
+    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
     
     public final static String NEED_PRIV_USER = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role.";
     public final static String NEED_PRIV_USER_NOT_CURRENT = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role, and not being the owner of the currently running XQuery.";
