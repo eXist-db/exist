@@ -43,7 +43,7 @@ public class RequestModule extends AbstractInternalModule {
 	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/request";
 	public static final String PREFIX = "request";
     public final static String INCLUSION_DATE = "2004-09-12, 2006-04-09";
-    public final static String RELEASED_IN_VERSION = "&lt; eXist-1.0 (Split into  three modules - request, response and session in 2006)";
+    public final static String RELEASED_IN_VERSION = "pre eXist-1.0 (Many functions originally in this module have been moved into new modules response and session.)";
 
 	public static final QName REQUEST_VAR = new QName("request", NAMESPACE_URI, PREFIX);
 	
