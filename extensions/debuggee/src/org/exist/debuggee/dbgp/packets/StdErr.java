@@ -56,7 +56,6 @@ public class StdErr extends Command {
     public void exec() {
     }
 
-    @Override
 	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"stderr\" " +
@@ -66,7 +65,6 @@ public class StdErr extends Command {
 		return response.getBytes();
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "stderr" +
 				" -i "+transactionID+

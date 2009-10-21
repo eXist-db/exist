@@ -40,10 +40,6 @@ public class Init extends AbstractCommandContinuation {
 		fileuri = source;
 	}
 
-	public int getLength() {
-		return responseBytes().length;
-	}
-
 	public byte[] responseBytes() {
 		String init_message = "<init " +
 			"appid=\"7035\" " +
@@ -68,5 +64,9 @@ public class Init extends AbstractCommandContinuation {
 
 	public boolean is(int type) {
 		return (type == INIT);
+	}
+
+	public byte[] commandBytes() {
+		return new byte[0];
 	}
 }

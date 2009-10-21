@@ -41,10 +41,6 @@ public class StepInto extends AbstractCommandContinuation {
 		getJoint().continuation(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
-	@Override
 	public synchronized byte[] responseBytes() {
 		String responce = "<response " +
 				"command=\"step_into\" " +
@@ -55,7 +51,6 @@ public class StepInto extends AbstractCommandContinuation {
 		return responce.getBytes();
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "step_into -i "+transactionID;
 		

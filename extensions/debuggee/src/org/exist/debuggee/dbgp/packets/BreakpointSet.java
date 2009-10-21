@@ -99,7 +99,6 @@ public class BreakpointSet extends Command implements Breakpoint {
 		status = getJoint().setBreakpoint(this);
 	}
 
-	@Override
 	public byte[] responseBytes() {
 		if (status == 1) {
 			String responce = "<response " +
@@ -127,7 +126,6 @@ public class BreakpointSet extends Command implements Breakpoint {
 		return "0";
 	}
 
-	@Override
 	public byte[] commandBytes() {
 		if (breakpoint != null) {
 			String command = "breakpoint_set" +

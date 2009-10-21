@@ -41,10 +41,6 @@ public class Run extends AbstractCommandContinuation {
 		getJoint().continuation(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
-	@Override
 	public byte[] responseBytes() {
 		String responce = "<response " +
 				"command=\"run\" " +
@@ -55,7 +51,6 @@ public class Run extends AbstractCommandContinuation {
 		return responce.getBytes();
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "run -i "+transactionID;
 		

@@ -43,7 +43,6 @@ public class Status extends Command {
 		command = getJoint().getCurrentCommand();
     }
 
-    @Override
 	public byte[] responseBytes() {
     	if (command != null) {
     		String response = "<response " +
@@ -57,7 +56,6 @@ public class Status extends Command {
     	return errorBytes("status");
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "status -i "+transactionID;
 		

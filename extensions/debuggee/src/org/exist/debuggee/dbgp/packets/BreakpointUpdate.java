@@ -106,10 +106,6 @@ public class BreakpointUpdate extends Command {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
-	@Override
 	public byte[] responseBytes() {
 		if (breakpoint != null) {
 			String responce = "<response " +
@@ -121,7 +117,6 @@ public class BreakpointUpdate extends Command {
 		return errorBytes("breakpoint_update");
 	}
 
-	@Override
 	public byte[] commandBytes() {
 		if (breakpoint != null) {
 			String command = "breakpoint_update" +

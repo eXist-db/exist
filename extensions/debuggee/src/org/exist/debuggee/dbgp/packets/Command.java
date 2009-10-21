@@ -23,9 +23,10 @@ package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.debuggee.dbgp.Packet;
+import org.exist.debuggee.Packet;
 import org.exist.debuggee.dbgp.Errors;
 import org.exist.debugger.Debugger;
+import org.exist.debugger.DebuggerImpl;
 import org.exist.debugger.Response;
 import org.exist.security.xacml.XACMLSource;
 
@@ -33,7 +34,7 @@ import org.exist.security.xacml.XACMLSource;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public abstract class Command extends Packet {
+public abstract class Command implements Packet {
 
 	protected IoSession session;
 
@@ -59,7 +60,7 @@ public abstract class Command extends Packet {
 	}
 	
 	protected void init() {
-		
+		//used by BreakpointSet
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -77,12 +78,6 @@ public abstract class Command extends Packet {
 		
 		return (DebuggeeJoint) session.getAttribute("joint");
 	}
-
-	public int getLength() {
-		return responseBytes().length;
-	}
-	
-	public abstract byte[] responseBytes();
 
 	public byte[] errorBytes(String commandName) {
 		return errorBytes(commandName, Errors.ERR_999, Errors.ERR_999_STR);
@@ -106,11 +101,11 @@ public abstract class Command extends Packet {
 	public Response toDebuggee() {
 		session.write(this);
 		
-		Debugger debugger = (Debugger) session.getAttribute("debugger");
+		DebuggerImpl debugger = (DebuggerImpl) session.getAttribute("debugger");
 		return debugger.getResponse(transactionID);
 	}
 	
-	public static Command parse(IoSession session, String message) throws ParsingCommandException {
+	public static Command parse(IoSession session, String message) {
 		System.out.println("get message = "+message);
 		
 		int pos = message.indexOf(" ");
