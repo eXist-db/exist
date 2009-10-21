@@ -49,7 +49,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		this.fileURI = fileURI;
 	}
 	
-	public Breakpoint Debugger() {
+	public Breakpoint getBreakpoint() {
 		BreakpointImpl breakpoint = new BreakpointImpl();
 		breakpoint.setFilename(fileURI);
 		breakpoint.setDebuggingSource(debugger);
@@ -157,15 +157,15 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	private String code = null;
 
-	public String getData() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getText() {
+		return code;
 	}
 
-	public void setData(String text) {
-		// TODO Auto-generated method stub
-		
+	public void setText(String text) {
+		code = text;
 	}
 
 }
