@@ -19,24 +19,28 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dbgp;
+package org.exist.debugger.dbgp;
+
+import java.io.OutputStream;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public abstract class Packet {
+public class ResponseImpl {
 
-	public int getLength() {
-		return 0;
+	public ResponseImpl(OutputStream outputStream) {
 	}
 
-	public byte[] responseBytes() {
+	public String getTransactionID() {
 		return null;
 	}
 
-	public byte[] commandBytes() {
+	public String getAttribute(String attr) {
 		return null;
 	}
 
+	public String getText() {
+		return null;
+	}
 }

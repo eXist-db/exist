@@ -58,7 +58,11 @@ public class RequestDecoder extends CumulativeProtocolDecoder {
 				}
 			
 			if (in.remaining() >= length) {
-				//TODO: parsing response
+				ResponseImpl response = new ResponseImpl(in.asOutputStream());
+				
+				System.out.println("got response");
+				
+				length = null;
 			}
 		}
 	}
