@@ -21,6 +21,8 @@
  */
 package org.exist.debugger;
 
+import java.io.IOException;
+
 import org.exist.debugger.model.Breakpoint;
 
 /**
@@ -29,12 +31,14 @@ import org.exist.debugger.model.Breakpoint;
  */
 public interface Debugger {
 
-	public DebuggingSource source(String fileURI);
+	public DebuggingSource init(String url) throws IOException, ExceptionTimeout;
+
+	public DebuggingSource getSource(String fileURI);
 
 	public void sessionClosed();
 
 	public Breakpoint addBreakpoint(Breakpoint breakpoint);
 
-	public Response getResponse(String transactionID);
+	//public Response getResponse(String transactionID);
 
 }

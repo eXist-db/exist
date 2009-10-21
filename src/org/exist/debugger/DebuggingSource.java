@@ -53,7 +53,6 @@ public interface DebuggingSource {
 
 	/**
 	 * Ends execution of the script immediately, the debugger engine may not respond, though if possible should be designed to do so. The script will be terminated right away and be followed by a disconnection of the network connection from the IDE (and debugger engine if required in multi request apache processes).
-	 * @return
 	 */
 	public void stop();
 
@@ -71,6 +70,5 @@ public interface DebuggingSource {
 
 	public Breakpoint newBreakpoint();
 
-	public String getData();
-	public void setData(String text);
+	public String getText();
 }
