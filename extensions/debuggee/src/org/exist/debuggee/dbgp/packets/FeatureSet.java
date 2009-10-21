@@ -48,11 +48,6 @@ public class FeatureSet extends Command {
 		}
 	}
 	
-	public int getLength() {
-		return responseBytes().length;
-	}
-
-	@Override
 	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"feature_set\" " +
@@ -75,7 +70,6 @@ public class FeatureSet extends Command {
 		success = getJoint().featureSet(name, value);
 	}
 
-	@Override
 	public byte[] commandBytes() {
 		String command = "feature_set -i "+transactionID+" -n "+name+" -v "+value;
 		

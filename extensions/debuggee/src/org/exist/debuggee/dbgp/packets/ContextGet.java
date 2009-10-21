@@ -69,7 +69,6 @@ public class ContextGet extends Command {
 		variables = getJoint().getVariables();
 	}
 
-	@Override
 	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"context_get\" " +
@@ -93,7 +92,6 @@ public class ContextGet extends Command {
 		return properties;
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "context_get -i "+transactionID;
 		

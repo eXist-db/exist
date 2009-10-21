@@ -50,7 +50,6 @@ public class BreakpointList extends Command {
 		breakpoints = getJoint().getBreakpoints();
 	}
 
-	@Override
 	public byte[] responseBytes() {
 		if (breakpoints != null) {
 			String responce = "<response " +
@@ -66,7 +65,6 @@ public class BreakpointList extends Command {
 		return errorBytes("breakpoint_list");
 	}
 	
-	@Override
 	public byte[] commandBytes() {
 		String command = "breakpoint_list -i "+transactionID;
 		return command.getBytes();

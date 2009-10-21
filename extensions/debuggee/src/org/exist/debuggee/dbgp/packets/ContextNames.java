@@ -48,7 +48,6 @@ public class ContextNames extends Command {
     public void exec() {
     }
 
-    @Override
 	public byte[] responseBytes() {
 		String response = "<response " +
             "command=\"context_names\" " +
@@ -61,7 +60,6 @@ public class ContextNames extends Command {
 		return response.getBytes();
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "context_names -i "+transactionID;
 		

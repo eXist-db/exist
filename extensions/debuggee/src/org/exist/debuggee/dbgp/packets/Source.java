@@ -141,7 +141,6 @@ public class Source extends Command {
 		}
     }
 
-    @Override
     public byte[] responseBytes() {
     	if (response == null) {
     		if (source != null) {
@@ -177,7 +176,6 @@ public class Source extends Command {
     	return "0";
     }
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "source" +
 				" -i "+transactionID+

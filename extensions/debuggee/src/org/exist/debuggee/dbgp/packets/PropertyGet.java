@@ -110,10 +110,6 @@ public class PropertyGet extends Command {
 		variable = getJoint().getVariable(nameLong);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
-	@Override
 	public byte[] responseBytes() {
 		if (variable == null)
 			return errorBytes("property_get");
@@ -194,7 +190,6 @@ public class PropertyGet extends Command {
         }
     }
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "property_get" +
 				" -i "+transactionID+

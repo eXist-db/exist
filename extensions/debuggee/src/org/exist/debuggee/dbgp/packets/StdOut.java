@@ -56,7 +56,6 @@ public class StdOut extends Command {
     public void exec() {
     }
 
-    @Override
 	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"stdout\" " +
@@ -66,7 +65,6 @@ public class StdOut extends Command {
 		return response.getBytes();
 	}
 
-    @Override
 	public byte[] commandBytes() {
 		String command = "stdout" +
 				" -i "+transactionID+

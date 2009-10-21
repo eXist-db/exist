@@ -46,11 +46,6 @@ public class FeatureGet extends Command {
 		}
 	}
 	
-	public int getLength() {
-		return responseBytes().length;
-	}
-
-	@Override
 	public byte[] responseBytes() {
 		String response = "<response " +
 				"command=\"feature_get\" " +
@@ -75,7 +70,6 @@ public class FeatureGet extends Command {
 		value = getJoint().featureGet(name);
 	}
 	
-    @Override
 	public byte[] commandBytes() {
 		String command = "feature_get -i "+transactionID+" -n "+name;
 		

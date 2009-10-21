@@ -44,10 +44,6 @@ public class Error extends Command {
 	public void exec() {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#toBytes()
-	 */
-	@Override
 	public byte[] responseBytes() {
 		String responce = "<response " +
 					"command=\""+name+"\" " +
@@ -56,6 +52,10 @@ public class Error extends Command {
 			"</response>";
 
 		return responce.getBytes();
+	}
+
+	public byte[] commandBytes() {
+		return new byte[0];
 	}
 
 }
