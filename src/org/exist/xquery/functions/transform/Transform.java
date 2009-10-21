@@ -114,11 +114,11 @@ public class Transform extends BasicFunction {
             "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
             "if the XSL processor reports a warning or error.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (nodes tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
 				},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the tranfromed result (nodes tree)")),
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
         new FunctionSignature(
 			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
 			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
@@ -138,11 +138,11 @@ public class Transform extends BasicFunction {
             "(if there are xincludes in the document). A relative path will be relative to the current " +
             "module load path.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (nodes tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
-                new FunctionParameterSequenceType("serailization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serailization options")},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (nodes tree)")),
+                new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
         new FunctionSignature(
             new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
             "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
@@ -150,7 +150,7 @@ public class Transform extends BasicFunction {
             "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (nodes tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
             },
@@ -162,10 +162,10 @@ public class Transform extends BasicFunction {
             "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (nodes tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
-                new FunctionParameterSequenceType("serailization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serailization options")},
+                new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
             new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
