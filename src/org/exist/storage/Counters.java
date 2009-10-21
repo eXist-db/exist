@@ -77,6 +77,10 @@ public class Counters {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return true if the counters are initialized
+	 */
 	public static boolean isInitialized() {
 		return initialized;
 	}
@@ -84,8 +88,8 @@ public class Counters {
 	/**
      * Creates a new Counter, initializes it to 0 and returns the current value in a long.
      * 
-     * @param String counterName
-     * @return Counter
+     * @param counterName
+     * @return the initial value of the newly created counter
 	 * @throws EXistException 
      */
     public long createCounter(String counterName) throws EXistException {
@@ -96,8 +100,9 @@ public class Counters {
      * Creates a new Counter, initializes it to initValue and returns the current value in a long.
      * If there already is a counter with the same name, the current value of this counter is returned.
      * 
-     * @param String counterName, long initValue
-     * @return Counter
+     * @param counterName
+     * @param initValue
+     * @return the current value of the named counter
      * @throws EXistException 
      */
     public synchronized long createCounter(String counterName, long initValue) throws EXistException {
@@ -119,8 +124,8 @@ public class Counters {
     /**
      * Removes a counter by the specified name.
      * 
-     * @param String counterName
-     * @return Boolean
+     * @param counterName
+     * @return true if the counter is removed
      * @throws EXistException 
      */
     public synchronized boolean destroyCounter(String counterName) throws EXistException {
@@ -142,8 +147,8 @@ public class Counters {
     /**
      * Retrieves the next value of a counter (specified by name).
      * 
-     * @param String counterName
-     * @return long the next counter value or -1 if the counter does not exist.
+     * @param counterName
+     * @return the next counter value or -1 if the counter does not exist.
      * @throws Exception 
      */
     public synchronized long nextValue(String counterName) throws EXistException {
@@ -167,7 +172,7 @@ public class Counters {
     /**
      * Returns all available counters in a Set of Strings.
      * 
-     * @return Set<String>
+     * @return all available counters in a Set of Strings
      */
     public Set<String> availableCounters() {
     	return counters.keySet();
