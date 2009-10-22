@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerFactory;
 
 import org.apache.log4j.Logger;
 
+import org.exist.util.ExistSAXParserFactory;
 import org.xml.sax.XMLReader;
 
 /**
@@ -93,7 +94,7 @@ public class XmlLibraryChecker {
 
         String parserClass = "Unable to determine parser class";
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
             XMLReader xmlReader = factory.newSAXParser().getXMLReader();
             String classId = xmlReader.toString();
             parserClass = getClassName(classId);
