@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 
 import org.apache.log4j.Logger;
+
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.GrammarPool;
@@ -118,7 +119,8 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
 
         // Create a xmlreader
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
+        
         if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED){
             saxFactory.setValidating(true);
         } else {
@@ -212,5 +214,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             LOG.error("SAXNotSupportedException:" + ex.getMessage());
         }
     }
+
 
 }
