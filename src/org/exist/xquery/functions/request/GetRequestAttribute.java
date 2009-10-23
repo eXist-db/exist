@@ -32,12 +32,9 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Enumeration;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -46,7 +43,7 @@ public class GetRequestAttribute extends BasicFunction {
 
 	protected static final Logger logger = Logger.getLogger(GetRequestAttribute.class);
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("get-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the string value of the request attribute specified in the argument or the empty " +
@@ -54,12 +51,20 @@ public class GetRequestAttribute extends BasicFunction {
 			new SequenceType[] {
                     new FunctionParameterSequenceType("attribute-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the attribute")
             },
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the string value of the requested attribute"));
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the string value of the requested attribute")),
+        new FunctionSignature(
+			new QName("attribute-names", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the names of all request attributes in the current request.",
+			null,
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the names of all attributes attached to the " +
+                "current request")
+        )
+    };
 
 	/**
 	 * @param context
 	 */
-	public GetRequestAttribute(XQueryContext context) {
+	public GetRequestAttribute(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -68,8 +73,7 @@ public class GetRequestAttribute extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		
-        String name = args[0].getStringValue();
+
         RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $request
@@ -81,8 +85,17 @@ public class GetRequestAttribute extends BasicFunction {
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
-			Object attrib = ((RequestWrapper) value.getObject()).getAttribute(name);
-            return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
+            if (isCalledAs("get-attribute")) {
+                String name = args[0].getStringValue();
+                Object attrib = ((RequestWrapper) value.getObject()).getAttribute(name);
+                return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
+            } else {
+                ValueSequence names = new ValueSequence();
+                for (Enumeration e = ((RequestWrapper) value.getObject()).getAttributeNames(); e.hasMoreElements(); ) {
+                    names.add(new StringValue(e.nextElement().toString()));
+                }
+                return names;
+            }
         } else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
 	}
