@@ -21,6 +21,8 @@
  */
 package org.exist.debuggee;
 
+import org.exist.debugger.Response;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -48,6 +50,9 @@ public interface CommandContinuation {
 	public void setStatus(String status);
 	
 	public int getCallStackDepth();
+
+	//debugger side methods
+	public void putResponse(Response response);
 
 	//close session
 	public void disconnect();
