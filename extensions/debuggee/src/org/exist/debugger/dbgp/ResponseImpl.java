@@ -21,23 +21,73 @@
  */
 package org.exist.debugger.dbgp;
 
-import java.io.OutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.mina.core.session.IoSession;
+import org.exist.debugger.DebuggerImpl;
+import org.exist.debugger.Response;
+import org.exist.memtree.SAXAdapter;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
-public class ResponseImpl {
+public class ResponseImpl implements Response {
 
-	public ResponseImpl(OutputStream outputStream) {
+	private IoSession session;
+	
+	private Document parsedResponse = null;
+	
+	public ResponseImpl(IoSession session, InputStream inputStream) {
+		this.session = session;
+		
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		InputSource src = new InputSource(inputStream);
+		SAXParser parser;
+		try {
+			parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			SAXAdapter adapter = new SAXAdapter();
+			reader.setContentHandler(adapter);
+			reader.parse(src);
+			parsedResponse = adapter.getDocument();
+		} catch (ParserConfigurationException e) {
+		} catch (SAXException e) {
+		} catch (IOException e) {
+		}
+	}
+	
+	protected boolean isValid() {
+		return (parsedResponse != null);
+	}
+	
+	protected DebuggerImpl getDebugger() {
+		return (DebuggerImpl) session.getAttribute("debugger");
+	}
+
+	public IoSession getSession() {
+		return session;
 	}
 
 	public String getTransactionID() {
-		return null;
+		if (parsedResponse.getFirstChild().getNodeName().equals("init"))
+			return "init";
+		
+		return getAttribute("transaction_id");
 	}
 
 	public String getAttribute(String attr) {
-		return null;
+		return parsedResponse.getFirstChild().getAttributes().getNamedItem(attr).getNodeValue();
 	}
 
 	public String getText() {

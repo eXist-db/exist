@@ -30,11 +30,12 @@ import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.exist.debuggee.dbgp.CodecFactory;
 import org.exist.debuggee.dbgp.packets.Source;
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
+import org.exist.debugger.dbgp.CodecFactory;
 import org.exist.debugger.dbgp.ProtocolHandler;
+import org.exist.debugger.dbgp.ResponseImpl;
 import org.exist.debugger.model.Breakpoint;
 
 /**
@@ -54,9 +55,16 @@ public class DebuggerImpl implements Debugger {
 	//uri -> source
 	private Map<String, DebuggingSource> sources = new HashMap<String, DebuggingSource>();
 	
+	int currentTransactionId = 1;
+	
 
 	public DebuggerImpl() {
 	}
+
+	private int getNextTransaction() {
+		return currentTransactionId++;
+	}
+
 	
 	protected void setSession(IoSession session) {
 		this.session = session;
@@ -74,7 +82,8 @@ public class DebuggerImpl implements Debugger {
 		Thread session = new Thread(new HttpSession(url));
 		session.start();
 		
-		Response response = getResponse("init", 30 * 1000); // 30s timeout
+		ResponseImpl response = (ResponseImpl) getResponse("init", 30 * 1000); // 30s timeout
+		this.session = response.getSession();
 		
 		return getSource(response.getAttribute("fileuri")); //TODO: fileuri as constant???
 	}
@@ -86,7 +95,7 @@ public class DebuggerImpl implements Debugger {
 		if (sources.containsKey(fileURI))
 			return sources.get(fileURI);
 
-		Source command = new Source(session, "");
+		Source command = new Source(session, " -i "+getNextTransaction());
 		command.setFileURI(fileURI);
 		Response response = command.toDebuggee();
 		
@@ -115,7 +124,7 @@ public class DebuggerImpl implements Debugger {
 	//weak map???
 	private Map<String, Response> responses = new HashMap<String, Response>();
 	
-	protected synchronized void addResponse(Response response) {
+	public synchronized void addResponse(Response response) {
 		responses.put(response.getTransactionID(), response);
 		notifyAll();
 	}
