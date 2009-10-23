@@ -64,49 +64,49 @@ public interface Breakpoint {
 
 	/**
 	 * The file the breakpoint is effective in. This must be a "file://" or "dbgp:" (See 6.7 Dynamic code and virtual files) URI.
-	 * @return
+	 * @return the source URI
 	 */
 	public String getFilename();
 //	public void setFilename(String filename);
 	
 	/**
 	 * Line number on which breakpoint is effective. Line numbers are 1-based. If an implementation requires a numeric value to indicate that lineno is not set, it is suggested that -1 be used, although this is not enforced.
-	 * @return
+	 * @return line number
 	 */
 	public Integer getLineno();
 	public void setLineno(Integer lineno);
 	
 	/**
 	 * Current state of the breakpoint. This must be one of enabled, disabled.
-	 * @return
+	 * @return current state: true = enabled, false = disabled
 	 */
 	public boolean getState();
 	public void setState(boolean state);
 	
 	/**
 	 * Function name for call or return type breakpoints.
-	 * @return
+	 * @return function name
 	 */
 	public String getFunction();
 	public void setFunction(String function);
 	
 	/**
 	 * Flag to define if breakpoint is temporary. A temporary breakpoint is one that is deleted after its first use. This is useful for features like "Run to Cursor". Once the debugger engine uses a temporary breakpoint, it should automatically remove the breakpoint from it's list of valid breakpoints.
-	 * @return
+	 * @return true if it's temporary
 	 */
 	public boolean getTemporary();
 	public void setTemporary(boolean temporary);
 	
 	/**
 	 * Number of effective hits for the breakpoint in the current session. This value is maintained by the debugger engine (a.k.a. DBGP client). A breakpoint's hit count should be increment whenever it is considered to break execution (i.e. whenever debugging comes to this line). If the breakpoint is disabled then the hit count should NOT be incremented.
-	 * @return
+	 * @return number of effective hits
 	 */
 	public int getHitCount();
 	public void setHitCount(int count);
 
 	/**
 	 * A numeric value used together with the hit_condition to determine if the breakpoint should pause execution or be skipped.
-	 * @return
+	 * @return numeric of hit to pause execution
 	 */
 	public int getHitValue();
 	public void setHitValue(int value);
@@ -117,14 +117,14 @@ public interface Breakpoint {
 	 * == break if hit_count is equal to hit_value 
 	 * %  break if hit_count is a multiple of hit_value
 	 *  
-	 * @return
+	 * @return hit condition string
 	 */
 	public String getHitCondition();
 	public void setHitCondition(String condition);
 	
 	/**
 	 * Exception name for exception type breakpoints.
-	 * @return
+	 * @return exception name
 	 */
 	public String getException();
 	public void setException(String exception);
