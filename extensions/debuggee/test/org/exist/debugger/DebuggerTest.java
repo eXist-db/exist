@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
+import org.apache.tools.ant.taskdefs.Sleep;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -57,6 +58,13 @@ public class DebuggerTest {
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/admin/admin.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
+			
+			try { //why???
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+			
+			source.run();
 
 		} catch (IOException e) {
 			assertNotNull("IO exception: "+e.getMessage(), null);

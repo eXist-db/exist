@@ -22,10 +22,8 @@
 package org.exist.debugger;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.exist.debuggee.dbgp.packets.BreakpointSet;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.BreakpointImpl;
 import org.exist.debugger.model.Location;
@@ -117,8 +115,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	 * @see org.exist.debugger.DebuggingSource#run()
 	 */
 	public void run() {
-		// TODO Auto-generated method stub
-
+		debugger.run();
 	}
 
 	/* (non-Javadoc)

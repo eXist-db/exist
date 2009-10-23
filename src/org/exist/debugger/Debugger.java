@@ -39,6 +39,8 @@ public interface Debugger {
 
 	public Breakpoint addBreakpoint(Breakpoint breakpoint);
 
+	public void run();
+
 	//public Response getResponse(String transactionID);
 
 }

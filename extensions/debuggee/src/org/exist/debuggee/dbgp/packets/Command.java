@@ -63,6 +63,10 @@ public abstract class Command implements Packet {
 		//used by BreakpointSet
 	}
 
+	public String getTransactionId() {
+		return transactionID;
+	}
+
 	protected void setArgument(String arg, String val) {
 		if (arg.equals("i"))
 			transactionID = val;
@@ -98,11 +102,8 @@ public abstract class Command implements Packet {
 	public abstract void exec();
 
 
-	public Response toDebuggee() {
+	public void toDebuggee() {
 		session.write(this);
-		
-		DebuggerImpl debugger = (DebuggerImpl) session.getAttribute("debugger");
-		return debugger.getResponse(transactionID);
 	}
 	
 	public static Command parse(IoSession session, String message) {

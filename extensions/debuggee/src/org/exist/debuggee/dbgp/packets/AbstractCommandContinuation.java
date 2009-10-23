@@ -23,6 +23,7 @@ package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.CommandContinuation;
+import org.exist.debugger.Response;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -63,5 +64,10 @@ public abstract class AbstractCommandContinuation extends Command implements Com
 	
 	public void disconnect() {
 		session.close(true);
+	}
+
+	public void putResponse(Response response) {
+		status = response.getAttribute("status");
+		//TODO: Listeners
 	}
 }
