@@ -37,6 +37,7 @@ import org.exist.debugger.dbgp.CodecFactory;
 import org.exist.debugger.dbgp.ProtocolHandler;
 import org.exist.debugger.dbgp.ResponseImpl;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.util.Base64Decoder;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -101,7 +102,13 @@ public class DebuggerImpl implements Debugger {
 		
 		if ("1".equals(response.getAttribute("success"))) {
 			DebuggingSourceImpl source = new DebuggingSourceImpl(this, fileURI);
-			source.setText(response.getText());
+
+            Base64Decoder dec = new Base64Decoder();
+            dec.translate(response.getText());
+            byte[] c = dec.getByteArray();
+            String s = new String(c);
+
+            source.setText(s);
 			
 			sources.put(fileURI, source);
 			
