@@ -56,10 +56,8 @@ public class DebuggerTest {
 
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/admin/admin.xql");
 
-			assertNotNull("Debugging source can't be NULL.", test);
+			assertNotNull("Debugging source can't be NULL.", source);
 
-			System.out.println(source.getText());
-			
 		} catch (IOException e) {
 			assertNotNull("IO exception: "+e.getMessage(), null);
 		} catch (ExceptionTimeout e) {

@@ -32,7 +32,9 @@ import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.DebuggerImpl;
 import org.exist.debugger.Response;
 import org.exist.memtree.SAXAdapter;
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -45,7 +47,7 @@ public class ResponseImpl implements Response {
 
 	private IoSession session;
 	
-	private Document parsedResponse = null;
+	private Element parsedResponse = null;
 	
 	public ResponseImpl(IoSession session, InputStream inputStream) {
 		this.session = session;
@@ -60,7 +62,7 @@ public class ResponseImpl implements Response {
 			SAXAdapter adapter = new SAXAdapter();
 			reader.setContentHandler(adapter);
 			reader.parse(src);
-			parsedResponse = adapter.getDocument();
+			parsedResponse = (Element) adapter.getDocument().getFirstChild();
 		} catch (ParserConfigurationException e) {
 		} catch (SAXException e) {
 		} catch (IOException e) {
@@ -80,17 +82,21 @@ public class ResponseImpl implements Response {
 	}
 
 	public String getTransactionID() {
-		if (parsedResponse.getFirstChild().getNodeName().equals("init"))
+		if (parsedResponse.getNodeName().equals("init"))
 			return "init";
 		
 		return getAttribute("transaction_id");
 	}
 
 	public String getAttribute(String attr) {
-		return parsedResponse.getFirstChild().getAttributes().getNamedItem(attr).getNodeValue();
+		return parsedResponse.getAttributes().getNamedItem(attr).getNodeValue();
 	}
 
 	public String getText() {
+		Node node = parsedResponse.getFirstChild();
+		if (node.getNodeType() == Node.TEXT_NODE) 
+			return ((Text) node).getData();
+		
 		return null;
 	}
 }

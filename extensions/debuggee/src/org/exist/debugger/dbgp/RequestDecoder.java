@@ -25,7 +25,6 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.exist.debuggee.dbgp.packets.Command;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -42,13 +41,16 @@ public class RequestDecoder extends CumulativeProtocolDecoder {
 		
 		byte b;
 		while (true) {
+			//TODO: limit length to avoid "OutOfMemory"
 			if (length == null) {
 				if (in.remaining() > 0) {
 					b = in.get();
 					if (b == (byte)0) {
 						try {
 							length = Integer.valueOf(sLength);
-						} finally {
+						} catch (java.lang.NumberFormatException e) {
+							length = null;
+							sLength = "";
 						}
 						continue;
 					}
@@ -57,8 +59,8 @@ public class RequestDecoder extends CumulativeProtocolDecoder {
 					return false;
 				}
 			} else if (in.remaining() >= length) {
-				in.limit(length+sLength.length()+1);
-				ResponseImpl response = new ResponseImpl(session, in.asInputStream());
+				ResponseImpl response = new ResponseImpl(session, 
+						in.getSlice(length).asInputStream());
 				
 				if (response.isValid())
 					response.getDebugger().addResponse(response);
