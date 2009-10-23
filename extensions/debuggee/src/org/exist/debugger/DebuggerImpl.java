@@ -72,7 +72,7 @@ public class DebuggerImpl implements Debugger {
 		LOG.info("Debugger is listening at port "+eventPort);
 
 		Thread session = new Thread(new HttpSession(url));
-		session.run();
+		session.start();
 		
 		Response response = getResponse("init", 30 * 1000); // 30s timeout
 		

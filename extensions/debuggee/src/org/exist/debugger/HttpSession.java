@@ -21,7 +21,11 @@
  */
 package org.exist.debugger;
 
+import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 /**
@@ -40,9 +44,21 @@ public class HttpSession implements Runnable {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
+//		HttpState initialState = new HttpState();
+//
+//		Cookie mycookie = new Cookie(".exist-db.org", "XDEBUG_SESSION", "default", "/", null, false);
+//
+//		initialState.addCookie(mycookie);
+		
 		HttpClient client = new HttpClient();
+//		client.setState(initialState);
 
 		PostMethod method = new PostMethod(url);
+
+		NameValuePair[] postData = new NameValuePair[1];
+        postData[0] = new NameValuePair("XDEBUG_SESSION", "default");
+        
+        method.addParameters(postData);
 
 		try {
 			System.out.println("sending http request with debugging flag");
