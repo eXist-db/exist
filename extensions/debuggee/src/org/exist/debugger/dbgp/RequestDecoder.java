@@ -34,7 +34,7 @@ import org.exist.debuggee.dbgp.packets.Command;
 public class RequestDecoder extends CumulativeProtocolDecoder {
 
 	private String sLength = "";
-	private Integer length;
+	private Integer length = null;
 	
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in,
@@ -42,7 +42,7 @@ public class RequestDecoder extends CumulativeProtocolDecoder {
 		
 		byte b;
 		while (true) {
-			if (length == null)
+			if (length == null) {
 				if (in.remaining() > 0) {
 					b = in.get();
 					if (b == (byte)0) {
@@ -56,13 +56,19 @@ public class RequestDecoder extends CumulativeProtocolDecoder {
 				} else {
 					return false;
 				}
-			
-			if (in.remaining() >= length) {
-				ResponseImpl response = new ResponseImpl(in.asOutputStream());
+			} else if (in.remaining() >= length) {
+				in.limit(length+sLength.length()+1);
+				ResponseImpl response = new ResponseImpl(session, in.asInputStream());
 				
-				System.out.println("got response");
+				if (response.isValid())
+					response.getDebugger().addResponse(response);
 				
 				length = null;
+				sLength = "";
+
+				return true;
+			} else {
+				return false;
 			}
 		}
 	}
