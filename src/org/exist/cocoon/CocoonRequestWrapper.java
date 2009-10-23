@@ -71,6 +71,10 @@ public class CocoonRequestWrapper implements RequestWrapper {
         return this.cocoonRequest.getAttribute(name);
     }
 
+    public Enumeration getAttributeNames() {
+        return this.cocoonRequest.getAttributeNames();
+    }
+
     public Cookie[] getCookies()
 	{
 		return servletRequest.getCookies();

@@ -95,6 +95,10 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getAttribute(name);
     }
 
+    public Enumeration getAttributeNames() {
+        return servletRequest.getAttributeNames();
+    }
+    
     /**
      * Returns an array of Cookies
      */

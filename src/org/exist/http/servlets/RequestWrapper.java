@@ -37,6 +37,8 @@ import javax.servlet.http.Cookie;
 public interface RequestWrapper {
 
     public Object getAttribute(String name);
+
+    public Enumeration getAttributeNames();
     
     public String getCharacterEncoding();
 	
