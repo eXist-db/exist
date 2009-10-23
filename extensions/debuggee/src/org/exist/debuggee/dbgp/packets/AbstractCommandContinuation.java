@@ -30,7 +30,7 @@ import org.exist.debuggee.CommandContinuation;
  */
 public abstract class AbstractCommandContinuation extends Command implements CommandContinuation {
 
-	private String status = null;
+	protected String status = null;
 	
 	private int callStackDepth = 0;
 
