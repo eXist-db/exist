@@ -38,6 +38,9 @@ public class Init extends AbstractCommandContinuation {
 
 	public void setFileURI(XACMLSource source){
 		fileuri = source;
+
+		if (!session.isClosing())
+			session.write(this);
 	}
 
 	public byte[] responseBytes() {
@@ -56,6 +59,10 @@ public class Init extends AbstractCommandContinuation {
 
 	@Override
 	public void exec() {
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public int getType() {
