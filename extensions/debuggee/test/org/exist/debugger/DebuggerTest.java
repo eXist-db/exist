@@ -64,6 +64,10 @@ public class DebuggerTest {
 			} catch (InterruptedException e) {
 			}
 			
+			source.stepInto();
+			source.stepOver();
+			source.stepOut();
+
 			source.run();
 
 		} catch (IOException e) {
