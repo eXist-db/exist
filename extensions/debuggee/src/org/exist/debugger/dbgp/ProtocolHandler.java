@@ -21,6 +21,7 @@
  */
 package org.exist.debugger.dbgp;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -32,6 +33,8 @@ import org.exist.debugger.Debugger;
  */
 public class ProtocolHandler extends IoHandlerAdapter {
 
+    private final static Logger LOG = Logger.getLogger(ProtocolHandler.class);
+	
 	private Debugger debugger;
 	
 	public ProtocolHandler(Debugger debugger) {
@@ -50,8 +53,8 @@ public class ProtocolHandler extends IoHandlerAdapter {
 		Debugger debugger = (Debugger) session.getAttribute("debugger");
 		debugger.sessionClosed();
 
-		// Print out total number of bytes read from the remote peer.
-		System.err.println("Total " + session.getReadBytes() + " byte(s)");
+		if (LOG.isDebugEnabled())
+			LOG.debug("Total " + session.getReadBytes() + " byte(s) readed.");
 	}
 
 	@Override

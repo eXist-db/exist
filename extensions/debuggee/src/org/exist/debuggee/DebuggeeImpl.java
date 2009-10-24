@@ -58,7 +58,7 @@ public class DebuggeeImpl implements Debuggee {
     DebuggeeConnectionTCP connection = null; 
     
 	public DebuggeeImpl() {
-		connection = new DebuggeeConnectionTCP(this);
+		connection = new DebuggeeConnectionTCP();
 	}
 	
 	public void joint(CompiledXQuery compiledXQuery) {

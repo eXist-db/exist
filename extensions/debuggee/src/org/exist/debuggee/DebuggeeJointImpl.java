@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debuggee.dbgp.packets.Init;
@@ -44,7 +45,9 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
-	private Map<String, String> features = new HashMap<String, String>(DebuggeeImpl.SET_GET_FEATURES);
+    private final static Logger LOG = Logger.getLogger(DebuggeeJoint.class);
+
+    private Map<String, String> features = new HashMap<String, String>(DebuggeeImpl.SET_GET_FEATURES);
 	
 	private Expression firstExpression = null;
 	
@@ -72,14 +75,18 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public void stackEnter(Expression expr) {
-		System.out.println("stackEnter " + expr.getLine() + " expr = "+ expr.toString());
+		if (LOG.isDebugEnabled())
+			LOG.debug("stackEnter " + expr.getLine() + " expr = "+ expr.toString());
+		
 		stack.add(expr);
 		stackDepth++;
 		
 	}
 	
 	public void stackLeave(Expression expr) {
-		System.out.println("stackLeave " + expr.getLine() + " expr = "+ expr.toString());
+		if (LOG.isDebugEnabled())
+			LOG.debug("stackLeave " + expr.getLine() + " expr = "+ expr.toString());
+		
 		stack.remove(stack.size()-1);
 		stackDepth--;
 		
@@ -94,7 +101,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 * @see org.exist.debuggee.DebuggeeJoint#expressionStart(org.exist.xquery.Expression)
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
-		System.out.println("expressionStart " + expr.getLine() + " expr = "+ expr.toString());
+		if (LOG.isDebugEnabled())
+			LOG.debug("expressionStart " + expr.getLine() + " expr = "+ expr.toString());
 		
 		if (compiledXQuery == null)
 			return;
@@ -183,7 +191,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 * @see org.exist.debuggee.DebuggeeJoint#expressionEnd(org.exist.xquery.Expression)
 	 */
 	public void expressionEnd(Expression expr) {
-		System.out.println("expressionEnd expr = "+expr.toString());
+		if (LOG.isDebugEnabled())
+			LOG.debug("expressionEnd expr = "+expr.toString());
 
 		if (firstExpression == expr) {
 			firstExpression = null;
@@ -347,8 +356,6 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public synchronized void sessionClosed(boolean disconnect) {
-		System.out.println("sessionClosed");
-
 		//disconnected already
 		if (compiledXQuery == null)
 			return;

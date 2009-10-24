@@ -42,7 +42,7 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 	
 	private NioSocketConnector connector;
 	
-	public DebuggeeConnectionTCP(Debuggee debuggee) {
+	public DebuggeeConnectionTCP() {
 		// Create TCP/IP connector.
 		connector = new NioSocketConnector();
 		
@@ -53,7 +53,7 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 				"protocol", new ProtocolCodecFilter(new CodecFactory()));
 		
 		// Start communication.
-		connector.setHandler(new ProtocolHandler(debuggee));
+		connector.setHandler(new ProtocolHandler());
 	}
 	
 	public IoSession connect() {

@@ -114,36 +114,36 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#run()
 	 */
-	public void run() {
-		debugger.run();
+	public void run(ResponseListener listener) {
+		debugger.run(listener);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepInto()
 	 */
-	public void stepInto() {
-		debugger.stepInto();
+	public void stepInto(ResponseListener listener) {
+		debugger.stepInto(listener);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOut()
 	 */
-	public void stepOut() {
-		debugger.stepOut();
+	public void stepOut(ResponseListener listener) {
+		debugger.stepOut(listener);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOver()
 	 */
-	public void stepOver() {
-		debugger.stepOver();
+	public void stepOver(ResponseListener listener) {
+		debugger.stepOver(listener);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stop()
 	 */
-	public void stop() {
-		debugger.stop();
+	public void stop(ResponseListener listener) {
+		debugger.stop(listener);
 	}
 
 	public Breakpoint newBreakpoint() {

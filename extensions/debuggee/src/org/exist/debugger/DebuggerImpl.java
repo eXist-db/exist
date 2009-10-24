@@ -188,28 +188,38 @@ public class DebuggerImpl implements Debugger {
 
 	private AbstractCommandContinuation currentCommand = null;
 
-	public void run() {
+	public void run(ResponseListener listener) {
 		Run command = new Run(session, " -i " + getNextTransaction());
+		command.addResponseListener(listener);
+
 		command.toDebuggee();
 	}
 
-	public void stepInto() {
+	public void stepInto(ResponseListener listener) {
 		StepInto command = new StepInto(session, " -i " + getNextTransaction());
+		command.addResponseListener(listener);
+
 		command.toDebuggee();
 	}
 
-	public void stepOut() {
+	public void stepOut(ResponseListener listener) {
 		StepOut command = new StepOut(session, " -i " + getNextTransaction());
+		command.addResponseListener(listener);
+
 		command.toDebuggee();
 	}
 
-	public void stepOver() {
+	public void stepOver(ResponseListener listener) {
 		StepOver command = new StepOver(session, " -i " + getNextTransaction());
+		command.addResponseListener(listener);
+
 		command.toDebuggee();
 	}
 
-	public void stop() {
+	public void stop(ResponseListener listener) {
 		Stop command = new Stop(session, " -i " + getNextTransaction());
+		command.addResponseListener(listener);
+
 		command.toDebuggee();
 	}
 
