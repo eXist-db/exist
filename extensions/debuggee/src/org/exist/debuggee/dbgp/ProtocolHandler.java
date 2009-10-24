@@ -21,14 +21,12 @@
  */
 package org.exist.debuggee.dbgp;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.debuggee.dbgp.packets.Command;
-import org.exist.debuggee.dbgp.packets.Init;
-import org.exist.security.xacml.XACMLSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -36,12 +34,10 @@ import org.exist.security.xacml.XACMLSource;
  */
 public class ProtocolHandler extends IoHandlerAdapter {
 
-	private Debuggee debuggee;
+    private final static Logger LOG = Logger.getLogger(ProtocolHandler.class);
 	
-	public ProtocolHandler(Debuggee debuggee) {
+	public ProtocolHandler() {
 		super();
-		
-		this.debuggee = debuggee;
 	}
 
 	@Override
@@ -56,8 +52,8 @@ public class ProtocolHandler extends IoHandlerAdapter {
 		if (joint != null)
 			joint.sessionClosed(false);
 
-		// Print out total number of bytes read from the remote peer.
-		System.err.println("Total " + session.getReadBytes() + " byte(s)");
+		if (LOG.isDebugEnabled())
+			LOG.debug("Total " + session.getReadBytes() + " byte(s) readed.");
 	}
 
 	@Override

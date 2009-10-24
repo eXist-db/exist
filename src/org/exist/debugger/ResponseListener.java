@@ -19,50 +19,14 @@
  *  
  *  $Id:$
  */
-package org.exist.debuggee.dbgp.packets;
+package org.exist.debugger;
 
-import org.apache.mina.core.session.IoSession;
-import org.exist.debugger.ResponseListener;
+import org.exist.debuggee.CommandContinuation;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class StepOut extends AbstractCommandContinuation {
-
-	public StepOut(IoSession session, String args) {
-		super(session, args);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.debuggee.dgbp.packets.Command#exec()
-	 */
-	@Override
-	public void exec() {
-		getJoint().continuation(this);
-	}
-
-	public byte[] responseBytes() {
-		String responce = "<response " +
-				"command=\"step_out\" " +
-				"status=\""+getStatus()+"\" " +
-				"reason=\"ok\" " +
-				"transaction_id=\""+transactionID+"\"/>";
-
-		return responce.getBytes();
-	}
-
-	public byte[] commandBytes() {
-		String command = "step_out -i "+transactionID;
-		
-		return command.getBytes();
-	}
-	
-	public int getType() {
-		return STEP_OUT;
-	}
-
-	public boolean is(int type) {
-		return (type == STEP_OUT);
-	}
+public interface ResponseListener {
+	public void responseEvent(CommandContinuation command, Response response);
 }

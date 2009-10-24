@@ -39,13 +39,13 @@ public interface Debugger {
 
 	public Breakpoint addBreakpoint(Breakpoint breakpoint);
 
-	public void run();
+	public void run(ResponseListener listener);
 
-	public void stepInto();
-	public void stepOut();
-	public void stepOver();
+	public void stepInto(ResponseListener listener);
+	public void stepOut(ResponseListener listener);
+	public void stepOver(ResponseListener listener);
 
-	public void stop();
+	public void stop(ResponseListener listener);
 
 	//public Response getResponse(String transactionID);
 

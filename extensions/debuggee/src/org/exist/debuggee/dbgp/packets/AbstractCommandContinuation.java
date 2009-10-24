@@ -21,9 +21,13 @@
  */
 package org.exist.debuggee.dbgp.packets;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.CommandContinuation;
 import org.exist.debugger.Response;
+import org.exist.debugger.ResponseListener;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -66,8 +70,21 @@ public abstract class AbstractCommandContinuation extends Command implements Com
 		session.close(true);
 	}
 
+	List<ResponseListener> listeners = new ArrayList<ResponseListener>();
+	
+	public void addResponseListener(ResponseListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removeResponseListener(ResponseListener listener) {
+		listeners.remove(listener);
+	}
+
 	public void putResponse(Response response) {
 		status = response.getAttribute("status");
-		//TODO: Listeners
+		
+		for (ResponseListener listener : listeners) {
+			listener.responseEvent(this, response);
+		}
 	}
 }
