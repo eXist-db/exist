@@ -33,6 +33,10 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dbgp.packets.Run;
 import org.exist.debuggee.dbgp.packets.Source;
+import org.exist.debuggee.dbgp.packets.StepInto;
+import org.exist.debuggee.dbgp.packets.StepOut;
+import org.exist.debuggee.dbgp.packets.StepOver;
+import org.exist.debuggee.dbgp.packets.Stop;
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
 import org.exist.debugger.dbgp.CodecFactory;
@@ -186,6 +190,26 @@ public class DebuggerImpl implements Debugger {
 
 	public void run() {
 		Run command = new Run(session, " -i " + getNextTransaction());
+		command.toDebuggee();
+	}
+
+	public void stepInto() {
+		StepInto command = new StepInto(session, " -i " + getNextTransaction());
+		command.toDebuggee();
+	}
+
+	public void stepOut() {
+		StepOut command = new StepOut(session, " -i " + getNextTransaction());
+		command.toDebuggee();
+	}
+
+	public void stepOver() {
+		StepOver command = new StepOver(session, " -i " + getNextTransaction());
+		command.toDebuggee();
+	}
+
+	public void stop() {
+		Stop command = new Stop(session, " -i " + getNextTransaction());
 		command.toDebuggee();
 	}
 

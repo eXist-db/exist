@@ -41,6 +41,12 @@ public interface Debugger {
 
 	public void run();
 
+	public void stepInto();
+	public void stepOut();
+	public void stepOver();
+
+	public void stop();
+
 	//public Response getResponse(String transactionID);
 
 }

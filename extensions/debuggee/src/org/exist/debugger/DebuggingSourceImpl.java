@@ -122,32 +122,28 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	 * @see org.exist.debugger.DebuggingSource#stepInto()
 	 */
 	public void stepInto() {
-		// TODO Auto-generated method stub
-
+		debugger.stepInto();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOut()
 	 */
 	public void stepOut() {
-		// TODO Auto-generated method stub
-
+		debugger.stepOut();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOver()
 	 */
 	public void stepOver() {
-		// TODO Auto-generated method stub
-
+		debugger.stepOver();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stop()
 	 */
 	public void stop() {
-		// TODO Auto-generated method stub
-
+		debugger.stop();
 	}
 
 	public Breakpoint newBreakpoint() {
