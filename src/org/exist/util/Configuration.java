@@ -22,6 +22,7 @@
 package org.exist.util;
 
 import org.apache.log4j.Logger;
+
 import org.exist.Indexer;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.journal.JournalManager;
@@ -43,7 +44,6 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.CustomMatchListenerFactory;
@@ -51,12 +51,18 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.DatabaseImpl;
-import org.exist.xquery.*;
+import org.exist.xquery.FunctionFactory;
+import org.exist.xquery.PerformanceStats;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
+
 import org.quartz.SimpleTrigger;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -67,6 +73,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
