@@ -21,88 +21,79 @@ import org.exist.EXistException;
 public class Counters {
 
     private final static Logger LOG = Logger.getLogger(Counters.class);
-	
-	private final static String counterStore = "counters";
-	public final static String delimiter = ";";
-	
-	private File store=null;
-	private Hashtable<String,Long> counters;
-	private static boolean initialized = false;
-	
-	private static Counters me;
-	
-	private Counters(String dataDir) throws EXistException {
-		counters = new Hashtable<String, Long>();
-		store = new File(dataDir, counterStore);
-		
-		BufferedReader br = null;
-		
-		try {
-			br = new BufferedReader(new FileReader(store));
-		} catch (FileNotFoundException e) {
-			try {
-				store.createNewFile();
-				br = new BufferedReader(new FileReader(store));
-			} catch (IOException e1) {
-				// Failed to create an empty file, probably no write permission..
-				throw new EXistException("Unable to create counter store file.");
-			}
-		}
-		
-		try {
-			if (store.exists() && store.canRead()) {
-				String line="";
-				
-				while ((line = br.readLine())!=null) {
-					//Use ; as a delimiter, counter names must be tested and rejected when they contain this character!
-					String[] tokens = line.split(delimiter);
-					counters.put(tokens[0], Long.parseLong(tokens[1]));
-				}
-				
-				br.close();
-			}
-		} catch (IOException e) {
-			throw new EXistException("IOException occurred when reading counter store file.");
+    
+    private static Counters instance;
 
-		} catch (NumberFormatException e) {
-			throw new EXistException("Corrupt counter store file: "+store.getAbsolutePath());
+    public final static String COUNTERSTORE = "counters";
+    public final static String DELIMITER = ";";
 
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new EXistException("Corrupt counter store file: "+store.getAbsolutePath());
-		}
-		
-		initialized=true;
-	}
-	
-	public static Counters getInstance(String dataDir) throws EXistException {
-		if (!isInitialized()) {
+    private File store = null;
+    private Hashtable<String, Long> counters = new Hashtable<String, Long>();
+
+    private Counters(String dataDir) throws EXistException {
+
+        store = new File(dataDir, COUNTERSTORE);
+
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(store));
+
+        } catch (FileNotFoundException e) {
+            try {
+                store.createNewFile();
+                br = new BufferedReader(new FileReader(store));
+            } catch (IOException e1) {
+                // Failed to create an empty file, probably no write permission..
+                throw new EXistException("Unable to create counter store file.");
+            }
+        }
+
+        try {
+            if (store.exists() && store.canRead()) {
+                String line = "";
+
+                while ((line = br.readLine()) != null) {
+                    //Use ; as a DELIMITER, counter names must be tested and rejected when they contain this character!
+                    String[] tokens = line.split(DELIMITER);
+                    counters.put(tokens[0], Long.parseLong(tokens[1]));
+                }
+
+                br.close();
+            }
+
+        } catch (IOException e) {
+            throw new EXistException("IOException occurred when reading counter store file.");
+
+        } catch (NumberFormatException e) {
+            throw new EXistException("Corrupt counter store file: " + store.getAbsolutePath());
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new EXistException("Corrupt counter store file: " + store.getAbsolutePath());
+        }
+    }
+
+    /**
+     *  Get singleton of Counters object.
+     */
+    public static Counters getInstance(String dataDir) throws EXistException {
+        if (instance == null) {
             LOG.debug("Initializing counters.");
-			me = new Counters(dataDir);
-			return me;
-		} else {
-			return me;
-		}
-	}
-	
-	/**
-	 * 
-	 * @return true if the counters are initialized
-	 */
-	public static boolean isInitialized() {
-		return initialized;
-	}
-	
-	/**
+            instance = new Counters(dataDir);
+        }
+        return instance;
+    }
+
+    /**
      * Creates a new Counter, initializes it to 0 and returns the current value in a long.
      * 
      * @param counterName
      * @return the initial value of the newly created counter
-	 * @throws EXistException 
+     * @throws EXistException
      */
     public long createCounter(String counterName) throws EXistException {
-    	return createCounter(counterName, (long)0);
-	}
-    
+        return createCounter(counterName, (long) 0);
+    }
+
     /**
      * Creates a new Counter, initializes it to initValue and returns the current value in a long.
      * If there already is a counter with the same name, the current value of this counter is returned.
@@ -113,21 +104,21 @@ public class Counters {
      * @throws EXistException 
      */
     public synchronized long createCounter(String counterName, long initValue) throws EXistException {
-    	if (counters.containsKey(counterName)) {
-    		return counters.get(counterName);
-    	} else {
-        	counters.put(counterName, initValue);
-        	
-        	try {
-        		serializeTable();
-			} catch (FileNotFoundException e) {
-				throw new EXistException("Unable to save to counter store file.");
-			}
-        	
-    		return counters.get(counterName);
-    	}
-	}
-	
+        if (counters.containsKey(counterName)) {
+            return counters.get(counterName);
+        } else {
+            counters.put(counterName, initValue);
+
+            try {
+                serializeTable();
+            } catch (FileNotFoundException e) {
+                throw new EXistException("Unable to save to counter store file.");
+            }
+
+            return counters.get(counterName);
+        }
+    }
+
     /**
      * Removes a counter by the specified name.
      * 
@@ -136,74 +127,75 @@ public class Counters {
      * @throws EXistException 
      */
     public synchronized boolean destroyCounter(String counterName) throws EXistException {
-    	if (counters.containsKey(counterName)) {
-    		counters.remove(counterName);
-    		
-    		try {
-    			serializeTable();
-			} catch (FileNotFoundException e) {
-				throw new EXistException("Unable to remove counter from counter store file.");
-			}
-    		
-    		return true;
-    	} else {
-    		return false;
-    	}
-	}
-    
+        if (counters.containsKey(counterName)) {
+            counters.remove(counterName);
+
+            try {
+                serializeTable();
+            } catch (FileNotFoundException e) {
+                throw new EXistException("Unable to remove counter from counter store file.");
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Retrieves the next value of a counter (specified by name).
      * 
      * @param counterName
      * @return the next counter value or -1 if the counter does not exist.
-     * @throws Exception 
+     * @throws EXistException
      */
     public synchronized long nextValue(String counterName) throws EXistException {
-        if (!counters.containsKey(counterName))
+        if (!counters.containsKey(counterName)) {
             return -1;
+        }
 
-    	long c = counters.get(counterName);
-    	c++;
-    	
-    	counters.put(counterName, c);
-    	
-    	try {
-    		serializeTable();
-		} catch (FileNotFoundException e) {
-			throw new EXistException("Unable to save to counter store file.");
-		}
-    	
-    	return c;
-	}
-    
+        long c = counters.get(counterName);
+        c++;
+
+        counters.put(counterName, c);
+
+        try {
+            serializeTable();
+        } catch (FileNotFoundException e) {
+            throw new EXistException("Unable to save to counter store file.");
+        }
+
+        return c;
+    }
+
     /**
      * Returns all available counters in a Set of Strings.
      * 
      * @return all available counters in a Set of Strings
      */
     public Set<String> availableCounters() {
-    	return counters.keySet();
-	}
-    
+        return counters.keySet();
+    }
+
     /**
      * Serializes the Map with counters to the filesystem.
      * 
      * @throws FileNotFoundException
      */
-    private synchronized void serializeTable() throws FileNotFoundException{
-    	
-		PrintWriter p = new PrintWriter(store);
-		Iterator<String> i = counters.keySet().iterator();
-		
-		String k="";
-		long v=0;
-		
-		while (i.hasNext()) {
-			k = (String)i.next();
-			v = counters.get(k);
-			p.println(k+delimiter+v);
-		}
-		
-		p.close();
+    private synchronized void serializeTable() throws FileNotFoundException {
+
+        PrintWriter p = new PrintWriter(store);
+        Iterator<String> i = counters.keySet().iterator();
+
+        String k = "";
+        long v = 0;
+
+        while (i.hasNext()) {
+            k = (String) i.next();
+            v = counters.get(k);
+            p.println(k + DELIMITER + v);
+        }
+
+        p.close();
     }
 }
