@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,7 +25,9 @@ package org.exist.protocolhandler.embedded;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
+
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.io.BlockingOutputStream;
 
 /**
@@ -39,6 +41,7 @@ public class EmbeddedDownloadThread extends Thread {
     
     private XmldbURL xmldbURL;
     private BlockingOutputStream bos;
+    private BrokerPool brokerPool;
     
     /**
      *  Constructor of EmbeddedDownloadThread.
@@ -50,6 +53,18 @@ public class EmbeddedDownloadThread extends Thread {
         xmldbURL = url;
         this.bos = bos;
     }
+
+    /**
+     *  Constructor of EmbeddedDownloadThread.
+     *
+     * @param url Document location in database.
+     * @param bos Stream to which the document is written.
+     */
+    public EmbeddedDownloadThread(BrokerPool brokerPool, XmldbURL url, BlockingOutputStream bos) {
+        xmldbURL = url;
+        this.bos = bos;
+        this.brokerPool=brokerPool;
+    }
     
     /**
      * Write resource to the output stream.
@@ -59,6 +74,7 @@ public class EmbeddedDownloadThread extends Thread {
         IOException exception=null;
         try {
             EmbeddedDownload ed = new EmbeddedDownload();
+            ed.setBrokerPool(brokerPool);
             ed.stream(xmldbURL, bos);
             
         } catch (IOException ex) {
