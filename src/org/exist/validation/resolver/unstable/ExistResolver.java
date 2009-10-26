@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -46,8 +46,10 @@ import org.xml.sax.ext.EntityResolver2;
  */
 public class ExistResolver implements EntityResolver2, URIResolver {
 
-    private final static Logger LOG = Logger.getLogger(EntityResolver2.class);
+    private final static Logger LOG = Logger.getLogger(ExistResolver.class);
+    
     private BrokerPool brokerPool = null;
+    
     private final static String LOCALURI = "xmldb:exist:///";
     private final static String SHORTLOCALURI = "xmldb:///";
 
@@ -92,6 +94,14 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("href=" + href + " base=" + base);
 
+        if(base!=null){
+            int pos = base.lastIndexOf('/');
+            if(pos!=-1){
+                base=base.substring(0, pos);
+                href=base+"/"+href;
+            }
+        }
+
         return resolveStreamSource(href);
     }
 
@@ -99,6 +109,9 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     /* Helper methods */
     /* ============== */
     private InputSource resolveInputSource(String path) throws IOException {
+
+        LOG.debug("Resolving "+path);
+
         InputSource inputsource = new InputSource();
 
         if (path != null &&
@@ -107,15 +120,20 @@ public class ExistResolver implements EntityResolver2, URIResolver {
             XmldbURL url = new XmldbURL(path);
             EmbeddedInputStream eis = new EmbeddedInputStream(url);
             inputsource.setByteStream(eis);
+            inputsource.setSystemId(path);
 
         } else {
             InputStream is = new URL(path).openStream();
             inputsource.setByteStream(is);
+            inputsource.setSystemId(path);
         }
         return inputsource;
     }
 
     private StreamSource resolveStreamSource(String path) throws TransformerException {
+
+        LOG.debug("Resolving "+path);
+        
         StreamSource streamsource = new StreamSource();
 
         try {
@@ -125,10 +143,12 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                 XmldbURL url = new XmldbURL(path);
                 EmbeddedInputStream eis = new EmbeddedInputStream(url);
                 streamsource.setInputStream(eis);
+                streamsource.setSystemId(path);
 
             } else {
                 InputStream is = new URL(path).openStream();
                 streamsource.setInputStream(is);
+                streamsource.setSystemId(path);
             }
         } catch (IOException ex) {
             throw new TransformerException(ex);

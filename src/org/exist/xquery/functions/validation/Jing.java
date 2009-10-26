@@ -27,7 +27,6 @@ import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
 
-import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import org.exist.dom.QName;
@@ -36,6 +35,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
+import org.exist.validation.resolver.unstable.ExistResolver;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -147,6 +147,11 @@ public class Jing extends BasicFunction  {
             // Setup validation properties. see Jing interface
             PropertyMapBuilder properties = new PropertyMapBuilder();
             ValidateProperty.ERROR_HANDLER.put(properties, report);
+            
+            // Register resolver for xmldb:exist:/// embedded URLs
+            ExistResolver resolver = new ExistResolver(brokerPool);
+            ValidateProperty.URI_RESOLVER.put(properties, resolver);
+            ValidateProperty.ENTITY_RESOLVER.put(properties, resolver);
 
             // Setup driver
             ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
