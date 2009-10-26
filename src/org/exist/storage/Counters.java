@@ -10,6 +10,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 
 /**
@@ -17,6 +19,8 @@ import org.exist.EXistException;
  *
  */
 public class Counters {
+
+    private final static Logger LOG = Logger.getLogger(Counters.class);
 	
 	private final static String counterStore = "counters";
 	public final static String delimiter = ";";
@@ -27,9 +31,9 @@ public class Counters {
 	
 	private static Counters me;
 	
-	private Counters() throws EXistException {
+	private Counters(String dataDir) throws EXistException {
 		counters = new Hashtable<String, Long>();
-		store = new File(counterStore);
+		store = new File(dataDir, counterStore);
 		
 		BufferedReader br = null;
 		
@@ -59,8 +63,10 @@ public class Counters {
 			}
 		} catch (IOException e) {
 			throw new EXistException("IOException occurred when reading counter store file.");
+
 		} catch (NumberFormatException e) {
 			throw new EXistException("Corrupt counter store file: "+store.getAbsolutePath());
+
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EXistException("Corrupt counter store file: "+store.getAbsolutePath());
 		}
@@ -68,9 +74,10 @@ public class Counters {
 		initialized=true;
 	}
 	
-	public static Counters getInstance() throws EXistException {
+	public static Counters getInstance(String dataDir) throws EXistException {
 		if (!isInitialized()) {
-			me = new Counters();
+            LOG.debug("Initializing counters.");
+			me = new Counters(dataDir);
 			return me;
 		} else {
 			return me;

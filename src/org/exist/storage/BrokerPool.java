@@ -582,8 +582,10 @@ public class BrokerPool extends Observable {
 		this.maxShutdownWait = DEFAULT_MAX_SHUTDOWN_WAIT;
 		//TODO : read from configuration
 		this.transactionsEnabled = true;
-		
-		this.counters = Counters.getInstance();
+
+        // Setup counters
+        String counterDir = (String) conf.getProperty(PROPERTY_DATA_DIR);
+		this.counters = Counters.getInstance(counterDir);
 		
 		this.minBrokers = minBrokers;
 		this.maxBrokers = maxBrokers;
