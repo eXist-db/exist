@@ -65,7 +65,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("publicId=" + publicId + " systemId=" + systemId);
 
-        return resolveInputSource(systemId);
+        return resolveInputSource(brokerPool, systemId);
     }
 
     /*  =============================================== */
@@ -76,7 +76,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("name=" + name + " baseURI=" + baseURI);
 
-        return resolveInputSource(baseURI);
+        return resolveInputSource(brokerPool, baseURI);
     }
 
     public InputSource resolveEntity(String name, String publicId,
@@ -84,7 +84,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("name=" + name + " publicId=" + publicId + " baseURI=" + baseURI + " systemId=" + systemId);
 
-        return resolveInputSource(systemId);
+        return resolveInputSource(brokerPool, systemId);
     }
 
     /* ================================================ */
@@ -102,13 +102,13 @@ public class ExistResolver implements EntityResolver2, URIResolver {
             }
         }
 
-        return resolveStreamSource(href);
+        return resolveStreamSource(brokerPool, href);
     }
 
     /* ============== */
     /* Helper methods */
     /* ============== */
-    private InputSource resolveInputSource(String path) throws IOException {
+    private InputSource resolveInputSource(BrokerPool bPool, String path) throws IOException {
 
         LOG.debug("Resolving "+path);
 
@@ -118,7 +118,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                 (path.startsWith(LOCALURI) || path.startsWith(SHORTLOCALURI))) {
 
             XmldbURL url = new XmldbURL(path);
-            EmbeddedInputStream eis = new EmbeddedInputStream(url);
+            EmbeddedInputStream eis = new EmbeddedInputStream(bPool, url);
             inputsource.setByteStream(eis);
             inputsource.setSystemId(path);
 
@@ -130,7 +130,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
         return inputsource;
     }
 
-    private StreamSource resolveStreamSource(String path) throws TransformerException {
+    private StreamSource resolveStreamSource(BrokerPool bPool, String path) throws TransformerException {
 
         LOG.debug("Resolving "+path);
         
@@ -141,7 +141,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                     (path.startsWith(LOCALURI) || path.startsWith(SHORTLOCALURI))) {
 
                 XmldbURL url = new XmldbURL(path);
-                EmbeddedInputStream eis = new EmbeddedInputStream(url);
+                EmbeddedInputStream eis = new EmbeddedInputStream(bPool, url);
                 streamsource.setInputStream(eis);
                 streamsource.setSystemId(path);
 

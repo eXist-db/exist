@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import org.apache.log4j.Logger;
+
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -50,6 +51,16 @@ import org.exist.xmldb.XmldbURI;
 public class EmbeddedDownload {
     
     private final static Logger LOG = Logger.getLogger(EmbeddedDownload.class);
+
+    private BrokerPool pool;
+
+    /**
+     * Set brokerpool for in database resolve of resource.
+     * @param brokerPool 
+     */
+    public void setBrokerPool(BrokerPool brokerPool) {
+        this.pool = brokerPool;
+    }
     
     /**
      *   Write document referred by URL to an (output)stream.
@@ -76,11 +87,14 @@ public class EmbeddedDownload {
         
         DocumentImpl resource = null;
         Collection collection = null;
-        BrokerPool pool = null;
         DBBroker broker = null;
+        
         try {
             XmldbURI path = XmldbURI.create(xmldbURL.getPath());
-            pool = BrokerPool.getInstance();
+
+            if(pool==null){
+                pool = BrokerPool.getInstance();
+            } 
             
             if(user==null){
                 if(xmldbURL.hasUserInfo()){
@@ -88,6 +102,7 @@ public class EmbeddedDownload {
                     if(user==null){
                         throw new ExistIOException("Unauthorized user "+xmldbURL.getUsername());
                     }
+                    
                 } else {
                     user=EmbeddedUser.getUserGuest(pool);
                 }

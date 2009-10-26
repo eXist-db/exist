@@ -27,7 +27,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
+
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
 
@@ -52,18 +54,29 @@ public class EmbeddedInputStream extends InputStream {
      */
     public EmbeddedInputStream(XmldbURL xmldbURL) throws MalformedURLException {
         
+        this(null, xmldbURL);
+    }
+
+        /**
+     *  Constructor of EmbeddedInputStream.
+     *
+     * @param xmldbURL Location of document in database.
+     * @throws MalformedURLException Thrown for illegalillegal URLs.
+     */
+    public EmbeddedInputStream(BrokerPool brokerPool, XmldbURL xmldbURL) throws MalformedURLException {
+
         logger.debug("Initializing EmbeddedInputStream");
-        
+
         bis = new BlockingInputStream();
         bos = bis.getOutputStream();
-        
-        rt = new EmbeddedDownloadThread(xmldbURL , bos);
-        
+
+        rt = new EmbeddedDownloadThread(brokerPool, xmldbURL , bos);
+
         rt.start();
-        
+
         logger.debug("Initializing EmbeddedInputStream done");
-        
     }
+    
     
     public int read(byte[] b, int off, int len) throws IOException {
         return bis.read(b, off, len);
