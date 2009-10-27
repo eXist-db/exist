@@ -1,0 +1,79 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2009 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist.xslt;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.sax.TemplatesHandler;
+
+import org.apache.log4j.Logger;
+import org.exist.xquery.XPathException;
+import org.exist.dom.i.ElementAtExist;
+import org.exist.memtree.SAXAdapter;
+import org.w3c.dom.Document;
+
+/**
+ * @author shabanovd
+ *
+ */
+public class TemplatesHandlerImpl extends SAXAdapter implements TemplatesHandler {
+
+    private final static Logger LOG = Logger.getLogger(TemplatesHandlerImpl.class);
+
+    private String systemId = null;
+    private Templates templates = null;
+	
+	protected TemplatesHandlerImpl(XSLContext context) {
+		super(context);
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.sax.TemplatesHandler#getSystemId()
+	 */
+	public String getSystemId() {
+		return systemId;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.sax.TemplatesHandler#getTemplates()
+	 */
+	public Templates getTemplates() {
+		if (templates == null) {
+	        Document doc = getDocument();
+	        ElementAtExist xsl = (ElementAtExist) doc.getDocumentElement();
+
+	        try {
+				templates = XSL.compile(xsl);
+			} catch (XPathException e) {
+				LOG.debug(e);
+				System.out.println(e.getDetailMessage()); //TODO: remove after debug 
+			}
+		}
+		return templates;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.sax.TemplatesHandler#setSystemId(java.lang.String)
+	 */
+	public void setSystemId(String systemId) {
+		this.systemId = systemId;
+	}
+}

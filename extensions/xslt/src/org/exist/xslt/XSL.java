@@ -1,0 +1,140 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2009 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist.xslt;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.NumberFormat;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.log4j.Logger;
+import org.exist.dom.i.DocumentAtExist;
+import org.exist.dom.i.ElementAtExist;
+import org.exist.memtree.SAXAdapter;
+import org.exist.storage.DBBroker;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Optimizer;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xslt.compiler.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+/**
+ * <xsl:stylesheet version="1.0"
+ *         xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+ * 
+ * 	<xsl:import href="..."/>
+ * 	<xsl:include href="..."/>
+ * 	<xsl:strip-space elements="..."/>
+ * 	<xsl:preserve-space elements="..."/>
+ * 	<xsl:output method="..."/>
+ * 	<xsl:key name="..." match="..." use="..."/>
+ * 	<xsl:decimal-format name="..."/>
+ * 	<xsl:namespace-alias stylesheet-prefix="..." result-prefix="..."/>
+ * 	<xsl:attribute-set name="...">...</xsl:attribute-set>
+ * 	<xsl:variable name="...">...</xsl:variable>
+ * 	<xsl:param name="...">...</xsl:param>
+ * 	<xsl:template match="...">...</xsl:template>
+ * 	<xsl:template name="...">...</xsl:template>
+ * </xsl:stylesheet>	
+ * 
+ * @author shabanovd
+ *
+ */
+public class XSL {
+
+    private final static Logger LOG = Logger.getLogger(XSL.class);
+
+    public XSL() {
+	}
+    
+    protected static XSLStylesheet compile(ElementAtExist source) throws XPathException {
+    	long start = System.currentTimeMillis();
+    	
+    	Element stylesheet = new Element(source);
+    	XSLStylesheet expr = (XSLStylesheet) stylesheet.compile();
+    	AnalyzeContextInfo info = new AnalyzeContextInfo();
+    	info.setFlags(Expression.IN_NODE_CONSTRUCTOR);
+        expr.analyze(info);
+
+        XQueryContext context = expr.getContext();
+        if (context.optimizationsEnabled()) {
+            Optimizer optimizer = new Optimizer(context);
+            expr.accept(optimizer);
+            if (optimizer.hasOptimized()) {
+                context.reset(true);
+                expr.resetState(true);
+                expr.analyze(new AnalyzeContextInfo());
+            }
+        }
+
+//        System.out.println(ExpressionDumper.dump(expr));
+        // Log the query if it is not too large, but avoid
+        // dumping huge queries to the log
+        if (context.getExpressionCount() < 150) {
+            LOG.debug("XSL diagnostics:\n" + ExpressionDumper.dump(expr));
+        } else {
+            LOG.debug("XSL diagnostics:\n" + "[skipped: more than 150 expressions]");
+        }
+        if (LOG.isDebugEnabled()) {
+        	NumberFormat nf = NumberFormat.getNumberInstance();
+        	LOG.debug("Compilation took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
+        }
+        return expr;
+	}
+
+    protected static XSLStylesheet compile(InputStream source, DBBroker broker) throws XPathException {
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);	
+
+			InputSource src = new InputSource(source);
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			SAXAdapter adapter = new SAXAdapter();
+			reader.setContentHandler(adapter);
+//			reader.setContentHandler(adapter);
+			reader.parse(src);
+		
+			DocumentAtExist document = (DocumentAtExist) adapter.getDocument();
+			document.setContext(new XSLContext(broker));
+			//return receiver.getDocument();
+			return compile((ElementAtExist) document.getDocumentElement());
+		} catch (ParserConfigurationException e) {
+        	LOG.debug(e);
+			throw new XPathException(e);
+		} catch (SAXException e) {
+        	LOG.debug(e);
+			throw new XPathException(e);
+		} catch (IOException e) {
+        	LOG.debug(e);
+			throw new XPathException(e);
+		}
+    }
+}
