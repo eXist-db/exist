@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2009 The eXist Project
+ *  Copyright (C) 2008-2009 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -28,7 +28,7 @@ import org.exist.xquery.XQueryWatchDog;
 import javax.xml.transform.Transformer;
 
 /**
- * @author shabanovd
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class XSLContext extends XQueryContext {
