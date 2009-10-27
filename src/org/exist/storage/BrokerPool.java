@@ -1,21 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2009 The eXist Project
+ * http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  *  $Id$
  */
 package org.exist.storage;
@@ -288,13 +289,6 @@ public class BrokerPool extends Observable {
         	throw new EXistException("database instance '" + instanceName + "' is not available");
     }
 
-	/** Returns the class that exposes the API for creating, destroying and incrementing counters.
-	 * @return Counters
-	 */
-	public Counters getCounters() {
-		return this.counters;
-	}
-	
 	/** Returns an iterator over the database instances.
 	 * @return The iterator
 	 */
@@ -406,10 +400,9 @@ public class BrokerPool extends Observable {
 	 * The number of active brokers for the database instance 
 	 */	
 	private Map activeBrokers = new HashMap();
-	
-	private Counters counters;
-	
-	/** The configuration object for the database instance
+		
+	/**
+     * The configuration object for the database instance
      */
 	protected Configuration conf = null;    
 
@@ -582,10 +575,6 @@ public class BrokerPool extends Observable {
 		this.maxShutdownWait = DEFAULT_MAX_SHUTDOWN_WAIT;
 		//TODO : read from configuration
 		this.transactionsEnabled = true;
-
-        // Setup counters
-        String counterDir = (String) conf.getProperty(PROPERTY_DATA_DIR);
-		this.counters = Counters.getInstance(counterDir);
 		
 		this.minBrokers = minBrokers;
 		this.maxBrokers = maxBrokers;
