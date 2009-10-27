@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2009 The eXist Project
+ *  Copyright (C) 2008-2009 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -28,7 +28,7 @@ import org.exist.xquery.XQueryContext;
  * Top-level elements whose names are in the XSLT namespace are declarations. 
  * Top-level elements in any other namespace are user-defined data elements.
  * 
- * @author shabanovd
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public abstract class Declaration extends XSLPathExpr {
