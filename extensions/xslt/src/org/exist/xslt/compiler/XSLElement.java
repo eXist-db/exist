@@ -39,9 +39,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
-import org.exist.dom.i.DocumentAtExist;
-import org.exist.dom.i.ElementAtExist;
-import org.exist.dom.i.NodeAtExist;
+import org.exist.dom.DocumentAtExist;
+import org.exist.dom.ElementAtExist;
+import org.exist.dom.NodeAtExist;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
 import org.exist.xslt.expression.XSLExpression;
@@ -59,12 +59,12 @@ import org.w3c.dom.UserDataHandler;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Element implements ElementAtExist, Names {
+public class XSLElement implements ElementAtExist, Names {
 	
 	protected XSLPathExpr expr = null;
 	protected ElementAtExist element;
 	
-	public Element(ElementAtExist element) {
+	public XSLElement(ElementAtExist element) {
 		this.element = element;
 	}
 	
@@ -217,7 +217,7 @@ public class Element implements ElementAtExist, Names {
 			
 			NodeAtExist child = (NodeAtExist)children.item(i);
 			if (isXSLElement(child)) {
-				Element xslElement = (Element) child;
+				XSLElement xslElement = (XSLElement) child;
 				content.add(xslElement.compile());
 			} else {
 				constructer = getNodeConstructor(child, content);
@@ -255,7 +255,7 @@ public class Element implements ElementAtExist, Names {
 		for (int i=0; i<children.getLength(); i++) {
 			NodeAtExist child = (NodeAtExist)children.item(i);
 			if (isXSLElement(child)) {
-				Element xslElement = (Element) child;
+				XSLElement xslElement = (XSLElement) child;
 				xslElement.preprocess();
 			} else {
 				preprocessNode(child);
@@ -325,7 +325,7 @@ public class Element implements ElementAtExist, Names {
 			NodeAtExist n = document.getNode(nextNode);
 
 			if (n instanceof ElementAtExist) {
-				n = new Element((ElementAtExist) n);
+				n = new XSLElement((ElementAtExist) n);
 			}
 			
 			nl.add(n);

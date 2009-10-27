@@ -40,7 +40,7 @@ import org.exist.xquery.Optimizer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xslt.compiler.Element;
+import org.exist.xslt.compiler.XSLElement;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -77,7 +77,7 @@ public class XSL {
     protected static XSLStylesheet compile(ElementAtExist source) throws XPathException {
     	long start = System.currentTimeMillis();
     	
-    	Element stylesheet = new Element(source);
+    	XSLElement stylesheet = new XSLElement(source);
     	XSLStylesheet expr = (XSLStylesheet) stylesheet.compile();
     	AnalyzeContextInfo info = new AnalyzeContextInfo();
     	info.setFlags(Expression.IN_NODE_CONSTRUCTOR);
