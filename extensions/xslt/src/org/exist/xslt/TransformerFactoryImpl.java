@@ -1,0 +1,222 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2009 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist.xslt;
+
+import java.io.InputStream;
+
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
+
+import org.apache.log4j.Logger;
+import org.exist.dom.i.ElementAtExist;
+import org.exist.storage.DBBroker;
+import org.exist.xquery.XPathException;
+import org.xml.sax.XMLFilter;
+
+/**
+ * @author shabanovd
+ *
+ */
+public class TransformerFactoryImpl extends SAXTransformerFactory {
+	
+    private final static Logger LOG = Logger.getLogger(TransformerFactoryImpl.class);
+
+    private DBBroker broker = null;
+    
+    private URIResolver resolver;
+    
+	public TransformerFactoryImpl() {
+	}
+	
+	public void setBroker(DBBroker broker) {
+		this.broker = broker;
+	}
+	
+	public DBBroker getBroker() {
+		return broker;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#getAssociatedStylesheet(javax.xml.transform.Source, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Source getAssociatedStylesheet(Source source, String media, String title, String charset)
+			throws TransformerConfigurationException {
+    	throw new RuntimeException("Not implemented: TransformerFactory.getAssociatedStylesheet");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#getAttribute(java.lang.String)
+	 */
+	@Override
+	public Object getAttribute(String name) {
+    	throw new RuntimeException("Not implemented: TransformerFactory.getAttribute");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#getErrorListener()
+	 */
+	@Override
+	public ErrorListener getErrorListener() {
+    	throw new RuntimeException("Not implemented: TransformerFactory.getErrorListener");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#getFeature(java.lang.String)
+	 */
+	@Override
+	public boolean getFeature(String name) {
+    	throw new RuntimeException("Not implemented: TransformerFactory.getFeature");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#getURIResolver()
+	 */
+	@Override
+	public URIResolver getURIResolver() {
+		return resolver;
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#newTemplates(javax.xml.transform.Source)
+	 */
+	@Override
+	public Templates newTemplates(Source source) throws TransformerConfigurationException {
+		//XXX: handle buffered input stream
+		if (source instanceof ElementAtExist) {
+			try {
+				return XSL.compile((ElementAtExist)source);
+			} catch (XPathException e) {
+				LOG.debug(e);
+		    	throw new TransformerConfigurationException("Compilation error.",e);
+			}
+		} else if (source instanceof InputStream) {
+			try {
+				return XSL.compile((InputStream)source, getBroker());
+			} catch (XPathException e) {
+				LOG.debug(e);
+		    	throw new TransformerConfigurationException("Compilation error.",e);
+			}
+		} else if (source instanceof StreamSource) {
+			try {
+				return XSL.compile(((StreamSource)source).getInputStream(), getBroker());
+			} catch (XPathException e) {
+				LOG.debug(e);
+				throw new TransformerConfigurationException("Compilation error.",e);
+			}
+		}
+		throw new TransformerConfigurationException("Not supported source "+source.getClass());
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#newTransformer()
+	 */
+	@Override
+	public Transformer newTransformer() throws TransformerConfigurationException {
+		//TODO: setURIresolver ???
+		return new org.exist.xslt.Transformer();
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#newTransformer(javax.xml.transform.Source)
+	 */
+	@Override
+	public Transformer newTransformer(Source source) throws TransformerConfigurationException {
+    	throw new RuntimeException("Not implemented: TransformerFactory.newTransformer");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#setAttribute(java.lang.String, java.lang.Object)
+	 */
+	@Override
+	public void setAttribute(String name, Object value) {
+    	throw new RuntimeException("Not implemented: TransformerFactory.setAttribute");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#setErrorListener(javax.xml.transform.ErrorListener)
+	 */
+	@Override
+	public void setErrorListener(ErrorListener listener) {
+    	throw new RuntimeException("Not implemented: TransformerFactory.setErrorListener");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#setFeature(java.lang.String, boolean)
+	 */
+	@Override
+	public void setFeature(String name, boolean value) throws TransformerConfigurationException {
+    	throw new RuntimeException("Not implemented: TransformerFactory.setFeature");
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.xml.transform.TransformerFactory#setURIResolver(javax.xml.transform.URIResolver)
+	 */
+	@Override
+	public void setURIResolver(URIResolver resolver) {
+		this.resolver = resolver;
+	}
+
+	@Override
+	public TemplatesHandler newTemplatesHandler() throws TransformerConfigurationException {
+		return new TemplatesHandlerImpl(new XSLContext(broker));
+	}
+
+	@Override
+	public TransformerHandler newTransformerHandler() throws TransformerConfigurationException {
+		return new TransformerHandlerImpl(new XSLContext(broker), newTransformer());
+	}
+
+	@Override
+	public TransformerHandler newTransformerHandler(Source src) throws TransformerConfigurationException {
+    	throw new RuntimeException("Not implemented: TransformerFactory.newTransformerHandler");
+	}
+
+	@Override
+	public TransformerHandler newTransformerHandler(Templates templates) throws TransformerConfigurationException {
+		if (templates == null)
+            throw new TransformerConfigurationException("Templates object can not be null.");
+        if (!(templates instanceof XSLStylesheet))
+            throw new TransformerConfigurationException("Templates object was not created by exist xslt ("+templates.getClass()+")");
+
+        return new TransformerHandlerImpl(new XSLContext(broker), templates.newTransformer());
+	}
+
+	@Override
+	public XMLFilter newXMLFilter(Source src) throws TransformerConfigurationException {
+    	throw new RuntimeException("Not implemented: TransformerFactory.newXMLFilter");
+	}
+
+	@Override
+	public XMLFilter newXMLFilter(Templates templates) throws TransformerConfigurationException {
+    	throw new RuntimeException("Not implemented: TransformerFactory.newXMLFilter");
+	}
+
+}
