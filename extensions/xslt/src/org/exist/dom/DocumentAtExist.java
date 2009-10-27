@@ -25,11 +25,9 @@ package org.exist.dom;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.exist.collections.Collection;
-import org.exist.security.SecurityManager;
+import org.exist.interpreter.ContextAtExist;
 import org.exist.security.User;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.MultiReadReentrantLock;
-import org.exist.xquery.i.ContextAtExist;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

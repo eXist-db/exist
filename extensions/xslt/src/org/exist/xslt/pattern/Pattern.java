@@ -159,7 +159,7 @@ public class Pattern {
 			String msg = e.getMessage();
 			if (msg.endsWith(", found 'null'"))
 				msg = msg.substring(0, msg.length() - ", found 'null'".length());
-            throw new StaticXQueryException(msg, e.getLine(), e.getColumn());
+            throw new StaticXQueryException(e.getLine(), e.getColumn(), msg);
         } catch (TokenStreamException e) {
         	LOG.debug("Error compiling query: " + e.getMessage(), e);
             throw new StaticXQueryException(e.getMessage(), e);
