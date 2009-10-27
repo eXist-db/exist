@@ -1,4 +1,4 @@
-package org.exist.storage;
+package org.exist.xquery.modules.counters;
 
 import java.io.BufferedReader;
 import java.io.File;
