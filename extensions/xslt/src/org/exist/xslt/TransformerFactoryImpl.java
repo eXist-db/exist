@@ -35,7 +35,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.i.ElementAtExist;
+import org.exist.dom.ElementAtExist;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
 import org.xml.sax.XMLFilter;

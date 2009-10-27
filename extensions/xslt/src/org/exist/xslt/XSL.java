@@ -30,8 +30,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.i.DocumentAtExist;
-import org.exist.dom.i.ElementAtExist;
+import org.exist.dom.DocumentAtExist;
+import org.exist.dom.ElementAtExist;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.AnalyzeContextInfo;

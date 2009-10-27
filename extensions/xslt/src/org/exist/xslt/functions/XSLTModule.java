@@ -34,7 +34,9 @@ public class XSLTModule extends AbstractInternalModule {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslt";
 	public final static String PREFIX = "xslt";
 
-	private final static FunctionDef[] functions = {
+    public final static String RELEASED_IN_VERSION = "eXist-1.5.0";
+
+    private final static FunctionDef[] functions = {
 		new FunctionDef(Current.signatures[0], Current.class),
 		new FunctionDef(Document.signatures[0], Document.class),
 		new FunctionDef(Document.signatures[1], Document.class),
@@ -86,6 +88,11 @@ public class XSLTModule extends AbstractInternalModule {
 	 */
 	public String getDescription() {
 		return "XSLT Module";
+	}
+
+	@Override
+	public String getReleaseVersion() {
+		return RELEASED_IN_VERSION;
 	}
 
 }
