@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.modules.counters.CountersModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,9 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public class CounterTest {
 
+    private final static String IMPORT = "import module namespace counter=\"" + CountersModule.NAMESPACE_URI + "\" " +
+        "at \"java:org.exist.xquery.modules.counters.CountersModule\"; ";
+    
     private XPathQueryService service;
     private Collection root = null;
     private Database database = null;
@@ -55,17 +59,17 @@ public class CounterTest {
         ResourceSet result = null;
         String r = "";
         try {
-        	String query = "util:create-counter('jasper1')";
+        	String query = IMPORT + "counter:create('jasper1')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("0", r);
             
-            query = "util:next-value('jasper1')";
+            query = IMPORT +"counter:next-value('jasper1')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("1", r);
             
-            query = "util:destroy-counter('jasper1')";
+            query = IMPORT +"counter:destroy('jasper1')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("true", r);
@@ -80,17 +84,17 @@ public class CounterTest {
         ResourceSet result = null;
         String r = "";
         try {
-        	String query = "util:create-counter('jasper3',xs:long(1200))";
+        	String query = IMPORT +"counter:create('jasper3',xs:long(1200))";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("1200", r);
             
-            query = "util:next-value('jasper3')";
+            query = IMPORT +"counter:next-value('jasper3')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("1201", r);
             
-            query = "util:destroy-counter('jasper3')";
+            query = IMPORT +"counter:destroy('jasper3')";
             result = service.query(query);
             r = (String) result.getResource(0).getContent();
             assertEquals("true", r);
@@ -104,10 +108,10 @@ public class CounterTest {
     public void threadedIncrementTest() throws XPathException, InterruptedException, XMLDBException {
 		service = (XPathQueryService) root.getService("XQueryService", "1.0");
 		
-		String query = "util:create-counter('jasper2')";
+		String query = IMPORT +"counter:create('jasper2')";
 		ResourceSet result = service.query(query);
 		
-		assertEquals("0", (String)result.getResource(0).getContent());
+		assertEquals("0", result.getResource(0).getContent());
 		
 		Thread a = new IncrementThread();
 		a.start();
@@ -120,10 +124,10 @@ public class CounterTest {
 		b.join();
 		c.join();
 		
-		query = "util:next-value('jasper2')";
+		query = IMPORT +"counter:next-value('jasper2')";
 		ResourceSet valueAfter = service.query(query);
 		
-		query = "util:destroy-counter('jasper2')";
+		query = IMPORT +"counter:destroy('jasper2')";
 		result = service.query(query);
 		
 		assertEquals("601", (String)valueAfter.getResource(0).getContent());
@@ -139,7 +143,7 @@ public class CounterTest {
         		service = (XPathQueryService) root.getService("XQueryService", "1.0");
 	        	
 	        	for (int i=0; i<200; i++) {
-	        		query = "util:next-value('jasper2')";
+	        		query = IMPORT +"counter:next-value('jasper2')";
 	                result = service.query(query);
 	                System.out.println("Thread "+getId()+": Counter value:"+result.getResource(0).getContent());
 	        	}
