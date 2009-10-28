@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.xquery.modules.counters;
+package org.exist.xquery.modules.counter;
 
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
@@ -34,9 +34,9 @@ import java.util.Arrays;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class CountersModule extends AbstractInternalModule {
+public class CounterModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/counters";
+	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/counter";
 
 	public final static String PREFIX = "counter";
     public final static String INCLUSION_DATE = "2009-10-27";
@@ -56,12 +56,12 @@ public class CountersModule extends AbstractInternalModule {
     }
 
     public final static QName EXCEPTION_QNAME =
-	    new QName("exception", CountersModule.NAMESPACE_URI, CountersModule.PREFIX);
+	    new QName("exception", CounterModule.NAMESPACE_URI, CounterModule.PREFIX);
 
     public final static QName EXCEPTION_MESSAGE_QNAME =
-        new QName("exception-message", CountersModule.NAMESPACE_URI, CountersModule.PREFIX);
+        new QName("exception-message", CounterModule.NAMESPACE_URI, CounterModule.PREFIX);
 
-	public CountersModule() throws XPathException {
+	public CounterModule() throws XPathException {
 		super(functions, true);
 		declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);

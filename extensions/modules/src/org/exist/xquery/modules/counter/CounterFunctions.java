@@ -1,4 +1,4 @@
-package org.exist.xquery.modules.counters;
+package org.exist.xquery.modules.counter;
 
 import org.apache.log4j.Logger;
 
@@ -31,50 +31,51 @@ public class CounterFunctions extends BasicFunction {
     
     public final static FunctionSignature createCounter =
             new FunctionSignature(
-            new QName("create", CountersModule.NAMESPACE_URI, CountersModule.PREFIX),
-            "Creates a unique counter by the name specified",
+            new QName("create", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
+            "Create a unique counter named $counter-name.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("counter-name", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The node or a string path pointing to a resource in the database.")
+                        "Name of the counter.")
             },
             new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, 
-            "the value of the newly created counter"));
+                                                        "the value of the newly created counter."));
 
     public final static FunctionSignature createCounterAndInit =
             new FunctionSignature(
-            new QName("create", CountersModule.NAMESPACE_URI, CountersModule.PREFIX),
-            "Creates a unique counter by the name specified and initializes it to 'init-value'.",
+            new QName("create", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
+            "Create a unique counter named $counter-name and initialize it with value $init-value.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("counter-name", Type.ITEM, Cardinality.EXACTLY_ONE, 
-                        "The node or a string path pointing to a resource in the database."),
+                        "Name of the counter."),
 
                 new FunctionParameterSequenceType("init-value", Type.LONG, Cardinality.EXACTLY_ONE,
                         "The initial value of the counter.")
             },
             new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, 
-            "the value of the newly created counter"));
+                                                        "the value of the newly created counter."));
 
     public final static FunctionSignature nextValue =
             new FunctionSignature(
-            new QName("next-value", CountersModule.NAMESPACE_URI, CountersModule.PREFIX),
-            "Increments the specified counter and returns its' new value afterwards",
+            new QName("next-value", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
+            "Increment the counter $counter-name and return its new value.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("counter-name", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The node or a string path pointing to a resource in the database.")
+                        "Name of the counter.")
             },
             new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, 
-            "the new value of the specified counter"));
+                                                        "the new value of the specified counter," +
+                                                        " or -1 if the counter does not exist."));
 
     public final static FunctionSignature destroyCounter =
             new FunctionSignature(
-            new QName("destroy", CountersModule.NAMESPACE_URI, CountersModule.PREFIX),
-            "Destroys the specified counter",
+            new QName("destroy", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
+            "Destroy the counter named $counter-name.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("counter-name", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The node or a string path pointing to a resource in the database.")
+                        "Name of the counter.")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
-            "Boolean value containing true if removal succeeded. False if removal failed."));
+            "boolean value true() if removal as successful, otherwise return value false()."));
 
     public CounterFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);

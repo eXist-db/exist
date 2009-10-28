@@ -1,4 +1,4 @@
-package org.exist.xquery.modules.counters;
+package org.exist.xquery.modules.counter;
 
 import java.io.BufferedReader;
 import java.io.File;
