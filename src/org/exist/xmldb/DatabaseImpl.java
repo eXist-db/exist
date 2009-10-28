@@ -101,7 +101,7 @@ public class DatabaseImpl implements Database {
             if (shutdown != null)
                 BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);
         } catch (Exception e ) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "configuration error", e );
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "configuration error: " + e.getMessage(), e );
     }
     currentInstanceName = instanceName;
   }
