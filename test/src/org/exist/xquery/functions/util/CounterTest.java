@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.counters.CountersModule;
+import org.exist.xquery.modules.counter.CounterModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +22,8 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public class CounterTest {
 
-    private final static String IMPORT = "import module namespace counter=\"" + CountersModule.NAMESPACE_URI + "\" " +
-        "at \"java:org.exist.xquery.modules.counters.CountersModule\"; ";
+    private final static String IMPORT = "import module namespace counter=\"" + CounterModule.NAMESPACE_URI + "\" " +
+        "at \"java:org.exist.xquery.modules.counter.CounterModule\"; ";
     
     private XPathQueryService service;
     private Collection root = null;
