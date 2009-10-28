@@ -25,6 +25,7 @@ package org.exist.xquery.functions.request;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -44,12 +45,21 @@ public class GetURI extends BasicFunction {
 
 	protected static final Logger logger = Logger.getLogger(GetURI.class);
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("get-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the URI of the current request.",
+			"Returns the URI of the current request. This will be the original URI as received from " +
+            "the client. Possible modifications done by the URL rewriter will not be visible.",
 			null,
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the URI of the request"));
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the URI of the request")),
+        new FunctionSignature(
+			new QName("get-effective-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the URI of the current request. If the request was forwarded via URL rewriting, " +
+            "the function returns the effective, rewritten URI, not the original URI which was received " +
+            "from the client.",
+			null,
+			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the URI of the request"))
+    };
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -62,7 +72,7 @@ public class GetURI extends BasicFunction {
 	/**
 	 * @param context
 	 */
-	public GetURI(XQueryContext context) {
+	public GetURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -82,11 +92,14 @@ public class GetURI extends BasicFunction {
 			throw new XPathException(this, "Variable $request is not bound to an Java object.");
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		
 		if (value.getObject() instanceof RequestWrapper) {
-			return new AnyURIValue(((RequestWrapper) value.getObject()).getRequestURI());
+            RequestWrapper wrapper = (RequestWrapper) value.getObject();
+            Object attr = wrapper.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
+            if (attr == null || isCalledAs("get-effective-uri"))
+			    return new AnyURIValue(wrapper.getRequestURI());
+            else
+                return new AnyURIValue(attr.toString());
 		} else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
-	}
-	
+	}	
 }
