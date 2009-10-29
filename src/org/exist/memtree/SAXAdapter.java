@@ -141,7 +141,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 			if(atts.getQName(i).startsWith("xmlns")) {
 				String prefix = atts.getLocalName(i);
 				String uri = atts.getValue(i);
-                if(!namespaces.containsKey(prefix))
+                if(namespaces == null || !namespaces.containsKey(prefix))
 					builder.namespaceNode(prefix, uri);
 			}
 		}
