@@ -12,23 +12,19 @@ declare namespace c="http://exist-db.org/xquery/controller";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
-let $uri := request:get-uri()
-let $context := request:get-context-path()
-let $path := substring-after($uri, $context)
-let $name := replace($uri, '^.*/([^/]+)$', '$1')
 let $query := request:get-parameter("q", ())
 return
 	(: redirect webapp root to index.xml :)
-    if ($path eq '/') then
+    if ($exist:path eq '/') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="index.xml"/>
 		</dispatch>
 	(: /rest and /webdav will be ignored :)
-	else if (matches($path, "/(xmlrpc|rest|servlet|webdav/|cocoon|test.xml)")) then
+	else if (matches($exist:path, "/(xmlrpc|rest|servlet|webdav/|cocoon|test.xml)")) then
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
 		</ignore>
-	else if ($name eq 'applications.xml') then
+	else if ($exist:resource eq 'applications.xml') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<!-- query results are passed to XSLT servlet via request attribute -->
 			<set-attribute name="xquery.attribute"
@@ -48,7 +44,7 @@ return
 				</forward>
 			</view>
 		</dispatch>
-	else if ($name eq 'articles') then
+	else if ($exist:resource eq 'articles') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<forward url="/xquery/exist-articles.xql">
 				<!-- query results are passed to XSLT servlet via request attribute -->
@@ -65,7 +61,7 @@ return
 			</view>
 		</dispatch>
 		
-    else if ($path = "/xforms/idxconf.xml") then
+    else if ($exist:path = "/xforms/idxconf.xml") then
         let $log := util:log("DEBUG", "in xforms rule") return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="idxconf.xql"/>
@@ -79,12 +75,12 @@ return
 		</dispatch>
 		
 	(: the following xml files use different stylesheets :)
-	else if ($name = ('index.xml', 'roadmap.xml', 'facts.xml')
-	    or $path = '/examples.xml') then
+	else if ($exist:resource = ('index.xml', 'roadmap.xml', 'facts.xml')
+	    or $exist:path = '/examples.xml') then
 		let $stylesheet :=
-			if ($name eq 'roadmap.xml') then
+			if ($exist:resource eq 'roadmap.xml') then
 				"stylesheets/roadmap.xsl"
-			else if ($name eq "facts.xml") then
+			else if ($exist:resource eq "facts.xml") then
 				"stylesheets/facts.xsl"
 			else
 				"stylesheets/doc2html-2.xsl"
@@ -100,15 +96,13 @@ return
 				</view>
 				<cache-control cache="no"/>
 			</dispatch>
-	else if (ends-with($uri, '.xml')) then
+	else if (ends-with($exist:resource, '.xml')) then
 		(: 	check if the requested document was selected from a query result.
 			if yes, pass it to docs.xql to get the match highlighting. :)
 		if ($query) then
-			let $docName := replace($uri, '^.*/([^/]+)$', '$1')
-			return
 				<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 					<forward url="/xquery/docs.xql">
-						<add-parameter name="path" value="/db/xqdocs/{$docName}"/>
+						<add-parameter name="path" value="/db/xqdocs/{$exist:resource}"/>
 					</forward>
 					<view>
     					<forward servlet="XSLTServlet">
@@ -141,7 +135,7 @@ return
 						<set-attribute name="xslt.output.doctype-system"
 						    value="resources/xhtml1-transitional.dtd"/>
 					    {
-					        if ($name eq 'download.xml') then
+					        if ($exist:resource eq 'download.xml') then
 					            <set-attribute name="xslt.table-of-contents"
 					                value="'no'"/>
 			                else
@@ -151,14 +145,17 @@ return
 				</view>
             	<cache-control cache="no"/>
 			</dispatch>
-	else if (ends-with($path, '/dump')) then
-		let $newPath := substring-before($path, '/dump')
-		let $log := util:log("DEBUG", ("LOG: ", $newPath))
+	else if (ends-with($exist:path, '/dump')) then
+		let $newPath := substring-before($exist:path, '/dump')
 		return
         	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-				<forward url="{$newPath}"/>
+				<forward url="{$exist:controller}{$newPath}"/>
 				<view>
-					<forward url="/xquery/dump.xql"/>
+					<forward url="xquery/dump.xql">
+					   <set-attribute name="controller" value="{$exist:controller}"/>
+					   <set-attribute name="path" value="{$exist:path}"/>
+					   <set-attribute name="resource" value="{$exist:resource}"/>
+				    </forward>
 				</view>
 			</dispatch>
 	else

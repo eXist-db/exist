@@ -129,13 +129,6 @@
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
-        
-        <!-- Uncomment the following if you want to keep your controller XQueries stored
-             in the db. -->
-        <!--init-param>
-            <param-name>base</param-name>
-            <param-value>xmldb:exist:///db</param-value>
-        </init-param-->
     </filter>
     
     <servlet>
@@ -488,66 +481,10 @@
     
     <!-- ====================== URL space mappings ======================= -->
 
-    <!-- XMLRPC -->
-    <servlet-mapping>
-        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
-        <url-pattern>/xmlrpc</url-pattern>
-    </servlet-mapping>
-     
-    <!-- REST new mapping-->
-    <servlet-mapping>
-        <servlet-name>EXistServlet</servlet-name>
-        <url-pattern>/rest/*</url-pattern>
-    </servlet-mapping>
-    
-    <!-- REST original mapping-->
-    <servlet-mapping>
-        <servlet-name>EXistServlet</servlet-name>
-        <url-pattern>/servlet/*</url-pattern>
-    </servlet-mapping>
-
-    <!-- webDAV -->
-    <servlet-mapping>
-        <servlet-name>WebDAVServlet</servlet-name>
-        <url-pattern>/webdav/*</url-pattern>
-    </servlet-mapping>
-
-    <!-- XQuery (not for database stored queries) -->
-    <servlet-mapping>
-        <servlet-name>XQueryServlet</servlet-name>
-        <url-pattern>*.xql</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>XQueryServlet</servlet-name>
-        <url-pattern>*.xqy</url-pattern>
-    </servlet-mapping>
-
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
-    <!-- SOAP (Apache Axis) -->
-    <servlet-mapping>
-        <servlet-name>AxisServlet</servlet-name>
-        <url-pattern>/axis-servlet/AxisServlet</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AxisServlet</servlet-name>
-        <url-pattern>*.jws</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AxisServlet</servlet-name>
-        <url-pattern>/services/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AdminServlet</servlet-name>
-        <url-pattern>/axis-servlet/AdminServlet</url-pattern>
-    </servlet-mapping>
     
     <!-- 
         Finally, we establish the main mapping for Cocoon  
@@ -577,19 +514,6 @@
         <servlet-name>Cocoon</servlet-name>
         <url-pattern>*.html</url-pattern>
     </servlet-mapping-->
-
-    <!-- Java Webstart -->
-    <servlet-mapping>
-        <servlet-name>jnlp</servlet-name>
-        <url-pattern>/webstart/*</url-pattern>
-    </servlet-mapping>
-
-    <!-- Atom Publishing Protocol -->
-    <servlet-mapping>
-        <servlet-name>AtomServlet</servlet-name>
-        <url-pattern>/atom/*</url-pattern>
-    </servlet-mapping>
-    
     
     <!-- ==================== various MIME type mappings ================== -->
 
