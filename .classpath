@@ -13,6 +13,10 @@
 	<classpathentry kind="src" path="extensions/modules/src"/>
 	<classpathentry kind="src" path="tools/ircbot/src"/>
 	<classpathentry kind="src" path="tools/requestlog/src"/>
+	<classpathentry kind="src" path="extensions/debuggee/src"/>
+	<classpathentry kind="src" path="extensions/debuggee/test"/>
+	<classpathentry kind="src" path="extensions/xslt/src"/>
+	<classpathentry kind="src" path="extensions/xslt/test"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="src" path="tools/wrapper/src"/>
@@ -103,7 +107,6 @@
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/onvdl-20070517.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/fop.jar"/>
 	<classpathentry kind="lib" path="lib/user/mail-1.4.2.jar"/>
@@ -114,5 +117,8 @@
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.4.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.4.1.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
+	<classpathentry kind="lib" path="lib/optional/jing-20090920.jar"/>
+	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.0-M6.jar"/>
+	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-api-1.5.2.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
