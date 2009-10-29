@@ -81,12 +81,12 @@ declare function sandbox:display-page() as element() {
         <head>
             <title>XQuery Sandbox</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-			<link rel="stylesheet" type="text/css" href="../scripts/yui/yui-skin.css"/>
+			<link rel="stylesheet" type="text/css" href="scripts/yui/yui-skin.css"/>
             <link type="text/css" href="styles/sandbox.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
 
-			<script src="../scripts/yui/yui-combined2.7.0.js"/>
+			<script src="scripts/yui/yui-combined2.7.0.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/sandbox.js"/>
         </head>
         <body class=" yui-skin-sam">
