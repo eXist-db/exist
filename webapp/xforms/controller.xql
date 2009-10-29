@@ -33,17 +33,13 @@ declare function local:setup() {
 };
 
 let $dummy := local:setup()
-let $uri := request:get-uri()
-let $context := request:get-context-path()
-let $path := substring-after($uri, $context)
-let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
-    if (matches($path, '/xforms/?$')) then
+    if ($exist:path eq '/') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<redirect url="{$context}/xforms/examples.xml"/>
+			<redirect url="examples.xml"/>
 		</dispatch>
     (: send docbook docs through the db2xhtml stylesheet :)
-   else if (ends-with($uri, 'examples.xml') or ends-with($uri, 'xforms.xml')) then
+   else if ($exist:resource = ('examples.xml', 'xforms.xml')) then
          <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
  			<view>
  				<forward servlet="XSLTServlet">
@@ -61,8 +57,8 @@ return
  		</dispatch>
     (:  for the following examples, the xsltforms.xsl stylesheet is applied
         on the *server*, not the client :)
-    else if ($name = ('todo-list.xml', 'shakespeare.xml')) then
-        let $relPath := if ($name eq 'todo-list.xml') then '../' else ''
+    else if ($exist:resource = ('todo-list.xml', 'shakespeare.xml')) then
+        let $relPath := if ($exist:resource eq 'todo-list.xml') then '../' else ''
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<view>
@@ -85,7 +81,7 @@ return
     			</view>
     			<cache-control cache="yes"/>
     		</dispatch>
-    else if ($name eq 'test.xql') then
+    else if ($exist:resource eq 'test.xql') then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<view>
     		    <forward servlet="XSLTServlet">
@@ -102,16 +98,16 @@ return
     		<cache-control cache="yes"/>
     	</dispatch>
     (: make sure the global css and js files are resolved :)
-    else if ($name = ('default-style.css', 'default-style2.css', 'curvycorners.js')
-        or matches($path, 'resources/')) then
-        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
+    else if ($exist:resource = ('default-style.css', 'default-style2.css', 'curvycorners.js')
+        or matches($exist:path, 'resources/')) then
+        let $newPath := replace($exist:path, '^.*/([^/]+/[^/]+)$', '/$1')
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<forward url="{$newPath}"/>
     			<cache-control cache="yes"/>
     		</dispatch>
-    else if (matches($path, 'syntax/.*\.(css|js)')) then
-        let $newPath := replace($path, '^.*/([^/]+/syntax/[^/]+)$', '/$1')
+    else if (matches($exist:path, 'syntax/.*\.(css|js)')) then
+        let $newPath := replace($exist:path, '^.*/([^/]+/syntax/[^/]+)$', '/$1')
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<forward url="{$newPath}"/>
