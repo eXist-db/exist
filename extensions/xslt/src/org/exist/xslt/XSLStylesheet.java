@@ -32,7 +32,6 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CompiledXQuery;
@@ -44,10 +43,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.dom.QName;
-import org.exist.dom.ElementAtExist;
 import org.exist.dom.NamespaceNodeAtExist;
-import org.exist.dom.NodeAtExist;
-import org.exist.dom.om.Validation;
+import org.exist.dom.Validation;
 import org.exist.xslt.expression.AttributeSet;
 import org.exist.xslt.expression.Declaration;
 import org.exist.xslt.expression.Param;
@@ -190,7 +187,6 @@ public class XSLStylesheet extends Declaration
     	throw new RuntimeException("Not implemented: reset() at "+this.getClass());
 	}
 
-	@Override
 	public void setSource(XACMLSource source) {
     	throw new RuntimeException("Not implemented: setSource(XACMLSource source) at "+this.getClass());
 	}
