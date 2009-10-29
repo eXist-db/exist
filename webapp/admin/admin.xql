@@ -180,19 +180,23 @@ return
             <div class="content">
                 <div class="guide">
                     <div class="guide-title">Select a Page</div>
-                    <ul>
-                        <li><a href="..">Home</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=users">User Management</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=xqueries">View Running Jobs</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=backup">Backups</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=trace">Query Profiling</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=grammar">Grammar cache</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
-                    </ul>
+                    {
+                        let $link := session:encode-url(request:get-uri())
+                        return
+                            <ul>
+                                <li><a href="..">Home</a></li>
+                                <li><a href="{$link}?panel=status">System Status</a></li>
+                                <li><a href="{$link}?panel=browse">Browse Collections</a></li>
+                                <li><a href="{$link}?panel=users">User Management</a></li>
+                                <li><a href="{$link}?panel=xqueries">View Running Jobs</a></li>
+                                <li><a href="{$link}?panel=setup">Examples Setup</a></li>
+                                <li><a href="{$link}?panel=backup">Backups</a></li>
+                                <li><a href="{$link}?panel=trace">Query Profiling</a></li>
+                                <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
+                                <li><a href="{$link}?panel=shutdown">Shutdown</a></li>
+                                <li><a href="{$link}?logout=yes">Logout</a></li>
+                            </ul>
+                    }
                     <div class="userinfo">
                         Logged in as: {xdb:get-current-user()}
                     </div>

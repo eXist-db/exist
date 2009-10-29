@@ -7,11 +7,9 @@ xquery version "1.0";
 	be handled like any other query. The results are then passed to
 	a second XQuery, session.xql, for post-processing.
 :)
-import module namespace xdb = "http://exist-db.org/xquery/xmldb";
-
 
 (: Root path: redirect to sandbox.xql :)
-if ($exist:resource eq '/') then
+if ($exist:path eq '/') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<redirect url="sandbox.xql"/>
 	</dispatch>
