@@ -285,8 +285,11 @@ public class NGramSearch extends Function implements Optimizable {
 
     private NodeSet endsWith(NodeSet nodes) {
     	NodeSet temp = new ExtArrayNodeSet();
-        LOG.debug("Filtering " + nodes.getLength());
-        for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
+    	
+    	if (LOG.isDebugEnabled())
+    		LOG.debug("Filtering " + nodes.getLength());
+        
+    	for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
             NodeProxy next = (NodeProxy) iterator.next();
             String data = next.getNodeValue();
             int len = data.length();

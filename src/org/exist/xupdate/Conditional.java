@@ -102,7 +102,10 @@ public class Conditional extends Modification {
 				mods += ((Modification)modifications.get(i)).process(transaction);
 				broker.flush();
 			}
-			LOG.debug(mods + " modifications processed.");
+			
+			if (LOG.isDebugEnabled())
+				LOG.debug(mods + " modifications processed.");
+			
 			return mods;
 		} else
 			return 0;
