@@ -22,6 +22,7 @@
 package org.exist.http.urlrewrite;
 
 import org.w3c.dom.Element;
+import org.exist.xmldb.XmldbURI;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterConfig;
@@ -50,7 +51,9 @@ public class PathForward extends Forward {
     protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
         if (servletName != null)
             return filterConfig.getServletContext().getNamedDispatcher(servletName);
-        else
+        else if (request != null)
             return request.getRequestDispatcher(target);
+        else
+            return filterConfig.getServletContext().getRequestDispatcher(target);
     }
 }

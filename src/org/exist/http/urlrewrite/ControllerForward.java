@@ -19,9 +19,11 @@
  *
  * $Id$
  */
+
 package org.exist.http.urlrewrite;
 
 import org.w3c.dom.Element;
+import org.exist.xmldb.XmldbURI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,20 +31,35 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-public class PassThrough extends URLRewrite {
+public class ControllerForward extends URLRewrite {
 
-    public PassThrough(HttpServletRequest request) {
-        super(null, request.getRequestURI());
-        this.target = request.getRequestURI().substring(request.getContextPath().length());
-    }
-    
-    public PassThrough(Element config, HttpServletRequest request) {
-        super(config, request.getRequestURI());
-        this.target = request.getRequestURI().substring(request.getContextPath().length());
+    public ControllerForward(Element config, String uri) {
+        super(config, uri);
+        this.target = config.getAttribute("path");
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        setHeaders(response);
-        chain.doFilter(request, response);
+    }
+
+    public boolean isControllerForward() {
+        return true;
+    }
+
+    protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
+        super.updateRequest(request);
+        if (!(target.length() == 0 || target.equals("/") ||target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
+            String oldURI = request.getInContextPath();
+            String uri = target + oldURI;
+            request.setInContextPath(uri);
+        }
+    }
+
+    protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
+        if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+            XmldbURI dbURI = XmldbURI.create(target);
+            this.uri = "/rest";
+            request.setPaths("/rest" + dbURI.getCollectionPath() + request.getInContextPath(), "/rest");
+            request.setBasePath("/rest" + dbURI.getCollectionPath());
+        }
     }
 }
