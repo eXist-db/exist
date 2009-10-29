@@ -44,6 +44,10 @@ public final class AccessContext
 	 */
 	public static final AccessContext XMLDB = new AccessContext("XML:DB");
 	/**
+	 * This represents when access is made through XSLT
+	 */
+	public static final AccessContext XSLT = new AccessContext("XSLT");
+	/**
 	 * This represents when access is made through XQJ
 	 */
 	public static final AccessContext XQJ = new AccessContext("XQJ");
