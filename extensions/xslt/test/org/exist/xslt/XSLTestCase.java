@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -101,6 +102,10 @@ public class XSLTestCase {
 				col = mgtService.createCollection(XSLT_COLLECTION);
 				System.out.println("collection created.");
 			}
+			
+			BrokerPool.getInstance().getConfiguration().setProperty(
+					TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, 
+					"org.exist.xslt.TransformerFactoryImpl");
 			
 			loadBench("test/src/org/exist/xslt/test/bench/v1_0", bench);
 		} catch (Exception e) {
@@ -183,7 +188,7 @@ public class XSLTestCase {
 	public void tearDown() throws Exception {
 	}
 
-//	@Test
+	@Test
     public void testSimpleTransform() {
         try {
             XPathQueryService service = (XPathQueryService) col.getService("XPathQueryService", "1.0");
@@ -226,7 +231,7 @@ public class XSLTestCase {
         }
     }
 	
-//	@Test
+	@Test
     public void testComplexTransform() throws Exception {
         try {
             XPathQueryService service = (XPathQueryService) col.getService("XPathQueryService", "1.0");
