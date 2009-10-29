@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Base class for all rewritten URLs.
@@ -43,6 +45,7 @@ public abstract class URLRewrite {
     
     protected String uri;
     protected String target;
+    protected String prefix = null;
     protected Map attributes = null;
     protected Map parameters = null;
     protected Map headers = null;
@@ -68,6 +71,43 @@ public abstract class URLRewrite {
                 node = node.getNextSibling();
             }
         }
+    }
+
+    protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
+        if (prefix != null)
+            request.removePathPrefix(prefix);
+    }
+
+    protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
+        // do nothing by default
+    }
+
+    /**
+     * Resolve the target of this rewrite rule against the current request context.
+     *
+     * @return the new target path excluding context path
+     */
+    protected String resolve(XQueryURLRewrite.RequestWrapper request) throws ServletException {
+        String path = request.getInContextPath();
+        if (target == null)
+            return path;
+        String fixedTarget;
+        if (request.getBasePath() != null && target.startsWith("/")) {
+            fixedTarget = request.getBasePath() + target;
+        } else
+            fixedTarget = target;
+        try {
+            URI reqURI = new URI(path);
+            return reqURI.resolve(fixedTarget).toASCIIString();
+        } catch (URISyntaxException e) {
+            throw new ServletException(e.getMessage(), e);
+        }
+    }
+
+    protected void copyFrom(URLRewrite other) {
+        this.headers = other.headers;
+        this.parameters = other.parameters;
+        this.attributes = other.attributes;
     }
 
     private void setHeader(String key, String value) {
@@ -96,6 +136,26 @@ public abstract class URLRewrite {
     
     public void setTarget(String target) {
         this.target = target;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setURI(String uri) {
+        this.uri = uri;
+    }
+
+    public String getURI() {
+        return uri;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public abstract void doRewrite(HttpServletRequest request, HttpServletResponse response,
@@ -129,6 +189,10 @@ public abstract class URLRewrite {
         }
     }
 
+    public boolean isControllerForward() {
+        return false;
+    }
+    
     protected static String normalizePath(String path) {
         StringBuilder sb = new StringBuilder(path.length());
         for (int i = 0; i < path.length(); i++) {
