@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.TextImpl;
+import org.exist.dom.CharacterDataImpl;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 
@@ -65,7 +66,7 @@ public abstract class AbstractStreamListener implements StreamListener {
         }
     }
 
-    public void characters(Txn transaction, TextImpl text, NodePath path) {
+    public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
         if (next != null) {
             next.characters(transaction, text, path);
         }

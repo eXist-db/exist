@@ -23,18 +23,7 @@ package org.exist.indexing.ngram;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
@@ -675,7 +664,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.endElement(transaction, element, path);
         }
 
-        public void characters(Txn transaction, TextImpl text, NodePath path) {
+        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
                     XMLString next = (XMLString) contentStack.get(i);
