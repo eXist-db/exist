@@ -22,9 +22,7 @@
 package org.exist.xslt.expression;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;

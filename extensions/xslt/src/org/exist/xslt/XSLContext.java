@@ -21,6 +21,7 @@
  */
 package org.exist.xslt;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XQueryContext;
@@ -31,7 +32,7 @@ import javax.xml.transform.Transformer;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class XSLContext extends XQueryContext {
+public class XSLContext extends XQueryContext implements ContextAtExist {
 
 	private XSLStylesheet xslStylesheet;
 

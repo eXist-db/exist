@@ -26,6 +26,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.AnyURIValue;
 
 /**
@@ -48,6 +49,9 @@ public interface ContextAtExist {
 	public boolean isBaseURIDeclared();
 	public AnyURIValue getBaseURI() throws XPathException;
 	
+	public void setWatchDog(XQueryWatchDog watchDog);
+	public XQueryWatchDog getWatchDog();
+
 //	public TraceListener getTraceListener();
 //	public void getTraceListener(TraceListener listener);
 
