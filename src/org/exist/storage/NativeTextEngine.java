@@ -25,19 +25,7 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.Match;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
 import org.exist.fulltext.FTMatch;
 import org.exist.numbering.NodeId;
@@ -253,7 +241,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      *                if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
+    public void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
     	if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
 	        //final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 	        //TODO : case conversion should be handled by the tokenizer -pb

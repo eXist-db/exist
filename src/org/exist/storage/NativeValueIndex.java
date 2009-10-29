@@ -26,17 +26,7 @@ package org.exist.storage;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexUtils;
 import org.exist.indexing.IndexWorker;
@@ -1390,7 +1380,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             super.endElement(transaction, element, path);
         }
 
-        public void characters(Txn transaction, TextImpl text, NodePath path) {
+        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
                     XMLString next = (XMLString) contentStack.get(i);

@@ -30,14 +30,7 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
@@ -673,7 +666,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         	super.attribute(transaction, attrib, path);          
         }        
 
-        public void characters(Txn transaction, TextImpl text, NodePath path) {
+        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
         	if (isDocumentGMLAware) {
         		//Release the deferred element if any
         		if (deferredElement != null)        		

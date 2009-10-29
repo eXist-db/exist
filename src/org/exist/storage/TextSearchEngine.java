@@ -29,12 +29,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
@@ -165,7 +160,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param indexSpec
 	 * @param node
 	 */
-	public abstract void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
+	public abstract void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
     public abstract void storeText(StoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
 
 	public abstract void flush();

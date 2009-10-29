@@ -281,8 +281,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
                 cdata.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, cdata);
-                if (!validate)
+                if (!validate) {
                     broker.storeNode(transaction, cdata, currentPath, indexSpec);
+                    if (indexListener != null) {
+                        indexListener.characters(transaction, cdata, currentPath);
+                    }
+                }
                 setPrevious(cdata);
                 
                 if (!nodeContentStack.isEmpty()) {
