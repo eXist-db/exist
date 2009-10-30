@@ -471,7 +471,8 @@ public class XQueryURLRewrite implements Filter {
         while (node != null) {
             if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
                 URLRewrite urw = parseAction(request, (Element) node);
-                modelView.addView(urw);
+                if (urw != null)
+                    modelView.addView(urw);
             }
             node = node.getNextSibling();
         }
