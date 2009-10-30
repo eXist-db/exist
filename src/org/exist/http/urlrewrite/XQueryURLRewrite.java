@@ -573,7 +573,6 @@ public class XQueryURLRewrite implements Filter {
                 Collection collection = broker.openCollection(locationUri, Lock.READ_LOCK);
                 if (collection == null) {
                     LOG.warn("Controller base collection not found: " + basePath);
-                    collection.getLock().release(Lock.READ_LOCK);
                     return null;
                 }
 
