@@ -149,6 +149,8 @@ public class FilteredExpression extends AbstractExpression {
         for (Iterator i = predicates.iterator(); i.hasNext();) {
             Predicate pred = (Predicate) i.next();
             seq = pred.evalPredicate(contextSequence, seq, Constants.DESCENDANT_SELF_AXIS);
+            //subsequent predicates operate on the result of the previous one
+            contextSequence = null;
         }
         return seq;
     }
