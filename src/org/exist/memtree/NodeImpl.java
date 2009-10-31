@@ -844,8 +844,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         for (int i = nodeNumber - 1; i > 0; i--) {
             NodeImpl n = document.getNode(i);
             if (!myNodeId.isDescendantOf(n.getNodeId()) && test.matches(n)) {
-                result.add(n);
-                if (-1 < position && ++count == position)
+                if (position < 0 || ++count == position)
+                    result.add(n);
+                if (count == position)
                     break;
             }
         }
@@ -897,8 +898,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
             while (nextNode < document.size) {
                 NodeImpl n = document.getNode(nextNode);
                 if (!n.getNodeId().isDescendantOf(myNodeId) && test.matches(n)) {
-                    result.add(n);
-                    if (-1 < position && ++count == position)
+                    if (position < 0 || ++count == position)
+                        result.add(n);
+                    if (count == position)
                         break;
                 }
                 nextNode++;
