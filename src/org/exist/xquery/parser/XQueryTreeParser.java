@@ -354,6 +354,7 @@ public XQueryTreeParser() {
 					case COMP_PI_CONSTRUCTOR:
 					case COMP_DOC_CONSTRUCTOR:
 					case PRAGMA:
+					case GTEQ:
 					case NCNAME:
 					case EQ:
 					case STRING_LITERAL:
@@ -384,9 +385,8 @@ public XQueryTreeParser() {
 					case LITERAL_le:
 					case LITERAL_gt:
 					case LITERAL_ge:
-					case NEQ:
 					case GT:
-					case GTEQ:
+					case NEQ:
 					case LT:
 					case LTEQ:
 					case LITERAL_is:
@@ -534,6 +534,7 @@ public XQueryTreeParser() {
 					case COMP_PI_CONSTRUCTOR:
 					case COMP_DOC_CONSTRUCTOR:
 					case PRAGMA:
+					case GTEQ:
 					case NCNAME:
 					case EQ:
 					case STRING_LITERAL:
@@ -564,9 +565,8 @@ public XQueryTreeParser() {
 					case LITERAL_le:
 					case LITERAL_gt:
 					case LITERAL_ge:
-					case NEQ:
 					case GT:
-					case GTEQ:
+					case NEQ:
 					case LT:
 					case LTEQ:
 					case LITERAL_is:
@@ -736,6 +736,7 @@ public XQueryTreeParser() {
 							case COMP_PI_CONSTRUCTOR:
 							case COMP_DOC_CONSTRUCTOR:
 							case PRAGMA:
+							case GTEQ:
 							case NCNAME:
 							case EQ:
 							case STRING_LITERAL:
@@ -766,9 +767,8 @@ public XQueryTreeParser() {
 							case LITERAL_le:
 							case LITERAL_gt:
 							case LITERAL_ge:
-							case NEQ:
 							case GT:
-							case GTEQ:
+							case NEQ:
 							case LT:
 							case LTEQ:
 							case LITERAL_is:
@@ -850,6 +850,7 @@ public XQueryTreeParser() {
 							case COMP_PI_CONSTRUCTOR:
 							case COMP_DOC_CONSTRUCTOR:
 							case PRAGMA:
+							case GTEQ:
 							case NCNAME:
 							case EQ:
 							case STRING_LITERAL:
@@ -880,9 +881,8 @@ public XQueryTreeParser() {
 							case LITERAL_le:
 							case LITERAL_gt:
 							case LITERAL_ge:
-							case NEQ:
 							case GT:
-							case GTEQ:
+							case NEQ:
 							case LT:
 							case LTEQ:
 							case LITERAL_is:
@@ -1012,6 +1012,7 @@ public XQueryTreeParser() {
 							case COMP_PI_CONSTRUCTOR:
 							case COMP_DOC_CONSTRUCTOR:
 							case PRAGMA:
+							case GTEQ:
 							case NCNAME:
 							case EQ:
 							case STRING_LITERAL:
@@ -1042,9 +1043,8 @@ public XQueryTreeParser() {
 							case LITERAL_le:
 							case LITERAL_gt:
 							case LITERAL_ge:
-							case NEQ:
 							case GT:
-							case GTEQ:
+							case NEQ:
 							case LT:
 							case LTEQ:
 							case LITERAL_is:
@@ -1162,6 +1162,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -1192,9 +1193,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -1327,6 +1327,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -1357,9 +1358,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -1497,6 +1497,7 @@ public XQueryTreeParser() {
 						case COMP_PI_CONSTRUCTOR:
 						case COMP_DOC_CONSTRUCTOR:
 						case PRAGMA:
+						case GTEQ:
 						case NCNAME:
 						case EQ:
 						case STRING_LITERAL:
@@ -1529,9 +1530,8 @@ public XQueryTreeParser() {
 						case LITERAL_le:
 						case LITERAL_gt:
 						case LITERAL_ge:
-						case NEQ:
 						case GT:
-						case GTEQ:
+						case NEQ:
 						case LT:
 						case LTEQ:
 						case LITERAL_is:
@@ -1647,6 +1647,7 @@ public XQueryTreeParser() {
 						case COMP_PI_CONSTRUCTOR:
 						case COMP_DOC_CONSTRUCTOR:
 						case PRAGMA:
+						case GTEQ:
 						case NCNAME:
 						case EQ:
 						case STRING_LITERAL:
@@ -1678,9 +1679,8 @@ public XQueryTreeParser() {
 						case LITERAL_le:
 						case LITERAL_gt:
 						case LITERAL_ge:
-						case NEQ:
 						case GT:
-						case GTEQ:
+						case NEQ:
 						case LT:
 						case LTEQ:
 						case LITERAL_is:
@@ -1768,6 +1768,7 @@ public XQueryTreeParser() {
 						case COMP_PI_CONSTRUCTOR:
 						case COMP_DOC_CONSTRUCTOR:
 						case PRAGMA:
+						case GTEQ:
 						case NCNAME:
 						case EQ:
 						case STRING_LITERAL:
@@ -1798,9 +1799,8 @@ public XQueryTreeParser() {
 						case LITERAL_le:
 						case LITERAL_gt:
 						case LITERAL_ge:
-						case NEQ:
 						case GT:
-						case GTEQ:
+						case NEQ:
 						case LT:
 						case LTEQ:
 						case LITERAL_is:
@@ -1883,6 +1883,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -1913,9 +1914,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -2112,7 +2112,7 @@ public XQueryTreeParser() {
 					case ATTRIBUTE_TEST:
 					case LITERAL_element:
 					case LITERAL_empty:
-					case 94:
+					case 95:
 					case LITERAL_item:
 					case LITERAL_text:
 					case LITERAL_node:
@@ -2189,6 +2189,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -2219,9 +2220,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -2433,6 +2433,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -2463,9 +2464,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -2559,6 +2559,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -2589,9 +2590,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -2692,10 +2692,10 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case EQ:
-		case NEQ:
-		case GT:
 		case GTEQ:
+		case EQ:
+		case GT:
+		case NEQ:
 		case LT:
 		case LTEQ:
 		{
@@ -2935,14 +2935,15 @@ public XQueryTreeParser() {
 		case COMP_PI_CONSTRUCTOR:
 		case COMP_DOC_CONSTRUCTOR:
 		case PRAGMA:
+		case GTEQ:
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
-		case 62:
+		case 63:
 		case LITERAL_ordering:
 		case LITERAL_construction:
-		case 65:
 		case 66:
+		case 67:
 		case LITERAL_element:
 		case LITERAL_order:
 		case COMMA:
@@ -2971,9 +2972,8 @@ public XQueryTreeParser() {
 		case LITERAL_le:
 		case LITERAL_gt:
 		case LITERAL_ge:
-		case NEQ:
 		case GT:
-		case GTEQ:
+		case NEQ:
 		case LT:
 		case LTEQ:
 		case LITERAL_is:
@@ -3062,14 +3062,15 @@ public XQueryTreeParser() {
 		case COMP_PI_CONSTRUCTOR:
 		case COMP_DOC_CONSTRUCTOR:
 		case PRAGMA:
+		case GTEQ:
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
-		case 62:
+		case 63:
 		case LITERAL_ordering:
 		case LITERAL_construction:
-		case 65:
 		case 66:
+		case 67:
 		case LITERAL_element:
 		case LITERAL_order:
 		case COMMA:
@@ -3098,9 +3099,8 @@ public XQueryTreeParser() {
 		case LITERAL_le:
 		case LITERAL_gt:
 		case LITERAL_ge:
-		case NEQ:
 		case GT:
-		case GTEQ:
+		case NEQ:
 		case LT:
 		case LTEQ:
 		case LITERAL_is:
@@ -3252,11 +3252,11 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 62:
+			case 63:
 			{
 				AST __t16 = _t;
 				org.exist.xquery.parser.XQueryAST tmp31_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,62);
+				match(_t,63);
 				_t = _t.getFirstChild();
 				{
 				if (_t==null) _t=ASTNULL;
@@ -3341,12 +3341,12 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 66:
+			case 67:
 			{
 				try {      // for error handling
 					AST __t20 = _t;
 					org.exist.xquery.parser.XQueryAST tmp37_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,66);
+					match(_t,67);
 					_t = _t.getFirstChild();
 					{
 					if (_t==null) _t=ASTNULL;
@@ -3362,10 +3362,10 @@ public XQueryTreeParser() {
 						
 						break;
 					}
-					case 83:
+					case 84:
 					{
 						org.exist.xquery.parser.XQueryAST tmp39_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,83);
+						match(_t,84);
 						_t = _t.getNextSibling();
 						
 						staticContext.setPreserveNamespaces(false);
@@ -3393,10 +3393,10 @@ public XQueryTreeParser() {
 						
 						break;
 					}
-					case 85:
+					case 86:
 					{
 						org.exist.xquery.parser.XQueryAST tmp41_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,85);
+						match(_t,86);
 						_t = _t.getNextSibling();
 						
 						staticContext.setInheritNamespaces(false);
@@ -3423,11 +3423,11 @@ public XQueryTreeParser() {
 				}
 				break;
 			}
-			case 65:
+			case 66:
 			{
 				AST __t23 = _t;
 				org.exist.xquery.parser.XQueryAST tmp42_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,65);
+				match(_t,66);
 				_t = _t.getFirstChild();
 				base = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,STRING_LITERAL);
@@ -3631,6 +3631,7 @@ public XQueryTreeParser() {
 				case COMP_PI_CONSTRUCTOR:
 				case COMP_DOC_CONSTRUCTOR:
 				case PRAGMA:
+				case GTEQ:
 				case NCNAME:
 				case EQ:
 				case STRING_LITERAL:
@@ -3662,9 +3663,8 @@ public XQueryTreeParser() {
 				case LITERAL_le:
 				case LITERAL_gt:
 				case LITERAL_ge:
-				case NEQ:
 				case GT:
-				case GTEQ:
+				case NEQ:
 				case LT:
 				case LTEQ:
 				case LITERAL_is:
@@ -3738,6 +3738,7 @@ public XQueryTreeParser() {
 				case COMP_PI_CONSTRUCTOR:
 				case COMP_DOC_CONSTRUCTOR:
 				case PRAGMA:
+				case GTEQ:
 				case NCNAME:
 				case EQ:
 				case STRING_LITERAL:
@@ -3768,9 +3769,8 @@ public XQueryTreeParser() {
 				case LITERAL_le:
 				case LITERAL_gt:
 				case LITERAL_ge:
-				case NEQ:
 				case GT:
-				case GTEQ:
+				case NEQ:
 				case LT:
 				case LTEQ:
 				case LITERAL_is:
@@ -3949,11 +3949,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 94:
+		case 95:
 		{
 			AST __t67 = _t;
 			org.exist.xquery.parser.XQueryAST tmp55_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,94);
+			match(_t,95);
 			_t = _t.getFirstChild();
 			
 							type.setPrimaryType(Type.EMPTY);
@@ -5438,6 +5438,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -5468,9 +5469,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -6259,6 +6259,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -6289,9 +6290,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -6400,6 +6400,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -6430,9 +6431,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -6919,6 +6919,7 @@ public XQueryTreeParser() {
 		case COMP_PI_CONSTRUCTOR:
 		case COMP_DOC_CONSTRUCTOR:
 		case PRAGMA:
+		case GTEQ:
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
@@ -6949,9 +6950,8 @@ public XQueryTreeParser() {
 		case LITERAL_le:
 		case LITERAL_gt:
 		case LITERAL_ge:
-		case NEQ:
 		case GT:
-		case GTEQ:
+		case NEQ:
 		case LT:
 		case LTEQ:
 		case LITERAL_is:
@@ -7123,6 +7123,7 @@ public XQueryTreeParser() {
 				case COMP_PI_CONSTRUCTOR:
 				case COMP_DOC_CONSTRUCTOR:
 				case PRAGMA:
+				case GTEQ:
 				case NCNAME:
 				case EQ:
 				case STRING_LITERAL:
@@ -7153,9 +7154,8 @@ public XQueryTreeParser() {
 				case LITERAL_le:
 				case LITERAL_gt:
 				case LITERAL_ge:
-				case NEQ:
 				case GT:
-				case GTEQ:
+				case NEQ:
 				case LT:
 				case LTEQ:
 				case LITERAL_is:
@@ -7266,6 +7266,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -7296,9 +7297,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -7405,6 +7405,7 @@ public XQueryTreeParser() {
 			case COMP_PI_CONSTRUCTOR:
 			case COMP_DOC_CONSTRUCTOR:
 			case PRAGMA:
+			case GTEQ:
 			case NCNAME:
 			case EQ:
 			case STRING_LITERAL:
@@ -7435,9 +7436,8 @@ public XQueryTreeParser() {
 			case LITERAL_le:
 			case LITERAL_gt:
 			case LITERAL_ge:
-			case NEQ:
 			case GT:
-			case GTEQ:
+			case NEQ:
 			case LT:
 			case LTEQ:
 			case LITERAL_is:
@@ -8102,6 +8102,7 @@ public XQueryTreeParser() {
 		"COMP_NS_CONSTRUCTOR",
 		"COMP_DOC_CONSTRUCTOR",
 		"PRAGMA",
+		"GTEQ",
 		"\"xpointer\"",
 		"opening parenthesis '('",
 		"closing parenthesis ')'",
@@ -8195,9 +8196,8 @@ public XQueryTreeParser() {
 		"\"le\"",
 		"\"gt\"",
 		"\"ge\"",
-		"!=",
 		">",
-		">=",
+		"!=",
 		"<",
 		"<=",
 		"\"is\"",
@@ -8281,27 +8281,27 @@ public XQueryTreeParser() {
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
-		data[0]=869686209785003922L;
-		data[1]=-9217175313866030592L;
-		data[2]=4611470512269295611L;
+		data[0]=1739443887820930962L;
+		data[1]=12393445977490432L;
+		data[2]=4611470512269295607L;
 		data[3]=512L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[8];
-		data[0]=869756634364018618L;
-		data[1]=-7847799533915075840L;
-		data[2]=4611470512269295611L;
+		data[0]=1739514312399945658L;
+		data[1]=2751145005879399936L;
+		data[2]=4611470512269295607L;
 		data[3]=512L;
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
 		long[] data = new long[8];
-		data[0]=869686209785003930L;
-		data[1]=-9217175313866030592L;
-		data[2]=4611470512269295611L;
+		data[0]=1739443887820930970L;
+		data[1]=12393445977490432L;
+		data[2]=4611470512269295607L;
 		data[3]=512L;
 		return data;
 	}
@@ -8309,7 +8309,7 @@ public XQueryTreeParser() {
 	private static final long[] mk_tokenSet_3() {
 		long[] data = new long[8];
 		data[0]=208907213996032L;
-		data[1]=8388608L;
+		data[1]=16777216L;
 		data[2]=52776558133248L;
 		data[3]=512L;
 		return data;
