@@ -426,7 +426,7 @@ public class XQueryURLRewrite implements Filter {
      */
     protected void doRewrite(URLRewrite action, RequestWrapper request, HttpServletResponse response,
                              FilterChain filterChain) throws IOException, ServletException {
-        if (action.getTarget() != null) {
+        if (action.getTarget() != null && !(action instanceof Redirect)) {
             String uri = action.resolve(request);
             URLRewrite staticRewrite = rewriteConfig.lookup(uri, true);
             if (staticRewrite != null) {
@@ -539,7 +539,7 @@ public class XQueryURLRewrite implements Filter {
 		}
         // Find correct module load path
 		queryContext.setModuleLoadPath(moduleLoadPath);
-        declareVariables(queryContext, sourceInfo, request, response);
+        declareVariables(queryContext, sourceInfo, basePath, request, response);
         if (compiled == null) {
 			try {
 				compiled = xquery.compile(queryContext, sourceInfo.source);
@@ -709,7 +709,7 @@ public class XQueryURLRewrite implements Filter {
         return sourceInfo;
     }
 
-    private void declareVariables(XQueryContext context, SourceInfo sourceInfo,
+    private void declareVariables(XQueryContext context, SourceInfo sourceInfo, String basePath,
 			RequestWrapper request, HttpServletResponse response)
 			throws XPathException {
 		HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
@@ -721,7 +721,8 @@ public class XQueryURLRewrite implements Filter {
 		context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
 
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
-
+        context.declareVariable("exist:root", basePath);
+        
         String path;
         if (sourceInfo.controllerPath.length() > 0 && !sourceInfo.controllerPath.equals("/"))
             path = request.getInContextPath().substring(sourceInfo.controllerPath.length());
