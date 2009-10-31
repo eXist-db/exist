@@ -44,7 +44,7 @@ public class Option {
     public final static QName CURRENT_DATETIME = new QName("current-dateTime", Namespaces.EXIST_NS);
 	
     private final static String paramPattern =
-		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\\s]+)";
+		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\"\'\\s][^\\s]*)";
 	
 	private final static Pattern pattern = Pattern.compile(paramPattern);
 	private final static Matcher matcher = pattern.matcher("");
