@@ -242,6 +242,8 @@ public class XSLTServlet extends HttpServlet {
             base = stylesheet.substring(0, p);
         else
             base = stylesheet;
+        if (LOG.isDebugEnabled())
+            LOG.debug("Loading stylesheet from " + stylesheet);
         CachedStylesheet cached = (CachedStylesheet)cache.get(stylesheet);
         if(cached == null) {
             cached = new CachedStylesheet(factory, user, stylesheet, base);
