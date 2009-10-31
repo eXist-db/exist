@@ -43,7 +43,8 @@ public class TimerPragma extends Pragma {
             for (int i = 0; i < options.length; i++) {
                 String param[] = Option.parseKeyValuePair(options[i]);
                 if (param == null)
-                    throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);
+                    throw new XPathException("Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() +
+                        ": " + contents);
                 if ("verbose".equals(param[0])) {
                     verbose = "yes".equals(param[1]);
                 } else if ("logger".equals(param[0])) {
