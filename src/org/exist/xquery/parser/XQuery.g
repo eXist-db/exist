@@ -160,6 +160,7 @@ imaginaryTokenDefinitions
 	COMP_NS_CONSTRUCTOR
 	COMP_DOC_CONSTRUCTOR
 	PRAGMA
+	GTEQ
 	;
 
 // === XPointer ===
@@ -706,12 +707,14 @@ castExpr throws XPathException
 
 comparisonExpr throws XPathException
 :
-	rangeExpr (
+	r1:rangeExpr (
 		( BEFORE ) => BEFORE^ rangeExpr 
 		|
 		( AFTER ) => AFTER^ rangeExpr
 		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) rangeExpr )
-		| ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr )
+		| ( GT EQ ) => GT^ EQ^ r2:rangeExpr
+			{ #comparisonExpr = #(#[GTEQ, ">="], #r1, #r2); }
+		| ( ( EQ^ | NEQ^ | GT^ | LT^ | LTEQ^ ) rangeExpr )
 		| ( ( "is"^ | "isnot"^ ) rangeExpr )
 		| ( ( ANDEQ^ | OREQ^ ) rangeExpr )
 	)?
@@ -1670,7 +1673,6 @@ protected OREQ options { paraphrase="fulltext operator '|='"; }: "|=" ;
 protected EQ options { paraphrase="="; }: '=' ;
 protected NEQ options { paraphrase="!="; }: "!=" ;
 protected GT options { paraphrase=">"; }: '>' ;
-protected GTEQ options { paraphrase=">="; }: ">=" ;
 protected QUOT options { paraphrase="double quote '\"'"; }: '"' ;
 protected APOS options { paraphrase="single quote '"; }: "'";
 protected LTEQ options { paraphrase="<="; }: "<=" ;
@@ -2046,9 +2048,6 @@ options {
 	AFTER { $setType(AFTER); }
 	|
 	GT { $setType(GT); }
-	|
-	{ !(inAttributeContent || inElementContent) }?
-	GTEQ { $setType(GTEQ); }
 	|
 	XML_PI_END { $setType(XML_PI_END); }
 	|
