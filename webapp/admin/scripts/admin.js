@@ -1,7 +1,7 @@
-var Dom = YAHOO.util.Dom,
-    Event = YAHOO.util.Event;
+var yDom = YAHOO.util.Dom,
+    yEvent = YAHOO.util.Event;
 
-Event.onDOMReady(function () {
+yEvent.onDOMReady(function () {
     if (document.getElementById('xqueries-container')) {
     	setTimeout('reloadScheduledJobs()', 3000);
     	setTimeout('reloadJobs()', 3000);
@@ -55,10 +55,10 @@ function reloadQueries() {
 
 function displayDiff(id, resource, revision) {
 	var div = document.getElementById(id);
-	if (Dom.getStyle(div, 'display') == 'none')
-		Dom.setStyle(div, 'display', '');
+	if (yDom.getStyle(div, 'display') == 'none')
+		yDom.setStyle(div, 'display', '');
 	else
-		Dom.setStyle(div, 'display', 'none');
+		yDom.setStyle(div, 'display', 'none');
 	
 	if (div.innerHTML == '') {
 		var callback = {
