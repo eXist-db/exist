@@ -248,7 +248,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         Type.subTypeOf(result.getItemType(), Type.ATOMIC))
                     gotAtomicResult = true;
 
-                if(steps.size() > 1)
+                if(steps.size() > 1 && getLastExpression() instanceof Step)
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step
                     result.removeDuplicates();
