@@ -37,9 +37,65 @@ declare function grammar:show-cache($cache as node()) as element()
 
 declare function grammar:main() as element() {
     let $action := lower-case(request:get-parameter("action", "refresh"))
+    
+    (: clear grammar cache :)
+    let $removed := if($action eq "clear-cache")
+    then
+        validation:clear-grammar-cache()
+    else
+        ()
+        
+    (: cache grammar doc :)
+    let $url := request:get-parameter("url", "http://....")
+    let $cached := if($action eq "pre-parse")
+                then 
+                    if($url eq "http://....") then
+                        ()
+                    else
+                        validation:pre-parse-grammar(xs:anyURI($url))
+                else
+                    ()
+        
     return
         <div class="panel">
             <h1>Grammar Cache</h1>
+            
+            <table>
+            <tr><td>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="submit" name="button" value="Clear grammar cache"/>
+                <input type="hidden" name="panel" value="grammar"/>
+                <input type="hidden" name="action" value="clear-cache"/>
+            </form>
+            </td><td> </td><td>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="submit" name="button" value="Pre-parse grammar"/>
+                <input type="text"   name="url" value="{$url}"/>
+                <input type="hidden" name="panel" value="grammar"/>
+                <input type="hidden" name="action" value="pre-parse"/>
+            </form>
+            </td></tr>
+            </table>
+            
+            
+            <!--
+            {
+                if(not(empty($removed)))
+                then
+                    <div>Removed {$removed} grammars.<p/></div>
+                else
+                    ()
+            }
+            -->
+            
+            {
+                if(not(empty($cached)))
+                then
+                    <div><br/>Cached {$cached} grammar.<p/></div>
+                else
+                    ()
+            }
+            <p/>
             <table id="grammar" cellpadding="7">
             {
                 let $cache := validation:show-grammar-cache()
