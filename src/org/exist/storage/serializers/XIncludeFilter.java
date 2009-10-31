@@ -344,11 +344,25 @@ public class XIncludeFilter implements Receiver {
                     String path = externalUri.getSchemeSpecificPart();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
-                        f = new File(moduleLoadPath, path);
-                        externalUri = f.toURI();
+                        if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                            XmldbURI parentUri = XmldbURI.create(moduleLoadPath);
+                            docUri = parentUri.append(path);
+                            try {
+                                doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
+                                if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
+                                    throw new ResourceError("Permission denied to read xincluded resource");
+                            } catch (PermissionDeniedException e) {
+                                LOG.warn("permission denied", e);
+                                throw new ResourceError("Permission denied to read xincluded resource", e);
+                            }
+                        } else {
+                            f = new File(moduleLoadPath, path);
+                            externalUri = f.toURI();
+                        }
                     }
                 }
-                memtreeDoc = parseExternal(externalUri);
+                if (doc == null)
+                    memtreeDoc = parseExternal(externalUri);
             } catch (IOException e) {
                 throw new ResourceError("XInclude: failed to read document at URI: " + href +
                     ": " + e.getMessage(), e);
