@@ -21,6 +21,7 @@ import module namespace rev="http://exist-db.org/xquery/admin-interface/revision
 import module namespace backup="http://exist-db.org/xquery/admin-interface/backup" at "backup.xqm";
 import module namespace prof="http://exist-db.org/xquery/profiling" at "trace.xqm";
 import module namespace grammar="http://exist-db.org/xquery/admin-interface/grammar" at "grammar.xqm";
+import module namespace install="http://exist-db.org/xquery/install-tools" at "install.xqm";
 
 declare option exist:serialize "method=xhtml media-type=text/html";
 
@@ -81,10 +82,24 @@ declare function admin:panel() as element()
 	    (
 	        grammar:main()
         )
+        else if ($panel eq "install") then
+        (
+            install:main()
+        )
         else
         (
             status:main()
         )
+};
+
+declare function admin:panel-header() {
+    let $panel := request:get-parameter("panel", "status")
+    return
+        if ($panel eq "install") then
+            install:header()
+        else
+            <xf:model xmlns:xf="http://www.w3.org/2002/xforms">
+            </xf:model>
 };
 
 (:~  
@@ -158,8 +173,9 @@ let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
             true()
         )
     )
-return
-    <html>
+return (
+    <?css-conversion no?>,
+    <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <title>eXist Database Administration</title>
             <link type="text/css" href="admin.css" rel="stylesheet"/>
@@ -169,7 +185,8 @@ return
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
 			<script type="text/javascript" src="scripts/prettify.js"/>
 			<script type="text/javascript" src="../scripts/yui/yui-combined2.7.0.js"></script>
-			<script type="text/javascript" src="scripts/admin.js"></script>	
+			<script type="text/javascript" src="scripts/admin.js"></script>
+			{ admin:panel-header() }
         </head>
         <body class="yui-skin-sam">
             <div class="header">
@@ -190,6 +207,7 @@ return
                                 <li><a href="{$link}?panel=users">User Management</a></li>
                                 <li><a href="{$link}?panel=xqueries">View Running Jobs</a></li>
                                 <li><a href="{$link}?panel=setup">Examples Setup</a></li>
+                                <li><a href="{$link}?panel=install">Install Tools</a></li>
                                 <li><a href="{$link}?panel=backup">Backups</a></li>
                                 <li><a href="{$link}?panel=trace">Query Profiling</a></li>
                                 <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
@@ -214,3 +232,4 @@ return
             </div>
         </body>
     </html>
+)
