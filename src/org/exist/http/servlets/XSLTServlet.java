@@ -405,6 +405,7 @@ public class XSLTServlet extends HttpServlet {
         DBBroker broker;
 
         public DatabaseResolver(DBBroker broker, DocumentImpl myDoc) {
+            this.broker = broker;
             this.doc = myDoc;
         }
 
