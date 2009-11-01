@@ -148,7 +148,10 @@ public abstract class Modification extends AbstractExpression
 	        
 		    StoredNode ql[] = new StoredNode[nodes.getLength()];
 			for (int i = 0; i < ql.length; i++) {
-				ql[i] = (StoredNode)nodes.item(i);
+                Node n = nodes.item(i);
+                if (n.getNodeType() == Node.DOCUMENT_NODE)
+                    throw new XPathException(this, "Updating the document object is not allowed.");
+				ql[i] = (StoredNode) n;
 				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				//prepare Trigger
 				prepareTrigger(transaction, doc);
