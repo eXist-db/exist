@@ -109,7 +109,7 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
-        files="webapp/WEB-INF/data" pageSize="4096">
+        files="@dataDir@" pageSize="4096">
 
         <!--
             Specifies the default permissions for all resources and collections
@@ -243,7 +243,7 @@
 				backup to the same directory.
         -->
         <recovery enabled="yes" group-commit="no" 
-			journal-dir="webapp/WEB-INF/data" size="100M"
+			journal-dir="@dataDir@" size="100M"
             sync-on-commit="no" force-restart="no"
 			consistency-check="yes"/>
 
@@ -492,8 +492,11 @@
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
         	cron-trigger="0 0 * * * ?">
-        	<parameter name="output" value="sanity"/>
-            <parameter name="backup" value="no"/>
+			<parameter name="output" value="export"/>
+    		<parameter name="backup" value="yes"/>
+		    <parameter name="incremental" value="no"/>
+			<parameter name="incremental-check" value="no"/>
+			<parameter name="max" value="2"/>
         </job>
         -->
         
@@ -511,34 +514,6 @@
         </job>
         -->
         
-        <!-- 
-            Automatically creates a backup of the database every 6 hours.
-
-            Parameters:
-                dir:
-                    The directory into which the backup will be written.
-                suffix:
-                    File suffix for the generated backup file or directory. Specify
-                    .zip to write the backup into a .zip. Otherwise, the backup will 
-                    be written to a plain directory. The name of the final backup 
-                    file or directory will be: prefix + current-date + suffix.
-                prefix:
-                    File prefix for the generated backup file or directory.
-
-		    -->
-        <!--
-        <job type="system" name="backup"
-            class="org.exist.storage.BackupSystemTask" 
-            cron-trigger="0 0 */6 * * ?">
-            <parameter name="dir" value="backup"/>
-            <parameter name="suffix" value=".zip"/>
-            <parameter name="prefix" value="backup-"/>
-            <parameter name="collection" value="/db"/>
-            <parameter name="user" value="admin"/>
-            <parameter name="password" value=""/>
-            <parameter name="zip-files-max" value="28"/>
-        </job>
-        -->
     </scheduler>
 
     <!-- 

@@ -118,7 +118,7 @@
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
-    <target name="prepare" depends="svn-prepare">
+    <target name="prepare">
 
         <tstamp/>
         <property file="VERSION.txt"/>
@@ -147,7 +147,16 @@
         <copy file="${src.webapp}/xqts/config.xml.tmpl" tofile="${src.webapp}/xqts/config.xml"
             filtering="true"/>
 
-        <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true"/>
+        <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
+			<filterset>
+				<filter token="dataDir" value="webapp/WEB-INF/data"/>
+			</filterset>
+		</copy>
+        <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
+			<filterset>
+				<filter token="dataDir" value="$dataDir"/>
+			</filterset>
+		</copy>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties"
             filtering="true"/>
         <copy file="${basedir}/server.xml.tmpl" tofile="${basedir}/server.xml" filtering="true"/>
