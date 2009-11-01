@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,6 +56,7 @@ import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.debuggee.Debuggee;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -1204,6 +1206,25 @@ public class RESTServer {
 		String xdebug = request.getParameter("XDEBUG_SESSION_START");
 		if (xdebug != null)
 			compiled.getContext().setDebugMode(true);
+		else {
+			//if have session
+			xdebug = request.getParameter("XDEBUG_SESSION");
+			if (xdebug != null) {
+				compiled.getContext().setDebugMode(true);
+			} else {
+				//looking for session in cookies (FF XDebug Helper add-ons)
+    			Cookie[] cookies = request.getCookies();
+    			if (cookies != null) {
+        			for (int i = 0; i < cookies.length; i++) {
+        				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
+        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
+        					compiled.getContext().setDebugMode(true);
+            				break;
+        				}
+        			}
+    			}
+			}
+		}
 		
 		try {
 			Sequence result = xquery.execute(compiled, null, outputProperties);
