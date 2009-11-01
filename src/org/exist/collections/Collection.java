@@ -271,6 +271,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
         }
     }
 
+    public Iterator collectionIteratorNoLock() {
+        return subcollections.stableIterator();
+    }
+
     /**
      * Load all collections below this collections
      * and return them in a List.
@@ -405,6 +409,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
         } finally {
             getLock().release(Lock.READ_LOCK);
         }
+        return docs;
+    }
+
+    public DocumentSet getDocumentsNoLock(DBBroker broker, MutableDocumentSet docs, boolean checkPermissions) {
+        docs.addCollection(this);
+        docs.addAll(broker, this, getDocumentPaths(), checkPermissions);
         return docs;
     }
 
@@ -611,6 +621,10 @@ public  class Collection extends Observable implements Comparable, Cacheable
             getLock().release(Lock.READ_LOCK);
         }
     }
+
+    public int getDocumentCountNoLock() {
+        return documents.size();
+    }
     
     /**
      *  Get the internal id.
@@ -705,7 +719,11 @@ public  class Collection extends Observable implements Comparable, Cacheable
     public Iterator iterator(DBBroker broker) {
         return getDocuments(broker, new DefaultDocumentSet(), false).getDocumentIterator();
     }
-    
+
+    public Iterator iteratorNoLock(DBBroker broker) {
+        return getDocumentsNoLock(broker, new DefaultDocumentSet(), false).getDocumentIterator();
+    }
+
     /**
      * Read collection contents from the stream.
      *

@@ -342,9 +342,9 @@ public class SystemExport {
             }
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
-            int docsCount = current.getDocumentCount();
+            int docsCount = current.getDocumentCountNoLock();
             int count = 0;
-            for (Iterator i = current.iterator(broker); i.hasNext(); count++) {
+            for (Iterator i = current.iteratorNoLock(broker); i.hasNext(); count++) {
                 DocumentImpl doc = (DocumentImpl) i.next();
                 if (isDamaged(doc, errorList)) {
                     reportError("Skipping damaged document " + doc.getFileURI(), null);
@@ -356,7 +356,7 @@ public class SystemExport {
                 docs.add(doc, false);
             }
 
-            for (Iterator i = current.collectionIterator(); i.hasNext(); ) {
+            for (Iterator i = current.collectionIteratorNoLock(); i.hasNext(); ) {
                 XmldbURI childUri = (XmldbURI) i.next();
                 if (childUri.equalsInternal(TEMP_COLLECTION))
                     continue;

@@ -36,7 +36,12 @@ import org.exist.util.Configuration;
  * written to the log.
  * 
  * A task can be scheduled for execution 
- * via {@link BrokerPool#triggerSystemTask(SystemTask)}
+ * via {@link BrokerPool#triggerSystemTask(SystemTask)}.
+ *
+ * IMPORTANT: SystemTask implementations should avoid to acquire
+ * locks on collections! Doing so may lead to a deadlock situation.
+ * The system task runs in a privileged mode. Locking a collection is
+ * not required since no writing transactions will be allowed.
  * 
  * @author wolf
  */

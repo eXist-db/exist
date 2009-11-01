@@ -111,7 +111,8 @@ public class ConsistencyCheck {
     private void checkCollection(Collection collection, List errors, ProgressCallback callback) {
         XmldbURI uri = collection.getURI();
         callback.startCollection(uri.toString());
-        for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+
+        for (Iterator i = collection.collectionIteratorNoLock(); i.hasNext(); ) {
             XmldbURI childUri = (XmldbURI) i.next();
             try {
                 Collection child = broker.getCollection(uri.append(childUri));

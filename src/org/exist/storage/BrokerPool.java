@@ -77,7 +77,7 @@ import org.exist.xquery.PerformanceStats;
  * To define multiple instances, pass an identification string to {@link #configure(String, int, int, Configuration)}
  * and use {@link #getInstance(String)} to retrieve an instance.
  *
- *@author  Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author  Wolfgang Meier <wolfgang@exist-db.org>
  *@author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 //TODO : in the future, separate the design between the Map of DBInstances and their non static implementation 
@@ -480,20 +480,6 @@ public class BrokerPool extends Observable {
     private NotificationService notificationService = null;
 
     private long nextSystemStatus = System.currentTimeMillis();
-    
-	/**
-	 * The system maintenance tasks of the database instance.
-	 */
-    //TODO : maybe not the most appropriate container...
-    // WM: yes, only used in initialization. Don't need a synchronized collection here
-    private List systemTasks = new ArrayList();
-    //TODO : remove when SystemTask has a getPeriodicity() method
-    //private Vector systemTasksPeriods = new Vector();
-	
-	/**
-	 * The pending system maintenance tasks of the database instance.
-	 */
-	private Stack waitingSystemTasks = new Stack();
 
     /**
 	 * The cache in which the database instance may store items.
@@ -1108,7 +1094,7 @@ public class BrokerPool extends Observable {
 
     public TransactionManager getTransactionManager() {
         return this.transactionManager;
-    }	
+    }
     
     /** 
      * Returns a manager for accessing the database instance's collection configuration files.
@@ -1335,7 +1321,6 @@ public class BrokerPool extends Observable {
 					this.syncRequired = false;
                     this.checkpoint = false;
 				}				
-                processWaitingTasks(broker);
                 if (serviceModeUser != null && !broker.getUser().equals(serviceModeUser)) {
                     inServiceMode = true;
                 }
@@ -1417,7 +1402,7 @@ public class BrokerPool extends Observable {
     // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
     // other brokers are active when it is called. That's why we don't need to synchronize here.
 	//TODO : make it protected ?
-	private void sync(DBBroker broker, int syncEvent) {
+	protected void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
 		User user = broker.getUser();
 		//TODO : strange that it is set *after* the sunc method has been called.
@@ -1481,37 +1466,7 @@ public class BrokerPool extends Observable {
 				syncRequired = true;
 			}
 		}
-	}   
-
-    /**
-     * Executes a system maintenance task for the database instance. The database will be stopped
-     * during its execution (TODO : how ?).
-     * @param broker A broker responsible for executing the task 
-     * @param task The task
-     */
-	//TODO : rename as executeSystemTask ?
-	//TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ?
-	// WM: no other brokers will be running when this method is called, so there's no need to synchronize.
-    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
-    // WM: get/release may lead to deadlock!
-	//TODO : make it protected ?
-    private void runSystemTask(DBBroker broker, SystemTask task) {
-    	
-    	//dont run the task if we are shutting down
-    	if(status == SHUTDOWN)
-    		return;
-    	
-    	try {
-    		//Flush everything
-    		//TOUNDERSTAND (pb) : are we sure that this sync will be executed (see comments above) ?
-            // WM: tried to fix it
-    		sync(broker, Sync.MAJOR_SYNC);
-            LOG.debug("Running system maintenance task: " + task.getClass().getName());
-    		task.execute(broker);
-    	} catch(Exception e) {
-    		LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
-    	}
-    }          
+	}
    
 	/**
 	 * Schedules a system maintenance task for the database instance. If the database is idle,
@@ -1521,43 +1476,9 @@ public class BrokerPool extends Observable {
      */
     //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ?
     public void triggerSystemTask(SystemTask task) {    	
-    	synchronized(this) {
-    		//Are there available brokers ?
-    	    // TOUNDERSTAND (pb) : the trigger is ignored !
-            // WM: yes, commented out
-//    		if(inactiveBrokers.size() == 0)
-//    			return;
-			//TODO : check task and throw an exception if inaccurate
-			//Is the database instance idle ?    		
-    		if(inactiveBrokers.size() == brokersCount) {
-    			//Borrow a broker
-    			//TODO : this broker is *not* marked as active and may be reused by another process !
-                // WM: No other broker will be running at this point
-    			//TODO : use get() then release the broker ? WM: deadlock risk here!
-    			DBBroker broker = (DBBroker) inactiveBrokers.peek();
-    			//Do the job
-    			runSystemTask(broker, task);
-    		} else
-    			//Put the task into the queue
-                waitingSystemTasks.push(task);
-    	}
+    	transactionManager.triggerSystemTask(task);
     }
     
-    /**
-     * Executes waiting system maintenance tasks for the database instance.
-     * @param broker A broker responsible for executing the task
-     */
-    //TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ?
-    //TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done ?
-    // WM: same as above: no other broker is active while we are calling this 
-    //TODO : make it protected ?
-    private void processWaitingTasks(DBBroker broker) {
-        while (waitingSystemTasks != null && !waitingSystemTasks.isEmpty()) {
-            SystemTask task = (SystemTask) waitingSystemTasks.pop();
-            runSystemTask(broker, task);
-        }
-    }   
-
 	/**
 	 * Shuts downs the database instance
 	 */
@@ -1574,146 +1495,154 @@ public class BrokerPool extends Observable {
 	 * Shuts downs the database instance
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
-	public synchronized void shutdown(boolean killed) {
+	public void shutdown(boolean killed) {
         if (status == SHUTDOWN)
             // we are already shut down
             return;
 
         LOG.info("Database is shutting down ...");
 
-        status = SHUTDOWN;
-        
-		notificationService.debug();
-		
-		//Notify all running tasks that we are shutting down
-		
-		//Shutdown the scheduler
-		scheduler.shutdown(false); 	//asynchronous
+        // wait for currently running system tasks before we shutdown
+        java.util.concurrent.locks.Lock lock = transactionManager.getLock();
 
-        while(!scheduler.isShutdown()) 	//wait for shutdown
-		{
-			try
-			{
-				wait(250);
-			}
-			catch(InterruptedException e) {}
-            signalSystemStatus(SIGNAL_SHUTDOWN);
-		}
-
-		//Notify all running XQueries that we are shutting down
-		processMonitor.killAll(500);
-		//TODO : close other objects using varying methods ? set them to null ?
-		//cacheManager.something();
-		//xQueryPool.something();
-		//collectionConfigurationManager.something();
-		//collectionCache.something();
-		//xmlReaderPool.close();
-
-        transactionManager.getJournal().flushToLog(true, true);
-
-        boolean hangingThreads = false;
-		long waitStart = System.currentTimeMillis();
-		//Are there active brokers ?
-        if (activeBrokers.size() > 0) {
-            LOG.info("Waiting " + maxShutdownWait + "ms for remaining threads to shut down...");
-            while (activeBrokers.size() > 0) {
-                try {
-                    //Wait until they become inactive...
-                    this.wait(1000);
-                } catch (InterruptedException e) {
-                }
-                signalSystemStatus(SIGNAL_SHUTDOWN);
-                //...or force the shutdown
-                if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
-                    LOG.warn("Not all threads returned. Forcing shutdown ...");
-                    hangingThreads = true;
-                    break;
-                }
-            }
-        }
-		LOG.debug("Calling shutdown ...");
-
-        // closing down external indexes
         try {
-            indexManager.shutdown();
-        } catch (DBException e) {
-            LOG.warn("Error during index shutdown: " + e.getMessage(), e);
+            lock.lock();
+            synchronized (this) {
+                status = SHUTDOWN;
+
+                notificationService.debug();
+
+                //Notify all running tasks that we are shutting down
+
+                //Shutdown the scheduler
+                scheduler.shutdown(false); 	//asynchronous
+
+                while(!scheduler.isShutdown()) 	//wait for shutdown
+                {
+                    try
+                    {
+                        wait(250);
+                    }
+                    catch(InterruptedException e) {}
+                    signalSystemStatus(SIGNAL_SHUTDOWN);
+                }
+
+                //Notify all running XQueries that we are shutting down
+                processMonitor.killAll(500);
+                //TODO : close other objects using varying methods ? set them to null ?
+                //cacheManager.something();
+                //xQueryPool.something();
+                //collectionConfigurationManager.something();
+                //collectionCache.something();
+                //xmlReaderPool.close();
+
+                if (isTransactional())
+                    transactionManager.getJournal().flushToLog(true, true);
+
+                boolean hangingThreads = false;
+                long waitStart = System.currentTimeMillis();
+                //Are there active brokers ?
+                if (activeBrokers.size() > 0) {
+                    LOG.info("Waiting " + maxShutdownWait + "ms for remaining threads to shut down...");
+                    while (activeBrokers.size() > 0) {
+                        try {
+                            //Wait until they become inactive...
+                            this.wait(1000);
+                        } catch (InterruptedException e) {
+                        }
+                        signalSystemStatus(SIGNAL_SHUTDOWN);
+                        //...or force the shutdown
+                        if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
+                            LOG.warn("Not all threads returned. Forcing shutdown ...");
+                            hangingThreads = true;
+                            break;
+                        }
+                    }
+                }
+                LOG.debug("Calling shutdown ...");
+
+                // closing down external indexes
+                try {
+                    indexManager.shutdown();
+                } catch (DBException e) {
+                    LOG.warn("Error during index shutdown: " + e.getMessage(), e);
+                }
+
+                //TODO : replace the following code by get()/release() statements ?
+                // WM: deadlock risk if not all brokers returned properly.
+                DBBroker broker = null;
+                if (inactiveBrokers.isEmpty())
+                    try {
+                        broker = createBroker();
+                    } catch (EXistException e) {
+                        LOG.warn("could not create instance for shutdown. Giving up.");
+                    }
+                else
+                    //TODO : this broker is *not* marked as active and may be reused by another process !
+                    //TODO : use get() then release the broker ?
+                    // WM: deadlock risk if not all brokers returned properly.
+                    broker = (DBBroker)inactiveBrokers.peek();
+
+                //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
+                // WM: yes, the database files are shared, so only one broker is needed to close them for all
+                if (broker != null) {
+                    broker.setUser(SecurityManager.SYSTEM_USER);
+                    broker.shutdown();
+                }
+                collectionCacheMgr.deregisterCache(collectionCache);
+
+                signalSystemStatus(SIGNAL_SHUTDOWN);
+
+                if (hangingThreads)
+                    // do not write a checkpoint if some threads did not return before shutdown
+                    // there might be dirty transactions
+                    transactionManager.shutdown(false);
+                else
+                    transactionManager.shutdown(true);
+
+                // deregister JMX MBeans
+                AgentFactory.getInstance().closeDBInstance(this);
+
+                //Invalidate the configuration
+                conf = null;
+                //Clear the living instances container
+                instances.remove(instanceName);
+
+                if (!isReadOnly)
+                    // release the lock on the data directory
+                    dataLock.release();
+
+                LOG.info("shutdown complete !");
+
+                //Last instance closes the house...
+                //TOUNDERSTAND (pb) : !killed or, rather, killed ?
+                // TODO: WM: check usage of killed!
+                if(instances.size() == 0 && !killed) {
+                    LOG.debug("removing shutdown hook");
+                    Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                }
+                if (shutdownListener != null)
+                    shutdownListener.shutdown(instanceName, instances.size());
+            }
+        } finally {
+            lock.unlock();
+
+            // clear instance variables, just to be sure they will be garbage collected
+            // the test suite restarts the db a few hundred times
+            transactionManager = null;
+            collectionCache = null;
+            collectionCacheMgr = null;
+            xQueryPool = null;
+            processMonitor = null;
+            collectionConfigurationManager = null;
+            notificationService = null;
+            indexManager = null;
+            scheduler = null;
+            xmlReaderPool = null;
+            shutdownListener = null;
+            securityManager = null;
+            notificationService = null;
         }
-
-        //TODO : replace the following code by get()/release() statements ?
-        // WM: deadlock risk if not all brokers returned properly.
-		DBBroker broker = null;
-		if (inactiveBrokers.isEmpty())
-			try {
-				broker = createBroker();
-			} catch (EXistException e) {
-				LOG.warn("could not create instance for shutdown. Giving up.");
-			}
-		else
-			//TODO : this broker is *not* marked as active and may be reused by another process !
-			//TODO : use get() then release the broker ?
-		    // WM: deadlock risk if not all brokers returned properly.
-			broker = (DBBroker)inactiveBrokers.peek();
-
-        //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
-        // WM: yes, the database files are shared, so only one broker is needed to close them for all
-        if (broker != null) {
-            broker.setUser(SecurityManager.SYSTEM_USER);
-            broker.shutdown();
-        }
-        collectionCacheMgr.deregisterCache(collectionCache);
-
-        signalSystemStatus(SIGNAL_SHUTDOWN);
-        
-        if (hangingThreads)
-            // do not write a checkpoint if some threads did not return before shutdown
-            // there might be dirty transactions
-            transactionManager.shutdown(false);
-        else
-            transactionManager.shutdown(true);
-
-        // deregister JMX MBeans
-        AgentFactory.getInstance().closeDBInstance(this);
-        
-        //Invalidate the configuration
-		conf = null;
-		//Clear the living instances container
-		instances.remove(instanceName);
-
-        if (!isReadOnly)
-            // release the lock on the data directory
-            dataLock.release();
-
-		LOG.info("shutdown complete !");
-
-		//Last instance closes the house...
-		//TOUNDERSTAND (pb) : !killed or, rather, killed ?
-        // TODO: WM: check usage of killed!
-		if(instances.size() == 0 && !killed) {
-			LOG.debug("removing shutdown hook");
-			Runtime.getRuntime().removeShutdownHook(shutdownHook);
-		}
-		if (shutdownListener != null)
-			shutdownListener.shutdown(instanceName, instances.size());
-
-        // clear instance variables, just to be sure they will be garbage collected
-        // the test suite restarts the db a few hundred times
-        transactionManager = null;
-        collectionCache = null;
-        collectionCacheMgr = null;
-        xQueryPool = null;
-        processMonitor = null;
-        collectionConfigurationManager = null;
-        notificationService = null;
-        indexManager = null;
-        scheduler = null;
-        systemTasks = null;
-        /* TODO: adam */ //systemTasksPeriods = null;
-        waitingSystemTasks.clear();
-        xmlReaderPool = null;
-        shutdownListener = null;
-        securityManager = null;
-        notificationService = null;
 	}
 
 	//TODO : move this elsewhere
