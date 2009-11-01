@@ -48,7 +48,8 @@ import org.junit.runners.Suite;
         ConstructedNodesTest.class,
         ConstructedNodesRecoveryTest.class,
         DuplicateAttributesTest.class,
-        StoredModuleTest.class
+        StoredModuleTest.class,
+        TransformTest.class
 })
 public class AllXqueryTests {
 }

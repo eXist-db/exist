@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -485,14 +486,14 @@ public class Transform extends BasicFunction {
 		throws TransformerConfigurationException, IOException, XPathException {
 			this.factory = factory;
 			this.uri = uri;
-			if (!baseURI.startsWith("xmldb:exist://"))
+			if (!baseURI.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
 				factory.setURIResolver(new ExternalResolver(baseURI));
 			getTemplates();
 		}
 		
 		public Templates getTemplates() throws TransformerConfigurationException, IOException, XPathException {
-			if (uri.startsWith("xmldb:exist://")) {
-				String docPath = uri.substring("xmldb:exist://".length());
+			if (uri.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+				String docPath = uri.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
 				DocumentImpl doc = null;
 				try {
 					doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
@@ -502,7 +503,7 @@ public class Transform extends BasicFunction {
 				} catch (PermissionDeniedException e) {
 					throw new XPathException(Transform.this, "Permission denied to read stylesheet: " + uri);
 				} finally {
-					doc.getUpdateLock().release(Lock.READ_LOCK);
+					if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
 				}
 			} else {
 				URL url = new URL(uri);
@@ -577,11 +578,50 @@ public class Transform extends BasicFunction {
 	private class DatabaseResolver implements URIResolver {
 		
 		DocumentImpl doc;
+		// Base path
+		String  	basePath;
 		
 		public DatabaseResolver(DocumentImpl myDoc) {
 			this.doc = myDoc;
+			basePath = myDoc.getCollection().getURI().toString();
+			
+			LOG.debug("Database Resolver base path set to " + basePath);
 		}
 		
+		/** Simplify a path removing any "." and ".." path elements.
+		 * Assumes an absolute path is given.
+		 */
+		public String normalizePath(String path) {
+			if (!path.startsWith("/")) throw new IllegalArgumentException("normalizePath may only be applied to an absolute path");
+
+			String[]	pathComponents = path.substring(1).split("/");
+			int			numPathComponents  = Array.getLength(pathComponents);
+			String[]	simplifiedComponents = new String[numPathComponents];
+			int 		numSimplifiedComponents = 0;
+			
+			for(String s : pathComponents) {
+				if (s.length() == 0) continue;		// Remove empty elements ("//")
+				if (s.equals(".")) continue;		// Remove identity elements ("/./")
+				if (s.equals("..")) {				// Remove parent elements ("/../") unless at the root
+					if (numSimplifiedComponents > 0) numSimplifiedComponents--;
+					continue;
+				}
+				simplifiedComponents[numSimplifiedComponents++] = s;
+			}
+			
+			if (numSimplifiedComponents == 0) return "/";
+			
+			StringBuffer	b = new StringBuffer(path.length());
+			for(int x = 0; x < numSimplifiedComponents; x++) {
+				b.append("/").append(simplifiedComponents[x]);
+			}
+			
+			if (path.endsWith("/")) {
+				b.append("/");
+			}
+			
+			return b.toString();
+		}
 		
 		/* (non-Javadoc)
 		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
@@ -591,13 +631,25 @@ public class Transform extends BasicFunction {
 			Collection collection = doc.getCollection();
 			String path;
             //TODO : use dedicated function in XmldbURI
-			if(href.startsWith("/"))
+			if (href.startsWith("/"))
 				path = href;
-			else
-				path = collection.getURI() + "/" + href;
+			else if (base == null) {
+				path = basePath + "/" + href;
+			}
+			else {
+				// Maybe base never contains this prefix?  Check to be sure.
+				if (base.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+					base = base.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
+				}
+				path = base.substring(0, base.lastIndexOf("/") + 1) + href;
+			}
+			path = normalizePath(path);
+			XmldbURI uri = XmldbURI.create(path);
+			
+			LOG.debug("Resolving database path " + href + " with base " + base + " to " + path + " (URI = " + uri.toASCIIString() + ")");
 			DocumentImpl xslDoc;
 			try {
-				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(XmldbURI.create(path));
+				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(uri);
 			} catch (PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}
@@ -607,7 +659,9 @@ public class Transform extends BasicFunction {
 			}
 			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
 			    throw new TransformerException("Insufficient privileges to read resource " + path);
+
 			DOMSource source = new DOMSource(xslDoc);
+			source.setSystemId(uri.toASCIIString());
 			return source;
 		}
 	}

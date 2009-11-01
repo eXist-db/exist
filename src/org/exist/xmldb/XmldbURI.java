@@ -57,6 +57,8 @@ public class XmldbURI implements Comparable {
 	public static final String DEFAULT_INSTANCE_NAME = "exist";
 	public static final String EMBEDDED_SERVER_AUTHORITY = "embedded-eXist-server";
 	
+	public static final String EMBEDDED_SERVER_URI_PREFIX = XMLDB_URI_PREFIX + DEFAULT_INSTANCE_NAME + "://";
+	
 	public final static XmldbURI ROOT_COLLECTION_URI = create(DBBroker.ROOT_COLLECTION);
 
 	public final static XmldbURI RELATIVE_ROOT_COLLECTION_URI = create(DBBroker.ROOT_COLLECTION_NAME);
@@ -74,7 +76,7 @@ public class XmldbURI implements Comparable {
 
 	public final static XmldbURI EMPTY_URI = createInternal("");
 		
-	public static final XmldbURI EMBEDDED_SERVER_URI = XmldbURI.create(XMLDB_URI_PREFIX+DEFAULT_INSTANCE_NAME+"://"+EMBEDDED_SERVER_AUTHORITY);
+	public static final XmldbURI EMBEDDED_SERVER_URI = XmldbURI.create(EMBEDDED_SERVER_URI_PREFIX + EMBEDDED_SERVER_AUTHORITY);
 
 	private String encodedCollectionPath;
 
