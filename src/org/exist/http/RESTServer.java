@@ -271,6 +271,7 @@ public class RESTServer {
 		}
 		if ((option = request.getParameter("_wrap")) != null) {
 			wrap = option.equals("yes");
+            outputProperties.setProperty("_wrap", option);
 		}
 		if ((option = request.getParameter("_cache")) != null) {
 			cache = option.equals("yes");
@@ -1225,10 +1226,12 @@ public class RESTServer {
     			}
 			}
 		}
-		
+		boolean wrap = outputProperties.getProperty("_wrap") != null &&
+            outputProperties.getProperty("_wrap").equals("yes");
+
 		try {
 			Sequence result = xquery.execute(compiled, null, outputProperties);
-			writeResults(response, broker, result, -1, 1, outputProperties, false);
+			writeResults(response, broker, result, -1, 1, outputProperties, wrap);
 		} finally {
 			pool.returnCompiledXQuery(source, compiled);
 		}
@@ -1703,9 +1706,13 @@ public class RESTServer {
 				if (semicolon != Constants.STRING_NOT_FOUND) {
 					mimeType = mimeType.substring(0, semicolon);
 				}
+                if (wrap) {
+                    mimeType = "text/xml";
+                }
 				response.setContentType(mimeType + "; charset=" + encoding);
 			}
-
+            if (wrap)
+                outputProperties.setProperty("method", "xml");
 			Writer writer = new OutputStreamWriter(response.getOutputStream(),
 					encoding);
 			sax.setOutput(writer, outputProperties);
