@@ -355,15 +355,19 @@ public class LuceneMatchListener extends AbstractMatchListener {
             if (startOffset == offset)
                 // duplicate match starts at same offset. ignore.
                 return;
+            getLast().next = new Offset(offset, endOffset);
+        }
+
+        private Offset getLast() {
             Offset next = this;
             while (next.next != null) {
                 next = next.next;
             }
-            next.next = new Offset(offset, endOffset);
+            return next;
         }
 
         void setEndOffset(int offset) {
-            this.endOffset = offset;
+            getLast().endOffset = offset;
         }
     }
 }
