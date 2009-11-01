@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+
+<icons>
+
+    <icon res="/img/leftarrow.png" id="stepback"/>
+    <icon res="/img/rightarrow.png" id="stepforward"/>
+    <icon res="/img/stop.png" id="stop"/>
+    <icon res="/img/done.png" id="done"/>
+    <icon res="/img/kcontrol.png" id="host"/>
+    <icon res="/img/info.png" id="information"/>
+    <icon res="/img/contents.png" id="history"/>
+    <icon res="/img/bookmark.png" id="bookmark"/>
+    <icon res="" id="edit"/>
+    <icon res="/img/empty.png" id="empty"/>
+    <icon res="/img/help.png" id="help"/>
+    <icon res="/img/fileopen.png" id="open"/>
+    <icon res="/img/home.png" id="home"/>
+    <icon res="/img/wizard.png" id="preferences"/>
+    <icon res="/img/idea.png" id="tip"/>
+    <icon res="/img/compfile.png" id="import"/>
+    <icon res="/img/compfile.png" id="refresh_cycle"/>
+    <icon res="/img/JFrameIcon.png" id="JFrameIcon"/>
+    <icon res="/img/check32.png" id="check"/>
+    <icon res="/img/link16x16.png" id="link16x16"/>
+
+    <sysicon res="/img/ascii.png" id="FileView.fileIcon"/>
+    <sysicon res="/img/error.png" id="OptionPane.errorIcon"/>
+    <sysicon res="/img/floppy.png" id="FileView.floppyDriveIcon"/>
+    <sysicon res="/img/folder.png" id="FileView.directoryIcon"/>
+    <sysicon res="/img/folder_new.png" id="FileChooser.newFolderIcon"/>
+    <sysicon res="/img/hdd.png" id="FileView.hardDriveIcon"/>
+    <sysicon res="/img/home.png" id="FileChooser.homeFolderIcon"/>
+    <sysicon res="/img/kcontrol.png" id="FileView.computerIcon"/>
+    <sysicon res="/img/messagebox_info.png" id="OptionPane.informationIcon"/>
+    <sysicon res="/img/messagebox_warning.png" id="OptionPane.warningIcon"/>
+    <sysicon res="/img/question.png" id="OptionPane.questionIcon"/>
+    <sysicon res="/img/uparrow.png" id="FileChooser.upFolderIcon"/>
+
+</icons>

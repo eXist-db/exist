@@ -19,6 +19,10 @@
         <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
         <res id="userInputSpec.xml" src="installer/userInput.xml"/>
         <res id="ProcessPanel.Spec.xml" src="installer/jobs.xml"/>
+
+	<res id="HTMLInfoPanel.start" src="installer/start.html"/>
+	<res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
+	<res id="customicons.xml" src="installer/custom.icons.xml"/>
     </resources>
 
     <jar src="tools/izpack/clinstaller.jar" stage="install"/>
@@ -29,18 +33,19 @@
         <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
         <variable name="JDKPathPanel.skipIfValid" value="yes"/>
         <variable name="JDKPathPanel.minVersion" value="1.5"/>
+        <variable name="dataDir" value="$INSTALL_PATH/webapp/WEB-INF/data" />
     </variables>
     
     <panels>
-        <panel classname="HelloPanel"/>
+	<panel classname="HTMLInfoPanel" id="start" />
         <panel classname="JDKPathPanel"/>
         <panel classname="TargetPanel"/>
+	<panel classname="UserInputPanel" id="UserInputPanel.0" />
         <panel classname="PacksPanel"/>
         <panel classname="InstallPanel"/>
-        <panel classname="UserInputPanel"/>
         <panel classname="ProcessPanel"/>
         <panel classname="ShortcutPanel"/>
-        <panel classname="HTMLInfoPanel"/>
+        <panel classname="HTMLInfoPanel" id="info" />
         <!--panel classname="FinishPanel"/-->
     </panels>
     <packs>
@@ -53,7 +58,6 @@
                 <include name="build.properties"/>
                 <include name="server.xml.tmpl"/>
                 <include name="server.xml"/>
-                <include name="conf.xml"/>
                 <include name="conf.xml.tmpl"/>
                 <include name="descriptor.xml.tmpl"/>
                 <include name="descriptor.xml"/>
@@ -129,6 +133,7 @@
                 <exclude name="**/CVS/"/>
                 <exclude name="**/*.log"/>
             </fileset>
+            <file src="installer/conf.xml" targetdir="$INSTALL_PATH"/>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
             <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
@@ -172,6 +177,10 @@
             <parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/setup.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
+
+            <parsable type="xml" targetfile="$INSTALL_PATH/conf.xml"/>
+
+
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>

@@ -1,10 +1,14 @@
 <userInput>
-    <panel order="0">
-        <field type="title" align="left" txt="Setup Admin Password" bold="false" size="2" id="title"/>
-
-        <field type="staticText" align="left" 
-            txt="Please enter a password for user 'admin', the database administrator:"/>
-        <field type="password" variable="adminPasswd">
+	<panel order="0">
+        <field type="title" align="left" txt="Set Data Directory and Admin Password" bold="false" size="1.33"/>
+		<field type="staticText" align="left" txt="Please select a directory where eXist will keep its data files:"/>
+		<field type="dir" align="center" variable="dataDir">
+			<spec txt="Data dir: " size="20" set="$INSTALL_PATH/webapp/WEB-INF/data" mustExist="false" create="true"/>
+		</field>
+		<field type="divider" align="bottom"/>
+		<field type="space"/>
+        <field type="password" variable="adminPasswd" align="left">
+        	<description align="left" txt="Please enter a password for user 'admin', the database administrator:"/>
             <validator class="org.exist.izpack.PasswordValidator" txt="Passwords did not match!"/>
             <spec>
                 <pwd txt="Enter password: " size="20" set=""/>
