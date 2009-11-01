@@ -173,7 +173,6 @@ public class FunDistinctValues extends CollatingFunction {
 				else
 					return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
 			} catch (XPathException e) {
-                logger.error("cannot compare values" + e.getMessage());
 				//throw new IllegalArgumentException("cannot compare values");
                 //Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct
                 return Constants.INFERIOR;
