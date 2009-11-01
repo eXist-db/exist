@@ -22,6 +22,8 @@
 package org.exist.storage.txn;
 
 import java.io.File;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -29,6 +31,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.SystemTaskManager;
+import org.exist.storage.SystemTask;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.util.ReadOnlyException;
@@ -66,6 +70,15 @@ public class TransactionManager {
 
     private boolean forceRestart = false;
 
+    private int activeTransactions = 0;
+
+    private Lock lock = new ReentrantLock();
+
+    /**
+     * Manages all system tasks
+     */
+    private SystemTaskManager taskManager;
+
     /**
      * Initialize the transaction manager using the specified data directory.
      * 
@@ -88,17 +101,23 @@ public class TransactionManager {
             if (LOG.isDebugEnabled())
                 LOG.debug("ForceRestart = " + forceRestart);
         }
+        taskManager = new SystemTaskManager(pool);
     }
     
     public void initialize() throws EXistException, ReadOnlyException {
         if (enabled)
             journal.initialize();
+        activeTransactions = 0;
     }
     
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
+    public boolean isIdle() {
+        return activeTransactions == 0;
+    }
+
     /**
      * Run a database recovery if required. This method is called once during
      * startup from {@link org.exist.storage.BrokerPool}.
@@ -118,13 +137,20 @@ public class TransactionManager {
     public Txn beginTransaction() {
         if (!enabled)
             return null;
-        long txnId = nextTxnId++;
+
         try {
-            journal.writeToLog(new TxnStart(txnId));
-        } catch (TransactionException e) {
-            LOG.warn("Failed to create transaction. Error writing to log file.", e);
+            lock.lock();
+            long txnId = nextTxnId++;
+            try {
+                journal.writeToLog(new TxnStart(txnId));
+            } catch (TransactionException e) {
+                LOG.warn("Failed to create transaction. Error writing to log file.", e);
+            }
+            ++activeTransactions;
+            return new Txn(txnId);
+        } finally {
+            lock.unlock();
         }
-        return new Txn(txnId);
     }
     
     /**
@@ -136,25 +162,45 @@ public class TransactionManager {
     public void commit(Txn txn) throws TransactionException {
         if (!enabled)
             return;
-        if (enabled) {
-            journal.writeToLog(new TxnCommit(txn.getId()));
-            if (!groupCommit)
-                journal.flushToLog(true);
-        }
-        txn.releaseAll();
+
+        try {
+            lock.lock();
+            --activeTransactions;
+            if (enabled) {
+                journal.writeToLog(new TxnCommit(txn.getId()));
+                if (!groupCommit)
+                    journal.flushToLog(true);
+            }
+            txn.releaseAll();
+            processSystemTasks();
+        } finally {
+            lock.unlock();
+        }    
     }
 	
     public void abort(Txn txn) {
         if (!enabled || txn == null)
-        	return;
+            return;
+
         try {
-			journal.writeToLog(new TxnAbort(txn.getId()));
-		} catch (TransactionException e) {
-			LOG.warn("Failed to write abort record to journal: " + e.getMessage());
-		}
-        if (!groupCommit)
-        	journal.flushToLog(true);
-        txn.releaseAll();
+            lock.lock();
+            --activeTransactions;
+            try {
+                journal.writeToLog(new TxnAbort(txn.getId()));
+            } catch (TransactionException e) {
+                LOG.warn("Failed to write abort record to journal: " + e.getMessage());
+            }
+            if (!groupCommit)
+                journal.flushToLog(true);
+            txn.releaseAll();
+            processSystemTasks();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Lock getLock() {
+        return lock;
     }
     
     /**
@@ -192,6 +238,26 @@ public class TransactionManager {
         if (enabled) {
         	long txnId = nextTxnId++;
             journal.shutdown(txnId, checkpoint);
+            activeTransactions = 0;
+        }
+    }
+
+    public void triggerSystemTask(SystemTask task) {
+        try {
+            lock.lock();
+            taskManager.triggerSystemTask(task);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void processSystemTasks() {
+        try {
+            lock.lock();
+            if (activeTransactions == 0)
+                taskManager.processTasks();
+        } finally {
+            lock.unlock();
         }
     }
 }
