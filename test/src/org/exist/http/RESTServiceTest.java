@@ -588,8 +588,14 @@ public class RESTServiceTest extends TestCase {
             doPut(TEST_MODULE, "module.xq");
             doPut(TEST_XQUERY, "test.xq");
 
-            doStoredQuery(false);
-            doStoredQuery(true);
+            doStoredQuery(false, false);
+
+            // cached:
+            doStoredQuery(true, false);
+
+            // cached and wrapped:
+            doStoredQuery(true, true);
+
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -614,10 +620,14 @@ public class RESTServiceTest extends TestCase {
         }
     }
     
-    protected void doStoredQuery(boolean cacheHeader) {
+    protected void doStoredQuery(boolean cacheHeader, boolean wrap) {
     	try {
-            System.out.println("--- Calling query: " + COLLECTION_URI + "/test.xq?p=Hello");
-            HttpURLConnection connect = getConnection(COLLECTION_URI + "/test.xq?p=Hello");
+          String uri = COLLECTION_URI + "/test.xq?p=Hello";
+          if (wrap) {
+              uri += "&_wrap=yes";
+          }
+            System.out.println("--- Calling query: " + uri);
+            HttpURLConnection connect = getConnection(uri);
             connect.setRequestMethod("GET");
             connect.connect();
 
@@ -635,9 +645,21 @@ public class RESTServiceTest extends TestCase {
             if (semicolon > 0) {
                 contentType = contentType.substring(0, semicolon).trim();
             }
-            assertEquals("Server returned content type " + contentType, "text/text", contentType);
+            if (wrap) {
+                assertEquals("Server returned content type " + contentType, "text/xml", contentType);
+            } else {
+                assertEquals("Server returned content type " + contentType, "text/text", contentType);
+            }
 
-            System.out.println('"' + readResponse(connect.getInputStream()) + '"');
+            String response = readResponse(connect.getInputStream());
+            System.out.println('"' + response + '"');
+            if (wrap) {
+                assertTrue ("Server returned response: " + response, 
+                            response.startsWith ("<exist:result "));
+            } else {
+                assertTrue ("Server returned response: " + response, 
+                            response.startsWith ("Hello World!"));
+            }
             
         } catch (Exception e) {
             fail(e.getMessage());
