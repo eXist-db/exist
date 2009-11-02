@@ -183,6 +183,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.DocumentImpl)
      */
     public void setDocument(DocumentImpl document) {
+        for (byte section = 0; section <= IDX_QNAME; section++) {
+            if (pending[section].size() > 0 && this.doc.getDocId() != doc.getDocId()) {
+                LOG.error("Document changed but pending had " + pending[section].size(), new Throwable());
+                pending[section].clear();
+            }
+        }
         this.doc = document;
     }    
     
