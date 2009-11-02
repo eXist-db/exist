@@ -1,5 +1,17 @@
 <?xml version="1.0"?>
-<p:pipeline xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc" xmlns:xproc="http://xproc.net/xproc" name="pipeline">
+<p:pipeline xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc"  xmlns:twitter="http://exist-db.org/twitter" xmlns:xproc="http://xproc.net/xproc" name="pipeline">
+
+
+   <p:declare-step type="twitter:query-stored">
+       <p:output port="result" primary="true"/>
+       <p:xquery>
+           <p:input port="query">
+               <p:inline><c:query>&lt;a/&gt;</c:query></p:inline>
+           </p:input>
+       </p:xquery>
+   </p:declare-step>
+
+
 <!-- Need to make sure that the /db/twitter collection exists.
        Maybe p:store should do this automatically? -->
 <p:xquery>
