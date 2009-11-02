@@ -74,6 +74,7 @@
             <webinf dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
+				<include name="controller-config.xml"/>
                 <include name="server.xml"/>
                 <include name="mime-types.xml"/>
                 <include name="descriptor.xml"/>
