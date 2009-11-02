@@ -233,9 +233,9 @@ public class XQueryURLRewrite implements Filter {
                 }
 
                 // check if the request URI is already in the url cache
-                ModelAndView modelView = null;
+                ModelAndView modelView;
                 synchronized (urlCache) {
-                    urlCache.get(modifiedRequest.getRequestURI());
+                    modelView = urlCache.get(modifiedRequest.getRequestURI());
                 }
                 // no: create a new model and view configuration
                 if (modelView == null) {
@@ -815,7 +815,6 @@ public class XQueryURLRewrite implements Filter {
             }
 
             contentType = request.getContentType();
-            servletPath = request.getServletPath();
         }
 
         public String getRequestURI() {
@@ -871,17 +870,25 @@ public class XQueryURLRewrite implements Filter {
          * @param base the base path to remove
          */
         public void removePathPrefix(String base) {
-            setPaths(getInContextPath().substring(base.length()), servletPath.substring(base.length()));
+            setPaths(getInContextPath().substring(base.length()),
+                servletPath != null ? servletPath.substring(base.length()) : null);
         }
 
         public String getServletPath() {
-            return servletPath;
+            return servletPath == null ? super.getServletPath() : servletPath;
         }
 
         public String getPathInfo() {
             String path = getInContextPath();
-            return path.length() == servletPath.length() ? null : path.substring(servletPath.length());
-        }
+            String sp = getServletPath();
+            if (sp == null)
+                return null;
+            if (path.length() < sp.length()) {
+                LOG.error("Internal error: servletPath = " + sp + " is longer than path = " + path);
+                return null;
+            }
+            return path.length() == sp.length() ? null : path.substring(sp.length());
+       }
 
         protected void setData(byte[] data) {
             if (data == null)
