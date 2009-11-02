@@ -122,7 +122,7 @@ public class Replace extends Modification {
         //start a transaction
         Txn transaction = getTransaction();
         try {
-            StoredNode ql[] = selectAndLock(transaction, inSeq.toNodeSet());
+            StoredNode ql[] = selectAndLock(transaction, inSeq);
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             Item temp;
