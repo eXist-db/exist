@@ -136,7 +136,7 @@ public class Insert extends Modification {
             try {
                 //start a transaction
                 Txn transaction = getTransaction();
-                StoredNode[] ql = selectAndLock(transaction, inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(transaction, inSeq);
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 IndexListener listener = new IndexListener(ql);                
                 NodeList contentList = seq2nodeList(contentSeq);

@@ -125,7 +125,7 @@ public class Update extends Modification {
                 
                 //start a transaction
                 Txn transaction = getTransaction();
-                StoredNode ql[] = selectAndLock(transaction, inSeq.toNodeSet());
+                StoredNode ql[] = selectAndLock(transaction, inSeq);
                 IndexListener listener = new IndexListener(ql);
                 TextImpl text;
                 AttrImpl attribute;

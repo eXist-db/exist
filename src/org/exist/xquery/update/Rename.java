@@ -132,7 +132,7 @@ public class Rename extends Modification {
     		try {
                 //start a transaction
                 Txn transaction = getTransaction();
-                StoredNode[] ql = selectAndLock(transaction, inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(transaction, inSeq);
                 NodeImpl parent;
                 IndexListener listener = new IndexListener(ql);
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();

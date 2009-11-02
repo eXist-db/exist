@@ -133,7 +133,7 @@ public abstract class Modification extends AbstractExpression
 	 * @param nodes
 	 * @throws LockException
 	 */
-	protected StoredNode[] selectAndLock(Txn transaction, NodeSet nodes) throws LockException, PermissionDeniedException,
+	protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
 		XPathException {
 	    Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
 	    try {
@@ -146,9 +146,16 @@ public abstract class Modification extends AbstractExpression
 	        // during the modification
 	        lockedDocuments.lock(context.getBroker(), true, false);
 	        
-		    StoredNode ql[] = new StoredNode[nodes.getLength()];
+		    StoredNode ql[] = new StoredNode[nodes.getItemCount()];
 			for (int i = 0; i < ql.length; i++) {
-                Node n = nodes.item(i);
+                Item item = nodes.itemAt(i);
+                if (!Type.subTypeOf(item.getType(), Type.NODE))
+                    throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
+                        item.getStringValue());
+                NodeValue nv = (NodeValue)item;
+                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+                    throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");
+                Node n = nv.getNode();
                 if (n.getNodeType() == Node.DOCUMENT_NODE)
                     throw new XPathException(this, "Updating the document object is not allowed.");
 				ql[i] = (StoredNode) n;

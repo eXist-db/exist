@@ -120,7 +120,7 @@ public class Delete extends Modification {
             Txn transaction = getTransaction();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                StoredNode[] ql = selectAndLock(transaction, inSeq.toNodeSet());
+                StoredNode[] ql = selectAndLock(transaction, inSeq);
                 IndexListener listener = new IndexListener(ql);
                 NodeImpl parent;
                 for (int i = 0; i < ql.length; i++) {
