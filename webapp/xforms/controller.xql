@@ -50,7 +50,7 @@ return
                 	<set-attribute name="xslt.output.doctype-system"
                 	    value="resources/xhtml1-transitional.dtd"/>
  					<set-attribute name="xslt.stylesheet"
- 						value="/stylesheets/db2xhtml.xsl"/>
+ 						value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
  				</forward>
  			</view>
              <cache-control cache="yes"/>
@@ -64,7 +64,7 @@ return
     			<view>
     			    <forward servlet="XSLTServlet">
     					<set-attribute name="xslt.stylesheet"
-    						value="/stylesheets/db2xhtml.xsl"/>
+    						value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
     				    <set-attribute name="xslt.syntax-highlight"
     				        value="no"/>
     				</forward>

@@ -17,7 +17,7 @@ else if ($exist:resource = ('search.xql', 'functions.xql', 'svnlog.xql')) then
 				<set-attribute name="xslt.input"
 					value="model"/>
 				<set-attribute name="xslt.stylesheet" 
-					value="/stylesheets/db2xhtml.xsl"/>
+					value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
 				<set-attribute name="xslt.output.media-type"
 				        value="text/html"/>
 				<set-attribute name="xslt.output.doctype-public"
@@ -44,7 +44,7 @@ else if ($exist:resource eq 'acronyms.xql') then
 				<set-attribute name="xslt.input"
 					value=""/>
 				<set-attribute name="xslt.stylesheet" 
-					value="/stylesheets/db2xhtml.xsl"/>
+					value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
 				<set-attribute name="xslt.output.media-type"
 				        value="text/html"/>
 				<set-attribute name="xslt.output.doctype-public"
