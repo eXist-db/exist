@@ -3775,12 +3775,11 @@ public class RpcConnection implements RpcAPI {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            QueryResult qr = doQuery(broker, xpath, null, null);
+            QueryResult qr = doQuery(broker, xpath, null, new HashMap());
             if (qr == null)
                 return new HashMap();
             if (qr.hasErrors())
                 throw qr.getException();
-            NodeList resultSet = (NodeList) qr.result;
             HashMap map = new HashMap();
             HashMap doctypes = new HashMap();
             NodeProxy p;
@@ -3788,32 +3787,38 @@ public class RpcConnection implements RpcAPI {
             DocumentType doctype;
             NodeCount counter;
             DoctypeCount doctypeCounter;
-            for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
-                p = (NodeProxy) i.next();
-                 docName = p.getDocument().getURI().toString();
-                doctype = p.getDocument().getDoctype();
-                if (map.containsKey(docName)) {
-                    counter = (NodeCount) map.get(docName);
-                    counter.inc();
-                } else {
-                    counter = new NodeCount(p.getDocument());
-                    map.put(docName, counter);
-                }
-                if (doctype == null)
-                    continue;
-                if (doctypes.containsKey(doctype.getName())) {
-                    doctypeCounter = (DoctypeCount) doctypes.get(doctype
-                            .getName());
-                    doctypeCounter.inc();
-                } else {
-                    doctypeCounter = new DoctypeCount(doctype);
-                    doctypes.put(doctype.getName(), doctypeCounter);
+            for (SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    NodeValue nv = (NodeValue) item;
+                    if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        p = (NodeProxy) nv;
+                        docName = p.getDocument().getURI().toString();
+                        doctype = p.getDocument().getDoctype();
+                        if (map.containsKey(docName)) {
+                            counter = (NodeCount) map.get(docName);
+                            counter.inc();
+                        } else {
+                            counter = new NodeCount(p.getDocument());
+                            map.put(docName, counter);
+                        }
+                        if (doctype == null)
+                            continue;
+                        if (doctypes.containsKey(doctype.getName())) {
+                            doctypeCounter = (DoctypeCount) doctypes.get(doctype
+                                .getName());
+                            doctypeCounter.inc();
+                        } else {
+                            doctypeCounter = new DoctypeCount(doctype);
+                            doctypes.put(doctype.getName(), doctypeCounter);
+                        }
+                    }
                 }
             }
             HashMap result = new HashMap();
             result.put("queryTime", new Integer((int) (System
                     .currentTimeMillis() - startTime)));
-            result.put("hits", new Integer(resultSet.getLength()));
+            result.put("hits", new Integer(qr.result.getItemCount()));
             Vector documents = new Vector();
             Vector hitsByDoc;
             for (Iterator i = map.values().iterator(); i.hasNext(); ) {
@@ -3868,7 +3873,6 @@ public class RpcConnection implements RpcAPI {
         }
         DBBroker broker = factory.getBrokerPool().get(user);
         try {
-        	NodeList resultSet = qr.result.toNodeSet();
             HashMap map = new HashMap();
             HashMap doctypes = new HashMap();
             NodeProxy p;
@@ -3876,29 +3880,35 @@ public class RpcConnection implements RpcAPI {
             DocumentType doctype;
             NodeCount counter;
             DoctypeCount doctypeCounter;
-            for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
-                p = (NodeProxy) i.next();
-                docName = p.getDocument().getURI().toString();
-                doctype = p.getDocument().getDoctype();
-                if (map.containsKey(docName)) {
-                    counter = (NodeCount) map.get(docName);
-                    counter.inc();
-                } else {
-                    counter = new NodeCount(p.getDocument());
-                    map.put(docName, counter);
-                }
-                if (doctype == null)
-                    continue;
-                if (doctypes.containsKey(doctype.getName())) {
-                    doctypeCounter = (DoctypeCount) doctypes.get(doctype
-                            .getName());
-                    doctypeCounter.inc();
-                } else {
-                    doctypeCounter = new DoctypeCount(doctype);
-                    doctypes.put(doctype.getName(), doctypeCounter);
+            for (SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    NodeValue nv = (NodeValue) item;
+                    if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        p = (NodeProxy) nv;
+                        docName = p.getDocument().getURI().toString();
+                        doctype = p.getDocument().getDoctype();
+                        if (map.containsKey(docName)) {
+                            counter = (NodeCount) map.get(docName);
+                            counter.inc();
+                        } else {
+                            counter = new NodeCount(p.getDocument());
+                            map.put(docName, counter);
+                        }
+                        if (doctype == null)
+                            continue;
+                        if (doctypes.containsKey(doctype.getName())) {
+                            doctypeCounter = (DoctypeCount) doctypes.get(doctype
+                                .getName());
+                            doctypeCounter.inc();
+                        } else {
+                            doctypeCounter = new DoctypeCount(doctype);
+                            doctypes.put(doctype.getName(), doctypeCounter);
+                        }
+                    }
                 }
             }
-            result.put("hits", new Integer(resultSet.getLength()));
+            result.put("hits", new Integer(qr.result.getItemCount()));
             Vector documents = new Vector();
             Vector hitsByDoc;
             for (Iterator i = map.values().iterator(); i.hasNext(); ) {
