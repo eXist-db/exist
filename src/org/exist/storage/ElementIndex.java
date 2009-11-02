@@ -29,12 +29,15 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
+import org.apache.log4j.Logger;
 
 import java.util.Observable;
 import java.util.TreeMap;
 
 /** base class for {@link org.exist.storage.NativeElementIndex} */
 public abstract class ElementIndex extends Observable {
+
+    protected static Logger LOG = Logger.getLogger(ElementIndex.class.getName());
 
     /** The broker that is using this value index */
     protected DBBroker broker;
@@ -51,6 +54,10 @@ public abstract class ElementIndex extends Observable {
     }
 
     public void setDocument(DocumentImpl doc) {
+        if (pending.size() > 0 && this.doc.getDocId() != doc.getDocId()) {
+            LOG.error("Document changed but pending had " + pending.size(), new Throwable());
+            pending.clear();
+        }
         this.doc = doc;
     }
     

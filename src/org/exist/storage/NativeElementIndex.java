@@ -96,8 +96,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //4
 	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //5
 	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //7
-	
-	private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
 
     /** The datastore for this node index */
     protected BFile dbNodes;
