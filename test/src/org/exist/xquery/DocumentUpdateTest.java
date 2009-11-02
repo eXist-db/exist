@@ -88,13 +88,13 @@ public class DocumentUpdateTest extends TestCase {
 			assertEquals(result, "2");
 
 			System.out.println("-- TEST 5: 'update replace' statement --");
-			query = "let $doc := " + 
+			query = imports + "let $doc := xdb:store('/db', 'test1.xml', " +
 				"<test> " +
 					"<link href=\"features\"/> " +
 					"(: it works with only 1 link :) " +
 					"<link href=\"features/test\"/> " +
-				"</test> " +
-				"let $links := $doc/link/@href " +
+				"</test>) " +
+				"let $links := doc($doc)/test/link/@href " +
 				"return " + 
 				"for $link in $links " +  
 				"return ( " +

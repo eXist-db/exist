@@ -93,26 +93,6 @@ public class DOMIndexerTest extends TestCase {
         "return" +
         "   <result>{$a/title, $a/f:name, $a}</result>";
     
-    public void testIndexer() {
-    	BrokerPool pool = null;
-    	DBBroker broker = null;  
-    	try {
-	        DocumentImpl doc = parse(XML);
-	        pool = BrokerPool.getInstance();
-	        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);	              
-            broker = pool.get(user);
-            org.exist.dom.DocumentImpl targetDoc = broker.storeTempResource(doc);
-            
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            System.out.println(serializer.serialize(targetDoc));
-    	} catch (Exception e) {
-    		fail(e.getMessage());        	           
-        } finally {
-        	if (pool != null) pool.release(broker);
-        }
-    }
-    
     public void testStore() {
     	BrokerPool pool = null;
     	DBBroker broker = null;    
