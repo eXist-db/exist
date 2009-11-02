@@ -19,8 +19,8 @@ return
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="index.xml"/>
 		</dispatch>
-	(: /rest and /webdav will be ignored :)
-	else if (matches($exist:path, "/(xmlrpc|rest|servlet|webdav/|cocoon|test.xml)")) then
+	(: ignore Cocoon :)
+	else if (matches($exist:path, "/cocoon")) then
 		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
 		</ignore>
@@ -46,7 +46,7 @@ return
 		</dispatch>
 	else if ($exist:resource eq 'articles') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<forward url="/xquery/exist-articles.xql">
+			<forward url="xquery/exist-articles.xql">
 				<!-- query results are passed to XSLT servlet via request attribute -->
 				<set-attribute name="xquery.attribute"
 					value="model"/>
@@ -56,7 +56,7 @@ return
 					<set-attribute name="xslt.input"
 						value="model"/>
 					<set-attribute name="xslt.stylesheet" 
-						value="/stylesheets/db2xhtml.xsl"/>
+						value="stylesheets/db2xhtml.xsl"/>
 				</forward>
 			</view>
 		</dispatch>
