@@ -100,6 +100,14 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
+                            <link href="functions/">RESTful browser for Function Modules</link>
+                        </td>
+                        <td width="70%">Browse the function documentation without AJAX. Directly access
+                            a function using a meaningful URL like "functions/module/function-name". A great
+                            example, which demonstrates how to use URL rewriting to construct RESTful URIs.</td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
                             <link href="xqts/report.xql">W3C XQuery Test suite (XQTS)</link>
                         </td>
                         <td width="70%"> Using this web application you can run the official XQuery test

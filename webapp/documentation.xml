@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <book>
-    <bookinfo><graphic fileref="logo.jpg"/>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Documentation</title>
         <date>September 2009</date>
@@ -10,7 +11,8 @@
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
-            </affiliation></author></bookinfo>
+            </affiliation></author>
+    </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Documentation</title>
@@ -49,6 +51,8 @@
             <para>We recommend to have a look at the <ulink url="quickstart.xml">Quick Start</ulink>
                 first, then maybe continue to read about <ulink url="xquery.xml">XQuery
                     support</ulink>, in particular eXist-specific extensions and features.</para>
+            <para>You can <ulink url="xquery/search.xql">search the documentation</ulink> as well as
+                the XQuery <ulink url="xquery/functions.xql">function module library</ulink>.</para>
             <section>
                 <title>General</title>
                 <table class="documentation">
@@ -60,7 +64,8 @@
                                 <td>getting started with eXist.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="upgrading.xml">Upgrade Guide</ulink>:</td>
+                                <td class="doclink"><ulink url="upgrading.xml">Upgrade
+                                    Guide</ulink>:</td>
                                 <td>upgrading from previous versions.</td>
                             </tr>
                             <tr>
@@ -263,11 +268,14 @@
                     <tgroup cols="2">
                         <tbody>
                             <tr>
-                                <td class="doclink"><ulink url="production_good_practice.xml">Production use Good Practice</ulink>:</td>
-                                <td>Points of Good Practice for using eXist in a production environment.</td>
+                                <td class="doclink"><ulink url="production_good_practice.xml"
+                                        >Production use Good Practice</ulink>:</td>
+                                <td>Points of Good Practice for using eXist in a production
+                                    environment.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="production_web_proxying.xml">Proxying eXist behind a Web Server</ulink>:</td>
+                                <td class="doclink"><ulink url="production_web_proxying.xml"
+                                        >Proxying eXist behind a Web Server</ulink>:</td>
                                 <td>Details of how to proxy eXist behind various web servers.</td>
                             </tr>
                         </tbody>
@@ -286,13 +294,15 @@
                     </para>
                 </listitem>
                 <listitem>
-                     <para>
-                       <ulink url="http://wiki.exist-db.org/FAQs">Some frequently asked questions</ulink>
-                     </para>
-                   </listitem>
+                    <para>
+                        <ulink url="http://wiki.exist-db.org/FAQs">Some frequently asked
+                            questions</ulink>
+                    </para>
+                </listitem>
                 <listitem>
                     <para>
-                        <ulink url="http://atomic.exist-db.org/articles/XMLPrague2006">XMLPrague 2006 papers and presentations</ulink>
+                        <ulink url="http://atomic.exist-db.org/articles/XMLPrague2006">XMLPrague
+                            2006 papers and presentations</ulink>
                     </para>
                 </listitem>
             </itemizedlist>
