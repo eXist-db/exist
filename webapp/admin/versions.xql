@@ -1,7 +1,6 @@
 xquery version "1.0";
 
-import module namespace v="http://exist-db.org/versioning"
-at "resource:org/exist/versioning/xquery/versioning.xqm";
+import module namespace v="http://exist-db.org/versioning";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace version="http://exist-db.org/xquery/versioning"
