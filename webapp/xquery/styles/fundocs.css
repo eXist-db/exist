@@ -65,6 +65,11 @@
     margin-bottom: 8px;
 }
 
+.f-link {
+    float: right;
+    font-size: 85%;
+}
+
 .f-description {
     text-align: justify;
 }

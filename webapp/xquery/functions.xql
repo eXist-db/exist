@@ -73,6 +73,8 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                         <br/>
                         {
                             for $match in $matches[ ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri = $modURI ]
+                            let $modName := $match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:name
+                            let $modUri := $match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri
                             order by $match/xqdoc:name
                             return
                                 <div class="f-function">
@@ -80,7 +82,14 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                                         {$match/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri/text()}
                                     </div>
                                     <h3>{$match/xqdoc:name/text()}</h3>
-                                    <div class="f-signature">{$match/xqdoc:signature/text()}</div>
+                                    <div class="f-signature">
+                                        <a href="../functions/{replace($modUri, '^.*/([^/]+)$', '$1')}/{$match/xqdoc:name}"
+                                            class="f-link" target="_new"
+                                            title="Open docs in new windows">
+                                            Link
+                                        </a>
+                                        {$match/xqdoc:signature/text()}
+                                    </div>
                                     <div class="f-description">
                                     	{ xqdoc:print-description($match/xqdoc:comment) }
                                         { xqdoc:print-parameters($match/xqdoc:comment) }
@@ -222,7 +231,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                         <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
                         build: {util:system-property("product-build")},
                         functions: {count(//xqdoc:function)}</b>). Modules have to be enabled 
-                        in conf.xml to appear here. 
+                        in conf.xml to appear here.
                         </p>
                         <div id="f-result">
                             { if ($query or $module) then xqdoc:do-query($action, $module, $type, $query, false()) else () }
