@@ -315,7 +315,7 @@ public class XQueryURLRewrite implements Filter {
 
                 HttpServletResponse wrappedResponse = response;
                 if (modelView.hasViews())
-                    wrappedResponse = new CachingResponseWrapper(response);
+                    wrappedResponse = new CachingResponseWrapper(response, true);
                 if (modelView.getModel() == null)
                     modelView.setModel(new PassThrough(modifiedRequest));
 
@@ -341,21 +341,22 @@ public class XQueryURLRewrite implements Filter {
                                 wrappedReq.setData(data);
 
                             if (i < views.size() - 1)
-                                wrappedResponse = new CachingResponseWrapper(response);
+                                wrappedResponse = new CachingResponseWrapper(response, true);
                             else
-                                wrappedResponse = response;
+                                wrappedResponse = new CachingResponseWrapper(response, false);
                             doRewrite(view, wrappedReq, wrappedResponse, null);
                             wrappedResponse.flushBuffer();
+
+                            // catch errors in the view
+                            status = ((CachingResponseWrapper) wrappedResponse).getStatus();
+                            if (status >= 400) {
+                                flushError(response, wrappedResponse);
+                                break;
+                            }
                         }
                     } else {
                         // HTTP response code indicates an error
-                        byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
-                        if (data != null) {
-                            response.setContentType(wrappedResponse.getContentType());
-                            response.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
-                            response.getOutputStream().write(data);
-                            response.flushBuffer();
-                        }
+                        flushError(response, wrappedResponse);
                     }
                 }
 //            Sequence result;
@@ -380,6 +381,16 @@ public class XQueryURLRewrite implements Filter {
             LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred: "
                     + e.getMessage(), e);
+        }
+    }
+
+    private void flushError(HttpServletResponse response, HttpServletResponse wrappedResponse) throws IOException {
+        byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+        if (data != null) {
+            response.setContentType(wrappedResponse.getContentType());
+            response.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
+            response.getOutputStream().write(data);
+            response.flushBuffer();
         }
     }
 
@@ -668,6 +679,8 @@ public class XQueryURLRewrite implements Filter {
             String parentPath = controllerFile.getParentFile().getAbsolutePath();
             sourceInfo.controllerPath =
                 parentPath.substring(baseDir.getAbsolutePath().length());
+            // replace windows path separators
+            sourceInfo.controllerPath = sourceInfo.controllerPath.replace('\\', '/');
             return sourceInfo;
         }
     }
@@ -741,7 +754,8 @@ public class XQueryURLRewrite implements Filter {
         context.declareVariable("exist:resource", resource);
 
         if (LOG.isTraceEnabled())
-            LOG.debug("\nexist:path = " + path + "\nexist:resource = " + resource);
+            LOG.debug("\nexist:path = " + path + "\nexist:resource = " + resource + "\nexist:controller = " +
+                sourceInfo.controllerPath);
 	}
 
     private class ModelAndView {
@@ -1006,13 +1020,17 @@ public class XQueryURLRewrite implements Filter {
         protected CachingServletOutputStream sos = null;
         protected PrintWriter writer = null;
         protected int status = HttpServletResponse.SC_OK;
+        protected boolean cache;
 
-        public CachingResponseWrapper(HttpServletResponse servletResponse) {
+        public CachingResponseWrapper(HttpServletResponse servletResponse, boolean cache) {
             super(servletResponse);
-            origResponse = servletResponse;
+            this.cache = cache;
+            this.origResponse = servletResponse;
         }
 
         public PrintWriter getWriter() throws IOException {
+            if (!cache)
+                return super.getWriter();
             if (sos != null)
                 throw new IOException("getWriter cannnot be called after getOutputStream");
             sos = new CachingServletOutputStream();
@@ -1022,6 +1040,8 @@ public class XQueryURLRewrite implements Filter {
         }
 
         public ServletOutputStream getOutputStream() throws IOException {
+            if (!cache)
+                return super.getOutputStream();
             if (writer != null)
                 throw new IOException("getOutputStream cannnot be called after getWriter");
             if (sos == null)
@@ -1058,9 +1078,13 @@ public class XQueryURLRewrite implements Filter {
         }
 
         public void setContentLength(int i) {
+            if (!cache)
+                super.setContentLength(i);
         }
 
         public void flushBuffer() throws IOException {
+            if (!cache)
+                super.flushBuffer();
         }
     }
 
