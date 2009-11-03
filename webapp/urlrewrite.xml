@@ -54,8 +54,7 @@
             <synopsis>index.xql?feed=HowTo/OxygenXML/&amp;ref=eXistXmlRpcChanged</synopsis>
             <para>The XQuery code which does the rewrite magic is shown below:</para>
             <programlisting language="xquery"><![CDATA[
-let $path := substring-after($uri, request:get-context-path())
-let $params := subsequence(text:groups($path, '^/?(.*)/([^/]+)$'), 2)
+let $params := subsequence(text:groups($exist:path, '^/?(.*)/([^/]+)$'), 2)
 return
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="/index.xql">
@@ -68,13 +67,16 @@ return
                 URL. You could also forward to a servlet instead of an URL by specifying its name
                 (servlet="ServletName"). The forwarding is done via the
                     <classname>RequestDispatcher</classname> of the servlet engine and is thus
-                invisible to the user. Relative URLs within forward or redirect elements are
-                interpreted relative to the request URI, absolute paths relative to the context of
-                the web application (e.g. /exist).</para>
+                invisible to the user. </para>
+            <para>Relative URLs within forward or redirect elements are interpreted relative to the
+                request URI, absolute paths relative to the root of the current controller
+                hierarchy. If the controller which processes the request is stored in the db, all
+                absolute and relative paths will be resolved against the db as well. This is
+                explained in more detail below.</para>
             <para>If you want the user to see the rewritten URL, you can replace the
                     <sgmltag>forward</sgmltag> action with a <sgmltag>redirect</sgmltag>. A common
                 use for <sgmltag>redirect</sgmltag> is to send the user to a default page:</para>
-            <programlisting language="xquery"><![CDATA[if ($path eq '/') then
+            <programlisting language="xquery"><![CDATA[if ($exist:path eq '/') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     	<redirect url="index.xml"/>
     </dispatch>]]></programlisting>
@@ -87,9 +89,85 @@ return
             <cache-control cache="yes"/>
         </ignore>]]></programlisting>
             <para>Most scripts in eXist return this if no other rule applies to a request.</para>
+            <note>
+                <para>It is important to understand that only one (!) controller will ever be
+                    applied to a given request. It is not possible to forward from one controller to
+                    another (or the same). Once you either ignored or forwarded a request in the
+                    controller, it will be directly passed to the servlet which handles it or - if
+                    it references a resource - it will be processed by the servlet engine itself.
+                    The controller will not be called again for the same request.</para>
+                <para>Redirects are different in this respect: they cause the client (the web
+                    browser) to send a second request and this will again be filtered by
+                    XQueryURLRewrite. It is thus possible to create redirect loops.</para>
+            </note>
         </section>
         <section>
-            <title>Locating Controller Scripts</title>
+            <title>Variables</title>
+            <para>Within a controller.xql file, you have access to the entire XQuery function
+                library, including the functions in the request, response and session modules. You
+                could thus use a function like <command>request:get-uri()</command> to get the
+                current URI of the request. However, to simplify things, XQueryURLRewrite passes a
+                few variables to the controller script:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>exist:path</term>
+                    <listitem>
+                        <para>The last part of the request URI after the section leading to the
+                            controller. If the resource <filename>example.xml</filename> resides
+                            within the same directory as the controller query,
+                                <option>$exist:path</option> will be <filename
+                                >/example.xml</filename>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>exist:resource</term>
+                    <listitem>
+                        <para>The section of the URI after the last <filename>/</filename>, usually
+                            pointing to a resource, e.g. <filename>example.xml</filename>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>exist:controller</term>
+                    <listitem>
+                        <para>The part of the URI leading to the current controller script. For
+                            example, if the request path is <filename>/xquery/test.xql</filename>
+                            and the controller is in the <filename>xquery</filename> directory,
+                                <option>exist:controller</option> would contain <filename
+                                >/xquery</filename>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>exist:root</term>
+                    <listitem>
+                        <para>The root of the current controller hierarchy. This may either point to
+                            the file system or to a collection in the database. Use this variable to
+                            locate resources relative to the root of the application. For example,
+                            assume you want to process a request through stylesheet <filename
+                                >db2xhtml.xsl</filename>, which could <emphasis>either</emphasis> be
+                            stored in the <filename>/stylesheets</filename> directory in the root of
+                            the webapp or - if the app is running from within the db - the
+                            corresponding <filename>/stylesheets</filename> collection. You want
+                            your app to be able to run from either location. The solution is to use
+                                <option>exist:root</option>:</para>
+                        <synopsis language="xml">&lt;forward servlet="XSLTServlet">
+    &lt;set-attribute name="xslt.stylesheet"
+    	value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
+&lt;/forward></synopsis>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <para>To summarize: if the request path is <filename
+                    >/exist/sandbox/get-examples.xql</filename>, <option>$exist:controller</option>
+                would contain <filename>/sandbox</filename>, <option>$exist:path</option> would be
+                    <filename>/get-examples.xql</filename>, and <option>$exist:resource</option>:
+                    <filename>get-examples.xml</filename>.</para>
+            <para>You do not need to explicitely declare the variables or the namespace. However, if
+                you would like to do so, you can add an external declaration for each used variable
+                at the top of your XQuery as follows:</para>
+            <synopsis language="xquery">declare variable exist:path as external;</synopsis>
+        </section>
+        <section>
+            <title>Locating Controller Scripts and Configuring Base Mappings</title>
             <para>By convention, the controller XQueries should be called <filename
                     >controller.xql</filename>. XQueryURLRewrite will try to guess the path to the
                 most-specific controller query by looking at the request path. For example, in the
@@ -101,22 +179,53 @@ return
                     >controller.xql</filename> file in the <filename>sandbox</filename> directory
                 and execute this controller instead of the main controller.</para>
             <para>It is also possible to store the controller XQuery into the database instead of
-                the file system. This makes sense if you want to keep your entire web application
-                within the db (which is a common approach). To make the servlet filter search for
-                controllers within the database, just change the parameter <option>base</option> in
-                the <filename>web.xml</filename> configuration of the web application:</para>
-            <example>
-                <title>Changing XQueryURLRewrite's base parameter in web.xml</title>
-                <programlisting language="XML"><![CDATA[<filter>
-    <filter-name>XQueryURLRewrite</filter-name>
-    <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
-    
-    <init-param>
-        <param-name>base</param-name>
-        <param-value>xmldb:exist:///db</param-value>
-    </init-param>
-</filter>]]></programlisting>
-            </example>
+                the file system. This makes sense if you want to keep a part of your web application
+                within the db (which is a common approach).</para>
+            <para>In fact, one web application may have more than one controller hierarchy. For
+                example, you may want to keep the main webapp within the file system, while some
+                tools and scripts should be served from a database collection. This can be done by
+                configuring two roots within the <filename>controller-config.xml</filename> file in
+                    <filename>webapp/WEB-INF</filename>. <filename>controller-config.xml</filename>
+                defines the base mappings used by XQueryURLRewrite. </para>
+            <para>It basically has two components:</para>
+            <itemizedlist>
+                <listitem>
+                    <para><sgmltag>forward</sgmltag> actions which map patterns to servlets</para>
+                </listitem>
+                <listitem>
+                    <para><sgmltag>root</sgmltag> elements define the root for a file system or db
+                        collection hierarchy </para>
+                </listitem>
+            </itemizedlist>
+            <para>The <sgmltag>forward</sgmltag> tags specify path mappings for common servlets,
+                similar to a servlet mapping in <filename>web.xml</filename>. The advantage is that
+                XQueryURLRewrite becomes a single point of entry for the entire web application and
+                we don't need to handle any of the servlet paths in the main controller. For
+                example, if we registered a servlet mapping for <filename>/rest</filename> in
+                    <filename>web.xml</filename>, we would need to make sure that this path is
+                ignored in our main <filename>controller.xql</filename>. However, if the mapping is
+                done via <filename>controller-config.xml</filename>, it will already been known to
+                XQueryURLRewrite and we don't need take care of the path in our controller.</para>
+            <para>The <sgmltag>root</sgmltag> elements define the roots of a directory or database
+                collection hierarchy, mapped to a certain base path. For example, the default
+                    <filename>controller-config.xml</filename> uses two roots:</para>
+            <synopsis language="xml"><![CDATA[<!-- 
+ Default configuration: main web application is served from the
+ webapp directory. 
+-->
+<root pattern="/tools" path="xmldb:exist:///db/www"/>
+<root pattern=".*" path="/"/>]]></synopsis>
+            <para>This means that paths starting with <filename>/tools</filename> will be mapped to
+                the collection hierarchy below <filename>/db/www</filename>. Everything else is
+                handled by the catch all pattern pointing to the root directory of the webapp (by
+                default corresponding to <filename>EXIST_HOME/webapp</filename>). For example, the
+                URI</para>
+            <synopsis>http://localhost:8080/exist/tools/admin/admin.xql</synopsis>
+            <para>will be handled by the controller stored in database collection <filename
+                    >/db/www/admin/</filename> (if there is one) or will directly resolve to
+                    <filename>/db/www/admin/admin.xql</filename>. In this case, all relative or
+                absolute URIs within the controller will be resolved against the database, not the
+                file system.</para>
         </section>
         <section>
             <title>MVC and Pipelines</title>
