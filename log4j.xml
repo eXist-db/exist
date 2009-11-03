@@ -57,6 +57,14 @@
         </layout>
     </appender>
     
+    <appender name="exist.urlrewrite" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/urlrewrite.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+
     <appender name="exist.profiling" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/profile.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -131,6 +139,12 @@
         <appender-ref ref="exist.xmldb"/>
     </category>
     
+	<category name="org.exist.http.urlrewrite" additivity="false">
+		<!-- set to "trace" to get detailed info on URL rewriting -->
+        <priority value="info"/>
+        <appender-ref ref="exist.urlrewrite"/>
+    </category>
+
     <category name="org.mortbay" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
@@ -173,7 +187,6 @@
         <appender-ref ref="exist.scheduler"/>
     </category>
 
-    
     <!-- Section: ROOT logger -->
     
     <root>
