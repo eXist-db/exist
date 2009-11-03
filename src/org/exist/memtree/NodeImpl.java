@@ -671,30 +671,18 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
 	public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException {
-	    DOMStreamer streamer = null;
-		try {
-		    Serializer serializer = broker.getSerializer();
-		    serializer.reset();
-			serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-            if (properties != null)
-                serializer.setProperties(properties);
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+        if (properties != null)
+            serializer.setProperties(properties);
+        if(handler instanceof LexicalHandler) {
+            serializer.setSAXHandlers(handler, (LexicalHandler) handler);
+        } else {
             serializer.setSAXHandlers(handler, null);
-            streamer = SerializerPool.getInstance().borrowDOMStreamer(serializer);
-			streamer.setContentHandler(handler);
-            
-            // Preserve e.g. comments
-            if(handler instanceof LexicalHandler){
-                streamer.setLexicalHandler( (LexicalHandler) handler );
-            }
-            
-			streamer.serialize(this, false);
-		} catch (Exception e) {
-		    e.printStackTrace();
-			throw new SAXException(e);
-		} finally {
-            if(streamer != null)
-                SerializerPool.getInstance().returnObject(streamer);
         }
+
+        serializer.toSAX(this);
 	}
 
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
