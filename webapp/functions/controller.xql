@@ -37,12 +37,15 @@ let $log := util:log("DEBUG", concat("URL Rewriter: request:get-uri():          
 
 
 return
-	(: App root path: forward to default query :)
-	if ($exist:path eq '/') then
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    		<forward url="{$internal-path-to-app}"/>
-    	</dispatch>
-	
+	(: make sure the global css, js and image files are resolved :)
+    if (matches($exist:path, '((styles|scripts|resources)/|logo.jpg)')) then
+        let $newPath := replace($exist:path, '^.*(((styles|scripts|resources)/|logo).*)$', '/$1')
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="{$newPath}"/>
+    			<cache-control cache="yes"/>
+    		</dispatch>
+    		
 	(: Execute RESTful queries by passing URL parameters to the query :)
     else
         let $module := $post-query-url-params[1]
@@ -52,10 +55,29 @@ return
         let $log := util:log('DEBUG', concat('Functions App function: ', $function))
         
         return
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<forward url="{$internal-path-to-app}">
-    			<add-parameter name="basepath" value="{$external-path-to-app}"/>
-        	    <add-parameter name="module" value="{$module}"/>,
-        	    <add-parameter name="function" value="{$function}"/>
-			</forward>
-		</dispatch>
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    			<forward url="{$internal-path-to-app}">
+        			<add-parameter name="basepath" value="{$external-path-to-app}"/>
+            	    <add-parameter name="module" value="{$module}"/>,
+            	    <add-parameter name="function" value="{$function}"/>
+            	    <!-- query results are passed to XSLT servlet via request attribute -->
+              		<set-attribute name="xquery.attribute"
+              			value="model"/>
+    			</forward>
+          		<view>
+          			<forward servlet="XSLTServlet">
+          				<set-attribute name="xslt.input"
+          					value="model"/>
+          			    <set-attribute name="xslt.base"
+          			        value="{$exist:root}{$exist:controller}"/>
+          				<set-attribute name="xslt.stylesheet" 
+          					value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
+          				<set-attribute name="xslt.output.media-type"
+          				        value="text/html"/>
+          				<set-attribute name="xslt.output.doctype-public"
+          				    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+          				<set-attribute name="xslt.output.doctype-system"
+          				    value="resources/xhtml1-transitional.dtd"/>
+          			</forward>
+          		</view>
+    		</dispatch>
