@@ -136,7 +136,7 @@ declare function local:module-to-moduleURI($module as xs:string) as xs:string {
 (: Lists all modules :)
 declare function local:list-modules($moduleURIs) {
     (
-    <p><a href="./all">Expand All</a> or select a single module:</p>
+    <p><a href="{concat($basepath, 'all')}">Expand All</a> or select a single module:</p>
     ,
     <table class="modules">
         <thead>
@@ -270,21 +270,22 @@ return
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             <style language="text/css">
             <![CDATA[
-                body {font-family: Arial, Helvetica; sans-serif;}
-                .module {border:1px black solid; margin:20px; page-break-after: always; }
-                .modhead {padding:5px;}
-                .functions {margin-left:10px; }
-                .function {border:1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; }
-                .name {font-weight:bold;}
-                .signature {margin-left:50px; font-style: italic;}
-                .description {margin-left:20px; padding:5px;}
+                body {font-family: Arial, Helvetica, sans-serif; } 
+                .module {border: 1px black solid; margin:20px; page-break-after: always; }
+                .modhead {padding: 5px;}
+                .functions {margin-left: 10px; }
+                .function {border: 1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; }
+                .name {font-weight: bold;}
+                .signature {margin-left: 50px; font-style: italic;}
+                .description {margin-left: 20px; padding: 5px;}
                 .f-description-para {margin-bottom: 8px;}
-                .parameters {margin-left:100px;}
+                .authors {display:none;}
+                .parameters {margin-left: 100px;}
                 .f-params {}
-                .f-param1 {width:250px;}
+                .f-param1 {width: 250px;}
                 .f-param2 {}
                 .parameter {}
-                .returning {color:green;}
+                .returning {margin-left: 100px; color:green;}
                 .deprecated {color:red; font-weight:bold;}
                 ]]>
             </style>
