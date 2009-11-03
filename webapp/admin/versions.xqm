@@ -1,7 +1,6 @@
 module namespace rev="http://exist-db.org/xquery/admin-interface/revisions";
 
-import module namespace v="http://exist-db.org/versioning"
-at "resource:org/exist/versioning/xquery/versioning.xqm";
+import module namespace v="http://exist-db.org/versioning";
 import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
 
 declare function rev:main() as element()
