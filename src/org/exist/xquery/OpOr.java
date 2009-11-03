@@ -53,12 +53,13 @@ public class OpOr extends LogicalOp {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 
+        boolean doOptimize = optimize;
         if (contextSequence != null && !contextSequence.isPersistentSet())
-            optimize = false;
+            doOptimize = false;
         Sequence result;
 		Expression left = getLeft();
 		Expression right = getRight();
-		if(optimize) {
+		if(doOptimize) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(contextId);
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
