@@ -13,27 +13,31 @@ declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:root external;
 
+let $pathSep := util:system-property("file.separator")
+let $controller := replace($exist:controller, '^\\', '/') (: turn Windows path separator '\' into '/' :)
+
 let $app-default-query := 'functions.xql'
-let $internal-path-to-app := concat($exist:controller, '/', $app-default-query)
+let $internal-path-to-app := concat($controller, '/', $app-default-query)
 
 let $context := request:get-context-path()
-let $external-path-to-app := concat($context, $exist:controller, '/')
+let $external-path-to-app := concat($context, $controller, '/')
 
 let $uri := request:get-uri()
-let $post-query-url-params := subsequence(tokenize(substring-after(request:get-uri(), $exist:controller), '/'), 2)
+let $post-query-url-params := subsequence(tokenize($exist:path, '/'), 2)
 
-(: Logging for sanity :)
-let $log := util:log("DEBUG", concat("URL Rewriter: $exist:root:                ", $exist:root))
-let $log := util:log("DEBUG", concat("URL Rewriter: request:get-context-path(): ", $context))
-let $log := util:log("DEBUG", concat("URL Rewriter: $app-default-query:         ", $app-default-query))
-let $log := util:log("DEBUG", concat("URL Rewriter: $internal-path-to-app:      ", $internal-path-to-app))
+(: Logging to demonstrate how variables are constructed for use in URL Rewriting :)
+let $log := util:log("DEBUG", concat("URL Info: $exist:root:                ", $exist:root))
+let $log := util:log("DEBUG", concat("URL Info: request:get-context-path(): ", $context))
+let $log := util:log("DEBUG", concat("URL Info: $app-default-query:         ", $app-default-query))
+let $log := util:log("DEBUG", concat("URL Info: $internal-path-to-app:      ", $internal-path-to-app))
 
-let $log := util:log("DEBUG", concat("URL Rewriter: $exist:controller:          ", $exist:controller))
-let $log := util:log("DEBUG", concat("URL Rewriter: $external-path-to-app:      ", $external-path-to-app))
+let $log := util:log("DEBUG", concat("URL Info: $exist:controller:          ", $exist:controller))
+let $log := util:log("DEBUG", concat("URL Info: $controller:                ", $controller))
+let $log := util:log("DEBUG", concat("URL Info: $external-path-to-app:      ", $external-path-to-app))
 
-let $log := util:log("DEBUG", concat("URL Rewriter: $exist:path:                ", $exist:path))
-let $log := util:log("DEBUG", concat("URL Rewriter: $exist:resource:            ", $exist:resource))
-let $log := util:log("DEBUG", concat("URL Rewriter: request:get-uri():          ", $uri))
+let $log := util:log("DEBUG", concat("URL Info: $exist:path:                ", $exist:path))
+let $log := util:log("DEBUG", concat("URL Info: $exist:resource:            ", $exist:resource))
+let $log := util:log("DEBUG", concat("URL Info: request:get-uri():          ", $uri))
 
 
 return
