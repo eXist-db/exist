@@ -14,13 +14,12 @@ declare variable $exist:resource external;
 declare variable $exist:root external;
 
 let $pathSep := util:system-property("file.separator")
-let $controller := replace($exist:controller, '^\\', '/') (: turn Windows path separator '\' into '/' :)
 
 let $app-default-query := 'functions.xql'
-let $internal-path-to-app := concat($controller, '/', $app-default-query)
+let $internal-path-to-app := concat($exist:controller, '/', $app-default-query)
 
 let $context := request:get-context-path()
-let $external-path-to-app := concat($context, $controller, '/')
+let $external-path-to-app := concat($context, $exist:controller, '/')
 
 let $uri := request:get-uri()
 let $post-query-url-params := subsequence(tokenize($exist:path, '/'), 2)
@@ -32,7 +31,6 @@ let $log := util:log("DEBUG", concat("URL Info: $app-default-query:         ", $
 let $log := util:log("DEBUG", concat("URL Info: $internal-path-to-app:      ", $internal-path-to-app))
 
 let $log := util:log("DEBUG", concat("URL Info: $exist:controller:          ", $exist:controller))
-let $log := util:log("DEBUG", concat("URL Info: $controller:                ", $controller))
 let $log := util:log("DEBUG", concat("URL Info: $external-path-to-app:      ", $external-path-to-app))
 
 let $log := util:log("DEBUG", concat("URL Info: $exist:path:                ", $exist:path))
@@ -69,6 +67,13 @@ return
               			value="model"/>
     			</forward>
           		<view>
+          		    <!-- Fix sidebar links -->
+          		    <forward url="{$exist:controller}/filter.xql">
+          		        <set-attribute name="xquery.attribute"
+              			   value="model"/>
+              		   <set-attribute name="base" value="{$context}"/>
+              	    </forward>
+              	    <!-- Apply db2xhtml stylesheet -->
           			<forward servlet="XSLTServlet">
           				<set-attribute name="xslt.input"
           					value="model"/>

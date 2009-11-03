@@ -291,7 +291,7 @@ return
             </style>
         </bookinfo>
         
-        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     
         <chapter>
             <title>A RESTful browser for eXist {$existVersion} Java-Based Function Modules</title>
