@@ -261,32 +261,39 @@ declare function local:main() {
 (: Module body :)
 let $existVersion := system:get-version()
 return
-    <html>
-        <head>
+    <book>
+        <bookinfo>
+            <graphic fileref="logo.jpg"/>
+            <productname>Open Source Native XML Database</productname>
             <title>eXist {$existVersion} Java-Based Function Modules</title>
+            <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             <style language="text/css">
             <![CDATA[
-            body {font-family: Arial, Helvetica; sans-serif;}
-            .module {border:1px black solid; margin:20px; page-break-after: always; }
-            .modhead {padding:5px;}
-            .functions {margin-left:10px; }
-            .function {border:1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; }
-            .name {font-weight:bold;}
-            .signature {margin-left:50px; font-style: italic;}
-            .description {margin-left:20px; padding:5px;}
-            .f-description-para {margin-bottom: 8px;}
-            .parameters {margin-left:100px;}
-            .f-params {}
-            .f-param1 {width:250px;}
-            .f-param2 {}
-            .parameter {}
-            .returning {color:green;}
-            .deprecated {color:red; font-weight:bold;}
-            ]]>
+                body {font-family: Arial, Helvetica; sans-serif;}
+                .module {border:1px black solid; margin:20px; page-break-after: always; }
+                .modhead {padding:5px;}
+                .functions {margin-left:10px; }
+                .function {border:1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; }
+                .name {font-weight:bold;}
+                .signature {margin-left:50px; font-style: italic;}
+                .description {margin-left:20px; padding:5px;}
+                .f-description-para {margin-bottom: 8px;}
+                .parameters {margin-left:100px;}
+                .f-params {}
+                .f-param1 {width:250px;}
+                .f-param2 {}
+                .parameter {}
+                .returning {color:green;}
+                .deprecated {color:red; font-weight:bold;}
+                ]]>
             </style>
-        </head>
-        <body>
-            <h1>A RESTful browser for eXist {$existVersion} Java-Based Function Modules</h1>
+        </bookinfo>
+        
+        <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    
+        <chapter>
+            <title>A RESTful browser for eXist {$existVersion} Java-Based Function Modules</title>
             { local:main() }
-        </body>
-    </html>
+        </chapter>
+    </book>
