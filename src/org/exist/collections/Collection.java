@@ -101,7 +101,7 @@ import java.util.TreeMap;
  */
 public  class Collection extends Observable implements Comparable, Cacheable
 {    
-	public static int LENGTH_COLLECTION_ID = 4; //sizeof int
+    public static int LENGTH_COLLECTION_ID = 4; //sizeof int
 
     public static final int POOL_PARSER_THRESHOLD = 500;
 
@@ -140,7 +140,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     
     private Observer[] observers = null;
     
-    private boolean collectionConfEnabled = true;
+    private volatile boolean collectionConfEnabled = true;
     private boolean triggersEnabled = true;
     
     // fields required by the collections cache
@@ -1601,12 +1601,12 @@ public  class Collection extends Observable implements Comparable, Cacheable
 
         //Attempt to get configuration
         CollectionConfiguration configuration = null;
-        collectionConfEnabled = false;
         try {
-        	//TODO: AR: if a Trigger throws CollectionConfigurationException from its configure() method, is the rest of the collection configurartion (indexes etc.) ignored even though they might be fine?
+            //TODO: AR: if a Trigger throws CollectionConfigurationException from its configure() method, is the rest of the collection configurartion (indexes etc.) ignored even though they might be fine?
             configuration = manager.getConfiguration(broker, this);
             collectionConfEnabled = true;
         } catch (CollectionConfigurationException e) {
+            collectionConfEnabled = false;
             LOG.warn("Failed to load collection configuration for '" + getURI() + "'", e);
         }
 //        LOG.debug("Loaded configuration for collection:  " + getURI());
