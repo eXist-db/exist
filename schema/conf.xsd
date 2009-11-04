@@ -20,9 +20,13 @@
                     <xs:complexType>
                         <xs:attribute name="dbaUser" type="xs:string" default="admin"/>
                         <xs:attribute name="dbaPassword" type="xs:string"/>
-                        <xs:attribute name="exclude" type="xs:string" default="/db/system,/db/system/config"/>
-                        <xs:attribute name="journalDir" type="xs:string" default="webapp/WEB-INF/data/journal"/>
-                        <xs:attribute name="protocol" type="xs:string" default="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)"/>
+                        <xs:attribute name="exclude" type="xs:string"
+                            default="/db/system,/db/system/config"/>
+                        <xs:attribute name="journalDir" type="xs:string"
+                            default="webapp/WEB-INF/data/journal"/>
+                        <xs:attribute name="protocol" type="xs:string"
+                            default="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)"
+                        />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="db-connection">
@@ -30,42 +34,50 @@
                         <xs:sequence>
                             <xs:element name="default-permissions" minOccurs="0">
                                 <xs:complexType>
-                                        <xs:attribute name="collection" type="xs:string" default="0775"/>
-                                        <xs:attribute name="resource" type="xs:string" default="0775"/>
+                                    <xs:attribute name="collection" type="xs:string" default="0775"/>
+                                    <xs:attribute name="resource" type="xs:string" default="0775"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="pool">
                                 <xs:complexType>
                                     <xs:attribute name="max" type="xs:integer" default="20"/>
                                     <xs:attribute name="min" type="xs:integer" default="1"/>
-                                    <xs:attribute name="sync-period" type="xs:integer" default="120000"/>
-                                    <xs:attribute name="wait-before-shutdown" type="xs:integer" default="120000"/>
+                                    <xs:attribute name="sync-period" type="xs:integer"
+                                        default="120000"/>
+                                    <xs:attribute name="wait-before-shutdown" type="xs:integer"
+                                        default="120000"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="query-pool" minOccurs="0" maxOccurs="1">
                                 <xs:complexType>
-                                    <xs:attribute name="max-stack-size" type="xs:integer" default="5"/>
+                                    <xs:attribute name="max-stack-size" type="xs:integer"
+                                        default="5"/>
                                     <xs:attribute name="size" type="xs:integer" default="128"/>
                                     <xs:attribute name="timeout" type="xs:integer" default="120000"/>
-                                    <xs:attribute name="timeout-check-interval" type="xs:integer" default="30000"/>
+                                    <xs:attribute name="timeout-check-interval" type="xs:integer"
+                                        default="30000"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="recovery">
                                 <xs:complexType>
                                     <xs:attribute name="enabled" type="yes_no" default="yes"/>
                                     <xs:attribute name="group-commit" type="yes_no" default="no"/>
-                                    <xs:attribute name="journal-dir" type="xs:string" default="webapp/WEB-INF/data"/>
+                                    <xs:attribute name="journal-dir" type="xs:string"
+                                        default="webapp/WEB-INF/data"/>
                                     <xs:attribute name="size" type="xs:string" default="100M"/>
                                     <xs:attribute name="sync-on-commit" type="yes_no" default="no"/>
                                     <xs:attribute name="force-restart" type="yes_no" default="no"/>
-                                    <xs:attribute name="consistency-check" type="yes_no" default="yes"/>
+                                    <xs:attribute name="consistency-check" type="yes_no"
+                                        default="yes"/>
                                 </xs:complexType>
                             </xs:element>
-                            
+
                             <xs:element name="security" minOccurs="0">
                                 <xs:complexType>
-                                    <xs:attribute name="class" type="xs:string" default="org.exist.security.XMLSecurityManager"/>
-                                    <xs:attribute name="password-encoding" use="optional" default="md5">
+                                    <xs:attribute name="class" type="xs:string"
+                                        default="org.exist.security.XMLSecurityManager"/>
+                                    <xs:attribute name="password-encoding" use="optional"
+                                        default="md5">
                                         <xs:simpleType>
                                             <xs:restriction base="xs:string">
                                                 <xs:enumeration value="plain"/>
@@ -74,7 +86,8 @@
                                             </xs:restriction>
                                         </xs:simpleType>
                                     </xs:attribute>
-                                    <xs:attribute name="password-realm" type="xs:string" use="optional"/>
+                                    <xs:attribute name="password-realm" type="xs:string"
+                                        use="optional"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="watchdog">
@@ -90,23 +103,30 @@
                         <xs:attribute name="files" type="xs:string" default="webapp/WEB-INF/data"/>
                         <xs:attribute name="free_mem_min" type="xs:integer" default="5"/>
                         <xs:attribute name="pageSize" type="xs:integer" default="4096"/>
+                        <xs:attribute name="nodesBuffer" type="xs:integer" default="-1"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="indexer">
                     <xs:complexType>
                         <xs:sequence>
-                            
+
                             <xs:element name="modules">
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="module" maxOccurs="unbounded">
                                             <xs:complexType>
-                                                <xs:attribute name="id" type="xs:string" default="ngram-index"/>
-                                                <xs:attribute name="class" type="xs:string" default="org.exist.indexing.impl.NGramIndex"/>
-                                                <xs:attribute name="file" type="xs:string" default="ngram.dbx"/>
-                                                <xs:attribute name="connectionTimeout" type="xs:integer" default="10000"/>
-                                                <xs:attribute name="flushAfter" type="xs:integer" default="300"/>
-                                                <xs:attribute name="n" type="xs:integer" default="3"/>
+                                                <xs:attribute name="id" type="xs:string"
+                                                  default="ngram-index"/>
+                                                <xs:attribute name="class" type="xs:string"
+                                                  default="org.exist.indexing.impl.NGramIndex"/>
+                                                <xs:attribute name="file" type="xs:string"
+                                                  default="ngram.dbx"/>
+                                                <xs:attribute name="connectionTimeout"
+                                                  type="xs:integer" default="10000"/>
+                                                <xs:attribute name="flushAfter" type="xs:integer"
+                                                  default="300"/>
+                                                <xs:attribute name="n" type="xs:integer" default="3"
+                                                />
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -123,33 +143,40 @@
                                         <xs:element name="fulltext">
                                             <xs:complexType>
                                                 <xs:sequence>
-                                                    <xs:element name="include" minOccurs="0" maxOccurs="unbounded">
-                                                        <xs:complexType>
-                                                            <xs:attribute name="path" type="xs:string"/>
-                                                        </xs:complexType>
-                                                    </xs:element>
-                                                    <xs:element name="exclude" minOccurs="0" maxOccurs="unbounded">
-                                                        <xs:complexType>
-                                                            <xs:attribute name="path" type="xs:string"/>
-                                                        </xs:complexType>
-                                                    </xs:element>
+                                                  <xs:element name="include" minOccurs="0"
+                                                  maxOccurs="unbounded">
+                                                  <xs:complexType>
+                                                  <xs:attribute name="path" type="xs:string"/>
+                                                  </xs:complexType>
+                                                  </xs:element>
+                                                  <xs:element name="exclude" minOccurs="0"
+                                                  maxOccurs="unbounded">
+                                                  <xs:complexType>
+                                                  <xs:attribute name="path" type="xs:string"/>
+                                                  </xs:complexType>
+                                                  </xs:element>
                                                 </xs:sequence>
                                                 <xs:attribute name="default" default="all">
-                                                    <xs:simpleType>
-                                                        <xs:restriction base="xs:string">
-                                                            <xs:enumeration value="all"/>
-                                                            <xs:enumeration value="none"/>
-                                                        </xs:restriction>
-                                                    </xs:simpleType>
+                                                  <xs:simpleType>
+                                                  <xs:restriction base="xs:string">
+                                                  <xs:enumeration value="all"/>
+                                                  <xs:enumeration value="none"/>
+                                                  </xs:restriction>
+                                                  </xs:simpleType>
                                                 </xs:attribute>
-                                                <xs:attribute name="attributes" type="xs:boolean" default="true"/>
-                                                <xs:attribute name="alphanum" type="xs:boolean" default="true"/>
+                                                <xs:attribute name="attributes" type="xs:boolean"
+                                                  default="true"/>
+                                                <xs:attribute name="alphanum" type="xs:boolean"
+                                                  default="true"/>
                                             </xs:complexType>
                                         </xs:element>
-                                        <xs:element name="create" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="create" minOccurs="0"
+                                            maxOccurs="unbounded">
                                             <xs:complexType>
-                                                <xs:attribute name="path" type="xs:string" use="optional"/>
-                                                <xs:attribute name="qname" type="xs:string" use="optional"/>
+                                                <xs:attribute name="path" type="xs:string"
+                                                  use="optional"/>
+                                                <xs:attribute name="qname" type="xs:string"
+                                                  use="optional"/>
                                                 <xs:attribute name="type" type="xs:anySimpleType"/>
                                             </xs:complexType>
                                         </xs:element>
@@ -159,7 +186,8 @@
                         </xs:sequence>
                         <xs:attribute name="caseSensitive" type="yes_no" default="yes"/>
                         <xs:attribute name="index-depth" type="xs:integer" default="5"/>
-                        <xs:attribute name="preserve-whitespace-mixed-content" type="yes_no" default="no"/>
+                        <xs:attribute name="preserve-whitespace-mixed-content" type="yes_no"
+                            default="no"/>
                         <xs:attribute name="stemming" type="yes_no" default="no"/>
                         <xs:attribute name="suppress-whitespace" default="both">
                             <xs:simpleType>
@@ -171,7 +199,8 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
-                        <xs:attribute name="tokenizer" type="xs:string" default="org.exist.storage.analysis.SimpleTokenizer"/>
+                        <xs:attribute name="tokenizer" type="xs:string"
+                            default="org.exist.storage.analysis.SimpleTokenizer"/>
                         <xs:attribute name="track-term-freq" type="yes_no" default="yes"/>
                     </xs:complexType>
                 </xs:element>
@@ -181,12 +210,13 @@
                             <xs:element name="job" minOccurs="0" maxOccurs="unbounded">
                                 <xs:complexType>
                                     <xs:sequence>
-                                            <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
-                                                <xs:complexType>
-                                                    <xs:attribute name="name" type="xs:string"/>
-                                                    <xs:attribute name="value" type="xs:string"/>
-                                                </xs:complexType>
-                                            </xs:element>
+                                        <xs:element name="parameter" minOccurs="0"
+                                            maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="name" type="xs:string"/>
+                                                <xs:attribute name="value" type="xs:string"/>
+                                            </xs:complexType>
+                                        </xs:element>
                                     </xs:sequence>
                                     <xs:attribute name="type" use="optional" default="user">
                                         <xs:simpleType>
@@ -197,9 +227,11 @@
                                             </xs:restriction>
                                         </xs:simpleType>
                                     </xs:attribute>
+                                    <xs:attribute name="name" type="xs:string" use="optional"/>
                                     <xs:attribute name="class" type="xs:string" use="optional"/>
                                     <xs:attribute name="xquery" type="xs:string" use="optional"/>
-                                    <xs:attribute name="cron-trigger" type="xs:string" use="optional"/>
+                                    <xs:attribute name="cron-trigger" type="xs:string"
+                                        use="optional"/>
                                     <xs:attribute name="period" type="xs:string" use="optional"/>
                                     <xs:attribute name="delay" type="xs:long" use="optional"/>
                                     <xs:attribute name="repeat" type="xs:integer" use="optional"/>
@@ -245,7 +277,8 @@
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
-                        <xs:attribute name="class" type="xs:string" default="org.apache.xalan.processor.TransformerFactoryImpl"/>
+                        <xs:attribute name="class" type="xs:string"
+                            default="org.apache.xalan.processor.TransformerFactoryImpl"/>
                         <xs:attribute name="caching" type="xs:string"/>
                     </xs:complexType>
                 </xs:element>
@@ -255,9 +288,11 @@
                             <xs:element name="entity-resolver">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="catalog" minOccurs="1" maxOccurs="unbounded">
+                                        <xs:element name="catalog" minOccurs="1"
+                                            maxOccurs="unbounded">
                                             <xs:complexType>
-                                                <xs:attribute name="uri" type="xs:string" default="webapp/WEB-INF/catalog.xml"/>
+                                                <xs:attribute name="uri" type="xs:string"
+                                                  default="webapp/WEB-INF/catalog.xml"/>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -269,7 +304,7 @@
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="auto"/>
                                     <xs:enumeration value="no"/>
-                                    <xs:enumeration value="yes"/>                                    
+                                    <xs:enumeration value="yes"/>
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
@@ -296,7 +331,8 @@
                         <xs:attribute name="disable-deprecated-functions" type="yes_no" default="no"/>
                         <xs:attribute name="enable-query-rewriting" type="yes_no" default="yes"/>
                         <xs:attribute name="backwardCompatible" type="yes_no" default="no"/>
-                        <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no" default="no"/>
+                        <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no"
+                            default="no"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="xupdate">
