@@ -99,6 +99,16 @@
             transferred from and to the database files. Should be a multiple of
             the operating system's file system page size (usually 4096).
 
+		- nodesBuffer:
+			size of the temporary buffer used by eXist for caching index
+			data while indexing a document. If set to -1, eXist will use the
+			entire free memory to buffer index entries and will flush the
+			cache once the memory is full.
+
+			If set to a value > 0, the buffer will be fixed to the given size.
+			The specified number corresponds to the number of nodes the
+			buffer can hold, in thousands. Usually, a good default could be
+			nodesBuffer="1000".
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
@@ -109,7 +119,7 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
-        files="@dataDir@" pageSize="4096">
+        files="@dataDir@" pageSize="4096" nodesBuffer="-1">
 
         <!--
             Specifies the default permissions for all resources and collections
