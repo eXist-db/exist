@@ -480,11 +480,65 @@
     
     
     <!-- ====================== URL space mappings ======================= -->
-
+    
+    <!-- IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
+         entry point into the web application. All eXist-related URL
+         mappings are handled by XQueryURLRewrite (see controller-config.xml). 
+         The servlet mappings below are thus commented out. We keep them here 
+         for documentation purposes. If you need to switch to the old setup, 
+         you can re-enable the mappings below and disable them in 
+         controller-config.xml. However, please note that some features of the
+         website will only work if XQueryURLRewrite controls the /rest servlet
+         (EXistServlet). -->
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    
+    <!-- XMLRPC -->
+    <!--servlet-mapping>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <url-pattern>/xmlrpc</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- REST new mapping-->
+    <!--servlet-mapping>
+        <servlet-name>EXistServlet</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- webDAV -->
+    <!--servlet-mapping>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <url-pattern>/webdav/*</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- XQuery (not for database stored queries) -->
+    <!--servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xql</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- SOAP (Apache Axis) -->
+    <!--servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/axis-servlet/AxisServlet</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>*.jws</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/services/*</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>AdminServlet</servlet-name>
+        <url-pattern>/axis-servlet/AdminServlet</url-pattern>
+    </servlet-mapping-->
     
     <!-- 
         Finally, we establish the main mapping for Cocoon  
