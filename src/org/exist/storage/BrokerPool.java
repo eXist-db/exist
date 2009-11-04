@@ -1211,7 +1211,7 @@ public class BrokerPool extends Observable {
 		if (!isInstanceConfigured()) {		
 			throw new EXistException("database instance '" + instanceName + "' is not available");
 		}
-		
+
 		synchronized(this) {
 			//Try to get an active broker
 			DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
@@ -1482,7 +1482,7 @@ public class BrokerPool extends Observable {
 	/**
 	 * Shuts downs the database instance
 	 */
-	public synchronized void shutdown() {
+	public void shutdown() {
 		shutdown(false);
 	}
 	
@@ -1502,14 +1502,20 @@ public class BrokerPool extends Observable {
 
         LOG.info("Database is shutting down ...");
 
-        // wait for currently running system tasks before we shutdown
+        status = SHUTDOWN;
+
         java.util.concurrent.locks.Lock lock = transactionManager.getLock();
-
         try {
+            // wait for currently running system tasks before we shutdown
+            // they will have a lock on the transactionManager
             lock.lock();
-            synchronized (this) {
-                status = SHUTDOWN;
 
+            synchronized (this) {
+
+                // release transaction log to allow remaining brokers to complete
+                // their job
+                lock.unlock();
+                
                 notificationService.debug();
 
                 //Notify all running tasks that we are shutting down
@@ -1560,7 +1566,7 @@ public class BrokerPool extends Observable {
                     }
                 }
                 LOG.debug("Calling shutdown ...");
-
+                
                 // closing down external indexes
                 try {
                     indexManager.shutdown();
@@ -1625,8 +1631,6 @@ public class BrokerPool extends Observable {
                     shutdownListener.shutdown(instanceName, instances.size());
             }
         } finally {
-            lock.unlock();
-
             // clear instance variables, just to be sure they will be garbage collected
             // the test suite restarts the db a few hundred times
             transactionManager = null;
