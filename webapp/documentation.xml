@@ -221,6 +221,14 @@
                                 <td>eXist provides a number of extensions to update document
                                     fragments from within an XQuery.</td>
                             </tr>
+                            <tr>
+                                <td><ulink url="debugger.xml">XQuery Debugger</ulink></td>
+                                <td>Since version 1.4, eXist provides a debugging interface to debug
+                                    XQuery code on the server. The feature basically works, though
+                                    it is currently still incomplete, in particular with respect to
+                                    the client side. We used emacs and vi as our main clients during
+                                    development.</td>
+                            </tr>
                         </tbody>
                     </tgroup>
                 </table>

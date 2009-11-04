@@ -161,10 +161,10 @@ return
                 would contain <filename>/sandbox</filename>, <option>$exist:path</option> would be
                     <filename>/get-examples.xql</filename>, and <option>$exist:resource</option>:
                     <filename>get-examples.xml</filename>.</para>
-            <para>You do not need to explicitely declare the variables or the namespace. However, if
+            <para>You do not need to explicitly declare the variables or the namespace. However, if
                 you would like to do so, you can add an external declaration for each used variable
                 at the top of your XQuery as follows:</para>
-            <synopsis language="xquery">declare variable exist:path as external;</synopsis>
+            <synopsis language="xquery">declare variable $exist:path as external;</synopsis>
         </section>
         <section>
             <title>Locating Controller Scripts and Configuring Base Mappings</title>
