@@ -11,7 +11,7 @@ declare namespace util = "http://exist-db.org/xquery/util";
 :)
 
 
-declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?) as item()?
+declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
 {
 	<entry>
 		<path>{$path}</path>
@@ -20,10 +20,10 @@ declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data 
 	</entry>
 };
 
-declare function local:entry-filter($path as xs:anyURI, $type as xs:string) as xs:boolean
+declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
 {
 	true()
 };
 
 let $zip := util:binary-doc("/db/example.zip") return
-	compression:unzip($zip, util:function(xs:QName("local:entry-filter"), 2), util:function(xs:QName("local:entry-data"), 3))
+	compression:unzip($zip, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), () )

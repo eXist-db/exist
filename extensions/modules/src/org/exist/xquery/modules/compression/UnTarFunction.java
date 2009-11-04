@@ -24,8 +24,9 @@ package org.exist.xquery.modules.compression;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import org.apache.tools.tar.TarEntry;
-import org.apache.tools.tar.TarInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -53,9 +54,9 @@ public class UnTarFunction extends AbstractExtractFunction {
             "to determine what and how to store the resources/folders",
             new SequenceType[] {
                 new FunctionParameterSequenceType("tar-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The tar file data"),
-                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for filtering resources from the tar file. The function takes 3 parameters e.g. user:untar-entry-filter($path as xs:anyURI, $data-type as xs:string, $param as item()?) as xs:boolean. $type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, for example a list of extracted files.If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped."),
+                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for filtering resources from the tar file. The function takes 3 parameters e.g. user:untar-entry-filter($path as xs:anyURI, $data-type as xs:string, $param as item()*) as xs:boolean. $type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, for example a list of extracted files.If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped."),
                 new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
-                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. user:untar-entry-data($path as xs:anyURI, $data-type as xs:string, $data as item()?, $param as item()?). $type may be 'resource' or 'folder'. $param is a sequence with any additional parameters"),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. user:untar-entry-data($path as xs:anyURI, $data-type as xs:string, $data as item()?, $param as item()*). $type may be 'resource' or 'folder'. $param is a sequence with any additional parameters"),
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
@@ -70,15 +71,15 @@ public class UnTarFunction extends AbstractExtractFunction {
     @Override
     protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException
     {
-        TarInputStream tis = null;
+        TarArchiveInputStream tis = null;
         try
         {
-            tis = new TarInputStream(new ByteArrayInputStream(compressedData.getBinaryData()));
-            TarEntry entry = null;
+            tis = new TarArchiveInputStream(new ByteArrayInputStream(compressedData.getBinaryData()));
+            TarArchiveEntry entry = null;
 
             Sequence results = new ValueSequence();
 
-            while((entry = tis.getNextEntry()) != null)
+            while((entry = tis.getNextTarEntry()) != null)
             {
                 Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis, filterParam, storeParam);
 

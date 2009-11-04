@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.tools.tar.TarEntry;
-import org.apache.tools.tar.TarOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -78,24 +78,24 @@ public class TarFunction extends AbstractCompressFunction
     @Override
     protected void closeEntry(Object os) throws IOException
     {
-            ((TarOutputStream) os).closeEntry();
+		((TarArchiveOutputStream) os).closeArchiveEntry();
     }
 
     @Override
     protected Object newEntry(String name)
     {
-            return new TarEntry(name);
+            return new TarArchiveEntry(name);
     }
 
     @Override
     protected void putEntry(Object os, Object entry) throws IOException
     {
-            ((TarOutputStream) os).putNextEntry((TarEntry) entry);
+		((TarArchiveOutputStream) os).putArchiveEntry((TarArchiveEntry) entry);
     }
 
     @Override
     protected OutputStream stream(ByteArrayOutputStream baos)
     {
-            return new TarOutputStream(baos);
+            return new TarArchiveOutputStream(baos);
     }	
 }
