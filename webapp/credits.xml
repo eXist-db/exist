@@ -7,7 +7,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Credits</title>
-        <date>September 2009</date>
+        <date>November 2009</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -135,6 +135,9 @@
                 </listitem>
                 <listitem>
                     <para>Dannes Wessels (developer)</para>
+                </listitem>
+                <listitem>
+                    <para>Joe Wicentowski (developer)</para>
                 </listitem>
                 <listitem>
                     <para>Cherif Yaya (XQJ implementation)</para>
