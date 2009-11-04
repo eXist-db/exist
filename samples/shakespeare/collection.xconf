@@ -15,9 +15,9 @@
         </lucene>
         <ngram qname="SPEAKER"/>
     </index>
-    <triggers>
+    <!--triggers>
         <trigger event="store,remove,update"
             class="org.exist.versioning.VersioningTrigger">
         </trigger>
-    </triggers>
+    </triggers-->
 </collection>
