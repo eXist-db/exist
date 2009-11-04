@@ -36,8 +36,8 @@ public class SystemTaskManager {
             DBBroker broker = null;
     	    try {
                 broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
-                pool.sync(broker, Sync.MAJOR_SYNC);
                 while (!waitingSystemTasks.isEmpty()) {
+                    pool.sync(broker, Sync.MAJOR_SYNC);
                     SystemTask task = (SystemTask) waitingSystemTasks.pop();
                     runSystemTask(task, broker);
                 }
