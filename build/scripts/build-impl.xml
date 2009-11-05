@@ -118,7 +118,7 @@
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
-    <target name="prepare">
+    <target name="prepare" depends="svn-prepare">
 
         <tstamp/>
         <property file="VERSION.txt"/>
