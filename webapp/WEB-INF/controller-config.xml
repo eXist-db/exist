@@ -9,11 +9,11 @@
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <!-- REST interface -->
-	<forward pattern="/(rest|servlet)" servlet="EXistServlet"/>
+	<forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
     <!-- WebDAV interface -->
-	<forward pattern="/webdav" servlet="WebDAVServlet"/>
+	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
     <!-- Atom Publishing Protocol -->
-    <forward pattern="/atom" servlet="AtomServlet"/>
+    <forward pattern="/atom/" servlet="AtomServlet"/>
     <!-- Apache SOAP interface -->
     <forward pattern="/axis-servlet/AxisServlet" servlet="AxisServlet"/>
     <forward pattern=".*\.jws" servlet="AxisServlet"/>

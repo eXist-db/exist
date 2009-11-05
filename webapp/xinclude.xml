@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="db2html.xsl" type="text/xsl"?>
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
@@ -16,8 +15,6 @@
         </author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
-    <!-- Cocoon include for the website docs -->
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     <chapter>
         <title>XInclude Examples</title>
 
@@ -119,7 +116,10 @@
             <para>The result of the XInclude will be displayed below:</para>
 
             <synopsis language="xml">
-                <xi:include href="disclaimer.xml" xpointer="statement"/>
+                <xi:include href="disclaimer.xml" xpointer="statement">
+					<xi:fallback><p>For the XInclude examples to work, you need to install the
+						sample documents. See admin app.</p></xi:fallback>
+				</xi:include>
             </synopsis>
         </section>
         <section>
@@ -138,7 +138,10 @@
             <para>As before, the results are included below:</para>
 
             <synopsis language="xml">
-                <xi:include href="/db/shakespeare/plays/macbeth.xml" xpointer="xpointer(//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '&quot;fenny snake&quot;')])"/>
+                <xi:include href="/db/shakespeare/plays/macbeth.xml" xpointer="xpointer(//SPEECH[ngram:contains(SPEAKER, 'witch')][ft:query(., '&quot;fenny snake&quot;')])">
+					<xi:fallback><p>For the XInclude examples to work, you need to install the
+						sample documents. See admin app.</p></xi:fallback>
+				</xi:include>
             </synopsis>
 
             <para>An XPath expression will be applied to the entire collection if the path in href
@@ -147,7 +150,10 @@
             <synopsis language="xml">&lt;xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])"/&gt;</synopsis>
 
             <synopsis language="xml">
-                <xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])"/>
+                <xi:include href="/db/shakespeare" xpointer="xpointer(//SPEECH[ft:query(., '&quot;cursed spite&quot;')])">
+					<xi:fallback><p>For the XInclude examples to work, you need to install the
+						sample documents. See admin app.</p></xi:fallback>
+				</xi:include>
 			</synopsis>
 
             <para>Concerning namespaces: all namespace/prefix mappings declared in the source
@@ -157,7 +163,10 @@
             <synopsis language="xml">&lt;xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/&gt;</synopsis>
 
             <synopsis language="xml">
-				<xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/>
+				<xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)">
+					<xi:fallback><p>For the XInclude examples to work, you need to install the
+						sample documents. See admin app.</p></xi:fallback>
+				</xi:include>	
 			</synopsis>
         </section>
         <section>
@@ -174,7 +183,10 @@
             <para>Calls a query without parameters. The result is shown below:</para>
 
             <synopsis language="xml">
-                <xi:include href="display-collection.xq"/>
+                <xi:include href="display-collection.xq">
+					<xi:fallback><p>For the XInclude examples to work, you need to install the
+						sample documents. See admin app.</p></xi:fallback>
+				</xi:include>
             </synopsis>
 
             <para>The XInclude processor declares two variables in the XQuery's static context:</para>
@@ -207,7 +219,10 @@ declare variable $var2 external;</synopsis>
             <para>The result of the call is included below:</para>
 
             <synopsis language="xml">
-                <xi:include href="testvars.xq?var1=Hello&amp;var2=World"/>
+                <xi:include href="testvars.xq?var1=Hello&amp;var2=World">
+					<xi:fallback><p>For the XInclude examples to work, you need to install the
+						sample documents. See admin app.</p></xi:fallback>
+				</xi:include>
             </synopsis>
         </section>
 
