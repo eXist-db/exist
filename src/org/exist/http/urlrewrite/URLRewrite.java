@@ -151,6 +151,8 @@ public abstract class URLRewrite {
     }
 
     public void setPrefix(String prefix) {
+        if (prefix.endsWith("/"))
+            prefix = prefix.replaceFirst("/+$", "");
         this.prefix = prefix;
     }
 
