@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project version="11.0">
     <meta>
         <filters directoryPatterns=".svn" filePatterns="*.java,*.class"
             positiveFilePatterns="" showHiddenFiles="false"/>
         <options>
-            <serialized>
+            <serialized version="11.0">
                 <map>
                     <entry>
                         <String xml:space="preserve">key.xquery.option.pane.group</String>
@@ -3067,8 +3067,6 @@
                     <file name="webapp/scripts/syntax/shBrushXml.js"/>
                     <file name="webapp/scripts/syntax/shBrushXQuery.js"/>
                     <file name="webapp/scripts/syntax/shCore.js"/>
-                    <file name="webapp/scripts/syntax/shLegacy.js"/>
-                    <file name="webapp/scripts/syntax/sh-min.js"/>
                 </folder>
                 <folder name="yui">
                     <file name="webapp/scripts/yui/utilities2.7.0.js"/>
@@ -3447,8 +3445,6 @@
                 <file name="webapp/xquery/functions.xsl"/>
                 <file name="webapp/xquery/guess.xql"/>
                 <file name="webapp/xquery/header.xml"/>
-                <file name="webapp/xquery/hello.xql"/>
-                <file name="webapp/xquery/hello-plural.xql"/>
                 <file name="webapp/xquery/hello-plural-db.xql"/>
                 <file name="webapp/xquery/httpclient-test.xql"/>
                 <file name="webapp/xquery/json-test.js"/>
@@ -3456,11 +3452,9 @@
                 <file name="webapp/xquery/login.css"/>
                 <file name="webapp/xquery/login.xql"/>
                 <file name="webapp/xquery/logo.jpg"/>
-                <file name="webapp/xquery/parameters.xq"/>
                 <file name="webapp/xquery/search.xql"/>
                 <file name="webapp/xquery/session.xql"/>
                 <file name="webapp/xquery/sidebar.xml"/>
-                <file name="webapp/xquery/sitemap.xmap"/>
                 <file name="webapp/xquery/svnlog.xql"/>
                 <file name="webapp/xquery/table.xql"/>
                 <file name="webapp/xquery/transform.xql"/>
@@ -3516,6 +3510,7 @@
             <file name="webapp/triggers.xml"/>
             <file name="webapp/tuning.xml"/>
             <file name="webapp/update_ext.xml"/>
+            <file name="webapp/upgrading.xml"/>
             <file name="webapp/urlrewrite.xml"/>
             <file name="webapp/validation.xml"/>
             <file name="webapp/webdav.xml"/>
