@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <book>
-    <bookinfo><graphic fileref="logo.jpg"/>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>XQuery Documentation</title>
-        <date>September 2009</date>
+        <date>November 2009</date>
         <orgname>The eXist Project</orgname>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
@@ -62,9 +63,10 @@
         <section>
             <title>Function Library</title>
             <para>A complete list of eXist-supported XQuery functions can be viewed on the <ulink
-                    url="xquery/functions.xql">XQuery Function Documentation</ulink> page. Each
-                function description is taken directly from the signature provided by the class
-                implementing the <classname>Function</classname> interface. </para>
+                    url="xquery/functions.xql">XQuery Function Documentation</ulink> page or the new
+                    <ulink url="functions">XQuery Function Documentation Browser</ulink>. Each function description is taken directly from the signature
+                provided by the class implementing the <classname>Function</classname> interface.
+            </para>
         </section>
         <section>
             <title>The Module System</title>
@@ -314,7 +316,7 @@ for $rec in /rdf:RDF/* return
                     number of common utility functions. The <command>util:md5</command> function,
                     used in the above example, is one such function. In this subsection, we discuss
                     a few of the important available utility functions. For a complete list, please
-                    go to the <ulink url="xquery/functions.xql">Built-in Functions</ulink>
+                    go to the <ulink url="functions/util">Built-in Functions</ulink>
                     section.</para>
                 <para>However, one important function, <command>util:eval</command>, requires
                     further explanation.</para>
@@ -657,10 +659,10 @@ throws XPathException {
                 value. In the example above, we accept a single argument named "text" of type
                     <option>xs:string</option> and a cardinality of <option>ZERO_OR_MORE</option>
                 with the description "The text to echo". In other words, we accept any sequence of
-                strings containing zero or more items.  The return value is of type
+                strings containing zero or more items. The return value is of type
                     <option>xs:string</option> and a cardinality of <option>ZERO_OR_MORE</option>
-                with the description "the echoed text".  <emphasis role="bold">Note:</emphasis> The
-                parameter description should be normal sentence starting with a capital letter.  The
+                with the description "the echoed text". <emphasis role="bold">Note:</emphasis> The
+                parameter description should be normal sentence starting with a capital letter. The
                 return value description is always prepended with "Returns ", so have the text to
                 match. </para>
             <para>Next, the subclass overwrites the <command>eval</command> method, which has two
