@@ -234,10 +234,9 @@
             <section>
                 <title>Jing</title>
                 <para>The Jing validation functions are based on James Clark's <a
-                        href="http://www.thaiopensource.com/relaxng/jing.html">Jing</a> library. eXist uses the <a
-                        href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> library, which is the
-                    &lt;oXygen/&gt; XML NVDL implementation based on new <a
-                        href="http://code.google.com/p/jing-trang/">Jing</a> development. The library relies on the <a
+                        href="http://www.thaiopensource.com/relaxng/jing.html">Jing</a> library. eXist uses the maintained version
+												that is available via <a
+                        href="http://code.google.com/p/jing-trang/">Google Code</a>. The library relies on the <a
                         href="http://www.thaiopensource.com/relaxng/api/jing/com/thaiopensource/validate/ValidationDriver.html"
                         >com.thaiopensource.validate.ValidationDriver</a> which supports a wide range of grammar types: <itemizedlist>
                         <listitem>
@@ -271,10 +270,7 @@
                         </varlistentry>
                     </variablelist>
                 </para>
-                <note>
-                    <para>A new version of the Jing library will be included in future revisions of eXist-db, providing 
-                        more solid support for schematron.</para>
-                </note>
+                
             </section>
         </section>
         <section id="sect3a">
@@ -481,8 +477,8 @@
                             grammars</a>.</para>
                     </listitem>
                     <listitem>
-                        <para><a href="http://www.oxygenxml.com/onvdl.html">oNVDL</a> oXygen XML NVDL implementation
-                            based on Jing</para>
+                        <para><a href="http://code.google.com/p/jing-trang/">jing-trang</a> Schema validation and 
+												conversion based on RELAX NG</para>
                     </listitem>
                     <listitem>
                         <para><a href="http://en.wikipedia.org/wiki/Namespace-based_Validation_Dispatching_Language"
