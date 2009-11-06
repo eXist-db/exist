@@ -131,7 +131,6 @@ public class NativeBroker extends DBBroker {
     public static final String INDEX_DEPTH_ATTRIBUTE = "index-depth"; 
 
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
-    
     private static final byte[] ALL_STORAGE_FILES = {
     	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
     };
@@ -172,6 +171,8 @@ public class NativeBroker extends DBBroker {
     /** used to count the nodes inserted after the last memory check */
     protected int nodesCount = 0;
 
+    protected int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
+    
     protected String dataDir;
 	
     protected byte prepend;
@@ -199,7 +200,10 @@ public class NativeBroker extends DBBroker {
         dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		if (dataDir == null)
             dataDir = DEFAULT_DATA_DIR;
-
+        nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
+        if (nodesCountThreshold > 0)
+            nodesCountThreshold = nodesCountThreshold * 1000;
+        
         defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
 		if (defaultIndexDepth < 0)
 		    defaultIndexDepth = DEFAULT_INDEX_DEPTH;
@@ -2929,14 +2933,22 @@ public class NativeBroker extends DBBroker {
 
     /** check available memory */
     public void checkAvailableMemory() {
-        if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
-            if (run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
-                flush();
-                System.gc();
-                NumberFormat nf = NumberFormat.getNumberInstance();
-                LOG.info("total memory: " + nf.format(run.totalMemory()) +
-                        "; free: " + nf.format(run.freeMemory()));
+        if (nodesCountThreshold <= 0) {
+            if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
+                if (run.totalMemory() >= run.maxMemory() && run.freeMemory() < pool.getReservedMem()) {
+                    NumberFormat nf = NumberFormat.getNumberInstance();
+                    LOG.info("total memory: " + nf.format(run.totalMemory()) +
+                            "; max: " + nf.format(run.maxMemory()) +
+                            "; free: " + nf.format(run.freeMemory()) +
+                            "; reserved: " + nf.format(pool.getReservedMem()) +
+                            "; used: " + nf.format(pool.getCacheManager().getSizeInBytes()));
+                    flush();
+                    System.gc();
+                }
+                nodesCount = 0;
             }
+        } else if (nodesCount > nodesCountThreshold) {
+            flush();
             nodesCount = 0;
         }
     }

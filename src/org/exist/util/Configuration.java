@@ -683,7 +683,17 @@ public class Configuration implements ErrorHandler
                 LOG.warn(nfe);
             }
         }
-        
+
+        String nodesBuffer = con.getAttribute(BrokerPool.NODES_BUFFER_ATTRIBUTE);
+        if (nodesBuffer != null) {
+            try {
+                config.put(BrokerPool.PROPERTY_NODES_BUFFER, new Integer(nodesBuffer));
+                LOG.debug(BrokerPool.PROPERTY_NODES_BUFFER + ": " + config.get(BrokerPool.PROPERTY_NODES_BUFFER));
+            } catch (NumberFormatException nfe) {
+                LOG.warn(nfe);
+            }
+        }
+
         //Unused !
         String buffers = con.getAttribute("buffers");
         if (buffers != null) {

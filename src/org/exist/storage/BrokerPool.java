@@ -99,6 +99,7 @@ public class BrokerPool extends Observable {
 	public final static String MAX_CONNECTIONS_ATTRIBUTE = "max";
 	public final static String SYNC_PERIOD_ATTRIBUTE = "sync-period";
 	public final static String SHUTDOWN_DELAY_ATTRIBUTE = "wait-before-shutdown";
+    public final static String NODES_BUFFER_ATTRIBUTE = "nodesBuffer";
 	
 	//Various configuration property keys (set by the configuration manager)
 	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
@@ -114,6 +115,7 @@ public class BrokerPool extends Observable {
 	public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
     public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
 	public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
+    public static final String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -714,9 +716,10 @@ public class BrokerPool extends Observable {
 
         // compute how much memory should be reserved for caches to grow
         Runtime rt = Runtime.getRuntime();
-        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() +
-        	(rt.maxMemory() / 5);
-
+        long maxMem = rt.maxMemory();
+        long minFree = maxMem / 5;
+        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
+        LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
         notificationService = new NotificationService();
 
         //REFACTOR : construct then... configure
