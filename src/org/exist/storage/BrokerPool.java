@@ -1375,7 +1375,7 @@ public class BrokerPool extends Observable {
 	/**
 	 * Shuts downs the database instance
 	 */
-	public synchronized void shutdown() {
+	public void shutdown() {
 		shutdown(false);
 	}
 	
@@ -1395,14 +1395,19 @@ public class BrokerPool extends Observable {
 
         LOG.info("Database is shutting down ...");
 
-        // wait for currently running system tasks before we shutdown
+        status = SHUTDOWN;
+
         java.util.concurrent.locks.Lock lock = transactionManager.getLock();
 
         try {
+            // wait for currently running system tasks before we shutdown
             lock.lock();
             synchronized (this) {
-                status = SHUTDOWN;
 
+                // release transaction log to allow remaining brokers to complete
+                // their job
+                lock.unlock();
+                
                 notificationService.debug();
 
                 //Notify all running tasks that we are shutting down
@@ -1518,8 +1523,6 @@ public class BrokerPool extends Observable {
                     shutdownListener.shutdown(instanceName, instances.size());
             }
         } finally {
-            lock.unlock();
-
             // clear instance variables, just to be sure they will be garbage collected
             // the test suite restarts the db a few hundred times
             transactionManager = null;
