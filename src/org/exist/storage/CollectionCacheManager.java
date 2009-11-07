@@ -25,6 +25,9 @@ import org.apache.log4j.Logger;
 import org.exist.collections.CollectionCache;
 import org.exist.storage.cache.Cache;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.management.AgentFactory;
+import org.exist.management.Agent;
 
 public class CollectionCacheManager implements CacheManager {
 
@@ -39,15 +42,16 @@ public class CollectionCacheManager implements CacheManager {
 
     private CollectionCache collectionCache;
 
-    public CollectionCacheManager(Configuration config, CollectionCache cache) {
+    public CollectionCacheManager(BrokerPool pool, CollectionCache cache) {
         int cacheSize;
-        if ((cacheSize = config.getInteger(PROPERTY_CACHE_SIZE)) < 0)
+        if ((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0)
             cacheSize = DEFAULT_CACHE_SIZE;
         this.maxCacheSize = cacheSize * 1024 * 1024;
         if (LOG.isDebugEnabled())
             LOG.debug("collection collectionCache will be using " + this.maxCacheSize + " bytes max.");
         this.collectionCache = cache;
         this.collectionCache.setCacheManager(this);
+        registerMBean(pool.getId());
     }
 
     public void registerCache(Cache cache) {
@@ -90,4 +94,14 @@ public class CollectionCacheManager implements CacheManager {
     public long getCurrentSize() {
         return collectionCache.getRealSize();
     }
+
+    private void registerMBean(String instanceName) {
+        Agent agent = AgentFactory.getInstance();
+        try {
+            agent.addMBean(instanceName, "org.exist.management." + instanceName +
+                ":type=CollectionCacheManager", new org.exist.management.CacheManager(this));
+        } catch (DatabaseConfigurationException e) {
+            LOG.warn("Exception while registering cache mbean.", e);
+        }
+        }
 }

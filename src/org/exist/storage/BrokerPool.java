@@ -741,8 +741,8 @@ public class BrokerPool extends Observable {
         int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
         if(bufferSize == -1)
         	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
-        collectionCache = new CollectionCache(this, bufferSize, 0.001);
-        collectionCacheMgr = new CollectionCacheManager(conf, collectionCache);
+        collectionCache = new CollectionCache(this, bufferSize, 0.0001);
+        collectionCacheMgr = new CollectionCacheManager(this, collectionCache);
 
         // compute how much memory should be reserved for caches to grow
         Runtime rt = Runtime.getRuntime();

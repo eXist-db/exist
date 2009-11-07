@@ -94,10 +94,8 @@ public class CollectionCache extends LRDCache {
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
-        
-        accounting.replacedPage(item);
-        if (cacheManager != null && accounting.resizeNeeded()) {
-            accounting.stats();
+
+        if (cacheManager != null) {
             cacheManager.requestMem(this);
         }
 		return old;
