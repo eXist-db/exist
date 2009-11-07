@@ -375,10 +375,10 @@
                     
             <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
-                connectionTimeout="10000" flushAfter="300" />            
             -->
             
-			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"/>
+			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
+				buffer="128"/>
 
 			<!-- 
                  The full text index is always required and should
