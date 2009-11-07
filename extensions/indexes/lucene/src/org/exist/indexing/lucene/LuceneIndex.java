@@ -29,6 +29,8 @@ public class LuceneIndex extends AbstractIndex {
     protected Directory directory;
     protected Analyzer defaultAnalyzer;
 
+    protected double bufferSize = IndexWriter.DEFAULT_RAM_BUFFER_SIZE_MB;
+
     protected IndexWriter cachedWriter = null;
     protected int writerUseCount = 0;
     protected IndexReader cachedReader = null;
@@ -46,6 +48,17 @@ public class LuceneIndex extends AbstractIndex {
         if (LOG.isDebugEnabled())
             LOG.debug("Configuring Lucene index");
 
+        String bufferSizeParam = config.getAttribute("buffer");
+        if (bufferSizeParam != null)
+            try {
+                bufferSize = Double.parseDouble(bufferSizeParam);
+            } catch (NumberFormatException e) {
+                LOG.warn("Invalid buffer size setting for lucene index: " + bufferSizeParam, e);
+            }
+
+        if (LOG.isDebugEnabled())
+            LOG.debug("Using buffer size: " + bufferSize);
+        
         NodeList nl = config.getElementsByTagName("analyzer");
         if (nl.getLength() > 0) {
             Element node = (Element) nl.item(0);
@@ -129,6 +142,7 @@ public class LuceneIndex extends AbstractIndex {
             writerUseCount++;
         } else {
             cachedWriter = new IndexWriter(directory, true, defaultAnalyzer);
+            cachedWriter.setRAMBufferSizeMB(bufferSize);
             writerUseCount = 1;
         }
         notifyAll();
