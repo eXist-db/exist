@@ -507,16 +507,17 @@ public class ClientFrame extends JFrame
             }
         });
         toolsMenu.add(item);
-        
-        item = new JMenuItem(Messages.getString("ClientFrame.59"), KeyEvent.VK_I); //$NON-NLS-1$
-        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
-        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                editIndexesAction(e);
-            }
-        });
-        toolsMenu.add(item);
+
+        // Disable "Edit Indexes" menu item.
+//        item = new JMenuItem(Messages.getString("ClientFrame.59"), KeyEvent.VK_I); //$NON-NLS-1$
+//        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
+//        		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+//        item.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                editIndexesAction(e);
+//            }
+//        });
+//        toolsMenu.add(item);
         
         item = new JMenuItem("Edit Triggers", KeyEvent.VK_T);
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
