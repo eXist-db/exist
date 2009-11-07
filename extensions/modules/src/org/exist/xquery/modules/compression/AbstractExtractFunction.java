@@ -79,13 +79,13 @@ public abstract class AbstractExtractFunction extends BasicFunction
         FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
         if(entryFilterFunctionSig.getArgumentCount() < 3)
             throw new XPathException("entry-filter function must take at least 3 arguments.");
-        SequenceType[] argTypes = entryFilterFunctionSig.getArgumentTypes();
-        if(
-            argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
-            argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
-            argTypes[2].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[2].getPrimaryType()) ||
-            !Type.subTypeOf(Type.BOOLEAN, entryFilterFunctionSig.getReturnType().getPrimaryType())
-        ) throw new XPathException("entry-filter function does not match the expected function signature.");
+//        SequenceType[] argTypes = entryFilterFunctionSig.getArgumentTypes();
+//        if(
+//            argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
+//            argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
+//            argTypes[2].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[2].getPrimaryType()) ||
+//            !Type.subTypeOf(Type.BOOLEAN, entryFilterFunctionSig.getReturnType().getPrimaryType())
+//        ) throw new XPathException("entry-filter function does not match the expected function signature.");
 
         filterParam = args[2];
         
@@ -97,13 +97,13 @@ public abstract class AbstractExtractFunction extends BasicFunction
         FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
         if(entryDataFunctionSig.getArgumentCount() < 4)
             throw new XPathException("entry-data function must take at least 4 arguments");
-        argTypes = entryDataFunctionSig.getArgumentTypes();
-        if(
-                argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
-                argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
-                argTypes[2].getCardinality() != Cardinality.ZERO_OR_ONE || !Type.subTypeOf(Type.ITEM, argTypes[2].getPrimaryType()) ||
-                argTypes[3].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[3].getPrimaryType())
-        ) throw new XPathException("entry-data function does not match the expected function signature.");
+//        argTypes = entryDataFunctionSig.getArgumentTypes();
+//        if(
+//                argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
+//                argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
+//                argTypes[2].getCardinality() != Cardinality.ZERO_OR_ONE || !Type.subTypeOf(Type.ITEM, argTypes[2].getPrimaryType()) ||
+//                argTypes[3].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[3].getPrimaryType())
+//        ) throw new XPathException("entry-data function does not match the expected function signature.");
 
         storeParam = args[4];
         
@@ -135,7 +135,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
         //call the entry-filter function
         Sequence filterParams[] = new Sequence[3];
-        filterParams[0] = new AnyURIValue(name);
+        filterParams[0] = new StringValue(name);
         filterParams[1] = new StringValue(dataType);
         filterParams[2] = filterParam;
         Sequence entryFilterFunctionResult = entryFilterFunction.evalFunction(contextSequence, null, filterParams);
