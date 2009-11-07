@@ -133,15 +133,17 @@ public class JMXClient {
                 values = getValues(attrs);
                 echo(String.format("%10s %20s %,10d %,10d %,10d %,10d", values[0], values[1], values[2], values[3], values[4], values[5]));
            }
-        } catch (IOException e) {
+            
+            echo("");
+           name = new ObjectName("org.exist.management." + instance + ":type=CollectionCacheManager");
+            cols = new String[] { "MaxTotal", "CurrentSize" };
+            attrs = connection.getAttributes(name, cols);
+            values = getValues(attrs);
+           echo(String.format("Collection Cache: %10d k max / %10d k allocated",
+               ((Long)values[0] / 1024), ((Long)values[1] / 1024)));
+        } catch (Exception e) {
             error(e);
-        } catch (MalformedObjectNameException e) {
-            error(e);
-        } catch (InstanceNotFoundException e) {
-            error(e);
-        } catch (ReflectionException e) {
-            error(e);
-        } 
+        }
     }
 
     public void lockTable() {
