@@ -17,6 +17,30 @@
     <chapter>
         <title>Tuning the Database</title>
         <section>
+            <title>Memory settings</title>
+            <para>Java always limits the maximum amount of memory available to a process. eXist will
+                thus not automatically use all of the memory available on your machine. The default
+                setting is limited to 512MB.</para>
+            <para>The maximum amount of memory Java will allocate is determined by the
+                    <option>-Xmx</option> parameter passed to Java on the command line. If you
+                launch eXist via one of the shell or batch scripts, you need to change
+                    <option>-Xmx</option> in there.</para>
+            <para>On a <emphasis>Unix</emphasis> system, edit <filename
+                    >EXIST_HOME/bin/functions.d/eXist-settings.sh</filename>. Search for the
+                    <option>JAVA_OPTIONS</option> variable, which sets <option>-Xmx</option> for the
+                server. The <option>CLIENT_JAVA_OPTIONS</option> variable does the same for the Java
+                admin client. Instead of directly editing <filename>eXist-settings.sh</filename>,
+                you may also override those variables globally in your own shell.</para>
+            <para>On <emphasis>Windows</emphasis>, the <option>-Xmx</option> settings is done in the
+                main .bat files, .e.g. <filename>EXIST_HOME\bin\startup.bat</filename>.</para>
+            <para>If you launch <emphasis>eXist as a service</emphasis>, all Java settings will be
+                controlled by the service wrapper. In this case, the file to edit is <filename
+                    >EXIST_HOME/tools/wrapper/conf/wrapper.conf</filename>. Search for the following
+                lines:</para>
+            <synopsis># Maximum Java Heap Size (in MB)
+wrapper.java.maxmemory=128</synopsis>
+        </section>
+        <section>
             <title>Cache settings</title>
             <para>Each of the core database files and indexes has a page cache. The main purpose of
                 this cache is to make sure that the most frequently used pages of the db files are
@@ -32,7 +56,7 @@
                 <title>cacheSize parameter in conf.xml</title>
                 <programlisting language="xml"><![CDATA[
 <db-connection cacheSize="48M" collectionCache="24M" database="native"
-        files="webapp/WEB-INF/data" pageSize="4096">]]></programlisting>
+        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="-1">]]></programlisting>
             </example>
             <para>The default <ulink url="http://www.exist-db.org/configuration.html#N101B8"
                     >setting</ulink> for <option>cacheSize</option> is very conservative (48M). It
@@ -50,6 +74,13 @@
                 to revisit your index configuration. Removing unused indexes will give more room to
                 the other indexes. In particular, the full text index can grow very fast until it
                 becomes a bottleneck. Try to disable the default full text index (see below).</para>
+            <para>The <option>nodesBuffer</option> attribute can be used to set eXist's temporary
+                internal buffer to a fixed size. The buffer is used during indexing to cache nodes
+                before they are flushed to disk. The default setting (nodesBuffer="-1") is to use as
+                much memory as is available, but this can be problematic if you have to store large
+                documents in a multi-user environment. For a production server, a good
+                recommendation would be to set nodesBuffer to 1000 or less if there are many
+                concurrent write operations.</para>
         </section>
         <section>
             <title>Index configuration</title>
@@ -107,10 +138,9 @@
                             configuration by path.</para>
                     </listitem>
                     <listitem>
-                        <para>if you are using eXist 1.3/SVN trunk, consider <emphasis>switching to
-                                the new <ulink url="lucene.xml">Lucene-based
-                                index</ulink></emphasis>. It provides better performance and
-                            stability.</para>
+                        <para>if you are using eXist 1.4, consider <emphasis>switching to the new
+                                    <ulink url="lucene.xml">Lucene-based index</ulink></emphasis>.
+                            It provides better performance and stability.</para>
                     </listitem>
                 </itemizedlist>
             </section>
@@ -194,7 +224,7 @@
                     a sequence of separate words or tokens in a longer text. It can sometimes even
                     be faster to post-process the returned node set and filter out wrong matches
                     than using a much slower regular expression.</para>
-                <para>eXist 1.3 offers a <ulink url="lucene.xml">new full text index</ulink> which
+                <para>eXist 1.4 offers a <ulink url="lucene.xml">new full text index</ulink> which
                     is based on Apache Lucene. It provides better performance and overall stability
                     than the builtin index.</para>
             </section>
@@ -459,11 +489,11 @@ return
                     can even block the db for a while. Also, experience shows that the overall
                     stability of the db suffers if too many temporary fragments have to be
                     stored/cleaned up in short time.</para>
-                <para>eXist 1.3/SVN trunk fixes those issues completely. It has a redesigned query
-                    engine, which is able to directly operate on in-memory nodes without
-                    transforming them into persistent nodes. No temporary documents need to be
-                    stored. As a consequence, queries on in-memory fragments will be much faster
-                    with 1.4.0 and have no effect on stability.</para>
+                <para>eXist 1.4 fixes those issues completely. It has a redesigned query engine,
+                    which is able to directly operate on in-memory nodes without transforming them
+                    into persistent nodes. No temporary documents need to be stored. As a
+                    consequence, queries on in-memory fragments will be much faster with 1.4.0 and
+                    have no effect on stability.</para>
                 <para>If you experience performance or stability issues with the 1.2.x series, we
                     recommend to check your log files for messages similar to the one given above.
                     If you see lots of them, there are two possibilities:</para>
