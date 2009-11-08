@@ -107,6 +107,8 @@
                 <include name="excalibur-cli*.jar"/>
                 <include name="commons-pool*.jar"/>
                 <include name="antlr*.jar"/>
+                <include name="ws-commons-util*.jar"/>
+                <include name="sunxacml*.jar"/>
             </fileset>
             <fileset dir="${exist.home}/lib/optional">
                 <include name="commons-fileupload*.jar"/>
@@ -137,6 +139,7 @@
         <copy todir="${exist.deploy}/samples/WEB-INF">
         	<fileset dir="${exist.home}/webapp/WEB-INF">
         		<include name="catalog.xml"/>
+        	    <include name="controller-config.xml"/>
         	</fileset>
         </copy>
         <copy todir="${exist.deploy}/samples/WEB-INF/entities">
