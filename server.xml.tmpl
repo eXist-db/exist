@@ -57,7 +57,7 @@
 	<filter enabled="no" path="/*" class="uk.gov.devonline.www.xforms.XFormsFilter"/>
 
     <filter enabled="no" path="/*" class="org.exist.http.urlrewrite.XQueryURLRewrite">
-        <param name="xquery" value="controller.xql"/>
+        <param name="config" value="xmldb:exist:///db/controller-config.xml"/>
     </filter>
 
     <!--

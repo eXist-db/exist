@@ -112,35 +112,7 @@ import java.util.regex.Matcher;
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
  *
- * XQueryURLrewrite is configured in web.xml as follows:
- * <pre>
- *   &lt;filter>
- *       &lt;filter-name>XQueryURLRewrite&lt;/filter-name>
- *       &lt;filter-class>org.exist.http.urlrewrite.XQueryURLRewrite&lt;/filter-class>
- *	     &lt;init-param>
- *			&lt;param-name>base&lt;/param-name>
- *	        &lt;param-value>.&lt;/param-value>
- *			&lt;!--param-value>xmldb:exist:///db&lt;/param-value-->
- *		&lt;/init-param>
- *      &lt;!--init-param>
- *          &lt;param-name>xquery&lt;/param-name>
- *          &lt;param-value>controller.xql&lt;/param-value>
- *      &lt;/init-param-->
- *   &lt;/filter>
- * </pre>
- *
- * Parameter "xquery" directly points to the controller XQuery which should be used for
- * <b>all</b> requests. The query may reside on the file system or can be stored in the
- * database. If it is stored in the db, the parameter value for "xquery" should be a valid
- * XML:DB URI, containing the complete path to the resource in the db.
- *
- * Alternatively, XQueryURLRewrite can try to search for a controller
- * matching the current request path. As above, it can either search the database collection
- * hierarchy or the file system. The starting point for the search is determined by parameter
- * "base".
- *
- * If neither "xquery" nor "base" are present, XQueryURLRewrite sets base to point to the current
- * webapp root directory.
+ * Please read the <a href="http://exist-db.org/urlrewrite.html">documentation</a> for further information. 
  */
 public class XQueryURLRewrite implements Filter {
 
@@ -161,8 +133,8 @@ public class XQueryURLRewrite implements Filter {
 
     private final Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
 
-    private User user;
-    private BrokerPool pool;
+    protected User user;
+    protected BrokerPool pool;
 
     // path to the query
     private String query = null;
@@ -176,6 +148,9 @@ public class XQueryURLRewrite implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         // save FilterConfig for later use
         this.config = filterConfig;
+
+        configure();
+
         this.rewriteConfig = new RewriteConfig(this);
 
         query = filterConfig.getInitParameter("xquery");
@@ -489,7 +464,7 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
-    private void configure() throws EXistException, ServletException {
+    private void configure() throws ServletException {
         if (pool == null) {
             String username = config.getInitParameter("user");
             if(username == null)
@@ -497,11 +472,15 @@ public class XQueryURLRewrite implements Filter {
             String password = config.getInitParameter("password");
             if(password == null)
                 password = DEFAULT_PASS;
-            pool = BrokerPool.getInstance();
-            org.exist.security.SecurityManager secman = pool.getSecurityManager();
-            user = secman.getUser(username);
-            if (!user.validate(password)) {
-                throw new ServletException("Invalid password specified for XQueryURLRewrite user");
+            try {
+                pool = BrokerPool.getInstance();
+                org.exist.security.SecurityManager secman = pool.getSecurityManager();
+                user = secman.getUser(username);
+                if (!user.validate(password)) {
+                    throw new ServletException("Invalid password specified for XQueryURLRewrite user");
+                }
+            } catch (EXistException e) {
+                throw new ServletException("Could not intialize db: " + e.getMessage(), e);
             }
         }
     }
@@ -735,6 +714,7 @@ public class XQueryURLRewrite implements Filter {
 
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
         context.declareVariable("exist:root", basePath);
+        context.declareVariable("exist:context", request.getContextPath());
         
         String path;
         if (sourceInfo.controllerPath.length() > 0 && !sourceInfo.controllerPath.equals("/"))
