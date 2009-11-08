@@ -145,7 +145,8 @@ public class RewriteConfig {
                 broker = urlRewrite.pool.get(urlRewrite.user);
 
                 doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
-                parse(doc);
+                if (doc != null)
+                    parse(doc);
             } catch (EXistException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             } catch (PermissionDeniedException e) {
@@ -159,8 +160,10 @@ public class RewriteConfig {
             try {
                 File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."));
                 File configFile = new File(d, controllerConfig);
-                Document doc = parseConfig(configFile);
-                parse(doc);
+                if (configFile.canRead()) {
+                    Document doc = parseConfig(configFile);
+                    parse(doc);
+                }
             } catch (ParserConfigurationException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             } catch (SAXException e) {
