@@ -6,7 +6,7 @@ $QUERY = <<END;
 <query xmlns="http://exist.sourceforge.net/NS/exist"
     start="1" max="20">
     <text><![CDATA[
-        for \$speech in //SPEECH[LINE &= 'corrupt*']
+        for \$speech in //SPEECH[ft:query(., 'corrupt*')]
         order by \$speech/SPEAKER[1]
         return
             <hit>{\$speech}</hit>
