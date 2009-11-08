@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <book>
-    <articleinfo>
+    <bookinfo>
         <graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>XProc Introduction</title>
+    	<subject>XProc</subject>
+    	<date>November 2009</date>
         <author>
             <firstname>James</firstname>
             <surname>Fuller</surname>
@@ -11,11 +13,12 @@
                 <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
             </affiliation>
         </author>
-    </articleinfo>
+    </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
 
     <chapter>
-    <section>
+    	<title>XProc Introduction</title>
+    	<section>
         <title>XProc Overview</title>
         <para>W3C XProc is a specification that defines a processor for working with XML technologies. eXist XProc implementation is called <b>xprocxq</b> and is mostly developed in XQuery.</para>
 		<para>
