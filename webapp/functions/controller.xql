@@ -47,7 +47,6 @@ return
     			<forward url="{$newPath}"/>
     			<cache-control cache="yes"/>
     		</dispatch>
-    		
 	(: Execute RESTful queries by passing URL parameters to the query :)
     else
         let $module := $post-query-url-params[1]

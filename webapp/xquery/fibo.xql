@@ -25,5 +25,6 @@ declare function f:fibo($n as xs:integer) as item() {
 				</tr>
 			}
 		</table>
+		<p id="view-source"><a href="guess.xql/source">View source</a></p>
 	</body>
 </html>

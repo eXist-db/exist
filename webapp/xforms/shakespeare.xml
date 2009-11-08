@@ -11,6 +11,7 @@
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
         </author>
+        <source>shakespeare.xml/source?mode=xml</source>
         <xf:model>
             <xf:instance>
                 <search xmlns="">

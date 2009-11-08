@@ -162,6 +162,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
             <script type="text/javascript" src="../scripts/yui/utilities2.7.0.js"/>
             <script type="text/javascript" src="scripts/fundocs.js"/>
+            <source>functions.xql/source</source>
         </bookinfo>
         
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
@@ -261,7 +262,7 @@ $query as xs:string?) as element() {
                         <p>Query: "{$query}" in {$type}.</p>
                     else ()
                 }
-    { xqdoc:do-query($prevAction, $module, $type, $query, true() ) }
+                { xqdoc:do-query($prevAction, $module, $type, $query, true() ) }
             </body>
         </html>
 };

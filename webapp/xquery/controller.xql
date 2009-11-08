@@ -7,6 +7,17 @@ if ($exist:path = "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<redirect url="../examples.xml"/>
 	</dispatch>
+else if (ends-with($exist:path, '.xql/source')) then
+    let $resource := substring-before($exist:path, '/source')
+    return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    		<forward url="{$exist:controller}{$resource}?source"/>
+    		<view>
+    			<forward url="/xquery/source.xql">
+                    <set-attribute name="resource" value="{$resource}"/>
+                </forward>
+    		</view>
+    	</dispatch>
 else if ($exist:resource = ('search.xql', 'functions.xql', 'svnlog.xql')) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<!-- query results are passed to XSLT servlet via request attribute -->
@@ -94,15 +105,8 @@ else if ($exist:resource eq 'twitter.xql') then
             <forward url="twitter-view.xql"/>
         </view>
     </dispatch>
-else if ($exist:resource = ('default-style.css', 'default-style2.css', 'curvycorners.js')) then
-    let $newPath := replace($exist:path, '^.*/([^/]+/[^/]+)$', '/$1')
-    return
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		<forward url="{$newPath}"/>
-		<cache-control cache="yes"/>
-	</dispatch>
-else if (matches($exist:path, 'syntax/.*\.(css|js)')) then
-    let $newPath := replace($exist:path, '^.*/([^/]+/syntax/[^/]+)$', '/$1')
+else if (matches($exist:path, '(styles/syntax|scripts/syntax/|logo.jpg|default-style2.css|curvycorners.js)')) then
+    let $newPath := replace($exist:path, '^.*((styles/|scripts/|logo).*)$', '/$1')
     return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<forward url="{$newPath}"/>

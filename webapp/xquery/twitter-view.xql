@@ -131,6 +131,8 @@ return
 					{ $formattedFeed }
 					</ul>
 				</div>
+			    <p class="view-source">View source: <a href="twitter.xql/source">twitter.xql</a>,
+			     <a href="twitter-view.xql/source">twitter-view.xql</a></p>
 			</body>
 		</html>
 	else

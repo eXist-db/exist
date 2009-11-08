@@ -654,3 +654,9 @@ td.doclink {
     border: 0;
     background-color: transparent;
 }
+
+.view-source {
+    float: right;
+    margin-top: 1em;
+    font-size: 85%;
+}
