@@ -353,28 +353,28 @@ public void fatal(Object message, Throwable t); ]]></programlisting>
     </root>
 ]]></markup></programlisting>
             <para>to</para>
-            <programlisting format="linespecific" language="java"><![CDATA[
+            <programlisting><markup><![CDATA[
     <root>
         <priority value="info"/>
         <appender-ref ref="exist.core"/>
     </root>
-]]></programlisting>
+]]></markup></programlisting>
             <para>Of course this will result in a cacophony of log output, so you’ll generally want
                 to adjust the logging level at a more specific level. To do this you can append a
                 line to the properties file of following form:</para>
-            <programlisting format="linespecific" language="java"><![CDATA[
+            <programlisting><markup><![CDATA[
     <category name="targetedLoggerName" additivity="false">
         <priority value="desiredLogLevel"/>
         <appender-ref ref="exist.xacml"/>
     </category>
- ]]></programlisting>
+ ]]></markup></programlisting>
             <para>For instance, you would add</para>
-            <programlisting format="linespecific" language="java"><![CDATA[
+            <programlisting><markup><![CDATA[
     <category name="org.exist.security" additivity="false">
         <priority value="info"/>
         <appender-ref ref="exist.security"/>
     </category>
-]]></programlisting>
+]]></markup></programlisting>
             <para>to set the “org.exist.security” logger’s level to “info”. Note that doing so also
                 causes all the default log level of all org.exist.security loggers to be set to
                 “INFO”. For example, the level of the org.exist.security.xacml logger would also be
