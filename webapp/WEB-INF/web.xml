@@ -129,6 +129,19 @@
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
+
+        <!-- Defines the location of the controller-config.xml file, which defines
+             the root mappings. -->
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>WEB-INF/controller-config.xml</param-value>
+        </init-param>
+        
+        <!-- This could also be stored inside the db: -->
+		<!--init-param>
+			<param-name>config</param-name>
+			<param-value>xmldb:exist:///db/controller-config.xml</param-value>
+		</init-param-->
     </filter>
     
     <servlet>

@@ -2,6 +2,13 @@ package org.exist.http.urlrewrite;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.dom.DocumentImpl;
+import org.exist.xmldb.XmldbURI;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.memtree.SAXAdapter;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.Constants;
@@ -74,19 +81,17 @@ public class RewriteConfig {
 
     // the list of established mappings
     private List<Mapping> mappings = new ArrayList<Mapping>();
-    // source file for controller-config.xml
-    private File configFile;
-    private long lastModified;
+
     // parent XQueryURLRewrite
     private XQueryURLRewrite urlRewrite;
 
     public RewriteConfig(XQueryURLRewrite urlRewrite) throws ServletException {
         this.urlRewrite = urlRewrite;
-        File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."), "WEB-INF");
-        configFile = new File(d, CONFIG_FILE);
-        if (configFile.canRead()) {
-            configure();
-        }
+        String controllerConfig = urlRewrite.getConfig().getInitParameter("config");
+        if (controllerConfig == null)
+            controllerConfig = CONFIG_FILE;
+
+        configure(controllerConfig);
     }
 
     /**
@@ -111,8 +116,6 @@ public class RewriteConfig {
      * @throws ServletException
      */
     public synchronized URLRewrite lookup(String path, boolean staticMapping) throws ServletException {
-        if (configFile.lastModified() > lastModified)
-            configure();
         int p = path.lastIndexOf(';');
         if(p != Constants.STRING_NOT_FOUND)
             path = path.substring(0, p);
@@ -133,34 +136,58 @@ public class RewriteConfig {
         return null;
     }
 
-    private void configure() throws ServletException {
-        LOG.debug("Loading XQueryURLRewrite configuration from " + configFile.getAbsolutePath());
-        try {
-            Document doc = parseConfig(configFile);
-            Element root = doc.getDocumentElement();
-            Node child = root.getFirstChild();
-            while (child != null) {
-                if (child.getNodeType() == Node.ELEMENT_NODE &&
-                    child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
-                    Element elem = (Element) child;
-                    String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
-                    if (pattern == null)
-                        throw new ServletException("Action in controller-config.xml has no pattern: " + elem.toString());
-                    URLRewrite urw = parseAction(urlRewrite.getConfig(), pattern, elem);
-                    if (urw == null)
-                        throw new ServletException("Unknown action in controller-config.xml: " + elem.getNodeName());
-                    mappings.add(new Mapping(pattern, urw));
-                }
-                child = child.getNextSibling();
+    private void configure(String controllerConfig) throws ServletException {
+        LOG.debug("Loading XQueryURLRewrite configuration from " + controllerConfig);
+        if (controllerConfig.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+            DBBroker broker = null;
+            DocumentImpl doc = null;
+            try {
+                broker = urlRewrite.pool.get(urlRewrite.user);
+
+                doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
+                parse(doc);
+            } catch (EXistException e) {
+                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
+            } catch (PermissionDeniedException e) {
+                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
+            } finally {
+                if (doc != null)
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                urlRewrite.pool.release(broker);
             }
-            lastModified = configFile.lastModified();
-            urlRewrite.clearCaches();
-        } catch (ParserConfigurationException e) {
-            throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-        } catch (SAXException e) {
-            throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
+        } else {
+            try {
+                File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."));
+                File configFile = new File(d, controllerConfig);
+                Document doc = parseConfig(configFile);
+                parse(doc);
+            } catch (ParserConfigurationException e) {
+                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
+            } catch (SAXException e) {
+                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
+            } catch (IOException e) {
+                throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
+            }
+        }
+        urlRewrite.clearCaches();
+    }
+
+    private void parse(Document doc) throws ServletException {
+        Element root = doc.getDocumentElement();
+        Node child = root.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE &&
+                child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
+                Element elem = (Element) child;
+                String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
+                if (pattern == null)
+                    throw new ServletException("Action in controller-config.xml has no pattern: " + elem.toString());
+                URLRewrite urw = parseAction(urlRewrite.getConfig(), pattern, elem);
+                if (urw == null)
+                    throw new ServletException("Unknown action in controller-config.xml: " + elem.getNodeName());
+                mappings.add(new Mapping(pattern, urw));
+            }
+            child = child.getNextSibling();
         }
     }
 
@@ -176,10 +203,10 @@ public class RewriteConfig {
         return rewrite;
     }
 
-    private Document parseConfig(File cf) throws ParserConfigurationException, SAXException, IOException {
+    private Document parseConfig(File file) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
-        InputSource src = new InputSource(new FileInputStream(cf));
+        InputSource src = new InputSource(new FileInputStream(file));
         SAXParser parser = factory.newSAXParser();
         XMLReader xr = parser.getXMLReader();
         SAXAdapter adapter = new SAXAdapter();
