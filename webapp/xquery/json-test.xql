@@ -34,6 +34,7 @@ return
         <!-- Source File -->
         <script type="text/javascript" src="http://yui.yahooapis.com/2.3.1/build/yuitest/yuitest-beta-min.js"></script>
         <script type="text/javascript" src="json-test.js"></script>
+        <style type="text/css">.view-source {{ margin: 1em 0 1em 0; }}</style>
       </head>
       <body>
         <h1>Running XML2JSON Tests</h1>
@@ -44,5 +45,6 @@ return
             var data3 = {json:xml-to-json($xml3)};
             var data4 = {json:xml-to-json($xml4)};
         </script>
+        <div class="view-source"><a href="json-test.xql/source">Show Source</a></div>
       </body>
     </html>

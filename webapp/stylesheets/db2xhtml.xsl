@@ -135,9 +135,13 @@
     <xsl:template match="author"/>
     <xsl:template match="bookinfo|articleinfo" mode="backmatter">
         <div class="authors">
+            <xsl:apply-templates select="source" mode="backmatter"/>
             <xsl:apply-templates select="date" mode="backmatter"/>
             <xsl:apply-templates select="author|orgname" mode="backmatter"/>
         </div>
+    </xsl:template>
+    <xsl:template match="source" mode="backmatter">
+        <div class="view-source"><a href="{.}">View Source</a></div>
     </xsl:template>
     <xsl:template match="date" mode="backmatter">
         <div class="date">

@@ -145,6 +145,7 @@ as element() {
             <title>Documentation Search</title>
             <link rel="stylesheet" type="text/css" href="styles/docsearch.css"/>
             <script type="text/javascript" src="scripts/yui/utilities2.7.0.js"/>
+            <source>search.xql/source</source>
         </bookinfo>
         
     	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>

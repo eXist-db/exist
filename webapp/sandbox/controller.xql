@@ -50,8 +50,6 @@ else if (starts-with($exist:path, '/results/')) then
 		</forward>
 	</dispatch>
 else if (starts-with($exist:path, '/scripts/yui')) then
-    let $log := util:log("DEBUG", ("UI: ", replace($exist:path, '(/scripts/yui/.*)$', '$1')))
-    return
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<forward url="/{replace($exist:path, '(/scripts/yui/.*)$', '$1')}"/>
 	</dispatch>

@@ -38,6 +38,21 @@ return
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="examples.xml"/>
 		</dispatch>
+		
+    else if (ends-with($exist:path, '/source')) then
+        let $resource := substring-before($exist:path, '/source')
+        let $mode := request:get-parameter("mode", "xquery")
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        		<forward url="{$exist:controller}{$resource}?source"/>
+        		<view>
+        			<forward url="../../xquery/source.xql">
+                        <set-attribute name="resource" value="{$resource}"/>
+                        <set-attribute name="mode" value="{$mode}"/>
+                    </forward>
+        		</view>
+        	</dispatch>
+    	
     (: send docbook docs through the db2xhtml stylesheet :)
    else if ($exist:resource = ('examples.xml', 'xforms.xml')) then
          <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -98,21 +113,13 @@ return
     		<cache-control cache="yes"/>
     	</dispatch>
     (: make sure the global css and js files are resolved :)
-    else if ($exist:resource = ('default-style.css', 'default-style2.css', 'curvycorners.js')
-        or matches($exist:path, 'resources/')) then
-        let $newPath := replace($exist:path, '^.*/([^/]+/[^/]+)$', '/$1')
+    else if (matches($exist:path, '(resources/|styles/syntax/|scripts/syntax/|logo.jpg|default-style2.css|curvycorners.js)')) then
+        let $newPath := replace($exist:path, '^.*((resources/|styles/|scripts/|logo).*)$', '/$1')
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    			<forward url="{$newPath}"/>
-    			<cache-control cache="yes"/>
-    		</dispatch>
-    else if (matches($exist:path, 'syntax/.*\.(css|js)')) then
-        let $newPath := replace($exist:path, '^.*/([^/]+/syntax/[^/]+)$', '/$1')
-        return
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    			<forward url="{$newPath}"/>
-    			<cache-control cache="yes"/>
-    		</dispatch>
+        		<forward url="{$newPath}"/>
+        		<cache-control cache="yes"/>
+        	</dispatch>
     else
         (: everything else is passed through :)
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">

@@ -69,5 +69,6 @@ local:add-attribute(),
                 <tr><td colspan="2"><input type="submit"/></td></tr>
             </table>
         </form>
+        <p class="view-source"><a href="session.xql/source">View source</a></p>
     </body>
 </html>

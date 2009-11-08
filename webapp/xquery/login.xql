@@ -63,5 +63,6 @@ session:create(),
             </table>
         </form>
         { local:do-login() }
+        <p id="view-source"><a href="login.xql/source">View source</a></p>
     </body>
 </html>
