@@ -10,7 +10,7 @@
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
-    <target depends="prepare" name="webapps">
+    <target depends="jar" name="webapps">
 	
         <mkdir dir="dist"/>
         
@@ -89,6 +89,11 @@
                 <exclude name="WEB-INF/web.xml"/>
                 <exclude name="WEB-INF/data/*.dbx"/>
                 <exclude name="WEB-INF/data/*.lck"/>
+                <exclude name="WEB-INF/data/lucene/**"/>
+                <exclude name="WEB-INF/data/fs/**"/>
+                <exclude name="WEB-INF/data/fs.journal/**"/>
+                <exclude name="WEB-INF/data/export/**"/>
+                <exclude name="WEB-INF/data/sanity/**"/>
                 <exclude name="**/*.log*"/>
             </fileset>
             <zipfileset dir="samples" prefix="samples">
