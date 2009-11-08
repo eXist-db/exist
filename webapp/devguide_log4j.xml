@@ -2,11 +2,12 @@
 <?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" type="xml"?>
 <!-- $Id: scheduler.xml 9661 2009-08-05 19:48:39Z ixitar $ -->
 <book>
-    <bookinfo subject=""><graphic fileref="logo.jpg"/>
+    <bookinfo subject="">
+        <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Developer's Guide</title>
         <subject>Log4J Logging Guide</subject>
-        <date>September 2009</date>
+        <date>November 2009</date>
         <author>
             <firstname>Loren</firstname>
             <surname>Cahlander</surname>
@@ -14,7 +15,8 @@
                 <address format="linespecific">
                     <email>loren at syntactica.com</email>
                 </address>
-            </affiliation></author></bookinfo>
+            </affiliation></author>
+    </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Log4J Logging Guide</title>
@@ -327,15 +329,9 @@ public void fatal(Object message, Throwable t); ]]></programlisting>
         </section>
         <section>
             <title>Configuring log4j</title>
-            <para>In X-10 several configuration files located in the codebase directory control
-                log4j’s behavior: </para>
-            <itemizedlist>
-                <listitem>
-                    <para>log4j.properties – default configuration file log4j will use if not
-                        otherwise specified; used for all other JVMs at this time</para>
-                </listitem>
-            </itemizedlist>
-            <para>The full format of these configuration files is described here and a short
+            <para>In 1.4 the <emphasis role="bold"><emphasis role="italic"
+                    >log4j.xml</emphasis></emphasis> configuration file control log4j’s behavior. </para>
+            <para>The full format of this configuration file is described here and a short
                 introduction of the basics is given here. Note this is the simpler, but less
                 powerful, form of log4j configuration file. An XML-based configuration file format
                 also exists and customers will end up supplanting one or more of the properties
@@ -348,30 +344,40 @@ public void fatal(Object message, Throwable t); ]]></programlisting>
                 out-of-the-box – except where the configuration has already been extended to output
                 other log events. Therefore you generally must change the configuration to see
                 trace, debug, info, or warn log events in the log4j output. </para>
-            <para>To turn on a given logging level for all loggers, find the log4j.rootLogger
-                property in the appropriate properties file and change the value before the first
-                comma (“error” by default) to the desired level. For instance, change </para>
-            <programlisting format="linespecific" language="java"><![CDATA[
-log4j.rootLogger=error, …
-]]></programlisting>
+            <para>To turn on a given logging level for all loggers, find the log4j.root property and
+                change the priority value to the desired level. For instance, change </para>
+            <programlisting><markup><![CDATA[
+    <root>
+        <priority value="debug"/>
+        <appender-ref ref="exist.core"/>
+    </root>
+]]></markup></programlisting>
             <para>to</para>
             <programlisting format="linespecific" language="java"><![CDATA[
-log4j.rootLogger=debug, …
+    <root>
+        <priority value="info"/>
+        <appender-ref ref="exist.core"/>
+    </root>
 ]]></programlisting>
             <para>Of course this will result in a cacophony of log output, so you’ll generally want
                 to adjust the logging level at a more specific level. To do this you can append a
                 line to the properties file of following form:</para>
             <programlisting format="linespecific" language="java"><![CDATA[
- log4j.logger.targetLoggerName =desiredLogLevel
+    <category name="targetedLoggerName" additivity="false">
+        <priority value="desiredLogLevel"/>
+        <appender-ref ref="exist.xacml"/>
+    </category>
  ]]></programlisting>
             <para>For instance, you would add</para>
             <programlisting format="linespecific" language="java"><![CDATA[
-log4j.logger.xx.servlet.ServletRequestMonitor.stats=INFO
+    <category name="org.exist.security" additivity="false">
+        <priority value="info"/>
+        <appender-ref ref="exist.security"/>
+    </category>
 ]]></programlisting>
-            <para>to set the “xx.servlet.ServletRequestMonitor.stats” logger’s level to “INFO”. Note
-                that doing so also causes all the default log level of all
-                xx.servlet.ServletRequestMonitor.stats.* loggers to be set to “INFO”. For example,
-                the level of the xx.servlet.ServletRequestMonitor.stats.summary logger would also be
+            <para>to set the “org.exist.security” logger’s level to “info”. Note that doing so also
+                causes all the default log level of all org.exist.security loggers to be set to
+                “INFO”. For example, the level of the org.exist.security.xacml logger would also be
                 set to INFO unless the level of this logger is otherwise specified. </para>
             <para>Changes to log4j configuration files may go unnoticed for as long as a few minutes
                 as the checks for modifications to these files take place on a periodic basis. To
