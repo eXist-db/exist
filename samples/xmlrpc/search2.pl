@@ -8,7 +8,7 @@ use RPC::XML;
 use RPC::XML::Client;
 
 $query = <<END;
-for \$speech in //SPEECH[LINE &= 'tear*']
+for \$speech in //SPEECH[ft:query(LINE, 'tear*')]
 order by \$speech/SPEAKER[1]
 return
     \$speech
