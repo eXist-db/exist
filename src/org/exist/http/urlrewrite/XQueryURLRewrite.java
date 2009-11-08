@@ -73,6 +73,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.xml.sax.SAXException;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.DatabaseManager;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -149,10 +151,6 @@ public class XQueryURLRewrite implements Filter {
         // save FilterConfig for later use
         this.config = filterConfig;
 
-        configure();
-
-        this.rewriteConfig = new RewriteConfig(this);
-
         query = filterConfig.getInitParameter("xquery");
         
         String opt = filterConfig.getInitParameter("check-modified");
@@ -161,6 +159,11 @@ public class XQueryURLRewrite implements Filter {
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        if (rewriteConfig == null) {
+            configure();
+            rewriteConfig = new RewriteConfig(this);
+        }
+        
         long start = System.currentTimeMillis();
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
@@ -465,23 +468,33 @@ public class XQueryURLRewrite implements Filter {
     }
 
     private void configure() throws ServletException {
-        if (pool == null) {
-            String username = config.getInitParameter("user");
-            if(username == null)
-                username = DEFAULT_USER;
-            String password = config.getInitParameter("password");
-            if(password == null)
-                password = DEFAULT_PASS;
-            try {
-                pool = BrokerPool.getInstance();
-                org.exist.security.SecurityManager secman = pool.getSecurityManager();
-                user = secman.getUser(username);
-                if (!user.validate(password)) {
-                    throw new ServletException("Invalid password specified for XQueryURLRewrite user");
-                }
-            } catch (EXistException e) {
-                throw new ServletException("Could not intialize db: " + e.getMessage(), e);
+        try {
+            Class driver = Class.forName(DRIVER);
+            Database database = (Database) driver.newInstance();
+            database.setProperty("create-database", "true");
+            DatabaseManager.registerDatabase(database);
+            LOG.debug("Initialized database");
+        } catch(Exception e) {
+            String errorMessage="Failed to initialize database driver";
+            LOG.error(errorMessage,e);
+            throw new ServletException(errorMessage+": " + e.getMessage(), e);
+        }
+
+        String username = config.getInitParameter("user");
+        if(username == null)
+            username = DEFAULT_USER;
+        String password = config.getInitParameter("password");
+        if(password == null)
+            password = DEFAULT_PASS;
+        try {
+            pool = BrokerPool.getInstance();
+            org.exist.security.SecurityManager secman = pool.getSecurityManager();
+            user = secman.getUser(username);
+            if (!user.validate(password)) {
+                throw new ServletException("Invalid password specified for XQueryURLRewrite user");
             }
+        } catch (EXistException e) {
+            throw new ServletException("Could not intialize db: " + e.getMessage(), e);
         }
     }
 
