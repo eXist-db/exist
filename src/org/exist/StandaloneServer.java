@@ -141,7 +141,7 @@ public class StandaloneServer {
         
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
-            System.err.println( "ERROR: " + optParser.getErrorString());
+            LOG.error( "ERROR: " + optParser.getErrorString());
             return;
         }
         List opt = optParser.getArguments();
@@ -165,7 +165,7 @@ public class StandaloneServer {
                     try {
                         threads = Integer.parseInt( option.getArgument() );
                     } catch( NumberFormatException e ) {
-                        System.err.println("option -t requires a numeric argument");
+                        LOG.error("option -t requires a numeric argument", e);
                         return;
                     }
                     break;
@@ -182,7 +182,8 @@ public class StandaloneServer {
             
         startHttpServer(servlets, props);
         
-        LOG.info("\nServer launched ...");
+        LOG.info("");
+        LOG.info("Server launched ...");
         LOG.info("Installed services:");
         LOG.info("-----------------------------------------------");
         Set listenerProtocols = listeners.keySet();
@@ -595,8 +596,7 @@ public class StandaloneServer {
         try {
             server.run(args, null);
         } catch (Exception e) {
-            System.err.println("An exception occurred while launching the server: " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("An exception occurred while launching the server: " + e.getMessage(), e);
         }
     }
 }
