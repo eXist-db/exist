@@ -26,7 +26,7 @@
         </section>
         <section id="sect2">
             <title>Installing eXist</title>
-            <para>To begin, download the <ulink url="http://exist-db.org/download.html">latest
+            <para>To begin, download the <ulink url="download.xml">latest
                     standard distribution</ulink> of eXist. This package is recommended for new
                 eXist users and includes a graphical installer that guides you through the
                 installation process. This standard distribution comes as an executable <filename

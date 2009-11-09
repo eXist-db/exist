@@ -46,7 +46,7 @@
         </section>
 
         <section>
-            <title>WinXP Webfolder</title>
+            <title>Windows Webfolder</title>
 
             <note>
                 <para>Be aware that there are multiple versions of webdav Microsoft libraries (and
@@ -55,6 +55,15 @@
                         windows XP for web folders</ulink>, or take more information about <ulink
                         url="http://greenbytes.de/tech/webdav/webfolder-client-list.html">Web Folder
                         Client (MSDAIPP.DLL) Versions and Issues</ulink>.</para>
+            </note>
+
+						<note>
+                <para>Windows Vista and Windows 7 both restrict access webdav servers that
+								use Basic HTTP authentication on non-SSL connections. This restriction can
+								be solved by changing a registry key. Read more on <ulink 
+								url="http://support.microsoft.com/kb/841215">MSDN</ulink> and
+								<ulink url="http://greenbytes.de/tech/webdav/webdav-redirector-list.html#issue-basic-authentication">greenbytes.de</ulink>.
+								</para>
             </note>
 
             <para>Perform the following steps in Internet Explorer: <itemizedlist>
