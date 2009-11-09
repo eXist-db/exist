@@ -35,20 +35,24 @@ import org.exist.storage.lock.Lock;
  */
 public interface DocumentAtExist extends Document, Comparable {
 
-	public void setContext(ContextAtExist context);
-	public ContextAtExist getContext();
+//	public void setContext(ContextAtExist context);
+//	public ContextAtExist getContext();
 	
     public int getFirstChildFor(int nodeNumber);
     
     public NodeAtExist getNode(int nodeNr) throws DOMException;
 
+    //???
     public int getNextNodeNumber(int nodeNr) throws DOMException;
 
-    public boolean isLockedForWrite(); //synchronized 
-    public Lock getUpdateLock(); //final synchronized 
-        
-	public void setUserLock(User user);
-	public User getUserLock();
+    //memory
+	public boolean hasReferenceNodes();
+
+//    public boolean isLockedForWrite(); //synchronized 
+//    public Lock getUpdateLock(); //final synchronized 
+//        
+//	public void setUserLock(User user);
+//	public User getUserLock();
 	
-	public Collection getCollection();
+//	public Collection getCollection();
 }

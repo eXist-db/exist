@@ -22,7 +22,6 @@
 
 package org.exist.interpreter;
 
-import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xquery.XPathException;
@@ -35,6 +34,8 @@ import org.exist.xquery.value.AnyURIValue;
  */
 public interface ContextAtExist {
 	
+	public int getExpressionCount();
+
 	public DBBroker getBroker();
 	public NamePool getSharedNamePool();
 
@@ -43,14 +44,19 @@ public interface ContextAtExist {
 	public String getPrefixForURI(String namespaceURI);
 	public void declareInScopeNamespace(String string, String namespaceURI);
 
-	//TODO: change to DocumentAtExist
-	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException;
+	public void declareNamespace(String prefix, String uri) throws XPathException;
+
+	public void setDefaultElementNamespace(String uri, String schema) throws XPathException;
 
 	public boolean isBaseURIDeclared();
 	public AnyURIValue getBaseURI() throws XPathException;
 	
 	public void setWatchDog(XQueryWatchDog watchDog);
 	public XQueryWatchDog getWatchDog();
+
+	public boolean optimizationsEnabled();
+
+	public void reset(boolean b);
 
 //	public TraceListener getTraceListener();
 //	public void getTraceListener(TraceListener listener);

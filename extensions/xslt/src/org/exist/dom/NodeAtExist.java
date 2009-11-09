@@ -39,5 +39,5 @@ public interface NodeAtExist extends Node, QNameable, Comparable {
 	public int getNodeNumber();
 	public NodeId getNodeId();
 	
-	public Boolean matchChildren(NodeTest test) throws XPathException;
+//	public Boolean matchChildren(NodeTest test) throws XPathException;
 }
