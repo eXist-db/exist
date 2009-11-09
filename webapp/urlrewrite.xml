@@ -140,10 +140,10 @@ return
                     <term>exist:prefix</term>
                     <listitem>
                         <para>If the current controller hierarchy is mapped to a certain path
-                            prefix, <option>$exist:path</option> returns that prefix. For example,
+                            prefix, <option>$exist:prefix</option> returns that prefix. For example,
                             the default configuration maps the path <filename>/tools</filename> to a
                             collection in the database (see below). In this case,
-                                <option>$exist:path</option> would contain <filename
+                                <option>$exist:prefix</option> would contain <filename
                                 >/tools</filename>.</para>
                     </listitem>
                 </varlistentry>
