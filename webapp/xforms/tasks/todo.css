@@ -8,7 +8,7 @@
     padding-bottom: 5px;
 }
 
-.xforms-value
+.xforms-input .xforms-value
 {
     width: 280px;
 }
@@ -38,7 +38,6 @@ textarea.xforms-value
 }
 
 table {
-    width: 100%;
 }
 
 td, th {
