@@ -172,7 +172,7 @@ public class StandaloneServer {
             }
         }
 
-        System.out.println( "Loading configuration ...");
+        LOG.info( "Loading configuration ...");
         Configuration config = new Configuration("conf.xml");
         if (observer != null)
             BrokerPool.registerStatusObserver(observer);
@@ -182,9 +182,9 @@ public class StandaloneServer {
             
         startHttpServer(servlets, props);
         
-        System.out.println("\nServer launched ...");
-        System.out.println("Installed services:");
-        System.out.println("-----------------------------------------------");
+        LOG.info("\nServer launched ...");
+        LOG.info("Installed services:");
+        LOG.info("-----------------------------------------------");
         Set listenerProtocols = listeners.keySet();
         for(int i = 0 ; i < servlets.size() ; i++)
         {
@@ -197,7 +197,7 @@ public class StandaloneServer {
         			Properties listenerProperties = (Properties)listeners.get(listenerProtocol);
         			String host = listenerProperties.getProperty("host", "localhost"); 
         			String port = listenerProperties.getProperty("port");
-            		System.out.println(name + ":\t" + host + ":" + port + props.getProperty(name+".context"));
+            		LOG.info(name + ":\t" + host + ":" + port + props.getProperty(name+".context"));
         		}
         	}
         }
@@ -386,14 +386,14 @@ public class StandaloneServer {
     }
     
     private static void printHelp() {
-        System.out.println("Usage: java " + StandaloneServer.class.getName() + " [options]");
-        System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+        LOG.info("Usage: java " + StandaloneServer.class.getName() + " [options]");
+        LOG.info(CLUtil.describeOptions(OPTIONS).toString());
     }
     
     public static void printNotice() {
-        System.out.println("eXist version 1.3, Copyright (C) 2001-2008 The eXist Project");
-        System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
-        System.out.println("This is free software, and you are welcome to "
+        LOG.info("eXist version 1.4, Copyright (C) 2001-2009 The eXist Project");
+        LOG.info("eXist comes with ABSOLUTELY NO WARRANTY.");
+        LOG.info("This is free software, and you are welcome to "
                 + "redistribute it\nunder certain conditions; "
                 + "for details read the license file.\n");
     }
@@ -412,9 +412,9 @@ public class StandaloneServer {
             is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/server.xml");
             if (is == null)
                 throw new IOException("Server configuration not found!");
-            System.out.println("Reading server configuration from exist.jar");
+            LOG.info("Reading server configuration from exist.jar");
         } else {
-            System.out.println("Reading server configuration from: " + f.getAbsolutePath());
+            LOG.info("Reading server configuration from: " + f.getAbsolutePath());
             is = new FileInputStream(f);
         }
         
@@ -577,7 +577,7 @@ public class StandaloneServer {
                 Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     public void run() {
-                        System.out.println("killing threads ...");
+                        LOG.info("killing threads ...");
                         try {
                             httpServer.stop();
                         } catch (InterruptedException e) {
