@@ -62,7 +62,7 @@
 								use Basic HTTP authentication on non-SSL connections. This restriction can
 								be solved by changing a registry key. Read more on <ulink 
 								url="http://support.microsoft.com/kb/841215">MSDN</ulink> and
-								<ulink url="http://greenbytes.de/tech/webdav/webdav-redirector-list.html#issue-basic-authentication">greenbytes.de</ulink>.
+								<ulink url="http://greenbytes.de/tech/webdav/webdav-redirector-list.html">greenbytes.de</ulink>.
 								</para>
             </note>
 
