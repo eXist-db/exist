@@ -47,6 +47,16 @@ return
     			<forward url="{$newPath}"/>
     			<cache-control cache="yes"/>
     		</dispatch>
+
+     (: Catch requests like 'functions/xmldb:login' and redirect them to 'functions/xmldb/login', thereby making it easier to paste in functions :)
+   else if (contains($post-query-url-params[1], ':')) then
+       let $module := substring-before($post-query-url-params[1], ':')
+       let $function := substring-after($post-query-url-params[1], ':')
+       return
+           <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+               <redirect url="{string-join(($external-path-to-app, $module, $function), '/')}"/>
+           </dispatch>
+
 	(: Execute RESTful queries by passing URL parameters to the query :)
     else
         let $module := $post-query-url-params[1]
