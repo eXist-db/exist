@@ -132,8 +132,19 @@ return
                         <para>The part of the URI leading to the current controller script. For
                             example, if the request path is <filename>/xquery/test.xql</filename>
                             and the controller is in the <filename>xquery</filename> directory,
-                                <option>exist:controller</option> would contain <filename
+                                <option>$exist:controller</option> would contain <filename
                                 >/xquery</filename>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>exist:prefix</term>
+                    <listitem>
+                        <para>If the current controller hierarchy is mapped to a certain path
+                            prefix, <option>$exist:path</option> returns that prefix. For example,
+                            the default configuration maps the path <filename>/tools</filename> to a
+                            collection in the database (see below). In this case,
+                                <option>$exist:path</option> would contain <filename
+                                >/tools</filename>.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -157,10 +168,11 @@ return
                 </varlistentry>
             </variablelist>
             <para>To summarize: if the request path is <filename
-                    >/exist/sandbox/get-examples.xql</filename>, <option>$exist:controller</option>
-                would contain <filename>/sandbox</filename>, <option>$exist:path</option> would be
-                    <filename>/get-examples.xql</filename>, and <option>$exist:resource</option>:
-                    <filename>get-examples.xml</filename>.</para>
+                    >/exist/tools/sandbox/get-examples.xql</filename>,
+                    <option>$exist:prefix</option> would contain <filename>/tools</filename>,
+                    <option>$exist:controller</option> would point to <filename>/sandbox</filename>,
+                    <option>$exist:path</option> would be <filename>/get-examples.xql</filename>,
+                and <option>$exist:resource</option>: <filename>get-examples.xml</filename>.</para>
             <para>You do not need to explicitly declare the variables or the namespace. However, if
                 you would like to do so, you can add an external declaration for each used variable
                 at the top of your XQuery as follows:</para>
