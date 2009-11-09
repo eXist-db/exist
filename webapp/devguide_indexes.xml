@@ -35,10 +35,7 @@
 	ships with two index types :</para>
 	<itemizedlist>
 	  <listitem>
-	    <variablelist>
-	      <varlistentry>
 		<term>NGram index</term>
-		<listitem>
 		  <para>An NGram index will store the N-grams contained in the data's characters, i.e. if the index is configured to
 		  index 3-grams, <markup><![CDATA[<data>abcde</data>]]></markup> will generate these index entries :
 		  <itemizedlist>
@@ -49,11 +46,9 @@
 		    <listitem><para>e&#x2423;&#x2423;</para></listitem>
 		  </itemizedlist>
 		  </para>
-		</listitem>
-	      </varlistentry>
-	      <varlistentry>
-		<term>Spatial index</term>
+	  </listitem>
 		<listitem>
+		<term>Spatial index</term>
 		  <para>A spatial index will store some of the geometric characteristics of 
 		  <ulink url="http://www.opengeospatial.org/standards/gml">Geography Markup Language</ulink> 
 		  geometries (currently only tested with GML version 2.1.2). 
@@ -83,9 +78,6 @@
 		  </para><para>
 		  The spatial index will we discussed in details further below.
 		</para>
-		</listitem>
-	      </varlistentry>
-	    </variablelist>
 	  </listitem>
 	</itemizedlist>	
 	<para>So, the new architecture introduces a new package, <classname>org.exist.indexing</classname> 
