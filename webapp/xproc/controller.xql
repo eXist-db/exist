@@ -25,7 +25,7 @@ return
 			<view>
 				<forward servlet="XSLTServlet">
 					<set-attribute name="xslt.stylesheet" 
-						value="/stylesheets/db2xhtml.xsl"/>
+						value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
 				    <set-attribute name="xslt.output.media-type"
                         value="text/html"/>
                 	<set-attribute name="xslt.output.doctype-public"
