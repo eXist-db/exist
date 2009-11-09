@@ -22,6 +22,8 @@
 package org.exist.xslt;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
@@ -54,6 +56,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
     
     private URIResolver resolver;
     
+    private Map<String, Object> attributes = new HashMap<String, Object>();
+    
+    private ErrorListener errorListener = null;
+    
 	public TransformerFactoryImpl() {
 	}
 	
@@ -82,7 +88,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	 */
 	@Override
 	public Object getAttribute(String name) {
-    	throw new RuntimeException("Not implemented: TransformerFactory.getAttribute");
+		return attributes.get(name);
 	}
 
 	/* (non-Javadoc)
@@ -90,7 +96,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	 */
 	@Override
 	public ErrorListener getErrorListener() {
-    	throw new RuntimeException("Not implemented: TransformerFactory.getErrorListener");
+		return errorListener;
 	}
 
 	/* (non-Javadoc)
@@ -168,7 +174,10 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	 */
 	@Override
 	public void setAttribute(String name, Object value) {
-    	throw new RuntimeException("Not implemented: TransformerFactory.setAttribute");
+		if (name.equals(TransformerFactoryAllocator.PROPERTY_BROKER_POOL))
+			pool = (BrokerPool) value;
+		
+		attributes.put(name, value);
 	}
 
 	/* (non-Javadoc)
@@ -176,7 +185,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	 */
 	@Override
 	public void setErrorListener(ErrorListener listener) {
-    	throw new RuntimeException("Not implemented: TransformerFactory.setErrorListener");
+		errorListener = listener;
 	}
 
 	/* (non-Javadoc)
@@ -197,12 +206,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 
 	@Override
 	public TemplatesHandler newTemplatesHandler() throws TransformerConfigurationException {
-		try {
-			return new TemplatesHandlerImpl(new XSLContext(getBroker()));
-		} catch (EXistException e) {
-			LOG.debug(e);
-	    	throw new TransformerConfigurationException("Compilation error.",e);
-		}
+		return new TemplatesHandlerImpl();
 	}
 
 	@Override

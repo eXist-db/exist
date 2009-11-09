@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
@@ -46,7 +47,7 @@ public class ApplyImports extends SimpleConstructor {
 	public void setToDefaults() {
 	}    
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

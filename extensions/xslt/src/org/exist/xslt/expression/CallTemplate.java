@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.exist.dom.QName;
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocalVariable;
@@ -61,7 +62,7 @@ public class CallTemplate extends SimpleConstructor {
 		name = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(NAME)) {
 			name = new QName(attr.getValue());

@@ -38,6 +38,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.XSLContext;
 import org.exist.dom.QName;
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xslt.expression.i.Parameted;
 import org.exist.xslt.pattern.Pattern;
 import org.exist.xslt.XSLExceptions;
@@ -86,7 +87,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 	    as = "item()*";
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(MATCH)) {

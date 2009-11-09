@@ -41,8 +41,8 @@ public class TemplatesHandlerImpl extends SAXAdapter implements TemplatesHandler
     private String systemId = null;
     private Templates templates = null;
 	
-	protected TemplatesHandlerImpl(XSLContext context) {
-		super(context);
+	protected TemplatesHandlerImpl() {
+		super();
 	}
 
 	/* (non-Javadoc)
@@ -64,7 +64,7 @@ public class TemplatesHandlerImpl extends SAXAdapter implements TemplatesHandler
 				templates = XSL.compile(xsl);
 			} catch (XPathException e) {
 				LOG.debug(e);
-				System.out.println(e.getDetailMessage()); //TODO: remove after debug 
+				System.out.println(e.getDetailMessage()); //TODO: remove 
 			}
 		}
 		return templates;

@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.XPathException;
 import org.exist.xslt.compiler.Names;
 import org.w3c.dom.Attr;
@@ -33,7 +34,7 @@ public interface XSLExpression extends Names {
 	
 	public void setToDefaults();
 
-	public void prepareAttribute(Attr attr) throws XPathException;
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException;
 	public void validate() throws XPathException;
 	
 	public void compileError(String error) throws XPathException;

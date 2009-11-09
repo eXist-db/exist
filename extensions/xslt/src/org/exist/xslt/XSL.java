@@ -30,9 +30,12 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.ElementAtExist;
+import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.SAXAdapter;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
@@ -75,17 +78,27 @@ public class XSL {
 	}
     
     protected static XSLStylesheet compile(ElementAtExist source) throws XPathException {
+    	try {
+			return compile(source, BrokerPool.getInstance().get(null));
+		} catch (EXistException e) {
+			throw new XPathException(e);
+		}
+    }
+
+    protected static XSLStylesheet compile(ElementAtExist source, DBBroker broker) throws XPathException {
     	long start = System.currentTimeMillis();
     	
     	XSLElement stylesheet = new XSLElement(source);
-    	XSLStylesheet expr = (XSLStylesheet) stylesheet.compile();
+    	
+    	ContextAtExist context = new XSLContext(broker);
+    	
+    	XSLStylesheet expr = (XSLStylesheet) stylesheet.compile(context);
     	AnalyzeContextInfo info = new AnalyzeContextInfo();
     	info.setFlags(Expression.IN_NODE_CONSTRUCTOR);
         expr.analyze(info);
 
-        XQueryContext context = expr.getContext();
         if (context.optimizationsEnabled()) {
-            Optimizer optimizer = new Optimizer(context);
+            Optimizer optimizer = new Optimizer((XQueryContext) context);
             expr.accept(optimizer);
             if (optimizer.hasOptimized()) {
                 context.reset(true);
@@ -123,9 +136,9 @@ public class XSL {
 			reader.parse(src);
 		
 			DocumentAtExist document = (DocumentAtExist) adapter.getDocument();
-			document.setContext(new XSLContext(broker));
+//			document.setContext(new XSLContext(broker));
 			//return receiver.getDocument();
-			return compile((ElementAtExist) document.getDocumentElement());
+			return compile((ElementAtExist) document.getDocumentElement(), broker);
 		} catch (ParserConfigurationException e) {
         	LOG.debug(e);
 			throw new XPathException(e);

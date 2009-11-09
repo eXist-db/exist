@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.util.FastQSort;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
@@ -106,12 +107,12 @@ public class Sort extends Declaration {
 	    data_type = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(SELECT)) {
 			select = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), select);
+			Pattern.parse(context, attr.getValue(), select);
 			
 			_check_(select);
 		} else if (attr_name.equals(LANG)) {
