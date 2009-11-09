@@ -1,21 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2009 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -58,7 +58,7 @@ import org.xml.sax.XMLReader;
  * Utilities for XPath doc related functions
  * 
  * @author wolf
- * @author Pierrick Brihaye<pierrick.brihaye@free.fr>
+ * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {	
@@ -164,7 +164,7 @@ public class DocUtils {
 					
                     if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
                     {
-                        throw new XPathException("Document is a binary resource, not an XML document. Please consider using the function util:binary-resource to retrieve a reference to it.");
+                        throw new XPathException("Document is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
                     }
 
                     if(lockOnLoad)
