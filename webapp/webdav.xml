@@ -58,7 +58,7 @@
             </note>
 
 						<note>
-                <para>Windows Vista and Windows 7 both restrict access webdav servers that
+                <para>Windows Vista and Windows 7 both restrict access to webdav servers that
 								use Basic HTTP authentication on non-SSL connections. This restriction can
 								be solved by changing a registry key. Read more on <ulink 
 								url="http://support.microsoft.com/kb/841215">MSDN</ulink> and
