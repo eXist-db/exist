@@ -54,7 +54,7 @@
         <filename>conf.xml</filename> and the Class name and Namespace for each module is listed
       below. Note - eXist will require a restart to load the new module. Once a Module is configured
       and loaded eXist will display the module and its function definitions as part of the <ulink
-        url="xquery/functions.xq">function library</ulink> page or through
+        url="xquery/functions.xql">function library</ulink> page or through
         <command>util:decribe-function()</command>.</para>
 
     <section id="module_example">
