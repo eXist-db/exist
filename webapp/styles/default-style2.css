@@ -660,3 +660,7 @@ td.doclink {
     margin-top: 1em;
     font-size: 85%;
 }
+
+.float-left {
+    float: left;
+}
