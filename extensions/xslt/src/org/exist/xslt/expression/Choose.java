@@ -24,6 +24,7 @@ package org.exist.xslt.expression;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
@@ -61,7 +62,7 @@ public class Choose extends SimpleConstructor {
 		otherwise = null;
 	}    
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 	}
 	
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {

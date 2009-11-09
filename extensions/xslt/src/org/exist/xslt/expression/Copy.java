@@ -23,6 +23,7 @@ package org.exist.xslt.expression;
 
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.XPathException;
@@ -69,7 +70,7 @@ public class Copy extends Declaration {
 	    validation = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(COPY_NAMESPACES)) {

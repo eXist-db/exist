@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
@@ -71,7 +72,7 @@ public class ForEach extends SimpleConstructor {
 		sort = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
 			attr_select = attr.getValue();

@@ -23,6 +23,7 @@ package org.exist.xslt.expression;
 
 import java.util.Iterator;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.AnyNodeTest;
@@ -75,7 +76,7 @@ public class ApplyTemplates extends SimpleConstructor {
 		mode = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
 			attr_select = attr.getValue();

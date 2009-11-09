@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
@@ -57,7 +58,7 @@ public class Text extends Declaration {
 		sequenceItSelf = false;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(DISABLE_OUTPUT_ESCAPING)) {

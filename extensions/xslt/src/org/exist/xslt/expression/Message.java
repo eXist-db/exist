@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -55,13 +56,15 @@ public class Message extends SimpleConstructor {
 		terminate = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
 			select = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), select);
+			Pattern.parse(context, attr.getValue(), select);
+			
 		} else if (attr_name.equals(TERMINATE)) {
 			terminate = getBoolean(attr.getValue());
+			
 		}
 	}
 	

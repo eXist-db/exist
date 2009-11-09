@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.AttributeConstructor;
 import org.exist.xquery.CDATAConstructor;
@@ -68,12 +69,12 @@ public class XSLElement implements ElementAtExist, Names {
 		this.element = element;
 	}
 	
-	protected XQueryContext getContext() {
-		return (XQueryContext) getDocument().getContext();
-	}
-	
+//	protected XQueryContext getContext() {
+//		return (XQueryContext) getDocument().getContext();
+//	}
+//	
 	@SuppressWarnings("unchecked")
-	protected XSLPathExpr getExpressionInstance() throws XPathException {
+	protected XSLPathExpr getExpressionInstance(ContextAtExist context) throws XPathException {
 		if (expr != null)
 			return expr;
 		
@@ -84,7 +85,7 @@ public class XSLElement implements ElementAtExist, Names {
 		
 		try {
 			Constructor<XSLPathExpr> constructor = clazz.getConstructor(XSLContext.class);
-			expr = constructor.newInstance(getContext());
+			expr = constructor.newInstance(context);
 			
 			return expr;
 		} catch (SecurityException e) {
@@ -102,26 +103,26 @@ public class XSLElement implements ElementAtExist, Names {
 		}
 	}
 
-	public Expression compile() throws XPathException {
+	public Expression compile(ContextAtExist context) throws XPathException {
 		XSLPathExpr exec;
 		
 		if ((!isXSLElement(this)) && (isParentNode())) { //UNDERSTAND: put to XSLStylesheet?
-			expr = new XSLStylesheet((XSLContext) getContext(), true);
+			expr = new XSLStylesheet((XSLContext) context, true);
 			
-			NodeConstructor constructer = getNodeConstructor(this, expr);
+			NodeConstructor constructer = getNodeConstructor(context, this, expr);
 			if (constructer != null) {
 				expr.add(constructer);
 
-				compileNode(expr, this);
+				compileNode(context, expr, this);
 			}
 			
 			exec = expr;
 		} else {
-			preprocess();
+			preprocess(context);
 
-			exec = getExpressionInstance();
+			exec = getExpressionInstance(context);
 
-			compileNode((PathExpr) exec, this);
+			compileNode(context, (PathExpr) exec, this);
 		}
 		
 		exec.validate();//UNDERSTAND: at compile time??? analyze ???
@@ -129,12 +130,12 @@ public class XSLElement implements ElementAtExist, Names {
 		return exec;
 	}
 	
-	private NodeConstructor getNodeConstructor(NodeAtExist node, PathExpr content) throws XPathException {
+	private NodeConstructor getNodeConstructor(ContextAtExist context, NodeAtExist node, PathExpr content) throws XPathException {
 		NodeConstructor constructer = null;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
-			ElementConstructor elementConstructer = new ElementConstructor(getContext(), node.getNodeName());
+			ElementConstructor elementConstructer = new ElementConstructor((XQueryContext) context, node.getNodeName());
 			content.add(elementConstructer);
-			PathExpr content_sub = new PathExpr(getContext()); 
+			PathExpr content_sub = new PathExpr((XQueryContext) context); 
 			elementConstructer.setContent(content_sub);
 		
 			NamedNodeMap attrs = node.getAttributes();
@@ -150,7 +151,7 @@ public class XSLElement implements ElementAtExist, Names {
 		        		continue;
 	        		}
 	        	}
-				AttributeConstructor attributeConstructer = new AttributeConstructor(getContext(), attr.getNodeName());
+				AttributeConstructor attributeConstructer = new AttributeConstructor((XQueryContext) context, attr.getNodeName());
         	
 				//XXX: rethinks
 				String value = attr.getNodeValue();
@@ -158,8 +159,8 @@ public class XSLElement implements ElementAtExist, Names {
 					value = value.replace("{", "");
 					value = value.replace("}", "");
         		
-					PathExpr expr = new PathExpr(getContext());
-					org.exist.xslt.pattern.Pattern.parse(getContext(), value, expr);
+					PathExpr expr = new PathExpr((XQueryContext) context);
+					org.exist.xslt.pattern.Pattern.parse(context, value, expr);
 					attributeConstructer.addEnclosedExpr(expr);
 				} else {
 					attributeConstructer.addValue(value);
@@ -168,17 +169,17 @@ public class XSLElement implements ElementAtExist, Names {
 				elementConstructer.addAttribute(attributeConstructer); 
 			}
 		
-			compileNode(content_sub, node);
+			compileNode(context, content_sub, node);
 		} else if (node.getNodeType() == Node.COMMENT_NODE) {
-			constructer = new CommentConstructor(getContext(), node.getNodeName());
+			constructer = new CommentConstructor((XQueryContext) context, node.getNodeName());
 		} else if (node.getNodeType() == Node.TEXT_NODE) {
 			if (content instanceof XSLPathExpr) {
 				XSLPathExpr xslExpr = (XSLPathExpr) content;
 				xslExpr.addText(node.getNodeValue());
 			} else
-				constructer = new TextConstructor(getContext(), node.getNodeValue());
+				constructer = new TextConstructor((XQueryContext) context, node.getNodeValue());
 		} else if (node.getNodeType() == Node.CDATA_SECTION_NODE) {
-			constructer = new CDATAConstructor(getContext(), node.getNodeName());
+			constructer = new CDATAConstructor((XQueryContext) context, node.getNodeName());
 		} else {
 			throw new XPathException("not supported node type: "+node.getNodeType());
 //	    	ATTRIBUTE_NODE            = 2;
@@ -194,14 +195,14 @@ public class XSLElement implements ElementAtExist, Names {
 		return constructer;
 	}
 	
-	public void compileNode(PathExpr content, Node node) throws XPathException {
+	public void compileNode(ContextAtExist context, PathExpr content, Node node) throws XPathException {
 		//namespaces
 		if (node instanceof ElementAtExist) {
 			ElementAtExist elementAtExist = (ElementAtExist) node;
 			Map<String, String> namespaceMap = elementAtExist.getNamespaceMap();
 	        for (String name : namespaceMap.keySet()) {
 	        	//getContext().declareInScopeNamespace(name, namespaceMap.get(name));
-	        	getContext().declareNamespace(name, namespaceMap.get(name));
+	        	context.declareNamespace(name, namespaceMap.get(name));
 	        	//TODO: rewrite, changes at xquery.parser. it use static 
 	        }
 		}
@@ -218,36 +219,36 @@ public class XSLElement implements ElementAtExist, Names {
 			NodeAtExist child = (NodeAtExist)children.item(i);
 			if (isXSLElement(child)) {
 				XSLElement xslElement = (XSLElement) child;
-				content.add(xslElement.compile());
+				content.add(xslElement.compile(context));
 			} else {
-				constructer = getNodeConstructor(child, content);
+				constructer = getNodeConstructor(context, child, content);
 			}
 			
 			if (constructer != null) {
 				content.add(constructer);
 
-				compileNode(content, child);
+				compileNode(context, content, child);
 			}
 		}
 	}
 
-	protected void prepareAttributes() throws XPathException { 
-    	XSLExpression exec = getExpressionInstance();
+	protected void prepareAttributes(ContextAtExist context) throws XPathException { 
+    	XSLExpression exec = getExpressionInstance(context);
 
     	NamedNodeMap attrs = getAttributes();
     	for (int i = 0; i < attrs.getLength(); i++)
-    		exec.prepareAttribute((Attr)attrs.item(i));
+    		exec.prepareAttribute(null, (Attr)attrs.item(i));
     }
     
-	protected void preprocess() throws XPathException {
+	protected void preprocess(ContextAtExist context) throws XPathException {
 //		XSLPathExpr exec = getExpressionInstance();
 		
-		prepareAttributes();
+		prepareAttributes(context);
 		
-		preprocessNode(this);
+		preprocessNode(context, this);
 	}
 
-	protected void preprocessNode(Node node) throws XPathException {
+	protected void preprocessNode(ContextAtExist context, Node node) throws XPathException {
 		if (!node.hasChildNodes())
 			return;
 		
@@ -256,9 +257,9 @@ public class XSLElement implements ElementAtExist, Names {
 			NodeAtExist child = (NodeAtExist)children.item(i);
 			if (isXSLElement(child)) {
 				XSLElement xslElement = (XSLElement) child;
-				xslElement.preprocess();
+				xslElement.preprocess(context);
 			} else {
-				preprocessNode(child);
+				preprocessNode(context, child);
 			}
 		}
 	}
@@ -725,12 +726,12 @@ public class XSLElement implements ElementAtExist, Names {
 		return element.compareTo(o);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#matchChildren(org.exist.xquery.NodeTest)
-	 */
-	public Boolean matchChildren(NodeTest test) throws XPathException {
-		return element.matchChildren(test);
-	}
+//	/* (non-Javadoc)
+//	 * @see org.exist.dom.i.NodeAtExist#matchChildren(org.exist.xquery.NodeTest)
+//	 */
+//	public Boolean matchChildren(NodeTest test) throws XPathException {
+//		return element.matchChildren(test);
+//	}
 
 	public String toString() {
 		return element.toString();

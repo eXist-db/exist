@@ -45,6 +45,7 @@ import org.exist.xquery.value.ValueSequence;
 import org.exist.dom.QName;
 import org.exist.dom.NamespaceNodeAtExist;
 import org.exist.dom.Validation;
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xslt.expression.AttributeSet;
 import org.exist.xslt.expression.Declaration;
 import org.exist.xslt.expression.Param;
@@ -120,7 +121,7 @@ public class XSLStylesheet extends Declaration
 		input_type_annotations = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 		if (attr instanceof NamespaceNodeAtExist) {
 			NamespaceNodeAtExist namespace = (NamespaceNodeAtExist) attr;

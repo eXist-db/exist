@@ -21,10 +21,12 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.DynamicAttributeConstructor;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LiteralValue;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -75,12 +77,12 @@ public class Attribute extends SimpleConstructor {
 	    validation = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(NAME)) {
 			name = attr.getValue();
-			constructor.setNameExpr(new LiteralValue(context, new StringValue(name)));
+			constructor.setNameExpr(new LiteralValue((XQueryContext) context, new StringValue(name)));
 		} else if (attr_name.equals(NAMESPACE)) {
 			namespace = attr.getValue();
 		} else if (attr_name.equals(SELECT)) {

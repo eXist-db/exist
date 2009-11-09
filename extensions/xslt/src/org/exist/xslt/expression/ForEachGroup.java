@@ -21,6 +21,7 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -67,23 +68,28 @@ public class ForEachGroup extends SimpleConstructor {
 		collation = null;
 	}
 
-	public void prepareAttribute(Attr attr) throws XPathException {
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
 			select = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), select);
+			Pattern.parse(context, attr.getValue(), select);
+			
 		} else if (attr_name.equals(GROUP_BY)) {
 			group_by = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), group_by);
+			Pattern.parse(context, attr.getValue(), group_by);
+			
 		} else if (attr_name.equals(GROUP_ADJACENT)) {
 			group_adjacent = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), group_adjacent);
+			Pattern.parse(context, attr.getValue(), group_adjacent);
+			
 		} else if (attr_name.equals(GROUP_STARTING_WITH)) {
 			group_starting_with = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), group_starting_with);
+			Pattern.parse(context, attr.getValue(), group_starting_with);
+			
 		} else if (attr_name.equals(GROUP_ENDING_WITH)) {
 			group_ending_with = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr.getValue(), group_ending_with);
+			Pattern.parse(context, attr.getValue(), group_ending_with);
+			
 		} else if (attr_name.equals(COLLATION)) {
 			collation = attr.getValue();
 		}
