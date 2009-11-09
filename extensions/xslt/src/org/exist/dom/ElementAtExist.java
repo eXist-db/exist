@@ -24,7 +24,6 @@ package org.exist.dom;
 
 import java.util.Map;
 
-import org.exist.dom.QName;
 import org.w3c.dom.Element;
 
 /**
