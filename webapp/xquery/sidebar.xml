@@ -67,9 +67,6 @@
     </group>
     <group name="Development">
         <item>
-            <link href="../roadmap.xml">Roadmap</link>
-        </item>
-        <item>
             <link href="../api/index.html">Javadocs</link>
         </item>
         <item>
