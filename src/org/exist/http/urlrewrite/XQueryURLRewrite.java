@@ -223,8 +223,8 @@ public class XQueryURLRewrite implements Filter {
                     DBBroker broker = null;
                     try {
                         broker = pool.get(user);
-                        result = runQuery(broker, modifiedRequest, response,
-                            staticRewrite == null ? "." : staticRewrite.getTarget());
+                        modifiedRequest.setAttribute(RQ_ATTR_REQUEST_URI, request.getRequestURI());
+                        result = runQuery(broker, modifiedRequest, response, staticRewrite);
 
                         logResult(broker, result);
                     } finally {
@@ -514,11 +514,13 @@ public class XQueryURLRewrite implements Filter {
         config = null;
     }
 
-    private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response, String basePath)
+    private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response,
+                              URLRewrite staticRewrite)
         throws ServletException, XPathException {
         // Try to find the XQuery
         SourceInfo sourceInfo;
         String moduleLoadPath = config.getServletContext().getRealPath(".");
+        String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         if (basePath == null)
             sourceInfo = getSource(broker, moduleLoadPath);
         else
@@ -542,7 +544,7 @@ public class XQueryURLRewrite implements Filter {
 		}
         // Find correct module load path
 		queryContext.setModuleLoadPath(moduleLoadPath);
-        declareVariables(queryContext, sourceInfo, basePath, request, response);
+        declareVariables(queryContext, sourceInfo, staticRewrite.getPrefix(), basePath, request, response);
         if (compiled == null) {
 			try {
 				compiled = xquery.compile(queryContext, sourceInfo.source);
@@ -714,7 +716,7 @@ public class XQueryURLRewrite implements Filter {
         return sourceInfo;
     }
 
-    private void declareVariables(XQueryContext context, SourceInfo sourceInfo, String basePath,
+    private void declareVariables(XQueryContext context, SourceInfo sourceInfo, String prefix, String basePath,
 			RequestWrapper request, HttpServletResponse response)
 			throws XPathException {
 		HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
@@ -728,7 +730,7 @@ public class XQueryURLRewrite implements Filter {
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
         context.declareVariable("exist:root", basePath);
         context.declareVariable("exist:context", request.getContextPath());
-        
+        context.declareVariable("exist:prefix", prefix == null ? "" : prefix);
         String path;
         if (sourceInfo.controllerPath.length() > 0 && !sourceInfo.controllerPath.equals("/"))
             path = request.getInContextPath().substring(sourceInfo.controllerPath.length());
