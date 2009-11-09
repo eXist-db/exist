@@ -1,5 +1,23 @@
 xquery version "1.0";
 
+(: $Id$ :)
+
+(:~
+    Main XQuery script for the RESTful function docs application.
+    
+    The parameters passed in from controller.xql are:
+        basepath: Used as base path for URLs
+        module:   Module name
+        function: Function name
+        
+    The controller.xql intercepts URLs like
+        http://exist-db.org/exist/functions/xmldb/login
+    and parses and passes these parameters transparently to the script:
+        basepath: /exist/functions/
+        module:   xmldb
+        function: login
+:)
+
 (: eXist module namespaces :)
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace text="http://exist-db.org/xquery/text";
@@ -109,7 +127,7 @@ declare function local:render-module($moduleURIs as xs:string+, $functionName as
 };
 
 (: 
- : App URL handling functions 
+ : URL handling functions 
  :)
 
 (: Constructs a URL from a module URI :)
@@ -136,11 +154,16 @@ declare function local:module-to-moduleURI($module as xs:string) as xs:string {
 (: Lists all modules :)
 declare function local:list-modules($moduleURIs) {
     (
+    <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
+    build: {util:system-property("product-build")}.)</b> Modules have to be enabled 
+    in conf.xml to appear here.
+    </p>
+    ,
     <p><a href="{concat($basepath, 'all')}">Expand All</a> or select a single module:</p>
     ,
     <table class="modules">
         <thead>
-            <tr><td>Name</td><td>Description</td><td>URI</td></tr>
+            <tr><td>Name</td><td>Description</td><td>Namespace URI</td></tr>
         </thead>
         <tbody>{
             for $moduleURI in $moduleURIs
@@ -167,7 +190,7 @@ declare function local:list-modules($moduleURIs) {
 
 (: Breadcrumbs for the page :)
 declare function local:breadcrumbs($module, $function, $viewall) {
-    <div>
+    <div id="breadcrumbs">
         <a href="{$basepath}">Modules</a>
         {
         if ($viewall) then 
@@ -259,42 +282,42 @@ declare function local:main() {
 };
 
 (: Module body :)
-let $existVersion := system:get-version()
-return
-    <book>
-        <bookinfo>
-            <graphic fileref="logo.jpg"/>
-            <productname>Open Source Native XML Database</productname>
-            <title>eXist {$existVersion} Java-Based Function Modules</title>
-            <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
-			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
-            <style language="text/css">
-            <![CDATA[
-                body {font-family: Arial, Helvetica, sans-serif; } 
-                .module {border: 1px black solid; margin:20px; page-break-after: always; }
-                .modhead {padding: 5px;}
-                .functions {margin-left: 10px; }
-                .function {border: 1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; }
-                .name {font-weight: bold;}
-                .signature {margin-left: 50px; font-style: italic;}
-                .description {margin-left: 20px; padding: 5px;}
-                .f-description-para {margin-bottom: 8px;}
-                .authors {display:none;}
-                .parameters {margin-left: 100px;}
-                .f-params {}
-                .f-param1 {width: 250px;}
-                .f-param2 {}
-                .parameter {}
-                .returning {margin-left: 100px; color:green;}
-                .deprecated {color:red; font-weight:bold;}
-                ]]>
-            </style>
-        </bookinfo>
-        
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>eXist Java-Based Function Modules</title>
+        <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
+		<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
+        <style language="text/css">
+        <![CDATA[
+            body {font-family: Arial, Helvetica, sans-serif; } 
+            .module {border: 1px black solid; margin:20px; page-break-after: always; }
+            .modhead {padding: 5px;}
+            thead {font-size: larger; font-weight: bold; }
+            .functions {margin-left: 10px; }
+            .function {border: 1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; }
+            .name {font-weight: bold;}
+            .signature {margin-left: 50px; font-style: italic;}
+            .description {margin-left: 20px; padding: 5px;}
+            .f-description-para {margin-bottom: 8px;}
+            .authors {display:none;}
+            .parameters {margin-left: 100px;}
+            .f-params {}
+            .f-param1 {width: 250px;}
+            .f-param2 {}
+            .parameter {}
+            .returning {margin-left: 100px; color:green;}
+            .deprecated {color:red; font-weight:bold;}
+            #breadcrumbs {margin: 1em 0 1em 0; }
+            ]]>
+        </style>
+    </bookinfo>
+    
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     
-        <chapter>
-            <title>A RESTful browser for eXist {$existVersion} Java-Based Function Modules</title>
-            { local:main() }
-        </chapter>
-    </book>
+    <chapter>
+        <title>A RESTful browser for eXist Java-Based Function Modules</title>
+        { local:main() }
+    </chapter>
+</book>
