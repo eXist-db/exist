@@ -23,6 +23,7 @@ package org.exist.management.impl;
 
 import org.apache.log4j.Logger;
 import org.exist.management.Agent;
+import org.exist.management.TaskStatus;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 
@@ -165,12 +166,23 @@ public class JMXAgent implements Agent {
         }
     }
 
-    public synchronized void updateErrors(BrokerPool instance, List errorList, long startTime) {
+    public synchronized void changeStatus(BrokerPool instance, TaskStatus actualStatus) {
         try {
             ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
             SanityReport report = (SanityReport) beanInstances.get(name);
             if (report != null)
-                report.updateErrors(errorList, startTime);
+                report.changeStatus(actualStatus);
+        } catch (MalformedObjectNameException e) {
+            LOG.warn("Problem calling mbean: " + e.getMessage(), e);
+        }
+    }
+
+    public synchronized void updateStatus(BrokerPool instance, int percentage) {
+        try {
+            ObjectName name = new ObjectName("org.exist.management." + instance.getId() + ".tasks:type=SanityReport");
+            SanityReport report = (SanityReport) beanInstances.get(name);
+            if (report != null)
+                report.updateStatus(percentage);
         } catch (MalformedObjectNameException e) {
             LOG.warn("Problem calling mbean: " + e.getMessage(), e);
         }
