@@ -21,20 +21,27 @@ else if ($exist:path eq "/") then
         <redirect url="admin.xql"/>
     </dispatch>
 else if ($exist:resource eq "admin.xql") then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <view>
-            <forward servlet="XSLTServlet">
-                (: Apply xsltforms.xsl stylesheet :)
-        		<set-attribute name="xslt.stylesheet"
-        			value="{$exist:root}/xforms/xsltforms/xsltforms.xsl"/>
-        	    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
-        	    <set-attribute name="xslt.output.indent" value="no"/>
-        	    <set-attribute name="xslt.output.media-type" value="text/html"/>
-        	    <set-attribute name="xslt.output.method" value="xhtml"/>
-        	    <set-attribute name="xslt.baseuri" value="../xforms/xsltforms/"/>
-        	</forward>
-    	</view>
-    </dispatch>
+    let $panel := request:get-parameter("panel", ())
+    return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        {
+            if ($panel eq 'install') then
+                <view>
+                    <forward servlet="XSLTServlet">
+                        (: Apply xsltforms.xsl stylesheet :)
+                		<set-attribute name="xslt.stylesheet"
+                			value="{$exist:root}/xforms/xsltforms/xsltforms.xsl"/>
+                	    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
+                	    <set-attribute name="xslt.output.indent" value="no"/>
+                	    <set-attribute name="xslt.output.media-type" value="text/html"/>
+                	    <set-attribute name="xslt.output.method" value="xhtml"/>
+                	    <set-attribute name="xslt.baseuri" value="../xforms/xsltforms/"/>
+                	</forward>
+            	</view>
+            else
+                ()
+        }
+        </dispatch>
 else
     <ignore xmlns="http://exist.sourceforge.net/NS/exist">
         <cache-control cache="yes"/>
