@@ -204,7 +204,7 @@ public class Database {
 	private static final ConsistencyCheck.ProgressCallback NULL_PROGRESS_CALLBACK = new ConsistencyCheck.ProgressCallback() {
 		public void error(ErrorReport error) {}
 		public void startCollection(String path) {}
-		public void startDocument(String path) {}
+        public void startDocument(String name, int current, int count) {}
 	};
 	
 	/**
