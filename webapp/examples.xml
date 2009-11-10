@@ -154,8 +154,12 @@
                             decide how a HTTP request is handled. The XML fragment returned by the
                             query determines how the request is processed. This happens transparently
                             to the client. One or more "views" can be applied to a request to further processes it.
-                            This is how most of the pages here are rendered (except the Cocoon examples). Have a look
-                            the main controller XQuery, which resides in <code>webapp/controller.xql</code>.</td>
+                            This is how most of the pages here are rendered (except the Cocoon examples). 
+                            The <link href="functions/">RESTful functions
+								browser</link> implementation is a good demonstration of how to use
+							URL rewriting and views. Please have a look at the
+							source in
+							<code>EXIST_HOME/webapp/functions/</code>.</td>
                     </tr>
                 </table>
             </section>
