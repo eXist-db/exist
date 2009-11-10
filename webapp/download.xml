@@ -67,19 +67,19 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable Builds/1.4/eXist-setup-1.4.0-rev10364.jar/download"
-                                >eXist-setup-1.4.0-rev10364.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10433.jar/download"
+                                >eXist-setup-1.4.0-rev10433.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.0-rev10364.jar</code></td>
+                                eXist-1.4.0-rev10433.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable Builds/1.4/eXist-setup-1.4.0-rev10364.exe/download"
-                                >eXist-setup-1.4.0-rev10364.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10433.exe/download"
+                                >eXist-setup-1.4.0-rev10433.exe</ulink>
                         </td>
-                        <td> Installer based on IzPack. Includes source. Required for MS Vista.</td>
+                        <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td colspan="2">We no longer distribute a <filename>.war</filename> package
@@ -113,7 +113,7 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.6-rev9165.jar"
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.2/eXist-setup-1.2.6-rev9165.jar/download"
                                 >eXist-setup-1.2.6-rev9165.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
@@ -122,7 +122,7 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-setup-1.2.6-rev9165.exe"
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.2/eXist-setup-1.2.6-rev9165.exe/download"
                                 >eXist-setup-1.2.6-rev9165.exe</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Required for MS Vista.</td>
@@ -130,7 +130,7 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/eXist-1.2.6-rev9165.war"
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.2/eXist-1.2.6-rev9165.war/download"
                                 >eXist-1.2.6-rev9165.war</ulink>
                         </td>
                         <td>Web application archive, ready to be installed into an existing
@@ -153,7 +153,7 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://prdownloads.sourceforge.net/exist/cocoon-2.1.11-with-eXist-1.2.6.war"
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.2/cocoon-2.1.11-with-eXist-1.2.6.war"
                                 > cocoon-2.1.11-with-eXist-1.2.6.war </ulink>
                         </td>
                         <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2

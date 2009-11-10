@@ -18,7 +18,7 @@
     <maxVersion></maxVersion>
     <initialHeapSize>0</initialHeapSize>
     <maxHeapSize>0</maxHeapSize>
-	<jdkPreference>jdkOnly</jdkPreference>
+	<jdkPreference>preferJdk</jdkPreference>
   </jre>
   <splash>
     <file>logo.bmp</file>
