@@ -353,9 +353,9 @@ public class BrokerPool extends Observable {
 	 */	
 	//TODO : make them static when we have 2 classes
 	private final int DEFAULT_MIN_BROKERS = 1;
-	private final int DEFAULT_MAX_BROKERS = 15;	 
+	private final int DEFAULT_MAX_BROKERS = 15;
     public final long DEFAULT_SYNCH_PERIOD = 120000;
-    public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;    
+    public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;
 	//TODO : move this default setting to org.exist.collections.CollectionCache ? 
 	public final int DEFAULT_COLLECTION_BUFFER_SIZE = 512;
 
