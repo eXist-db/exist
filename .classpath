@@ -40,7 +40,7 @@
 	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-2.4.0.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-junit4-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-pool-1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-pool-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/ws-commons-util-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.2.jar"/>
@@ -101,7 +101,7 @@
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/quartz-1.6.5.jar"/>
+	<classpathentry kind="lib" path="lib/core/quartz-1.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
