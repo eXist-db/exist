@@ -23,12 +23,19 @@ package org.exist.versioning.svn;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
+import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -36,15 +43,29 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNProperties;
+import org.tmatesoft.svn.core.SVNProperty;
 import org.tmatesoft.svn.core.SVNPropertyValue;
+import org.tmatesoft.svn.core.internal.util.SVNDate;
+import org.tmatesoft.svn.core.internal.util.SVNEncodingUtil;
+import org.tmatesoft.svn.core.internal.util.SVNHashMap;
+import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
+import org.tmatesoft.svn.core.internal.wc.DefaultSVNOptions;
+import org.tmatesoft.svn.core.internal.wc.SVNErrorManager;
+import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
+import org.tmatesoft.svn.core.internal.wc.admin.SVNTranslator;
 import org.tmatesoft.svn.core.io.ISVNEditor;
 import org.tmatesoft.svn.core.io.diff.SVNDeltaProcessor;
 import org.tmatesoft.svn.core.io.diff.SVNDiffWindow;
+import org.tmatesoft.svn.core.wc.ISVNOptions;
+import org.tmatesoft.svn.util.SVNLogType;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -54,16 +75,33 @@ public class ExportEditor implements ISVNEditor {
 	private XmldbURI rootPath;
 	
 	private Collection myRootDirectory;
-	private SVNDeltaProcessor myDeltaProcessor;
-    
-    BrokerPool pool = null;
+	
+	BrokerPool pool = null;
     DBBroker broker = null;
     TransactionManager transact = null;
+    Txn transaction;
     
+    private SVNProperties fileProperties;
+    private Map dirProperties;
+
+    private File currentTmpFile;
+
+    private SVNDeltaProcessor deltaProcessor;
+
+    private String currentPath; 
+    private Collection currentDirectory;
+    private File currentFile;
+    
+    private ISVNOptions options;
+    private String eolStyle = SVNProperty.EOL_STYLE_NATIVE;
+
     public ExportEditor(XmldbURI path) throws EXistException {
     	rootPath = path;
-        
-        myDeltaProcessor = new SVNDeltaProcessor();
+    	
+        deltaProcessor = new SVNDeltaProcessor();
+    
+        options = new DefaultSVNOptions();
+        dirProperties = new SVNHashMap();
     }
 
     public void targetRevision(long revision) throws SVNException {
@@ -80,7 +118,11 @@ public class ExportEditor implements ISVNEditor {
 			
 			myRootDirectory = broker.getCollection(rootPath);
 			
-		} catch (EXistException e) {
+			currentDirectory = myRootDirectory;
+			
+	    	transaction = transact.beginTransaction();
+
+    	} catch (EXistException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
             		"error: failed to initialize database.");
             throw new SVNException(err);
@@ -90,13 +132,15 @@ public class ExportEditor implements ISVNEditor {
     public void addDir(String path, String copyFromPath, long copyFromRevision) throws SVNException {
     	System.out.println("addDir");
 
-    	Txn transaction = transact.beginTransaction();
+    	currentPath = path;
+
 		Collection child;
 
 		try {
 			child = broker.getOrCreateCollection(transaction, myRootDirectory.getURI().append(path));
 			broker.saveCollection(transaction, child);
-			transact.commit(transaction);
+			
+			currentDirectory = child;
 		} catch (PermissionDeniedException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
             		"error: failed on permission.");
@@ -106,37 +150,38 @@ public class ExportEditor implements ISVNEditor {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
     				"error: failed on IO.");
             throw new SVNException(err);
-		
-		} catch (TransactionException e) {
-            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
-    				"error: failed on transaction.");
-            throw new SVNException(err);
 		}
-
-        System.out.println("collection added: " + path);
     }
     
     public void openDir(String path, long revision) throws SVNException {
     	System.out.println("openDir");
+
+    	currentPath = path;
+
+    	currentDirectory = broker.getCollection(myRootDirectory.getURI().append(path));
     }
 
     public void changeDirProperty(String name, SVNPropertyValue property) throws SVNException {
-    	System.out.println("changeDirProperty name = "+name+" :: property = "+property);
+    	//UNDERSTAND: should check path?
+        if (SVNProperty.EXTERNALS.equals(name) && property != null) {
+        	dirProperties.put(currentPath, property.getString());
+        }
 	}
 
     public void addFile(String path, String copyFromPath, long copyFromRevision) throws SVNException {
-    	System.out.println("addFile path = "+path+" :: copyFromPath = "+copyFromPath+" :: copyFromRevision = "+copyFromRevision);
+    	System.out.println("addFile path = "+path);
 
-    	Txn transaction = transact.beginTransaction();
-//		myRootDirectory.addDocument(transaction, broker, doc);
-//		myRootDirectory.store(transaction, broker, info, is, false);
-		try {
-			transact.commit(transaction);
-		} catch (TransactionException e) {
-          SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
-        		  "error: exported file ''{0}'' already exists!", path);
-          throw new SVNException(err);
-		}
+    	path = SVNEncodingUtil.uriEncode(path);
+        
+        //TODO: check parent for that resource.
+
+        // create child resource.
+        currentFile = SVNFileUtil.createTempFile("", ".tmp"); //prefix???
+
+        //TODO: "COPY"
+
+        fileProperties = new SVNProperties();
+        checksum = null;
     }
     
     public void openFile(String path, long revision) throws SVNException {
@@ -144,34 +189,134 @@ public class ExportEditor implements ISVNEditor {
     }
 
     public void changeFileProperty(String path, String name, SVNPropertyValue property) throws SVNException {
-    	System.out.println("changeFileProperty path = "+path+" :: name = "+name+" :: property = "+property);
+    	//UNDERSTAND: should check path?
+        fileProperties.put(name, property);
 	}
 
+    /* ************************************* 
+       ************* text part ************* 
+       *************************************/
+    private String checksum;
+
     public void applyTextDelta(String path, String baseChecksum) throws SVNException {
-    	System.out.println("applyTextDelta path = "+path);
-    	
-    	DocumentImpl doc = myRootDirectory.getDocument(broker, XmldbURI.create(path));
-    	
-//        myDeltaProcessor.applyTextDelta(SVNFileUtil.DUMMY_IN, doc, false);
+        String name = SVNPathUtil.tail(path);
+        currentTmpFile = SVNFileUtil.createTempFile(name, ".tmp");
+        deltaProcessor.applyTextDelta((File)null, currentTmpFile, true);
     }
 
     public OutputStream textDeltaChunk(String path, SVNDiffWindow diffWindow)   throws SVNException {
-    	System.out.println("textDeltaChunk path = "+path+" :: diffWindow = "+diffWindow);
-        return myDeltaProcessor.textDeltaChunk(diffWindow);
+        return deltaProcessor.textDeltaChunk(diffWindow);
     }
     
     public void textDeltaEnd(String path) throws SVNException {
-    	System.out.println("textDeltaEnd");
-        myDeltaProcessor.textDeltaEnd();
+        checksum = deltaProcessor.textDeltaEnd();
     }
     
     public void closeFile(String path, String textChecksum) throws SVNException {
-    	System.out.println("closeFile");
-        System.out.println("file added: " + path);
+    	System.out.println(" closeFile");
+
+    	if (textChecksum == null) {
+            textChecksum = fileProperties.getStringValue(SVNProperty.CHECKSUM);
+        }
+        
+        String realChecksum = checksum != null ? checksum : SVNFileUtil.computeChecksum(currentTmpFile);
+        checksum = null;
+        
+        if (textChecksum != null && !textChecksum.equals(realChecksum)) {
+            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.CHECKSUM_MISMATCH, "Checksum mismatch for ''{0}''; expected: ''{1}'', actual: ''{2}''",
+                    new Object[] {currentFile, textChecksum, realChecksum}); 
+            SVNErrorManager.error(err, SVNLogType.WC);
+        }
+
+        try {
+            String date = fileProperties.getStringValue(SVNProperty.COMMITTED_DATE);
+            boolean special = fileProperties.getStringValue(SVNProperty.SPECIAL) != null;
+            boolean binary = SVNProperty.isBinaryMimeType(fileProperties.getStringValue(SVNProperty.MIME_TYPE));
+            String keywords = fileProperties.getStringValue(SVNProperty.KEYWORDS);
+            Map keywordsMap = null;
+//            if (keywords != null) {
+//                String url = SVNPathUtil.append(myURL, SVNEncodingUtil.uriEncode(currentPath));
+//                url = SVNPathUtil.append(url, SVNEncodingUtil.uriEncode(currentFile.getName()));
+//                String author = fileProperties.getStringValue(SVNProperty.LAST_AUTHOR);
+//                String revStr = fileProperties.getStringValue(SVNProperty.COMMITTED_REVISION);
+//                keywordsMap = SVNTranslator.computeKeywords(keywords, url, author, date, revStr, options);
+//            }
+            String charset = SVNTranslator.getCharset(fileProperties.getStringValue(SVNProperty.CHARSET), currentFile.getPath(), options);
+            byte[] eolBytes = null;
+            if (SVNProperty.EOL_STYLE_NATIVE.equals(fileProperties.getStringValue(SVNProperty.EOL_STYLE))) {
+                eolBytes = SVNTranslator.getEOL(eolStyle != null ? eolStyle : fileProperties.getStringValue(SVNProperty.EOL_STYLE), options);
+            } else if (fileProperties.containsName(SVNProperty.EOL_STYLE)) {
+                eolBytes = SVNTranslator.getEOL(fileProperties.getStringValue(SVNProperty.EOL_STYLE), options);
+            }
+            
+            if (binary) {
+                // no translation unless 'special'.
+                charset = null;
+                eolBytes = null;
+                keywordsMap = null;
+            }
+            
+            if (charset != null || eolBytes != null || (keywordsMap != null && !keywordsMap.isEmpty()) || special) {
+                SVNTranslator.translate(currentTmpFile, currentFile, charset, eolBytes, keywordsMap, special, true);
+            } else {
+                SVNFileUtil.rename(currentTmpFile, currentFile);
+            }
+            
+            boolean executable = fileProperties.getStringValue(SVNProperty.EXECUTABLE) != null;
+            if (executable) {
+                SVNFileUtil.setExecutable(currentFile, true);
+            }
+            
+            if (!special && date != null) {
+                currentFile.setLastModified(SVNDate.parseDate(date).getTime());
+            }
+            
+            InputStream is;
+			try {
+				is = new FileInputStream(currentFile);
+
+	            BinaryDocument doc = currentDirectory.addBinaryResource(
+	            		transaction, 
+	            		broker, 
+	            		XmldbURI.create(path), 
+	            		is, 
+	            		MimeType.BINARY_TYPE.getName(), 
+	            		(int) currentFile.length(), 
+	            		new Date(), 
+	            		new Date());
+	            
+	            is.close();
+	            
+	            currentFile.delete();
+
+			} catch (FileNotFoundException e) {
+	            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."); //TODO: error description
+	            throw new SVNException(err);
+			} catch (TriggerException e) {
+	            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."); //TODO: error description
+	            throw new SVNException(err);
+			} catch (EXistException e) {
+	            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."); //TODO: error description
+	            throw new SVNException(err);
+			} catch (PermissionDeniedException e) {
+	            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."); //TODO: error description
+	            throw new SVNException(err);
+			} catch (LockException e) {
+	            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."); //TODO: error description
+	            throw new SVNException(err);
+			} catch (IOException e) {
+	            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."); //TODO: error description
+	            throw new SVNException(err);
+			}
+
+        } finally {
+            currentTmpFile.delete();
+        }
     }
 
     public void closeDir() throws SVNException {
-    	System.out.println("closeDir");
+        currentDirectory = broker.getCollection(currentDirectory.getParentURI());
+        currentPath = SVNPathUtil.removeTail(currentPath);
     }
 
     public void deleteEntry(String path, long revision) throws SVNException {
@@ -188,6 +333,15 @@ public class ExportEditor implements ISVNEditor {
     
     public SVNCommitInfo closeEdit() throws SVNException {
     	System.out.println("closeEdit");
+		
+    	try {
+			transact.commit(transaction);
+		} catch (TransactionException e) {
+            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
+    		"error: failed on transaction's commit.");
+            throw new SVNException(err);
+		}
+		
         return null;
     }
     
