@@ -20,7 +20,7 @@
             <link href="../../../quickstart.xml">Quick Start</link>
         </item>
         <item>
-            <link href="../../../xquery/functions.xq">Function Library</link>
+            <link href="../../../xquery/functions.xql">Function Library</link>
         </item>
         <item>
             <link href="../../../extensions.xml">Extension Modules</link>
@@ -40,10 +40,10 @@
             <link href="../../../sandbox/sandbox.xql">XQuery Sandbox</link>
         </item>
         <item>
-            <link href="../../../xquery/acronyms.xq">XML Acronyms</link>
+            <link href="../../../xquery/acronyms.xql">XML Acronyms</link>
         </item>
         <item>
-            <link href="../../../mods/">Bibliographic</link>
+            <link href="../../../cocoon/biblio.xq">Bibliographic</link>
         </item>
         <item>
             <link href="../../../examples.xml">All Examples</link>
@@ -67,7 +67,7 @@
             <link href="../../../api/index.html">Javadocs</link>
         </item>
         <item>
-            <link href="http://demo.exist-db.org/xquery/svnlog.xq">ChangeLog</link>
+            <link href="http://demo.exist-db.org/xquery/svnlog.xql">ChangeLog</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
