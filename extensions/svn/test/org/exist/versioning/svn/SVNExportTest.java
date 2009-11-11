@@ -77,11 +77,11 @@ public class SVNExportTest {
     public static void closeDB() {
         try {
             Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-            CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            cmgr.removeCollection("test");
+//            CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+//            cmgr.removeCollection("test");
 
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
+            mgr.shutdown(2);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
