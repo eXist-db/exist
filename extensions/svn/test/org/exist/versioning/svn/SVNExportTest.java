@@ -65,6 +65,11 @@ public class SVNExportTest {
 
             org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
             CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+            try {
+				mgmt.removeCollection("test");
+			} catch (XMLDBException e) {
+			}
+
             test = mgmt.createCollection("test");
 
         } catch (Exception e) {
