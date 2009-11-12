@@ -123,7 +123,7 @@ public class StandaloneServer {
     }
     private Server server;
     private Map forwarding = new HashMap();
-    private Map listeners = new HashMap();
+    private Map<String, Properties> listeners = new HashMap<String, Properties>();
     private Map filters = new HashMap();
 
     public StandaloneServer() {
@@ -416,6 +416,8 @@ public class StandaloneServer {
         // TODO not sure
         //httpServer.addContext(context);
         server.setHandler(context);
+
+        server.setStopAtShutdown(true);
 
         server.start();
     }

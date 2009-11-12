@@ -36,7 +36,10 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
 import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
+import org.mortbay.jetty.handler.ContextHandler;
+import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.util.MultiException;
 import org.mortbay.xml.XmlConfiguration;
 
@@ -108,6 +111,8 @@ public class JettyStart {
             InputStream is = new FileInputStream(args[0]);
             XmlConfiguration configuration = new XmlConfiguration(is);
             configuration.configure(server);
+            
+            server.setStopAtShutdown(true);
 
             BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
             server.start();
@@ -117,10 +122,17 @@ public class JettyStart {
                 port = connectors[0].getPort();
             }
 
-            
             System.out.println("-----------------------------------------------------");
             System.out.println("Server has started on port " + port + ". Configured contexts:");
-            // TODO where to get the information
+
+            HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
+            Handler[] handlers = rootHandler.getHandlers();
+            for (int index = 0; index < handlers.length; index++) {
+            	if (handlers[index] instanceof ContextHandler) {
+					ContextHandler contextHandler = (ContextHandler) handlers[index];
+	            	System.out.println("http://localhost:" + port + contextHandler.getContextPath());
+				}
+            }
 //            HttpContext[] contexts = server.getContexts();
 //            for (int i = 0; i < contexts.length; i++) {
 //                System.out.println("http://localhost:" + port + contexts[i].getContextPath());
