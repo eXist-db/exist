@@ -213,4 +213,9 @@ public interface Expression {
     public XQueryContext getContext();
     
     public XACMLSource getSource();
+
+    //Expression is the part of tree, next methods allow to walk down the tree
+    public int getSubExpressionCount();
+    
+    public Expression getSubExpression(int index);
 }

@@ -146,4 +146,13 @@ public abstract class AbstractExpression implements Expression {
     public XQueryContext getContext() {
         return context;
     }
+
+    public int getSubExpressionCount() {
+    	//default value
+    	return 0;
+    }
+    
+    public Expression getSubExpression(int index) {
+	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
+    }
 }

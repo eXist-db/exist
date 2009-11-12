@@ -134,4 +134,12 @@ public class DebuggableExpression implements Expression {
     public XACMLSource getSource() {
         return expression.getSource();
     }
+
+    public int getSubExpressionCount() {
+    	return expression.getSubExpressionCount();
+    }
+    
+    public Expression getSubExpression(int index) {
+    	return expression.getSubExpression(index);
+    }
 }
