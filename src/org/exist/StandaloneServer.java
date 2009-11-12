@@ -434,6 +434,11 @@ public class StandaloneServer {
 
     public void shutdown() {
         BrokerPool.stopAll(false);
+
+        try {
+            server.stop();
+        } catch (Exception e) {
+        }
     }
 
     private List configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
