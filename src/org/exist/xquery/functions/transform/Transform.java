@@ -543,7 +543,8 @@ public class Transform extends BasicFunction {
                 if (e instanceof XPathException)
                     throw (XPathException) e;
 				throw new XPathException(Transform.this,
-					"An exception occurred while compiling the stylesheet: " + e.getMessage(), e);
+					"An exception occurred while compiling the stylesheet: " + stylesheet.getURI() +
+                        ": " + e.getMessage(), e);
 			}
 		}
 	}
@@ -592,7 +593,9 @@ public class Transform extends BasicFunction {
 		 * Assumes an absolute path is given.
 		 */
 		public String normalizePath(String path) {
-			if (!path.startsWith("/")) throw new IllegalArgumentException("normalizePath may only be applied to an absolute path");
+			if (!path.startsWith("/"))
+                throw new IllegalArgumentException("normalizePath may only be applied to an absolute path; " +
+                    "argument was: " + path + "; base: " + basePath);
 
 			String[]	pathComponents = path.substring(1).split("/");
 			int			numPathComponents  = Array.getLength(pathComponents);
@@ -633,7 +636,7 @@ public class Transform extends BasicFunction {
             //TODO : use dedicated function in XmldbURI
 			if (href.startsWith("/"))
 				path = href;
-			else if (base == null) {
+			else if (base == null || base.length() == 0) {
 				path = basePath + "/" + href;
 			}
 			else {
