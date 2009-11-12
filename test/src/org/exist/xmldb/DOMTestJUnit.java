@@ -4,16 +4,9 @@ $Id$
  */
 package org.exist.xmldb;
 
-import java.net.BindException;
-import java.util.Iterator;
-
-import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
-import org.mortbay.util.MultiException;
-import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -21,17 +14,14 @@ import org.w3c.dom.NodeList;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /** A test case for accessing DOMS remotely
  * @author jmv
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-public class DOMTestJUnit extends TestCase {
+public class DOMTestJUnit extends RemoteDBTest {
 	
-	private static StandaloneServer server = null;
-	private static String driver = "org.exist.xmldb.DatabaseImpl";
 	private static String baseURI = "xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION;
 	private static String name = "test.xml";
 	private Collection rootColl;
@@ -49,7 +39,7 @@ public class DOMTestJUnit extends TestCase {
 			//Don't worry about closing the server : the shutdown hook will do the job
 			initServer();
 			System.setProperty("exist.initdb", "true");
-			Class dbc = Class.forName(driver);
+			Class dbc = Class.forName(DB_DRIVER);
 			database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
 			
@@ -63,39 +53,6 @@ public class DOMTestJUnit extends TestCase {
 			fail(e.getMessage());
 		}			
 	}
-	
-	private void initServer() {
-		try {
-			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {			
-					try {				
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception)i.next();
-							if (e0 instanceof BindException) {
-								System.out.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow) throw e;
-					}
-				}				
-			}
-		} catch(Exception e) {	
-			e.printStackTrace();
-			fail(e.getMessage());
-		}			
-	}	
 	
 	/** test Update of an existing document through DOM */
 	public void testDOMUpdate() {
