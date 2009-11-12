@@ -155,4 +155,9 @@ public abstract class AbstractExpression implements Expression {
     public Expression getSubExpression(int index) {
 	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
     }
+
+	public boolean match(Sequence contextSequence, Item item) {
+		//default
+		return false;
+	}
 }
