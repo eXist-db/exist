@@ -22,7 +22,9 @@
 package org.exist;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
@@ -45,6 +47,8 @@ import org.mortbay.xml.XmlConfiguration;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import org.apache.log4j.Logger;
+import org.exist.xquery.functions.system.GetVersion;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -54,6 +58,8 @@ import java.util.TimerTask;
  * @author wolf
  */
 public class JettyStart {
+
+    protected static final Logger logger = Logger.getLogger(JettyStart.class);
 
     public static void main(String[] args) {
         JettyStart start = new JettyStart();
@@ -67,15 +73,56 @@ public class JettyStart {
 
     public void run(String[] args) {
         if (args.length == 0) {
-            System.out.println("No configuration file specified!");
+            logger.info("No configuration file specified!");
             return;
         }
 
         String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
         boolean registerShutdownHook = shutdownHookOption.equals("true");
 
+        Properties sysProperties = new Properties();
+		try
+		{
+			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
         // configure database
-        System.out.println("Configuring eXist from " + SingleInstanceConfiguration.getPath());
+        logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
+        logger.info("");
+        logger.info("Running with Java "+
+                System.getProperty("java.version", "(unknown java.version)") + " [" +
+                System.getProperty("java.vendor", "(unknown java.vendor)") + " (" +
+                System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in " +
+                System.getProperty("java.home", "(unknown java.home)") +"]");
+        logger.info("");
+
+        String msg;
+        msg = "[eXist Version : " + sysProperties.get("product-version") + "]";
+        logger.info(msg);
+        msg = "[eXist Build : " + sysProperties.get("product-build") + "]";
+        logger.info(msg);
+        msg = "[eXist Home : " + System.getProperty("exist.home") + "]";
+        logger.info(msg);
+        msg = "[SVN Revision : " + sysProperties.get("svn-revision") + "]";
+        logger.info(msg);
+        msg = "[Operating System : " +
+        		System.getProperty("os.name") +
+        		" " +
+        		System.getProperty("os.version") +
+                " " +
+                System.getProperty("os.arch") +
+                "]";
+        logger.info(msg);
+
+        msg = "[jetty.home : " + System.getProperty("jetty.home") + "]";
+        logger.info(msg);
+        msg = "[log4j.configuration : " + System.getProperty("log4j.configuration") + "]";
+        logger.info(msg);
+
         try {
             // we register our own shutdown hook
             BrokerPool.setRegisterShutdownHook(false);
@@ -122,15 +169,15 @@ public class JettyStart {
                 port = connectors[0].getPort();
             }
 
-            System.out.println("-----------------------------------------------------");
-            System.out.println("Server has started on port " + port + ". Configured contexts:");
+            logger.info("-----------------------------------------------------");
+            logger.info("Server has started on port " + port + ". Configured contexts:");
 
             HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
             Handler[] handlers = rootHandler.getHandlers();
             for (int index = 0; index < handlers.length; index++) {
             	if (handlers[index] instanceof ContextHandler) {
 					ContextHandler contextHandler = (ContextHandler) handlers[index];
-	            	System.out.println("http://localhost:" + port + contextHandler.getContextPath());
+	            	logger.info("http://localhost:" + port + contextHandler.getContextPath());
 				}
             }
 //            HttpContext[] contexts = server.getContexts();
@@ -169,10 +216,10 @@ public class JettyStart {
             for (Object t : e.getThrowables()) {
                 if (t instanceof java.net.BindException) {
                     hasBindException = true;
-                    System.out.println("----------------------------------------------------------");
-                    System.out.println("ERROR: Could not start jetty, port " + port + " is already in use.   ");
-                    System.out.println(t.toString());
-                    System.out.println("----------------------------------------------------------");
+                    logger.info("----------------------------------------------------------");
+                    logger.info("ERROR: Could not start jetty, port " + port + " is already in use.   ");
+                    logger.info(t.toString());
+                    logger.info("----------------------------------------------------------");
                 }
             }
 
