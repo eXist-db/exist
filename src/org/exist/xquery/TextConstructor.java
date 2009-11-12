@@ -94,4 +94,8 @@ public class TextConstructor extends NodeConstructor {
 	protected final static boolean isWhiteSpace(char ch) {
 		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
 	}
+
+	public String getText() {
+		return text;
+	}
 }
