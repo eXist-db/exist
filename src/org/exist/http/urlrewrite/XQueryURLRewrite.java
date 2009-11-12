@@ -424,7 +424,7 @@ public class XQueryURLRewrite implements Filter {
                 RequestWrapper modifiedRequest = new RequestWrapper(request);
                 modifiedRequest.setPaths(uri, action.getPrefix());
                 if (LOG.isTraceEnabled())
-                    LOG.trace("Forwarding to target: " + action.getTarget() + " url: " + action.getURI());
+                    LOG.trace("Forwarding to : " + action.toString() + " url: " + action.getURI());
                 request = modifiedRequest;
             }
         }
@@ -544,7 +544,7 @@ public class XQueryURLRewrite implements Filter {
 		}
         // Find correct module load path
 		queryContext.setModuleLoadPath(moduleLoadPath);
-        declareVariables(queryContext, sourceInfo, staticRewrite.getPrefix(), basePath, request, response);
+        declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
         if (compiled == null) {
 			try {
 				compiled = xquery.compile(queryContext, sourceInfo.source);
@@ -716,7 +716,7 @@ public class XQueryURLRewrite implements Filter {
         return sourceInfo;
     }
 
-    private void declareVariables(XQueryContext context, SourceInfo sourceInfo, String prefix, String basePath,
+    private void declareVariables(XQueryContext context, SourceInfo sourceInfo, URLRewrite staticRewrite, String basePath,
 			RequestWrapper request, HttpServletResponse response)
 			throws XPathException {
 		HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
@@ -730,6 +730,7 @@ public class XQueryURLRewrite implements Filter {
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
         context.declareVariable("exist:root", basePath);
         context.declareVariable("exist:context", request.getContextPath());
+        String prefix = staticRewrite == null ? null : staticRewrite.getPrefix();
         context.declareVariable("exist:prefix", prefix == null ? "" : prefix);
         String path;
         if (sourceInfo.controllerPath.length() > 0 && !sourceInfo.controllerPath.equals("/"))
