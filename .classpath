@@ -123,5 +123,7 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-6.1.21.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-6.1.21.jar"/>
 	<classpathentry kind="lib" path="lib/core/servlet-api-2.5-20081211.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jasper-compiler.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jasper-runtime.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
