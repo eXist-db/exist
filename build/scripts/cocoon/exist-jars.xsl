@@ -179,7 +179,7 @@
     </xsl:template>
     
     <xsl:template match="file[contains(title, 'Commons Pool')]/lib">
-        <lib>optional/commons-pool-1.5.1.jar</lib>
+        <lib>optional/commons-pool-1.5.3.jar</lib>
     </xsl:template>
     
     <xsl:template match="file[title = 'Search engine']/lib">
