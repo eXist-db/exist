@@ -89,7 +89,7 @@ public class ValueOf extends SimpleConstructor {
 
     	if (attr_select != null) {
     		select = new PathExpr(getContext());
-    		Pattern.parse(getContext(), attr_select, select);
+    		Pattern.parse(contextInfo.getContext(), attr_select, select);
 
 			//UNDERSTAND: <node>text<node>  step = "." -> SELF:node(), but need CHILD:node()
 			if ((contextInfo.getFlags() & DOT_TEST) != 0) {

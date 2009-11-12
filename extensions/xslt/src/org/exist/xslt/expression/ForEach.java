@@ -84,7 +84,7 @@ public class ForEach extends SimpleConstructor {
     	
     	if (attr_select != null) {
 			select = new PathExpr(getContext());
-			Pattern.parse(getContext(), attr_select, select);
+			Pattern.parse(contextInfo.getContext(), attr_select, select);
 			
 			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
 				atRootCall = true;

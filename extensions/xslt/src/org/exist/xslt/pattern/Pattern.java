@@ -75,16 +75,16 @@ public class Pattern {
     static final String ATTRIBUTE = "attribute()"; 
     static final String ATTRIBUTE_A = "attribute(*)"; 
 
-	public static void parse(ContextAtExist context, String pattern, PathExpr content) throws XPathException {
+	public static void parse(XQueryContext context, String pattern, PathExpr content) throws XPathException {
 		boolean xpointer = false;
 		
 		//TODO: rewrite RootNode?
 		if (pattern.equals("//")) {
-			content.add(new LocationStep((XQueryContext) context, Constants.SELF_AXIS, new AnyNodeTest()));
+			content.add(new LocationStep(context, Constants.SELF_AXIS, new AnyNodeTest()));
 			return;
 		}
 		if (pattern.equals("/")) {
-			content.add(new LocationStep((XQueryContext) context, Constants.SELF_AXIS, new AnyNodeTest()));
+			content.add(new LocationStep(context, Constants.SELF_AXIS, new AnyNodeTest()));
 			return;
 		}
 		
@@ -97,9 +97,9 @@ public class Pattern {
 		}
 		
     	long start = System.currentTimeMillis();
-        XQueryLexer lexer = new XQueryLexer((XQueryContext) context, reader);
+        XQueryLexer lexer = new XQueryLexer(context, reader);
 		XQueryParser parser = new XQueryParser(lexer);
-		XQueryTreeParser treeParser = new XQueryTreeParser((XQueryContext) context);
+		XQueryTreeParser treeParser = new XQueryTreeParser(context);
 		try {
             if (xpointer)
                 parser.xpointer();
@@ -115,7 +115,7 @@ public class Pattern {
             if (ast == null)
                 throw new XPathException("Unknown XQuery parser error: the parser returned an empty syntax tree.");
 
-            PathExpr expr = new PathExpr((XQueryContext) context);
+            PathExpr expr = new PathExpr(context);
             if (xpointer)
                 treeParser.xpointer(ast, expr);
             else
@@ -126,7 +126,7 @@ public class Pattern {
             		treeParser.getLastException());
             }
 
-            expr.analyze(new AnalyzeContextInfo());
+            expr.analyze(new AnalyzeContextInfo(context));
 
 //            if (context.optimizationsEnabled()) {
 //                Optimizer optimizer = new Optimizer(context);

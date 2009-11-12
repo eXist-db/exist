@@ -160,7 +160,7 @@ public class XSLElement implements ElementAtExist, Names {
 					value = value.replace("}", "");
         		
 					PathExpr expr = new PathExpr((XQueryContext) context);
-					org.exist.xslt.pattern.Pattern.parse(context, value, expr);
+					org.exist.xslt.pattern.Pattern.parse((XQueryContext) context, value, expr);
 					attributeConstructer.addEnclosedExpr(expr);
 				} else {
 					attributeConstructer.addValue(value);

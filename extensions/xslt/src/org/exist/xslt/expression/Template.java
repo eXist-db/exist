@@ -111,7 +111,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 
     	if (attr_match != null) {
 		    match = new PathExpr(getContext());
-		    Pattern.parse(getContext(), attr_match, match);
+		    Pattern.parse(contextInfo.getContext(), attr_match, match);
 
 			_check_(match);
     	}

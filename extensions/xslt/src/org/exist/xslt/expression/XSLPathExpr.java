@@ -76,9 +76,9 @@ public abstract class XSLPathExpr extends PathExpr implements XSLExpression {
 	}
 
 	protected void _check_(Expression path) {
-		for (int pos = 0; pos < path.getLength(); pos++) {
-			Expression expr = path.getExpression(pos);
-			if ((pos == 0) && (expr instanceof LocationStep)) {
+		for (int index = 0; index < path.getSubExpressionCount(); index++) {
+			Expression expr = path.getSubExpression(index);
+			if ((index == 0) && (expr instanceof LocationStep)) {
 				LocationStep location = (LocationStep) expr;
 				if (location.getTest().isWildcardTest())
 					;
@@ -92,8 +92,8 @@ public abstract class XSLPathExpr extends PathExpr implements XSLExpression {
 	}
 
 	protected void _check_childNodes_(Expression path) {
-		if (path.getLength() != 0) {
-			Expression expr = path.getExpression(path.getLength()-1);
+		if (path.getSubExpressionCount() != 0) {
+			Expression expr = path.getSubExpression(path.getSubExpressionCount()-1);
 			if (expr instanceof LocationStep) {
 				LocationStep location = (LocationStep) expr;
 				//TODO: rewrite

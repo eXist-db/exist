@@ -90,7 +90,7 @@ public class ApplyTemplates extends SimpleConstructor {
 
     	if (attr_select != null) {
     		select = new PathExpr(getContext());
-    		Pattern.parse(getContext(), attr_select, select);
+    		Pattern.parse(contextInfo.getContext(), attr_select, select);
     		
     		_check_(select);
     	}
