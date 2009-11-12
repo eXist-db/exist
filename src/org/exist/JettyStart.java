@@ -20,14 +20,10 @@
  */
 package org.exist;
 
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Observer;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.apache.log4j.Logger;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
@@ -36,13 +32,17 @@ import org.exist.util.SingleInstanceConfiguration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
-import org.exist.xquery.functions.system.GetVersion;
-import org.mortbay.http.HttpContext;
-import org.mortbay.http.HttpListener;
-import org.mortbay.jetty.Server;
-import org.mortbay.util.MultiException;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
+
+import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Server;
+import org.mortbay.util.MultiException;
+import org.mortbay.xml.XmlConfiguration;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -52,219 +52,177 @@ import org.xmldb.api.base.Database;
  * @author wolf
  */
 public class JettyStart {
-	
-	protected static final Logger logger = Logger.getLogger(JettyStart.class);
 
-	public static void main(String[] args) {
-		JettyStart start = new JettyStart();
-		start.run(args, null);
-	}
-	
-        public JettyStart() {
-            // Additional checks XML libs @@@@
-    		XmlLibraryChecker.check();
+    public static void main(String[] args) {
+        JettyStart start = new JettyStart();
+        start.run(args);
+    }
+
+    public JettyStart() {
+        // Additional checks XML libs @@@@
+        XmlLibraryChecker.check();
+    }
+
+    public void run(String[] args) {
+        if (args.length == 0) {
+            System.out.println("No configuration file specified!");
+            return;
         }
-	
-	public void run(String[] args, Observer observer) {
-		if (args.length == 0) {
-			logger.info("No configuration file specified!");
-			return;
-		}
-		
-		String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
-		boolean registerShutdownHook = shutdownHookOption.equals("true");
-		
-		Properties sysProperties = new Properties();
-		try
-		{
-			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		
-		
-		// configure database
-		logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
-        logger.info("");
-        logger.info("Running with Java "+
-                System.getProperty("java.version", "(unknown java.version)") + " [" +
-                System.getProperty("java.vendor", "(unknown java.vendor)") + " (" +
-                System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in " +
-                System.getProperty("java.home", "(unknown java.home)") +"]");
-        logger.info("");
-        
-        String msg;
-        msg = "[eXist Version : " + sysProperties.get("product-version") + "]";
-        logger.info(msg);
-        msg = "[eXist Build : " + sysProperties.get("product-build") + "]";
-        logger.info(msg);
-        msg = "[eXist Home : " + System.getProperty("exist.home") + "]";
-        logger.info(msg);
-        msg = "[SVN Revision : " + sysProperties.get("svn-revision") + "]";
-        logger.info(msg);
-        msg = "[Operating System : " + 
-        		System.getProperty("os.name") +
-        		" " +
-        		System.getProperty("os.version") +
-                " " +
-                System.getProperty("os.arch") + 
-                "]";
-        logger.info(msg);
-        
-        msg = "[jetty.home : " + System.getProperty("jetty.home") + "]";
-        logger.info(msg);
-        msg = "[log4j.configuration : " + System.getProperty("log4j.configuration") + "]";
-        logger.info(msg);
-        
-		try {
-			// we register our own shutdown hook
-			BrokerPool.setRegisterShutdownHook(false);
 
-			// configure the database instance
-			SingleInstanceConfiguration config;
-            if (args.length == 2)
+        String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
+        boolean registerShutdownHook = shutdownHookOption.equals("true");
+
+        // configure database
+        System.out.println("Configuring eXist from " + SingleInstanceConfiguration.getPath());
+        try {
+            // we register our own shutdown hook
+            BrokerPool.setRegisterShutdownHook(false);
+
+            // configure the database instance
+            SingleInstanceConfiguration config;
+            if (args.length == 2) {
                 config = new SingleInstanceConfiguration(args[1]);
-            else
+            } else {
                 config = new SingleInstanceConfiguration();
+            }
 
-            if (observer != null)
-                BrokerPool.registerStatusObserver(observer);
-            
             BrokerPool.configure(1, 5, config);
-			
-			// register the XMLDB driver
-			Database xmldb = new DatabaseImpl();
-			xmldb.setProperty("create-database", "false");
-			DatabaseManager.registerDatabase(xmldb);
+
+            // register the XMLDB driver
+            Database xmldb = new DatabaseImpl();
+            xmldb.setProperty("create-database", "false");
+            DatabaseManager.registerDatabase(xmldb);
 
             configureCluster(config);
 
         } catch (Exception e) {
-			logger.error("configuration error: ", e);
-			e.printStackTrace();
-			return;
-		}
+            System.err.println("configuration error: " + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
 
-		// start Jetty
-		final Server server;
+        // start Jetty
+        final Server server;
         int port = 8080;
-		try {
-			server = new Server(args[0]);
+        try {
+            server = new Server();
+            InputStream is = new FileInputStream(args[0]);
+            XmlConfiguration configuration = new XmlConfiguration(is);
+            configuration.configure(server);
+
             BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
-			server.start();
+            server.start();
 
-            HttpListener[] listeners = server.getListeners();
-
-            StringBuilder ports = new StringBuilder();
-
-            if (listeners.length > 0) {
-                for (HttpListener listener : listeners) {
-                    port = listener.getPort();
-                    ports.append(" "+port);
-                }
-                
-            } else {
-                ports.append(" "+port);
+            Connector[] connectors = server.getConnectors();
+            if (connectors.length > 0) {
+                port = connectors[0].getPort();
             }
 
-            HttpContext[] contexts = server.getContexts();
-            logger.info("----------------------------------------------------------------");
-            logger.info("eXist-db has started on port" + ports + ". Configured contexts:");
-            for (int i = 0; i < contexts.length; i++) {
-                logger.info("http://localhost:" + port + contexts[i].getContextPath());                
-            }
-            logger.info("----------------------------------------------------------------");
             
-            if (registerShutdownHook) {
-				// register a shutdown hook for the server
-				Thread hook = new Thread() {
-					public void run() {
-						setName("Shutdown");
-						BrokerPool.stopAll(true);
-						try {
-							server.stop();
-						} catch (InterruptedException e) {
-						}
-						try {
-							Thread.sleep(1000);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				};
-				Runtime.getRuntime().addShutdownHook(hook);
-			}
-		} catch (MultiException  e) {
+            System.out.println("-----------------------------------------------------");
+            System.out.println("Server has started on port " + port + ". Configured contexts:");
+            // TODO where to get the information
+//            HttpContext[] contexts = server.getContexts();
+//            for (int i = 0; i < contexts.length; i++) {
+//                System.out.println("http://localhost:" + port + contexts[i].getContextPath());
+//            }
+            System.out.println("-----------------------------------------------------");
 
-            boolean hasBindException=false;
-            for(Object t : e.getExceptions()){
-                if(t instanceof java.net.BindException){
-                    hasBindException=true;
-                    logger.info("----------------------------------------------------------");
-                    logger.info("ERROR: Could not start jetty, port "
-                            + port + " is already in use.   ");
-                    logger.info(t.toString());
-                    logger.info("----------------------------------------------------------");
+            if (registerShutdownHook) {
+                // register a shutdown hook for the server
+                Thread hook = new Thread() {
+
+                    @Override
+                    public void run() {
+                        setName("Shutdown");
+                        BrokerPool.stopAll(true);
+                        try {
+                            server.stop();
+                        } catch (Exception e) {
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                Runtime.getRuntime().addShutdownHook(hook);
+            }
+            
+        } catch (MultiException e) {
+
+            // Mute the BindExceptions
+
+            boolean hasBindException = false;
+            for (Object t : e.getThrowables()) {
+                if (t instanceof java.net.BindException) {
+                    hasBindException = true;
+                    System.out.println("----------------------------------------------------------");
+                    System.out.println("ERROR: Could not start jetty, port " + port + " is already in use.   ");
+                    System.out.println(t.toString());
+                    System.out.println("----------------------------------------------------------");
                 }
             }
 
             // If it is another error, print stacktrace
-            if(!hasBindException){
+            if (!hasBindException) {
                 e.printStackTrace();
             }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void shutdown() {
-		BrokerPool.stopAll(false);
-	}
+    public void shutdown() {
+        BrokerPool.stopAll(false);
+    }
 
-	/**
-	 * This class gets called after the database received a shutdown request.
-	 *
-	 * @author wolf
-	 */
-	private static class ShutdownListenerImpl implements ShutdownListener {
-		private Server server;
+    /**
+     * This class gets called after the database received a shutdown request.
+     *
+     * @author wolf
+     */
+    private static class ShutdownListenerImpl
+            implements ShutdownListener {
 
-		public ShutdownListenerImpl(Server server) {
-			this.server = server;
-		}
+        private Server server;
 
-		public void shutdown(String dbname, int remainingInstances) {
-			logger.error("Database shutdown: stopping server in 1sec ...");
-			if (remainingInstances == 0) {
-				// give the webserver a 1s chance to complete open requests
-				Timer timer = new Timer();
-				timer.schedule(new TimerTask() {
-					public void run() {
-						try {
-							// stop the server
-							server.stop();
+        public ShutdownListenerImpl(Server server) {
+            this.server = server;
+        }
+
+        public void shutdown(String dbname, int remainingInstances) {
+            System.err.println("Database shutdown: stopping server in 1sec ...");
+            if (remainingInstances == 0) {
+                // give the webserver a 1s chance to complete open requests
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+
+                    public void run() {
+                        try {
+                            // stop the server
+                            server.stop();
                             ClusterComunication cluster = ClusterComunication.getInstance();
-                            if(cluster!=null){
+                            if (cluster != null) {
                                 cluster.stop();
                             }
-                        } catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						System.exit(0);
-					}
-				}, 1000);
-			}
-		}
-	}
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.exit(0);
+                    }
+                }, 1000);
+            }
+        }
+    }
 
-     private void configureCluster(Configuration c) throws ClusterException {
-        String database = (String)c.getProperty("database");
-        if(! database.equalsIgnoreCase("NATIVE_CLUSTER"))
+    private void configureCluster(Configuration c) throws ClusterException {
+        String database = (String) c.getProperty("database");
+        if (!database.equalsIgnoreCase("NATIVE_CLUSTER")) {
             return;
+        }
 
         ClusterComunication.configure(c);
     }

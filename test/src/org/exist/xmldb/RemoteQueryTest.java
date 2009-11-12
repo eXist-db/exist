@@ -165,7 +165,7 @@ public class RemoteQueryTest extends TestCase {
 						}
 					} catch (MultiException e) {
 						boolean rethrow = true;
-						Iterator i = e.getExceptions().iterator();
+						Iterator i = e.getThrowables().iterator();
 						while (i.hasNext()) {
 							Exception e0 = (Exception)i.next();
 							if (e0 instanceof BindException) {
