@@ -218,4 +218,7 @@ public interface Expression {
     public int getSubExpressionCount();
     
     public Expression getSubExpression(int index);
+
+    //check will item process by the expression 
+	public boolean match(Sequence contextSequence, Item item);
 }

@@ -142,4 +142,8 @@ public class DebuggableExpression implements Expression {
     public Expression getSubExpression(int index) {
     	return expression.getSubExpression(index);
     }
+
+	public boolean match(Sequence contextSequence, Item item) {
+		return expression.match(contextSequence, item);
+	}
 }
