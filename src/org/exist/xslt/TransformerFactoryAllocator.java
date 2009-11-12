@@ -55,6 +55,8 @@ public class TransformerFactoryAllocator
 	public final static String TRANSFORMER_CACHING_ATTRIBUTE 					= "caching";
 	public final static String PROPERTY_CACHING_ATTRIBUTE 						= "transformer.caching";
 
+	public final static String PROPERTY_BROKER_POOL 							= "transformer.brokerPool";
+
 	//private constructor
 	private TransformerFactoryAllocator() 
 	{
