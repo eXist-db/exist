@@ -43,7 +43,6 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class RemoteDatabaseImplTest extends RemoteDBTest {
 
-	private static StandaloneServer server = null;
 	protected final static String ADMIN_PASSWORD = "somepwd";
     protected final static String ADMIN_COLLECTION_NAME = "admin-collection";
 
@@ -61,39 +60,6 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
         }
 	}    
 	
-	private void initServer() {
-		try {
-			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {			
-					try {				
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception)i.next();
-							if (e0 instanceof BindException) {
-								System.out.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow) throw e;
-					}
-				}
-			}
-        } catch (Exception e) {
-        	e.printStackTrace();
-            fail(e.getMessage()); 
-        }
-	}  		
-
     public void testGetCollection() {
     	try {
 	        Class cl = Class.forName(DB_DRIVER);

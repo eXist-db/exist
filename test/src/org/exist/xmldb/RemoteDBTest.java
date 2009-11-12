@@ -20,9 +20,14 @@
  */
 package org.exist.xmldb;
 
+import java.net.BindException;
+import java.util.Iterator;
+
 import junit.framework.TestCase;
 
+import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
+import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -36,7 +41,9 @@ import org.xmldb.api.modules.CollectionManagementService;
 //TODO : manage content from here, not from the derived classes
 public abstract class RemoteDBTest extends TestCase {
 	
-    protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
+	protected static StandaloneServer server = null;
+
+	protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
     private final static String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
@@ -45,6 +52,39 @@ public abstract class RemoteDBTest extends TestCase {
     public RemoteDBTest(String name) {
         super(name);
     }
+
+    protected void initServer() {
+		try {
+			if (server == null) {
+				server = new StandaloneServer();
+				if (!server.isStarted()) {			
+					try {				
+						System.out.println("Starting standalone server...");
+						String[] args = {};
+						server.run(args);
+						while (!server.isStarted()) {
+							Thread.sleep(1000);
+						}
+					} catch (MultiException e) {
+						boolean rethrow = true;
+						Iterator i = e.getThrowables().iterator();
+						while (i.hasNext()) {
+							Exception e0 = (Exception)i.next();
+							if (e0 instanceof BindException) {
+								System.out.println("A server is running already !");
+								rethrow = false;
+								break;
+							}
+						}
+						if (rethrow) throw e;
+					}
+				}
+			}
+        } catch (Exception e) {
+        	e.printStackTrace();
+            fail(e.getMessage()); 
+        }
+	}  		
 
     protected void setUpRemoteDatabase() {             
     	try {

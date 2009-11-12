@@ -27,7 +27,6 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class RemoteCollectionTest extends RemoteDBTest {
 
-	private static StandaloneServer server = null;
 	private final static String XML_CONTENT = "<xml/>";
 	private final static String BINARY_CONTENT = "TEXT";
 	
@@ -53,38 +52,6 @@ public class RemoteCollectionTest extends RemoteDBTest {
         }
 	}
   	
-	private void initServer() {
-		try {
-			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {			
-					try {				
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception)i.next();
-							if (e0 instanceof BindException) {
-								System.out.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow) throw e;
-					}
-				}
-			}
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-        }
-	}  	
-
     public void testIndexQueryService() {
 		// TODO .............
 	}
