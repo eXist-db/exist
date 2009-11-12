@@ -434,11 +434,6 @@ public class StandaloneServer {
 
     public void shutdown() {
         BrokerPool.stopAll(false);
-
-        try {
-            server.stop();
-        } catch (Exception e) {
-        }
     }
 
     private List configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
@@ -607,19 +602,19 @@ public class StandaloneServer {
         public void shutdown(String dbname, int remainingInstances) {
             if (remainingInstances == 0) {
                 // give the server a 1s chance to complete pending requests
-                Timer timer = new Timer();
-                timer.schedule(new TimerTask() {
-
-                    public void run() {
-                        System.out.println("killing threads ...");
+//                Timer timer = new Timer();
+//                timer.schedule(new TimerTask() {
+//
+//                    public void run() {
+                        System.out.println("killing jetty threads ...");
                         try {
                             server.stop();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        System.exit(0);
-                    }
-                }, 1000);
+//                        System.exit(0);
+//                    }
+//                }, 1000);
             }
         }
     }
