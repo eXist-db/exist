@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 import javax.xml.transform.OutputKeys;
 
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
@@ -40,13 +41,22 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
+import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.util.MimeType;
 import org.exist.StandaloneServer;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.TestConstants;
 import org.exist.xmldb.XmldbURI;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mortbay.util.MultiException;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -54,7 +64,7 @@ import org.mortbay.util.MultiException;
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  * @author ljo
  */
-public class XmlRpcTest extends XMLTestCase {    
+public class XmlRpcTest {    
 	
 	private static StandaloneServer server = null;
     private final static String URI = "http://localhost:8088/xmlrpc";
@@ -97,14 +107,26 @@ public class XmlRpcTest extends XMLTestCase {
         "($tm:imported-external-string, $tm-query:local-external-string)";
     
     
-	public XmlRpcTest(String name) {
-		super(name);
+	public XmlRpcTest() {
 	}
 	
-	protected void setUp() {
+    @BeforeClass
+    public static void setUp() {
 		//Don't worry about closing the server : the shutdown hook will do the job
 		initServer();		
 	}
+
+    @AfterClass
+    public static void stopServer() {
+    	//waiting to finish 10s
+    	try {
+			Thread.sleep(10 * 1000);
+		} catch (InterruptedException e1) {
+		}
+
+		server.shutdown();
+        server = null;
+    }
 
     protected void tearDown() {
         XmlRpcClient xmlrpc = getClient();
@@ -114,11 +136,11 @@ public class XmlRpcTest extends XMLTestCase {
             Boolean b = (Boolean) xmlrpc.execute("removeCollection", params);
         } catch (XmlRpcException e) {
             e.printStackTrace();
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
-	private void initServer() {
+	private static void initServer() {
 		try {
 			if (server == null) {
 				server = new StandaloneServer();
@@ -147,10 +169,11 @@ public class XmlRpcTest extends XMLTestCase {
 			}
 	    } catch (Exception e) {
             e.printStackTrace();
-	        fail(e.getMessage());  
+            Assert.fail(e.getMessage());  
 	    }
     }
 
+	@Test
 	public void testStoreAndRetrieve() {
 		try {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
@@ -158,7 +181,7 @@ public class XmlRpcTest extends XMLTestCase {
 			Vector params = new Vector();
 			params.addElement(TARGET_COLLECTION.toString());
 			Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 
 			System.out.println("Storing document " + XML_DATA);
 			params.clear();
@@ -167,7 +190,7 @@ public class XmlRpcTest extends XMLTestCase {
 			params.addElement(new Integer(1));
 
 			result = (Boolean)xmlrpc.execute("parse", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 
 			System.out.println("Documents stored.");
 
@@ -178,7 +201,7 @@ public class XmlRpcTest extends XMLTestCase {
 
 			byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
 			System.out.println( new String(data, "UTF-8") );
-            assertNotNull(data);
+            Assert.assertNotNull(data);
 
             params.clear();
             params.addElement(TARGET_RESOURCE.toString());
@@ -187,14 +210,14 @@ public class XmlRpcTest extends XMLTestCase {
 
             data = (byte[]) xmlrpc.execute( "getDocument", params );
             System.out.println( new String(data, "UTF-8") );
-            assertNotNull(data);
+            Assert.assertNotNull(data);
 
             params.clear();
             params.addElement(TARGET_RESOURCE.toString());
             params.addElement(0);
             String sdata = (String) xmlrpc.execute( "getDocumentAsString", params );
             System.out.println(sdata);
-            assertNotNull(data);
+            Assert.assertNotNull(data);
 
             params.clear();
             params.addElement(TARGET_RESOURCE.toString());
@@ -214,16 +237,16 @@ public class XmlRpcTest extends XMLTestCase {
                 os.write(data);
             }
             data = os.toByteArray();
-            assertTrue(data.length > 0);
+            Assert.assertTrue(data.length > 0);
             System.out.println(new String(data, "UTF-8"));
 
             params.clear();
             params.addElement(TARGET_RESOURCE.toString());
             Boolean b = (Boolean) xmlrpc.execute( "hasDocument", params );
-            assertTrue(b.booleanValue());
+            Assert.assertTrue(b.booleanValue());
 	    } catch (Exception e) {
             e.printStackTrace();
-	        fail(e.getMessage());
+            Assert.fail(e.getMessage());
 	    }
 	}
 
@@ -234,7 +257,7 @@ public class XmlRpcTest extends XMLTestCase {
 			Vector<Object> params = new Vector<Object>();
 			params.addElement(TARGET_COLLECTION.toString());
 			Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 			
 			System.out.println("Storing document " + XML_DATA);
 			params.clear();
@@ -243,13 +266,13 @@ public class XmlRpcTest extends XMLTestCase {
 			params.addElement(new Integer(1));
 			
 			result = (Boolean)xmlrpc.execute("parse", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 			
 			System.out.println("Storing resource " + XSL_DATA);
 			params.setElementAt(XSL_DATA, 0);
 			params.setElementAt(TARGET_COLLECTION.append("test.xsl").toString(), 1);
 			result = (Boolean)xmlrpc.execute("parse", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 			
 			System.out.println("Storing resource " + MODULE_DATA);
 			params.setElementAt(MODULE_DATA.getBytes("UTF-8"), 0);
@@ -257,15 +280,16 @@ public class XmlRpcTest extends XMLTestCase {
 			params.setElementAt(MimeType.XQUERY_TYPE.getName(), 2);
 			params.addElement(Boolean.TRUE);
 			result = (Boolean)xmlrpc.execute("storeBinary", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 			
 			System.out.println("Documents stored.");
 	    } catch (Exception e) {
             e.printStackTrace();
-	        fail(e.getMessage());  
+            Assert.fail(e.getMessage());  
 	    }			
 	}
 
+	@Test
     public void testRemoveCollection() {
         storeData();
         XmlRpcClient xmlrpc = getClient();
@@ -273,19 +297,20 @@ public class XmlRpcTest extends XMLTestCase {
             List params = new ArrayList(1);
             params.add(TARGET_COLLECTION.toString());
             Boolean b = (Boolean) xmlrpc.execute("hasCollection", params);
-            assertTrue(b.booleanValue());
+            Assert.assertTrue(b.booleanValue());
 
             b = (Boolean) xmlrpc.execute("removeCollection", params);
-            assertTrue(b.booleanValue());
+            Assert.assertTrue(b.booleanValue());
 
             b = (Boolean) xmlrpc.execute("hasCollection", params);
-            assertFalse(b.booleanValue());
+            Assert.assertFalse(b.booleanValue());
         } catch (XmlRpcException e) {
             e.printStackTrace();
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
+	@Test
     public void testRemoveDoc() {
         storeData();
         XmlRpcClient xmlrpc = getClient();
@@ -294,19 +319,20 @@ public class XmlRpcTest extends XMLTestCase {
             params.add(TARGET_RESOURCE.toString());
             Boolean b = (Boolean) xmlrpc.execute("hasDocument", params);
 
-            assertTrue(b.booleanValue());
+            Assert.assertTrue(b.booleanValue());
 
             b = (Boolean) xmlrpc.execute("remove", params);
-            assertTrue(b.booleanValue());
+            Assert.assertTrue(b.booleanValue());
 
             b = (Boolean) xmlrpc.execute("hasDocument", params);
-            assertFalse(b.booleanValue());
+            Assert.assertFalse(b.booleanValue());
         } catch (XmlRpcException e) {
             e.printStackTrace();
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
+	@Test
 	public void testRetrieveDoc() {
         storeData();
 		System.out.println("Retrieving document " + TARGET_RESOURCE);
@@ -331,10 +357,11 @@ public class XmlRpcTest extends XMLTestCase {
 			data = (byte[]) xmlrpc.execute( "getDocument", params );
 			System.out.println( new String(data, "UTF-8") );
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
+	    	Assert.fail(e.getMessage());  
 	    }			
 	}
 	
+	@Test
 	public void testCharEncoding() {
         storeData();
 		try {
@@ -347,18 +374,19 @@ public class XmlRpcTest extends XMLTestCase {
 	        HashMap result = (HashMap) xmlrpc.execute( "queryP", params );
 	        Object[] resources = (Object[]) result.get("results");
 	        //TODO : check the number of resources before !
-	        assertEquals(resources.length, 2);
+	        Assert.assertEquals(resources.length, 2);
 	        String value = (String)resources[0];
-	        assertEquals(value, "\u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF");
+	        Assert.assertEquals(value, "\u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF");
 	        System.out.println("Result1: " + value);
 	        value = (String)resources[1];
-	        assertEquals(value, "\uC5F4\uB2E8\uACC4");
+	        Assert.assertEquals(value, "\uC5F4\uB2E8\uACC4");
 	        System.out.println("Result2: " + value);
 	    } catch (Exception e) {            
-	        fail(e.getMessage());
+	    	Assert.fail(e.getMessage());
         }
 	}
 	
+	@Test
 	public void testQuery() {
         storeData();
 		try {
@@ -371,14 +399,15 @@ public class XmlRpcTest extends XMLTestCase {
 			params.addElement(new Hashtable());
 			XmlRpcClient xmlrpc = getClient();
 	        byte[] result = (byte[]) xmlrpc.execute( "query", params );
-	        assertNotNull(result);
-	        assertTrue(result.length > 0);
+	        Assert.assertNotNull(result);
+	        Assert.assertTrue(result.length > 0);
 	        System.out.println(new String(result, "UTF-8"));
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
+	    	Assert.fail(e.getMessage());  
 	    }	        
 	}	
 	
+	@Test
 	public void testQueryWithStylesheet() {
         storeData();
 		try {
@@ -393,24 +422,25 @@ public class XmlRpcTest extends XMLTestCase {
 			params.addElement(options);
 			XmlRpcClient xmlrpc = getClient();
 	        Integer handle = (Integer) xmlrpc.execute( "executeQuery", params );
-	        assertNotNull(handle);
+	        Assert.assertNotNull(handle);
 	        
 	        params.clear();
 	        params.addElement(handle);
 	        params.addElement(new Integer(0));
 	        params.addElement(options);
 	        byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
-	        assertNotNull(item);
-	        assertTrue(item.length > 0);
+	        Assert.assertNotNull(item);
+	        Assert.assertTrue(item.length > 0);
 	        String out = new String(item, "UTF-8");
 	        System.out.println("Received: " + out);
-	        assertXMLEqual("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+	        XMLAssert.assertXMLEqual("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 	        		"<p>Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</p>", out);
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
+	    	Assert.fail(e.getMessage());  
 	    }	        
 	}
 	
+	@Test
 	public void testExecuteQuery() {
         storeData();
 		try {
@@ -421,15 +451,15 @@ public class XmlRpcTest extends XMLTestCase {
 			XmlRpcClient xmlrpc = getClient();
 			System.out.println("Executing query: " + query);
 	        Integer handle = (Integer) xmlrpc.execute( "executeQuery", params );
-	        assertNotNull(handle);
+	        Assert.assertNotNull(handle);
 	        
 	        params.clear();
 	        params.addElement(handle);
 	        Integer hits = (Integer) xmlrpc.execute( "getHits", params );
-	        assertNotNull(hits);
+	        Assert.assertNotNull(hits);
 	        System.out.println("Found: " + hits.intValue());
 	        
-	        assertEquals(hits.intValue(), 2);	        
+	        Assert.assertEquals(hits.intValue(), 2);	        
         
 	        params.addElement(new Integer(0));
 	        params.addElement(new Hashtable());
@@ -443,10 +473,11 @@ public class XmlRpcTest extends XMLTestCase {
 	        item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        System.out.println(new String(item, "UTF-8"));
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
+	    	Assert.fail(e.getMessage());  
 	    }	        
 	}
 	
+	@Test
 	public void testQueryModuleExternalVar() {
         storeData();
 		try {
@@ -471,19 +502,20 @@ public class XmlRpcTest extends XMLTestCase {
 			XmlRpcClient xmlrpc = getClient();
 			HashMap<String, Object[]> result = (HashMap<String, Object[]>) xmlrpc.execute("queryP", params);
 	        Object[] resources = (Object[]) result.get("results");
-	        assertEquals(resources.length, 2);
+	        Assert.assertEquals(resources.length, 2);
 	        String value = (String) resources[0];
-	        assertEquals(value, "imported-string-value");
+	        Assert.assertEquals(value, "imported-string-value");
 	        System.out.println("Imported external: " + value);
 	        value = (String) resources[1];
-	        assertEquals(value, "local-string-value");
+	        Assert.assertEquals(value, "local-string-value");
 	        System.out.println("Local external: " + value);
 	        
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
+	    	Assert.fail(e.getMessage());  
 	    }	        
 	}
 	
+	@Test
 	public void testCollectionWithAccentsAndSpaces() {
         storeData();
 		try {
@@ -500,7 +532,7 @@ public class XmlRpcTest extends XMLTestCase {
 			params.addElement(new Integer(1));
 			
 			Boolean result = (Boolean)xmlrpc.execute("parse", params);
-			assertTrue(result.booleanValue());
+			Assert.assertTrue(result.booleanValue());
 			
 			params.clear();
 			params.addElement(SPECIAL_COLLECTION.removeLastSegment().toString());
@@ -517,7 +549,7 @@ public class XmlRpcTest extends XMLTestCase {
 					break;
 				}
 			}
-			assertTrue("added collection not found", foundMatch);
+			Assert.assertTrue("added collection not found", foundMatch);
 			
 			System.out.println("Retrieving document '" + SPECIAL_RESOURCE.toString() + "'");
 			HashMap options = new HashMap();
@@ -534,7 +566,7 @@ public class XmlRpcTest extends XMLTestCase {
 			byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
 			System.out.println( new String(data, "UTF-8") );
 	    } catch (Exception e) {            
-	        fail(e.getMessage());  
+	    	Assert.fail(e.getMessage());  
 	    }			
 	}
 	
@@ -554,7 +586,7 @@ public class XmlRpcTest extends XMLTestCase {
     }
 
 	public static void main(String[] args) {
-		TestRunner.run(XmlRpcTest.class);
+		org.junit.runner.JUnitCore.main(XmlRpcTest.class.getName());
 		//Explicit shutdown for the shutdown hook
 		System.exit(0);		
 	}	

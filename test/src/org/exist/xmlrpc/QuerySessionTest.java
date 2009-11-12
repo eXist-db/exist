@@ -172,6 +172,12 @@ public class QuerySessionTest {
 
     @AfterClass
     public static void stopServer() {
+    	//waiting to finish 10s
+    	try {
+			Thread.sleep(10 * 1000);
+		} catch (InterruptedException e1) {
+		}
+		
         try {
             Collection root = DatabaseManager.getCollection(baseURI + "/db", "admin", "");
             CollectionManagementService mgmt =
