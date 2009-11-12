@@ -73,7 +73,7 @@ public class If extends SimpleConstructor {
 			throw new XPathException("error, no test at xsl:if");//TODO: error???
 		
 	    test = new PathExpr(getContext());
-	    Pattern.parse(getContext(), attr_test, test);
+	    Pattern.parse(contextInfo.getContext(), attr_test, test);
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

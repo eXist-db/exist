@@ -63,7 +63,7 @@ public class AnalyzeString extends SimpleConstructor {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
 			select = new PathExpr(getContext());
-			Pattern.parse(context, attr.getValue(), select);
+			Pattern.parse((XQueryContext) context, attr.getValue(), select);
 		} else if (attr_name.equals(REGEX)) {
 			regex = attr.getValue();
 		} else if (attr_name.equals(FLAGS)) {

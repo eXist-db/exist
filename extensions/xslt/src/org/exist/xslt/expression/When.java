@@ -70,7 +70,7 @@ public class When extends SimpleConstructor {
 
     	if (attr_test != null) {
     		test = new PathExpr(getContext());
-		    Pattern.parse(getContext(), attr_test, test);
+		    Pattern.parse(contextInfo.getContext(), attr_test, test);
 
 			_check_(test);
     	}
