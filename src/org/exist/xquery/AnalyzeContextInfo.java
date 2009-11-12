@@ -34,6 +34,8 @@ import org.exist.xquery.value.Type;
  */
 public class AnalyzeContextInfo {
 	
+	private XQueryContext context = null;
+	
 	private Expression parent = null;
 	private int flags = 0;
 	private int contextId = Expression.NO_CONTEXT_ID;
@@ -71,6 +73,14 @@ public class AnalyzeContextInfo {
         this.staticType = other.staticType;
     }
 	
+	public AnalyzeContextInfo(XQueryContext context) {
+		this.context = context;
+    }
+
+	public XQueryContext getContext() {
+		return context;
+	}
+
 	/**
 	 * Returns the current context id. The context id is used
 	 * to keep track of the context node set within a predicate
