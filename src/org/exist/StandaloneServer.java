@@ -427,7 +427,7 @@ public class StandaloneServer {
     }
 
     public static void printNotice() {
-        System.out.println("eXist version 1.3, Copyright (C) 2001-2008 The eXist Project");
+        System.out.println("eXist version 1.5, Copyright (C) 2001-2009 The eXist Project");
         System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
         System.out.println("This is free software, and you are welcome to " + "redistribute it\nunder certain conditions; " + "for details read the license file.\n");
     }
