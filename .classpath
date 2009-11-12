@@ -97,7 +97,6 @@
 	<classpathentry kind="lib" path="tools/ant/lib/junit-4.6.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.2.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
@@ -119,6 +118,10 @@
 	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20090920.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.0-M6.jar"/>
-	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-api-1.5.2.jar"/>
+	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/user/commons-compress-1.0.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-6.1.21.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-6.1.21.jar"/>
+	<classpathentry kind="lib" path="lib/core/servlet-api-2.5-20081211.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
