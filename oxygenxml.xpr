@@ -3472,6 +3472,7 @@
             <file name="webapp/configuration.xml"/>
             <file name="webapp/controller.xql"/>
             <file name="webapp/credits.xml"/>
+            <file name="webapp/debugger.xml"/>
             <file name="webapp/deployment.xml"/>
             <file name="webapp/devguide_codereview.xml"/>
             <file name="webapp/devguide_indexes.xml"/>
