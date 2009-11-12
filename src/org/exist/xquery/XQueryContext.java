@@ -1849,6 +1849,10 @@ public class XQueryContext {
 	    getWatchDog().proceed(expr, builder);
 	}
 	
+	public void setWatchDog(XQueryWatchDog watchdog) {
+	    this.watchdog = watchdog;
+	}
+
 	public XQueryWatchDog getWatchDog() {
 	    return watchdog;
 	}
