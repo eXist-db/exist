@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2009 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -606,6 +605,7 @@ public class StandaloneServer {
 //                timer.schedule(new TimerTask() {
 //
 //                    public void run() {
+            	//XXX: how to wait a little ??? -shabanovd
                         System.out.println("killing jetty threads ...");
                         try {
                             server.stop();
