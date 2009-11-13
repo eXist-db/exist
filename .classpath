@@ -117,7 +117,7 @@
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.4.1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.4.1.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jing-20090920.jar"/>
+	<classpathentry kind="lib" path="lib/optional/jing-20091111.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.0-M6.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-api-1.5.2.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
