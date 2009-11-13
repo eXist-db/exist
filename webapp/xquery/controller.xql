@@ -7,6 +7,10 @@ if ($exist:path = "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<redirect url="../examples.xml"/>
 	</dispatch>
+else if ($exist:resource = 'index.xml') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+		<redirect url="{$exist:context}/index.xml"/>
+	</dispatch>
 else if (ends-with($exist:path, '.xql/source')) then
     let $resource := substring-before($exist:path, '/source')
     return
