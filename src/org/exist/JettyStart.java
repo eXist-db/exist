@@ -135,6 +135,10 @@ public class JettyStart {
                 config = new SingleInstanceConfiguration();
             }
 
+// TODO lost during merge?
+//            if (observer != null)
+//                BrokerPool.registerStatusObserver(observer);
+
             BrokerPool.configure(1, 5, config);
 
             // register the XMLDB driver
@@ -145,7 +149,7 @@ public class JettyStart {
             configureCluster(config);
 
         } catch (Exception e) {
-            System.err.println("configuration error: " + e.getMessage());
+            logger.error("configuration error: " + e.getMessage());
             e.printStackTrace();
             return;
         }
@@ -174,17 +178,15 @@ public class JettyStart {
 
             HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
             Handler[] handlers = rootHandler.getHandlers();
+            // todo make Java5 style
             for (int index = 0; index < handlers.length; index++) {
             	if (handlers[index] instanceof ContextHandler) {
 					ContextHandler contextHandler = (ContextHandler) handlers[index];
 	            	logger.info("http://localhost:" + port + contextHandler.getContextPath());
 				}
             }
-//            HttpContext[] contexts = server.getContexts();
-//            for (int i = 0; i < contexts.length; i++) {
-//                System.out.println("http://localhost:" + port + contexts[i].getContextPath());
-//            }
-            System.out.println("-----------------------------------------------------");
+
+            logger.info("-----------------------------------------------------");
 
             if (registerShutdownHook) {
                 // register a shutdown hook for the server
@@ -217,7 +219,8 @@ public class JettyStart {
                 if (t instanceof java.net.BindException) {
                     hasBindException = true;
                     logger.info("----------------------------------------------------------");
-                    logger.info("ERROR: Could not start jetty, port " + port + " is already in use.   ");
+                    logger.info("ERROR: Could not start jetty, port " 
+                            + port + " is already in use.   ");
                     logger.info(t.toString());
                     logger.info("----------------------------------------------------------");
                 }
@@ -242,8 +245,7 @@ public class JettyStart {
      *
      * @author wolf
      */
-    private static class ShutdownListenerImpl
-            implements ShutdownListener {
+    private static class ShutdownListenerImpl implements ShutdownListener {
 
         private Server server;
 
@@ -252,7 +254,7 @@ public class JettyStart {
         }
 
         public void shutdown(String dbname, int remainingInstances) {
-            System.err.println("Database shutdown: stopping server in 1sec ...");
+            logger.error("Database shutdown: stopping server in 1sec ...");
             if (remainingInstances == 0) {
                 // give the webserver a 1s chance to complete open requests
                 Timer timer = new Timer();
