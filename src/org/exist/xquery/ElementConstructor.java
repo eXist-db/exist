@@ -261,6 +261,10 @@ public class ElementConstructor extends NodeConstructor {
                     context.declareInScopeNamespace(prefix, qn.getNamespaceURI());
                     builder.namespaceNode(new QName(prefix, qn.getNamespaceURI(), "xmlns"));
                 }
+            } else if ((qn.getPrefix() == null || qn.getPrefix().length() == 0) &&
+                context.getInheritedNamespace("") != null) {
+                context.declareInScopeNamespace("", "");
+                builder.namespaceNode(new QName("", "", "xmlns"));
             }
             // process element contents
             if(content != null) {
