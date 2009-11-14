@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Redirect extends URLRewrite {
 
@@ -36,7 +38,10 @@ public class Redirect extends URLRewrite {
         String redirectTo = config.getAttribute("url");
         if (redirectTo.length() == 0)
             throw new ServletException("<exist:redirect> needs an attribute 'url'.");
-        setTarget(URLRewrite.normalizePath(redirectTo));
+        if (redirectTo.matches("^\\w+://.*"))
+            setTarget(redirectTo); // do not touch URIs pointing to other server
+        else
+            setTarget(URLRewrite.normalizePath(redirectTo));
     }
 
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
