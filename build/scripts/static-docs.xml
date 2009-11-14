@@ -139,6 +139,7 @@
         <get src='${url}/cluster.xml' dest='${build.docs.html}/cluster.html'/>
         <get src='${url}/configuration.xml' dest='${build.docs.html}/configuration.html'/>
         <get src='${url}/credits.xml' dest='${build.docs.html}/credits.html'/>
+        <get src='${url}/debugger.xml' dest='${build.docs.html}/debugger.html'/>
         <get src='${url}/deployment.xml' dest='${build.docs.html}/deployment.html'/>
         <get src='${url}/devguide_codereview.xml' dest='${build.docs.html}/devguide_codereview.html'/>
         <get src='${url}/devguide_indexes.xml' dest='${build.docs.html}/devguide_indexes.html'/>
@@ -185,8 +186,12 @@
         <get src='${url}/xacml-intro.xml' dest='${build.docs.html}/xacml-intro.html'/>
         <get src='${url}/xacml-usage.xml' dest='${build.docs.html}/xacml-usage.html'/>
         <get src='${url}/xacml.xml' dest='${build.docs.html}/xacml.html'/>
+        <get src='${url}/xinclude.xml' dest='${build.docs.html}/xinclude.html'/>
         <get src='${url}/xmlprague06.xml' dest='${build.docs.html}/xmlprague06.html'/>
         <get src='${url}/xquery.xml' dest='${build.docs.html}/xquery.html'/>
+        
+        <get src='${url}/production_good_practice.xml' dest='${build.docs.html}/production_good_practice.html'/>
+        <get src='${url}/production_web_proxying.xml' dest='${build.docs.html}/production_web_proxying.html'/>
         
         <mkdir dir="${build.docs.html}/xforms"/>
         <get src='${url}/xforms/xforms.xml' dest='${build.docs.html}/xforms/xforms.html'/>
