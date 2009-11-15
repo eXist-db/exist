@@ -740,4 +740,16 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                 return docCmp;
         }
     }
+
+	public Boolean matchSelf(NodeTest test) throws XPathException {
+		//is it required? -shabanovd
+		sortInDocumentOrder();
+		for (int i = 0; i <= size; i++) {
+			NodeImpl node = (NodeImpl) values[i];
+			if ((test.getType() == Type.NODE && node.getNodeType() == Node.ATTRIBUTE_NODE) ||
+					test.matches(node))
+				return true;
+			}
+		return false;
+	}
 }
