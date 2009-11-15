@@ -71,6 +71,7 @@ public class AnalyzeContextInfo {
 		this.contextId = other.contextId;
         this.contextStep = other.contextStep;
         this.staticType = other.staticType;
+        this.context = other.context;
     }
 	
 	public AnalyzeContextInfo(XQueryContext context) {
