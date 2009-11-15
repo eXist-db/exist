@@ -40,4 +40,7 @@ public interface MemoryNodeSet extends Sequence {
     public int size();
 
     public NodeImpl get(int which);
+
+    public Boolean matchSelf(NodeTest test) throws XPathException;
+
 }
