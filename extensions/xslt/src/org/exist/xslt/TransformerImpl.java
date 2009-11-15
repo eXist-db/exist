@@ -42,7 +42,7 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class TransformerImpl extends javax.xml.transform.Transformer {
+public class TransformerImpl extends Transformer {
 
 	public final double version = 2.0;
 

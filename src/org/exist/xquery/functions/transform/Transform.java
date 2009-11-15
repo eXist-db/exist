@@ -229,7 +229,16 @@ public class Transform extends BasicFunction {
         if (isCalledAs("transform"))
         {
         	//transform:transform()
-        	
+
+        	Transformer transformer = handler.getTransformer();
+        	if (transformer.getClass().getName().equals("org.exist.xslt.TransformerImpl")) {
+        		context.pushDocumentContext();
+
+        		Sequence seq = ((org.exist.xslt.Transformer)transformer).transform(args[0]);
+
+        		context.popDocumentContext();
+        		return seq;
+        	} else {
             ValueSequence seq = new ValueSequence();
     		context.pushDocumentContext();
     		MemTreeBuilder builder = context.getDocumentBuilder();
@@ -267,6 +276,7 @@ public class Transform extends BasicFunction {
             }
     		context.popDocumentContext();
     		return seq;
+        	}
         }
         else
         {
