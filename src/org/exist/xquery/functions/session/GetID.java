@@ -57,14 +57,6 @@ public class GetID extends Function
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the session ID")
 	);
 	
-	public final static FunctionSignature deprecated = new FunctionSignature(
-			new QName("get-session-id", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the ID of the current session or an empty sequence if there is no session.",
-			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the session ID"),
-			"Moved to session module and renamed to session:get-id."
-	);
-	
 	public GetID(XQueryContext context)
 	{
 		super(context, signature);

@@ -58,16 +58,6 @@ public class EncodeURL extends BasicFunction {
 			},
 			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the encoded URL"));
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("encode-url", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Encodes the specified URL with the current HTTP session-id.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URL to encode")
-			},
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the encoded URL"),
-			"Moved to the 'session' module. See session:encode-url.");
-	
 	public EncodeURL(XQueryContext context) {
 		super(context, signature);
 	}

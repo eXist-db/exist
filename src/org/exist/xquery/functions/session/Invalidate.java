@@ -52,14 +52,6 @@ public class Invalidate extends BasicFunction {
 			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
     
-    public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("invalidate-session", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Invalidate (remove) the current HTTP session if present",
-			null,
-			new SequenceType(Type.ITEM, Cardinality.EMPTY),
-			"Moved to 'session' module and renamed to session:invalidate");
-    
     /**
      * @param context
      */

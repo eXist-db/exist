@@ -78,22 +78,6 @@ public class GetParameter extends BasicFunction {
 		
 	};
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-		new QName(
-		"request-parameter",
-		RequestModule.NAMESPACE_URI,
-		RequestModule.PREFIX),
-		"Returns the HTTP request parameter identified by $name. If the parameter could not be found, " +
-		"the default value is returned instead. Note: this function will not try to expand " +
-		"predefined entities like &amp; or &lt;, so a &amp; passed through a parameter will indeed " +
-		"be treated as an &amp; character.",
-		new SequenceType[] {
-				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name"),
-				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The default value if the parameter does not exist")},
-		new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value"),
-		"Renamed to request:get-parameter.");
-	
 	public GetParameter(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

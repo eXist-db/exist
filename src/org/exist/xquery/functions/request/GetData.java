@@ -74,17 +74,6 @@ public class GetData extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request"));
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName(
-				"get-request-data",
-				RequestModule.NAMESPACE_URI,
-				RequestModule.PREFIX),
-			"Returns the content of a POST request. If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
-			null,
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request"),
-			"Renamed to get-data.");
-	
 	public GetData(XQueryContext context) {
 		super(context, signature);
 	}

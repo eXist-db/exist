@@ -62,17 +62,6 @@ public class GetAttribute extends Function
 			},
 			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute value" ) );
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName( "get-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
-			"Returns an attribute stored in the current session object or an empty sequence " +
-			"if the attribute cannot be found.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The session attribute name" )
-			},
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute value" ),
-			"Moved to 'session' module. Renamed to session:get-attribute");
-		
 	public GetAttribute( XQueryContext context ) 
 	{
 		super( context, signature );

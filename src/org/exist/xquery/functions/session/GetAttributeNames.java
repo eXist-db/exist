@@ -57,15 +57,6 @@ public class GetAttributeNames extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the list of attribute names"));
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("session-attributes", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns a sequence containing the names of all session attributes defined within the "
-				+ "current HTTP session.",
-			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the list of attribute names"),
-			"Moved to session module and renamed to session:get-attribute-names.");
-
 	/**
 	 * @param context
 	 */
