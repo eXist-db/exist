@@ -143,7 +143,7 @@ public class DebuggableExpression implements Expression {
     	return expression.getSubExpression(index);
     }
 
-	public boolean match(Sequence contextSequence, Item item) {
+	public Boolean match(Sequence contextSequence, Item item) throws XPathException {
 		return expression.match(contextSequence, item);
 	}
 }

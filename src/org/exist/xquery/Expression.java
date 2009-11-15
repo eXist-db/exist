@@ -220,5 +220,5 @@ public interface Expression {
     public Expression getSubExpression(int index);
 
     //check will item process by the expression 
-	public boolean match(Sequence contextSequence, Item item);
+	public Boolean match(Sequence contextSequence, Item item) throws XPathException;
 }

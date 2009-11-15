@@ -1022,4 +1022,86 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         " owned by " + broker.toString();
     }
 
+	@Override
+	public Boolean matchElementsByTagName(byte type, DocumentSet docs,
+			QName qname, NodeSelector selector) {
+        short nodeType = getIndexType(type);
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        final Lock lock = dbNodes.getLock();
+        // true if the output document set is the same as the input document set
+        boolean sameDocSet = true;
+        boolean descendantAxis = selector instanceof DescendantSelector;
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+            //Compute a key for the node
+            Collection collection = (Collection) i.next();
+            int collectionId = collection.getId();
+            final Value key = computeTypedKey(type, collectionId, qname);
+            try {
+                lock.acquire(Lock.READ_LOCK);
+                VariableByteInput is = dbNodes.getAsStream(key); 
+                //Does the node already has data in the index ?
+                if (is == null) {
+                	sameDocSet = false;
+                    continue;
+                }
+                while (is.available() > 0) {
+                    int storedDocId = is.readInt();
+                    byte ordered = is.readByte();
+                    int gidsCount = is.readInt();
+                    //TOUNDERSTAND -pb
+                    int size = is.readFixedInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    //Exit if the document is not concerned
+                    if (storedDocument == null) {
+                        is.skipBytes(size);
+                        continue;
+                    }               
+                    //Process the nodes
+                    NodeId nodeId;
+                    NodeId previous = null;
+                    for (int k = 0; k < gidsCount; k++) {
+                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        if (selector == null) {
+                            long address = StorageAddress.read(is);
+                            NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
+//                            result.add(storedNode, gidsCount);
+                            return true;
+                        } else {
+                            //Filter out the node if requested to do so
+                            NodeProxy storedNode = selector.match(storedDocument, nodeId);
+                            if (storedNode != null) {
+                                long address = StorageAddress.read(is);
+                                storedNode.setInternalAddress(address);
+                                storedNode.setNodeType(nodeType);
+//                                result.add(storedNode, gidsCount);
+                                return true;
+                            } else {
+                            	//What does this 3 stand for ?
+                                is.skip(3);
+                                sameDocSet = false;
+                            }
+                        }
+                    }
+                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(NodeId.ROOT_NODE, is);
+//                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED && !descendantAxis);
+                }
+            } catch (EOFException e) {
+                //EOFExceptions are expected here
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);               
+                //TODO : return ?
+            } finally {
+                lock.release(Lock.READ_LOCK);
+            }
+        }
+//        LOG.debug("Found: " + result.getLength() + " for " + qname);
+        if (sameDocSet) {
+        	result.setDocumentSet(docs);
+        }
+        return false;
+	}
+
 }

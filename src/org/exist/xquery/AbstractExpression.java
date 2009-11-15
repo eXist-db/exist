@@ -156,7 +156,7 @@ public abstract class AbstractExpression implements Expression {
 	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
     }
 
-	public boolean match(Sequence contextSequence, Item item) {
+	public Boolean match(Sequence contextSequence, Item item) throws XPathException {
 		//default
 		return false;
 	}
