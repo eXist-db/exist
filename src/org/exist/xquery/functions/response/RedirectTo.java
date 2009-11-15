@@ -55,15 +55,6 @@ public class RedirectTo extends BasicFunction {
 			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("redirect-to", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Sends a HTTP redirect response (302) to the client. Note: this is not supported by the Cocooon " +
-			"generator. Use a sitemap redirect instead.",
-			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY),
-			"Moved to 'response' module.");
-
 	/**
 	 * @param context
 	 */
