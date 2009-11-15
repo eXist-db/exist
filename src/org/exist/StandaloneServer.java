@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import javax.servlet.GenericServlet;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -47,7 +48,6 @@ import org.exist.xmldb.ShutdownListener;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.FilterHolder;
@@ -349,19 +349,25 @@ public class StandaloneServer {
             if (bootstrapper != null) {
                 bootstrapper.bootstrap(props, context);
             } else {
-            	//XXX: need refactoring -shabanovd
-//                String path = props.getProperty(name + ".context", "/" + name + "/*");
-//                String sname = props.getProperty(name + ".name", name);
-//                ServletHolder servlet = context.addServlet(props.getProperty(name + ".class"), path);
-//                servlet.setName(sname);
-//                String paramPrefix = name + ".param.";
-//                for (Enumeration pnames = props.propertyNames(); pnames.hasMoreElements();) {
-//                    String pname = (String) pnames.nextElement();
-//                    if (pname.startsWith(paramPrefix)) {
-//                        String theName = pname.substring(paramPrefix.length());
-//                        servlet.setInitParameter(theName, props.getProperty(pname));
-//                    }
-//                }
+                String path = props.getProperty(name + ".context", "/" + name + "/*");
+                String sname = props.getProperty(name + ".name", name);
+                
+                String servletClassString = props.getProperty(name + ".class");
+                Class<GenericServlet> servletClass = (Class<GenericServlet>) Class.forName(servletClassString);
+                
+                ServletHolder servlet = new ServletHolder(servletClass.newInstance());
+                
+                servlet.setName(sname);
+                String paramPrefix = name + ".param.";
+                for (Enumeration pnames = props.propertyNames(); pnames.hasMoreElements();) {
+                    String pname = (String) pnames.nextElement();
+                    if (pname.startsWith(paramPrefix)) {
+                        String theName = pname.substring(paramPrefix.length());
+                        servlet.setInitParameter(theName, props.getProperty(pname));
+                    }
+                }
+
+                context.addServlet(servlet, path);
             }
         }
 
