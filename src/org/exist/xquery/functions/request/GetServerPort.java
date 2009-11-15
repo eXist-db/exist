@@ -52,14 +52,6 @@ public class GetServerPort extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the server port of the current request"));
 
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("request-serverport", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns the server port of the current request.",
-			null,
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the server port of the current request"),
-			"Renamed to request:get-server-port.");
-	
 	/**
 	 * @param context
 	 */

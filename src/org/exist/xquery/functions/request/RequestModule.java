@@ -27,8 +27,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.functions.response.StreamBinary;
-import org.exist.xquery.functions.util.FunUnEscapeURI;
 
 /**
  * Module function definitions for transform module.
@@ -73,17 +71,9 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetRemotePort.signature, GetRemotePort.class),
 		new FunctionDef(GetExists.signature, GetExists.class),
 		new FunctionDef(SetAttribute.signature, SetAttribute.class),
-		
-		// deprecated functions:
-		new FunctionDef(GetServerName.deprecated, GetServerName.class),
-		new FunctionDef(GetServerPort.deprecated, GetServerPort.class),
         new FunctionDef(GetContextPath.signatures[0], GetContextPath.class),
         new FunctionDef(GetContextPath.signatures[1], GetContextPath.class),
-        new FunctionDef(GetPathInfo.signature, GetPathInfo.class),
-        new FunctionDef(GetURI.deprecated, GetURI.class),
-		new FunctionDef(StreamBinary.deprecated, StreamBinary.class),
-		new FunctionDef(FunUnEscapeURI.deprecated, FunUnEscapeURI.class)
-		
+        new FunctionDef(GetPathInfo.signature, GetPathInfo.class)
 	};
 
     static {
