@@ -122,6 +122,8 @@ public class TransformerFactoryAllocator
 					}
 				}
 				
+				factory.setAttribute(PROPERTY_BROKER_POOL, pool);
+				
 			} 
 			catch( ClassNotFoundException cnfe ) {
 				if( LOG.isDebugEnabled() ) {
