@@ -30,7 +30,7 @@ import org.xmldb.api.base.Collection;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
- *
+ * @deprecated it'll removed after 1.6
  */
 public final class CollectionTagInfo extends TagExtraInfo {
 	

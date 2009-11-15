@@ -32,7 +32,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
- *
+ * @deprecated it'll removed after 1.6
  */
 public class CollectionTag extends TagSupport {
 	
