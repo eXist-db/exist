@@ -72,5 +72,7 @@ public abstract class ElementIndex extends Observable {
 	
 	public abstract Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
         throws PermissionDeniedException;
+
+	public abstract Boolean matchElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
 	
 }
