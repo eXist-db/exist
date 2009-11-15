@@ -158,7 +158,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	@Override
 	public Transformer newTransformer() throws TransformerConfigurationException {
 		//TODO: setURIresolver ???
-		return new org.exist.xslt.Transformer();
+		return new org.exist.xslt.TransformerImpl();
 	}
 
 	/* (non-Javadoc)

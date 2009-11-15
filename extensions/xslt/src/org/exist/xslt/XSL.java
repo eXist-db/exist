@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 package org.exist.xslt;
 
@@ -132,7 +132,6 @@ public class XSL {
 			XMLReader reader = parser.getXMLReader();
 			SAXAdapter adapter = new SAXAdapter();
 			reader.setContentHandler(adapter);
-//			reader.setContentHandler(adapter);
 			reader.parse(src);
 		
 			DocumentAtExist document = (DocumentAtExist) adapter.getDocument();

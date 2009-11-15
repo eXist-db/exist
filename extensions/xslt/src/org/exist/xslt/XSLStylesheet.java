@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 package org.exist.xslt;
 
@@ -163,7 +163,7 @@ public class XSLStylesheet extends Declaration
 	 * @see javax.xml.transform.Templates#newTransformer()
 	 */
 	public Transformer newTransformer() throws TransformerConfigurationException {
-        org.exist.xslt.Transformer transformer = new org.exist.xslt.Transformer();
+        org.exist.xslt.TransformerImpl transformer = new org.exist.xslt.TransformerImpl();
         transformer.setPreparedStylesheet(this);
         return transformer;
 	}

@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 package org.exist.xslt;
 
@@ -42,7 +42,7 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Transformer extends javax.xml.transform.Transformer {
+public class TransformerImpl extends javax.xml.transform.Transformer {
 
 	public final double version = 2.0;
 

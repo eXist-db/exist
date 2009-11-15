@@ -17,9 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 package org.exist.xslt;
+
+import javax.xml.transform.Source;
 
 import org.w3c.dom.Document;
 
@@ -27,7 +29,7 @@ import org.w3c.dom.Document;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Source implements javax.xml.transform.Source {
+public class SourceImpl implements Source {
 
 	public static final int NOT_DEFAINED = -1;
 	public static final int STRING = 1;
@@ -41,17 +43,17 @@ public class Source implements javax.xml.transform.Source {
 	int type = NOT_DEFAINED;
 	
 	
-	public Source(Document source) {
+	public SourceImpl(Document source) {
 		this.source = source;
 		type = DOM;
 	}
 	
-	public Source(org.exist.source.Source source) {
+	public SourceImpl(org.exist.source.Source source) {
 		this.source = source;
 		type = EXIST_Sequence;
 	}
 
-	public Source(String source) {
+	public SourceImpl(String source) {
 		this.source = source;
 		type = STRING;
 	}
