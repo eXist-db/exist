@@ -22,17 +22,16 @@
 package org.exist.memtree;
 
 import org.exist.Namespaces;
+import org.exist.dom.ElementAtExist;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -43,7 +42,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ElementImpl extends NodeImpl implements Element, QNameable {
+public class ElementImpl extends NodeImpl implements ElementAtExist {
 
 	public ElementImpl(DocumentImpl doc, int nodeNumber) {
 		super(doc, nodeNumber);

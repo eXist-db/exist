@@ -22,18 +22,17 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.EmptyNodeSet;
+import org.exist.dom.NodeAtExist;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.Receiver;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeTest;
@@ -61,7 +60,7 @@ import org.xml.sax.ext.LexicalHandler;
 import java.util.Iterator;
 import java.util.Properties;
 
-public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
+public class NodeImpl implements NodeAtExist, NodeValue {
 
     public final static short REFERENCE_NODE = 100;
     public final static short NAMESPACE_NODE = 101;
@@ -349,6 +348,10 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	    return document;
 	}
 	
+	public DocumentAtExist getDocumentAtExist() {
+	    return document;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
