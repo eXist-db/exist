@@ -26,15 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -145,7 +137,7 @@ public class StandaloneServer {
 
         CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
         if (optParser.getErrorString() != null) {
-            System.err.println("ERROR: " + optParser.getErrorString());
+        	LOG.error("ERROR: " + optParser.getErrorString());
             return;
         }
         List opt = optParser.getArguments();
@@ -176,7 +168,7 @@ public class StandaloneServer {
             }
         }
 
-        System.out.println("Loading configuration ...");
+        LOG.info("Loading configuration ...");
         Configuration config = new Configuration("conf.xml");
         BrokerPool.configure(1, threads, config);
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
@@ -184,9 +176,9 @@ public class StandaloneServer {
 
         startHttpServer(servlets, props);
 
-        System.out.println("\nServer launched ...");
-        System.out.println("Installed services:");
-        System.out.println("-----------------------------------------------");
+        LOG.info("\nServer launched ...");
+        LOG.info("Installed services:");
+        LOG.info("-----------------------------------------------");
         Set listenerProtocols = listeners.keySet();
         for (int i = 0; i < servlets.size(); i++) {
             String name = (String) servlets.get(i);
@@ -196,7 +188,7 @@ public class StandaloneServer {
                     Properties listenerProperties = (Properties) listeners.get(listenerProtocol);
                     String host = listenerProperties.getProperty("host", "localhost");
                     String port = listenerProperties.getProperty("port");
-                    System.out.println(name + ":\t" + host + ":" + port + props.getProperty(name + ".context"));
+                    LOG.info(name + ":\t" + host + ":" + port + props.getProperty(name + ".context"));
                 }
             }
         }
@@ -423,14 +415,14 @@ public class StandaloneServer {
     }
 
     private static void printHelp() {
-        System.out.println("Usage: java " + StandaloneServer.class.getName() + " [options]");
-        System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+    	LOG.info("Usage: java " + StandaloneServer.class.getName() + " [options]");
+    	LOG.info(CLUtil.describeOptions(OPTIONS).toString());
     }
 
     public static void printNotice() {
-        System.out.println("eXist version 1.5, Copyright (C) 2001-2009 The eXist Project");
-        System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
-        System.out.println("This is free software, and you are welcome to " + "redistribute it\nunder certain conditions; " + "for details read the license file.\n");
+    	LOG.info("eXist version 1.5, Copyright (C) 2001-2009 The eXist Project");
+    	LOG.info("eXist comes with ABSOLUTELY NO WARRANTY.");
+    	LOG.info("This is free software, and you are welcome to " + "redistribute it\nunder certain conditions; " + "for details read the license file.\n");
     }
 
     public void shutdown() {
@@ -448,9 +440,9 @@ public class StandaloneServer {
             if (is == null) {
                 throw new IOException("Server configuration not found!");
             }
-            System.out.println("Reading server configuration from exist.jar");
+            LOG.info("Reading server configuration from exist.jar");
         } else {
-            System.out.println("Reading server configuration from: " + f.getAbsolutePath());
+        	LOG.info("Reading server configuration from: " + f.getAbsolutePath());
             is = new FileInputStream(f);
         }
 
@@ -608,7 +600,7 @@ public class StandaloneServer {
 //
 //                    public void run() {
             	//XXX: how to wait a little ??? -shabanovd
-                        System.out.println("killing jetty threads ...");
+            			LOG.info("killing jetty threads ...");
                         try {
                             server.stop();
                         } catch (Exception e) {
@@ -626,8 +618,7 @@ public class StandaloneServer {
         try {
             server.run(args);
         } catch (Exception e) {
-            System.err.println("An exception occurred while launching the server: " + e.getMessage());
-            e.printStackTrace();
+        	LOG.error("An exception occurred while launching the server: " + e.getMessage());
         }
     }
 }
