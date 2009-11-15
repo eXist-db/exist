@@ -93,7 +93,7 @@ public class XSL {
     	ContextAtExist context = new XSLContext(broker);
     	
     	XSLStylesheet expr = (XSLStylesheet) stylesheet.compile(context);
-    	AnalyzeContextInfo info = new AnalyzeContextInfo();
+    	AnalyzeContextInfo info = new AnalyzeContextInfo((XQueryContext)context);
     	info.setFlags(Expression.IN_NODE_CONSTRUCTOR);
         expr.analyze(info);
 
