@@ -269,10 +269,10 @@ public class XSLElement implements ElementAtExist, Names {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getDocument()
+	 * @see org.exist.dom.i.NodeAtExist#getDocumentAtExist()
 	 */
-	public DocumentAtExist getDocument() {
-		return element.getDocument();
+	public DocumentAtExist getDocumentAtExist() {
+		return element.getDocumentAtExist();
 	}
 
 	/* (non-Javadoc)
@@ -318,7 +318,7 @@ public class XSLElement implements ElementAtExist, Names {
 		if (nl != null)
 			return nl;
 		
-		DocumentAtExist document = getDocument();
+		DocumentAtExist document = getDocumentAtExist();
 		
 		nl = new NodeListImpl();
 		int nextNode = document.getFirstChildFor(getNodeNumber());
