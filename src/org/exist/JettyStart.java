@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2009 The eXist Project
+ *  Copyright (C) 2009 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -24,7 +24,9 @@ package org.exist;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Observer;
 import java.util.Properties;
+
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
@@ -48,6 +50,7 @@ import org.mortbay.xml.XmlConfiguration;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.apache.log4j.Logger;
+
 import org.exist.xquery.functions.system.GetVersion;
 
 /**
@@ -63,7 +66,7 @@ public class JettyStart {
 
     public static void main(String[] args) {
         JettyStart start = new JettyStart();
-        start.run(args);
+        start.run(args, null);
     }
 
     public JettyStart() {
@@ -71,7 +74,7 @@ public class JettyStart {
         XmlLibraryChecker.check();
     }
 
-    public void run(String[] args) {
+    public void run(String[] args, Observer observer) {
         if (args.length == 0) {
             logger.info("No configuration file specified!");
             return;
@@ -135,9 +138,9 @@ public class JettyStart {
                 config = new SingleInstanceConfiguration();
             }
 
-// TODO lost during merge?
-//            if (observer != null)
-//                BrokerPool.registerStatusObserver(observer);
+            if (observer != null){
+                BrokerPool.registerStatusObserver(observer);
+            }
 
             BrokerPool.configure(1, 5, config);
 
@@ -178,10 +181,9 @@ public class JettyStart {
 
             HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
             Handler[] handlers = rootHandler.getHandlers();
-            // todo make Java5 style
-            for (int index = 0; index < handlers.length; index++) {
-            	if (handlers[index] instanceof ContextHandler) {
-					ContextHandler contextHandler = (ContextHandler) handlers[index];
+            for (Handler handler: handlers) {
+            	if (handler instanceof ContextHandler) {
+					ContextHandler contextHandler = (ContextHandler) handler;
 	            	logger.info("http://localhost:" + port + contextHandler.getContextPath());
 				}
             }
