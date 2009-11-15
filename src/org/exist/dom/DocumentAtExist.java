@@ -17,17 +17,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 
 package org.exist.dom;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-import org.exist.collections.Collection;
-import org.exist.interpreter.ContextAtExist;
-import org.exist.security.User;
-import org.exist.storage.lock.Lock;
+//import org.exist.collections.Collection;
+//import org.exist.interpreter.ContextAtExist;
+//import org.exist.security.User;
+//import org.exist.storage.lock.Lock;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -42,8 +42,8 @@ public interface DocumentAtExist extends Document, Comparable {
     
     public NodeAtExist getNode(int nodeNr) throws DOMException;
 
-    //???
-//    public int getNextNodeNumber(int nodeNr) throws DOMException;
+    //memory
+    public int getNextNodeNumber(int nodeNr) throws DOMException;
 
     //memory
 	public boolean hasReferenceNodes();

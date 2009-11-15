@@ -1369,5 +1369,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }       
         result.append("} ");    	
     	return result.toString();
-    }    	
+    }
+
+	public int getNextNodeNumber(int nextNode) throws DOMException {
+		return document.next[nextNode];
+	}    	
 }
