@@ -34,7 +34,7 @@ import org.w3c.dom.Node;
  */
 public interface NodeAtExist extends Node, QNameable, Comparable {
 	
-	public DocumentAtExist getDocument();
+	public DocumentAtExist getDocumentAtExist();
 	
 	public int getNodeNumber();
 	public NodeId getNodeId();

@@ -43,7 +43,7 @@ public interface DocumentAtExist extends Document, Comparable {
     public NodeAtExist getNode(int nodeNr) throws DOMException;
 
     //???
-    public int getNextNodeNumber(int nodeNr) throws DOMException;
+//    public int getNextNodeNumber(int nodeNr) throws DOMException;
 
     //memory
 	public boolean hasReferenceNodes();

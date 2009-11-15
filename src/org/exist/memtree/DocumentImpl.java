@@ -21,6 +21,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.DocumentAtExist;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -66,7 +67,7 @@ import java.util.Arrays;
  * 
  * @author wolf
  */
-public class DocumentImpl extends NodeImpl implements Document {
+public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     private static long nextDocId = 0;
 
