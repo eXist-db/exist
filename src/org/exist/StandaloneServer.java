@@ -601,10 +601,10 @@ public class StandaloneServer {
         public void shutdown(String dbname, int remainingInstances) {
             if (remainingInstances == 0) {
                 // give the server a 1s chance to complete pending requests
-//                Timer timer = new Timer();
-//                timer.schedule(new TimerTask() {
-//
-//                    public void run() {
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+
+                    public void run() {
             	//XXX: how to wait a little ??? -shabanovd
             			LOG.info("killing jetty threads ...");
                         try {
@@ -612,9 +612,9 @@ public class StandaloneServer {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-//                        System.exit(0);
-//                    }
-//                }, 1000);
+                        System.exit(0);
+                    }
+                }, 1000);
             }
         }
     }
