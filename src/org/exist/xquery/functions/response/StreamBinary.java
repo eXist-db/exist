@@ -62,20 +62,6 @@ public class StreamBinary extends BasicFunction {
             true
         );
     
-    public final static FunctionSignature deprecated =
-        new FunctionSignature(
-            new QName("stream-binary", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-            "Streams the binary data to the current servlet response output stream. The ContentType " +
-            "HTTP header is set to the value given in $content-type." +
-            "This function only works within a servlet context, not within " +
-            "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog " +
-            "will not be passed.",
-            new SequenceType[] { BINARY_DATA_PARAM, CONTENT_TYPE_PARAM },
-            new SequenceType(Type.ITEM, Cardinality.EMPTY),
-            true,
-            "Renamed to response:stream-binary."
-        );
-    
     public StreamBinary(XQueryContext context) {
         super(context, signature);
     }

@@ -56,18 +56,6 @@ public class FunUnEscapeURI extends BasicFunction {
 			},
 			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"));
 
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("unescape-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns an un-escaped URL escaped string with the encoding scheme (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
-			new SequenceType[]
-			{
-				new FunctionParameterSequenceType("escaped-string", Type.STRING, Cardinality.EXACTLY_ONE, "The escaped string to be un-escaped"),
-				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding scheme to use in the un-escaping of the string")
-			},
-			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"),
-			"Moved to the util module. See util:unescape-uri.");
-	
 	/**
 	 * @param context
 	 */
