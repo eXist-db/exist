@@ -52,7 +52,8 @@ public class JFreeChartFactory {
      * @return          Initialized chart or NULL in case of issues.
      * @throws IOException Thrown when a problem is reported while parsing XML data.
      */
-    public static JFreeChart createJFreeChart(String chartType, Configuration conf, InputStream is) throws XPathException {
+    public static JFreeChart createJFreeChart(String chartType, Configuration conf, InputStream is)
+            throws XPathException {
 
         logger.debug("Generating "+chartType);
 

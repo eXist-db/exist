@@ -26,10 +26,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
-
+import org.exist.http.servlets.ResponseWrapper;
+import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.node.NodeInputStream;
-
+import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -48,11 +52,7 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 
-import org.exist.http.servlets.ResponseWrapper;
-import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.value.Base64Binary;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.NodeValue;
+
 
 
 /**
@@ -72,19 +72,18 @@ public class JFreeCharting extends BasicFunction {
      private static final String function2Txt = function1Txt +
              " Output is directly streamed into the servlet output stream.";
 
-    private static final String chartText = 
-    	"The type of chart to render.  Supported chart types: LineChart, LineChart3D, " +
-        "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
-        "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
-        "WaterfallChart.";
+    private static final String chartText="The type of chart to render.  Supported chart types: " +
+            "LineChart, LineChart3D, " +
+            "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
+            "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
+            "WaterfallChart.";
 
-    private static final String parametersText = 
-    	"The configuration for the chart.  The configuration should be " +
-    	"supplied as follows: <configuration>"+
-        "<param1>Value1</param1> <param2>Value2</param2> </configuration>.  " +
-        "Supported parameters: width height title categoryAxisLabel " +
-        "valueAxisLabel domainAxisLabel rangeAxisLabel orientation " +
-        "order legend tooltips urls.";
+    private static final String parametersText="The configuration for the chart.  The " +
+            "configuration should be supplied as follows: <configuration>"+
+            "<param1>Value1</param1><param2>Value2</param2>/<configuration>.  " +
+            "Supported parameters: width height title categoryAxisLabel " +
+            "valueAxisLabel domainAxisLabel rangeAxisLabel orientation " +
+            "order legend tooltips urls.";
 
     public final static FunctionSignature signatures[] = {
 
@@ -94,7 +93,8 @@ public class JFreeCharting extends BasicFunction {
             new SequenceType[]{
                 new FunctionParameterSequenceType("chart-type", Type.STRING, Cardinality.EXACTLY_ONE, chartText),
                 new FunctionParameterSequenceType("configuration", Type.NODE, Cardinality.EXACTLY_ONE, parametersText),
-                new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE, "The CategoryDataset or PieDataset, supplied as JFreechart XML.")
+                new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE,
+                        "The CategoryDataset or PieDataset, supplied as JFreechart XML.")
             },
             new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the generated PNG image file")
         ),
@@ -105,7 +105,8 @@ public class JFreeCharting extends BasicFunction {
             new SequenceType[]{
                 new FunctionParameterSequenceType("chart-type", Type.STRING, Cardinality.EXACTLY_ONE, chartText),
                 new FunctionParameterSequenceType("configuration", Type.NODE, Cardinality.EXACTLY_ONE, parametersText),
-                new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE, "The CategoryDataset or PieDataset, supplied as JFreechart XML.")
+                new FunctionParameterSequenceType("data", Type.NODE, Cardinality.EXACTLY_ONE,
+                        "The CategoryDataset or PieDataset, supplied as JFreechart XML.")
             },
             new SequenceType(Type.EMPTY, Cardinality.EMPTY)
         )
@@ -201,7 +202,8 @@ public class JFreeCharting extends BasicFunction {
      *
      * @throws XPathException Thrown when an IO exception is thrown,
      */
-    private void writePNGtoResponse(Configuration config, ResponseWrapper response, JFreeChart chart) throws XPathException {
+    private void writePNGtoResponse(Configuration config, ResponseWrapper response, JFreeChart chart)
+            throws XPathException {
         OutputStream os = null;
         try {
             response.setContentType("image/png");
