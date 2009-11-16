@@ -638,16 +638,17 @@
 
         <!-- International Components for Unicode -->
         <!-- http://www.icu-project.org/          -->
-        <get src="http://download.icu-project.org/files/icu4j/4.0.1/icu4j-4_0_1.jar"
-            dest="${lib.user}/icu4j-4.0.1.jar" verbose="true"/>
+        <get src="http://download.icu-project.org/files/icu4j/4.2.1/icu4j-4_2_1.jar"
+            dest="${lib.user}/icu4j-4.2.1.jar" verbose="true" usetimestamp="true"/>
 
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
-        <get src="http://prdownloads.sourceforge.net/saxon/saxonb9-1-0-6j.zip"
+        <get src="http://sourceforge.net/projects/saxon/files/Saxon-B/9.1.0.8/saxonb9-1-0-8j.zip/download"
             dest="${lib.endorsed}/saxon.zip" verbose="true"/>
 
         <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
             <patternset>
+                <include name="**/saxon9he.jar"/>
                 <include name="**/saxon9.jar"/>
                 <include name="**/saxon9-dom.jar"/>
                 <include name="**/saxon9-xpath.jar"/>
