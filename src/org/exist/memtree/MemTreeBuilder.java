@@ -340,8 +340,12 @@ public class MemTreeBuilder {
 	
 	public int namespaceNode(QName qn) {
 		int lastNode = doc.getLastNode();
-		int nodeNr = doc.addNamespace(lastNode, qn);
-		return nodeNr;
+        QName elemQN = (QName) doc.namePool.get(doc.nodeName[lastNode]);
+        String elemPrefix = elemQN.getPrefix() == null ? "" : elemQN.getPrefix();
+        if (elemPrefix.equals(qn.getLocalName()) && elemQN.getNamespaceURI() != null &&
+            !elemQN.getNamespaceURI().equals(qn.getNamespaceURI()))
+            return -1;
+		return doc.addNamespace(lastNode, qn);
 	}
     
 	public int documentType(String publicId, String systemId) {

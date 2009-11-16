@@ -31,6 +31,7 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
