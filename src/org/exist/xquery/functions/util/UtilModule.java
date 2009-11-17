@@ -116,13 +116,6 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(GetFragmentBetween.signature, GetFragmentBetween.class),
         new FunctionDef(BaseConverter.signatures[0], BaseConverter.class),
         new FunctionDef(BaseConverter.signatures[1], BaseConverter.class),
-
-        // deprecated functions
-        new FunctionDef(GetVersion.deprecated, GetVersion.class),
-		new FunctionDef(FileRead.deprecated[0], FileRead.class),
-		new FunctionDef(FileRead.deprecated[1], FileRead.class),
-		new FunctionDef(MD5.deprecated[0], MD5.class),
-		new FunctionDef(MD5.deprecated[1], MD5.class),
     };
 
     static {
