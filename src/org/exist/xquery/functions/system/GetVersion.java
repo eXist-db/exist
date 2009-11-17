@@ -55,14 +55,6 @@ public class GetVersion extends BasicFunction
 			FunctionSignature.NO_ARGS,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the version string"));
 	
-	public final static FunctionSignature deprecated =
-		new FunctionSignature(
-			new QName("eXist-version", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the version of eXist running this query.",
-			FunctionSignature.NO_ARGS,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the version string"),
-			"Moved to system module and renamed to system:get-version.");
-
 	public GetVersion(XQueryContext context)
 	{
 		super(context, signature);
