@@ -22,8 +22,10 @@
 package org.exist.debugger;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.Variable;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -49,4 +51,5 @@ public interface Debugger {
 
 	//public Response getResponse(String transactionID);
 
+	public List<Variable> getVariables();
 }

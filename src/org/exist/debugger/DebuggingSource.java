@@ -21,6 +21,8 @@
  */
 package org.exist.debugger;
 
+import java.util.List;
+
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
@@ -65,7 +67,7 @@ public interface DebuggingSource {
 	public boolean isSuspended();
 	public boolean isTerminated();
 
-	public Variable[] getVariables();
+	public List<Variable> getVariables();
 
 	public Location[] getStackFrames();
 

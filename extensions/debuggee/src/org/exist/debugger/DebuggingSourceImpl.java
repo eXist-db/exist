@@ -22,6 +22,7 @@
 package org.exist.debugger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.exist.debugger.model.Breakpoint;
@@ -74,9 +75,8 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#getVariables()
 	 */
-	public Variable[] getVariables() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Variable> getVariables() {
+		return debugger.getVariables();
 	}
 
 	/* (non-Javadoc)

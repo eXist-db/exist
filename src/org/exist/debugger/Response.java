@@ -21,6 +21,8 @@
  */
 package org.exist.debugger;
 
+import org.w3c.dom.NodeList;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -32,4 +34,6 @@ public interface Response {
 	public String getAttribute(String attr);
 
 	public String getText();
+
+	public NodeList getElemetsByName(String name);
 }
