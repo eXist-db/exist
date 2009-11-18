@@ -24,8 +24,10 @@ package org.exist.debugger;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.exist.debuggee.CommandContinuation;
+import org.exist.debugger.model.Variable;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,9 +45,11 @@ public class DebuggerTest implements ResponseListener {
 		Debugger debugger;
 		
 		try {
+			System.out.println("creating debugger");
 			debugger = new DebuggerImpl();
 
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/admin/admin.xql");
+			System.out.println("sending init request");
+			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -54,10 +58,44 @@ public class DebuggerTest implements ResponseListener {
 			} catch (InterruptedException e) {
 			}
 			
+			System.out.println("sending step-into");
 			source.stepInto(this);
+			
+			for (int i = 0; i < 6; i++) {
+				source.stepInto(this);
+			}
+			
+			System.out.println("sending get-variables first time");
+			List<Variable> vars = source.getVariables();
+			
+			assertEquals(1, vars.size());
+			
+			for (Variable var : vars) {
+				assertEquals("n", var.getName());
+				assertEquals("1", var.getValue());
+			}
+			
+			for (int i = 0; i < 7; i++) {
+				source.stepInto(this);
+			}
+
+			System.out.println("sending get-variables second time");
+			vars = source.getVariables();
+			
+			assertEquals(1, vars.size());
+			
+			for (Variable var : vars) {
+				assertEquals("n", var.getName());
+				assertEquals("2", var.getValue());
+			}
+
+			System.out.println("sending step-over");
 			source.stepOver(this);
+
+			System.out.println("sending step-out");
 			source.stepOut(this);
 
+			System.out.println("sending run");
 			source.run(this);
 
 		} catch (IOException e) {

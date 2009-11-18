@@ -23,27 +23,27 @@ package org.exist.debugger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
-import org.exist.debuggee.dbgp.packets.Run;
-import org.exist.debuggee.dbgp.packets.Source;
-import org.exist.debuggee.dbgp.packets.StepInto;
-import org.exist.debuggee.dbgp.packets.StepOut;
-import org.exist.debuggee.dbgp.packets.StepOver;
-import org.exist.debuggee.dbgp.packets.Stop;
+import org.exist.debuggee.dbgp.packets.*;
 import org.exist.debugger.Debugger;
 import org.exist.debugger.DebuggingSource;
 import org.exist.debugger.dbgp.CodecFactory;
 import org.exist.debugger.dbgp.ProtocolHandler;
 import org.exist.debugger.dbgp.ResponseImpl;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.Variable;
+import org.exist.debugger.model.VariableImpl;
 import org.exist.util.Base64Decoder;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -128,6 +128,25 @@ public class DebuggerImpl implements Debugger {
 
 		return null;
 	}
+	
+	public List<Variable> getVariables() {
+		ContextGet command = new ContextGet(session, " -i " + getNextTransaction());
+		command.toDebuggee();
+
+		Response response = getResponse(command.getTransactionId());
+
+		//XXX: handle errors
+		List<Variable> variables = new ArrayList<Variable>();
+		
+		NodeList children = response.getElemetsByName("property");
+		for (int i = 0; i < children.getLength(); i++) {
+			variables.add(new VariableImpl(children.item(i)));
+		}
+
+
+		return variables;
+	}
+	
 
 	public Breakpoint addBreakpoint(Breakpoint breakpoint) {
 		// TODO Auto-generated method stub
