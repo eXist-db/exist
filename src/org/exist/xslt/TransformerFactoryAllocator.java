@@ -55,7 +55,7 @@ public class TransformerFactoryAllocator
 	public final static String TRANSFORMER_CACHING_ATTRIBUTE 					= "caching";
 	public final static String PROPERTY_CACHING_ATTRIBUTE 						= "transformer.caching";
 
-	public final static String PROPERTY_BROKER_POOL 							= "transformer.brokerPool";
+	public final static String PROPERTY_BROKER_POOL 						= "transformer.brokerPool";
 
 	//private constructor
 	private TransformerFactoryAllocator() 
@@ -121,8 +121,9 @@ public class TransformerFactoryAllocator
 						LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + e );
 					}
 				}
-				
-				factory.setAttribute(PROPERTY_BROKER_POOL, pool);
+
+                                if(factory instanceof org.exist.xslt.TransformerFactoryImpl)
+                                    factory.setAttribute(PROPERTY_BROKER_POOL, pool);
 				
 			} 
 			catch( ClassNotFoundException cnfe ) {
