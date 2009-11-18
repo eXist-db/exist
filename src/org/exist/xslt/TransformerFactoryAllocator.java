@@ -122,8 +122,14 @@ public class TransformerFactoryAllocator
 					}
 				}
 
+                                /* TODO uncomment below for testing eXist-XSLT or once the eXist-XSLT is ready for general consumption
+                                 at the moment the XSLT extension is not on the classpath, which make compilation fail for everyone
+                                 else otherwise!
+                                */
+                                /*
                                 if(factory instanceof org.exist.xslt.TransformerFactoryImpl)
                                     factory.setAttribute(PROPERTY_BROKER_POOL, pool);
+                                 */
 				
 			} 
 			catch( ClassNotFoundException cnfe ) {
