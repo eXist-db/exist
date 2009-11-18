@@ -47,8 +47,32 @@ public class DtdEntityTest extends EmbeddedExistTester {
             fail("Exception expected");
 
         } catch (XMLDBException ex) {
-            assertTrue(ex.getMessage()
-                    .contains("The entity \"empty\" was referenced, but not declared"));
+            assertTrue(ex.getMessage().contains("The entity \"empty\" was referenced, but not declared"));
+
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+
+    }
+
+    @Test @Ignore("Enitiy resolve bug")
+    public void bugloadWithEntities() {
+
+        String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" 
+                + "<!DOCTYPE procedure PUBLIC \"-//AAAA//DTD Procedure 0.4//EN\" \"aaaa.dtd\" >"
+                + "<a>first empty: &empty; then trade: &trade; </a>";
+        try {
+            Collection col = createCollection(rootCollection, "entitiy");
+            storeResource(col, "docname.xml", input.getBytes());
+
+            String result = getXMLResource(col, "docname.xml");
+            System.out.println(result);
+            fail("Exception expected, document should be rejected");
+
+        } catch (XMLDBException ex) {
+            assertTrue(ex.getMessage().contains("The entity \"empty\" was referenced, but not declared"));
 
 
         } catch (Exception ex) {

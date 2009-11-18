@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.transform.OutputKeys;
 import org.apache.log4j.*;
 
 import org.exist.storage.DBBroker;
@@ -39,6 +40,7 @@ import org.exist.xmldb.DatabaseInstanceManager;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -48,6 +50,7 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 
@@ -175,5 +178,15 @@ public class EmbeddedExistTester {
         in.close();
 
         return out.toByteArray();
+    }
+
+    protected String getXMLResource(Collection collection, String resource) throws XMLDBException{
+		collection.setProperty(OutputKeys.INDENT, "yes");
+		collection.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        collection.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+		XMLResource res = (XMLResource)collection.getResource(resource);
+        String retval = res.getContent().toString();
+        collection.close();
+        return retval;
     }
 }
