@@ -1,5 +1,0 @@
-<!ELEMENT address (first, last, phone)>
-<!ATTLIST address type CDATA #IMPLIED>
-<!ELEMENT first (#PCDATA)>
-<!ELEMENT last (#PCDATA)>
-<!ELEMENT phone (#PCDATA)>
