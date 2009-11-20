@@ -1,7 +1,0 @@
-<doc xmlns:t="http://xproc.org/ns/testsuite" xmlns:p="http://www.w3.org/ns/xproc" xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:err="http://www.w3.org/ns/xproc-error"><title>Document Title</title>
-<p>Some prose.</p>
-<x:lit xmlns:x="http://example.org/test/ns"><![CDATA[This is <literally>literally</literally>
-what should appear in this   element.]]></x:lit>
-<p>The Balisage conference
-takes place in Montréal.</p>
-</doc>
