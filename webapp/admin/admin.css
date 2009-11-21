@@ -261,3 +261,17 @@ td.last {
 .legend {
 	font-size: .75em;
 }
+
+label {
+    display: block;
+    width: 200px;
+    float: left;
+}
+
+.output {
+    position: relative;
+    height: 8em;
+    overflow: auto;
+    font-size: 75%;
+    border: 1px solid #CCC;
+}
