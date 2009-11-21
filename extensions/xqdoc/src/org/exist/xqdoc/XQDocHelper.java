@@ -14,7 +14,7 @@ public class XQDocHelper {
 
     public XQDocHelper() throws XQDocException {
         controller = new XQDocController(XQDocController.JAN2007);
-        controller.setEncodeURIs(true);
+        controller.setEncodeURIs(false);
     }
 
     public String scan(Source source) throws XQDocException, IOException {

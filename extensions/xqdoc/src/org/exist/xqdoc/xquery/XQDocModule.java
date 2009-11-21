@@ -7,7 +7,7 @@ public class XQDocModule extends AbstractInternalModule {
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/xqdoc";
 
-    public static final String PREFIX = "xqdoc";
+    public static final String PREFIX = "xqdm";
 
     public final static String RELEASED_IN_VERSION = "eXist-1.4.1";
 

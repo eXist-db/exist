@@ -4,8 +4,10 @@ import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -27,7 +29,7 @@ public class Scan extends BasicFunction {
             new QName("scan", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
             "",
             new SequenceType[] {
-                new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.EXACTLY_ONE,
+                new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE,
                     "The URI from which to load the function module")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
@@ -70,6 +72,18 @@ public class Scan extends BasicFunction {
                     doc.getUpdateLock().release(Lock.READ_LOCK);
                 if(collection != null)
                     collection.release(Lock.READ_LOCK);
+            }
+        } else {
+            // first check if the URI points to a registered module
+            String location = context.getModuleLocation(uri);
+            if (location != null)
+                uri = location;
+            try {
+                source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
+            } catch (IOException e) {
+                throw new XPathException(this, "failed to read module " + uri, e);
+            } catch (PermissionDeniedException e) {
+                throw new XPathException(this, "permission denied to read module " + uri, e);
             }
         }
         try {
