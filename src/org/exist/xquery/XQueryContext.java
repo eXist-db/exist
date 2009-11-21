@@ -2209,7 +2209,13 @@ public class XQueryContext {
 		declareNamespace(prefix, namespaceURI);
 	}
 
-    private String getModuleLocation(String namespaceURI) {
+    /**
+     * Returns the static location mapped to an XQuery source module, if known.
+     *
+     * @param namespaceURI
+     * @return
+     */
+    public String getModuleLocation(String namespaceURI) {
         Map moduleMap = (Map) broker.getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
         return (String) moduleMap.get(namespaceURI);
     }
@@ -2242,6 +2248,10 @@ public class XQueryContext {
         Reader reader;
         try {
         	reader = source.getReader();
+            if (reader == null) {
+                throw new XPathException("failed to load module '" + namespaceURI + "' from '" + source +
+                    ". Source not found. ");
+            }
         } catch (IOException e) {
         	throw new XPathException("IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e);
         }
