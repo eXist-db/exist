@@ -67,9 +67,8 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#getStackFrames()
 	 */
-	public Location[] getStackFrames() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Location> getStackFrames() {
+		return debugger.getStackFrames();
 	}
 
 	/* (non-Javadoc)

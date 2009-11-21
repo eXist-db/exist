@@ -39,6 +39,8 @@ import org.exist.debugger.dbgp.CodecFactory;
 import org.exist.debugger.dbgp.ProtocolHandler;
 import org.exist.debugger.dbgp.ResponseImpl;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.Location;
+import org.exist.debugger.model.LocationImpl;
 import org.exist.debugger.model.Variable;
 import org.exist.debugger.model.VariableImpl;
 import org.exist.util.Base64Decoder;
@@ -147,6 +149,24 @@ public class DebuggerImpl implements Debugger {
 		return variables;
 	}
 	
+
+	public List<Location> getStackFrames() {
+		StackGet command = new StackGet(session, " -i " + getNextTransaction());
+		command.toDebuggee();
+
+		Response response = getResponse(command.getTransactionId());
+
+		//XXX: handle errors
+		List<Location> variables = new ArrayList<Location>();
+		
+		NodeList children = response.getElemetsByName("stack");
+		for (int i = 0; i < children.getLength(); i++) {
+			variables.add(new LocationImpl(children.item(i)));
+		}
+
+
+		return variables;
+	}
 
 	public Breakpoint addBreakpoint(Breakpoint breakpoint) {
 		// TODO Auto-generated method stub
