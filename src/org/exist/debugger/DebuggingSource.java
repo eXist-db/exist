@@ -69,7 +69,7 @@ public interface DebuggingSource {
 
 	public List<Variable> getVariables();
 
-	public Location[] getStackFrames();
+	public List<Location> getStackFrames();
 
 	public Breakpoint newBreakpoint();
 

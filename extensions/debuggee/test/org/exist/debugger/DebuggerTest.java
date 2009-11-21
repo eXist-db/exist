@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.exist.debuggee.CommandContinuation;
+import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -58,12 +59,25 @@ public class DebuggerTest implements ResponseListener {
 			} catch (InterruptedException e) {
 			}
 			
-			System.out.println("sending step-into");
+			System.out.print("sending step-into");
+			System.out.print(".");
 			source.stepInto(this);
 			
 			for (int i = 0; i < 6; i++) {
+				System.out.print(".");
 				source.stepInto(this);
+
+				try {
+					Thread.sleep(1000); //TODO: query current stage or wait for STOP status ???
+				} catch (InterruptedException e) {
+				}
 			}
+			System.out.println("=");
+			
+			System.out.println("get stack frames");
+			List<Location> stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(21, stack.get(0).getLineBegin());
 			
 			System.out.println("sending get-variables first time");
 			List<Variable> vars = source.getVariables();
@@ -75,9 +89,17 @@ public class DebuggerTest implements ResponseListener {
 				assertEquals("1", var.getValue());
 			}
 			
+			System.out.print("sending step-into");
 			for (int i = 0; i < 7; i++) {
+				System.out.print(".");
 				source.stepInto(this);
+
+				try {
+					Thread.sleep(1000); //TODO: query current stage or wait for STOP status ???
+				} catch (InterruptedException e) {
+				}
 			}
+			System.out.print("=");
 
 			System.out.println("sending get-variables second time");
 			vars = source.getVariables();
