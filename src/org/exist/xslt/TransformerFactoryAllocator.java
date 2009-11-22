@@ -55,7 +55,7 @@ public class TransformerFactoryAllocator
 	public final static String TRANSFORMER_CACHING_ATTRIBUTE 					= "caching";
 	public final static String PROPERTY_CACHING_ATTRIBUTE 						= "transformer.caching";
 
-	public final static String PROPERTY_BROKER_POOL 						= "transformer.brokerPool";
+	public final static String PROPERTY_BROKER_POOL 							= "transformer.brokerPool";
 
 	//private constructor
 	private TransformerFactoryAllocator() 
@@ -121,15 +121,12 @@ public class TransformerFactoryAllocator
 						LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + e );
 					}
 				}
-
-                                /* TODO uncomment below for testing eXist-XSLT or once the eXist-XSLT is ready for general consumption
-                                 at the moment the XSLT extension is not on the classpath, which make compilation fail for everyone
-                                 else otherwise!
-                                */
-                                /*
-                                if(factory instanceof org.exist.xslt.TransformerFactoryImpl)
-                                    factory.setAttribute(PROPERTY_BROKER_POOL, pool);
-                                 */
+				
+				try {
+					factory.setAttribute(PROPERTY_BROKER_POOL, pool);
+				} finally {
+					//some transformers do not support "setAttribute"
+				}
 				
 			} 
 			catch( ClassNotFoundException cnfe ) {
