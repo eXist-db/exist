@@ -59,6 +59,13 @@ public interface DebuggingSource {
 	 */
 	public void stop(ResponseListener listener);
 
+
+	public void run();
+	public void stepInto();
+	public void stepOver();
+	public void stepOut();
+	public void stop();
+
 	/**
 	 * Stops interaction with the debugger engine. Once this command is executed, the IDE will no longer be able to communicate with the debugger engine. This does not end execution of the script as does the stop command above, but rather detaches from debugging. Support of this continuation command is optional, and the IDE should verify support for it via the feature_get command. If the IDE has created stdin/stdout/stderr pipes for execution of the script (eg. an interactive shell or other console to catch script output), it should keep those open and usable by the process until the process has terminated normally.
 	 */

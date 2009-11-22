@@ -79,4 +79,7 @@ public class LocationImpl implements Location {
 		return beginLine;
 	}
 
+	public String toString() {
+		return ""+beginLine+":"+beginColumn+"@"+fileURI;
+	}
 }

@@ -118,10 +118,24 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#run()
+	 */
+	public void run() {
+		debugger.run();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepInto()
 	 */
 	public void stepInto(ResponseListener listener) {
 		debugger.stepInto(listener);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stepInto()
+	 */
+	public void stepInto() {
+		debugger.stepInto();
 	}
 
 	/* (non-Javadoc)
@@ -132,6 +146,13 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stepOut()
+	 */
+	public void stepOut() {
+		debugger.stepOut();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOver()
 	 */
 	public void stepOver(ResponseListener listener) {
@@ -139,10 +160,24 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stepOver()
+	 */
+	public void stepOver() {
+		debugger.stepOver();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stop()
 	 */
 	public void stop(ResponseListener listener) {
 		debugger.stop(listener);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stop()
+	 */
+	public void stop() {
+		debugger.stop();
 	}
 
 	public Breakpoint newBreakpoint() {

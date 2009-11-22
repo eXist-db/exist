@@ -76,6 +76,10 @@ public class DebuggerTest implements ResponseListener {
 			
 			System.out.println("get stack frames");
 			List<Location> stack = source.getStackFrames();
+			for (Location loc : stack) {
+				System.out.println(loc);
+			}
+				
 			assertEquals(1, stack.size());
 			assertEquals(21, stack.get(0).getLineBegin());
 			
@@ -89,15 +93,10 @@ public class DebuggerTest implements ResponseListener {
 				assertEquals("1", var.getValue());
 			}
 			
-			System.out.print("sending step-into");
+			System.out.print("sending step-into & waiting stop status");
 			for (int i = 0; i < 7; i++) {
 				System.out.print(".");
-				source.stepInto(this);
-
-				try {
-					Thread.sleep(1000); //TODO: query current stage or wait for STOP status ???
-				} catch (InterruptedException e) {
-				}
+				source.stepInto();
 			}
 			System.out.print("=");
 
