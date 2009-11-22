@@ -44,14 +44,13 @@ import org.exist.debugger.model.LocationImpl;
 import org.exist.debugger.model.Variable;
 import org.exist.debugger.model.VariableImpl;
 import org.exist.util.Base64Decoder;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-public class DebuggerImpl implements Debugger {
+public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	protected final static Logger LOG = Logger.getLogger(DebuggerImpl.class);
 
@@ -227,6 +226,17 @@ public class DebuggerImpl implements Debugger {
 
 	private AbstractCommandContinuation currentCommand = null;
 
+	private void waitFor(String transactionId, String status) {
+		Response response = null;
+		while (true) {
+			response = getResponse(transactionId);
+			
+			if (response.getAttribute("status").equals(status)) {
+				break;
+			}
+		}
+	}
+
 	public void run(ResponseListener listener) {
 		Run command = new Run(session, " -i " + getNextTransaction());
 		command.addResponseListener(listener);
@@ -234,11 +244,27 @@ public class DebuggerImpl implements Debugger {
 		command.toDebuggee();
 	}
 
-	public void stepInto(ResponseListener listener) {
+	public void run() {
 		StepInto command = new StepInto(session, " -i " + getNextTransaction());
+
+		command.toDebuggee();
+		
+		waitFor(command.getTransactionId(), STOPPED);
+	}
+
+	public void stepInto(ResponseListener listener) {
+		Run command = new Run(session, " -i " + getNextTransaction());
 		command.addResponseListener(listener);
 
 		command.toDebuggee();
+	}
+	
+	public void stepInto() {
+		StepInto command = new StepInto(session, " -i " + getNextTransaction());
+
+		command.toDebuggee();
+		
+		waitFor(command.getTransactionId(), STOPPED);
 	}
 
 	public void stepOut(ResponseListener listener) {
@@ -248,11 +274,27 @@ public class DebuggerImpl implements Debugger {
 		command.toDebuggee();
 	}
 
+	public void stepOut() {
+		StepOut command = new StepOut(session, " -i " + getNextTransaction());
+
+		command.toDebuggee();
+		
+		waitFor(command.getTransactionId(), STOPPED);
+	}
+
 	public void stepOver(ResponseListener listener) {
 		StepOver command = new StepOver(session, " -i " + getNextTransaction());
 		command.addResponseListener(listener);
 
 		command.toDebuggee();
+	}
+
+	public void stepOver() {
+		StepOver command = new StepOver(session, " -i " + getNextTransaction());
+
+		command.toDebuggee();
+		
+		waitFor(command.getTransactionId(), STOPPED);
 	}
 
 	public void stop(ResponseListener listener) {
@@ -262,4 +304,11 @@ public class DebuggerImpl implements Debugger {
 		command.toDebuggee();
 	}
 
+	public void stop() {
+		Stop command = new Stop(session, " -i " + getNextTransaction());
+
+		command.toDebuggee();
+		
+		waitFor(command.getTransactionId(), STOPPED);
+	}
 }

@@ -73,11 +73,13 @@ public abstract class AbstractCommandContinuation extends Command implements Com
 	List<ResponseListener> listeners = new ArrayList<ResponseListener>();
 	
 	public void addResponseListener(ResponseListener listener) {
-		listeners.add(listener);
+		if (listener != null)
+			listeners.add(listener);
 	}
 
 	public void removeResponseListener(ResponseListener listener) {
-		listeners.remove(listener);
+		if (listener != null)
+			listeners.remove(listener);
 	}
 
 	public void putResponse(Response response) {
