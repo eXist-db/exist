@@ -1023,7 +1023,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     }
 
 	@Override
-	public Boolean matchElementsByTagName(byte type, DocumentSet docs,
+	public boolean matchElementsByTagName(byte type, DocumentSet docs,
 			QName qname, NodeSelector selector) {
         short nodeType = getIndexType(type);
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
