@@ -127,6 +127,7 @@
                                                   default="300"/>
                                                 <xs:attribute name="n" type="xs:integer" default="3"
                                                 />
+                                                <xs:attribute name="buffer" type="xs:integer" default="32"/>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
