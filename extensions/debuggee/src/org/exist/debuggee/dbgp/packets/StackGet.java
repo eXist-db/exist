@@ -79,10 +79,10 @@ public class StackGet extends Command {
 		return "<stack level=\""+String.valueOf(level)+"\" " +
 					"lineno=\""+expr.getLine()+"\" " +
 					"type=\"file\" " +
-					"filename=\""+getFileuri(expr.getSource())+"\" />";
+					"filename=\""+getFileuri(expr.getSource())+"\" " +
 //					+
 //					"where=\"\" " +
-//					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\" " +
+					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\"  />";
 //					"cmdend=\""+(expr.getLine())+":"+(expr.getColumn()+1)+"\"/>";
 	}
 	
