@@ -48,6 +48,7 @@ public class XSLTStoJUnit extends SAXAdapter {
 
 		SAXParser parser = factory.newSAXParser();
 		XMLReader reader = parser.getXMLReader();
+		reader.setEntityResolver(new SpecialEntityResolver("test/external/XSLTS_1_1_0/"));
 		SAXAdapter adapter = new XSLTStoJUnit();
 		reader.setContentHandler(adapter);
 		reader.parse(src);
