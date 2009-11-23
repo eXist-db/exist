@@ -38,7 +38,7 @@ for impl to do things as they see fit). The real impact though is that we
 need things like expath and exquery to allow for even a remote chance at 
 compatibility between processors. 
 
-	* that this approach may prove highly performaant within the context of XML 
+	* that this approach may prove highly performant within the context of XML
 database
 
 
