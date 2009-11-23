@@ -27,7 +27,11 @@ public class Scan extends BasicFunction {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("scan", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
-            "",
+            "Scan and extract function documentation from an external XQuery function module according to the" +
+            "XQDoc specification. The single argument URI may either point to an XQuery module stored in the " +
+            "db (URI starts with xmldb:exist:...) or a module in the file system. A file system module is " +
+            "searched in the same way as if it were loaded through an \"import module\" statement. Static " +
+            "mappings defined in conf.xml are searched first.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE,
                     "The URI from which to load the function module")

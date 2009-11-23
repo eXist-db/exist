@@ -153,14 +153,11 @@ as element() {
             <title>Search the Documentation</title>
             {
                 if ($askPass) then
-                    <form id="f-pass" name="f-pass" action="search.xql" method="POST">
-                        <para>The documentation needs to be loaded into the first,
-                        which requires administrator rights. Please enter the
-                        password for the admin user below:</para>
-                        <input type="password" name="pass" value=""/>
-                        <input type="hidden" name="generate" value="true"/>
-                        <button type="submit">Generate</button>
-                    </form>
+                    <para>The function documentation needs to be generated one 
+                    time at least. Please change to the 
+                    <a href="{request:get-context-path()}/admin/admin.xql?panel=fundocs">documentation 
+                    setup page</a>
+                    in the admin web application.</para>
                 else (
                     <div id="f-search">
                         <form name="f-query" action="search.xql" method="GET">
