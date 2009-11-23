@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
@@ -55,6 +56,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private int stackDepth = 0;
 	
 	private CommandContinuation command = null;
+	private Stack<CommandContinuation> commands = new Stack<CommandContinuation>();
 	
 	private int breakpointNo = 0;
 	//<fileName, Map<line, breakpoint>>
@@ -205,6 +207,15 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 	
 	private synchronized void waitCommand() {
+		if (command.isStatus(BREAK) && commands.size() != 0) {
+			command = commands.pop();
+			
+			((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
+			
+			return;
+		}
+			
+			
 		notifyAll();
 		try {
 			wait();
@@ -241,9 +252,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		else
 			command.setStatus(STARTING);
 
-		((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
+		if (this.command == null || this.command.isStatus(STOPPED)) {
+			((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
 		
-		this.command = command;
+			this.command = command;
+		} else {
+			commands.add(command);
+		}
 
 		notifyAll();
 	}
