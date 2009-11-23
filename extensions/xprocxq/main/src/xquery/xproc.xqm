@@ -740,6 +740,8 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:parse_and_eval($pipeline,$stdin,$bindings,$outputs) {
  (: -------------------------------------------------------------------------- :)
+
+
      let $steps := xproc:genstepnames($pipeline)
      return
          u:step-fold($pipeline,

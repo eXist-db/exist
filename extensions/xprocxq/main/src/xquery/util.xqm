@@ -29,6 +29,28 @@ import module namespace p1 = "http://xproc.net/xproc/functions";
 (: set to 1 to enable debugging :)
 declare variable $u:NDEBUG :=0;
 
+(: -------------------------------------------------------------------------- :)
+(: manage namespaces                                                          :)
+(: -------------------------------------------------------------------------- :)
+declare function u:declare-ns($element){
+(
+let $prefixes := in-scope-prefixes($element)
+for $prefix in $prefixes
+return
+if ($prefix eq 'xml' or $prefix eq '') then
+ ()
+else
+util:declare-namespace($prefix,xs:anyURI(namespace-uri-for-prefix($prefix,$element)))
+,
+       for $child in $element/node()
+            return
+              if ($child instance of element()) then
+               	 u:declare-ns($child)
+                else
+                  ()
+)
+};
+
 
 (: -------------------------------------------------------------------------- :)
 (: generate unique id														  :)
@@ -310,11 +332,27 @@ declare function u:xslt($xslt,$xml){
 
 
 (: -------------------------------------------------------------------------- :)
+declare function u:safe-evalXPATH($qry as xs:string, $xml,$pipeline){
+  let $declarens := u:declare-ns($pipeline/*)
+  return
+    util:catch("*",u:evalXPATH($qry, $xml),())
+};
+
+
+(: -------------------------------------------------------------------------- :)
 declare function u:safe-evalXPATH($qry as xs:string, $xml){
     util:catch("*", u:evalXPATH($qry,$xml),())
 };
 
 
+(: -------------------------------------------------------------------------- :)
+declare function u:evalXPATH($qry as xs:string, $xml,$pipeline){
+  let $declarens := u:declare-ns($pipeline/*)
+  return
+    u:evalXPATH($qry, $xml)
+};
+
+                   
 (: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($qry as xs:string, $xml){
 
@@ -322,6 +360,7 @@ declare function u:evalXPATH($qry as xs:string, $xml){
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
+u:declare-ns(<test xmlns:ex="http://example.org"/>),
 
 if(empty($qry) or $qry eq '/') then
 	$xml
@@ -334,8 +373,9 @@ else
                   $qry
 	
     return
-			util:eval-inline($xml,$query)
-		(: 
+		util:eval-inline($xml,$query)
+
+		(:
 		if ( $result instance of element() or $result instance of document-node()) then 
 		
 			u:dynamicError('err:XD0016',$xpathstring)
@@ -350,7 +390,7 @@ declare function u:evalXPATH($xpathstring, $xml, $namespaces){
 util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
 util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
 util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
-
+u:declare-ns(<test xmlns:ex="http://example.org"/>),
 
 if(empty($xpathstring) or $xpathstring eq '/') then
 	$xml

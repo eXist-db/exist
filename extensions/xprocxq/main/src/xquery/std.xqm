@@ -67,7 +67,7 @@ let $query := if (starts-with($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $attribute-name := u:get-option('attribute-name',$options,$v)
 let $attribute-value := u:get-option('attribute-value',$options,$v)
 return
@@ -162,7 +162,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 return
 	u:delete-matching-elements($v/*, $matchresult)
 };
@@ -235,7 +235,7 @@ declare function std:filter($primary,$secondary,$options) {
 u:assert(exists($options/p:with-option[@name='select']/@select),'p:with-option match is required'),
 let $v := u:get-primary($primary)
 let $select := string(u:get-option('select',$options,$v))
-let $result := u:safe-evalXPATH($select,$v)
+let $result := u:safe-evalXPATH($select, $v, $primary)
     return
         if(exists($result)) then
         	$result
@@ -315,7 +315,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $insertion := u:get-secondary('insertion',$secondary)
 return
 	u:insert-matching-elements($v/*,$matchresult,$insertion,$position)
@@ -333,7 +333,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 return
 	u:label-matching-elements($v/*,$matchresult,$attribute,$label,$replace)
 };
@@ -415,7 +415,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $new-name := u:get-option('new-name',$options,$v)
 return
 	u:rename-matching-elements($v/*,$matchresult,$new-name)
@@ -430,7 +430,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replacement := u:get-secondary('replacement',$secondary)
 return
 	u:replace-matching-elements($v/*,$matchresult,$replacement)
@@ -442,7 +442,7 @@ declare function std:set-attributes($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $attributes := u:get-secondary('attributes',$secondary)
 let $match := u:get-option('match',$options,$v)
-let $matchresult := u:evalXPATH(string($match), $v)
+let $matchresult := u:evalXPATH(string($match), $v, $primary)
 return
 	u:add-attributes-matching-elements($v/*,$matchresult,$attributes/*/@*)
 };
@@ -458,7 +458,7 @@ declare function std:sink($primary,$secondary,$options) {
 declare function std:split-sequence($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $test := u:get-option('test',$options,$v)
-let $match := u:evalXPATH($test, $v)
+let $match := u:evalXPATH($test, $v, $primary)
 return
     for $child at $count in $match
     return
@@ -504,7 +504,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replace := string(u:get-option('replace',$options,$v))
 
 (:
@@ -542,7 +542,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $wrapper := u:get-option('wrapper',$options,$v)
 let $group-adjacent := u:get-option('group-adjacent',$options,$v)
 return
@@ -570,7 +570,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 return
 	u:unwrap-matching-elements($v/*,$matchresult)
 };
