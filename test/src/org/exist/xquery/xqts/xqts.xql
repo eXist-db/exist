@@ -9,6 +9,7 @@ declare namespace hack="http://exist-db.org/xquery/xqts/hacked-test-cases";
 declare namespace props="java:java.io.File";
 
 import module namespace util="http://exist-db.org/xquery/util";
+import module namespace file="http://exist-db.org/xquery/file";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace xdiff="http://exist-db.org/xquery/xmldiff"
 at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";
