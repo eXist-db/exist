@@ -245,7 +245,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	}
 
 	public void run() {
-		StepInto command = new StepInto(session, " -i " + getNextTransaction());
+		Run command = new Run(session, " -i " + getNextTransaction());
 
 		command.toDebuggee();
 		
@@ -253,7 +253,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	}
 
 	public void stepInto(ResponseListener listener) {
-		Run command = new Run(session, " -i " + getNextTransaction());
+		StepInto command = new StepInto(session, " -i " + getNextTransaction());
 		command.addResponseListener(listener);
 
 		command.toDebuggee();
