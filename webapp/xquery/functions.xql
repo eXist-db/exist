@@ -12,8 +12,6 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace ngram="http://exist-db.org/xquery/ngram" at
     "java:org.exist.xquery.modules.ngram.NGramModule";
 
-import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
-
 declare option exist:serialize "media-type=text/xml";
 (:~
     Execute a query or list all functions in a given module.
@@ -304,19 +302,7 @@ declare function xqdoc:debug-parameters() {
 :)
 let $action := request:get-parameter("action", "Search")
 let $generate := request:get-parameter("generate", ())
-let $askPass :=
-    if (empty(//xqdoc:module) or $generate) then
-        let $adminPass := request:get-parameter("pass", ())
-        return
-            if ($generate) then
-                let $setup-result := util:catch("java.lang.Exception",
-                                     let $result := setup:setup($adminPass) return false(),
-                                     true())
-                return $setup-result
-            else
-                true()
-    else
-        $action eq 'reload'
+let $askPass := empty(//xqdoc:module)
 let $log := xqdoc:debug-parameters()
 let $query := request:get-parameter("q", ())
 let $type := request:get-parameter("type", "name")

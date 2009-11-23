@@ -7,8 +7,6 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 
-import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
-
 declare namespace dq="http://exist-db.org/xquery/documentation";
 
 declare option exist:serialize "method=html media-type=text/html expand-xincludes=yes";
@@ -202,16 +200,6 @@ as element() {
 };
 
 let $askPass :=
-    if (not(xdb:collection-available($dq:COLLECTION))) then
-        let $adminPass := request:get-parameter("pass", ())
-        let $generate := request:get-parameter("generate", ())
-        return
-            if ($generate) then
-                let $dummy := setup:setup($adminPass)
-                return false()
-            else
-                true()
-    else
-        false()
+    not(xdb:collection-available($dq:COLLECTION))
 return
 	dq:get-page((), $askPass)
