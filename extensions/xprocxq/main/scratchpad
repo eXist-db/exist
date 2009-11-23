@@ -3,12 +3,16 @@ priority
 ----------------------------------------
 
     viewport and all path iterators (p:viewport,p:for-each)
-    revisit p:outputs
-    implement variables & params
-    implement extension functions
-    namespace handling
+    implement p:outputs
+    implement variables & params & options
+    implement xproc xpath functions
     serialization
     error assertions
+
+
+util:eval('request:get-parameter-names()')
+vs
+util:eval-inline('request:get-parameter-names()',$xml)
 
 
 ----------------------------------------
@@ -23,11 +27,9 @@ current issues
 to each function
 * fix p:choose deal with xpath-context, each subpipeline must have the same output signature (static check)
 * need to check eq and = throughout the codebase to ensure we are testing equality properly
-(yes sloppy I know)
 * migrate errors from string to QName
 * make error reporting look nicer and try to get some kind of line number reporting
 * inputs in nested p:declare-steps need fixing due to $allcomp in xproc:explicitnames
-* namespace fixups: enumerate step level in scope namespaces
 * create namespace module to manage namespace fixups
 * target main eXist scenarios
 	- form handler

@@ -104,7 +104,7 @@ declare function xproc:viewport($primary,$secondary,$options,$currentstep,$outpu
                     $match
                   else
                     concat('.//',$match)
-     let $matchresult := u:evalXPATH($match, $v)
+     let $matchresult := u:evalXPATH($match, $v, $primary)
      let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
      return
 
@@ -186,7 +186,7 @@ declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs
      let $otherwise := $currentstep/p:otherwise
     let $when := (
         for $when in $whens
-            let $when_eval := u:evalXPATH(string($when/@test),$v)
+            let $when_eval := u:evalXPATH(string($when/@test),$v, $primary)
             return
                 if($when_eval) then
                     $when

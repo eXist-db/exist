@@ -145,7 +145,7 @@ else
 declare function std:count($primary,$secondary,$options){
 let $v := u:get-primary($primary)
 let $limit := xs:integer(u:get-option('limit',$options,$v))
-let $count := count($v)
+let $count := count($v/*)
 return
     if (empty($limit) or $limit eq 0 or $count lt $limit ) then
 		u:outputResultElement($count)

@@ -371,10 +371,8 @@ else
 				replace($qry,'\(/','(./')
               else
                   $qry
-	
     return
-		util:eval-inline($xml,$query)
-
+	    util:eval-inline($xml,$query)
 		(:
 		if ( $result instance of element() or $result instance of document-node()) then 
 		
