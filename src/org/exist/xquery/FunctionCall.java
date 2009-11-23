@@ -336,7 +336,7 @@ public class FunctionCall extends Function {
         protected Sequence execute() throws XPathException {
             context.pushDocumentContext();
             
-            context.stackEnter(expression);
+//            context.stackEnter(expression);
 
             context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
@@ -354,7 +354,7 @@ public class FunctionCall extends Function {
                 context.popLocalVariables(mark);
                 context.functionEnd();
                 
-                context.stackLeave(expression);
+//                context.stackLeave(expression);
                 
                 context.popDocumentContext();
             }
