@@ -471,6 +471,10 @@ return
 		<section>
 			<title><a href='extension-xproc-steps.xml'>Extension Steps</a></title>
 			<para>Implementation specific steps</para>
+            <ul>
+                <li><b><a href="extension-xproc-steps.xml#ext:xproc">ext:xproc</a>:</b>arbritrarily run xproc pipeline</li>
+            </ul>
+
 		</section>
 	
 		<section>

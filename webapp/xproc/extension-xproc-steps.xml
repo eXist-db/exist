@@ -19,7 +19,7 @@
     </section>
 
     <section>
-		<a name="pipeline"/>
+		<a name="ext:xproc"/>
         <title>ext:xproc</title>
         <para>This step arbritrarily runs a supplied xproc file.</para>
 			<example>
