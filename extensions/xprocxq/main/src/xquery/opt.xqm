@@ -51,7 +51,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replacement := u:hash($matchresult,$algorithm)
 return
 	u:replace-matching-elements($v/*,$matchresult,$replacement)
@@ -67,7 +67,7 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
+let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replacement := u:uuid()
 return
 	u:replace-matching-elements($v/*,$matchresult,$replacement)

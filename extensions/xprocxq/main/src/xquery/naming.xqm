@@ -249,6 +249,8 @@ else
             return
                if ( name($step) eq 'p:import') then
                     ()
+               else if (name($step) eq 'p:documentation') then
+                    ()
                else if (exists($is_component) and $step/@type)then
                     ()
                else if(exists($is_step)) then
