@@ -3,12 +3,14 @@ xquery version "1.0" encoding "UTF-8";
 declare namespace t="http://xproc.org/ns/testsuite";
 declare namespace c="http://www.w3.org/ns/xproc-step";
 
+(:NOTE - requires file module to be enabled :)
+declare namespace file="http://exist-db.org/xquery/file";
+
 import module namespace const = "http://xproc.net/xproc/const";
 import module namespace xproc = "http://xproc.net/xproc";
 import module namespace u = "http://xproc.net/xproc/util";
 import module namespace naming = "http://xproc.net/xproc/naming";
 
-(:NOTE - requires file module to be enabled :)
 
 declare option exist:serialize "method=html media-type=text/html omit-xml-declaration=yes indent=yes";
 

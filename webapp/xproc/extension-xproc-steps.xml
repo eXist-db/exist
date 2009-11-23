@@ -15,47 +15,39 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <section>
         <title>XProc Extensions Steps</title>
-        <para>The </para>
+        <para>eXist's xproc implementation contains a number of proprietary extension steps</para>
     </section>
 
     <section>
 		<a name="pipeline"/>
-        <title>p:pipeline</title>
-        <para></para>
+        <title>ext:xproc</title>
+        <para>This step arbritrarily runs a supplied xproc file.</para>
+			<example>
+			<title>Simple Pipeline - XSLT transformation</title>
+			<programlisting>
+			<markup>
+				<![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<p:pipeline xmlns:c="http://www.w3.org/ns/xproc-step"
+xmlns:p="http://www.w3.org/ns/xproc" name="test">
+    <ext:xproc xmlns:ext="http://xproc.net/xproc/ext" name="test">
+        <p:input port="source"></p:input>
+        <p:input port="pipeline">
+            <p:inline>
+                <p:declare-step name="mytest">
+                    <p:input port="source"/>
+                    <p:output port="result"/>
+                    <p:count name="nothertest"/>
+                </p:declare-step>
+            </p:inline>
+        </p:input>
+    </ext:xproc>
+</p:pipeline>
+                ]]>
+			</markup>
+			</programlisting>
+			<a href="examples/extrunstep.xproc" target="_example">run extrunstep.xproc</a>
+			</example>
     </section>
-
-    <section>
-		<a name="foreach"/>
-        <title>p:for-each</title>
-        <para></para>
-    </section>
-
-    <section>
-		<a name="viewport"/>
-        <title>p:viewport</title>
-        <para></para>
-    </section>
-
-    <section>
-		<a name="group"/>	
-        <title>p:group</title>
-        <para></para>
-    </section>
-
-    <section>
-		<a name="choose"/>
-        <title>p:choose</title>
-        <para></para>
-    </section>
-
-    <section>
-		<a name="try"/>
-        <title>p:try</title>
-        <para></para>
-    </section>
-
-
-
-
 
 </article>
