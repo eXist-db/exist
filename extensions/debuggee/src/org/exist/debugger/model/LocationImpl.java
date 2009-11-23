@@ -54,6 +54,11 @@ public class LocationImpl implements Location {
 			} else if (attr.getNodeName().equals("level")) {
 				level = Integer.parseInt(attr.getNodeValue());
 			
+			} else if (attr.getNodeName().equals("cmdbegin")) {
+				String[] begin = attr.getNodeValue().split(":");
+				
+				beginColumn = Integer.parseInt(begin[1]);
+			
 			}
 		}
 	}

@@ -92,8 +92,12 @@ public class DebuggerTest implements ResponseListener {
 			stack = source.getStackFrames();
 			assertEquals(3, stack.size());
 			assertEquals(8, stack.get(0).getLineBegin());
+			
 			assertEquals(24, stack.get(1).getLineBegin());
+			assertEquals(78, stack.get(1).getColumnBegin());
+
 			assertEquals(24, stack.get(2).getLineBegin());
+			assertEquals(42, stack.get(2).getColumnBegin());
 			
 			System.out.println("sending get-variables first time");
 			List<Variable> vars = source.getVariables();
