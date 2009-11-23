@@ -55,6 +55,7 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
     
         let $return := 
             for $modURI in distinct-values( $matches/ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri )
+            let $since := /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:since
             order by $modURI
             return 
                 <div class="f-module-heading">
@@ -62,14 +63,27 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
                     <table class="f-module-heading-table">
                         <tr>
                             <td class="f-module-heading-namespace">{ $modURI }</td>
-                            <td class="f-module-heading-description"><div>{  /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description/text() }</div>
-			    <br/>
-			    <div>{if (/xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:since/text() eq "trunk") then "Can only be used with current svn trunk from sourceforge at https://exist.svn.sourceforge.net/svnroot/exist/trunk/" else concat("Available from release: ", /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:since/text())}</div>
-			    </td>
+                            <td class="f-module-heading-description">
+                                <div>{  
+                                    xqdoc:extract-title(string-join(/xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description, ''))
+                                }</div>
+                 			    <br/>
+                 			    <div>
+                 			    {
+                 			        if ($since eq "trunk") then 
+                 			            "Can only be used with current svn trunk from sourceforge at https://exist.svn.sourceforge.net/svnroot/exist/trunk/" 
+                 		            else if (string-length($since) > 0) then
+                 		                concat("Available from release: ", /xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:since/text())
+                 	                else
+                 	                  ()
+                 	            }
+                 	            </div>
+                 		    </td>
                             <td class="f-module-heading-hideshow">{ $hideIndicator }</td>
                         </tr>
                     </table>
                     <div class="f-module-heading-section">
+                        <p>{/xqdoc:xqdoc/xqdoc:module[ xqdoc:uri = $modURI ]/xqdoc:comment/xqdoc:description}</p>
                         <br/>
                         {
                             for $match in $matches[ ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:uri = $modURI ]
@@ -107,6 +121,18 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
         return <div class="query-result">{ $hideshowButtons, $return }</div>
     else
         ()
+};
+
+declare function xqdoc:extract-title($text as xs:string?) as xs:string {
+    if (string-length($text) gt 60) then
+        let $paragraphs := tokenize($text, "[.:?!]")
+        return
+            if (string-length($paragraphs[1]) gt 60) then
+                concat(substring($paragraphs[1], 1, 60), '...')
+            else
+                $paragraphs[1]
+    else
+        $text
 };
 
 declare function xqdoc:print-description($comment as element(xqdoc:comment)?) {
@@ -171,14 +197,12 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
             <title>XQuery Function Documentation</title>
             {
                 if ($askPass) then
-                    <form id="f-pass" name="f-pass" action="functions.xql" method="POST">
-                        <para>The function documentation needs to be generated first,
-                        which requires administrator rights. Please enter the
-                        password for the admin user below:</para>
-                        <input type="password" name="pass" value=""/>
-                        <input type="hidden" name="generate" value="true"/>
-                        <button type="submit">Generate</button>
-                    </form>
+                    <para>The function documentation needs to be generated one 
+                    time at least. Please change to the 
+                    <a href="{request:get-context-path()}/admin/admin.xql?panel=fundocs">documentation 
+                    setup page</a>
+                    in the admin web application.</para>
+                    
                 else (
                     <div id="f-search">
                         <form name="f-query" action="functions.xql" method="POST">
@@ -227,7 +251,7 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                             </table>
                             <input type="hidden" name="prev" value="{$action}"/>
                         </form>
-                        <p class="f-reload"><a href="?action=reload">Reload documentation</a>
+                        <p class="f-reload"><a href="{request:get-context-path()}/admin/admin.xql?panel=fundocs">Reload documentation</a>
                             (click here if you enabled/disabled additional modules)</p>
                         <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
                         build: {util:system-property("product-build")},

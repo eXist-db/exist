@@ -100,6 +100,11 @@ declare function docs:action-load() {
     let $uri1 := request:get-parameter("uri", "")
     let $uri2 := request:get-parameter("uri2", "")
     let $uri := if (string-length($uri1) gt 0) then $uri1 else $uri2
+    let $setup := 
+        if (empty(collection("/db/xqdocs"))) then
+            docs:configure()
+        else
+            ()
     return
         if (string-length($uri) gt 0) then
             docs:load-external($uri)
