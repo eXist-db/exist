@@ -249,7 +249,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		command.toDebuggee();
 		
-		waitFor(command.getTransactionId(), STOPPED);
+		waitFor(command.getTransactionId(), BREAK);
 	}
 
 	public void stepInto(ResponseListener listener) {
@@ -264,7 +264,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		command.toDebuggee();
 		
-		waitFor(command.getTransactionId(), STOPPED);
+		waitFor(command.getTransactionId(), BREAK);
 	}
 
 	public void stepOut(ResponseListener listener) {
@@ -279,7 +279,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		command.toDebuggee();
 		
-		waitFor(command.getTransactionId(), STOPPED);
+		waitFor(command.getTransactionId(), BREAK);
 	}
 
 	public void stepOver(ResponseListener listener) {
@@ -294,7 +294,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		command.toDebuggee();
 		
-		waitFor(command.getTransactionId(), STOPPED);
+		waitFor(command.getTransactionId(), BREAK);
 	}
 
 	public void stop(ResponseListener listener) {
@@ -309,6 +309,6 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		command.toDebuggee();
 		
-		waitFor(command.getTransactionId(), STOPPED);
+		waitFor(command.getTransactionId(), BREAK);
 	}
 }
