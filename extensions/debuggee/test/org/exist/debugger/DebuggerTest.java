@@ -59,29 +59,41 @@ public class DebuggerTest implements ResponseListener {
 			} catch (InterruptedException e) {
 			}
 			
+			System.out.println("get stack frames");
+			List<Location> stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(15, stack.get(0).getLineBegin());
+
 			System.out.print("sending step-into");
 			System.out.print(".");
 			source.stepInto(this);
 			
-			for (int i = 0; i < 6; i++) {
+			try {
+				Thread.sleep(1000); //TODO: query current stage or wait for BREAK status ???
+			} catch (InterruptedException e) {
+			}
+
+			System.out.println("get stack frames");
+			stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(16, stack.get(0).getLineBegin());
+
+			for (int i = 0; i < 9; i++) {
 				System.out.print(".");
 				source.stepInto(this);
-
-				try {
-					Thread.sleep(1000); //TODO: query current stage or wait for STOP status ???
-				} catch (InterruptedException e) {
-				}
+			}
+			try {
+				Thread.sleep(5000); //TODO: query current stage or wait for BREAK status ???
+			} catch (InterruptedException e) {
 			}
 			System.out.println("=");
 			
 			System.out.println("get stack frames");
-			List<Location> stack = source.getStackFrames();
-			for (Location loc : stack) {
-				System.out.println(loc);
-			}
-				
-			assertEquals(1, stack.size());
-			assertEquals(21, stack.get(0).getLineBegin());
+			stack = source.getStackFrames();
+			assertEquals(3, stack.size());
+			assertEquals(8, stack.get(0).getLineBegin());
+			assertEquals(24, stack.get(1).getLineBegin());
+			assertEquals(24, stack.get(2).getLineBegin());
 			
 			System.out.println("sending get-variables first time");
 			List<Variable> vars = source.getVariables();
