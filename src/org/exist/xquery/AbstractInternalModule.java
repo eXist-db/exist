@@ -58,7 +58,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     protected boolean ordered = false;
 
-    protected final TreeMap mGlobalVariables = new TreeMap();
+    protected final TreeMap<QName, Variable> mGlobalVariables = new TreeMap<QName, Variable>();
 
     public AbstractInternalModule(FunctionDef[] functions) {
         this(functions, false);
@@ -171,7 +171,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     public Variable declareVariable(QName qname, Object value) throws XPathException {
 		Sequence val = XPathUtil.javaObjectToXPath(value, null);
-		Variable var = (Variable)mGlobalVariables.get(qname);
+		Variable var = mGlobalVariables.get(qname);
 		if(var == null) {
 			var = new Variable(qname);
 			mGlobalVariables.put(qname, var);
@@ -189,7 +189,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
-		return (Variable)mGlobalVariables.get(qname);
+		return mGlobalVariables.get(qname);
 	}
 
     public boolean isVarDeclared(QName qname) {
