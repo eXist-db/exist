@@ -18,7 +18,7 @@
 
 
     <target name="test"
-            depends="test-prepare, test-local,  test-fluent, test-indexing, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
+            depends="test-prepare, test-local,  test-fluent, test-indexing, test-xqdoc, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -46,6 +46,7 @@
         <copy todir="${junit.reports}/classes/org/exist/performance"
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/> 
+        <ant antfile="build.xml" dir="extensions/xqdoc" target="compile-tests"/>
     </target>
 
     <!-- Seperate target for creating folders -->
@@ -193,6 +194,10 @@
         <ant antfile="build.xml" dir="extensions/indexes" target="test"/>
     </target>
 
+    <target name="test-xqdoc" depends="prepare-extensions">
+        <ant antfile="build.xml" dir="extensions/xqdoc" target="test"/>
+    </target>
+    
     <target name="test-fluent" depends="prepare-extensions">
         <ant antfile="build.xml" dir="extensions/fluent" target="test"/>
     </target>
