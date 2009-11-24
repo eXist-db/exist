@@ -99,7 +99,7 @@ import java.util.TreeMap;
  *
  * @author wolf
  */
-public  class Collection extends Observable implements Comparable, Cacheable
+public  class Collection extends Observable implements Comparable<Collection>, Cacheable
 {    
     public static int LENGTH_COLLECTION_ID = 4; //sizeof int
 
@@ -121,7 +121,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
     private int collectionId = UNKNOWN_COLLECTION_ID;
     
     // the documents contained in this collection
-    private Map documents = new TreeMap();
+    private Map<String, DocumentImpl> documents = new TreeMap<String, DocumentImpl>();
     
     // the path of this collection
     private XmldbURI path;
@@ -449,8 +449,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
      * @return A boolean value where true indicates it may be unloaded.
      */
     public boolean allowUnload() {
-        for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
-            DocumentImpl doc = (DocumentImpl) i.next();
+        for (DocumentImpl doc : documents.values()) {
             if (doc.isLockedForWrite())
                 return false;
         }
@@ -471,8 +470,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
 //		return false;
     }
     
-    public int compareTo(Object obj) {
-        Collection other = (Collection) obj;
+    public int compareTo(Collection other) {
         if (collectionId == other.collectionId)
             return Constants.EQUAL;
         else if (collectionId < other.collectionId)

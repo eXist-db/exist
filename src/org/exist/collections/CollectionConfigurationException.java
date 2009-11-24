@@ -28,6 +28,8 @@ package org.exist.collections;
  */
 public class CollectionConfigurationException extends Exception {
 
+	private static final long serialVersionUID = 2646147244407222955L;
+
 	/**
 	 * 
 	 */
