@@ -39,7 +39,9 @@ import org.apache.log4j.Logger;
  */
 public class JnlpServlet extends HttpServlet {
     
-    private static Logger logger = Logger.getLogger(JnlpServlet.class);
+	private static final long serialVersionUID = 1238966115449192258L;
+
+	private static Logger logger = Logger.getLogger(JnlpServlet.class);
     
     private JnlpJarFiles jf=null;
     private JnlpHelper jh=null;
