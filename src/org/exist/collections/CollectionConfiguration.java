@@ -295,7 +295,7 @@ public class CollectionConfiguration {
 		return triggers[eventType];
 	}
 
-    public boolean triggerRegistered(Class triggerClass) {
+    public boolean triggerRegistered(Class<?> triggerClass) {
         for (int i = 0; i < triggers.length; i++) {
             if (triggers[i] != null && triggers[i].getTriggerClass() == triggerClass)
                 return true;
@@ -356,19 +356,20 @@ public class CollectionConfiguration {
         }
     }
 	
+	@SuppressWarnings("unchecked")
 	private TriggerConfig instantiate(DBBroker broker, Element node, String classname, boolean testOnly)
             throws CollectionConfigurationException {
 		try {
-			Class clazz = Class.forName(classname);
+			Class<?> clazz = Class.forName(classname);
 			if(!Trigger.class.isAssignableFrom(clazz)) {
 				throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
                 return null;
             }
-            TriggerConfig triggerConf = new TriggerConfig(clazz);
+            TriggerConfig triggerConf = new TriggerConfig((Class<Trigger>) clazz);
 			NodeList nodes = node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             //TODO : rely on schema-driven validation -pb
             if (nodes.getLength() > 0) {
-                Map parameters = new HashMap(nodes.getLength()); 
+                Map<String, String> parameters = new HashMap<String, String>(nodes.getLength()); 
                 for (int i = 0 ; i < nodes.getLength();  i++) {
                     Element param = (Element)nodes.item(i);
                     //TODO : rely on schema-driven validation -pb
@@ -420,16 +421,16 @@ public class CollectionConfiguration {
 
     public static class TriggerConfig {
 
-        private Class clazz;
-        private Map parameters;
+        private Class<Trigger> clazz;
+        private Map<String, String> parameters;
 
-        public TriggerConfig(Class clazz) {
+        public TriggerConfig(Class<Trigger> clazz) {
             this.clazz = clazz;
         }
 
         public Trigger newInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
             try {
-                Trigger trigger = (Trigger) clazz.newInstance();
+                Trigger trigger = clazz.newInstance();
                 trigger.configure(broker, collection, parameters);
                 return trigger;
             } catch (InstantiationException e) {
@@ -439,15 +440,15 @@ public class CollectionConfiguration {
             }
         }
 
-        public Map getParameters() {
+        public Map<String, String> getParameters() {
             return parameters;
         }
 
-        public void setParameters(Map parameters) {
+        public void setParameters(Map<String, String> parameters) {
             this.parameters = parameters;
         }
 
-        public Class getTriggerClass() {
+        public Class<Trigger> getTriggerClass() {
             return clazz;
         }
     }
