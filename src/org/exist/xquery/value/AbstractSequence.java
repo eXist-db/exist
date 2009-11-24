@@ -239,7 +239,7 @@ public abstract class AbstractSequence implements Sequence {
 			}
 			return array;
 		} else if(target.isAssignableFrom(List.class)) {
-			List l = new ArrayList(getItemCount());
+			List<Item> l = new ArrayList<Item>(getItemCount());
 			for(SequenceIterator i = iterate(); i.hasNext(); ) {
 				l.add(i.nextItem());
 			}

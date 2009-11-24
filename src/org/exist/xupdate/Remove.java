@@ -55,7 +55,7 @@ public class Remove extends Modification {
      * @param selectStmt 
      */
 	public Remove(DBBroker broker, DocumentSet docs, String selectStmt,
-			Map namespaces, Map variables) {
+			Map<String, String> namespaces, Map<String, Object> variables) {
 		super(broker, docs, selectStmt, namespaces, variables);
 	}
 

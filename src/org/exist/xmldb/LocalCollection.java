@@ -1,4 +1,3 @@
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-06 Wolfgang M. Meier
@@ -101,7 +100,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     protected Properties properties = new Properties(defaultProperties);
     protected LocalCollection parent = null;
     protected User user = null;
-    protected ArrayList observers = new ArrayList(1);
+    protected ArrayList<Observer> observers = new ArrayList<Observer>(1);
     protected boolean needsSync = false;
     
     private XMLReader userReader = null;
@@ -533,7 +532,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             if (!checkPermissions(collection, Permission.READ))
                 return new String[0];
             
-            List allresources = new ArrayList();
+            List<XmldbURI> allresources = new ArrayList<XmldbURI>();
             DocumentImpl doc;
             for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
                 doc = (DocumentImpl) i.next();
@@ -550,8 +549,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
             // Copy content of list into String array.
             int j=0;
             String[] resources = new String[allresources.size()];
-            for(Iterator i = allresources.iterator(); i.hasNext(); j++){
-                resources[j]= ((XmldbURI) i.next()).toString();
+            for(Iterator<XmldbURI> i = allresources.iterator(); i.hasNext(); j++){
+                resources[j]= i.next().toString();
             }
             
             return resources;
@@ -725,9 +724,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     transact.abort(txn);
                     throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
                 }
-                Observer observer;
-                for (Iterator i = observers.iterator(); i.hasNext();) {
-                    observer = (Observer) i.next();
+                for (Observer observer : observers) {
                     collection.addObserver(observer);
                 }
                 if (uri != null || res.inputSource!=null) {
@@ -775,7 +772,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             try {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Converting HTML to XML using NekoHTML parser.");
-                Class clazz = Class.forName("org.cyberneko.html.parsers.SAXParser");
+                Class<?> clazz = Class.forName("org.cyberneko.html.parsers.SAXParser");
                 XMLReader htmlReader = (XMLReader) clazz.newInstance();
                 //do not modify the case of elements and attributes
                 htmlReader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");

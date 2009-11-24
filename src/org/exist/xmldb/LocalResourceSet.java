@@ -57,7 +57,7 @@ public class LocalResourceSet implements ResourceSet {
 
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
-	protected Vector resources = new Vector();
+	protected Vector<Object> resources = new Vector<Object>();
 	protected Properties outputProperties;
 	private User user;
 
@@ -150,7 +150,7 @@ public class LocalResourceSet implements ResourceSet {
 						attribs);
 			Item current;
 			char[] value;
-			for(Iterator i = resources.iterator(); i.hasNext(); ) {
+			for(Iterator<Object> i = resources.iterator(); i.hasNext(); ) {
 				current = (Item)i.next();
 				if(Type.subTypeOf(current.getType(), Type.NODE)) {
 					((NodeValue)current).toSAX(broker, handler, outputProperties);
