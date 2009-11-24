@@ -53,5 +53,5 @@ public interface InternalModule extends Module {
 	 * @param qname
 	 * @return all functions defined in this module
 	 */
-	public List getFunctionsByName(QName qname);
+	public List<FunctionSignature> getFunctionsByName(QName qname);
 }

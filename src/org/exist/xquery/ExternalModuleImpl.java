@@ -117,8 +117,8 @@ public class ExternalModuleImpl implements ExternalModule {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
 	 */
-	public Iterator getSignaturesForFunction(QName qname) {
-		ArrayList signatures = new ArrayList(2);
+	public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
+		ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
 		for (Iterator i = mFunctionMap.values().iterator(); i.hasNext(); ) {
 			UserDefinedFunction func = (UserDefinedFunction) i.next();
 			if(func.getName().compareTo(qname) == 0)

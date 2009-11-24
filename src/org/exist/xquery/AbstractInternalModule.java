@@ -113,8 +113,8 @@ public abstract class AbstractInternalModule implements InternalModule {
 		return signatures;
 	}
 
-	public Iterator getSignaturesForFunction(QName qname) {
-		ArrayList signatures = new ArrayList(2);
+	public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
+		ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
 		for(int i = 0; i < mFunctions.length; i++) {
 			FunctionSignature signature = mFunctions[i].getSignature();
 			if(signature.getName().compareTo(qname) == 0)
@@ -158,8 +158,8 @@ public abstract class AbstractInternalModule implements InternalModule {
         return null;  // key not found.
     }
 
-    public List getFunctionsByName(QName qname) {
-		List funcs = new ArrayList();
+    public List<FunctionSignature> getFunctionsByName(QName qname) {
+		List<FunctionSignature> funcs = new ArrayList<FunctionSignature>();
 		for (int i = 0; i < mFunctions.length; i++) {
 			FunctionSignature sig = mFunctions[i].getSignature();
 			if (sig.getName().compareTo(qname) == 0) {
