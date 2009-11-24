@@ -13,16 +13,16 @@ import com.sun.xacml.PolicyTreeElement;
 
 public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 {
-	private List children;
-	private List originalChildren;
-	private List listeners = new ArrayList(2);
+	private List<PolicyElementNode> children;
+	private List<PolicyElementNode> originalChildren;
+	private List<NodeChangeListener> listeners = new ArrayList<NodeChangeListener>(2);
 	
-	public RootNode()
-	{
+	public RootNode() {
 		super(null);
-		children = new ArrayList();
-		originalChildren = Collections.EMPTY_LIST;
+		children = new ArrayList<PolicyElementNode>();
+		originalChildren = Collections.emptyList();
 	}
+	
 	public void add(PolicyTreeElement element)
 	{
 		add(-1, element);
@@ -68,15 +68,15 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		setModified(true);
 		nodeRemoved(node, index);
 	}
-	public boolean containsId(String id)
-	{
-		for(Iterator it = children.iterator();it.hasNext();)
-		{
-			if(((AbstractPolicyNode)it.next()).getId().toString().equals(id))
+	
+	public boolean containsId(String id) {
+		for(PolicyElementNode child : children) {
+			if( child.getId().toString().equals(id) )
 				return true;
 		}
 		return false;
 	}
+	
 	public int getChildCount()
 	{
 		return children.size();
@@ -91,15 +91,12 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		return children.indexOf(child);
 	}
 	
-	public boolean isModified(boolean deep)
-	{
+	public boolean isModified(boolean deep) {
 		if(super.isModified(deep))
 			return true;
-		if(deep)
-		{
-			for(Iterator it = children.iterator(); it.hasNext();)
-			{
-				PolicyElementNode child = (PolicyElementNode)it.next(); 
+		
+		if(deep) {
+			for(PolicyElementNode child : children) {
 				if(child.isModified(true))
 					return true;
 			}
@@ -107,32 +104,29 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		return false;
 	}
 
-	public void revert(boolean deep)
-	{
+	public void revert(boolean deep) {
 		children = originalChildren;
-		if(deep)
-		{
-			for(Iterator it = children.iterator(); it.hasNext();)
-				((PolicyElementNode)it.next()).revert(true);
+		
+		if(deep) {
+			for(PolicyElementNode child : children)
+				child.revert(true);
 		}
 		super.revert(deep);
 	}
-	public void commit(boolean deep)
-	{
+	
+	public void commit(boolean deep) {
 		originalChildren = children;
-		if(deep)
-		{
-			for(Iterator it = children.iterator(); it.hasNext();)
-				((PolicyElementNode)it.next()).commit(true);
+		
+		if(deep) {
+			for(PolicyElementNode node : children)
+				node.commit(true);
 		}
 		super.commit(deep);
 	}
 	
-	public Set getRemovedDocumentNames()
-	{
-		Set ret = new HashSet();
-		for(Iterator originalIt = originalChildren.iterator(); originalIt.hasNext();)
-		{
+	public Set<String> getRemovedDocumentNames() {
+		Set<String> ret = new HashSet<String>();
+		for(Iterator originalIt = originalChildren.iterator(); originalIt.hasNext();) {
 			AbstractPolicyNode originalChild = (AbstractPolicyNode)originalIt.next();
 			String documentName = originalChild.getDocumentName();
 			if(!documentNameExists(documentName))
@@ -140,10 +134,9 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		}
 		return ret;
 	}
-	private boolean documentNameExists(String documentName)
-	{
-		for(Iterator currentIt = children.iterator(); currentIt.hasNext();)
-		{
+	
+	private boolean documentNameExists(String documentName) {
+		for(Iterator currentIt = children.iterator(); currentIt.hasNext();) {
 			AbstractPolicyNode currentChild = (AbstractPolicyNode)currentIt.next();
 			String currentDocName = currentChild.getDocumentName();
 			if(currentDocName != null && currentDocName.equals(documentName))
@@ -152,34 +145,32 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		return false;
 	}
 
-	public void addNodeChangeListener(NodeChangeListener listener)
-	{
+	public void addNodeChangeListener(NodeChangeListener listener) {
 		if(listener != null)
 			listeners.add(listener);
 	}
-	public void removeNodeChangeListener(NodeChangeListener listener)
-	{
+	
+	public void removeNodeChangeListener(NodeChangeListener listener) {
 		if(listener != null)
 			listeners.remove(listener);
 	}
-	public void nodeChanged(XACMLTreeNode node)
-	{
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((NodeChangeListener)it.next()).nodeChanged(node);
-	}
-	public void nodeAdded(XACMLTreeNode node, int newIndex)
-	{
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((NodeChangeListener)it.next()).nodeAdded(node, newIndex);
-	}
-	public void nodeRemoved(XACMLTreeNode removedNode, int oldChildIndex)
-	{
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((NodeChangeListener)it.next()).nodeRemoved(removedNode, oldChildIndex);
+	
+	public void nodeChanged(XACMLTreeNode node) {
+		for(NodeChangeListener listener : listeners)
+			listener.nodeChanged(node);
 	}
 	
-	public String serialize(boolean indent)
-	{
+	public void nodeAdded(XACMLTreeNode node, int newIndex) {
+		for(NodeChangeListener listener : listeners)
+			listener.nodeAdded(node, newIndex);
+	}
+	
+	public void nodeRemoved(XACMLTreeNode removedNode, int oldChildIndex) {
+		for(NodeChangeListener listener : listeners)
+			listener.nodeRemoved(removedNode, oldChildIndex);
+	}
+	
+	public String serialize(boolean indent) {
 		throw new UnsupportedOperationException("Cannot serialize the root node");
 	}
 }
