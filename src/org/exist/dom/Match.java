@@ -43,9 +43,9 @@ import org.exist.xquery.Constants;
  * 
  * @author wolf
  */
-public abstract class Match implements Comparable {
+public abstract class Match implements Comparable<Match> {
 	
-    public final static class Offset implements Comparable {
+    public final static class Offset implements Comparable<Offset> {
         private int offset;
         private int length;
         
@@ -66,8 +66,8 @@ public abstract class Match implements Comparable {
             return length;
         }
         
-        public int compareTo(Object other) {
-            final int otherOffset = ((Offset) other).offset;
+        public int compareTo(Offset other) {
+            final int otherOffset = other.offset;
             return offset == otherOffset ? Constants.EQUAL : (offset < otherOffset ? Constants.INFERIOR : Constants.SUPERIOR);
         }
     }
@@ -220,8 +220,7 @@ public abstract class Match implements Comparable {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		Match other = (Match)o;
+	public int compareTo(Match other) {
         return matchTerm.compareTo(other.matchTerm);
 	}
 
