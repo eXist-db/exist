@@ -35,7 +35,7 @@ public class Txn {
 
     private long id;
     
-    private List locksHeld = new ArrayList();
+    private List<LockInfo> locksHeld = new ArrayList<LockInfo>();
     
     public Txn(long transactionId) {
         this.id = transactionId;
@@ -56,7 +56,7 @@ public class Txn {
     
     public void releaseAll() {
         for (int i = locksHeld.size() - 1; i >= 0; i--) {
-            LockInfo info = (LockInfo) locksHeld.get(i);
+            LockInfo info = locksHeld.get(i);
             info.lock.release(info.lockMode);
         }
         locksHeld.clear();
