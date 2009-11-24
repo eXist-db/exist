@@ -170,7 +170,7 @@ public class Abbreviator
 	}
 
 	//TODO: not valid for date-related conversions
-	public Set getAbbreviatedTargetFunctions(URI dataType)
+	public Set<Object> getAbbreviatedTargetFunctions(URI dataType)
 	{
 		//note that sunxacml includes logical functions in the target
 		//instance
@@ -180,7 +180,7 @@ public class Abbreviator
 		FunctionFactory factory = FunctionFactory.getTargetInstance();
 		Set functionIds = factory.getSupportedFunctions();
 		
-		Set ret = new HashSet();
+		Set<Object> ret = new HashSet<Object>();
 		String abbrevType = getAbbreviatedType(dataType);
 		String functionId;
 		for(Iterator it = functionIds.iterator(); it.hasNext();)

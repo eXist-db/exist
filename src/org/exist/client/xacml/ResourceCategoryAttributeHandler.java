@@ -13,19 +13,19 @@ import com.sun.xacml.attr.AttributeValue;
 
 public class ResourceCategoryAttributeHandler implements AttributeHandler
 {
-	public void filterFunctions(Set functions, AttributeDesignator attribute)
+	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE))
 		{
-			List retain = new ArrayList(2);
+			List<String> retain = new ArrayList<String>(2);
 			retain.add("=");
 			retain.add("equals");
 			functions.retainAll(retain);
 		}
 	}
 
-	public boolean getAllowedValues(Set values, AttributeDesignator attribute)
+	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE))

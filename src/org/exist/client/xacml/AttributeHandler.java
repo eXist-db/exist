@@ -20,7 +20,7 @@ public interface AttributeHandler
 	 * @param functions The <code>Set</code> of functions to modify in place.
 	 * @param attribute The relevant attribute 
 	 */
-	void filterFunctions(Set functions, AttributeDesignator attribute);
+	void filterFunctions(Set<Object> functions, AttributeDesignator attribute);
 	
 	/**
 	 * Determines which values the user may select for an attribute.  If the user
@@ -31,7 +31,7 @@ public interface AttributeHandler
 	 * @return true if the user is not restricted to the values in the set,
 	 * 	false otherwise 
 	 */
-	boolean getAllowedValues(Set values, AttributeDesignator attribute);
+	boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute);
 	
 	/**
 	 * Determines if the user entered value is valid.

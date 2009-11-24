@@ -42,12 +42,12 @@ public class ModuleAttributeHandler implements AttributeHandler
 	public ModuleAttributeHandler()
 	{
 	}
-	public void filterFunctions(Set functions, AttributeDesignator attribute)
+	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.MODULE_CATEGORY_ATTRIBUTE))
 		{
-			List retain = new ArrayList(2);
+			List<String> retain = new ArrayList<String>(2);
 			retain.add("=");
 			retain.add("equals");
 			functions.retainAll(retain);
@@ -58,7 +58,7 @@ public class ModuleAttributeHandler implements AttributeHandler
 		}
 	}
 
-	public boolean getAllowedValues(Set values, AttributeDesignator attribute)
+	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.MODULE_CATEGORY_ATTRIBUTE))
@@ -101,7 +101,7 @@ public class ModuleAttributeHandler implements AttributeHandler
 	//	available remotely, this is commented until a remote
 	//	solution is written
 	//index = 0 for namespaces, 1 for the class name
-	private void addInternal(Set values, int index)
+	private void addInternal(Set<Object> values, int index)
 	{
 		/*String modules[][] = (String[][])config.getProperty(XQueryContext.PROPERTY_BULT_IN_MODULES);
 		if(modules == null)
