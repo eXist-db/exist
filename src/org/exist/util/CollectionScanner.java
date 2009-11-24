@@ -12,13 +12,13 @@ public class CollectionScanner {
 
 	public final static Resource[] scan(Collection current, String vpath, String pattern) 
 	throws XMLDBException {
-		List list = new ArrayList();
+		List<Resource> list = new ArrayList<Resource>();
 		scan(list, current, vpath, pattern);
 		Resource resources[] = new Resource[list.size()];
 		return (Resource[])list.toArray(resources);
 	}
 
-	public final static void scan(List list, Collection current, String vpath, String pattern) 
+	public final static void scan(List<Resource> list, Collection current, String vpath, String pattern) 
 	throws XMLDBException {
 		String[] resources = current.listResources();
 		String name;
