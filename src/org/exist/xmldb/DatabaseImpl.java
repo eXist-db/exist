@@ -78,7 +78,7 @@ public class DatabaseImpl implements Database {
   protected String configuration = null;
   protected String currentInstanceName = null;
 
-  private HashMap rpcClients = new HashMap();
+  private HashMap<String, XmlRpcClient> rpcClients = new HashMap<String, XmlRpcClient>();
   protected ShutdownListener shutdown = null;
   protected int mode = UNKNOWN_CONNECTION;
 
@@ -282,7 +282,7 @@ public class DatabaseImpl implements Database {
    */
   private XmlRpcClient getRpcClient(String user, String password, URL url) throws XMLDBException {
       String key = user + "@" + url.toString();
-      XmlRpcClient client = (XmlRpcClient) rpcClients.get(key);
+      XmlRpcClient client = rpcClients.get(key);
       XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
       config.setEnabledForExtensions(true);
       config.setServerURL(url);
