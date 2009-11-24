@@ -1,18 +1,4 @@
-package org.exist.backup;
-
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.XPathException;
-import org.exist.util.XMLReaderPool;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.XMLReader;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.Date;
-import java.util.Properties;
-import java.io.IOException;/*
+/*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
@@ -31,8 +17,23 @@ import java.io.IOException;/*
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * \$Id\$
+ * $Id:$
  */
+
+package org.exist.backup;
+
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.XPathException;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.XMLReader;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.ParserConfigurationException;
+import java.util.Date;
+import java.util.Properties;
+import java.io.IOException;
 
 public abstract class AbstractBackupDescriptor implements BackupDescriptor {
 
