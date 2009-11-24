@@ -82,10 +82,10 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         return visitor.firstStep;
     }
 
-    public static List findLocationSteps(Expression expr) {
-        final List steps = new ArrayList(5);
+    public static List<LocationStep> findLocationSteps(Expression expr) {
+        final List<LocationStep> steps = new ArrayList<LocationStep>(5);
         if (expr instanceof LocationStep) {
-            steps.add(expr);
+            steps.add((LocationStep)expr);
             return steps;
         }
         expr.accept(new BasicExpressionVisitor() {

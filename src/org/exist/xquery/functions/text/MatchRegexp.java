@@ -138,10 +138,10 @@ public class MatchRegexp extends Function implements Optimizable {
         super.analyze(contextInfo);
         if (isCalledAs("match-any"))
             this.type = Constants.FULLTEXT_OR;
-        List steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            LocationStep firstStep = (LocationStep) steps.get(0);
-            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.get(0);
+            LocationStep lastStep = steps.get(steps.size() - 1);
             if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
@@ -165,7 +165,7 @@ public class MatchRegexp extends Function implements Optimizable {
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
                     if (axis == Constants.SELF_AXIS && steps.size() > 1)
-                        axis = ((LocationStep) steps.get(1)).getAxis();
+                        axis = steps.get(1).getAxis();
                 }
             }
         }

@@ -147,10 +147,10 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             steps.add(arg);
         }
 
-        List steps = BasicExpressionVisitor.findLocationSteps(path);
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
         if (!steps.isEmpty()) {
-            LocationStep firstStep = (LocationStep) steps.get(0);
-            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.get(0);
+            LocationStep lastStep = steps.get(steps.size() - 1);
             NodeTest test = lastStep.getTest();
             if (!test.isWildcardTest() && test.getName() != null) {
                 contextQName = new QName(test.getName());
@@ -159,7 +159,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                 contextStep = lastStep;
                 axis = firstStep.getAxis();
                 if (axis == Constants.SELF_AXIS && steps.size() > 1)
-                    axis = ((LocationStep) steps.get(1)).getAxis();
+                    axis = steps.get(1).getAxis();
             }
         }
     }

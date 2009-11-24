@@ -43,7 +43,7 @@ public abstract class AbstractMatchFunction extends DeprecatedExtRegexp {
 		super(context, type, signature);
 	}
 
-	public abstract Sequence evalQuery(NodeSet nodes,	List terms) throws XPathException;
+	public abstract Sequence evalQuery(NodeSet nodes, List<String> terms) throws XPathException;
 	
 	public NodeSet mergeResults(NodeSet[] hits) {
 		NodeSet result = hits[0];
@@ -58,12 +58,12 @@ public abstract class AbstractMatchFunction extends DeprecatedExtRegexp {
 			return NodeSet.EMPTY_SET;
 	}
 	
-	protected List getSearchTerms(XQueryContext context,
+	protected List<String> getSearchTerms(XQueryContext context,
 										Sequence contextSequence)
 			throws XPathException {
 		String searchString = getArgument(1).eval(contextSequence)
 				.getStringValue();
-		List tokens = new ArrayList();
+		List<String> tokens = new ArrayList<String>();
 		Tokenizer tokenizer = context.getBroker().getTextEngine()
 				.getTokenizer();
 		tokenizer.setText(searchString);

@@ -99,10 +99,10 @@ public class ExtFulltext extends Function implements Optimizable {
         path.analyze(newContextInfo);
         searchTerm.analyze(newContextInfo);
 
-        List steps = BasicExpressionVisitor.findLocationSteps(path);
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
         if (!steps.isEmpty()) {
-            LocationStep firstStep = (LocationStep) steps.get(0);
-            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.get(0);
+            LocationStep lastStep = steps.get(steps.size() - 1);
             if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
@@ -126,7 +126,7 @@ public class ExtFulltext extends Function implements Optimizable {
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
                     if (axis == Constants.SELF_AXIS && steps.size() > 1)
-                        axis = ((LocationStep) steps.get(1)).getAxis();
+                        axis = steps.get(1).getAxis();
                 }
             }
         }

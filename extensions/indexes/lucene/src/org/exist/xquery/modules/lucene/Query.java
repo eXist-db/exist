@@ -83,10 +83,10 @@ public class Query extends Function implements Optimizable {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
 
-        List steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            LocationStep firstStep = (LocationStep) steps.get(0);
-            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.get(0);
+            LocationStep lastStep = steps.get(steps.size() - 1);
             if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
