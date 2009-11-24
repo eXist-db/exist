@@ -378,7 +378,7 @@ public class Configuration implements ErrorHandler
             LOG.debug(JournalManager.PROPERTY_JOURNAL_DIR + ": " + config.get(JournalManager.PROPERTY_JOURNAL_DIR));
         }
         String excludedColl = cluster.getAttribute(ClusterComunication.CLUSTER_EXCLUDED_COLLECTIONS_ATTRIBUTE);
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         if(excludedColl != null) {
             String[] excl = excludedColl.split(",");
             for(int i=0;i<excl.length;i++){
@@ -439,8 +439,8 @@ public class Configuration implements ErrorHandler
         config.put(PerformanceStats.CONFIG_PROPERTY_TRACE, trace);
         
         //built-in-modules
-        Map classMap = new HashMap();
-        Map knownMappings = new HashMap();
+        Map<String, Class> classMap = new HashMap<String, Class>();
+        Map<String, String> knownMappings = new HashMap<String, String>();
         XQueryContext.loadModuleClasses(xquery, classMap, knownMappings);
         config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);
         config.put(XQueryContext.PROPERTY_STATIC_MODULE_MAP, knownMappings);
@@ -487,7 +487,7 @@ public class Configuration implements ErrorHandler
 			// Process any specified attributes that should be passed to the transformer factory
 			
 			NodeList attrs = transformer.getElementsByTagName( TransformerFactoryAllocator.CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME );
-			Hashtable attributes = new Properties();
+			Hashtable<Object,Object> attributes = new Properties();
 			
             for( int a = 0; a < attrs.getLength(); a++ ) {
                 Element attr = (Element)attrs.item( a );
@@ -574,7 +574,7 @@ public class Configuration implements ErrorHandler
         if (nlFilters == null)
             return;
 
-        List filters = new ArrayList(nlFilters.getLength());
+        List<String> filters = new ArrayList<String>(nlFilters.getLength());
         for (int i = 0; i < nlFilters.getLength(); i++) {
             Element filterElem = (Element) nlFilters.item(i);
             String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
@@ -599,7 +599,7 @@ public class Configuration implements ErrorHandler
         if(nlJobs == null)
             return;
         
-        ArrayList jobList = new ArrayList();
+        ArrayList<JobConfig> jobList = new ArrayList<JobConfig>();
         
         String jobType = null;
         String jobName = null;
@@ -1213,7 +1213,7 @@ public class Configuration implements ErrorHandler
             LOG.debug("using webappHome="+webappHome.toURI().toString());
             
             // Get and store all URIs
-            List allURIs= new ArrayList();
+            List<String> allURIs= new ArrayList<String>();
             for (int i = 0; i < catalogs.getLength(); i++) {
                 String uri = ((Element) catalogs.item(i)).getAttribute("uri");
                 

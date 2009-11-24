@@ -2785,7 +2785,7 @@ public class XQueryContext {
      * @param xquery configuration root
      * @throws DatabaseConfigurationException
      */
-    public static void loadModuleClasses(Element xquery, Map classMap, Map externalMap)
+    public static void loadModuleClasses(Element xquery, Map<String, Class> classMap, Map<String, String> externalMap)
         throws DatabaseConfigurationException {
         // add the standard function module
         classMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class);
