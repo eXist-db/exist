@@ -85,7 +85,7 @@ public class ElementImpl extends NamedNode implements Element {
     private int children = 0;
 
     private int position = 0;
-    private Map namespaceMappings = null;
+    private Map<String, String> namespaceMappings = null;
     private int indexType = RangeIndexSpec.NO_INDEX;
     private boolean preserveWS = false;
     private boolean isDirty = false;
@@ -170,10 +170,10 @@ public class ElementImpl extends NamedNode implements Element {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream(bout);
                 out.writeShort(namespaceMappings.size());
-                for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
-                    Map.Entry entry = (Map.Entry) i.next();
-                    out.writeUTF((String) entry.getKey());
-                    short nsId = symbols.getNSSymbol((String) entry.getValue());
+                for (Iterator<Map.Entry<String, String>> i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
+                    Map.Entry<String, String> entry = (Map.Entry<String, String>) i.next();
+                    out.writeUTF(entry.getKey());
+                    short nsId = symbols.getNSSymbol(entry.getValue());
                     out.writeShort(nsId);
                 }
                 prefixData = bout.toByteArray();
@@ -375,7 +375,7 @@ public class ElementImpl extends NamedNode implements Element {
         if (prefix == null)
             return;
         if (namespaceMappings == null)
-            namespaceMappings = new HashMap(1);
+            namespaceMappings = new HashMap<String, String>(1);
         else if (namespaceMappings.containsKey(prefix))
             return;
         namespaceMappings.put(prefix, ns);
@@ -732,8 +732,8 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         if(declaresNamespacePrefixes()) {
-            for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) i.next();
+            for(Iterator<Map.Entry<String, String>> i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry<String, String> entry = (Map.Entry<String, String>) i.next();
                 String prefix = entry.getKey().toString();
                 String ns = entry.getValue().toString();
                 QName attrName = new QName(prefix, Namespaces.XMLNS_NS, "xmlns");
@@ -1010,8 +1010,8 @@ public class ElementImpl extends NamedNode implements Element {
         children = count;
     }
 
-    public void setNamespaceMappings(Map map) {
-        namespaceMappings = new HashMap(map);
+    public void setNamespaceMappings(Map<String, String> map) {
+        namespaceMappings = new HashMap<String, String>(map);
         String ns;
         for (Iterator i = namespaceMappings.values().iterator(); i.hasNext();) {
             ns = (String) i.next();
@@ -1019,12 +1019,12 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
-    public Iterator getPrefixes() {
+    public Iterator<String> getPrefixes() {
         return namespaceMappings.keySet().iterator();
     }
 
     public String getNamespaceForPrefix(String prefix) {
-        return (String) namespaceMappings.get(prefix);
+        return namespaceMappings.get(prefix);
     }
 
     public int getPrefixCount() {
@@ -1041,14 +1041,14 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      */
     public String toString(boolean top) {
-        return toString(top, new TreeSet());
+        return toString(top, new TreeSet<String>());
     }
 
     /**
      * Method toString.
      *
      */
-    public String toString(boolean top, TreeSet namespaces) {
+    public String toString(boolean top, TreeSet<String> namespaces) {
         StringBuilder buf = new StringBuilder();
         StringBuilder attributes = new StringBuilder();
         StringBuilder children = new StringBuilder();
@@ -1065,12 +1065,12 @@ public class ElementImpl extends NamedNode implements Element {
         }
         if (declaresNamespacePrefixes()) {
             // declare namespaces used by this element
-            Map.Entry entry;
+            Map.Entry<String, String> entry;
             String namespace, prefix;
-            for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
-                entry = (Map.Entry) i.next();
-                prefix = (String) entry.getKey();
-                namespace = (String) entry.getValue();
+            for (Iterator<Map.Entry<String, String>> i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
+                entry = (Map.Entry<String, String>) i.next();
+                prefix = entry.getKey();
+                namespace = entry.getValue();
                 if (prefix.length() == 0) {
                     buf.append(" xmlns=\"");
                     //buf.append(namespace);

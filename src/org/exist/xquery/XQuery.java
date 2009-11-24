@@ -27,7 +27,6 @@ import antlr.collections.AST;
 import com.sun.xacml.ctx.RequestCtx;
 import org.apache.log4j.Logger;
 import org.exist.debuggee.Debuggee;
-import org.exist.debuggee.DebuggeeJoint;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
