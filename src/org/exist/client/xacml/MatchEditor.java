@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,6 +35,8 @@ import com.sun.xacml.attr.AttributeValue;
 
 public class MatchEditor extends JPanel implements ActionListener, DocumentListener
 {
+	private static final long serialVersionUID = 8115203189859399823L;
+
 	private static final String EMPTY_TEXT = "Select an attribute to edit";
 	private static final int MAXIMUM_BOX_WIDTH = 450;
 	
@@ -44,12 +45,13 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	private JComboBox functionBox;
 	private JComboBox valueBox;
 	private Abbreviator abbrev;
-	private List listeners = new ArrayList(2);
-	private List attributeHandlers = new ArrayList(2);
+	private List<ChangeListener> listeners = new ArrayList<ChangeListener>(2);
+	private List<AttributeHandler> attributeHandlers = new ArrayList<AttributeHandler>(2);
 	
 	private Object currentFunction;
 	private Object currentValue;
 	
+	@SuppressWarnings("unused")
 	private MatchEditor() {}
 	public MatchEditor(Abbreviator abbrev)
 	{
@@ -117,9 +119,9 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		URI dataType = attribute.getType();
 		label.setText(abbrev.getAbbreviatedId(attribute.getId()) + " (" + abbrev.getAbbreviatedType(dataType) + ")");
 		
-		Set targetFunctions = abbrev.getAbbreviatedTargetFunctions(dataType);
-		for(Iterator it = attributeHandlers.iterator(); it.hasNext();)
-			((AttributeHandler)it.next()).filterFunctions(targetFunctions, attribute);
+		Set<Object> targetFunctions = abbrev.getAbbreviatedTargetFunctions(dataType);
+		for(AttributeHandler handler : attributeHandlers)
+			handler.filterFunctions(targetFunctions, attribute);
 		
 		functionBox.setModel(new DefaultComboBoxModel(targetFunctions.toArray()));
 		if(functionId == null)
@@ -132,10 +134,10 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		functionBox.setMaximumSize(restrictWidth(functionBox.getPreferredSize()));
 
 		valueBox.setEditable(true);
-		Set allowedValues = new TreeSet();
-		for(Iterator it = attributeHandlers.iterator(); it.hasNext();)
+		Set<Object> allowedValues = new TreeSet<Object>();
+		for(AttributeHandler handler : attributeHandlers)
 		{
-			if(!((AttributeHandler)it.next()).getAllowedValues(allowedValues, attribute))
+			if(!handler.getAllowedValues(allowedValues, attribute))
 			{
 				valueBox.setEditable(false);
 				break;
@@ -189,8 +191,8 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 			if(textValue == null || textValue.length() == 0)
 				return null;
 			AttributeValue value = factory.createValue(attribute.getType(), textValue);
-			for(Iterator it = attributeHandlers.iterator(); it.hasNext();)
-				((AttributeHandler)it.next()).checkUserValue(value, attribute);
+			for(AttributeHandler handler : attributeHandlers)
+				handler.checkUserValue(value, attribute);
 			return value;
 		}
 		catch(UnknownIdentifierException e)
@@ -214,7 +216,7 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		if(ah == null)
 			return;
 		if(attributeHandlers == null)
-			attributeHandlers = new ArrayList();
+			attributeHandlers = new ArrayList<AttributeHandler>();
 		attributeHandlers.add(ah);
 	}
 	public void removeAttributeHandler(AttributeHandler ah)
@@ -239,8 +241,8 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	private void fireChanged()
 	{
 		ChangeEvent event = new ChangeEvent(this);
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((ChangeListener)it.next()).stateChanged(event);
+		for(ChangeListener listener : listeners)
+			listener.stateChanged(event);
 	}
 	public void addChangeListener(ChangeListener listener)
 	{

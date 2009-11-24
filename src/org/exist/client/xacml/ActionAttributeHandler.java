@@ -15,19 +15,19 @@ public class ActionAttributeHandler implements AttributeHandler
 {
 	public ActionAttributeHandler() {}
 	
-	public void filterFunctions(Set functions, AttributeDesignator attribute)
+	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.ACTION_ID_ATTRIBUTE) || id.equals(XACMLConstants.ACTION_NS_ATTRIBUTE))
 		{
-			List retain = new ArrayList(2);
+			List<String> retain = new ArrayList<String>(2);
 			retain.add("=");
 			retain.add("equals");
 			functions.retainAll(retain);
 		}
 	}
 
-	public boolean getAllowedValues(Set values, AttributeDesignator attribute)
+	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.ACTION_NS_ATTRIBUTE))

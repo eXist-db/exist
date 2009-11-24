@@ -20,6 +20,7 @@ public class UserAttributeHandler implements AttributeHandler
 {
 	private Collection collection;
 
+	@SuppressWarnings("unused")
 	private UserAttributeHandler() {}
 	public UserAttributeHandler(DatabaseInterface dbInterface)
 	{
@@ -27,7 +28,7 @@ public class UserAttributeHandler implements AttributeHandler
 			throw new NullPointerException("Database interface cannot be null");
 		this.collection = dbInterface.getPolicyCollection();
 	}
-	public void filterFunctions(Set functions, AttributeDesignator attribute)
+	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.SUBJECT_ID_ATTRIBUTE) ||
@@ -35,14 +36,14 @@ public class UserAttributeHandler implements AttributeHandler
 				id.equals(XACMLConstants.GROUP_ATTRIBUTE) || 
 				id.equals(XACMLConstants.SUBJECT_NS_ATTRIBUTE))
 		{
-			List retain = new ArrayList(2);
+			List<String> retain = new ArrayList<String>(2);
 			retain.add("equals");
 			retain.add("=");
 			functions.retainAll(retain);
 		}
 	}
 
-	public boolean getAllowedValues(Set values, AttributeDesignator attribute)
+	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.SUBJECT_ID_ATTRIBUTE))
