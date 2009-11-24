@@ -28,7 +28,6 @@ import org.w3c.dom.NodeList;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -36,7 +35,7 @@ public class Group {
 
     private String name;
 
-    private List threads = new ArrayList();
+    private List<ActionThread> threads = new ArrayList<ActionThread>();
 
     private ActionThread setupAction = null;
 
@@ -85,16 +84,15 @@ public class Group {
             System.out.println("Setup done ...");
         }
 
-        Stack stack = new Stack();
-        for (Iterator i = threads.iterator(); i.hasNext(); ) {
-            ActionThread thread = (ActionThread) i.next();
+        Stack<Thread> stack = new Stack<Thread>();
+        for (ActionThread thread : threads) {
             Thread t = new Thread(thread, thread.getName());
             t.start();
             stack.push(t);
         }
 
         while (!stack.isEmpty()) {
-            Thread t = (Thread) stack.pop();
+            Thread t = stack.pop();
             try {
                 t.join();
             } catch (InterruptedException e) {

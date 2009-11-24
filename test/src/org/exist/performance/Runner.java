@@ -36,20 +36,16 @@ import org.xmldb.api.base.XMLDBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 public class Runner {
 
-    private Map connections = new HashMap();
+    private Map<String, Connection> connections = new HashMap<String, Connection>();
 
-    private Map classes = new HashMap();
+    private Map<String, Class<Action>> classes = new HashMap<String, Class<Action>>();
 
-    private Map groups = new HashMap();
+    private Map<String, Group> groups = new HashMap<String, Group>();
 
     private TestResultWriter resultWriter;
 
@@ -94,12 +90,11 @@ public class Runner {
 
     public void run(String groupToRun) throws XMLDBException, EXistException {
         if (groupToRun == null) {
-            for (Iterator iterator = groups.values().iterator(); iterator.hasNext();) {
-                Group group = (Group) iterator.next();
+            for (Group group : groups.values()) {
                 group.run();
             }
         } else {
-            Group group = (Group) groups.get(groupToRun);
+            Group group = groups.get(groupToRun);
             if (group == null)
                 throw new EXistException("Test group not found: " + groupToRun);
             group.run();
@@ -107,11 +102,11 @@ public class Runner {
     }
 
     public Connection getConnection(String connection) {
-        return (Connection) connections.get(connection);
+        return connections.get(connection);
     }
 
-    public Class getClassForAction(String action) {
-        return (Class) classes.get(action);
+    public Class<Action> getClassForAction(String action) {
+        return classes.get(action);
     }
 
     public TestResultWriter getResults() {
@@ -133,7 +128,7 @@ public class Runner {
 
     private void initDb() throws EXistException {
         try {
-            Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
+            Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
             Database database = (Database)clazz.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
@@ -143,8 +138,7 @@ public class Runner {
     }
 
     private void shutdownDb() throws XMLDBException {
-        for (Iterator iterator = connections.values().iterator(); iterator.hasNext();) {
-            Connection connection = (Connection) iterator.next();
+        for (Connection connection : connections.values()) {
             CollectionImpl collection = (CollectionImpl) connection.getCollection("/db");
             if (!collection.isRemoteCollection()) {
                 DatabaseInstanceManager mgr = (DatabaseInstanceManager)

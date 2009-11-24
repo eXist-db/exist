@@ -31,12 +31,11 @@ import org.xmldb.api.base.XMLDBException;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class ActionSequence extends AbstractAction {
 
     protected int repeat = 1;
-    protected List actions = new ArrayList();
+    protected List<Action> actions = new ArrayList<Action>();
     protected Runner runner;
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
@@ -57,7 +56,7 @@ public class ActionSequence extends AbstractAction {
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element elem = (Element) node;
                 if (elem.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
-                    Class clazz = runner.getClassForAction(elem.getLocalName());
+                    Class<Action> clazz = runner.getClassForAction(elem.getLocalName());
                     if (clazz == null)
                         throw new EXistException("no class defined for action: " + elem.getLocalName());
                     if (!Action.class.isAssignableFrom(clazz))
@@ -78,8 +77,7 @@ public class ActionSequence extends AbstractAction {
 
     public void execute(Connection connection) throws XMLDBException, EXistException {
         for (int i = 0; i < repeat; i++) {
-            for (Iterator iterator = actions.iterator(); iterator.hasNext();) {
-                Action action = (Action) iterator.next();
+            for (Action action : actions) {
                 long start = System.currentTimeMillis();
                 LOG.debug('[' + Thread.currentThread().getName() + "] " + action.getClass().getName());
                 action.execute(connection);
