@@ -247,7 +247,7 @@ public abstract class AbstractRemoteResource
 		
 		Properties properties = getProperties();
 		String command = null;
-		List params = new ArrayList();
+		List<Object> params = new ArrayList<Object>();
 		if(isRetrieve) {
 			command = "retrieveFirstChunk";
 			params.add(new Integer(handle));
@@ -505,7 +505,7 @@ public abstract class AbstractRemoteResource
 			retval=contentFile.length();
 		} else {
 			Properties properties = getProperties();
-			List params = new ArrayList();
+			List<Object> params = new ArrayList<Object>();
 			params.add(path.toString());
 			params.add(properties);
 			try {

@@ -16,7 +16,7 @@ public class DatabaseStatus {
 	private int runningBrokers = 0;
 	private int availableBrokers = 0;
 	private int maxBrokers = 0;
-	private Map indexStats = new TreeMap();
+	private Map<String, IndexStats> indexStats = new TreeMap<String, IndexStats>();
 	
 	public DatabaseStatus(BrokerPool pool) {
 		Configuration conf = pool.getConfiguration();
@@ -96,7 +96,7 @@ public class DatabaseStatus {
 	}
 	
 	public IndexStats getIndexStats(String dbName) {
-		return (IndexStats)indexStats.get(dbName);
+		return indexStats.get(dbName);
 	}
 
 }

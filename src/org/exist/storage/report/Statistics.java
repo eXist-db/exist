@@ -24,7 +24,7 @@ public class Statistics {
 	 * @param conf
 	 * @param indexStats
 	 */
-	public static void generateIndexStatistics(Configuration conf, Map indexStats) {
+	public static void generateIndexStatistics(Configuration conf, Map<String, IndexStats> indexStats) {
 		DOMFile dom = (DOMFile) conf.getProperty(DOMFile.FILE_KEY_IN_CONFIG);
 		if(dom != null)
 			indexStats.put(DOMFile.FILE_NAME, new IndexStats(dom));
