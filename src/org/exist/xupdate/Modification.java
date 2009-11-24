@@ -87,25 +87,26 @@ public abstract class Modification {
 	/** Documents concerned by this XUpdate modification,
 	 * i.e. the set of documents to which this XUpdate might apply. */
 	protected DocumentSet docs;
-	protected Map namespaces;
-	protected Map variables;
+	protected Map<String, String> namespaces;
+	protected Map<String, Object> variables;
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectHashMap triggers;
 
     private AccessContext accessCtx;
 
+	@SuppressWarnings("unused")
 	private Modification() {}
 	/**
 	 * Constructor for Modification.
 	 */
 	public Modification(DBBroker broker, DocumentSet docs, String selectStmt,
-	        Map namespaces, Map variables) {
+	        Map<String, String> namespaces, Map<String, Object> variables) {
 		this.selectStmt = selectStmt;
 		this.broker = broker;
 		this.docs = docs;
-		this.namespaces = new HashMap(namespaces);
-		this.variables = new TreeMap(variables);
+		this.namespaces = new HashMap<String, String>(namespaces);
+		this.variables = new TreeMap<String, Object>(variables);
         this.triggers = new Int2ObjectHashMap(97);
         // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
@@ -194,8 +195,8 @@ public abstract class Modification {
 	 * @throws XPathException
 	 */
 	protected void declareVariables(XQueryContext context) throws XPathException {
-		for (Iterator i = variables.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry entry = (Map.Entry) i.next();
+		for (Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
 			context.declareVariable(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -204,12 +205,12 @@ public abstract class Modification {
 	 * @param context
 	 */
 	protected void declareNamespaces(XQueryContext context) throws XPathException {
-		Map.Entry entry;
-		for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
+		Map.Entry<String, String> entry;
+		for (Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
+			entry = (Map.Entry<String, String>) i.next();
 			context.declareNamespace(
-				(String) entry.getKey(),
-				(String) entry.getValue());
+				entry.getKey(),
+				entry.getValue());
 		}
 	}
 
@@ -267,11 +268,11 @@ public abstract class Modification {
 			return;
 		
 		//finish Trigger
-		Iterator iterator = modifiedDocuments.getDocumentIterator();
+		Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
 		DocumentImpl doc;
 		while (iterator.hasNext())
 		{
-			doc = (DocumentImpl) iterator.next();
+			doc = iterator.next();
 			finishTrigger(transaction, doc);
 		}
         triggers.clear();
@@ -295,8 +296,8 @@ public abstract class Modification {
         Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null)
 	        fragmentationLimit = ((Integer)property).intValue();		
-	    for(Iterator i = docs.getDocumentIterator(); i.hasNext(); ) {
-	        DocumentImpl next = (DocumentImpl) i.next();
+	    for(Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+	        DocumentImpl next = i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
 	            broker.defragXMLResource(transaction, next);
 	        broker.checkXMLResourceConsistency(next);
@@ -414,14 +415,12 @@ public abstract class Modification {
 
 	}
 
-	final static class NodeComparator implements Comparator {
+	final static class NodeComparator implements Comparator<StoredNode> {
 
 		/* (non-Javadoc)
 		* @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		*/
-		public int compare(Object o1, Object o2) {
-			StoredNode n1 = (StoredNode) o1;
-			StoredNode n2 = (StoredNode) o2;
+		public int compare(StoredNode n1, StoredNode n2) {
 			if (n1.getInternalAddress() == n2.getInternalAddress())
 				return Constants.EQUAL;
 			if (n1.getInternalAddress() < n2.getInternalAddress())

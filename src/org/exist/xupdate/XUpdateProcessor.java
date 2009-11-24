@@ -139,7 +139,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * Stack to maintain xml:space settings. The items on the
      * stack are strings, containing either "default" or "preserve".
      */
-    private Stack spaceStack = null;
+    private Stack<String> spaceStack = null;
 
     /**
      * The modification we are currently processing.
@@ -153,7 +153,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     private Document doc;
 
     /** The current element stack. Contains the last elements processed. */
-    private Stack stack = new Stack();
+    private Stack<Element> stack = new Stack<Element>();
 
     /** The last node that has been created */
     private Node currentNode = null;
@@ -169,7 +169,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * within the XUpdate will be added to this list. The final list
      * will be returned to the caller.
      */
-    private List modifications = new ArrayList();
+    private List<Modification> modifications = new ArrayList<Modification>();
 
     /** Temporary string buffer used for collecting text chunks */
     private FastStringBuffer charBuf = new FastStringBuffer(64);
@@ -180,17 +180,17 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * Maps variable QName to the Sequence returned by
      * evaluating the variable expression.
      */
-    private Map variables = new TreeMap();
+    private Map<String, Object> variables = new TreeMap<String, Object>();
 
     /**
      * Keeps track of namespaces declared within the XUpdate.
      */
-    private Map namespaces = new HashMap(10);
+    private Map<String, String> namespaces = new HashMap<String, String>(10);
 
     /**
      * Stack used to track conditionals.
      */
-    private Stack conditionals = new Stack();
+    private Stack<Conditional> conditionals = new Stack<Conditional>();
 
 	private AccessContext accessCtx;
 	
@@ -251,7 +251,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			
 			reader.parse(is);
 			Modification mods[] = new Modification[modifications.size()];
-			return (Modification[]) modifications.toArray(mods);
+			return modifications.toArray(mods);
 		} finally {
 			broker.getBrokerPool().getParserPool().returnXMLReader(reader);
 		}
@@ -269,7 +269,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void startDocument() throws SAXException {
         // The default...
         this.preserveWhitespace = preserveWhitespaceTemp;
-        this.spaceStack = new Stack();
+        this.spaceStack = new Stack<String>();
         this.spaceStack.push("default");
 	}
 
@@ -315,7 +315,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					//LOG.debug("appending text to fragment: " + text.getData());
 					contents.add(text);
 				} else {
-					Element last = (Element) stack.peek();
+					Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -425,7 +425,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (stack.isEmpty()) {
 					contents.add(elem);
 				} else {
-					Element last = (Element) stack.peek();
+					Element last = stack.peek();
 					last.appendChild(elem);
 				}
 				this.setWhitespaceHandling((Element) stack.push(elem));
@@ -574,7 +574,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (stack.isEmpty()) {
 					contents.add(text);
 				} else {
-					Element last = (Element) stack.peek();
+					Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -582,10 +582,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 		if (XUPDATE_NS.equals(namespaceURI)) {
 			if (IF.equals(localName)) {
-				Conditional cond = (Conditional) conditionals.pop();
+				Conditional cond = conditionals.pop();
 				modifications.add(cond);
 			} else if (localName.equals(ELEMENT)) {
-				this.resetWhitespaceHandling((Element) stack.pop());
+				this.resetWhitespaceHandling(stack.pop());
 			} else if (localName.equals(ATTRIBUTE)) {
 				inAttribute = false;
 			} else if (localName.equals(APPEND)
@@ -599,7 +599,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				modification.setContent(contents);
 				modification.setAccessContext(accessCtx);
 				if(!conditionals.isEmpty()) {
-					Conditional cond = (Conditional) conditionals.peek();
+					Conditional cond = conditionals.peek();
 					cond.addModification(modification);
 				} else {
 					modifications.add(modification);
@@ -607,7 +607,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				modification = null;
 			}
 		} else if (inModification) {
-            this.resetWhitespaceHandling((Element) stack.pop());
+            this.resetWhitespaceHandling(stack.pop());
         }
 	}
 
@@ -696,7 +696,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					
 					contents.add(text);
 				} else {
-					Element last = (Element) stack.peek();
+					Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -708,7 +708,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (stack.isEmpty()) {
 				contents.add(pi);
 			} else {
-				Element last = (Element) stack.peek();
+				Element last = stack.peek();
 				last.appendChild(pi);
 			}
 		}
@@ -738,15 +738,16 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         try {
 			context = new XQueryContext(broker, accessCtx);
 			context.setStaticallyKnownDocuments(documentSet);
-			Map.Entry entry;
-			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
-				entry = (Map.Entry) i.next();
+			Map.Entry<String, String> namespaceEntry;
+			for (Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
+				namespaceEntry = (Map.Entry<String, String>) i.next();
 				context.declareNamespace(
-					(String) entry.getKey(),
-					(String) entry.getValue());
+					namespaceEntry.getKey(),
+					namespaceEntry.getValue());
 			}
-			for (Iterator i = variables.entrySet().iterator(); i.hasNext(); ) {
-				entry = (Map.Entry) i.next();
+			Map.Entry<String, Object> entry;
+			for (Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
+				entry = (Map.Entry<String, Object>) i.next();
 				context.declareVariable(entry.getKey().toString(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?
@@ -798,7 +799,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					//LOG.debug("appending text to fragment: " + text.getData());
 					contents.add(text);
 				} else {
-					Element last = (Element) stack.peek();
+					Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -809,7 +810,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (stack.isEmpty()) {
 				contents.add(comment);
 			} else {
-				Element last = (Element) stack.peek();
+				Element last = stack.peek();
 				last.appendChild(comment);
 			}
 		}

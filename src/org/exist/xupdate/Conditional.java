@@ -46,7 +46,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class Conditional extends Modification {
 
-	private List modifications = new ArrayList(5);
+	private List<Modification> modifications = new ArrayList<Modification>(5);
 	
 	/**
 	 * @param broker
@@ -55,7 +55,7 @@ public class Conditional extends Modification {
 	 * @param namespaces
 	 */
 	public Conditional(DBBroker broker, DocumentSet docs, String selectStmt,
-			Map namespaces, Map variables) {
+			Map<String, String> namespaces, Map<String, Object> variables) {
 		super(broker, docs, selectStmt, namespaces, variables);
 	}
 
@@ -98,8 +98,8 @@ public class Conditional extends Modification {
 		}
 		if(seq.effectiveBooleanValue()) {
 			long mods = 0;
-			for (int i = 0; i < modifications.size(); i++) {
-				mods += ((Modification)modifications.get(i)).process(transaction);
+			for (Modification modification : modifications) {
+				mods += modification.process(transaction);
 				broker.flush();
 			}
 			
