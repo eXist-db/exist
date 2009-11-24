@@ -17,7 +17,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-
 package org.exist.ant;
 
 import java.io.File;
@@ -44,7 +43,6 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-
 /**
  * an ant task to extract the content of a collection or resource
  *
@@ -52,6 +50,7 @@ import org.xmldb.api.modules.XMLResource;
  * @author jim.fuller at webcomposite.com to handle binary file extraction
  */
 public class XMLDBExtractTask extends AbstractXMLDBTask {
+
     private String resource = null;
     private File destFile = null;
     private File destDir = null;
@@ -59,18 +58,19 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     private boolean createdirectories = false;
     private boolean subcollections = false;
     private boolean overwrite = false;
-
     // output encoding
     private String encoding = "UTF-8";
 
 
     /* (non-Javadoc)
-    * @see org.apache.tools.ant.Task#execute()
-    */
+     * @see org.apache.tools.ant.Task#execute()
+     */
     public void execute() throws BuildException {
-                          
+
         if (uri == null) {
-            if (failonerror) throw new BuildException("You need to specify an XMLDB collection URI");
+            if (failonerror) {
+                throw new BuildException("You need to specify an XMLDB collection URI");
+            }
 
         } else {
             registerDatabase();
@@ -87,15 +87,16 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                     Resource res = base.getResource(resource);
                     if (res == null) {
                         String msg = "Resource " + resource + " not found.";
-                        if (failonerror)
+                        if (failonerror) {
                             throw new BuildException(msg);
-                        else
+                        } else {
                             log(msg, Project.MSG_ERR);
+                        }
                     } else {
                         writeResource(res, destFile);
                     }
                 } else {
-               // extraction of a collection
+                    // extraction of a collection
                     extractResources(base, null);
                     if (subcollections) {
                         extractSubCollections(base, null);
@@ -103,25 +104,26 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 }
             } catch (XMLDBException e) {
                 String msg = "XMLDB exception caught while executing query: " + e.getMessage();
-                if (failonerror)
+                if (failonerror) {
                     throw new BuildException(msg, e);
-                else
+                } else {
                     log(msg, e, Project.MSG_ERR);
+                }
             } catch (IOException e) {
                 String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
-                if (failonerror)
+                if (failonerror) {
                     throw new BuildException(msg, e);
-                else
+                } else {
                     log(msg, e, Project.MSG_ERR);
+                }
             }
         }
     }
 
-
     /**
-      * Create directory from a collection
-      *
-      */
+     * Create directory from a collection
+     *
+     */
     private void extractResources(Collection base, String path)
             throws XMLDBException, IOException {
         Resource res = null;
@@ -146,9 +148,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     }
 
     /**
-      * Extract multiple resources from a collection
-      *
-      */
+     * Extract multiple resources from a collection
+     *
+     */
     private void extractSubCollections(Collection base, String path) throws XMLDBException, IOException {
         String[] childCols = base.listChildCollections();
         if (childCols != null) {
@@ -165,7 +167,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                     } else {
                         subdir = childCols[i];
                     }
-                    if (!dir.exists() && createdirectories == true ) {
+                    if (!dir.exists() && createdirectories == true) {
                         dir.mkdirs();
                     }
                     extractResources(col, subdir);
@@ -177,32 +179,30 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         }
     }
 
-
     /**
-      * Extract single resource
-      *
-      */
+     * Extract single resource
+     *
+     */
     private void writeResource(Resource res, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException {
         if (res instanceof XMLResource) {
             writeXMLResource((XMLResource) res, dest);
-        } else if (res instanceof ExtendedResource){
+        } else if (res instanceof ExtendedResource) {
             writeBinaryResource(res, dest);
-        } 
+        }
     }
 
-
     /**
-      * Extract XML resource
-      *
-      */
+     * Extract XML resource
+     *
+     */
     private void writeXMLResource(XMLResource res, File dest) throws IOException, XMLDBException {
         if (createdirectories == true) {
-            File parentDir= new File(dest.getParent());
-            if(!parentDir.exists()){
+            File parentDir = new File(dest.getParent());
+            if (!parentDir.exists()) {
                 parentDir.mkdirs();
             }
         }
-        if (dest != null  || overwrite == true ) {
+        if (dest != null || overwrite == true) {
             Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -227,55 +227,55 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         } else {
             String msg = "Destination xml file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
                     "overwrite property to overwrite this file.";
-            if (failonerror)
+            if (failonerror) {
                 throw new BuildException(msg);
-            else
+            } else {
                 log(msg, Project.MSG_ERR);
+            }
         }
     }
 
-
     /**
-      * Extract single binary resource
-      *
-      */
+     * Extract single binary resource
+     *
+     */
     private void writeBinaryResource(Resource res, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException {
 
         if (createdirectories == true) {
-            File parentDir= new File(dest.getParent());
-            if(!parentDir.exists()){
+            File parentDir = new File(dest.getParent());
+            if (!parentDir.exists()) {
                 parentDir.mkdirs();
             }
         }
-                     //dest != null && ( !dest.exists() || 
-        if (dest != null  || overwrite == true) {
+        //dest != null && ( !dest.exists() ||
+        if (dest != null || overwrite == true) {
 
-             if (dest.isDirectory()) {
+            if (dest.isDirectory()) {
 
                 String fname = res.getId();
                 if (!fname.endsWith("." + type)) {
-                    fname += "" ;
+                    fname += "";
                 }
                 dest = new File(dest, fname);
 
-             }
-                 FileOutputStream os;
-                 os = new FileOutputStream(dest);
+            }
+            FileOutputStream os;
+            os = new FileOutputStream(dest);
 
-               ((ExtendedResource)res).getContentIntoAStream(os);
+            ((ExtendedResource) res).getContentIntoAStream(os);
 
 
         } else {
             String msg = "Dest binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
                     "overwrite property to overwrite file.";
-            if (failonerror)
+            if (failonerror) {
                 throw new BuildException(msg);
-            else
+            } else {
                 log(msg, Project.MSG_ERR);
+            }
         }
     }
-    
-    
+
     public void setResource(String resource) {
         this.resource = resource;
     }
@@ -304,6 +304,6 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     }
 
     public void setOverwrite(boolean createdirectories) {
-        this.overwrite = overwrite;
+        this.overwrite = createdirectories;
     }
 }
