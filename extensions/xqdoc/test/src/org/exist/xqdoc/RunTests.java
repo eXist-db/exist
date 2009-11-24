@@ -1,4 +1,4 @@
-package xquery;
+package org.exist.xqdoc;
 
 
 import static org.junit.Assert.fail;
@@ -27,6 +27,10 @@ import org.xmldb.api.modules.XMLResource;
 
 public class RunTests {
 
+    private final static String TEST_DIR = "extensions/xqdoc/test/src/org/exist/xqdoc";
+
+    private final static String TEST_QUERY = TEST_DIR + "/runTests.xql";
+
 	private static File[] files;
 	private static Collection testCollection;
 
@@ -34,7 +38,7 @@ public class RunTests {
 	public void run() {
 		try {
 			XQueryService xqs = (XQueryService) testCollection.getService("XQueryService", "1.0");
-			Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
+			Source query = new FileSource(new File(TEST_QUERY), "UTF-8", false);
 			for (File file : files) {
 				xqs.declareVariable("doc", file.getName());
 				ResourceSet result = xqs.execute(query);
@@ -72,7 +76,7 @@ public class RunTests {
 		testCollection = service.createCollection("test");
 		Assert.assertNotNull(testCollection);
         
-		File dir = new File("test/src/xquery");
+		File dir = new File(TEST_DIR);
 		files = dir.listFiles(new XMLFilenameFilter());
 		for (File file : files) {
 			XMLResource resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
