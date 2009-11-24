@@ -21,24 +21,57 @@
  */
 package org.exist.xslt;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Vector;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.exist.memtree.SAXAdapter;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-public class XSLTStoJUnit extends SAXAdapter {
+public class XSLTStoJUnit implements ContentHandler {
 
+	private static final String TESTCASES = "test-group";
+	private static final String TESTCASE = "testcase";
+	
+	private static final String NAME = "name";
+
+	private static final String INPUT = "input";
+	private static final String STYLESHEET = "stylesheet";
+	private static final String SOURCE_DOCUMENT = "source-document";
+
+	private static final String OUTPUT = "output";
+	private static final String RESULT_DOCUMENT = "result-document";
+	
+	private static File folder;
+    private String sep = File.separator;
+    
+    private BufferedWriter out;
+
+	private Vector<String> currentPath = new Vector<String>();
+	
+	private String name;
+	private String stylesheet;
+	private String sourceDocument;
+	private String resultDocument;
+	
 	public static void main(String[] args) throws Exception {
 
+		folder = new File("extensions/xslt/test/org/exist/xslt/xslts");
+		
 		File xslts = new File("test/external/XSLTS_1_1_0/catalog.xml");
 		FileInputStream is = new FileInputStream(xslts);
 		InputSource src = new InputSource(is);
@@ -49,11 +82,121 @@ public class XSLTStoJUnit extends SAXAdapter {
 		SAXParser parser = factory.newSAXParser();
 		XMLReader reader = parser.getXMLReader();
 		reader.setEntityResolver(new SpecialEntityResolver("test/external/XSLTS_1_1_0/"));
-		SAXAdapter adapter = new XSLTStoJUnit();
+		XSLTStoJUnit adapter = new XSLTStoJUnit();
 		reader.setContentHandler(adapter);
-		reader.parse(src);
 
-		System.out.println(adapter.getDocument());
+		reader.parse(src);
 	}
 
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		if (currentPath.lastElement().equals(NAME)) {
+            StringBuilder s = new StringBuilder(name);
+            s.append(ch, start, length);
+			name = new String(s);
+		}
+	}
+
+	public void endDocument() throws SAXException {
+	}
+
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		currentPath.remove(currentPath.size()-1);
+		
+		if (localName.equals(TESTCASES)) {
+			try {
+				endTestFile();
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
+		} else if (localName.equals(TESTCASE)) {
+				try {
+					writeTestCase();
+				} catch (IOException e) {
+					throw new SAXException(e);
+				}
+		}
+	}
+
+	private void writeTestCase() throws IOException {
+       out.write("	/* "+name+" */\n" +
+		"	@Test\n" +
+		"	public void test_"+adoptString(name)+"() {\n" +
+		"		testCase(\""+sourceDocument+"\", \""+stylesheet+"\", \""+resultDocument+"\");\n"+
+		"	}\n\n");
+	}
+
+	public void endPrefixMapping(String prefix) throws SAXException {
+	}
+
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+	}
+
+	public void processingInstruction(String target, String data) throws SAXException {
+	}
+
+	public void setDocumentLocator(Locator locator) {
+	}
+
+	public void skippedEntity(String name) throws SAXException {
+	}
+
+	public void startDocument() throws SAXException {
+	}
+
+	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		currentPath.add(localName);
+		
+		if (localName.equals(TESTCASES)) {
+			try {
+				newTestFile(atts.getValue("name"));
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
+			
+		} else if (localName.equals(TESTCASE)) {
+			name = "";
+			stylesheet = "";
+			sourceDocument = "";
+			resultDocument = "";
+			
+		} else if (localName.equals(STYLESHEET)) {
+			stylesheet = atts.getValue("file");
+			
+		} else if (localName.equals(SOURCE_DOCUMENT)) {
+			sourceDocument = atts.getValue("file");
+			
+		} else if (localName.equals(RESULT_DOCUMENT)) {
+			resultDocument = atts.getValue("file");
+			
+		}
+		
+	}
+
+	private void newTestFile(String name) throws IOException {
+   		File jTest = new File(folder.getAbsolutePath()+sep+name+".java");
+
+   		FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
+   	    out = new BufferedWriter(fstream);
+   	    
+   	    out.write("package org.exist.xslt.xslts;\n\n"+
+//   	    		"import org.exist.xquery.xqts.XQTS_case;\n" +
+//   	    		"import static org.junit.Assert.*;\n" +
+   	    		"import org.junit.Test;\n\n" +
+   	    		"public class "+name+" extends XSLTS_case {\n");
+	}
+
+	private void endTestFile() throws IOException {
+		out.write("}");
+		out.close();
+	}
+
+
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+	}
+
+	private String adoptString(String caseName) {
+		String result = caseName.replace("-", "_");
+		result = result.replace(".", "_");
+		return result;
+	}
 }
