@@ -47,10 +47,9 @@ public abstract class AbstractInternalModule implements InternalModule {
 
 	private final static Logger LOG = Logger.getLogger(AbstractInternalModule.class);
 
-    public static class FunctionComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            FunctionDef d1 = (FunctionDef) o1;
-            return d1.getSignature().getFunctionId().compareTo(((FunctionDef) o2).getSignature().getFunctionId());
+    public static class FunctionComparator implements Comparator<FunctionDef> {
+        public int compare(FunctionDef o1, FunctionDef o2) {
+            return o1.getSignature().getFunctionId().compareTo(o2.getSignature().getFunctionId());
         }
     };
 
