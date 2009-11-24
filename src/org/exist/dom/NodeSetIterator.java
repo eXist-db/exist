@@ -31,7 +31,7 @@ import java.util.Iterator;
  * @author wolf
  *
  */
-public interface NodeSetIterator extends Iterator {
+public interface NodeSetIterator extends Iterator<NodeProxy> {
 
     
     /**

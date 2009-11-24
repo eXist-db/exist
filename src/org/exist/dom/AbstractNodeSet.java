@@ -703,7 +703,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return result.toString();
     }
 
-    private class CollectionIterator implements Iterator {
+    private class CollectionIterator implements Iterator<Collection> {
 
         Collection nextCollection = null;
         NodeSetIterator nodeIterator = iterator();
@@ -719,7 +719,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             return nextCollection != null;
         }
 
-        public Object next() {
+        public Collection next() {
             Collection oldCollection = nextCollection;
             nextCollection = null;
             while (nodeIterator.hasNext()) {

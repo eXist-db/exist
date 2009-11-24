@@ -198,7 +198,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 			return pi.hasNext();
 		}
 
-		public Object next() {
+		public NodeProxy next() {
 			if (!pi.hasNext())
 				return null;
 			return ((IteratorItem) pi.next()).proxy;

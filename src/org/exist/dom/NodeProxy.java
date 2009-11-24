@@ -1406,7 +1406,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 	    return hasNext;
 	}
 
-	public Object next() {
+	public NodeProxy next() {
 	    if (!hasNext)
                 return null;
 	    hasNext = false;
