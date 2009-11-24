@@ -19,7 +19,7 @@ public class NumericOpPromotionTest extends TestCase {
 	
 	private static String[] tests;
 	static {
-		Collection names = new ArrayList();
+		Collection<String> names = new ArrayList<String>();
 		Method[] ms = NumericOpPromotionTest.class.getMethods();
 		for (int i=0; i<ms.length; i++) {
 			Method m = ms[i];
