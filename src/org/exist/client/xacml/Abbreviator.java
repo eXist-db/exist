@@ -30,8 +30,8 @@ public class Abbreviator
 			{"less-than-or-equal", "<="}, {"less-than", "<"},
 			{"greater-than-or-equal", ">="}, {"greater-than", ">"} };
 	
-	private Map attributeIdMap = new HashMap(8);
-	private Map typeMap = new HashMap(8);
+	private Map<String, URI> attributeIdMap = new HashMap<String, URI>(8);
+	private Map<String, URI> typeMap = new HashMap<String, URI>(8);
 	private Map functionMap = new HashMap(8);
 	
 	public Abbreviator() {} 
@@ -223,9 +223,9 @@ public class Abbreviator
 		return null;
 	}
 	
-	private static URI get(Map map, String abbrev)
+	private static URI get(Map<String, URI> map, String abbrev)
 	{
-		URI ret = (URI)map.get(abbrev);
+		URI ret = map.get(abbrev);
 		return (ret == null) ? parse(abbrev) : ret;
 	}
 	private static URI parse(String abbrev)
