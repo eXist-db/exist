@@ -241,7 +241,7 @@ public final class ClusterCollection extends Collection {
         return collection.allowUnload();
     }
 
-    public int compareTo(Object obj) {
+    public int compareTo(Collection obj) {
         return collection.compareTo(obj);
     }
 
