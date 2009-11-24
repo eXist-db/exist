@@ -66,7 +66,7 @@ public class CollectionConfigurationManager {
 
     public final static CollectionURI COLLECTION_CONFIG_PATH = new CollectionURI(XmldbURI.CONFIG_COLLECTION_URI.getRawCollectionPath());
     
-    private Map configurations = new HashMap();
+    private Map<CollectionURI, CollectionConfiguration> configurations = new HashMap<CollectionURI, CollectionConfiguration>();
 
     private Object latch;
 
@@ -193,7 +193,7 @@ public class CollectionConfigurationManager {
 
         synchronized (latch) {
             while(!path.equals(COLLECTION_CONFIG_PATH)) {
-                conf = (CollectionConfiguration) configurations.get(path);
+                conf = configurations.get(path);
                 if (conf != null)
                     return conf;
                 path.removeLastSegment();
