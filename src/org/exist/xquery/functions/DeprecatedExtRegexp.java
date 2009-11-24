@@ -112,10 +112,10 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
-        List steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            LocationStep firstStep = (LocationStep) steps.get(0);
-            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.get(0);
+            LocationStep lastStep = steps.get(steps.size() - 1);
             if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
@@ -139,7 +139,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
                     if (axis == Constants.SELF_AXIS && steps.size() > 1)
-                        axis = ((LocationStep) steps.get(1)).getAxis();
+                        axis = steps.get(1).getAxis();
                 }
             }
         }
@@ -164,7 +164,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
         preselectResult = null;
         
         // get the search terms
-        List terms = getSearchTerms(contextSequence);
+        List<String> terms = getSearchTerms(contextSequence);
 
         // lookup the terms in the fulltext index. returns one node set for each term
         NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
@@ -220,7 +220,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
                     path == null
                         ? contextSequence.toNodeSet()
                         : path.eval(contextSequence).toNodeSet();
-                List terms = getSearchTerms(contextSequence);
+                List<String> terms = getSearchTerms(contextSequence);
                 result = evalQuery(nodes, terms).toNodeSet();
             } else {
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
@@ -238,7 +238,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 			Sequence temp;
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
 				current = i.nextItem();
-				List terms = getSearchTerms(contextSequence);
+				List<String> terms = getSearchTerms(contextSequence);
 				nodes =
 					path == null
 					? contextSequence.toNodeSet()
@@ -290,7 +290,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 	 */
 	public Sequence evalQuery(
 		NodeSet nodes,
-		List terms)
+		List<String> terms)
 		throws XPathException {
 		if(terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE;	// no search terms
@@ -307,7 +307,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 			return NodeSet.EMPTY_SET;
 	}
 
-    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List terms)
+    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List<String> terms)
     throws XPathException {
         NodeSet hits[] = new NodeSet[terms.size()];
         for (int k = 0; k < terms.size(); k++) {
@@ -323,10 +323,10 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
         return hits;
     }
 
-    protected List getSearchTerms(Sequence contextSequence) throws XPathException {
+    protected List<String> getSearchTerms(Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException(this, "function requires at least 2 arguments");
-		List terms = new ArrayList();
+		List<String> terms = new ArrayList<String>();
 		Expression next;
 		Sequence seq;
 		for(int i = 1; i < getLength(); i++) {
