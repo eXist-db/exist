@@ -93,7 +93,7 @@ public interface Module {
 	 * @param qname
 	 * @return the function signature or null if the function is not defined.
 	 */
-	public Iterator getSignaturesForFunction(QName qname);
+	public Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
 	
 	public Variable resolveVariable(QName qname) throws XPathException;
 	
