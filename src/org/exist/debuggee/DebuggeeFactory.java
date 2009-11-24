@@ -37,7 +37,7 @@ public class DebuggeeFactory {
         if (instance == null) {
             String className = System.getProperty("exist.debuggee", "org.exist.debuggee.DebuggeeImpl");
             try {
-                Class clazz = Class.forName(className);
+                Class<?> clazz = Class.forName(className);
                 if (!Debuggee.class.isAssignableFrom(clazz)) {
                     LOG.warn("Class " + className + " does not implement interface Debuggee. Using fallback.");
                 } else {
