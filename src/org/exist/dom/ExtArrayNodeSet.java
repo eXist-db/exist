@@ -1536,7 +1536,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          *
          * @see java.util.Iterator#next()
          */
-        public Object next() {
+        public NodeProxy next() {
             if (next == null)
                 return null;
             NodeProxy n = next;

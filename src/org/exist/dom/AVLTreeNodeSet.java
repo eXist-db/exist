@@ -32,8 +32,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
       * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
       */
     public void addAll(NodeSet other) {
-        for (Iterator i = other.iterator(); i.hasNext();)
-            add((NodeProxy) i.next());
+        for (Iterator<NodeProxy> i = other.iterator(); i.hasNext();)
+            add(i.next());
     }
 
     /* (non-Javadoc)
@@ -53,8 +53,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
       */
     public org.w3c.dom.Node item(int pos) {
         int i = 0;
-        for(Iterator it = iterator(); it.hasNext(); i++) {
-            NodeProxy p = (NodeProxy) it.next();
+        for(Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
+            NodeProxy p = it.next();
             if(i == pos)
                 return p.getNode();
         }
@@ -89,8 +89,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
       */
     public Item itemAt(int pos) {
         int i = 0;
-        for(Iterator it = iterator(); it.hasNext(); i++) {
-            NodeProxy p = (NodeProxy) it.next();
+        for(Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
+            NodeProxy p = it.next();
             if(i == pos)
                 return p;
         }
@@ -394,10 +394,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     class InorderTraversal implements NodeSetIterator, SequenceIterator {
 
-        private Stack nodes;
+        private Stack<Node> nodes;
 
         public InorderTraversal() {
-            nodes = new Stack();
+            nodes = new Stack<Node>();
             if (root != null) {
                 Node tempNode = root;
                 do {
@@ -414,10 +414,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                 return true;
         }
 
-        public Object next() {
+        public NodeProxy next() {
             if(nodes.isEmpty())
                 return null;
-            Node currentNode = (Node) nodes.peek();
+            Node currentNode = nodes.peek();
             nodes.pop();
             if (currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
@@ -432,7 +432,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public NodeProxy peekNode() {
             if(nodes.isEmpty())
                 return null;
-            Node currentNode = (Node) nodes.peek();
+            Node currentNode = nodes.peek();
             return currentNode.getData();
         }
         
@@ -461,7 +461,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public Item nextItem() {
             if(nodes.isEmpty())
                 return null;
-            Node currentNode = (Node) nodes.peek();
+            Node currentNode = nodes.peek();
             nodes.pop();
             if (currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
@@ -554,7 +554,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             return tempNode;
         }
 
-        public int degree() {
+        @SuppressWarnings("unused")
+		public int degree() {
             int i = 0;
             if (leftChild != null)
                 i++;
@@ -571,7 +572,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             return (this == parent.leftChild);
         }
 
-        public boolean isRightChild() {
+        @SuppressWarnings("unused")
+		public boolean isRightChild() {
             return (this == parent.rightChild);
         }
 
@@ -589,7 +591,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                 return 0;
         }
 
-        public int height() {
+        @SuppressWarnings("unused")
+		public int height() {
             return height;
         }
 

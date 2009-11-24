@@ -1472,7 +1472,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
          *
          * @see java.util.Iterator#next()
          */
-        public Object next() {
+        public NodeProxy next() {
             if (pos == size || pos < 0) {
                 pos = -1;
                 return null;

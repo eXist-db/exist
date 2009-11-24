@@ -151,7 +151,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public NodeProxy next() {
 			return null;
 		}
         
