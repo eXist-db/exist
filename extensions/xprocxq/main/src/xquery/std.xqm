@@ -162,9 +162,9 @@ let $query := if (contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
+let $matchresult := u:evalXPATH($query, $v)
 return
-	u:delete-matching-elements($v/*, $matchresult)
+   	u:delete-matching-elements($v/*, $matchresult)
 };
 
 
