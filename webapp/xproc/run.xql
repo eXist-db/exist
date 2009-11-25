@@ -15,4 +15,4 @@ let $debug := if(request:get-parameter("debug", ())) then
 				 else
 					'0'
 return
-     xproc:run(doc($pipeline), $indoc, $debug)
+     xproc:run(doc($pipeline), $indoc, '1')
