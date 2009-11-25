@@ -823,17 +823,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         if (!collection.getPermissions().validate(user, Permission.READ))
             throw new PermissionDeniedException("User '" + user.getName() + 
                     "' has no permission to read collection '" + collection.getURI() + "'");        
-        List collections;
+        List<Collection> collections;
         if (inclusive) 
             collections = collection.getDescendants(broker, broker.getUser());
         else
-            collections = new ArrayList();
+            collections = new ArrayList<Collection>();
         collections.add(collection);
         final SymbolTable symbols = broker.getBrokerPool().getSymbols();
-        final TreeMap map = new TreeMap();        
+        final TreeMap<QName, Occurrences> map = new TreeMap<QName, Occurrences>();        
         final Lock lock = dbNodes.getLock();
-        for (Iterator i = collections.iterator(); i.hasNext();) {
-            Collection storedCollection = (Collection) i.next();
+        for (Collection storedCollection : collections) {
             int storedCollectionId = storedCollection.getId();
             ElementValue startKey = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
@@ -854,7 +853,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         namespace = symbols.getNamespace(nsSymbol);
                     }                    
                     QName qname = new QName(name, namespace);
-                    Occurrences oc = (Occurrences) map.get(qname);
+                    Occurrences oc = map.get(qname);
                     if (oc == null) {
                         // required for namespace lookups
                         final XQueryContext context = new XQueryContext(broker, AccessContext.INTERNAL_PREFIX_LOOKUP);                        
@@ -893,7 +892,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             }
         }
         Occurrences[] result = new Occurrences[map.size()];
-        return (Occurrences[]) map.values().toArray(result);
+        return map.values().toArray(result);
     }   
 
     //TODO : note that this is *not* this.doc -pb

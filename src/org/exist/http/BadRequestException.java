@@ -24,6 +24,8 @@ package org.exist.http;
 
 public class BadRequestException extends Exception {
 
+	private static final long serialVersionUID = 8663399057134424372L;
+
 	public BadRequestException(String message) {
 		super(message);
 	}
