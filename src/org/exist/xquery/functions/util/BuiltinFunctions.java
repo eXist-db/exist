@@ -87,13 +87,13 @@ public class BuiltinFunctions extends BasicFunction {
 				throw new XPathException(this, "No module found matching namespace URI: " + uri);
 			addFunctionsFromModule(resultSeq, module);
 		} else {
-			for(Iterator i = context.getModules(); i.hasNext(); ) {
-				Module module = (Module)i.next();
+			for(Iterator<Module> i = context.getModules(); i.hasNext(); ) {
+				Module module = i.next();
 				addFunctionsFromModule(resultSeq, module);
 			}
 			// Add all functions declared in the local module
-			for(Iterator i = context.localFunctions(); i.hasNext(); ) {
-				UserDefinedFunction func = (UserDefinedFunction)i.next();
+			for(Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
+				UserDefinedFunction func = i.next();
 				FunctionSignature sig = func.getSignature();
 				resultSeq.add(new QNameValue(context, sig.getName()));
 			}

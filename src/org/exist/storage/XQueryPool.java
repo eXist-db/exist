@@ -214,8 +214,8 @@ public class XQueryPool extends Object2ObjectHashMap {
     
     private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
         Map borrowedModules = new TreeMap();
-        for (Iterator it = context.getAllModules(); it.hasNext(); ) {
-            Module module = (Module) it.next();
+        for (Iterator<Module> it = context.getAllModules(); it.hasNext(); ) {
+            Module module = it.next();
             if (module == null || !module.isInternalModule()) {
                 ExternalModule extModule = (ExternalModule) module;
                 ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
@@ -239,8 +239,8 @@ public class XQueryPool extends Object2ObjectHashMap {
                 context.setModule(moduleNamespace, module);
             }
             List importedModuleNamespaceUris = new ArrayList();
-            for (Iterator it2 = module.getContext().getModules(); it2.hasNext(); ) {
-                Module nestedModule = (Module) it2.next();
+            for (Iterator<Module> it2 = module.getContext().getModules(); it2.hasNext(); ) {
+                Module nestedModule = it2.next();
                  if (!nestedModule.isInternalModule()) {
                     importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
                 }
