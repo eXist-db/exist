@@ -60,6 +60,8 @@ declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outpu
  let $v := u:get-primary($primary)
  let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
  let $subpipeline := $currentstep/node()
+ let $namespaces := xproc:enum-namespaces($subpipeline)
+
  return
     for $child in $v/node()
     let $iteration-source := <xproc:output step="{$defaultname}"
@@ -73,12 +75,14 @@ declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outpu
                   </xproc:output>
     return
         (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
-        {$subpipeline}</p:declare-step>,$child,(),($outputs,$iteration-source))/.)[last()]/node()
+        {$subpipeline}</p:declare-step>,$namespaces,$child,(),($outputs,$iteration-source))/.)[last()]/node()
  };
 
 (: -------------------------------------------------------------------------- :)
 declare function xproc:replace-matching-elements($element as element(),$select,$defaultname,$currentstep,$outputs) as element() {
 (: -------------------------------------------------------------------------- :)
+   let $namespaces := xproc:enum-namespaces($currentstep)
+   return
    element {node-name($element)}
       {$element/@*,
           for $child in $element/node()
@@ -86,7 +90,7 @@ declare function xproc:replace-matching-elements($element as element(),$select,$
               if ($child instance of element())
                 then
             		if ($child intersect $select) then
-                          (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$child,(),$outputs)/.)[last()]/node()
+                          (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,(),$child,(),$outputs)/.)[last()]/node()
     			    else
                         xproc:replace-matching-elements($child,$select,$defaultname,$currentstep,$outputs)
                 else
@@ -136,9 +140,10 @@ declare function xproc:pipeline($primary,$secondary,$options,$step) {
 declare function xproc:group($primary,$secondary,$options,$currentstep,$outputs) {
 (: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
+    let $namespaces := xproc:enum-namespaces($currentstep)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
-        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$namespaces,$v,(),$outputs)/.)[last()]/node()
 };
 
 
@@ -147,22 +152,24 @@ declare function xproc:try($primary,$secondary,$options,$currentstep,$outputs) {
 (: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
+    let $namespaces := xproc:enum-namespaces($currentstep/p:group)
     return
 
          util:catch('*',
              (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
-                 {$currentstep/p:group}</p:declare-step>,$v,(),$outputs)/.)[last()]/node(),
+                 {$currentstep/p:group}</p:declare-step>,$namespaces,$v,(),$outputs)/.)[last()]/node(),
              (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
-                 {$currentstep/p:catch}</p:declare-step>,$v,(),$outputs)/.)[last()]/node())
+                 {$currentstep/p:catch}</p:declare-step>,$namespaces,$v,(),$outputs)/.)[last()]/node())
 };
 
 (: -------------------------------------------------------------------------- :)
 declare function xproc:catch($primary,$secondary,$options,$currentstep,$outputs) {
 (: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
+    let $namespaces := xproc:enum-namespaces($currentstep)
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     return
-        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$currentstep/node()}</p:declare-step>,$namespaces,$v,(),$outputs)/.)[last()]/node()
  };
 
 
@@ -170,6 +177,8 @@ declare function xproc:catch($primary,$secondary,$options,$currentstep,$outputs)
 declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs) {
 (: ----------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
+    let $namespaces := xproc:enum-namespaces($currentstep)
+    
     let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
     let $xpath-context := <test1/>
     let $xpath-context-output := <xproc:output step="{$defaultname}"
@@ -195,9 +204,9 @@ declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs
         )
     return
         if ($when) then
-            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$when/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$when/node()}</p:declare-step>,$namespaces,$v,(),$outputs)/.)[last()]/node()
          else
-            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$otherwise/node()}</p:declare-step>,$v,(),$outputs)/.)[last()]/node()
+            (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >{$otherwise/node()}</p:declare-step>,$namespaces,$v,(),$outputs)/.)[last()]/node()
 
  };
 
