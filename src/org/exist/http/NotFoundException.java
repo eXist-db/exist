@@ -24,7 +24,8 @@ package org.exist.http;
 
 public class NotFoundException extends Exception {
 
-	
+	private static final long serialVersionUID = -8399138517913514619L;
+
 	public NotFoundException(String message) {
 		super(message);
 	}

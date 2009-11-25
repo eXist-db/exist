@@ -281,8 +281,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      *
      * @return List
      */
-    public List getDescendants(DBBroker broker, User user) {
-        final ArrayList cl = new ArrayList(subcollections.size());
+    public List<Collection> getDescendants(DBBroker broker, User user) {
+        final ArrayList<Collection> cl = new ArrayList<Collection>(subcollections.size());
         try {
             getLock().acquire(Lock.READ_LOCK);
             Collection child;
