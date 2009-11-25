@@ -26,7 +26,7 @@
 
  (: -------------------------------------------------------------------------- :)
  declare variable $xproc:run-step := util:function(xs:QName("xproc:run-step"), 5);
- declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_and_eval"), 4);
+ declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_and_eval"), 5);
  (: -------------------------------------------------------------------------- :)
  declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 5);
  declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
@@ -622,10 +622,11 @@ declare function xproc:explicitbindings($xproc,$unique_id){
 
 
  (: -------------------------------------------------------------------------- :)
- declare function xproc:evalstep ($step,$primaryinput,$pipeline,$outputs) {
+ declare function xproc:evalstep ($step,$namespaces,$primaryinput,$pipeline,$outputs) {
  (: -------------------------------------------------------------------------- :)
 
-        let $currentstep := $pipeline/*[@name=$step][1]
+     let $declarens :=  u:declare-ns($namespaces)
+     let $currentstep := $pipeline/*[@name=$step][1]
      let $stepfuncname := $currentstep/@xproc:step
      let $stepfunc := concat($const:default-imports,$stepfuncname)
      let $outputs := document{$outputs}
@@ -718,44 +719,55 @@ declare function xproc:explicitbindings($xproc,$unique_id){
 
 
  (: -------------------------------------------------------------------------- :)
- declare function xproc:parse_and_eval($pipeline,$stdin,$bindings) {
+ declare function xproc:parse_and_eval($pipeline,$namespaces,$stdin,$bindings) {
  (: -------------------------------------------------------------------------- :)
  let $steps := xproc:genstepnames($pipeline)
  return
      u:step-fold($pipeline,
-                    $steps,
-                    util:function(xs:QName("xproc:evalstep"), 4),
-                    $stdin,
-                    (xproc:resolve-external-bindings($bindings,$pipeline/@name),
-                    (<xproc:output
-                             step="{if ($steps[1] = '|') then '!1|' else $steps[1]}"
-                             port="stdin"
-                             port-type="external"
-                             primary="false"
-                             func="{$pipeline/@type}">{$stdin}</xproc:output>))
+                 $namespaces,
+                 $steps,
+                 util:function(xs:QName("xproc:evalstep"), 5),
+                 $stdin,
+                 (xproc:resolve-external-bindings($bindings,$pipeline/@name),
+                 (<xproc:output
+                     step="{if ($steps[1] = '|') then '!1|' else $steps[1]}"
+                     port="stdin"
+                     test="test"
+                     port-type="external"
+                     primary="false"
+                     func="{$pipeline/@type}">{$stdin}</xproc:output>))
      )
  };
 
 
  (: -------------------------------------------------------------------------- :)
- declare function xproc:parse_and_eval($pipeline,$stdin,$bindings,$outputs) {
+ declare function xproc:parse_and_eval($pipeline,$namespaces,$stdin,$bindings,$outputs) {
  (: -------------------------------------------------------------------------- :)
-
 
      let $steps := xproc:genstepnames($pipeline)
      return
          u:step-fold($pipeline,
-                        $steps,
-                        util:function(xs:QName("xproc:evalstep"), 4),
-                        $stdin,
-                        ($outputs,xproc:resolve-external-bindings($bindings,$pipeline/@name),
- <xproc:output
-                                step="{concat('!',$pipeline/@name)}"
-                                port="stdin"
-                                port-type="external"
-                                primary="false"
-                                func="example">{$stdin}</xproc:output>)
+                     $namespaces,
+                     $steps,
+                     util:function(xs:QName("xproc:evalstep"), 5),
+                     $stdin,
+                    ($outputs,
+                     xproc:resolve-external-bindings($bindings,$pipeline/@name),
+                     <xproc:output
+                        step="{concat('!',$pipeline/@name)}"
+                        port="stdin"
+                        port-type="external"
+                        primary="false"
+                        func="example">{$stdin}</xproc:output>
+                         )
                         )
+ };
+
+
+ (: -------------------------------------------------------------------------- :)
+ declare function xproc:enum-namespaces($pipeline){
+ (: -------------------------------------------------------------------------- :)
+    <namespace name="{$pipeline/@name}">{u:enum-ns(<dummy>{util:expand($pipeline)}</dummy>)}</namespace>
  };
 
 
@@ -786,14 +798,13 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  };
 
 
-
  (: -------------------------------------------------------------------------- :)
  declare function xproc:output($result,$dflag){
  (: -------------------------------------------------------------------------- :)
  let $pipeline :=subsequence($result,1,1)
  let $output := subsequence($result,2)
      return
-         if($dflag="1") then
+         if($dflag eq "1") then
              <xproc:debug>
                  <xproc:pipeline>{$pipeline}</xproc:pipeline>
                  <xproc:outputs>{$output}</xproc:outputs>
@@ -833,6 +844,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$dflag,$tflag,$bindings,$options){
  (: -------------------------------------------------------------------------- :)
+    let $namespaces := xproc:enum-namespaces($pipeline)
     let $internaldbg := 0
     return
          if ($internaldbg eq 1) then
@@ -855,10 +867,10 @@ declare function xproc:explicitbindings($xproc,$unique_id){
      let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)
 
      (: STEP II: parse and eval tree :)
-     let $eval_result := xproc:parse_and_eval($xproc-binding,$stdin,$bindings)
+     let $eval_result := xproc:parse_and_eval($xproc-binding,$namespaces,$stdin,$bindings)
 
      (: STEP III: serialize and return results :)
-     let $serialized_result := xproc:output($eval_result,$dflag)
+     let $serialized_result := xproc:output($eval_result,"0")
      return
           if ($tflag="1") then
                  document
@@ -883,15 +895,17 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  if (exists($pipeline)) then
 
+     let $namespaces := xproc:enum-namespaces($pipeline)
+
      (: STEP I: generate parse tree :)
      let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))
      let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)
 
      (: STEP II: parse and eval tree :)
-     let $eval_result := xproc:parse_and_eval($xproc-binding,$stdin,$bindings,$outputs)
+     let $eval_result := xproc:parse_and_eval($xproc-binding,$namespaces,$stdin,$bindings,$outputs)
 
      (: STEP III: serialize and return results :)
-     let $serialized_result := xproc:output($eval_result,$dflag)
+     let $serialized_result := xproc:output($eval_result,"0")
 
      let $internaldbg := 0
 

@@ -32,25 +32,31 @@ declare variable $u:NDEBUG :=0;
 (: -------------------------------------------------------------------------- :)
 (: manage namespaces                                                          :)
 (: -------------------------------------------------------------------------- :)
-declare function u:declare-ns($element){
+declare function u:declare-ns($namespaces){
+    for $ns in $namespaces//ns
+    return
+        util:declare-namespace($ns/@prefix,xs:anyURI($ns/@URI))
+};
+
+
+declare function u:enum-ns($element){
 (
 let $prefixes := in-scope-prefixes($element)
 for $prefix in $prefixes
 return
-if ($prefix eq 'xml' or $prefix eq '') then
+if ($prefix eq 'xml' or $prefix eq '' or $prefix eq 'xproc' or $prefix eq 'ext' or $prefix eq 'opt' or $prefix eq 'p' or $prefix eq 'c') then
  ()
 else
-util:declare-namespace($prefix,xs:anyURI(namespace-uri-for-prefix($prefix,$element)))
+<ns prefix="{$prefix}" URI="{namespace-uri-for-prefix($prefix,$element)}"/>
 ,
        for $child in $element/node()
             return
-              if ($child instance of element()) then
-               	 u:declare-ns($child)
+              if ($child instance of element() or $child instance of document-node()) then
+               	 u:enum-ns($child)
                 else
                   ()
 )
 };
-
 
 (: -------------------------------------------------------------------------- :)
 (: generate unique id														  :)
@@ -333,9 +339,7 @@ declare function u:xslt($xslt,$xml){
 
 (: -------------------------------------------------------------------------- :)
 declare function u:safe-evalXPATH($qry as xs:string, $xml,$pipeline){
-  let $declarens := u:declare-ns($pipeline/*)
-  return
-    util:catch("*",u:evalXPATH($qry, $xml),())
+    util:catch("*",u:evalXPATH($qry, $xml, $pipeline/*),())
 };
 
 
@@ -346,21 +350,7 @@ declare function u:safe-evalXPATH($qry as xs:string, $xml){
 
 
 (: -------------------------------------------------------------------------- :)
-declare function u:evalXPATH($qry as xs:string, $xml,$pipeline){
-  let $declarens := u:declare-ns($pipeline/*)
-  return
-    u:evalXPATH($qry, $xml)
-};
-
-                   
-(: -------------------------------------------------------------------------- :)
 declare function u:evalXPATH($qry as xs:string, $xml){
-
-(: TODO - these namespace declarations need to be removed :)
-util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
-util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
-util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
-u:declare-ns(<test xmlns:ex="http://example.org"/>),
 
 if(empty($qry) or $qry eq '/') then
 	$xml
@@ -381,25 +371,28 @@ else
 };
 
 
-(:)
 (: -------------------------------------------------------------------------- :)
-declare function u:evalXPATH($xpathstring, $xml, $namespaces){
+declare function u:evalXPATH($qry as xs:string, $xml, $namespaces){
 
-util:declare-namespace('xhtml',xs:anyURI('http://www.w3.org/1999/xhtml')),
-util:declare-namespace('atom',xs:anyURI('http://www.w3.org/2005/Atom')),
-util:declare-namespace('p',xs:anyURI('http://www.w3.org/ns/xproc')),
-u:declare-ns(<test xmlns:ex="http://example.org"/>),
-
-if(empty($xpathstring) or $xpathstring eq '/') then
+if(empty($qry) or $qry eq '/') then
 	$xml
 else
-	let $query := concat(string-join($namespaces,''),'$xml',$xpathstring)
-	let $result := util:eval($query)
+	let $query := if (starts-with($qry,'/') or starts-with($qry,'//')) then
+                concat('.',$qry)
+			  else if(contains($qry,'(/')) then
+				replace($qry,'\(/','(./')
+              else
+                  $qry
     return
-			$result
-};
+        let $declarens := u:declare-ns($namespaces)
+        return
+	       util:eval-inline($xml,$query)
 
-:)
+		(:
+		if ( $result instance of element() or $result instance of document-node()) then
+			u:dynamicError('err:XD0016',$xpathstring)
+	    :)
+};
 
 
 (: -------------------------------------------------------------------------- :)
@@ -882,26 +875,29 @@ declare function u:final-result($pipeline,$resulttree){
 
 (: -------------------------------------------------------------------------- :)
 declare function u:step-fold( $pipeline,
-                                 $steps,
-                                 $evalstep-function,
-                                 $primary,
-                                 $outputs) {
-  
+                              $namespaces,
+                              $steps,
+                              $evalstep-function,
+                              $primary,
+                              $outputs) {
+
     if (empty($steps)) then
         u:final-result($pipeline,$outputs)
 
     else
         let $result:= u:call($evalstep-function,
                                 $steps[1],
+                                $namespaces,
                                 $primary,
                                 $pipeline,
                                 $outputs)
     return
         u:step-fold($pipeline,
-                       remove($steps, 1),
-                       $evalstep-function,
-                       $result[last()],
-                       ($outputs,$result))      
+                    $namespaces,
+                    remove($steps, 1),
+                    $evalstep-function,
+                    $result[last()],
+                    ($outputs,$result))
 };
 
 
