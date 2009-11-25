@@ -65,7 +65,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -767,7 +766,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    }
    
    public void mergeEntry(final Txn transaction,final ElementImpl target,Element source,final String updated) {
-      final List toRemove = new ArrayList();
+      final List<Node> toRemove = new ArrayList<Node>();
       DOM.forEachChild(target,new NodeHandler() {
          public void process(Node parent, Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
@@ -796,10 +795,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             }
          }
       });
-      for (Iterator childrenToRemove = toRemove.iterator(); childrenToRemove.hasNext(); ) {
-         Node child = (Node)childrenToRemove.next();
+
+      for (Node child : toRemove) {
          target.removeChild(transaction,child);
       }
+      
       DOM.forEachChild(source,new NodeHandler() {
          public void process(Node parent,Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
@@ -829,7 +829,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    
    public void mergeFeed(final DBBroker broker,final Txn transaction,final ElementImpl target,Element source,final String updated) {
       final DocumentImpl ownerDocument = (DocumentImpl)target.getOwnerDocument();
-      final List toRemove = new ArrayList();
+      final List<Node> toRemove = new ArrayList<Node>();
       DOM.forEachChild(target,new NodeHandler() {
          public void process(Node parent, Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
@@ -866,8 +866,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          }
       });
       
-      for (Iterator childrenToRemove = toRemove.iterator(); childrenToRemove.hasNext(); ) {
-         Node child = (Node)childrenToRemove.next();
+      for (Node child : toRemove) {
          target.removeChild(transaction,child);
       }
       

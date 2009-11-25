@@ -94,7 +94,7 @@ public class ServerShutdown {
         }
         try {
             // initialize database drivers
-            Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             // create the default database
             Database database = (Database) cl.newInstance();
             DatabaseManager.registerDatabase(database);

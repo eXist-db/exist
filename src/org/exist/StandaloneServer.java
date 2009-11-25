@@ -114,9 +114,9 @@ public class StandaloneServer {
         DEFAULT_PROPERTIES.setProperty("rest.param.dynamic-content-type", "no");
     }
     private Server server;
-    private Map forwarding = new HashMap();
+    private Map<String, String> forwarding = new HashMap<String, String>();
     private Map<String, Properties> listeners = new HashMap<String, Properties>();
-    private Map filters = new HashMap();
+    private Map<String, Properties> filters = new HashMap<String, Properties>();
 
     public StandaloneServer() {
     }
@@ -133,7 +133,7 @@ public class StandaloneServer {
         listeners.put("http", defaultListener);
 
         //read the configuration file
-        List servlets = configure(props);
+        List<String> servlets = configure(props);
 
         CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
         if (optParser.getErrorString() != null) {
@@ -153,7 +153,7 @@ public class StandaloneServer {
                 case DEBUG_OPT:
                     break;
                 case HTTP_PORT_OPT:
-                    Properties httpListener = (Properties) listeners.get("http");
+                    Properties httpListener = listeners.get("http");
                     httpListener.put("port", option.getArgument());
                     listeners.put("http", httpListener);
                     break;
@@ -179,15 +179,16 @@ public class StandaloneServer {
         LOG.info("\nServer launched ...");
         LOG.info("Installed services:");
         LOG.info("-----------------------------------------------");
-        Set listenerProtocols = listeners.keySet();
-        for (int i = 0; i < servlets.size(); i++) {
-            String name = (String) servlets.get(i);
+        Set<String> listenerProtocols = listeners.keySet();
+        for (String name : servlets) {
             if (props.getProperty(name + ".enabled").equalsIgnoreCase("yes")) {
-                for (Iterator itProtocol = listenerProtocols.iterator(); itProtocol.hasNext();) {
-                    String listenerProtocol = (String) itProtocol.next();
-                    Properties listenerProperties = (Properties) listeners.get(listenerProtocol);
+                for (Iterator<String> itProtocol = listenerProtocols.iterator(); itProtocol.hasNext();) {
+                    String listenerProtocol = itProtocol.next();
+                    Properties listenerProperties = listeners.get(listenerProtocol);
+                    
                     String host = listenerProperties.getProperty("host", "localhost");
                     String port = listenerProperties.getProperty("port");
+                    
                     LOG.info(name + ":\t" + host + ":" + port + props.getProperty(name + ".context"));
                 }
             }
@@ -205,7 +206,7 @@ public class StandaloneServer {
      * 
      */
     private void initXMLDB() throws Exception {
-        Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) clazz.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
@@ -219,14 +220,14 @@ public class StandaloneServer {
      * @throws IllegalArgumentException
      * @throws MultiException
      */
-    private void startHttpServer(List servlets, Properties props) throws Exception {
+    private void startHttpServer(List<String> servlets, Properties props) throws Exception {
         server = new Server();
 
         //setup listeners
-        Set listenerProtocols = listeners.keySet();
-        for (Iterator itProtocol = listenerProtocols.iterator(); itProtocol.hasNext();) {
-            String listenerProtocol = (String) itProtocol.next();
-            Properties listenerProps = (Properties) listeners.get(listenerProtocol);
+        Set<String> listenerProtocols = listeners.keySet();
+        for (Iterator<String> itProtocol = listenerProtocols.iterator(); itProtocol.hasNext();) {
+            String listenerProtocol = itProtocol.next();
+            Properties listenerProps = listeners.get(listenerProtocol);
             Connector connector = null;
 
             /** currently support http and https listeners */
@@ -343,8 +344,7 @@ public class StandaloneServer {
             }
         });
 
-        for (int i = 0; i < servlets.size(); i++) {
-            String name = (String) servlets.get(i);
+        for (String name : servlets) {
             ServletBootstrap bootstrapper = (ServletBootstrap) bootstrappers.get(name);
             if (bootstrapper != null) {
                 bootstrapper.bootstrap(props, context);
@@ -373,10 +373,10 @@ public class StandaloneServer {
 
 
         //setup filters
-        Set filterClasses = filters.keySet();
-        for (Iterator itFilterClass = filterClasses.iterator(); itFilterClass.hasNext();) {
-            String filterClass = (String) itFilterClass.next();
-            Properties filterProps = (Properties) filters.get(filterClass);
+        Set<String> filterClasses = filters.keySet();
+        for (Iterator<String> itFilterClass = filterClasses.iterator(); itFilterClass.hasNext();) {
+            String filterClass = itFilterClass.next();
+            Properties filterProps = filters.get(filterClass);
 
             FilterHolder fh = context.addFilter(filterClass, filterClass, 1); // TODO check 3rd param
 
@@ -435,7 +435,7 @@ public class StandaloneServer {
         BrokerPool.stopAll(false);
     }
 
-    private List configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
+    private List<String> configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
         // try to read configuration from file. Guess the location if
         // necessary
         InputStream is = null;
@@ -467,10 +467,10 @@ public class StandaloneServer {
         Element root = doc.getDocumentElement();
         if (!root.getLocalName().equals("server")) {
             LOG.warn("Configuration should have a root element <server>");
-            return new ArrayList();
+            return new ArrayList<String>();
         }
 
-        List configurations = new ArrayList();
+        List<String> configurations = new ArrayList<String>();
         NodeList cl = root.getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
