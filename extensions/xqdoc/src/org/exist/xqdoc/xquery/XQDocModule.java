@@ -12,7 +12,8 @@ public class XQDocModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.4.1";
 
     public static final FunctionDef[] functions = {
-        new FunctionDef(Scan.signature, Scan.class)
+        new FunctionDef(Scan.signatures[0], Scan.class),
+        new FunctionDef(Scan.signatures[1], Scan.class)
     };
 
     public XQDocModule() {
