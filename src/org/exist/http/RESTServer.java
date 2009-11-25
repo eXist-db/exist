@@ -56,7 +56,6 @@ import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.debuggee.Debuggee;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -822,7 +821,7 @@ public class RESTServer {
 	
 	private class NamespaceExtractor extends XMLFilterImpl
 	{
-		List namespaces = new ArrayList(); //<Namespace>
+		List<Namespace> namespaces = new ArrayList<Namespace>(); //<Namespace>
 		
 		public void startPrefixMapping(String prefix, String uri) throws SAXException
 		{
@@ -833,7 +832,7 @@ public class RESTServer {
 			super.startPrefixMapping(prefix, uri);
 		}
 		
-		public List  getNamespaces()
+		public List<Namespace>  getNamespaces()
 		{
 			return namespaces;
 		}
@@ -1056,7 +1055,7 @@ public class RESTServer {
 	 * @throws XPathException
 	 */
 	protected void search(DBBroker broker, String query, String path,
-			List/*<Namespace>*/ namespaces, int howmany, int start, Properties outputProperties, boolean wrap,
+			List<Namespace> namespaces, int howmany, int start, Properties outputProperties, boolean wrap,
 			boolean cache, HttpServletRequest request,
 			HttpServletResponse response) throws BadRequestException,
 			PermissionDeniedException, XPathException {
@@ -1132,14 +1131,12 @@ public class RESTServer {
 		}
 	}
 
-	private void declareNamespaces(XQueryContext context, List/*<Namespace>*/ namespaces) throws XPathException
+	private void declareNamespaces(XQueryContext context, List<Namespace> namespaces) throws XPathException
 	{
 		if(namespaces == null)
 			return;
 		
-		for(int i = 0; i < namespaces.size(); i++)
-		{
-			Namespace ns = (Namespace)namespaces.get(i);
+		for(Namespace ns : namespaces) {
 			context.declareNamespace(ns.getPrefix(), ns.getUri());
 		}
 	}
