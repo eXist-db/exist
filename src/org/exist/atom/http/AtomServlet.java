@@ -144,8 +144,8 @@ public class AtomServlet extends HttpServlet {
    
    // What I want...
    //private Map<String,AtomModule> modules;
-   private Map modules;
-   private Map noAuth;
+   private Map<String, AtomModule> modules;
+   private Map<String, Boolean> noAuth;
    
    private String formEncoding = null;
    private BrokerPool pool = null;
@@ -241,8 +241,8 @@ public class AtomServlet extends HttpServlet {
 
       // Load all the modules
       //modules = new HashMap<String,AtomModule>();
-      modules = new HashMap();
-      noAuth = new HashMap();
+      modules = new HashMap<String, AtomModule>();
+      noAuth = new HashMap<String, Boolean>();
 
       String configFileOpt = config.getInitParameter("config-file");
       File dbHome = pool.getConfiguration().getExistHome();
@@ -283,7 +283,7 @@ public class AtomServlet extends HttpServlet {
                String className = moduleConf.getAttribute("class");
                if (className!=null && className.length()>0) {
                   try {
-                     Class moduleClass = Class.forName(className);
+                     Class<?> moduleClass = Class.forName(className);
                      AtomModule amodule = (AtomModule)moduleClass.newInstance();
                      modules.put(name,amodule);
                      amodule.init(new ModuleContext(config,name, atomConf.getParent()));
@@ -415,7 +415,7 @@ public class AtomServlet extends HttpServlet {
          String moduleName = firstSlash<0 ? path.substring(1) : path.substring(1,firstSlash);
          path = firstSlash<0 ? "" : path.substring(firstSlash);
          
-         AtomModule module = (AtomModule)modules.get(moduleName);
+         AtomModule module = modules.get(moduleName);
          if (module==null) {
             response.sendError(400,"Module "+moduleName+" not found.");
             return;
@@ -548,7 +548,7 @@ public class AtomServlet extends HttpServlet {
       }
        try {
          LOG.info("registering XMLDB driver");
-         Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
+         Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
          Database database = (Database)clazz.newInstance();
          DatabaseManager.registerDatabase(database);
       } catch (ClassNotFoundException e) {

@@ -43,7 +43,6 @@ import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -68,7 +67,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
 
   private String outputproperty;
 
-  private List variables = new ArrayList();
+  private List<Variable> variables = new ArrayList<Variable>();
   
   // output encoding
   private String encoding = "UTF-8";
@@ -131,8 +130,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
 	      service.setProperty(OutputKeys.INDENT, "yes");
 	      service.setProperty(OutputKeys.ENCODING, "UTF-8");
 	
-	      for (Iterator i = variables.iterator(); i.hasNext();) {
-	        Variable var = (Variable) i.next();
+	      for (Variable var : variables) {
 	        System.out.println("Name: " + var.name);
 	        System.out.println("Value: " + var.value);
 	        service.declareVariable(var.name, var.value);

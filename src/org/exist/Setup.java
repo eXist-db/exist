@@ -50,7 +50,7 @@ public class Setup {
     private static void initDb(String adminPass) {
         System.out.println("--- Starting embedded database instance ---");
         try {
-            Class cl = Class.forName(DRIVER);
+            Class<?> cl = Class.forName(DRIVER);
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
