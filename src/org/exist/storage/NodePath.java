@@ -86,8 +86,8 @@ public class NodePath {
         } else {
 			System.arraycopy(components, 0, components, 1, pos);
 			components[0] = component;
-			pos++;
         }
+        pos++;
 	}
 	
     public void removeLastComponent() {
