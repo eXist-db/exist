@@ -1,7 +1,7 @@
 <project basedir="." default="jar" name="xqdoc">
 
     <property name="src" value="./src"/>
-    <property name="classes" value="./classes"/>
+    <property name="xqdoc.classes" value="./classes"/>
 	<property name="lib" value="./lib"/>
     <property name="test.src" value="./test/src"/>
     <property name="test.classes" value="./test/classes"/>
@@ -57,7 +57,7 @@
     </path>
 
     <target name="prepare">
-		<mkdir dir="${classes}"/>
+		<mkdir dir="${xqdoc.classes}"/>
     </target>
 	
     <target name="compile" depends="prepare" if="include.feature.xqdoc.config">
@@ -69,18 +69,20 @@
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
             
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
-			destdir="${classes}" encoding="UTF-8"
+			destdir="${xqdoc.classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
         	source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
             	<path refid="classpath.core"/>
             </classpath>
 		</javac>
+        <copy file="${src}/org/exist/xqdoc/ant/antlib.xml"
+            todir="${xqdoc.classes}/org/exist/xqdoc/ant"/>
 	</target>
 	
     <target name="jar" depends="compile" if="include.feature.xqdoc.config">
 		<echo message="Creating exist-xqdoc.jar ..."/>
-        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-xqdoc.jar">  
+        <jar basedir="${xqdoc.classes}" jarfile="${top.dir}/${lib.extensions}/exist-xqdoc.jar">  
 	        <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
@@ -123,7 +125,7 @@
     </target>
 
     <target name="clean" if="include.feature.xqdoc.config">
-		<delete dir="${classes}"/>
+		<delete dir="${xqdoc.classes}"/>
 		<delete file="${top.dir}/${lib.extensions}/exist-xqdoc.jar" failonerror="false"/>
 	</target>
 </project>

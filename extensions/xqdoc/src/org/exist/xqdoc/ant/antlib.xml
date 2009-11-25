@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<antlib>
+  <typedef name="scan" classname="org.exist.xqdoc.ant.XQDocTask"/>
+</antlib>

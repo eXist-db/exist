@@ -26,7 +26,12 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+
+import java.util.StringTokenizer;
 
 /**
  * @author wolf
@@ -120,4 +125,37 @@ public abstract class AbstractXMLDBTask extends Task
 			throw( new BuildException( "failed to initialize XMLDB database driver" ) );
 		}
 	}
+
+    protected final Collection mkcol(Collection root, String baseURI, String path, String relPath)
+      throws XMLDBException
+    {
+      CollectionManagementService mgtService;
+      Collection current = root, c;
+      String token;
+      ///TODO : use dedicated function in XmldbURI
+      StringTokenizer tok = new StringTokenizer(relPath, "/");
+      while (tok.hasMoreTokens())
+      {
+        token = tok.nextToken();
+        if (path != null)
+        {
+          path = path + "/" + token;
+        } else
+        {
+          path = "/" + token;
+        }
+        log("Get collection " + baseURI + path, Project.MSG_DEBUG);
+        c = DatabaseManager.getCollection(baseURI + path, user, password);
+        if (c == null)
+        {
+          log("Create collection management service for collection " + current.getName(), Project.MSG_DEBUG);
+          mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
+          log("Create child collection " + token, Project.MSG_DEBUG);
+          current = mgtService.createCollection(token);
+          log("Created collection " + current.getName() + '.', Project.MSG_DEBUG);
+        } else
+          current = c;
+      }
+      return current;
+    }
 }

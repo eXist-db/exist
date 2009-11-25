@@ -82,11 +82,11 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
       throw new BuildException("no file set specified");
 
     registerDatabase();
-    int p = uri.indexOf(DBBroker.ROOT_COLLECTION);
-    if (p == Constants.STRING_NOT_FOUND)
-      throw new BuildException("invalid uri: '" + uri + "'");
     try
     {
+        int p = uri.indexOf(DBBroker.ROOT_COLLECTION);
+        if (p == Constants.STRING_NOT_FOUND)
+            throw new BuildException("invalid uri: '" + uri + "'");
       String baseURI = uri.substring(0, p);
       String path;
       if (p == uri.length() - 3)
@@ -274,41 +274,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
   {
     this.forceMimeType = mimeType;
   }
-  
-  private final Collection mkcol(Collection root, String baseURI, String path, String relPath)
-    throws XMLDBException
-  {
-    CollectionManagementService mgtService;
-    Collection current = root, c;
-    String token;
-    ///TODO : use dedicated function in XmldbURI
-    StringTokenizer tok = new StringTokenizer(relPath, "/");
-    while (tok.hasMoreTokens())
-    {
-      token = tok.nextToken();
-      if (path != null)
-      {
-        path = path + "/" + token;
-      } else
-      {
-        path = "/" + token;
-      }
-      log("Get collection " + baseURI + path, Project.MSG_DEBUG);
-      c = DatabaseManager.getCollection(baseURI + path, user, password);
-      if (c == null)
-      {
-        log("Create collection management service for collection " + current.getName(), Project.MSG_DEBUG);
-        mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
-        log("Create child collection " + token, Project.MSG_DEBUG);
-        current = mgtService.createCollection(token);
-        log("Created collection " + current.getName() + '.', Project.MSG_DEBUG);
-      } else
-        current = c;
-    }
-    return current;
-  }
-  
-  private final MimeTable getMimeTable()
+
+    private final MimeTable getMimeTable()
 	throws BuildException
   {
 	if (mtable==null) {
