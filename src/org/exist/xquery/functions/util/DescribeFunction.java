@@ -86,15 +86,15 @@ public class DescribeFunction extends Function {
 		FunctionSignature signature;
 		Module module = context.getModule(uri);
 		if(module != null) {
-			Iterator i = module.getSignaturesForFunction(qname);
+			Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
 			while(i.hasNext()) {
-				signature = (FunctionSignature) i.next();
+				signature = i.next();
 				writeSignature(signature, builder);
 			}
 		} else {
-			Iterator i = context.getSignaturesForFunction(qname);
+			Iterator<FunctionSignature> i = context.getSignaturesForFunction(qname);
 			while(i.hasNext()) {
-				signature = (FunctionSignature) i.next();
+				signature = i.next();
 				writeSignature(signature, builder);
 			}
 		}

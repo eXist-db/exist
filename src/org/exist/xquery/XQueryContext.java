@@ -144,34 +144,34 @@ public class XQueryContext {
 	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
     
 	// Static namespace/prefix mappings
-	protected HashMap staticNamespaces = new HashMap();
+	protected HashMap<String, String> staticNamespaces = new HashMap<String, String>();
 	
 	// Static prefix/namespace mappings
-	protected HashMap staticPrefixes = new HashMap();
+	protected HashMap<String, String> staticPrefixes = new HashMap<String, String>();
 	
 	// Local in-scope namespace/prefix mappings in the current context
-	protected HashMap inScopeNamespaces = new HashMap();
+	protected HashMap<String, String> inScopeNamespaces = new HashMap<String, String>();
 	
 	// Local prefix/namespace mappings in the current context
-	protected HashMap inScopePrefixes = new HashMap();
+	protected HashMap<String, String> inScopePrefixes = new HashMap<String, String>();
 	
 	// Inherited in-scope namespace/prefix mappings in the current context
-	protected HashMap inheritedInScopeNamespaces = new HashMap();	
+	protected HashMap<String, String> inheritedInScopeNamespaces = new HashMap<String, String>();	
 
 	// Inherited prefix/namespace mappings in the current context
-	protected HashMap inheritedInScopePrefixes = new HashMap();	
+	protected HashMap<String, String> inheritedInScopePrefixes = new HashMap<String, String>();	
 	
-	protected HashMap mappedModules = new HashMap();
+	protected HashMap<String, XmldbURI> mappedModules = new HashMap<String, XmldbURI>();
 	
 	private boolean preserveNamespaces = true;
 	
     private boolean inheritNamespaces = true;	
 
 	// Local namespace stack
-	protected Stack namespaceStack = new Stack();
+	protected Stack<HashMap<String, String>> namespaceStack = new Stack<HashMap<String, String>>();
 
 	// Known user defined functions in the local module
-	protected TreeMap declaredFunctions = new TreeMap();
+	protected TreeMap<FunctionId, UserDefinedFunction> declaredFunctions = new TreeMap<FunctionId, UserDefinedFunction>();
 
     // Globally declared variables
 	protected Map<QName, Variable> globalVariables = new TreeMap<QName, Variable>();
@@ -181,18 +181,18 @@ public class XQueryContext {
 	
     protected Stack<LocalVariable> contextStack = new Stack<LocalVariable>();
     
-    protected Stack callStack = new Stack();
+    protected Stack<FunctionSignature> callStack = new Stack<FunctionSignature>();
     
 	// The current size of the variable stack
 	protected int variableStackSize = 0;
 	
 	// Unresolved references to user defined functions
-	protected Stack forwardReferences = new Stack();
+	protected Stack<FunctionCall> forwardReferences = new Stack<FunctionCall>();
 	
 	// List of options declared for this query at compile time - i.e. declare option 
-	protected List staticOptions = null;
+	protected List<Option> staticOptions = null;
 	// List of options declared for this query at run time - i.e. util:declare-option()
-	protected List dynamicOptions = null;
+	protected List<Option> dynamicOptions = null;
 	
 	//The Calendar for this context : may be changed by some options
 	XMLGregorianCalendar calendar = null; 
@@ -206,12 +206,12 @@ public class XQueryContext {
 	/**
 	 * Loaded modules.
 	 */
-	protected HashMap modules = new HashMap();
+	protected HashMap<String, Module> modules = new HashMap<String, Module>();
 	
 	/**
 	 * Loaded modules, including ones bubbled up from imported modules.
 	 */
-	protected HashMap allModules = new HashMap();
+	protected HashMap<String, Module> allModules = new HashMap<String, Module>();
 	
 	/**
 	 * Whether some modules were rebound to new instances since the last time this context's
@@ -256,7 +256,7 @@ public class XQueryContext {
      * A general-purpose map to set attributes in the current
      * query context.
      */
-    protected Map attributes = new HashMap();
+    protected Map<String, Object> attributes = new HashMap<String, Object>();
     
     protected AnyURIValue baseURI = AnyURIValue.EMPTY_URI;
 	
@@ -316,7 +316,7 @@ public class XQueryContext {
     /**
 	 * Stack for temporary document fragments
 	 */
-	private Stack fragmentStack = new Stack();
+	private Stack<MemTreeBuilder> fragmentStack = new Stack<MemTreeBuilder>();
 
 	/**
 	 * The root of the expression tree
@@ -350,7 +350,7 @@ public class XQueryContext {
     private Profiler profiler;
     
     //For holding XQuery Context variables for general storage in the XQuery Context
-    HashMap XQueryContextVars = new HashMap();
+    HashMap<String, Object> XQueryContextVars = new HashMap<String, Object>();
     public static final String XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR = "_eXist_xquery_update_error";
     public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
 
@@ -370,7 +370,8 @@ public class XQueryContext {
 
     private XACMLSource source = null;
     
-    private XQueryContext() {}
+    @SuppressWarnings("unused")
+	private XQueryContext() {}
 	
 	protected XQueryContext(AccessContext accessCtx) {
 		if(accessCtx == null)
@@ -392,14 +393,14 @@ public class XQueryContext {
         this(copyFrom.getAccessContext());
         this.broker = copyFrom.broker;
         loadDefaultNS();
-        Iterator prefixes = copyFrom.staticNamespaces.keySet().iterator();
+        Iterator<String> prefixes = copyFrom.staticNamespaces.keySet().iterator();
         while (prefixes.hasNext()) {
-            String prefix = (String)prefixes.next();
+            String prefix = prefixes.next();
             if (prefix.equals("xml") || prefix.equals("xmlns")) {
                 continue;
             }
             try {
-                declareNamespace(prefix,(String)copyFrom.staticNamespaces.get(prefix));
+                declareNamespace(prefix, copyFrom.staticNamespaces.get(prefix));
             } catch (XPathException ex) {
                 ex.printStackTrace();
             }
@@ -470,24 +471,23 @@ public class XQueryContext {
         ctx.inheritNamespaces = this.inheritNamespaces;
         ctx.orderEmptyGreatest = this.orderEmptyGreatest;
 
-        ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
+        ctx.declaredFunctions = new TreeMap<FunctionId, UserDefinedFunction>(this.declaredFunctions);
         ctx.globalVariables = new TreeMap<QName, Variable>(this.globalVariables);
+        
         // make imported modules available in the new context
-        ctx.modules = new HashMap();
-        for (Iterator i = this.modules.values().iterator(); i.hasNext(); ) {
+        ctx.modules = new HashMap<String, Module>();
+        for (Module module : this.modules.values()) {
             try {
-                Module module = (Module) i.next();
                 ctx.modules.put(module.getNamespaceURI(), module);
-                String prefix = (String) this.staticPrefixes.get(module.getNamespaceURI());
+                String prefix = this.staticPrefixes.get(module.getNamespaceURI());
                 ctx.declareNamespace(prefix, module.getNamespaceURI());
             } catch (XPathException e) {
                 // ignore
             }
         }
-        ctx.allModules = new HashMap();
-        for (Iterator i = this.allModules.values().iterator(); i.hasNext(); ) {
-      	  Module module = (Module) i.next();
-            if (module != null)
+        ctx.allModules = new HashMap<String, Module>();
+        for (Module module : this.allModules.values()) {
+            if (module != null) //UNDERSTAND: why is it possible? -shabanovd
           	  ctx.allModules.put(module.getNamespaceURI(), module);
         }
 
@@ -495,9 +495,9 @@ public class XQueryContext {
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;        
-        ctx.mappedModules = new HashMap(this.mappedModules);
-        ctx.staticNamespaces = new HashMap(this.staticNamespaces);
-        ctx.staticPrefixes = new HashMap(this.staticPrefixes);
+        ctx.mappedModules = new HashMap<String, XmldbURI>(this.mappedModules);
+        ctx.staticNamespaces = new HashMap<String, String>(this.staticNamespaces);
+        ctx.staticPrefixes = new HashMap<String, String>(this.staticPrefixes);
     }
     
     /**
@@ -635,7 +635,7 @@ public class XQueryContext {
 			throw new XPathException("err:XQST0070: Namespace predefined prefix '" + prefix + "' can not be bound");
 		if (uri.equals(Namespaces.XML_NS))
 			throw new XPathException("err:XQST0070: Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
-		final String prevURI = (String)staticNamespaces.get(prefix);
+		final String prevURI = staticNamespaces.get(prefix);
 		//This prefix was not bound
 		if(prevURI == null ) {
 			//Bind it
@@ -713,16 +713,16 @@ public class XQueryContext {
 	 */
 	public void removeNamespace(String uri) {
 		staticPrefixes.remove(uri);
-		for (Iterator i = staticNamespaces.values().iterator(); i.hasNext();) {
-			if (((String) i.next()).equals(uri)) {
+		for (Iterator<String> i = staticNamespaces.values().iterator(); i.hasNext();) {
+			if (i.next().equals(uri)) {
 				i.remove();
 				return;
 			}
 		}
 		inScopePrefixes.remove(uri);
 		if (inScopeNamespaces != null) {
-			for (Iterator i = inScopeNamespaces.values().iterator(); i.hasNext();) {
-				if (((String) i.next()).equals(uri)) {
+			for (Iterator<String> i = inScopeNamespaces.values().iterator(); i.hasNext();) {
+				if (i.next().equals(uri)) {
 					i.remove();
 					return;
 				}
@@ -731,8 +731,8 @@ public class XQueryContext {
 		//TODO : is this relevant ?
 		inheritedInScopePrefixes.remove(uri);
 		if (inheritedInScopeNamespaces != null) {
-			for (Iterator i = inheritedInScopeNamespaces.values().iterator(); i.hasNext();) {
-				if (((String) i.next()).equals(uri)) {
+			for (Iterator<String> i = inheritedInScopeNamespaces.values().iterator(); i.hasNext();) {
+				if (i.next().equals(uri)) {
 					i.remove();
 					return;
 				}
@@ -759,19 +759,19 @@ public class XQueryContext {
 	}	
 	
     public String getInScopeNamespace(String prefix) {
-        return inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
+        return inScopeNamespaces == null ? null : inScopeNamespaces.get(prefix);
     }
 
     public String getInScopePrefix(String uri) {
-        return inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
+        return inScopePrefixes == null ? null : inScopePrefixes.get(uri);
     }
 
     public String getInheritedNamespace(String prefix) {
-        return inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+        return inheritedInScopeNamespaces == null ? null : inheritedInScopeNamespaces.get(prefix);
     }
 
     public String getInheritedPrefix(String uri) {
-        return inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);
+        return inheritedInScopePrefixes == null ?	null : inheritedInScopePrefixes.get(uri);
     }	
 	
 	/**
@@ -783,15 +783,15 @@ public class XQueryContext {
 	 */
 	public String getURIForPrefix(String prefix) {
         // try in-scope namespace declarations
-       String uri = inScopeNamespaces == null ? null : (String) inScopeNamespaces.get(prefix);
+       String uri = inScopeNamespaces == null ? null : inScopeNamespaces.get(prefix);
        if (uri != null)
     	   return uri;
        if (inheritNamespaces) {
-    	   uri = inheritedInScopeNamespaces == null ? null : (String) inheritedInScopeNamespaces.get(prefix);
+    	   uri = inheritedInScopeNamespaces == null ? null : inheritedInScopeNamespaces.get(prefix);
     	   if (uri != null)
     		   return uri;
        }      
-      return (String)staticNamespaces.get(prefix);
+      return staticNamespaces.get(prefix);
       /* old code checked namespaces first
 		String ns = (String) namespaces.get(prefix);
 		if (ns == null)
@@ -810,15 +810,15 @@ public class XQueryContext {
          * is not registered.
 	 */
 	public String getPrefixForURI(String uri) {
-		String prefix = inScopePrefixes == null ? null : (String) inScopePrefixes.get(uri);
+		String prefix = inScopePrefixes == null ? null : inScopePrefixes.get(uri);
 		if (prefix != null)
 			return prefix;
 		if (inheritNamespaces) {
-			prefix = inheritedInScopePrefixes == null ?	null : (String) inheritedInScopePrefixes.get(uri);		
+			prefix = inheritedInScopePrefixes == null ?	null : inheritedInScopePrefixes.get(uri);		
 			if (prefix != null)
 				return prefix;
 		}
-		return (String) staticPrefixes.get(uri);
+		return staticPrefixes.get(uri);
 	}
 
 	/**
@@ -1180,7 +1180,7 @@ public class XQueryContext {
         }
         if (!isShared)
             lastVar = null;
-        fragmentStack = new Stack();
+        fragmentStack = new Stack<MemTreeBuilder>();
         callStack.clear();
         protectedDocuments = null;
         if (!keepGlobals)
@@ -1196,10 +1196,11 @@ public class XQueryContext {
 
         if (!isShared)
             watchdog.reset();
-        for (Iterator i = modules.values().iterator(); i.hasNext();) {
-            Module module = (Module) i.next();
+
+        for (Module module : modules.values()) {
             module.reset(this);
         }
+        
         if (!keepGlobals)
             mappedModules.clear();
 
@@ -1274,18 +1275,18 @@ public class XQueryContext {
     /**
  	 * @return iterator over all modules imported into this context
  	 */
-	public Iterator getModules() {
+	public Iterator<Module> getModules() {
 		return modules.values().iterator();
 	}
 	
 	/**
 	 *  @return iterator over all modules registered in the entire context tree
 	 */
-	public Iterator getRootModules() {
+	public Iterator<Module> getRootModules() {
 		return getAllModules();
 	}
 	
-	public Iterator getAllModules() {
+	public Iterator<Module> getAllModules() {
 		return allModules.values().iterator();
 	}
 
@@ -1297,11 +1298,11 @@ public class XQueryContext {
 	 * @return built-in module
 	 */
 	public Module getModule(String namespaceURI) {
-		return (Module) modules.get(namespaceURI);
+		return modules.get(namespaceURI);
 	}
 	
 	public Module getRootModule(String namespaceURI) {
-		return (Module) allModules.get(namespaceURI);
+		return allModules.get(namespaceURI);
 	}
 	
 	public void setModule(String namespaceURI, Module module) {
@@ -1335,8 +1336,7 @@ public class XQueryContext {
 	 * compilation.
 	 */
 	public boolean checkModulesValid() {
-		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
-			Module module = (Module)i.next();
+		for(Module module : modules.values()) {
 			if(!module.isInternalModule()) {
 				if(!((ExternalModule)module).moduleIsValid(getBroker())) {
 					LOG.debug("Module with URI " + module.getNamespaceURI() +
@@ -1475,21 +1475,20 @@ public class XQueryContext {
 	 */
 	public UserDefinedFunction resolveFunction(QName name, int argCount) throws XPathException {
 		FunctionId id = new FunctionId(name, argCount);
-		UserDefinedFunction func = (UserDefinedFunction) declaredFunctions.get(id);
+		UserDefinedFunction func = declaredFunctions.get(id);
 		return func;
 	}
 	
-	public Iterator getSignaturesForFunction(QName name) {
-		ArrayList signatures = new ArrayList(2);
-		for (Iterator i = declaredFunctions.values().iterator(); i.hasNext(); ) {
-			UserDefinedFunction func = (UserDefinedFunction) i.next();
+	public Iterator<FunctionSignature> getSignaturesForFunction(QName name) {
+		ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
+		for (UserDefinedFunction func : declaredFunctions.values()) {
 			if (func.getName().equals(name))
 				signatures.add(func.getSignature());
 		}
 		return signatures.iterator();
 	}
 	
-	public Iterator localFunctions() {
+	public Iterator<UserDefinedFunction> localFunctions() {
 		return declaredFunctions.values().iterator();
 	}
 
@@ -1868,7 +1867,7 @@ public class XQueryContext {
 
 	public void popDocumentContext() {
 		if (!fragmentStack.isEmpty()) {
-			builder = (MemTreeBuilder) fragmentStack.pop();
+			builder = fragmentStack.pop();
 		}
 	}
 
@@ -1992,8 +1991,8 @@ public class XQueryContext {
 	 */
 	public void pushInScopeNamespaces(boolean inherit) {
 		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap
-		HashMap m = (HashMap) inScopeNamespaces.clone();
-		HashMap p = (HashMap) inScopePrefixes.clone();
+		HashMap<String, String> m = (HashMap) inScopeNamespaces.clone();
+		HashMap<String, String> p = (HashMap) inScopePrefixes.clone();
 		namespaceStack.push(inheritedInScopeNamespaces);
 		namespaceStack.push(inheritedInScopePrefixes);
 		namespaceStack.push(inScopeNamespaces);
@@ -2005,24 +2004,24 @@ public class XQueryContext {
             inheritedInScopePrefixes = (HashMap)inheritedInScopePrefixes.clone();
             inheritedInScopePrefixes.putAll(p);
         } else {
-            inheritedInScopeNamespaces = new HashMap();
-            inheritedInScopePrefixes = new HashMap();
+            inheritedInScopeNamespaces = new HashMap<String, String>();
+            inheritedInScopePrefixes = new HashMap<String, String>();
         }
 		//TODO : consider dynamic instanciation
-		inScopeNamespaces = new HashMap();
-		inScopePrefixes = new HashMap();
+		inScopeNamespaces = new HashMap<String, String>();
+		inScopePrefixes = new HashMap<String, String>();
 	}
 
 	public void popInScopeNamespaces() {
-		inScopePrefixes = (HashMap) namespaceStack.pop();
-		inScopeNamespaces = (HashMap) namespaceStack.pop();
-		inheritedInScopePrefixes = (HashMap) namespaceStack.pop();
-		inheritedInScopeNamespaces = (HashMap) namespaceStack.pop();
+		inScopePrefixes = namespaceStack.pop();
+		inScopeNamespaces = namespaceStack.pop();
+		inheritedInScopePrefixes = namespaceStack.pop();
+		inheritedInScopeNamespaces = namespaceStack.pop();
 	}
 
 	public void pushNamespaceContext() {
-		HashMap m = (HashMap) staticNamespaces.clone();
-		HashMap p = (HashMap) staticPrefixes.clone();		
+		HashMap<String, String> m = (HashMap) staticNamespaces.clone();
+		HashMap<String, String> p = (HashMap) staticPrefixes.clone();		
 		namespaceStack.push(staticNamespaces);
 		namespaceStack.push(staticPrefixes);		
 		staticNamespaces = m;
@@ -2030,8 +2029,8 @@ public class XQueryContext {
 	}
 	
 	public void popNamespaceContext() {
-		staticPrefixes = (HashMap) namespaceStack.pop();
-		staticNamespaces = (HashMap) namespaceStack.pop();
+		staticPrefixes = namespaceStack.pop();
+		staticNamespaces = namespaceStack.pop();
 	}
 	
 	/**
@@ -2354,7 +2353,7 @@ public class XQueryContext {
 	 */
 	public void resolveForwardReferences() throws XPathException {
 		while(!forwardReferences.empty()) {
-			FunctionCall call = (FunctionCall)forwardReferences.pop();
+			FunctionCall call = forwardReferences.pop();
 			UserDefinedFunction func = resolveFunction(call.getQName(), call.getArgumentCount());
 			if(func == null)
 				throw new XPathException(call, 
@@ -2373,7 +2372,7 @@ public class XQueryContext {
     public void addOption(String qnameString, String contents) throws XPathException
     {
     	if(staticOptions == null)
-			staticOptions = new ArrayList();
+			staticOptions = new ArrayList<Option>();
     	
 		addOption(staticOptions, qnameString, contents);
     }
@@ -2384,12 +2383,12 @@ public class XQueryContext {
     public void addDynamicOption(String qnameString, String contents) throws XPathException
     {
     	if(dynamicOptions == null)
-			dynamicOptions = new ArrayList();
+			dynamicOptions = new ArrayList<Option>();
     	
 		addOption(dynamicOptions, qnameString, contents);
     }
     
-    private void addOption(List options, String qnameString, String contents) throws XPathException
+    private void addOption(List<Option> options, String qnameString, String contents) throws XPathException
     {
     	QName qn = QName.parse(this, qnameString, defaultFunctionNamespace);
 
@@ -2441,34 +2440,23 @@ public class XQueryContext {
         }
     }
     
-    
-	
-	public Option getOption(QName qname)
-	{
+	public Option getOption(QName qname) {
 		/*
 		 * check dynamic options that were declared at run-time
 		 * first as these have precedence and then check
 		 * static options that were declare at compile time 
 		 */
-		if(dynamicOptions != null)
-		{
-			for(int i = 0; i < dynamicOptions.size(); i++)
-			{
-				Option option = (Option)dynamicOptions.get(i);
-				if(qname.compareTo(option.getQName()) == 0)
-				{
+		if(dynamicOptions != null) {
+			for(Option option : dynamicOptions) {
+				if(qname.compareTo(option.getQName()) == 0) {
 					return option;
 				}
 			}
 		}
 		
-		if(staticOptions != null)
-		{
-			for(int i = 0; i < staticOptions.size(); i++)
-			{
-				Option option = (Option)staticOptions.get(i);
-				if(qname.compareTo(option.getQName()) == 0)
-				{
+		if(staticOptions != null) {
+			for(Option option : staticOptions) {
+				if(qname.compareTo(option.getQName()) == 0) {
 					return option;
 				}
 			}
@@ -2542,8 +2530,7 @@ public class XQueryContext {
 	 * @param name The variable name
 	 * @param XQvar The variable value, may be of any xs: type 
 	 */
-    public void setXQueryContextVar(String name, Object XQvar)
-    {
+    public void setXQueryContextVar(String name, Object XQvar) {
     	XQueryContextVars.put(name, XQvar);
     }
     
@@ -2554,11 +2541,9 @@ public class XQueryContext {
 	 * @param name The variable name
 	 * @return The variable value indicated by name.
 	 */
-    public Object getXQueryContextVar(String name)
-    {
-    	return(XQueryContextVars.get(name));
+    public Object getXQueryContextVar(String name) {
+    	return XQueryContextVars.get(name);
     }
-    
     
     /**
      *	Starts a batch Transaction 

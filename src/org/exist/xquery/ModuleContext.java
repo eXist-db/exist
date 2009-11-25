@@ -188,11 +188,11 @@ public class ModuleContext extends XQueryContext {
 		parentContext.setRootModule(namespaceURI, module);
 	}
 
-	public Iterator getRootModules() {
+	public Iterator<Module> getRootModules() {
 		return parentContext.getRootModules();
 	}
 	
-	public Iterator getAllModules() {
+	public Iterator<Module> getAllModules() {
 		return allModules.values().iterator();
 	}
 	
@@ -221,9 +221,8 @@ public class ModuleContext extends XQueryContext {
     }
 
     public void updateModuleRefs(XQueryContext rootContext) {
-        HashMap newModules = new HashMap(modules.size());
-        for (Iterator i = modules.values().iterator(); i.hasNext(); ) {
-            Module module = (Module) i.next();
+        HashMap<String, Module> newModules = new HashMap<String, Module>(modules.size());
+        for (Module module : modules.values()) {
             if (module.isInternalModule()) {
                 Module updated = rootContext.getModule(module.getNamespaceURI());
                 if (updated == null)
@@ -391,7 +390,7 @@ public class ModuleContext extends XQueryContext {
         if (uri != null)
             return uri;
         // Check global declarations
-        return (String) staticNamespaces.get(prefix);
+        return staticNamespaces.get(prefix);
     }
 
     /**
@@ -409,7 +408,7 @@ public class ModuleContext extends XQueryContext {
         prefix = getInheritedPrefix(uri);
 		if (prefix != null)
 			return prefix;
-		return (String) staticPrefixes.get(uri);
+		return staticPrefixes.get(uri);
     }
 
     public String getInScopeNamespace(String prefix) {
