@@ -5,6 +5,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.BinarySource;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -24,7 +25,7 @@ import java.net.URISyntaxException;
 
 public class Scan extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("scan", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
             "Scan and extract function documentation from an external XQuery function module according to the" +
@@ -38,56 +39,76 @@ public class Scan extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "the function docs.")
-        );
+        ),
+        new FunctionSignature(
+            new QName("scan-data", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
+            "Scan and extract function documentation from an external XQuery function module according to the" +
+            "XQDoc specification. The single argument URI may either point to an XQuery module stored in the " +
+            "db (URI starts with xmldb:exist:...) or a module in the file system. A file system module is " +
+            "searched in the same way as if it were loaded through an \"import module\" statement. Static " +
+            "mappings defined in conf.xml are searched first.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE,
+                    "The base64 encoded source data of the module")
+            },
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "the function docs.")
+        )
+    };
 
-    public Scan(XQueryContext context) {
+    public Scan(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Source source = null;
-        String uri = args[0].getStringValue();
-        if (uri.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-            Collection collection = null;
-            DocumentImpl doc = null;
-            try {
-                XmldbURI resourceURI = XmldbURI.xmldbUriFor(uri);
-                collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), Lock.READ_LOCK);
-                if (collection == null) {
-                    LOG.warn("collection not found: " + resourceURI.getCollectionPath());
-                    return Sequence.EMPTY_SEQUENCE;
-                }
-                doc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), Lock.READ_LOCK);
-                if (doc == null)
-                    return Sequence.EMPTY_SEQUENCE;
-                if (doc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                        !doc.getMetadata().getMimeType().equals("application/xquery")) {
-                    throw new XPathException(this, "XQuery resource: " + uri + " is not an XQuery or " +
-                            "declares a wrong mime-type");
-                }
-                source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
-            } catch (URISyntaxException e) {
-                throw new XPathException(this, "invalid module uri: " + uri + ": " + e.getMessage(), e);
-            } catch (LockException e) {
-                throw new XPathException(this, "internal lock error: " + e.getMessage());
-            } finally {
-                if (doc != null)
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
-                if(collection != null)
-                    collection.release(Lock.READ_LOCK);
-            }
+        if (isCalledAs("scan-data")) {
+            byte[] data = ((Base64Binary) args[0].itemAt(0)).getBinaryData();
+            source = new BinarySource(data, true);
         } else {
-            // first check if the URI points to a registered module
-            String location = context.getModuleLocation(uri);
-            if (location != null)
-                uri = location;
-            try {
-                source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
-            } catch (IOException e) {
-                throw new XPathException(this, "failed to read module " + uri, e);
-            } catch (PermissionDeniedException e) {
-                throw new XPathException(this, "permission denied to read module " + uri, e);
+            String uri = args[0].getStringValue();
+            if (uri.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                Collection collection = null;
+                DocumentImpl doc = null;
+                try {
+                    XmldbURI resourceURI = XmldbURI.xmldbUriFor(uri);
+                    collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), Lock.READ_LOCK);
+                    if (collection == null) {
+                        LOG.warn("collection not found: " + resourceURI.getCollectionPath());
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+                    doc = collection.getDocumentWithLock(context.getBroker(), resourceURI.lastSegment(), Lock.READ_LOCK);
+                    if (doc == null)
+                        return Sequence.EMPTY_SEQUENCE;
+                    if (doc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                            !doc.getMetadata().getMimeType().equals("application/xquery")) {
+                        throw new XPathException(this, "XQuery resource: " + uri + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                    }
+                    source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
+                } catch (URISyntaxException e) {
+                    throw new XPathException(this, "invalid module uri: " + uri + ": " + e.getMessage(), e);
+                } catch (LockException e) {
+                    throw new XPathException(this, "internal lock error: " + e.getMessage());
+                } finally {
+                    if (doc != null)
+                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                    if(collection != null)
+                        collection.release(Lock.READ_LOCK);
+                }
+            } else {
+                // first check if the URI points to a registered module
+                String location = context.getModuleLocation(uri);
+                if (location != null)
+                    uri = location;
+                try {
+                    source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
+                } catch (IOException e) {
+                    throw new XPathException(this, "failed to read module " + uri, e);
+                } catch (PermissionDeniedException e) {
+                    throw new XPathException(this, "permission denied to read module " + uri, e);
+                }
             }
         }
         try {
@@ -98,11 +119,11 @@ public class Scan extends BasicFunction {
                 return Sequence.EMPTY_SEQUENCE;
             return (NodeValue) ((Document) root).getDocumentElement();
         } catch (XQDocException e) {
-            throw new XPathException(this, "error while scanning module: " + uri + ": " + e.getMessage(), e);
+            throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);
         } catch (IOException e) {
-            throw new XPathException(this, "IO error while scanning module: " + uri + ": " + e.getMessage(), e);
+            throw new XPathException(this, "IO error while scanning module: " + e.getMessage(), e);
         } catch (SAXException e) {
-            throw new XPathException(this, "error while scanning module: " + uri + ": " + e.getMessage(), e);
+            throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);
         }
     }
 }

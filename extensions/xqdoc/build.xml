@@ -1,11 +1,15 @@
 <project basedir="." default="jar" name="xqdoc">
 
     <property name="src" value="./src"/>
-    <property name="classes" value="./classes"/>
+    <property name="xqdoc.classes" value="./classes"/>
 	<property name="lib" value="./lib"/>
-
+    <property name="test.src" value="./test/src"/>
+    <property name="test.classes" value="./test/classes"/>
+    
 	<property name="top.dir" value="../.."/>
-	
+
+    <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
+    
     <property name="build.compiler" value="modern"/>
 
 	<property file="${top.dir}/build.properties"/>
@@ -36,6 +40,9 @@
         <fileset dir="${top.dir}/${lib.extensions}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${top.dir}/extensions/indexes/lucene/lib">
+            <include name="*.jar"/>
+        </fileset>
 		<fileset dir="${lib}">
 			<include name="*.jar"/>
 		</fileset>
@@ -44,9 +51,13 @@
     	<pathelement path="${top.dir}/start.jar"/>
 		<pathelement path="${java.class.path}"/>
     </path>
-		
+    <path id="classpath.junit">
+    	<pathelement path="${top.dir}/test/classes"/>
+    	<pathelement path="${test.classes}"/>
+    </path>
+
     <target name="prepare">
-		<mkdir dir="${classes}"/>
+		<mkdir dir="${xqdoc.classes}"/>
     </target>
 	
     <target name="compile" depends="prepare" if="include.feature.xqdoc.config">
@@ -58,18 +69,20 @@
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
             
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
-			destdir="${classes}" encoding="UTF-8"
+			destdir="${xqdoc.classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
         	source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
             	<path refid="classpath.core"/>
             </classpath>
 		</javac>
+        <copy file="${src}/org/exist/xqdoc/ant/antlib.xml"
+            todir="${xqdoc.classes}/org/exist/xqdoc/ant"/>
 	</target>
 	
     <target name="jar" depends="compile" if="include.feature.xqdoc.config">
 		<echo message="Creating exist-xqdoc.jar ..."/>
-        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-xqdoc.jar">  
+        <jar basedir="${xqdoc.classes}" jarfile="${top.dir}/${lib.extensions}/exist-xqdoc.jar">  
 	        <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
@@ -79,8 +92,40 @@
 		</jar>
 	</target>
 
+    <target name="compile-tests" depends="jar" if="include.feature.xqdoc.config">
+		<echo message="----------------------------------"/>
+        <echo message="Compiling XQDoc tests"/>
+        <echo message="----------------------------------"/>
+
+         <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+        <mkdir dir="${test.classes}"/>
+		<javac debug="${build.debug}" deprecation="${build.deprecation}"
+			destdir="${test.classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${test.src}"
+        	source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+            	<path refid="classpath.core"/>
+            </classpath>
+		</javac>
+	</target>
+
+    <target name="test" depends="compile-tests">
+        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
+
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+
+            <test name="org.exist.xqdoc.RunTests"
+                todir="${junit.index.reports}/"/>
+        </junit>
+    </target>
+
     <target name="clean" if="include.feature.xqdoc.config">
-		<delete dir="${classes}"/>
+		<delete dir="${xqdoc.classes}"/>
 		<delete file="${top.dir}/${lib.extensions}/exist-xqdoc.jar" failonerror="false"/>
 	</target>
 </project>
