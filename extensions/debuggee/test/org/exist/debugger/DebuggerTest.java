@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.exist.debuggee.CommandContinuation;
+import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
 import org.junit.AfterClass;
@@ -39,7 +40,7 @@ import org.junit.Test;
  */
 public class DebuggerTest implements ResponseListener {
 	
-	@Test
+	//@Test
 	public void testDebugger() {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -135,6 +136,42 @@ public class DebuggerTest implements ResponseListener {
 			System.out.println("sending run");
 			source.run(this);
 
+		} catch (IOException e) {
+			assertNotNull("IO exception: "+e.getMessage(), null);
+		} catch (ExceptionTimeout e) {
+			assertNotNull("Timeout exception: "+e.getMessage(), null);
+		}
+	}
+
+	@Test
+	public void testBreakpoints() {
+		assertNotNull("Database wasn't initilised.", database);
+		
+		Debugger debugger;
+		
+		try {
+			System.out.println("creating debugger");
+			debugger = new DebuggerImpl();
+
+			System.out.println("sending init request");
+			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+
+			assertNotNull("Debugging source can't be NULL.", source);
+			
+			Breakpoint breakpoint = source.newBreakpoint();
+			breakpoint.setLineno(24);
+			breakpoint.sync();
+			
+			source.run();
+			
+			List<Location> stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(24, stack.get(0).getLineBegin());
+			
+			breakpoint.remove();
+
+			source.run();
+			
 		} catch (IOException e) {
 			assertNotNull("IO exception: "+e.getMessage(), null);
 		} catch (ExceptionTimeout e) {

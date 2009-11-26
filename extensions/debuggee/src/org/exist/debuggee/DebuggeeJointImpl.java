@@ -199,6 +199,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		if (firstExpression == expr) {
 			firstExpression = null;
 			
+			command.setStatus(BREAK);
 			command.setStatus(STOPPED);
 			
 			sessionClosed(true);
@@ -330,7 +331,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			fileBreakpoints.put(breakpoint.getLineno(), breakpoint);
 		}
 
-		return 1;//TODO: do throw constant
+		return 1;//TODO: create constant
 	}
 
 	public Breakpoint getBreakpoint(int breakpointID) {

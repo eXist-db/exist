@@ -48,10 +48,14 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		this.fileURI = fileURI;
 	}
 	
-	public Breakpoint getBreakpoint() {
+	public Debugger getDebugger() {
+		return debugger;
+	}
+
+	public Breakpoint newBreakpoint() {
 		BreakpointImpl breakpoint = new BreakpointImpl();
 		breakpoint.setFilename(fileURI);
-		breakpoint.setDebuggingSource(debugger);
+		breakpoint.setDebuggingSource(this);
 		
 		return breakpoint;
 	}
@@ -180,11 +184,6 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		debugger.stop();
 	}
 
-	public Breakpoint newBreakpoint() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	private String code = null;
 
 	public String getText() {

@@ -23,6 +23,7 @@ package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.BreakpointImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -76,5 +77,9 @@ public class BreakpointRemove extends Command {
 			return command.getBytes();
 		}
 		return null;
+	}
+
+	public void setBreakpoint(BreakpointImpl breakpoint) {
+		this.breakpoint= breakpoint;
 	}
 }

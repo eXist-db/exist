@@ -89,7 +89,12 @@ public class ResponseImpl implements Response {
 		return getAttribute("transaction_id");
 	}
 
+	public boolean hasAttribute(String attr) {
+		return parsedResponse.getAttributes().getNamedItem(attr) != null;
+	}
+
 	public String getAttribute(String attr) {
+		//XXX: NPE???
 		return parsedResponse.getAttributes().getNamedItem(attr).getNodeValue();
 	}
 

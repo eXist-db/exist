@@ -40,7 +40,7 @@ public interface Debugger {
 
 	public void sessionClosed();
 
-	public Breakpoint addBreakpoint(Breakpoint breakpoint);
+//	public boolean setBreakpoint(Breakpoint breakpoint);
 
 	public void run(ResponseListener listener);
 	public void run();

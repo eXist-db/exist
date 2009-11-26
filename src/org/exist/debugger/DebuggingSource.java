@@ -33,6 +33,8 @@ import org.exist.debugger.model.Variable;
  */
 public interface DebuggingSource {
 
+	public Debugger getDebugger();
+
 	/**
 	 * Starts or resumes the script until a new breakpoint is reached, or the end of the script is reached.
 	 */

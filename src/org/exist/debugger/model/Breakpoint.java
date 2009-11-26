@@ -133,4 +133,8 @@ public interface Breakpoint {
 	public void setId(int breakpointNo);
 	
 	public String toXMLString();
+
+	//Synchronize changes
+	public boolean sync();
+	public boolean remove();
 }
