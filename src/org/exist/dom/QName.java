@@ -32,7 +32,7 @@ import org.exist.xquery.XQueryContext;
  * 
  * @author Wolfgang <wolfgang@exist-db.org>
  */
-public class QName implements Comparable {
+public class QName implements Comparable<QName> {
 
 	/*
     public final static QName DOCUMENT_QNAME = new QName("#document", "", null);
@@ -156,8 +156,7 @@ public class QName implements Comparable {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		QName other = (QName) o;
+	public int compareTo(QName other) {
 		if(nameType_ != other.nameType_) {
 			return nameType_ < other.nameType_ ? Constants.INFERIOR : Constants.SUPERIOR;
 		}
@@ -178,10 +177,12 @@ public class QName implements Comparable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
-		int cmp = compareTo(obj);
+		QName other = (QName) obj;
+
+		int cmp = compareTo(other);
 		if(cmp != 0)
 			return false;
-		QName other = (QName) obj;
+		
 		if(prefix_ == null)
 			return other.prefix_ == null ? true : false;
 		else if(other.prefix_ == null)
