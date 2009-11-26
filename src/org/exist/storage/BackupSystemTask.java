@@ -136,7 +136,7 @@ public class BackupSystemTask implements SystemTask {
 
         if (files.length > 0)
         {
-            Map sorted = new TreeMap();
+            Map<String, File> sorted = new TreeMap<String, File>();
             for (int i=0; i < files.length; i++)
             {
                 //check for prefix and suffix match
@@ -147,12 +147,12 @@ public class BackupSystemTask implements SystemTask {
             }
             if (sorted.size() > zipFilesMax)
             {
-               Set keys = sorted.keySet();
-                Iterator ki = keys.iterator();
+               Set<String> keys = sorted.keySet();
+                Iterator<String> ki = keys.iterator();
                 int i = sorted.size() - zipFilesMax;
                 while (ki.hasNext())
                 {
-                    File f = (File) sorted.get(ki.next());
+                    File f = sorted.get(ki.next());
                     if (i > 0)
                     {
                         if (LOG.isDebugEnabled()) LOG.debug("Purging backup : " + f.getName());
