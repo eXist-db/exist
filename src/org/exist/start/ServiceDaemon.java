@@ -47,13 +47,13 @@ public class ServiceDaemon {
            Classpath classpath = existMain.constructClasspath(homeDir,noArgs);
            ClassLoader cl = classpath.getClassLoader(null);
            Thread.currentThread().setContextClassLoader(cl);
-           Class brokerPoolClass = cl.loadClass("org.exist.storage.BrokerPool");
+           Class<?> brokerPoolClass = cl.loadClass("org.exist.storage.BrokerPool");
            // This only works in Java 1.5
            //Method stopAll = brokerPoolClass.getDeclaredMethod("stopAll",java.lang.Boolean.TYPE);
            //stopAll.invoke(null,Boolean.TRUE);
 
            // This is the ugly Java 1.4 version
-           Class [] paramTypes = new Class[1];
+           Class<?> [] paramTypes = new Class[1];
            paramTypes[0] = java.lang.Boolean.TYPE;
            Method stopAll = brokerPoolClass.getDeclaredMethod("stopAll",paramTypes);
            Object [] arguments = new Object[1];

@@ -12,6 +12,8 @@ import org.exist.xquery.value.Sequence;
 
 public class Session implements Serializable {
 
+	private static final long serialVersionUID = -5863393640379705401L;
+
 	public static class QueryResult {
 		Sequence result;
 
