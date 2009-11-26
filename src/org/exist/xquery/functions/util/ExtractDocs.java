@@ -63,7 +63,7 @@ public class ExtractDocs extends BasicFunction {
 
         String moduleURI = args[0].getStringValue();
         Module module = context.getModule(moduleURI);
-        if (module == null) {
+        if (module == null || !module.isInternalModule()) {
             return Sequence.EMPTY_SEQUENCE;
         }
         MemTreeBuilder builder = context.getDocumentBuilder();
