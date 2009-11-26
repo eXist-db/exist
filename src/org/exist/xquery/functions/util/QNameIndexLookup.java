@@ -86,15 +86,15 @@ public class QNameIndexLookup extends Function {
      * 
      * @see org.exist.xquery.Function#setArguments(java.util.List)
      */
-    public void setArguments(List arguments) throws XPathException {
+    public void setArguments(List<Expression> arguments) throws XPathException {
         // wrap arguments into a cardinality check, so an error will be generated if
         // one of the arguments returns an empty sequence
-        Expression arg = (Expression) arguments.get(0);
+        Expression arg = arguments.get(0);
         arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
         steps.add(arg);
         
-        arg = (Expression) arguments.get(1);
+        arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         steps.add(arg);

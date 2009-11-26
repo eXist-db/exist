@@ -62,7 +62,7 @@ public abstract class Function extends PathExpr {
 
     private boolean argumentsChecked = false;
     
-	private XQueryAST astNode = null;
+//	private XQueryAST astNode = null;
 	
 	/**
 	 * Internal constructor. Subclasses should <b>always</b> call this and
@@ -172,7 +172,7 @@ public abstract class Function extends PathExpr {
 	 * @param arguments
 	 * @throws XPathException
 	 */
-	public void setArguments(List arguments) throws XPathException {
+	public void setArguments(List<Expression> arguments) throws XPathException {
 		if ((!mySignature.isOverloaded())
 			&& arguments.size() != mySignature.getArgumentCount())
 			throw new XPathException(this,
@@ -422,11 +422,10 @@ public abstract class Function extends PathExpr {
     	result.append(getName());
     	result.append('(');
     	boolean moreThanOne = false;
-        for (Iterator i = steps.iterator(); i.hasNext();) {
-			Expression e = (Expression) i.next();
+        for (Expression step : steps) {
 			if (moreThanOne) result.append(", ");
 			moreThanOne = true;
-			result.append(e.toString());				
+			result.append(step.toString());				
         }
         result.append(')');   
         return result.toString();

@@ -23,7 +23,6 @@ package org.exist.xquery.functions;
 
 import org.apache.log4j.Logger;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -82,10 +81,9 @@ public class FunConcat extends Function {
 	 * 
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
-	public void setArguments(List arguments) throws XPathException {
-		for(Iterator i = arguments.iterator(); i.hasNext(); ) {
-			Expression next = (Expression) i.next();
-            next = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, next,
+	public void setArguments(List<Expression> arguments) throws XPathException {
+		for(Expression argument : arguments) {
+			Expression next = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, argument,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));                
             if (!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
                 next = new Atomize(context, next);

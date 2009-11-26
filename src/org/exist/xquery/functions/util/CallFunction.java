@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
@@ -85,7 +86,7 @@ public class CallFunction extends Function {
         FunctionCall call = ref.getFunctionCall();
         
         // pass the remaining parameters to the function call
-        List params = new ArrayList(getArgumentCount() - 1);
+        List<Expression> params = new ArrayList<Expression>(getArgumentCount() - 1);
         for(int i = 1; i < getArgumentCount(); i++) {
             params.add(getArgument(i));
         }

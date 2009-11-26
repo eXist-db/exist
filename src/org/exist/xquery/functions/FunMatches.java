@@ -127,11 +127,11 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
-	public void setArguments(List arguments) throws XPathException {
-        Expression path = (Expression) arguments.get(0);
+	public void setArguments(List<Expression> arguments) throws XPathException {
+        Expression path = arguments.get(0);
         steps.add(path);
         
-        Expression arg = (Expression) arguments.get(1);
+        Expression arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
@@ -139,7 +139,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         steps.add(arg);
         
         if (arguments.size() == 3) {
-            arg = (Expression) arguments.get(2);
+            arg = arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
             if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))

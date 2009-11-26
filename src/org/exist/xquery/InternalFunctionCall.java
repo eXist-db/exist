@@ -205,7 +205,7 @@ public class InternalFunctionCall extends Function
 	{
 		function.resetState(postOptimization);
 	}
-	public void setArguments(List arguments) throws XPathException
+	public void setArguments(List<Expression> arguments) throws XPathException
 	{
 		function.setArguments(arguments);
 	}
