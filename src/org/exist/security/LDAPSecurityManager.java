@@ -39,10 +39,10 @@ public class LDAPSecurityManager implements SecurityManager
 {
 
    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
-   protected Map userByNameCache = new HashMap();
-   protected Map userByIdCache = new HashMap();
-   protected Map groupByNameCache = new HashMap();
-   protected Map groupByIdCache = new HashMap();
+   protected Map<String, User> userByNameCache = new HashMap<String, User>();
+   protected Map<Integer, User> userByIdCache = new HashMap<Integer, User>();
+   protected Map<String, Group> groupByNameCache = new HashMap<String, Group>();
+   protected Map<Integer, Group> groupByIdCache = new HashMap<Integer, Group>();
    
    static String getProperty(String name,String defaultValue) {
       String value = System.getProperty(name);
@@ -166,7 +166,7 @@ public class LDAPSecurityManager implements SecurityManager
       return valueString;
    }
 
-   protected Hashtable getDirectoryEnvironment() {
+   protected Hashtable<String, String> getDirectoryEnvironment() {
 
       if (connectionURL==null) {
          throw new IllegalStateException("The security.ldap.connection.url property is not set.");
@@ -177,7 +177,7 @@ public class LDAPSecurityManager implements SecurityManager
       if (groupBase==null) {
          throw new IllegalStateException("The security.ldap.dn.group property is not set.");
       }
-      Hashtable env = new Hashtable();
+      Hashtable<String, String> env = new Hashtable<String, String>();
 
       LOG.info("security.ldap.contextFactory="+contextFactory);
       env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactory);
@@ -368,7 +368,7 @@ public class LDAPSecurityManager implements SecurityManager
    public Group getGroup(int gid)
    {
       Integer igid = new Integer(gid);
-      Group group = (Group)groupByIdCache.get(igid);
+      Group group = groupByIdCache.get(igid);
       if (group==null) {
          try {
             group = getGroupById(context,gid);
@@ -384,7 +384,7 @@ public class LDAPSecurityManager implements SecurityManager
 
    public Group getGroup(String name)
    {
-      Group group = (Group)groupByIdCache.get(name);
+      Group group = groupByNameCache.get(name);
       if (group==null) {
          try {
             group = getGroupByName(context,name);
@@ -438,7 +438,7 @@ public class LDAPSecurityManager implements SecurityManager
    public User getUser(int uid)
    {
       Integer iuid = new Integer(uid);
-      User user = (User)userByIdCache.get(iuid);
+      User user = userByIdCache.get(iuid);
       if (user==null) {
          try {
             user = getUserById(context,uid);
@@ -454,7 +454,7 @@ public class LDAPSecurityManager implements SecurityManager
 
    public User getUser(String name)
    {
-      User user = (User)userByNameCache.get(name);
+      User user = userByNameCache.get(name);
       if (user==null) {
          try {
             user = getUserByName(context,name);
