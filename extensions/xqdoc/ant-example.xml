@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<project basedir="." default="docs" name="test xqdoc tasks">
+
+	<property name="server" value="xmldb:exist://localhost:8080/exist/xmlrpc"/>
+	
+	<property name="top.dir" value="../.."/>
+	
+	<path id="classpath.core">
+		<fileset dir="${top.dir}/lib/core">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="./lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${top.dir}/tools/ant/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<pathelement path="${top.dir}/lib/extensions/exist-xqdoc.jar"/>
+		<pathelement path="${top.dir}/exist.jar"/>
+		<pathelement path="${top.dir}/exist-optional.jar"/>
+	</path>
+	
+	<typedef resource="org/exist/xqdoc/ant/antlib.xml" uri="http://exist-db.org/xqdoc">
+		<classpath refid="classpath.core"/>
+	</typedef>
+
+	<target name="docs" xmlns:xqdoc="http://exist-db.org/xqdoc">
+		<xqdoc:scan uri="${server}/db/xqdoc" initdb="true" createcollection="true"
+			moduleuri="resource:org/exist/xquery/lib/kwic.xql"/>
+		<xqdoc:scan uri="${server}/db/xqdoc" initdb="true" createcollection="true"
+			failonerror="false">
+			<fileset dir="${top.dir}/samples/xquery">
+				<include name="*.xq"/>
+			</fileset>
+		</xqdoc:scan>
+	</target>
+
+</project>
