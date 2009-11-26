@@ -342,11 +342,10 @@ public class QueryService implements Cloneable {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	private CompiledXQuery wrap(CompiledXQuery expr, WrapperFactory wrapperFactory, XQueryContext context) throws XPathException {
 		if (wrapperFactory == null) return expr;
 		Function wrapper = wrapperFactory.createWrapper(context);
-		wrapper.setArguments(Collections.singletonList(expr));
+		wrapper.setArguments(Collections.singletonList((Expression)expr));
 //		wrapper.setSource(expr.getSource());
 		return wrapper;
 	}
