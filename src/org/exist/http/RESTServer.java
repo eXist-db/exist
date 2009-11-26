@@ -1258,8 +1258,14 @@ public class RESTServer {
 		context.declareVariable("stdin", stdin == null ? "" : stdin);
 		
 		String debug = request.getParameter("debug");
-		context.declareVariable("debug",  debug == null ? "0" : debug);
-		
+		context.declareVariable("debug",  debug == null ? "0" : "1");
+
+        String bindings = request.getParameter("bindings");
+        context.declareVariable("bindings",  bindings == null ? "<bindings/>" : bindings);
+
+        String options = request.getParameter("options");
+        context.declareVariable("options",  options == null ? "<options/>" : options);
+
 		// TODO: don't hardcode this?
 		context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(
 				resource.getCollection().getURI()).toString());

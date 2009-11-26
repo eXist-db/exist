@@ -7,8 +7,11 @@ import module namespace u = "http://xproc.net/xproc/util";
 declare variable $pipeline external;
 declare variable $stdin    external;
 declare variable $debug    external;
+declare variable $bindings external;
+declare variable $options  external;
 
-xproc:run(doc($pipeline), doc($stdin), $debug)
+xproc:run( doc($pipeline), doc($stdin), $debug, "0", util:parse($bindings), util:parse($options))
+
 
 
 
