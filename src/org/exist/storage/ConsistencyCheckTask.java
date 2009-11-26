@@ -101,13 +101,13 @@ public class ConsistencyCheckTask implements SystemTask {
             agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.PAUSED));
             return;
         }
-        long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
         PrintWriter report = null;
         try {
             boolean doBackup = createBackup;
             // TODO: don't use the direct access feature for now. needs more
             // testing
-            List errors = null;
+            List<ErrorReport> errors = null;
             if (!incremental || incrementalCheck) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Starting consistency check...");

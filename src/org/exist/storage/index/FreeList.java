@@ -44,6 +44,7 @@ import org.exist.util.ByteConversion;
  */
 public class FreeList {
 
+	@SuppressWarnings("unused")
 	private final static Logger LOG = Logger.getLogger(FreeList.class);
 	
 	public final static int MAX_FREE_LIST_LEN = 128;

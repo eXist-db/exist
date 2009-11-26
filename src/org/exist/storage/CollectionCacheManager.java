@@ -24,7 +24,6 @@ package org.exist.storage;
 import org.apache.log4j.Logger;
 import org.exist.collections.CollectionCache;
 import org.exist.storage.cache.Cache;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.management.AgentFactory;
 import org.exist.management.Agent;
