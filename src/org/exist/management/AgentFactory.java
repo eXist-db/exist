@@ -33,7 +33,7 @@ public class AgentFactory {
         if (instance == null) {
             String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");
             try {
-                Class clazz = Class.forName(className);
+                Class<?> clazz = Class.forName(className);
                 if (!Agent.class.isAssignableFrom(clazz)) {
                     LOG.warn("Class " + className + " does not implement interface Agent. Using fallback.");
                 } else {

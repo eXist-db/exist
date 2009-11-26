@@ -66,7 +66,7 @@ public class DOMIndexer {
     private DocumentImpl doc;
     private org.exist.dom.DocumentImpl targetDoc;
     private IndexSpec indexSpec = null;
-    private Stack stack = new Stack();
+    private Stack<ElementImpl> stack = new Stack<ElementImpl>();
     private TextImpl text = new TextImpl();
     private StoredNode prevNode = null;
     
@@ -165,7 +165,7 @@ public class DOMIndexer {
                 targetDoc.appendChild(elem);
                 elem.setChildCount(0);
             } else {
-                last = (ElementImpl) stack.peek();
+                last = stack.peek();
                 initElement(nodeNr, elem);
                 last.appendChildInternal(prevNode, elem);
                 stack.push(elem);
@@ -182,7 +182,7 @@ public class DOMIndexer {
         					prevNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
         		break;
         	}
-            last = (ElementImpl) stack.peek();
+            last = stack.peek();
             text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             text.setOwnerDocument(targetDoc);
             last.appendChildInternal(prevNode, text);
@@ -190,7 +190,7 @@ public class DOMIndexer {
             broker.storeNode(transaction, text, null, indexSpec);
             break;
         case Node.CDATA_SECTION_NODE :
-            last = (ElementImpl) stack.peek();
+            last = stack.peek();
             org.exist.dom.CDATASectionImpl cdata =
                 (org.exist.dom.CDATASectionImpl) NodePool.getInstance().borrowNode(Node.CDATA_SECTION_NODE);
             cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
@@ -207,7 +207,7 @@ public class DOMIndexer {
                 targetDoc.appendChild(comment);
                 broker.storeNode(transaction, comment, null, indexSpec);
             } else {
-                last = (ElementImpl) stack.peek();
+                last = stack.peek();
                 last.appendChildInternal(prevNode, comment);
                 broker.storeNode(transaction, comment, null, indexSpec);
                 setPrevious(comment);
@@ -222,7 +222,7 @@ public class DOMIndexer {
                 pi.setNodeId(NodeId.DOCUMENT_NODE);
                 targetDoc.appendChild(pi);
             } else {
-                last = (ElementImpl) stack.peek();
+                last = stack.peek();
                 last.appendChildInternal(prevNode, pi);
                 setPrevious(pi);
             }
@@ -244,16 +244,16 @@ public class DOMIndexer {
         elem.setAttributes(attribs);
         elem.setChildCount(doc.getChildCountFor(nodeNr) + attribs);
         elem.setNodeName((QName) doc.namePool.get(doc.nodeName[nodeNr]));
-        Map ns = getNamespaces(nodeNr);
+        Map<String, String> ns = getNamespaces(nodeNr);
         if (ns != null)
             elem.setNamespaceMappings(ns);
     }
 
-    private Map getNamespaces(int nodeNr) {
+    private Map<String, String> getNamespaces(int nodeNr) {
         int ns = doc.alphaLen[nodeNr];
         if (ns < 0)
             return null;
-        Map map = new HashMap();
+        Map<String, String> map = new HashMap<String, String>();
         while (ns < doc.nextNamespace && doc.namespaceParent[ns] == nodeNr) {
             QName qn = (QName)doc.namePool.get(doc.namespaceCode[ns]);
             if ("xmlns".equals(qn.getLocalName()))
@@ -292,7 +292,7 @@ public class DOMIndexer {
      */
     private void endNode(int nodeNr, NodePath currentPath) {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
-            ElementImpl last = (ElementImpl) stack.pop();
+            ElementImpl last = stack.pop();
             broker.endElement(last, currentPath, null);
             currentPath.removeLastComponent();
             setPrevious(last);

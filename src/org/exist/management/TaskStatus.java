@@ -12,7 +12,10 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.SimpleType;
 
 public class TaskStatus implements Serializable {
-    public static final int NA = 0;
+
+	private static final long serialVersionUID = -8405783622910875893L;
+
+	public static final int NA = 0;
     public static final int NEVER_RUN = 1;
     public static final int INIT = 2;
     public static final int PAUSED = 3;
@@ -102,7 +105,7 @@ public class TaskStatus implements Serializable {
     }
 
     public CompositeDataSupport getCompositeData() {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<String, Object>();
         CompositeDataSupport compositeData = null;
         data.put("status", new Integer(_status));
         data.put("statusChangeTime", _statusChangeTime);

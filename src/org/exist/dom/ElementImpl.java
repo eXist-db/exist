@@ -332,7 +332,7 @@ public class ElementImpl extends NamedNode implements Element {
         return new QName(name, namespace, prefix == null ? "" : prefix);
     }
 
-    public static void readNamespaceDecls(List namespaces, Value value, DocumentImpl document, NodeId nodeId) {
+    public static void readNamespaceDecls(List<String[]> namespaces, Value value, DocumentImpl document, NodeId nodeId) {
         final byte[] data = value.data();
         int offset = value.start();
         int end = offset + value.getLength();
@@ -1012,9 +1012,8 @@ public class ElementImpl extends NamedNode implements Element {
 
     public void setNamespaceMappings(Map<String, String> map) {
         namespaceMappings = new HashMap<String, String>(map);
-        String ns;
-        for (Iterator i = namespaceMappings.values().iterator(); i.hasNext();) {
-            ns = (String) i.next();
+
+        for (String ns : namespaceMappings.values()) {
             ownerDocument.getBrokerPool().getSymbols().getNSSymbol(ns);
         }
     }

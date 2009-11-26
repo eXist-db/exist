@@ -31,7 +31,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -42,7 +41,7 @@ import java.util.Map;
 public class SAXAdapter implements ContentHandler, LexicalHandler {
 
 	private MemTreeBuilder builder;
-	private HashMap namespaces = null;
+	private HashMap<String, String> namespaces = null;
 	
 	public SAXAdapter() {
 		builder = new MemTreeBuilder();
@@ -114,7 +113,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 	 */
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		if(namespaces == null)
-			namespaces = new HashMap();
+			namespaces = new HashMap<String, String>();
 		namespaces.put(prefix, uri);
 	}
 
@@ -132,8 +131,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
             throws SAXException {
 		builder.startElement(namespaceURI, localName, qName, atts);
 		if(namespaces != null) {
-			for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
-				Map.Entry entry = (Map.Entry) i.next();
+			for(Map.Entry<String, String> entry : namespaces.entrySet()) {
 				builder.namespaceNode(entry.getKey().toString(), entry.getValue().toString());
 			}
 		}

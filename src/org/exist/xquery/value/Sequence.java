@@ -207,7 +207,7 @@ public interface Sequence {
 	 * 
 	 * @param javaClass
 	 */
-	public int conversionPreference(Class javaClass);
+	public int conversionPreference(Class<?> javaClass);
 	
 	/**
 	 * Convert the value into an instance of the specified
@@ -216,7 +216,7 @@ public interface Sequence {
 	 * @param target
 	 * @throws XPathException
 	 */
-	public Object toJavaObject(Class target) throws XPathException;
+	public Object toJavaObject(Class<?> target) throws XPathException;
 	
 	/**
 	 * Returns true if the sequence is the result of a previous operation

@@ -703,7 +703,7 @@ public class NodeImpl implements NodeAtExist, NodeValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(NodeImpl.class))
 			return 0;
 		if (javaClass.isAssignableFrom(Node.class))
@@ -735,7 +735,7 @@ public class NodeImpl implements NodeAtExist, NodeValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target.isAssignableFrom(NodeImpl.class))
 			return this;
 		else if (target.isAssignableFrom(Node.class))
