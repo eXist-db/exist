@@ -436,7 +436,7 @@ public class MatchListenerTest {
                 pool.release(broker);
         }
 
-        HashMap m = new HashMap();
+        HashMap<String, String> m = new HashMap<String, String>();
         m.put("tei", "http://www.tei-c.org/ns/1.0");
         m.put("exist", "http://exist.sourceforge.net/NS/exist");
         NamespaceContext ctx = new SimpleNamespaceContext(m);
