@@ -79,7 +79,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     }
     
     public IndexWorker getWorker(DBBroker broker) {
-    	GMLHSQLIndexWorker worker = (GMLHSQLIndexWorker)workers.get(broker);    	
+    	AbstractGMLJDBCIndexWorker worker = workers.get(broker);    	
     	if (worker == null) {
     		worker = new GMLHSQLIndexWorker(this, broker);
     		workers.put(broker, worker);

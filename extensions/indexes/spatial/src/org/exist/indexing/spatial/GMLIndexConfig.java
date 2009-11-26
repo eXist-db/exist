@@ -38,7 +38,7 @@ public class GMLIndexConfig {
 	private final static String FLUSH_AFTER = "flushAfter";	
 	private int flushAfter = -1;
 	
-	public GMLIndexConfig(Map namespaces, Element node) throws DatabaseConfigurationException {       
+	public GMLIndexConfig(Map<String, String> namespaces, Element node) throws DatabaseConfigurationException {       
     	String param = ((Element)node).getAttribute(FLUSH_AFTER);
         if (param != null && !"".equals(param)) {
         	try {

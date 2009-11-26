@@ -105,7 +105,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected int currentMode = StreamListener.UNKNOWN;    
     protected DocumentImpl currentDoc = null;  
     private boolean isDocumentGMLAware = false;
-    protected Map geometries = new TreeMap();    
+    protected Map<NodeId, SRSGeometry> geometries = new TreeMap<NodeId, SRSGeometry>();    
     NodeId currentNodeId = null;    
     Geometry streamedGeometry = null;
     boolean documentDeleted = false;
@@ -114,7 +114,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
     protected GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);      
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
-	protected TreeMap transformations = new TreeMap();
+	protected TreeMap<String, MathTransform> transformations = new TreeMap<String, MathTransform>();
 	protected boolean useLenientMode = false;    
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
     protected GeometryTransformer gmlTransformer = new GeometryTransformer();		
@@ -148,12 +148,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
-        Map map = null;      
+        Map<String, GMLIndexConfig> map = null;      
         for(int i = 0; i < configNodes.getLength(); i++) {
         	Node node = configNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
-                map = new TreeMap();
+                map = new TreeMap<String, GMLIndexConfig>();
                 GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
                 map.put(AbstractGMLJDBCIndex.ID, config);
             }
@@ -283,10 +283,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         if (geometries.size() == 0)
             return;  
         try {	        
-	        for (Iterator iterator = geometries.entrySet().iterator(); iterator.hasNext();) {
-	            Map.Entry entry = (Map.Entry) iterator.next();
-	            NodeId nodeId = (NodeId)entry.getKey();
-	            SRSGeometry srsGeometry = (SRSGeometry)entry.getValue();       	
+	        for (Map.Entry<NodeId, SRSGeometry> entry : geometries.entrySet()) {
+	            NodeId nodeId = entry.getKey();
+	            SRSGeometry srsGeometry = entry.getValue();       	
 	            try {
 	            	saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
 	            			currentDoc, nodeId, conn);
@@ -484,7 +483,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract int removeCollection(Collection collection, Connection conn) throws SQLException;
   
-    protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
+    protected abstract Map<Geometry, String> getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
     
     protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
 
@@ -505,7 +504,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
     	//TODO : try to use contextSet
-    	Map occurences = new TreeMap();
+    	Map<Geometry, Occurrences> occurences = new TreeMap<Geometry, Occurrences>();
     	Connection conn = null;
     	try { 
     		conn = acquireConnection();
@@ -514,12 +513,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 				DocumentImpl doc = (DocumentImpl)iDoc.next();
 				//TODO : check if document is GML-aware ?
 		    	//Aggregate the occurences between different documents
-		    	for (Iterator iGeom = getGeometriesForDocument(doc, conn).entrySet().iterator(); iGeom.hasNext();) {
+		    	for (Map.Entry<Geometry, String> entry : getGeometriesForDocument(doc, conn).entrySet()) {
 		    		///TODO : use the IndexWorker.VALUE_COUNT hint, if present, to limit the number of returned entries
-		    		Map.Entry entry = (Map.Entry) iGeom.next();
-		            Geometry key = (Geometry)entry.getKey();
+		            Geometry key = entry.getKey();
 		            //Do we already have an occurence for this geometry ?
-		            Occurrences oc = (Occurrences)occurences.get(key);
+		            Occurrences oc = occurences.get(key);
 		            if (oc != null) {
 		            	//Yes : increment occurence count
 		            	oc.addOccurrences(oc.getOccurrences() + 1);
@@ -527,7 +525,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 		            	oc.addDocument(doc);
 		            } else {
 		            	//No : create a new occurence with EPSG4326_WKT as "term"
-		            	oc = new Occurrences((String)entry.getValue());
+		            	oc = new Occurrences(entry.getValue());
 		            	//... with a count set to 1
 		            	oc.addOccurrences(1);
 		            	//... and reference the document
@@ -608,7 +606,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         	sourceCRS = "EPSG:27700";  	    
         if ("osgb:BNG".equalsIgnoreCase(targetCRS.trim()))
         	targetCRS = "EPSG:27700"; 
-        MathTransform transform = (MathTransform)transformations.get(sourceCRS + "_" + targetCRS);
+        MathTransform transform = transformations.get(sourceCRS + "_" + targetCRS);
 		if (transform == null) {
     		try {
 	    		try {        	
@@ -642,7 +640,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     private class GMLStreamListener extends AbstractStreamListener {
 
-    	Stack srsNamesStack = new Stack();
+    	Stack<String> srsNamesStack = new Stack<String>();
     	ElementImpl deferredElement;
     	
         public IndexWorker getWorker() {
@@ -732,7 +730,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         
         private void processCurrentElement(ElementImpl element) {
         	currentNodeId = element.getNodeId();
-        	String currentSrsName = (String)srsNamesStack.pop();        		
+        	String currentSrsName = srsNamesStack.pop();        		
     		try {
     			geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
         		//Some invalid/(yet) incomplete geometries don't have a SRS

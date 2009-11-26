@@ -10,7 +10,10 @@ package org.exist.soap;
 import org.exist.Namespaces;
 
 public class Strings  implements java.io.Serializable {
-    private java.lang.String[] elements;
+	
+	private static final long serialVersionUID = -4950143157744257740L;
+
+	private java.lang.String[] elements;
 
     public Strings() {
     }

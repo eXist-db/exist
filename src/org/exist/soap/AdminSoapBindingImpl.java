@@ -490,8 +490,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new EXistException("collection " + collectionName
                         + " not found!");
             CollectionDesc desc = new CollectionDesc();
-            Vector docs = new Vector();
-            Vector collections = new Vector();
+            Vector<DocumentDesc> docs = new Vector<DocumentDesc>();
+            Vector<String> collections = new Vector<String>();
             if (collection.getPermissions().validate(session.getUser(), Permission.READ)) {
                 DocumentImpl doc;
 //              Hashtable hash;
@@ -514,7 +514,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     collections.addElement(((XmldbURI)i.next()).toString());
             }
             Permission perms = collection.getPermissions();
-            desc.setCollections(new Strings((String[]) collections.toArray(new String[collections.size()])));
+            desc.setCollections(new Strings(collections.toArray(new String[collections.size()])));
             desc.setDocuments(new DocumentDescs((DocumentDesc[])docs.toArray(new DocumentDesc[docs.size()])));
             desc.setName(collection.getURI().toString());
             desc.setCreated(collection.getCreationTime());
@@ -862,11 +862,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException {
         String[] groups = pool.getSecurityManager().getGroups();
-        Vector v = new Vector(groups.length);
+        Vector<String> v = new Vector<String>(groups.length);
         for (int i = 0; i < groups.length; i++) {
             v.addElement(groups[i]);
         }
-        return new Strings((String[])v.toArray(new String[v.size()]));
+        return new Strings(v.toArray(new String[v.size()]));
     }
     
     public void moveCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
