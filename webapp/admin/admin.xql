@@ -135,6 +135,12 @@ declare function admin:display-login-form() as element()
                     <td colspan="2" align="left"><input type="submit"/></td>
                 </tr>
             </table>
+            {
+                for $param in request:get-parameter-names()
+                return
+                    <input type="hidden" name="{$param}" 
+                        value="{request:get-parameter($param, ())}"/>
+            }
         </form>
     </div>
 };

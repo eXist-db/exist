@@ -7,8 +7,6 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 
-import module namespace setup="http://exist-db.org/xquery/docs/setup" at "docsetup.xql";
-
 declare namespace dq="http://exist-db.org/xquery/documentation";
 
 declare option exist:serialize "method=html media-type=text/html expand-xincludes=yes";
@@ -153,14 +151,11 @@ as element() {
             <title>Search the Documentation</title>
             {
                 if ($askPass) then
-                    <form id="f-pass" name="f-pass" action="search.xql" method="POST">
-                        <para>The documentation needs to be loaded into the first,
-                        which requires administrator rights. Please enter the
-                        password for the admin user below:</para>
-                        <input type="password" name="pass" value=""/>
-                        <input type="hidden" name="generate" value="true"/>
-                        <button type="submit">Generate</button>
-                    </form>
+                    <para>The function documentation needs to be generated one 
+                    time at least. Please change to the 
+                    <a href="{request:get-context-path()}/admin/admin.xql?panel=fundocs">documentation 
+                    setup page</a>
+                    in the admin web application.</para>
                 else (
                     <div id="f-search">
                         <form name="f-query" action="search.xql" method="GET">
@@ -205,16 +200,6 @@ as element() {
 };
 
 let $askPass :=
-    if (not(xdb:collection-available($dq:COLLECTION))) then
-        let $adminPass := request:get-parameter("pass", ())
-        let $generate := request:get-parameter("generate", ())
-        return
-            if ($generate) then
-                let $dummy := setup:setup($adminPass)
-                return false()
-            else
-                true()
-    else
-        false()
+    not(xdb:collection-available($dq:COLLECTION))
 return
 	dq:get-page((), $askPass)
