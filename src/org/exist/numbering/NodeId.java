@@ -32,7 +32,7 @@ import java.io.IOException;
  * scheme. From a given id, we can determine the relationship
  * of the node it represents to any other node in the same document.
  */
-public interface NodeId extends Comparable {
+public interface NodeId extends Comparable<NodeId> {
 	
 	public static final int LENGTH_NODE_ID_UNITS = 2; //sizeof short
 
