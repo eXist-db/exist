@@ -1,7 +1,6 @@
 package org.exist.xquery.functions.util;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.dom.NodeSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,14 +11,11 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
@@ -43,7 +39,7 @@ public class SerializeTest {
     @Before
     public void setUp() throws Exception {
         // initialize driver
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);

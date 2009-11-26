@@ -317,7 +317,7 @@ public class OptimizerTest {
             BrokerPool.configure(1, 5, config); 
             
 			// initialize driver
-			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+			Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);

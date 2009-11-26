@@ -71,7 +71,7 @@ public class RandomText extends BasicFunction {
             docs = context.getBroker().getAllXMLResources(docs);
             Occurrences[] occurrences =
                     context.getBroker().getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), null, null);
-            List list = new ArrayList();
+            List<String> list = new ArrayList<String>();
             for (int i = 0; i < occurrences.length; i++) {
                 list.add(occurrences[i].getTerm().toString());
             }

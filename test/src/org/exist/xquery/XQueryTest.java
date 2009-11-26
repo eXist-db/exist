@@ -137,7 +137,7 @@ public class XQueryTest extends XMLTestCase {
     public void setUp() {
         try {
             // initialize driver
-            Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

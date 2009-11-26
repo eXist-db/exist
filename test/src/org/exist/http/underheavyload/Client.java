@@ -3,8 +3,6 @@
  */
 package org.exist.http.underheavyload;
 
-import java.util.List;
-
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.URI;

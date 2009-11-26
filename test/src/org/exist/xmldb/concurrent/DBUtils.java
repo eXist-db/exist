@@ -52,7 +52,7 @@ public class DBUtils {
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
     public static Collection setupDB(String uri) throws Exception {
-        Class cl = Class.forName(DRIVER);
+        Class<?> cl = Class.forName(DRIVER);
         Database database = (Database)cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
@@ -188,7 +188,7 @@ public class DBUtils {
 	 * */
 	public static String[] wordList(Collection root) throws XMLDBException {
 		IndexQueryService service = (IndexQueryService)root.getService("IndexQueryService", "1.0");
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         String alphas = "abcdefghijklmnopqrstuvwxyz";
         for (int i = 0; i < alphas.length(); i++) {
             String s = alphas.substring(i, i + 1);

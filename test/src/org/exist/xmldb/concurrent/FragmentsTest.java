@@ -23,10 +23,7 @@ package org.exist.xmldb.concurrent;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.concurrent.action.CreateCollectionAction;
-import org.exist.xmldb.concurrent.action.ReplaceResourceAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
-import org.exist.xmldb.concurrent.action.XQueryUpdateAction;
-import org.xmldb.api.base.XMLDBException;
 
 public class FragmentsTest extends ConcurrentTestBase {
 

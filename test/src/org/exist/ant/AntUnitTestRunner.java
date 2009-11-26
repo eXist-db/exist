@@ -2,7 +2,6 @@ package org.exist.ant;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xquery.XPathException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +33,7 @@ public class AntUnitTestRunner {
     @Before
     public void setUp() throws Exception {
         // initialize driver
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);

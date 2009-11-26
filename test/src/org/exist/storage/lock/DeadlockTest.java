@@ -21,10 +21,7 @@
  */
 package org.exist.storage.lock;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -180,7 +177,7 @@ public class DeadlockTest {
 			transact.commit(transaction);
 
 			// initialize XML:DB driver
-			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+			Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) cl.newInstance();
 			DatabaseManager.registerDatabase(database);
 		} catch (Exception e) {

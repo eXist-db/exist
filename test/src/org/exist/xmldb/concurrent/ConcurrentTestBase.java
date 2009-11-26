@@ -54,7 +54,7 @@ public abstract class ConcurrentTestBase extends TestCase {
 
     protected Collection testCol;
 
-    protected List actions = new ArrayList(5);
+    protected List<Runner> actions = new ArrayList<Runner>(5);
 
     protected volatile boolean failed = false;
 
@@ -86,15 +86,13 @@ public abstract class ConcurrentTestBase extends TestCase {
 
     public void testConcurrent() {
         // start all threads
-        for (int i = 0; i < actions.size(); i++) {
-            Thread t = (Thread) actions.get(i);
+        for (Thread t : actions) {
             t.start();
         }
 
         // wait for threads to finish
         try {
-            for (int i = 0; i < actions.size(); i++) {
-                Thread t = (Thread) actions.get(i);
+            for (Thread t : actions) {
                 t.join();
             }
         } catch (Exception e) {

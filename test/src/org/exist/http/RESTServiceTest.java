@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -757,9 +758,8 @@ public class RESTServiceTest extends TestCase {
     }
 
     protected void dumpHeaders(HttpURLConnection connect) {
-    	Map headers = connect.getHeaderFields();
-    	for (Iterator i = headers.entrySet().iterator(); i.hasNext(); ) {
-    		Map.Entry entry = (Map.Entry) i.next();
+    	Map<String,List<String>> headers = connect.getHeaderFields();
+    	for (Map.Entry<String,List<String>> entry : headers.entrySet()) {
     		System.out.println(entry.getKey() + ": " + entry.getValue());
     	}
     }

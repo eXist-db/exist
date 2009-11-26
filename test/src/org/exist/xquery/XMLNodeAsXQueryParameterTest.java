@@ -213,7 +213,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 * @throws XMLDBException
 	 */
 	private final Database registerDatabase() throws XMLDBException {
-		Class driver = null;
+		Class<?> driver = null;
 		String driverName = "org.exist.xmldb.DatabaseImpl";
 		try {
 			driver = Class.forName(driverName);

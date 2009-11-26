@@ -31,7 +31,6 @@ import org.exist.test.EmbeddedExistTester;
 import org.exist.xquery.XPathException;
 
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
 import org.xml.sax.SAXException;

@@ -151,7 +151,7 @@ public class XQTS_case {
 	}
 
 	protected void groupCase(String testGroup, String testCase) {
-		BrokerPool pool;
+//		BrokerPool pool;
 		try {
 			XQueryService service = (XQueryService) testCollection.getService(
 					"XQueryService", "1.0");

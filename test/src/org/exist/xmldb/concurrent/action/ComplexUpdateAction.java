@@ -120,6 +120,7 @@ public class ComplexUpdateAction extends Action {
 		System.out.println("Processed " + mods + " modifications.");
 	}
 	
+	@SuppressWarnings("unused")
 	private void displayResource(Collection col) throws XMLDBException {
 		XMLResource res = (XMLResource)col.getResource(resourceName);
 		System.out.println("------------------------------------------------------------------");

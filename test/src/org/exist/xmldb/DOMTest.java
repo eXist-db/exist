@@ -1,7 +1,6 @@
 package org.exist.xmldb;
 
 import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,7 +56,7 @@ public class DOMTest {
 	public void runTest1() {
 		try {
 			System.out.println("Running test1 ...");
-			Class dbc = Class.forName(driver);
+			Class<?> dbc = Class.forName(driver);
 			Database database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
 			Collection rootColl =
@@ -118,7 +117,7 @@ public class DOMTest {
 		try {
 			System.out.println("Running test 2 ...");
 			for (int i = 0; i < 2; i++) {
-				Class dbc = Class.forName(driver);
+				Class<?> dbc = Class.forName(driver);
 				Database database = (Database) dbc.newInstance();
 				DatabaseManager.registerDatabase(database);
 
@@ -166,7 +165,7 @@ public class DOMTest {
 				dim.shutdown();
 			}
 
-			Class dbc = Class.forName(driver);
+			Class<?> dbc = Class.forName(driver);
 			Database database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
 			Collection coll =
@@ -192,7 +191,7 @@ public class DOMTest {
 		try {
 			System.out.println("Running test 3 ...");
 
-			Class dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
+			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
 
@@ -247,7 +246,7 @@ public class DOMTest {
 		try {
 			System.out.println("Running test 4 ...");
 
-			Class dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
+			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
 			database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
 

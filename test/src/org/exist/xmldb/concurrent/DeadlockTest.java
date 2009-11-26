@@ -63,7 +63,7 @@ public class DeadlockTest extends TestCase {
     protected void setUp() {
     	try {
 	        String driver = "org.exist.xmldb.DatabaseImpl";
-	        Class cl = Class.forName(driver);
+	        Class<?> cl = Class.forName(driver);
 	        Database database = (Database) cl.newInstance();
 	        assertNotNull(database);
 	        database.setProperty("create-database", "true");

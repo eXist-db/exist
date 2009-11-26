@@ -22,14 +22,12 @@
 package org.exist.xquery;
 
 import java.io.File;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -41,8 +39,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
-import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author wolf
@@ -106,7 +102,7 @@ public class ValueIndexTest extends TestCase {
     protected void setUp() {
         try {
             // initialize driver
-            Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

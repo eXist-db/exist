@@ -31,7 +31,6 @@ import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 /** An abstract wrapper for remote DB tests
@@ -89,7 +88,7 @@ public abstract class RemoteDBTest extends TestCase {
     protected void setUpRemoteDatabase() {             
     	try {
 	    	//Connect to the DB
-	        Class cl = Class.forName(DB_DRIVER);
+	        Class<?> cl = Class.forName(DB_DRIVER);
 	        Database database = (Database) cl.newInstance();
 	        assertNotNull(database);
 	        DatabaseManager.registerDatabase(database);

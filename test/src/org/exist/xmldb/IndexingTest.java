@@ -2,17 +2,13 @@ package org.exist.xmldb;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 
@@ -105,7 +101,7 @@ public class IndexingTest extends TestCase {
 			if ( EXIST_HOME != "" )
 				System.setProperty("exist.home", EXIST_HOME );
 			
-			Class dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
+			Class<?> dbc = Class.forName("org.exist.xmldb.DatabaseImpl");
 			database = (Database) dbc.newInstance();
             database.setProperty( "create-database", "true" );
 			DatabaseManager.registerDatabase(database);

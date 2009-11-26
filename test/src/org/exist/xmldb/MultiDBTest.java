@@ -126,7 +126,7 @@ public class MultiDBTest extends TestCase {
             testDir.mkdirs();
         try {
 	        // initialize database drivers
-	        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+	        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 	        for (int i = 0; i < INSTANCE_COUNT; i++) {
 	            File dir = new File(testDir, "db" + i);
 	            dir.mkdirs();

@@ -49,7 +49,7 @@ public class DatabaseCollectionTest {
     public void setUp() {
         try {
             System.out.println(">>> setUp");
-            Class cl = Class.forName(DRIVER);
+            Class<?> cl = Class.forName(DRIVER);
             /* Database */ database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

@@ -37,11 +37,8 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.xmldb.api.base.ResourceSet;
@@ -94,7 +91,7 @@ public class CollectionConfigurationTest {
     // =============
     
     private static void startDatabase() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
@@ -120,7 +117,8 @@ public class CollectionConfigurationTest {
         assertEquals("Store xconf", collection + "/collection.xconf", r);
     }
 
-    private void storeDocument(String collection, String name, String document) throws XMLDBException {
+    @SuppressWarnings("unused")
+	private void storeDocument(String collection, String name, String document) throws XMLDBException {
         System.out.println("storeDocument=" + collection + " " + name);
         ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
         String r = (String) result.getResource(0).getContent();

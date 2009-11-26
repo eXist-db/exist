@@ -75,7 +75,7 @@ public class ValidationServiceTest  {
         
         try {
             System.out.println(">>> setUp");
-            Class cl = Class.forName(DRIVER);
+            Class<?> cl = Class.forName(DRIVER);
              database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

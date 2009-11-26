@@ -38,7 +38,6 @@ import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.Serializer;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.serializer.SAXSerializer;

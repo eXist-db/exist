@@ -209,7 +209,7 @@ public class TreeLevelOrderTest extends TestCase {
 	 * Registers a new database instance and returns it.
 	 */
 	private final Database registerDatabase() {		
-		Class driver = null;
+		Class<?> driver = null;
 		String driverName = "org.exist.xmldb.DatabaseImpl";
 		try {
 			driver = Class.forName(driverName);

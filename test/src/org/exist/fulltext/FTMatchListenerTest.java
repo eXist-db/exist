@@ -305,7 +305,7 @@ public class FTMatchListenerTest {
             if (pool != null)
                 pool.release(broker);
         }
-        HashMap m = new HashMap();
+        HashMap<String, String> m = new HashMap<String, String>();
         m.put("exist", "http://exist.sourceforge.net/NS/exist");
         NamespaceContext ctx = new SimpleNamespaceContext(m);
         XMLUnit.setXpathNamespaceContext(ctx);

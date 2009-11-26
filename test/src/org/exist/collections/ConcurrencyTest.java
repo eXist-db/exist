@@ -14,7 +14,6 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XQueryService;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,7 +96,7 @@ public class ConcurrencyTest {
     public static void initDB() {
         // initialize XML:DB driver
         try {
-            Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

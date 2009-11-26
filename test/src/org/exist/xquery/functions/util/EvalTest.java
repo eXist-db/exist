@@ -1,6 +1,5 @@
 package org.exist.xquery.functions.util;
 
-import org.exist.dom.NodeSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,8 +9,6 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
@@ -35,7 +32,7 @@ public class EvalTest {
     @Before
     public void setUp() throws Exception {
         // initialize driver
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);

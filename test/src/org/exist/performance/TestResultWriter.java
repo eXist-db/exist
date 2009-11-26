@@ -35,9 +35,6 @@ import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-import java.io.IOException;
 import java.util.Properties;
 
 public class TestResultWriter {

@@ -49,7 +49,7 @@ public class CollectionTest extends TestCase {
 	protected void setUp() {
         try {
             // initialize driver
-            Class cl = Class.forName(DRIVER);
+            Class<?> cl = Class.forName(DRIVER);
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

@@ -66,7 +66,7 @@ public class ValidationFunctions_Node_Test {
         initLog4J();
         logger.info("start");
 
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);

@@ -198,8 +198,8 @@ public class SeqOpTest extends TestCase {
 	private void assertSeq(String[] expected, String q) throws XMLDBException {
 		ResourceSet rs = query.query(q);
 		assertEquals(expected.length, rs.getSize());
-		List a = Arrays.asList(expected);
-		List r = new ArrayList((int) rs.getSize());
+		List<String> a = Arrays.asList(expected);
+		List<Object> r = new ArrayList<Object>((int) rs.getSize());
 		for (int i = 0; i < rs.getSize(); i++) r.add(rs.getResource(i).getContent());
 		if (!a.equals(r)) fail("expected " + a + ", got " + r);
 	}

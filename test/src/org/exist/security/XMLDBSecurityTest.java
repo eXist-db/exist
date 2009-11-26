@@ -1,6 +1,5 @@
 package org.exist.security;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
 import org.exist.StandaloneServer;
@@ -263,7 +262,7 @@ public class XMLDBSecurityTest {
     @BeforeClass
     public static void startServer() {
         try {
-            Class cl = Class.forName(DB_DRIVER);
+            Class<?> cl = Class.forName(DB_DRIVER);
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
