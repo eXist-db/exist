@@ -812,8 +812,8 @@ public class XQueryURLRewrite implements Filter {
         private RequestWrapper(HttpServletRequest request) {
             super(request);
             // copy parameters
-            for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
-                String key = (String) e.nextElement();
+            for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
+                String key = e.nextElement();
                 String[] value = request.getParameterValues(key);
                 addedParams.put(key, value);
             }
@@ -912,11 +912,11 @@ public class XQueryURLRewrite implements Filter {
             return null;
         }
 
-        public Map getParameterMap() {
+        public Map<String, String[]> getParameterMap() {
             return addedParams;
         }
 
-        public Enumeration getParameterNames() {
+        public Enumeration<String> getParameterNames() {
             Vector<String> v = new Vector<String>();
             for (String key : addedParams.keySet()) {
                 v.addElement(key);
@@ -1005,7 +1005,8 @@ public class XQueryURLRewrite implements Filter {
 
     private class CachingResponseWrapper extends HttpServletResponseWrapper {
 
-        protected HttpServletResponse origResponse;
+        @SuppressWarnings("unused")
+		protected HttpServletResponse origResponse;
         protected CachingServletOutputStream sos = null;
         protected PrintWriter writer = null;
         protected int status = HttpServletResponse.SC_OK;

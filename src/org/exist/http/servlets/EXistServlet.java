@@ -679,7 +679,7 @@ public class EXistServlet extends HttpServlet {
         }
         try {
 			LOG.info("registering XMLDB driver");
-			Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
+			Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database)clazz.newInstance();
 			DatabaseManager.registerDatabase(database);
 		} catch (ClassNotFoundException e) {

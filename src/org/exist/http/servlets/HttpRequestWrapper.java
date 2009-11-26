@@ -107,7 +107,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getCookies();
     }
     
-    private static void addParameter(Map map, String paramName, Object value)
+    private static void addParameter(Map<String, Object> map, String paramName, Object value)
     {
     	Object old = map.get(paramName);
         if(old != null)
@@ -118,7 +118,7 @@ public class HttpRequestWrapper implements RequestWrapper {
             }
             else
             {
-                ArrayList list = new ArrayList();
+                ArrayList<Object> list = new ArrayList<Object>();
                 list.add(old);
                 list.add(value);
                 map.put(paramName, list);
@@ -161,7 +161,7 @@ public class HttpRequestWrapper implements RequestWrapper {
             	String nvps[] = qs.split("&");
             	if(nvps != null && nvps.length > 0)
             	{
-                    HashMap qsParams = new HashMap();
+                    HashMap<String, Object> qsParams = new HashMap<String, Object>();
             		for(int i = 0; i < nvps.length; i++)
             		{
             			String nvp[] = nvps[i].split("=");

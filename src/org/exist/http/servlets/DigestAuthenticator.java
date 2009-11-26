@@ -135,7 +135,8 @@ public class DigestAuthenticator implements Authenticator {
 	private static class Digest {
 		String method=null;
         String username = null;
-        String realm = null;
+        @SuppressWarnings("unused")
+		String realm = null;
         String nonce = null;
         String uri = null;
         String response=null;
