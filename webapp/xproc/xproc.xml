@@ -706,6 +706,8 @@ return
 
 	    <li>some step sorting issues (specifically intermixing of steps using p:inline), best to use explicit port binding to completely avoid.</li>
 
+        <li>p:xquery does not currently pass in the full context(ex. request funcs may not work).</li>
+
 	    <li>p:xquery currently uses a c:result element to output, I also added a xproc:escape attribute to c:query to avoid having to wrap XQuery using CDATA (which is XProc spec requirement).</li>
 
 	    <li>declare base-uri affects module imports (need to investigate across all XQuery processors)</li>
