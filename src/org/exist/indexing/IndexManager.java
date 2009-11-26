@@ -50,7 +50,7 @@ public class IndexManager {
 
     private BrokerPool pool;
 
-    private Map indexers = new HashMap();
+    private Map<String, Index> indexers = new HashMap<String, Index>();
 
     /**
      * Constructs a new IndexManager and registers the indexes specified in
@@ -76,7 +76,7 @@ public class IndexManager {
             for (int i = 0; i < modConf.length; i++) {
                 String className = modConf[i].getClassName();
                 try {
-                    Class clazz = Class.forName(className);
+                    Class<?> clazz = Class.forName(className);
                     if (!AbstractIndex.class.isAssignableFrom(clazz)) {
                         throw new DatabaseConfigurationException("Class " + className + " does not implement " +
                         		AbstractIndex.class.getName());
@@ -112,7 +112,7 @@ public class IndexManager {
      * 
      * @return the iterator
      */
-    protected Iterator iterator() {
+    protected Iterator<Index> iterator() {
         return indexers.values().iterator();
     }
 
@@ -123,8 +123,8 @@ public class IndexManager {
      * @return the index
      */
     public synchronized Index getIndexById(String indexId) {
-    	for (Iterator i = iterator(); i.hasNext(); ) {
-    		Index indexer = (Index) i.next();
+    	for (Iterator<Index> i = iterator(); i.hasNext(); ) {
+    		Index indexer = i.next();
             if (indexId.equals(indexer.getIndexId()))
     			return indexer;
     	}
@@ -137,7 +137,7 @@ public class IndexManager {
      * @return the index
      */    
     public synchronized Index getIndexByName(String indexName) {
-        return (Index)indexers.get(indexName);
+        return indexers.get(indexName);
     }
     
     /**
@@ -151,8 +151,8 @@ public class IndexManager {
         final IndexWorker workers[] = new IndexWorker[indexers.size()];
         Index index;
         int j = 0;
-        for (Iterator i = indexers.values().iterator(); i.hasNext(); j++) {
-            index = (Index) i.next();
+        for (Iterator<Index> i = indexers.values().iterator(); i.hasNext(); j++) {
+            index = i.next();
             workers[j] = index.getWorker(broker);
         }
         return workers;
@@ -166,7 +166,7 @@ public class IndexManager {
      */
     public void shutdown() throws DBException {
         Index index;
-        for (Iterator i = iterator(); i.hasNext(); ) {
+        for (Iterator<Index> i = iterator(); i.hasNext(); ) {
             index = (Index) i.next();
             index.close();
         }
@@ -179,8 +179,8 @@ public class IndexManager {
      */
     public void sync() throws DBException {
         Index index;
-        for (Iterator i = iterator(); i.hasNext(); ) {
-            index = (Index) i.next();
+        for (Iterator<Index> i = iterator(); i.hasNext(); ) {
+            index = i.next();
             index.sync();
         }
     }
@@ -193,8 +193,8 @@ public class IndexManager {
      */
     public void removeIndexes() throws DBException {
         Index index;
-        for (Iterator i = iterator(); i.hasNext();) {
-            index = (Index) i.next();
+        for (Iterator<Index> i = iterator(); i.hasNext();) {
+            index = i.next();
             index.remove();
         }
     }
@@ -207,16 +207,16 @@ public class IndexManager {
      */
     public void reopenIndexes() throws DatabaseConfigurationException {
         Index index;
-        for (Iterator i = iterator(); i.hasNext();) {
-            index = (Index) i.next();
+        for (Iterator<Index> i = iterator(); i.hasNext();) {
+            index = i.next();
             index.open();
         }
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
         Index index;
-        for (Iterator i = iterator(); i.hasNext();) {
-            index = (Index) i.next();
+        for (Iterator<Index> i = iterator(); i.hasNext();) {
+            index = i.next();
             if (index instanceof RawBackupSupport)
                 ((RawBackupSupport)index).backupToArchive(backup);
         }

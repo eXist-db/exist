@@ -47,7 +47,7 @@ import java.util.Map;
  */
 public class IndexController {
 
-    protected Map indexWorkers = new HashMap();
+    protected Map<String, IndexWorker> indexWorkers = new HashMap<String, IndexWorker>();
 
     protected DBBroker broker;
     protected StreamListener listener = null;    
@@ -80,12 +80,10 @@ public class IndexController {
      * @return an arbitrary configuration object to be kept for this index in the collection configuration
      * @throws DatabaseConfigurationException if a configuration error occurs
      */
-    public Map configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
-        Map map = new HashMap();
-        IndexWorker indexWorker;
+    public Map<String, Object> configure(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+        Map<String, Object> map = new HashMap<String, Object>();
         Object conf;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
+        for (IndexWorker indexWorker : indexWorkers.values()) {
             conf = indexWorker.configure(this, configNodes, namespaces);
             if (conf != null)
                 map.put(indexWorker.getIndexId(), conf);

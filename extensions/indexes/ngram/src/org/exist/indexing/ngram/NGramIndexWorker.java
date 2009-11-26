@@ -132,7 +132,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.getN();
     }
 
-    public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         // We use a map to store the QNames to be indexed
         Map map = new TreeMap();

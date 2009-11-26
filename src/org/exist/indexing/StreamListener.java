@@ -23,7 +23,6 @@ package org.exist.indexing;
 
 import org.exist.dom.AttrImpl;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.TextImpl;
 import org.exist.dom.CharacterDataImpl;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;

@@ -33,7 +33,7 @@ public class NGramIndexConfig {
 
     private QName qname;
 
-    public NGramIndexConfig(Map namespaces, String name) throws DatabaseConfigurationException {
+    public NGramIndexConfig(Map<String, String> namespaces, String name) throws DatabaseConfigurationException {
         boolean isAttribute = false;
         if (name.startsWith("@")) {
             isAttribute = true;
@@ -44,7 +44,7 @@ public class NGramIndexConfig {
             String localName = QName.extractLocalName(name);
             String namespaceURI = "";
             if (prefix != null) {
-                namespaceURI = (String) namespaces.get(prefix);
+                namespaceURI = namespaces.get(prefix);
                 if(namespaceURI == null) {
                     throw new DatabaseConfigurationException("NGram index conifg: no namespace defined for prefix: " + prefix +
                         " in index definition");
