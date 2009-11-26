@@ -45,7 +45,7 @@ public class XACMLSource
 		this.key = key;
 	}
 	
-	public static XACMLSource getInstance(Class source)
+	public static XACMLSource getInstance(Class<?> source)
 	{
 		if(source == null)
 			throw new NullPointerException("Source class cannot be null");

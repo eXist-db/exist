@@ -72,10 +72,10 @@ public class RequestHelper
 	 */
 	public RequestCtx createQueryRequest(XQueryContext context, XACMLSource source)
 	{
-		Set subjects = createQuerySubjects(context.getUser(), null);
-		Set resourceAttributes = createQueryResource(source);
-		Set actionAttributes = createBasicAction(XACMLConstants.EXECUTE_QUERY_ACTION);
-		Set environmentAttributes = createEnvironment(context.getAccessContext());
+		Set<Subject> subjects = createQuerySubjects(context.getUser(), null);
+		Set<Attribute> resourceAttributes = createQueryResource(source);
+		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.EXECUTE_QUERY_ACTION);
+		Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, environmentAttributes);
 	}
@@ -112,10 +112,10 @@ public class RequestHelper
 	public RequestCtx createReflectionRequest(XQueryContext context, Module contextModule, String className, String methodName)
 	{
 		User user = context.getUser();
-		Set subjects = createQuerySubjects(user, contextModule);
-		Set resourceAttributes = createReflectionResource(className, methodName);
-		Set actionAttributes = createBasicAction(XACMLConstants.INVOKE_METHOD_ACTION);
-		Set environmentAttributes = createEnvironment(context.getAccessContext());
+		Set<Subject> subjects = createQuerySubjects(user, contextModule);
+		Set<Attribute> resourceAttributes = createReflectionResource(className, methodName);
+		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.INVOKE_METHOD_ACTION);
+		Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, environmentAttributes);
 	}
@@ -174,9 +174,9 @@ public class RequestHelper
 		}
 		
 		User user = context.getUser();
-		Set subjects = createQuerySubjects(user, contextModule);
+		Set<Subject> subjects = createQuerySubjects(user, contextModule);
 
-		Set resourceAttributes = new HashSet(8);
+		Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
 		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(functionModule));
 		XACMLSource moduleSrc = generateModuleSource(functionModule);
 		addSourceAttributes(resourceAttributes, moduleSrc);
@@ -184,8 +184,8 @@ public class RequestHelper
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.FUNCTION_RESOURCE);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalName());
 
-		Set actionAttributes = createBasicAction(XACMLConstants.CALL_FUNCTION_ACTION);
-		Set environmentAttributes = createEnvironment(context.getAccessContext());
+		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.CALL_FUNCTION_ACTION);
+		Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, environmentAttributes);
 	}
@@ -220,12 +220,12 @@ public class RequestHelper
 	* @return A <code>Set</code> that contains attributes describing the
 	*	action for use in a <code>RequestCtx</code>
 	*/
-	public Set createBasicAction(String action)
+	public Set<Attribute> createBasicAction(String action)
 	{
 		if(action == null)
 			return null;
 
-		Set attributes = new HashSet(4);
+		Set<Attribute> attributes = new HashSet<Attribute>(4);
 		addStringAttribute(attributes, XACMLConstants.ACTION_ID_ATTRIBUTE, action);
 		addValidURIAttribute(attributes, XACMLConstants.ACTION_NS_ATTRIBUTE, XACMLConstants.ACTION_NS);
 
@@ -253,7 +253,7 @@ public class RequestHelper
 		if(module == null)
 			return null;
 
-		Set attributes = new HashSet(8);
+		Set<Attribute> attributes = new HashSet<Attribute>(8);
 		addValidURIAttribute(attributes, XACMLConstants.SUBJECT_NS_ATTRIBUTE, module.getNamespaceURI());
 		addStringAttribute(attributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(module));
 		XACMLSource moduleSrc = generateModuleSource(module);
@@ -281,14 +281,14 @@ public class RequestHelper
 	* @return A <code>Set</code> containing the <code>Attribute</code>s
 	* describing access to Java code by reflection.
 	*/
-	public Set createReflectionResource(String className, String methodName)
+	public Set<Attribute> createReflectionResource(String className, String methodName)
 	{
 		if(className == null)
 			throw new NullPointerException("Class name cannot be null");
 		if(methodName == null)
 			throw new NullPointerException("Method name cannot be null");
 		
-		Set resourceAttributes = new HashSet(8);
+		Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
 
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.METHOD_RESOURCE);
 		XACMLSource source = XACMLSource.getInstance(className);
@@ -305,12 +305,12 @@ public class RequestHelper
 	 * @return A <code>Set</code> containing attributes for the specified
 	 * query.
 	 */
-	public Set createQueryResource(XACMLSource source)
+	public Set<Attribute> createQueryResource(XACMLSource source)
 	{
 		if(source == null)
 			throw new NullPointerException("Query source cannot be null");
 		
-		Set resourceAttributes = new HashSet(4);
+		Set<Attribute> resourceAttributes = new HashSet<Attribute>(4);
 		addSourceAttributes(resourceAttributes, source);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, source.createId());
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.MAIN_MODULE_RESOURCE);
@@ -330,11 +330,11 @@ public class RequestHelper
 	* @return A <code>Set</code> containing a <code>Subject</code> for each
 	* the context module if there is one and the user.
 	*/
-	public Set createQuerySubjects(User user, Module contextModule)
+	public Set<Subject> createQuerySubjects(User user, Module contextModule)
 	{
 		if(user == null)
 			throw new NullPointerException("User cannot be null");
-		Set subjects = new HashSet(4);
+		Set<Subject> subjects = new HashSet<Subject>(4);
 
 		Subject userSubject = createUserSubject(user);
 		subjects.add(userSubject);
@@ -356,11 +356,11 @@ public class RequestHelper
 	 * {@link XACMLConstants#ACCESS_CONTEXT_ATTRIBUTE access context}
 	 * attribute with the value of the specified access context.
 	 */
-	public Set createEnvironment(AccessContext accessCtx)
+	public Set<Attribute> createEnvironment(AccessContext accessCtx)
 	{
 		if(accessCtx == null)
 			throw new NullAccessContextException();
-		Set environment = new HashSet(4);
+		Set<Attribute> environment = new HashSet<Attribute>(4);
 		addStringAttribute(environment, XACMLConstants.ACCESS_CONTEXT_ATTRIBUTE, accessCtx.toString());
 		return environment;
 	}
@@ -413,7 +413,7 @@ public class RequestHelper
 	 * @param source The source for which attributes will be added.  It
 	 * cannot be null.
 	 */
-	public static void addSourceAttributes(Set attributes, XACMLSource source)
+	public static void addSourceAttributes(Set<Attribute> attributes, XACMLSource source)
 	{
 		if(source == null)
 			throw new NullPointerException("Source cannot be null");
@@ -432,7 +432,7 @@ public class RequestHelper
 	 * @param attrID The ID of the new attribute, cannot be null
 	 * @param attrValue The value of the new attribute.  It cannot be null.
 	 */
-	public static void addStringAttribute(Set attributes, URI attrID, String attrValue)
+	public static void addStringAttribute(Set<Attribute> attributes, URI attrID, String attrValue)
 	{
 		if(attributes == null)
 			return;
@@ -459,7 +459,7 @@ public class RequestHelper
 	 * @throws URISyntaxException if the specified attribute value is not a
 	 * valid URI.
 	 */
-	public static void addURIAttribute(Set attributes, URI attrID, String uriString) throws URISyntaxException
+	public static void addURIAttribute(Set<Attribute> attributes, URI attrID, String uriString) throws URISyntaxException
 	{
 		if(attributes == null)
 			return;
@@ -475,7 +475,7 @@ public class RequestHelper
 	
 	//wrapper for when the URI is known to be valid, such as when obtained from a source
 	//that validates the URI or from a constant
-	private static void addValidURIAttribute(Set attributes, URI attrID, String uriString)
+	private static void addValidURIAttribute(Set<Attribute> attributes, URI attrID, String uriString)
 	{
 		try
 		{

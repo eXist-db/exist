@@ -1,4 +1,3 @@
-
 /*
  *  eXist xml document repository and xpath implementation
  *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
@@ -27,7 +26,9 @@ package org.exist.security;
  */
 public class PermissionDeniedException extends Exception {
 
-    /**  Constructor for the PermissionDeniedException object */
+	private static final long serialVersionUID = 8832813230189409267L;
+
+	/**  Constructor for the PermissionDeniedException object */
     public PermissionDeniedException() {
         super();
     }

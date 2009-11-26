@@ -24,6 +24,8 @@ package org.exist.security.xacml;
 
 public class NullAccessContextException extends NullPointerException
 {
+	private static final long serialVersionUID = -4882806628775359710L;
+
 	public NullAccessContextException()
 	{
 		super("Access context cannot be null");

@@ -36,10 +36,12 @@ import com.sun.xacml.finder.PolicyFinderResult;
 */
 public class ExistPolicyModule extends PolicyFinderModule
 {
+	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(ExistPolicyModule.class);
 
 	private ExistPDP pdp;
 
+	@SuppressWarnings("unused")
 	private ExistPolicyModule() {}
 	/**
 	* Creates a new <code>ExistPolicyModule</code>.  Retains a reference

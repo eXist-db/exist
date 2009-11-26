@@ -30,7 +30,7 @@ public class LDAPbindSecurityManager extends LDAPSecurityManager implements Secu
        * @param user 
        * @param passwd
        */
-      Hashtable env = getDirectoryEnvironment();
+      Hashtable<String, String> env = getDirectoryEnvironment();
       env.put(Context.SECURITY_CREDENTIALS, passwd);
       env.put(Context.SECURITY_PRINCIPAL, "uid=" + user+","+userBase);
 

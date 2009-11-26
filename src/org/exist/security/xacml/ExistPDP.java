@@ -94,6 +94,7 @@ public class ExistPDP
 		java.util.logging.Logger.getLogger("com.sun.xacml").setLevel(java.util.logging.Level.WARNING);
 	}
 
+	@SuppressWarnings("unused")
 	private ExistPDP() {}
 	/**
 	* @param pool A <code>BrokerPool</code> used to obtain an instance
@@ -333,7 +334,7 @@ public class ExistPDP
 	*/
 	private AttributeFinder createAttributeFinder()
 	{
-		List modules = new ArrayList(2);
+		List<Object> modules = new ArrayList<Object>(2);
 		modules.add(new UserAttributeModule(this));
 		modules.add(new CurrentEnvModule());
 		

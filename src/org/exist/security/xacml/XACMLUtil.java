@@ -89,13 +89,14 @@ import org.w3c.dom.Element;
 public class XACMLUtil implements UpdateListener
 {
 	private static final Logger LOG = Logger.getLogger(ExistPolicyModule.class);
-	private static final Map POLICY_CACHE = Collections.synchronizedMap(new HashMap(8));
+	private static final Map<String, AbstractPolicy> POLICY_CACHE = Collections.synchronizedMap(new HashMap<String, AbstractPolicy>(8));
 	private static final XmldbURI[] samplePolicyDocs = { XmldbURI.create("policies/main_modules_policy.xml"),
 		XmldbURI.create("policies/builtin_policy.xml"), XmldbURI.create("policies/external_modules_policy.xml"),
 			XmldbURI.create("policies/reflection_policy.xml") };
 	
 	private ExistPDP pdp;
 	
+	@SuppressWarnings("unused")
 	private XACMLUtil() {}
 	XACMLUtil(ExistPDP pdp)
 	{
@@ -144,7 +145,7 @@ public class XACMLUtil implements UpdateListener
 	public void documentUpdated(DocumentImpl document, int event)
 	{
 		if(inPolicyCollection(document) && (event == UpdateListener.REMOVE || event == UpdateListener.UPDATE))
-			POLICY_CACHE.remove(document.getURI());
+			POLICY_CACHE.remove(document.getURI().toString());
 	}
 
 
