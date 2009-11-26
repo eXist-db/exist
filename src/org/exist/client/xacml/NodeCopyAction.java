@@ -14,9 +14,12 @@ import javax.swing.tree.TreePath;
 
 public class NodeCopyAction extends AbstractAction implements ClipboardOwner
 {
+	private static final long serialVersionUID = -3740034384422578150L;
+
 	private JTree tree;
 	private XACMLTreeNode contextNode;
 	
+	@SuppressWarnings("unused")
 	private NodeCopyAction() {}
 	public NodeCopyAction(JTree tree)
 	{

@@ -2,10 +2,8 @@ package org.exist.client.xacml;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.Policy;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.PolicyTreeElement;
@@ -15,8 +13,8 @@ import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 
 public class PolicySetNode extends AbstractPolicyNode
 {
-	private List children;
-	private List originalChildren;
+	private List<AbstractPolicyNode> children;
+	private List<AbstractPolicyNode> originalChildren;
 	
 	public PolicySetNode(NodeContainer parent, PolicySet policySet)
 	{
@@ -26,12 +24,12 @@ public class PolicySetNode extends AbstractPolicyNode
 	{
 		super(parent, documentName, policySet);
 
-		List toCopy = policySet.getChildren();
-		children = new ArrayList(toCopy.size());
-		for(Iterator it = toCopy.iterator(); it.hasNext();)
-			add((AbstractPolicy)it.next());
+		List<PolicyTreeElement> toCopy = policySet.getChildren();
+		children = new ArrayList<AbstractPolicyNode>(toCopy.size());
+		for(PolicyTreeElement elem : toCopy)
+			add(elem);
 
-		originalChildren = new ArrayList(children);
+		originalChildren = new ArrayList<AbstractPolicyNode>(children);
 	}
 
 	public PolicyTreeElement create()
@@ -53,9 +51,9 @@ public class PolicySetNode extends AbstractPolicyNode
 			throw new IllegalStateException("Combining algorithm must be a policy combining algorithm");
 		PolicyCombiningAlgorithm algorithm = (PolicyCombiningAlgorithm)alg;
 		Target target = getTarget().getTarget();
-		List copy = new ArrayList(children.size());
-		for(Iterator it = children.iterator(); it.hasNext();)
-			copy.add(((PolicyElementNode)it.next()).create());
+		List<PolicyTreeElement> copy = new ArrayList<PolicyTreeElement>(children.size());
+		for(PolicyElementNode child : children)
+			copy.add(child.create());
 		URI useId = (id == null) ? getId() : id;
 		return new PolicySet(useId, algorithm, getDescription(), target, copy);
 	}
@@ -92,7 +90,7 @@ public class PolicySetNode extends AbstractPolicyNode
 				index = children.size()+1;
 			if(index == 0)
 				throw new IllegalArgumentException("Cannot insert AbstractPolicy before Target");
-			children.add(index-1, node);
+			children.add(index-1, (AbstractPolicyNode)node);
 			setModified(true);
 			nodeAdded(node, index);
 		}
@@ -113,9 +111,9 @@ public class PolicySetNode extends AbstractPolicyNode
 
 	public boolean containsId(String id)
 	{
-		for(Iterator it = children.iterator();it.hasNext();)
+		for(AbstractPolicyNode child : children)
 		{
-			if(((AbstractPolicyNode)it.next()).getId().toString().equals(id))
+			if(child.getId().toString().equals(id))
 				return true;
 		}
 		return false;
@@ -144,9 +142,9 @@ public class PolicySetNode extends AbstractPolicyNode
 			return true;
 		if(deep)
 		{
-			for(Iterator it = children.iterator(); it.hasNext();)
+			for(PolicyElementNode child : children)
 			{
-				if(((PolicyElementNode)it.next()).isModified(true))
+				if(child.isModified(true))
 					return true;
 			}
 		}
@@ -157,8 +155,8 @@ public class PolicySetNode extends AbstractPolicyNode
 		children = originalChildren;
 		if(deep)
 		{
-			for(Iterator it = children.iterator(); it.hasNext();)
-				((PolicyElementNode)it.next()).revert(true);
+			for(PolicyElementNode child : children)
+				child.revert(true);
 		}
 		super.revert(deep);
 	}
@@ -167,8 +165,8 @@ public class PolicySetNode extends AbstractPolicyNode
 		originalChildren = children;
 		if(deep)
 		{
-			for(Iterator it = children.iterator(); it.hasNext();)
-				((PolicyElementNode)it.next()).commit(true);
+			for(PolicyElementNode child : children)
+				child.commit(true);
 		}
 		super.commit(deep);
 	}

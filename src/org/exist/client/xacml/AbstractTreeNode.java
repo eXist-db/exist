@@ -5,6 +5,7 @@ public abstract class AbstractTreeNode implements XACMLTreeNode
 	private NodeContainer parent;
 	private boolean modified;
 
+	@SuppressWarnings("unused")
 	private AbstractTreeNode() {}
 	protected AbstractTreeNode(NodeContainer parent)
 	{

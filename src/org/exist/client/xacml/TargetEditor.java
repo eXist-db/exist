@@ -18,6 +18,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.sun.xacml.Target;
+import com.sun.xacml.TargetMatch;
 import com.sun.xacml.attr.AttributeDesignator;
 import com.sun.xacml.attr.AttributeValue;
 
@@ -38,6 +39,7 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 
 	private TargetNode node;
 	
+	@SuppressWarnings("unused")
 	private TargetEditor() {}
 	public TargetEditor(DatabaseInterface dbInterface)
 	{
@@ -137,9 +139,9 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 		if(!node.isModified(false))
 			return;
 		
-		List subjects = ((TargetTableModel)subjectTargetTable.getModel()).createTarget();
-		List resources = ((TargetTableModel)resourceTargetTable.getModel()).createTarget();
-		List actions = ((TargetTableModel)actionTargetTable.getModel()).createTarget();
+		List<List<TargetMatch>> subjects = ((TargetTableModel)subjectTargetTable.getModel()).createTarget();
+		List<List<TargetMatch>> resources = ((TargetTableModel)resourceTargetTable.getModel()).createTarget();
+		List<List<TargetMatch>> actions = ((TargetTableModel)actionTargetTable.getModel()).createTarget();
 		//XACML 2.0:
 		//List environments = ((TargetTableModel)environmentTargetTable.getModel()).createTarget();
 		Target target = new Target(subjects, resources, actions);

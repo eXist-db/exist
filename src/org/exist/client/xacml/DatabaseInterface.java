@@ -3,7 +3,6 @@ package org.exist.client.xacml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -35,6 +34,7 @@ public class DatabaseInterface
 	
 	private Collection policyCollection;
 
+	@SuppressWarnings("unused")
 	private DatabaseInterface() {}
 	public DatabaseInterface(Collection systemCollection)
 	{
@@ -89,10 +89,10 @@ public class DatabaseInterface
 	
 	public void writePolicies(RootNode root)
 	{
-		Set removeDocs;
+		Set<String> removeDocs;
 		try
 		{
-			removeDocs = new TreeSet(Arrays.asList(policyCollection.listResources()));
+			removeDocs = new TreeSet<String>(Arrays.asList(policyCollection.listResources()));
 		}
 		catch(XMLDBException xe)
 		{
@@ -160,9 +160,8 @@ public class DatabaseInterface
 		}
 		if(removeDocs == null)
 			return;
-		for(Iterator it = removeDocs.iterator(); it.hasNext();)
+		for(String documentName : removeDocs)
 		{
-			String documentName = (String)it.next();
 			try
 			{
 				Resource removeResource = policyCollection.getResource(documentName);

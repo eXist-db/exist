@@ -83,7 +83,7 @@ public class TargetTableModel implements TableModel
 	}
 	
 	private int type;
-	private List listeners;
+	private List<TableModelListener> listeners;
 	private AttributeDesignator[] attributes;
 	private Abbreviator abbrev;
 	
@@ -91,6 +91,7 @@ public class TargetTableModel implements TableModel
 	private URI[][] functions;
 
 	
+	@SuppressWarnings("unused")
 	private TargetTableModel() {}
 	public TargetTableModel(int type, Abbreviator abbrev)
 	{
@@ -133,7 +134,7 @@ public class TargetTableModel implements TableModel
 		return false;
 	}
 
-	public Class getColumnClass(int col)
+	public Class<?> getColumnClass(int col)
 	{
 		return String.class;
 	}
@@ -280,15 +281,15 @@ public class TargetTableModel implements TableModel
 		if(listeners == null)
 			return;
 		
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((TableModelListener)it.next()).tableChanged(event);
+		for(TableModelListener listener : listeners)
+			listener.tableChanged(event);
 	}
-	public List createTarget()
+	public List<List<TargetMatch>> createTarget()
 	{
-		List list = new ArrayList(values.length);
+		List<List<TargetMatch>> list = new ArrayList<List<TargetMatch>>(values.length);
 		for(int row = 0; row < values.length; ++row)
 		{
-			List matches = new ArrayList(attributes.length);
+			List<TargetMatch> matches = new ArrayList<TargetMatch>(attributes.length);
 			for(int col = 0; col < attributes.length; ++col)
 			{
 				AttributeValue value = values[row][col];
@@ -372,7 +373,7 @@ public class TargetTableModel implements TableModel
 		if(listener == null)
 			return;
 		if(listeners == null)
-			listeners = new ArrayList(2);
+			listeners = new ArrayList<TableModelListener>(2);
 		listeners.add(listener);
 	}
 

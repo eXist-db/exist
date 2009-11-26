@@ -65,6 +65,7 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	private JPopupMenu popup;
 	private XACMLTreeNode contextNode;
 	
+	@SuppressWarnings("unused")
 	private TreeMutator() {}
 	public TreeMutator(JTree tree)
 	{

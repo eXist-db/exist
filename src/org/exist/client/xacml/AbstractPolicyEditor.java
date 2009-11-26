@@ -1,7 +1,6 @@
 package org.exist.client.xacml;
 
 import java.net.URI;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.ComboBoxModel;
@@ -28,10 +27,9 @@ public class AbstractPolicyEditor extends PolicyElementEditor
 	{
 		boolean isPolicy = node instanceof PolicyNode;
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		Set algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
-		for(Iterator it = algorithms.iterator(); it.hasNext();)
+		Set<CombiningAlgorithm> algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
+		for(CombiningAlgorithm algorithm : algorithms)
 		{
-			CombiningAlgorithm algorithm = (CombiningAlgorithm)it.next();
 			if(isPolicy)
 			{
 				if(algorithm instanceof RuleCombiningAlgorithm)
@@ -52,10 +50,9 @@ public class AbstractPolicyEditor extends PolicyElementEditor
 	{
 		Object prototype = "";
 		int maxLength = -1;
-		Set algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
-		for(Iterator it = algorithms.iterator(); it.hasNext();)
+		Set<CombiningAlgorithm> algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
+		for(CombiningAlgorithm algorithm : algorithms)
 		{
-			CombiningAlgorithm algorithm = (CombiningAlgorithm)it.next();
 			URI ID = algorithm.getIdentifier();
 			String abbreviatedID = abbrev.getAbbreviatedCombiningID(ID);
 			int length = abbreviatedID.length(); 

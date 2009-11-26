@@ -42,6 +42,8 @@ import com.sun.xacml.ctx.Result;
 
 public class XACMLEditor extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, WindowListener
 {
+	private static final long serialVersionUID = 7029748734913443907L;
+
 	private static final String DEFAULT_DESCRIPTION = "This is a policy template.  It will match and deny everything until you change the target and add rules.";
 	private static final String DEFAULT_RULE_DESCRIPTION = "This rule denies everything that is not permitted by the rules above it when " +
 	"used with the ordered permit overrides combining algorithm.  Any rules below it will not be evaluated, so it should be the last rule";
@@ -63,6 +65,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	private NodeEditor editor;
 	private JSplitPane split;
 	
+	@SuppressWarnings("unused")
 	private XACMLEditor() {}
 	public XACMLEditor(Collection systemCollection)
 	{
@@ -161,7 +164,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		Target emptyTarget = createEmptyTarget();
 		RuleCombiningAlgorithm alg = new OrderedPermitOverridesRuleAlg(); 
 		Rule denyEverythingRule = createDefaultRule("DenyAll");
-		List rules = Collections.singletonList(denyEverythingRule);
+		List<Rule> rules = Collections.singletonList(denyEverythingRule);
 		return new Policy(URI.create(policyID), alg, DEFAULT_DESCRIPTION, emptyTarget, rules);
 	}
 	public static Rule createDefaultRule(PolicyElementContainer parent)
