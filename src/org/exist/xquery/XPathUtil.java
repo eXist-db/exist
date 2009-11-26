@@ -39,16 +39,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.RemoteXMLResource;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FloatValue;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -95,6 +86,8 @@ public class XPathUtil {
             return new IntegerValue(((Integer) obj).intValue(), Type.INT);
         else if (obj instanceof Long)
             return new IntegerValue(((Long) obj).longValue(), Type.LONG);
+        else if (obj instanceof byte[])
+            return new Base64Binary((byte[]) obj);
         else if (obj instanceof ResourceSet) {
             Sequence seq = new AVLTreeNodeSet();
             try {
