@@ -33,7 +33,7 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
 
 	private QName qname;
 	
-	public QNameRangeIndexSpec(Map namespaces, String name, String typeStr) 
+	public QNameRangeIndexSpec(Map<String, String> namespaces, String name, String typeStr) 
 	throws DatabaseConfigurationException {
 		try {
             this.type = Type.getType(typeStr);
@@ -50,7 +50,7 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
         String localName = QName.extractLocalName(name);
         String namespaceURI = "";
         if (prefix != null) {
-            namespaceURI = (String) namespaces.get(prefix);
+            namespaceURI = namespaces.get(prefix);
             if(namespaceURI == null) {
                 throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
                     " in index definition");

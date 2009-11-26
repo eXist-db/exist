@@ -33,7 +33,6 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -70,9 +69,9 @@ public class IndexSpec {
     private FulltextIndexSpec ftSpec = null;
 
     private GeneralRangeIndexSpec specs[] = null;
-    private Map qnameSpecs = new TreeMap();
+    private Map<QName, QNameRangeIndexSpec> qnameSpecs = new TreeMap<QName, QNameRangeIndexSpec>();
 
-    private Map customIndexSpecs = null;
+    private Map<String, Object> customIndexSpecs = null;
 
     public IndexSpec(DBBroker broker, Element index) throws DatabaseConfigurationException {
         read(broker, index);
@@ -88,7 +87,7 @@ public class IndexSpec {
      * @throws DatabaseConfigurationException
      */
     public void read(DBBroker broker, Element index) throws DatabaseConfigurationException {
-        Map namespaces = getNamespaceMap(index);
+        Map<String, String> namespaces = getNamespaceMap(index);
 		
         NodeList cl = index.getChildNodes();
         for(int i = 0; i < cl.getLength(); i++) {
@@ -160,7 +159,7 @@ public class IndexSpec {
     }
     
     public QNameRangeIndexSpec getIndexByQName(QName name) {
-    	return (QNameRangeIndexSpec) qnameSpecs.get(name);
+    	return qnameSpecs.get(name);
     }
 
     public boolean hasIndexesByPath() {
@@ -171,10 +170,9 @@ public class IndexSpec {
         return qnameSpecs.size() > 0;
     }
     
-    public List getIndexedQNames() {
-        ArrayList qnames = new ArrayList(8);
-        for (Iterator i = qnameSpecs.keySet().iterator(); i.hasNext(); ) {
-            QName qname = (QName) i.next();
+    public List<QName> getIndexedQNames() {
+        ArrayList<QName> qnames = new ArrayList<QName>(8);
+        for (QName qname : qnameSpecs.keySet()) {
             qnames.add(qname);
         }
         return qnames;
@@ -204,8 +202,8 @@ public class IndexSpec {
      * @param elem
      * @return The namespaces map.
      */
-    private Map getNamespaceMap(Element elem) {
-        HashMap map = new HashMap();
+    private Map<String, String> getNamespaceMap(Element elem) {
+        HashMap<String, String> map = new HashMap<String, String>();
         map.put("xml", Namespaces.XML_NS);
         NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
@@ -228,9 +226,8 @@ public class IndexSpec {
 					result.append(spec.toString()).append('\n');
 			}
 		}		
-		Iterator i = qnameSpecs.keySet().iterator();		
-		while (i.hasNext()) {
-			result.append(qnameSpecs.get(i.next()).toString()).append('\n');
+		for (QName qName : qnameSpecs.keySet()) {
+			result.append(qnameSpecs.get(qName).toString()).append('\n');
 		}		
 		return result.toString();
     }

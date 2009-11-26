@@ -8,7 +8,7 @@ public class TestJob extends UserJavaJob {
 
     private String jobName = this.getClass().getName();
     
-	public void execute(BrokerPool brokerpool, Map params) throws JobException {
+	public void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException {
 		
 		System.out.println("****** TEST JOB EXECUTED ******");
 

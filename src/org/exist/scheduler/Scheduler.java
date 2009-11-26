@@ -43,7 +43,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -76,7 +75,7 @@ public class Scheduler
 	private org.quartz.Scheduler scheduler = null;
 	
 	//startup jobs
-	private Vector startupJobs = new Vector();
+	private Vector<JobExecutionContext> startupJobs = new Vector<JobExecutionContext>();
 	
 	private BrokerPool brokerpool = null;
 	private Configuration config = null;
@@ -193,10 +192,8 @@ public class Scheduler
 	 */
 	public void executeStartupJobs()
 	{
-		for(Iterator itStartupJob = startupJobs.iterator(); itStartupJob.hasNext();)
+		for(JobExecutionContext jec : startupJobs)
 		{
-			JobExecutionContext jec = (JobExecutionContext)itStartupJob.next();
-			
 			org.quartz.Job j = jec.getJobInstance();
 			
 			if(LOG.isInfoEnabled())
@@ -437,7 +434,7 @@ public class Scheduler
 	 */
 	public ScheduledJobInfo[] getScheduledJobs()
 	{
-		ArrayList jobs = new ArrayList();
+		ArrayList<ScheduledJobInfo> jobs = new ArrayList<ScheduledJobInfo>();
 		
 		try
 		{
@@ -475,7 +472,7 @@ public class Scheduler
 	 */
 	public ScheduledJobInfo[] getExecutingJobs()
 	{
-		List executingJobs = null;
+		List<JobExecutionContext> executingJobs = null;
 		
 		try
 		{
@@ -491,7 +488,7 @@ public class Scheduler
 		
 		for(int i = 0; i < executingJobs.size(); i++)
 		{
-			JobExecutionContext jec = (JobExecutionContext)executingJobs.get(i);
+			JobExecutionContext jec = executingJobs.get(i);
 			jobs[i] = new ScheduledJobInfo(scheduler, jec.getTrigger());
 		}
 		
@@ -542,7 +539,7 @@ public class Scheduler
 				//create a Java job
 				try
 				{
-					Class jobClass = Class.forName(jobConfig.getResourceName());
+					Class<?> jobClass = Class.forName(jobConfig.getResourceName());
 					Object jobObject = jobClass.newInstance();
 					
 					if(jobConfig.getType().equals(JOB_TYPE_SYSTEM))
