@@ -22,6 +22,7 @@ import module namespace backup="http://exist-db.org/xquery/admin-interface/backu
 import module namespace prof="http://exist-db.org/xquery/profiling" at "trace.xqm";
 import module namespace grammar="http://exist-db.org/xquery/admin-interface/grammar" at "grammar.xqm";
 import module namespace install="http://exist-db.org/xquery/install-tools" at "install.xqm";
+import module namespace fundocs="http://exist-db.org/xquery/admin/fundocs" at "fundocs.xqm";
 
 declare option exist:serialize "method=xhtml media-type=text/html";
 
@@ -65,6 +66,10 @@ declare function admin:panel() as element()
         else if($panel eq "setup") then
         (
             setup:main()
+        )
+        else if ($panel eq "fundocs") then
+        (
+            fundocs:main()
         )
 		else if ($panel eq "revisions") then
 		(
@@ -208,6 +213,7 @@ return (
                                 <li><a href="{$link}?panel=xqueries">View Running Jobs</a></li>
                                 <li><a href="{$link}?panel=setup">Examples Setup</a></li>
                                 <li><a href="{$link}?panel=install">Install Tools</a></li>
+                                <li><a href="{$link}?panel=fundocs">Install Documentation</a></li>
                                 <li><a href="{$link}?panel=backup">Backups</a></li>
                                 <li><a href="{$link}?panel=trace">Query Profiling</a></li>
                                 <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
