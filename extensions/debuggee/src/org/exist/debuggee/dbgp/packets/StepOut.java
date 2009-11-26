@@ -22,7 +22,6 @@
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.debugger.ResponseListener;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

@@ -49,11 +49,12 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 	 * the available JDBC index, whatever its underlying engine is.
 	 */
 	public final static String ID = AbstractGMLJDBCIndex.class.getName();	
+	@SuppressWarnings("unused")
 	private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);
     /**
      * An IndexWorker "pool"
      */
-    protected HashMap workers = new HashMap();
+    protected HashMap<DBBroker, AbstractGMLJDBCIndexWorker> workers = new HashMap<DBBroker, AbstractGMLJDBCIndexWorker>();
     /**
      * The connection to the DB that will be needed for global operations 
      */
@@ -100,9 +101,9 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     }
 
     public void close() throws DBException {
-    	Iterator i = workers.values().iterator();
+    	Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
     	while (i.hasNext()) {
-    		AbstractGMLJDBCIndexWorker worker = (AbstractGMLJDBCIndexWorker)i.next();
+    		AbstractGMLJDBCIndexWorker worker = i.next();
     		//Flush any pending stuff 
 			worker.flush();
 			//Reset state
@@ -125,9 +126,9 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     }
     
     public void remove() throws DBException {
-    	Iterator i = workers.values().iterator();
+    	Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
     	while (i.hasNext()) {
-    		AbstractGMLJDBCIndexWorker worker = (AbstractGMLJDBCIndexWorker)i.next();
+    		AbstractGMLJDBCIndexWorker worker = i.next();
     		//Flush any pending stuff 
 			worker.flush();
 			//Reset state

@@ -385,7 +385,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
-    protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
+    protected Map<Geometry, String> getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
     	); 
@@ -393,7 +393,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         ResultSet rs = null;
         try {	 
 	        rs = ps.executeQuery();
-	        Map map = new TreeMap();
+	        Map<Geometry, String> map = new TreeMap<Geometry, String>();
 	        while (rs.next()) {
 	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
 	        	//Returns the EPSG:4326 WKT for every geometry to make occurrence aggregation consistent
