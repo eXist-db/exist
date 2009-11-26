@@ -64,7 +64,16 @@ public class ModuleInfo extends BasicFunction {
 			"Returns a Boolean value if the module identified by the namespace URI is registered.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is registered as an active function module"));
-	
+
+    public final static FunctionSignature mappedModulesSig =
+		new FunctionSignature(
+			new QName("mapped-modules", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Returns a sequence containing the namespace URIs of all XQuery modules " +
+			"which are statically mapped to a source location in the configuration file. " +
+            "This does not include any built in modules.",
+			null,
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"));
+
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -96,6 +105,12 @@ public class ModuleInfo extends BasicFunction {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
 			return new BooleanValue(module != null);
+        } else if ("mapped-modules".equals(getSignature().getName().getLocalName())) {
+            ValueSequence resultSeq = new ValueSequence();
+            for (Iterator i = context.getMappedModuleURIs(); i.hasNext();) {
+                resultSeq.add(new StringValue(i.next().toString()));
+            }
+            return resultSeq;
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
 			for(Iterator i = context.getRootModules(); i.hasNext(); ) {
