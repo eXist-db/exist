@@ -41,15 +41,15 @@ public class Scan extends BasicFunction {
                 "the function docs.")
         ),
         new FunctionSignature(
-            new QName("scan-data", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
-            "Scan and extract function documentation from an external XQuery function module according to the" +
-            "XQDoc specification. The single argument URI may either point to an XQuery module stored in the " +
-            "db (URI starts with xmldb:exist:...) or a module in the file system. A file system module is " +
-            "searched in the same way as if it were loaded through an \"import module\" statement. Static " +
-            "mappings defined in conf.xml are searched first.",
+            new QName("scan", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
+            "Scan and extract function documentation from an external XQuery function module according to the " +
+            "XQDoc specification. The two parameter version of the function expects to get the source code of " +
+            "the module in the first argument and a name for the module in the second.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE,
-                    "The base64 encoded source data of the module")
+                    "The base64 encoded source data of the module"),
+                new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE,
+                    "The name of the module")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "the function docs.")
@@ -63,8 +63,10 @@ public class Scan extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Source source = null;
-        if (isCalledAs("scan-data")) {
+        String name;
+        if (getArgumentCount() == 2) {
             byte[] data = ((Base64Binary) args[0].itemAt(0)).getBinaryData();
+            name = args[1].getStringValue();
             source = new BinarySource(data, true);
         } else {
             String uri = args[0].getStringValue();
@@ -87,6 +89,7 @@ public class Scan extends BasicFunction {
                                 "declares a wrong mime-type");
                     }
                     source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
+                    name = doc.getURI().toString();
                 } catch (URISyntaxException e) {
                     throw new XPathException(this, "invalid module uri: " + uri + ": " + e.getMessage(), e);
                 } catch (LockException e) {
@@ -104,6 +107,7 @@ public class Scan extends BasicFunction {
                     uri = location;
                 try {
                     source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
+                    name = source.getKey().toString();
                 } catch (IOException e) {
                     throw new XPathException(this, "failed to read module " + uri, e);
                 } catch (PermissionDeniedException e) {
@@ -113,7 +117,7 @@ public class Scan extends BasicFunction {
         }
         try {
             XQDocHelper helper = new XQDocHelper();
-            String xml = helper.scan(source);
+            String xml = helper.scan(source, name);
             NodeValue root = ModuleUtils.stringToXML(context, xml);
             if (root == null)
                 return Sequence.EMPTY_SEQUENCE;
