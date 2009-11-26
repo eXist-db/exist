@@ -317,7 +317,8 @@ public class Lock extends AbstractWebDAVMethod {
      * @return NULL if error is send to response object, or locktoken with
      *         details about scope, depth and owner
      */
-    private LockToken getLockParameters(HttpServletRequest request, HttpServletResponse response)
+    @SuppressWarnings("unused")
+	private LockToken getLockParameters(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException{
         
         LockToken token = new LockToken();

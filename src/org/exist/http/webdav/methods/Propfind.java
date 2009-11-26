@@ -318,13 +318,13 @@ public class Propfind extends AbstractWebDAVMethod {
         serializer.endElement(WebDAV.DAV_NS, "propstat", "D:propstat");
         
         if(type == FIND_BY_PROPERTY) {
-            List unvisited = searchedProperties.unvisitedProperties();
+            List<QName> unvisited = searchedProperties.unvisitedProperties();
             if(unvisited.size() > 0) {
                 // there were unsupported properties. Report these to the client.
                 serializer.startElement(WebDAV.DAV_NS, "propstat", "D:propstat", attrs);
                 serializer.startElement(WebDAV.DAV_NS, "prop", "D:prop", attrs);
-                for(Iterator i = unvisited.iterator(); i.hasNext(); ) {
-                    writeEmptyElement((QName)i.next(), serializer);
+                for(QName qName : unvisited) {
+                    writeEmptyElement(qName, serializer);
                 }
                 serializer.endElement(WebDAV.DAV_NS, "prop", "D:prop");
                 writeSimpleElement(STATUS_PROP, "HTTP/1.1 404 Not Found", serializer);

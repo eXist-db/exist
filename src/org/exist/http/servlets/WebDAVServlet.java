@@ -74,7 +74,8 @@ public class WebDAVServlet extends HttpServlet {
         webdav.process(request, response);
     }
     
-    private void dumpHeaders(HttpServletRequest request) {
+    @SuppressWarnings("unused")
+	private void dumpHeaders(HttpServletRequest request) {
         System.out.println("-------------------------------------------------------");
         for(Enumeration e = request.getHeaderNames(); e.hasMoreElements(); ) {
             String header = (String)e.nextElement();
