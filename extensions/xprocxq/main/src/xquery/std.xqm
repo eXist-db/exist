@@ -126,10 +126,11 @@ else if ($strict and count($v/*) gt 1) then
 else if (count($v/*) gt 1) then
 	u:deep-equal-seq($v,$alternate,'0')
 
-else
+else 
 	deep-equal(u:treewalker($v/*),u:treewalker($alternate/*))
 
     return
+
 
        if($fail-if-not-equal) then
             if ($result) then          
