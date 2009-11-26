@@ -2,7 +2,6 @@ package org.exist.irc;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -18,6 +17,10 @@ public class IRCProxy extends HttpServlet {
 
 	// private String server = "irc.freenode.net";
 
+	private static final long serialVersionUID = -1599826284082032574L;
+
+	private static final String SESSION_ATTR = "org.exist.irc.sessions";
+
 	private String server = "localhost";
 	private String channel = "#testaabb";
 
@@ -32,8 +35,8 @@ public class IRCProxy extends HttpServlet {
         param = config.getInitParameter("server");
         if (param != null)
             server = param;
-        Map channels = new HashMap();
-        getServletContext().setAttribute("org.exist.irc.sessions", channels);
+        Map<String, IRCSession> channels = new HashMap<String, IRCSession>();
+        getServletContext().setAttribute(SESSION_ATTR, channels);
     }
 	
 	/**
@@ -53,8 +56,8 @@ public class IRCProxy extends HttpServlet {
 			return;
 		}
 
-        Map channels = (Map) getServletContext().getAttribute("org.exist.irc.sessions");
-        IRCSession session = (IRCSession) channels.get(sessionId);
+        Map<String, IRCSession> channels = (Map) getServletContext().getAttribute(SESSION_ATTR);
+        IRCSession session = channels.get(sessionId);
 		if (session == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Session " + sessionId + " not found");
 			return;
@@ -80,7 +83,7 @@ public class IRCProxy extends HttpServlet {
 		String send = request.getParameter("send");
 		String pong = request.getParameter("pong");
 		String reconnect = request.getParameter("refresh");
-        Map channels = (Map) getServletContext().getAttribute("org.exist.irc.sessions");
+        Map<String, IRCSession> channels = (Map) getServletContext().getAttribute(SESSION_ATTR);
         if (sessionId == null) {
 			// No session yet: connect and create a new one
 			if (channelParam != null && channelParam.length() > 0)
@@ -105,7 +108,7 @@ public class IRCProxy extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			}
 		} else {
-			IRCSession session = (IRCSession) channels.get(sessionId);
+			IRCSession session = channels.get(sessionId);
 			if (session == null) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Session " + sessionId + " not found");
 				return;
@@ -135,9 +138,8 @@ public class IRCProxy extends HttpServlet {
 	}
 	
 	public void destroy() {
-        Map channels = (Map) getServletContext().getAttribute("org.exist.irc.sessions");
-        for (Iterator i = channels.values().iterator(); i.hasNext(); ) {
-			IRCSession session = (IRCSession) i.next();
+        Map<String, IRCSession> channels = (Map) getServletContext().getAttribute(SESSION_ATTR);
+        for (IRCSession session : channels.values()) {
 			session.quit();
 		}
 	}
