@@ -17,6 +17,8 @@ import org.exist.client.ClientFrame;
 
 public class CustomRenderer extends DefaultTreeCellRenderer
 {
+	private static final long serialVersionUID = -1610799020547073755L;
+
 	private static final Icon targetIcon = getIcon("icons/Target.png");
 	private static final Icon qmarkIcon = getIcon("icons/Condition.png");
 	private static final Icon policyIcon = getIcon("icons/Policy.png");
@@ -34,6 +36,7 @@ public class CustomRenderer extends DefaultTreeCellRenderer
 	private boolean currentModified = false;
 	private TreeMutator mutator;
 	
+	@SuppressWarnings("unused")
 	private CustomRenderer() {}
 	public CustomRenderer(TreeMutator mutator)
 	{

@@ -16,7 +16,7 @@ import org.exist.util.MimeType;
 public class NodeTransferable implements Transferable
 {
 	private static final String FLAVOR_DESCRIPTION = "XACML Element";
-	private static final Map CLASS_TO_FLAVOR = new HashMap();
+	private static final Map<Class<?>, DataFlavor> CLASS_TO_FLAVOR = new HashMap<Class<?>, DataFlavor>();
 	
 	public static final DataFlavor CONDITION_FLAVOR = createFlavor(ConditionNode.class);
 	public static final DataFlavor TARGET_FLAVOR = createFlavor(TargetNode.class);
@@ -33,28 +33,28 @@ public class NodeTransferable implements Transferable
 	public static final DataFlavor APPLICATION_XML_FLAVOR = new DataFlavor("application/xml", FLAVOR_DESCRIPTION + " (XML)");
 	
 	
-	private static DataFlavor createFlavor(Class c)
+	private static DataFlavor createFlavor(Class<?> c)
 	{
 		DataFlavor ret = new DataFlavor(c, FLAVOR_DESCRIPTION);
 		CLASS_TO_FLAVOR.put(c, ret);
 		return ret;
 	}
 	
-	private Set supportedFlavors;
+	private Set<DataFlavor> supportedFlavors;
 	private XACMLTreeNode node;
 	
 	public NodeTransferable(XACMLTreeNode node)
 	{
 		this.node = node;
 		
-		supportedFlavors = new LinkedHashSet();
+		supportedFlavors = new LinkedHashSet<DataFlavor>();
 		supportedFlavors.add(TEXT_XML_FLAVOR);
 		supportedFlavors.add(APPLICATION_XML_FLAVOR);
 		supportedFlavors.add(DataFlavor.stringFlavor);
 
-		for(Class c = node.getClass(); c != null; c = c.getSuperclass())
+		for(Class<?> c = node.getClass(); c != null; c = c.getSuperclass())
 		{
-			DataFlavor flavor = (DataFlavor)CLASS_TO_FLAVOR.get(c);
+			DataFlavor flavor = CLASS_TO_FLAVOR.get(c);
 			if(flavor != null)
 				supportedFlavors.add(flavor);
 		}

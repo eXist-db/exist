@@ -9,6 +9,7 @@ public class TargetNode extends AbstractTreeNode
 	private Target originalTarget;
 	private Target target;
 
+	@SuppressWarnings("unused")
 	private TargetNode()
 	{
 		this(null, null);

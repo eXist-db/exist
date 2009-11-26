@@ -13,6 +13,8 @@ import javax.swing.table.TableModel;
 
 public class ResizingTable extends JTable
 {
+	private static final long serialVersionUID = 6344436107939184687L;
+
 	public ResizingTable()
 	{
 		super();

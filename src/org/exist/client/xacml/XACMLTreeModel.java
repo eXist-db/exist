@@ -1,7 +1,6 @@
 package org.exist.client.xacml;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.event.TreeModelEvent;
@@ -29,10 +28,11 @@ import javax.swing.tree.TreePath;
  */
 public class XACMLTreeModel implements NodeChangeListener, TreeModel
 {
-	private List listeners = new ArrayList(2);
+	private List<TreeModelListener> listeners = new ArrayList<TreeModelListener>(2);
 
 	private RootNode root;
 	
+	@SuppressWarnings("unused")
 	private XACMLTreeModel() {}
 	public XACMLTreeModel(RootNode root)
 	{
@@ -105,20 +105,20 @@ public class XACMLTreeModel implements NodeChangeListener, TreeModel
 	{
 		TreePath path = getPathToNode(node);
 		TreeModelEvent event = new TreeModelEvent(this, path);
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((TreeModelListener)it.next()).treeNodesChanged(event);
+		for(TreeModelListener listener : listeners)
+			listener.treeNodesChanged(event);
 	}
 	public void nodeAdded(XACMLTreeNode node, int newIndex)
 	{
 		TreeModelEvent event = getEvent(node, newIndex);
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((TreeModelListener)it.next()).treeNodesInserted(event);
+		for(TreeModelListener listener : listeners)
+			listener.treeNodesInserted(event);
 	}
 	public void nodeRemoved(XACMLTreeNode removedNode, int oldChildIndex)
 	{
 		TreeModelEvent event = getEvent(removedNode, oldChildIndex);
-		for(Iterator it = listeners.iterator(); it.hasNext();)
-			((TreeModelListener)it.next()).treeNodesRemoved(event);
+		for(TreeModelListener listener : listeners)
+			listener.treeNodesRemoved(event);
 	}
 	private TreeModelEvent getEvent(XACMLTreeNode node, int index)
 	{

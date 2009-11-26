@@ -2,7 +2,6 @@ package org.exist.client.xacml;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import com.sun.xacml.Policy;
@@ -13,8 +12,8 @@ import com.sun.xacml.combine.RuleCombiningAlgorithm;
 
 public class PolicyNode extends AbstractPolicyNode
 {
-	private List rules;
-	private List originalRules;
+	private List<RuleNode> rules;
+	private List<RuleNode> originalRules;
 	
 	public PolicyNode(NodeContainer parent, Policy policy)
 	{
@@ -24,11 +23,11 @@ public class PolicyNode extends AbstractPolicyNode
 	{
 		super(parent, documentName, policy);
 		
-		List children = policy.getChildren();
-		rules = new ArrayList(children.size());
-		for(Iterator it = children.iterator(); it.hasNext();)
-			rules.add(new RuleNode(this, (Rule)it.next()));
-		originalRules = new ArrayList(rules);
+		List<Rule> children = policy.getChildren();
+		rules = new ArrayList<RuleNode>(children.size());
+		for(Rule rule : children)
+			rules.add(new RuleNode(this, rule));
+		originalRules = new ArrayList<RuleNode>(rules);
 	}
 
 	public PolicyTreeElement create()
@@ -47,9 +46,9 @@ public class PolicyNode extends AbstractPolicyNode
 	{
 		Target target = getTarget().getTarget();
 		RuleCombiningAlgorithm algorithm = (RuleCombiningAlgorithm)getCombiningAlgorithm();
-		List rawRules = new ArrayList(rules.size());
-		for(Iterator it = rules.iterator(); it.hasNext();)
-			rawRules.add(((RuleNode)it.next()).createRule());
+		List<Rule> rawRules = new ArrayList<Rule>(rules.size());
+		for(RuleNode rule : rules)
+			rawRules.add(rule.createRule());
 		URI useId = (id == null) ? getId() : id;
 		return new Policy(useId, algorithm, getDescription(), target, rawRules);
 	}
@@ -81,7 +80,7 @@ public class PolicyNode extends AbstractPolicyNode
 				index = rules.size()+1;
 			if(index == 0)
 				throw new IllegalArgumentException("Cannot insert Rule before Target");
-			rules.add(index-1, node);
+			rules.add(index-1, (RuleNode)node);
 			setModified(true);
 			nodeAdded(node, index);
 		}
@@ -102,9 +101,9 @@ public class PolicyNode extends AbstractPolicyNode
 
 	public boolean containsId(String id)
 	{
-		for(Iterator it = rules.iterator();it.hasNext();)
+		for(RuleNode rule : rules)
 		{
-			if(((RuleNode)it.next()).getId().toString().equals(id))
+			if(rule.getId().toString().equals(id))
 				return true;
 		}
 		return false;
@@ -132,9 +131,9 @@ public class PolicyNode extends AbstractPolicyNode
 			return true;
 		if(deep)
 		{
-			for(Iterator it = rules.iterator(); it.hasNext();)
+			for(RuleNode rule : rules)
 			{
-				if(((RuleNode)it.next()).isModified(true))
+				if(rule.isModified(true))
 					return true;
 			}
 		}
@@ -142,21 +141,21 @@ public class PolicyNode extends AbstractPolicyNode
 	}
 	public void revert(boolean deep)
 	{
-		rules = new ArrayList(originalRules);
+		rules = new ArrayList<RuleNode>(originalRules);
 		if(deep)
 		{
-			for(Iterator it = rules.iterator(); it.hasNext();)
-				((RuleNode)it.next()).revert(true);
+			for(RuleNode rule : rules)
+				rule.revert(true);
 		}
 		super.revert(deep);
 	}
 	public void commit(boolean deep)
 	{
-		originalRules = new ArrayList(rules);
+		originalRules = new ArrayList<RuleNode>(rules);
 		if(deep)
 		{
-			for(Iterator it = rules.iterator(); it.hasNext();)
-				((RuleNode)it.next()).commit(true);
+			for(RuleNode rule : rules)
+				rule.commit(true);
 		}
 		super.commit(deep);
 	}
