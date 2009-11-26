@@ -92,7 +92,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.getIndexName();
     }
 
-    public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         LOG.debug("Configuring lucene index");
         config = new LuceneConfig(configNodes, namespaces);

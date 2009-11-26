@@ -146,7 +146,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return index;
     }
     
-    public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         Map map = null;      
         for(int i = 0; i < configNodes.getLength(); i++) {

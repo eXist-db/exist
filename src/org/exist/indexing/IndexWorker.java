@@ -80,7 +80,7 @@ public interface IndexWorker {
      * @return an arbitrary configuration object to be kept for this index in the collection configuration
      * @throws DatabaseConfigurationException if a configuration error occurs
      */
-    Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException;
+    Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException;
 
     /**
      * Notify this worker to operate on the specified document.

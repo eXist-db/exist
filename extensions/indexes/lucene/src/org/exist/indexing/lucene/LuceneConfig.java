@@ -29,7 +29,7 @@ public class LuceneConfig {
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
-    public LuceneConfig(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public LuceneConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         parseConfig(configNodes, namespaces);
     }
 
@@ -99,9 +99,8 @@ public class LuceneConfig {
         return ignoreNodes != null && ignoreNodes.contains(qname);
     }
     
-    public void getDefinedIndexes(List indexes) {
-        for (Iterator ci = qnames.keySet().iterator(); ci.hasNext();) {
-            QName qn = (QName) ci.next();
+    public void getDefinedIndexes(List<QName> indexes) {
+        for (QName qn : qnames.keySet()) {
             indexes.add(qn);
         }
     }
@@ -118,7 +117,7 @@ public class LuceneConfig {
      * @param namespaces
      * @throws org.exist.util.DatabaseConfigurationException
      */
-    protected void parseConfig(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    protected void parseConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         Node node;
         for(int i = 0; i < configNodes.getLength(); i++) {
             node = configNodes.item(i);
