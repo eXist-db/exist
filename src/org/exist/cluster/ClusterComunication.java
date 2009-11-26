@@ -79,7 +79,7 @@ public class ClusterComunication implements MembershipListener {
 
     private static ClusterComunication instance;
 
-    private Vector membersNoSender = new Vector();
+    private Vector<Address> membersNoSender = new Vector<Address>();
     private Address localAddress;
     private Address coordinatorAddress;
 
@@ -221,21 +221,20 @@ public class ClusterComunication implements MembershipListener {
         return localAddress;
     }
 
-    public Vector getMembersNoCoordinator(){
-        Vector members =  (Vector) membersNoSender.clone();
+    public Vector<Address> getMembersNoCoordinator(){
+        Vector<Address> members =  (Vector<Address>) membersNoSender.clone();
         members.remove(coordinatorAddress);
         return members;
     }
 
-    public HashMap getConsoleInfos(Vector address){
+    public HashMap<String, Object> getConsoleInfos(Vector<Address> address){
 
-        HashMap response = new HashMap();
+        HashMap<String, Object> response = new HashMap<String, Object>();
 
         RspList list = disp.callRemoteMethods(address, "getConsoleProperties", new Object[]{}, new Class[]{}, GroupRequest.GET_ALL, 0);
 
-        for(int i=0;i<address.size();i++){
-            Address addr = (Address) address.get(i);
-            response.put(addr.toString(),list.get(addr));
+        for(Address addr : address){
+            response.put(addr.toString(), list.get(addr));
         }
 
         return response;
@@ -427,9 +426,8 @@ public class ClusterComunication implements MembershipListener {
         throw new ClusterException("NODE DISALIGNED");
     }
 
-    private int manageEvents(ArrayList events) throws ClusterException {
-        for(int i = 0; i < events.size() ; i++) {
-            ClusterEvent event = (ClusterEvent) events.get(i);
+    private int manageEvents(ArrayList<ClusterEvent> events) throws ClusterException {
+        for(ClusterEvent event : events) {
             log.info("Manage event id " + event.getId());
             if(journalManager.isProcessed(event))
             {
@@ -439,7 +437,7 @@ public class ClusterComunication implements MembershipListener {
             ClusterChannel.accountEvent("" + event.hashCode());
             manageEvent(event);
         }
-        return ((ClusterEvent)events.get(events.size() - 1)).getId();
+        return events.get(events.size() - 1).getId();
     }
 
     private void manageEvent(ClusterEvent event) throws ClusterException {

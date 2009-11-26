@@ -96,7 +96,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XQueryServlet extends HttpServlet {
     
-    private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
+	private static final long serialVersionUID = 5266794852401553015L;
+
+	private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
     
     public final static String DEFAULT_USER = "guest";
     public final static String DEFAULT_PASS = "guest";
@@ -153,7 +155,7 @@ public class XQueryServlet extends HttpServlet {
             contentType = DEFAULT_CONTENT_TYPE;
         
         try {
-            Class driver = Class.forName(DRIVER);
+            Class<?> driver = Class.forName(DRIVER);
             Database database = (Database)driver.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

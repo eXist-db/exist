@@ -32,7 +32,6 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -41,14 +40,14 @@ import java.net.URISyntaxException;
  */
 public abstract class URLRewrite {
 
-    private final static Object UNSET = new Object();
+    private final static String UNSET = new String();
     
     protected String uri;
     protected String target;
     protected String prefix = null;
-    protected Map attributes = null;
-    protected Map parameters = null;
-    protected Map headers = null;
+    protected Map<String, String> attributes = null;
+    protected Map<String, String> parameters = null;
+    protected Map<String, String> headers = null;
 
     protected URLRewrite(Element config, String uri) {
         this.uri = uri;
@@ -112,25 +111,25 @@ public abstract class URLRewrite {
 
     private void setHeader(String key, String value) {
         if (headers == null)
-            headers = new HashMap();
+            headers = new HashMap<String, String>();
         headers.put(key, value);
     }
 
     private void addParameter(String name, String value) {
         if (parameters == null)
-            parameters = new HashMap();
+            parameters = new HashMap<String, String>();
         parameters.put(name, value);
     }
 
     private void setAttribute(String name, String value) {
         if (attributes == null)
-            attributes = new HashMap();
+            attributes = new HashMap<String, String>();
         attributes.put(name, value);
     }
 
     private void unsetAttribute(String name) {
         if (attributes == null)
-            attributes = new HashMap();
+            attributes = new HashMap<String, String>();
         attributes.put(name, UNSET);
     }
     
@@ -165,15 +164,13 @@ public abstract class URLRewrite {
 
     public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
         if (parameters != null) {
-            for (Iterator iterator = parameters.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                request.addParameter(entry.getKey().toString(), (String) entry.getValue());
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                request.addParameter(entry.getKey().toString(), entry.getValue());
             }
         }
         if (attributes != null) {
-            for (Iterator iterator = attributes.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object value = entry.getValue();
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            	String value = entry.getValue();
                 if (value == UNSET)
                     request.removeAttribute(entry.getKey().toString());
                 else
@@ -184,8 +181,7 @@ public abstract class URLRewrite {
 
     protected void setHeaders(HttpServletResponse response) {
         if (headers != null) {
-            for (Iterator iterator = headers.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
                 response.setHeader(entry.getKey().toString(), entry.getValue().toString());
             }
         }

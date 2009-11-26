@@ -108,7 +108,7 @@ public class ListBackups extends BasicFunction {
                                 AttributesImpl attrs = new AttributesImpl();
                                 attrs.addAttribute("", "file", "file", "CDATA", files[i].getName());
                                 builder.startElement(BACKUP_ELEMENT, attrs);
-                                for (Iterator iter = properties.keySet().iterator(); iter.hasNext();) {
+                                for (Iterator<Object> iter = properties.keySet().iterator(); iter.hasNext();) {
                                         String key = iter.next().toString();
                                         builder.startElement(new QName(key, Namespaces.EXIST_NS, ""), null);
                                         builder.characters((String) properties.get(key));

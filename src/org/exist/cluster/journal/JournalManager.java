@@ -53,7 +53,7 @@ public class JournalManager {
     private int counter = 1;
     private int maxIdSaved = ClusterEvent.NO_EVENT;
 
-    TreeSet queue = new TreeSet(new EventComparator());
+    TreeSet<ClusterEvent> queue = new TreeSet<ClusterEvent>(new EventComparator());
 
     public JournalManager(Configuration conf) {
         String dirName = (String) conf.getProperty(PROPERTY_JOURNAL_DIR); //retrieve journal folder
@@ -183,7 +183,7 @@ public class JournalManager {
         boolean done = false;
         while (queue.size() > 0) {
             done = true;
-            ClusterEvent event = (ClusterEvent) queue.first();
+            ClusterEvent event = queue.first();
             saveEvent(event);
             queue.remove(event);
         }
@@ -326,7 +326,7 @@ public class JournalManager {
         return ClusterEventMarshaller.unmarshall(eventBytes);
     }
 
-    public ArrayList getNextEvents(int[] header, int[] myHeader, Integer start) {
+    public ArrayList<ClusterEvent> getNextEvents(int[] header, int[] myHeader, Integer start) {
 
         if(journalDisabled)
             return null;
@@ -335,7 +335,7 @@ public class JournalManager {
         System.out.println("Get next events saved : lastIdSaved " + myHeader[0] + " maxId " + myHeader[1] + " counter:" + myHeader[2]);
         if (header[0] == myHeader[0] && header[1] == myHeader[1] && header[2] == myHeader[2]) {
             System.out.println("Return empty arraylist");
-            return new ArrayList(); //same header
+            return new ArrayList<ClusterEvent>(); //same header
         }
         System.out.println("Start :" + start.intValue());
         if (start.intValue() == -1) {
@@ -345,9 +345,9 @@ public class JournalManager {
         }
     }
 
-    private ArrayList getEvents(int last, int[] myHeader) {
+    private ArrayList<ClusterEvent> getEvents(int last, int[] myHeader) {
 
-        ArrayList events = new ArrayList();
+        ArrayList<ClusterEvent> events = new ArrayList<ClusterEvent>();
 
         try {
             RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
@@ -392,8 +392,8 @@ public class JournalManager {
 
     }
 
-    private synchronized ArrayList getStart(int last, int[] myHeader) {
-        ArrayList events = new ArrayList();
+    private synchronized ArrayList<ClusterEvent> getStart(int last, int[] myHeader) {
+        ArrayList<ClusterEvent> events = new ArrayList<ClusterEvent>();
         try {
             int pos = last < 0 ? 0 : last;
             final int c = myHeader[2];

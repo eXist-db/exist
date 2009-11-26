@@ -50,7 +50,9 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
  */
 public class Log4jInit extends HttpServlet {
     
-    private String getTimestamp(){
+	private static final long serialVersionUID = 2358611360404852183L;
+
+	private String getTimestamp(){
         return new Date().toString();
     }
     

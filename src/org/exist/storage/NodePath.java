@@ -59,11 +59,11 @@ public class NodePath {
     /**
      * 
      */
-    public NodePath(Map namespaces, String path) {
+    public NodePath(Map<String, String> namespaces, String path) {
         init(namespaces, path);
     }
 
-    public NodePath(Map namespaces, String path, boolean includeDescendants) {
+    public NodePath(Map<String, String> namespaces, String path, boolean includeDescendants) {
         this.includeDescendants = includeDescendants;
         init(namespaces, path);
     }
@@ -159,7 +159,7 @@ public class NodePath {
         return buf.toString();
     }
     
-    private void addComponent(Map namespaces, String component) {
+    private void addComponent(Map<String, String> namespaces, String component) {
     	boolean isAttribute = false;
     	if (component.startsWith("@")) {
     		isAttribute = true;
@@ -169,7 +169,7 @@ public class NodePath {
         String localName = QName.extractLocalName(component);
         String namespaceURI = "";
         if (prefix != null) {
-	        namespaceURI = (String) namespaces.get(prefix);
+	        namespaceURI = namespaces.get(prefix);
 	        if(namespaceURI == null) {
 	            LOG.error("No namespace URI defined for prefix: " + prefix);
 	            prefix = null;
@@ -182,7 +182,7 @@ public class NodePath {
         addComponent(qn);
     }
     
-    private void init( Map namespaces, String path ) {        
+    private void init( Map<String, String> namespaces, String path ) {        
     	//TODO : compute better length
         FastStringBuffer token = new FastStringBuffer(path.length());
         int pos = 0;

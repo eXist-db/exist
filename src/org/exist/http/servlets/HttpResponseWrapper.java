@@ -167,7 +167,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/** used the feature "Guess last modification time for an XQuery result" */
-	private Map dateHeaders = new HashMap();
+	private Map<String, Long> dateHeaders = new HashMap<String, Long>();
 	/**
 	 * @param name
 	 * @param arg1
@@ -180,7 +180,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * 0 if none has been set. */
 	public long getDateHeader(String name) {
 		long ret = 0;
-		Long val = (Long)dateHeaders.get(name);
+		Long val = dateHeaders.get(name);
 		if ( val != null )
 			ret = val.longValue();
 		return ret;

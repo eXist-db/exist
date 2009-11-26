@@ -70,7 +70,9 @@ import java.util.Properties;
 
 public class XSLTServlet extends HttpServlet {
 
-    private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
+	private static final long serialVersionUID = -7258405385386062151L;
+
+	private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
     
     private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
     private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
@@ -81,7 +83,7 @@ public class XSLTServlet extends HttpServlet {
 
     private BrokerPool pool;
 
-    private final Map cache = new HashMap();
+    private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
     
     private boolean isCaching() {
@@ -244,7 +246,7 @@ public class XSLTServlet extends HttpServlet {
             base = stylesheet;
         if (LOG.isDebugEnabled())
             LOG.debug("Loading stylesheet from " + stylesheet);
-        CachedStylesheet cached = (CachedStylesheet)cache.get(stylesheet);
+        CachedStylesheet cached = cache.get(stylesheet);
         if(cached == null) {
             cached = new CachedStylesheet(factory, user, stylesheet, base);
             cache.put(stylesheet, cached);

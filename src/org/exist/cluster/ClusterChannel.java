@@ -17,9 +17,10 @@ import org.apache.log4j.Logger;
  */
 public class ClusterChannel {
 
-    private static Logger log = Logger.getLogger(ClusterChannel.class);
+    @SuppressWarnings("unused")
+	private static Logger log = Logger.getLogger(ClusterChannel.class);
     public static final String EXIST_GROUP = "exist-replication-group";
-    public static Vector incomingEvents = new Vector();
+    public static Vector<String> incomingEvents = new Vector<String>();
 
 
     public static boolean hasToBePublished(String event) {

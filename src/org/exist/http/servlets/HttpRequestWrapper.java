@@ -61,7 +61,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     private String formEncoding = null;
     private String containerEncoding = null;
     
-    private Map params = null;
+    private Map<String, Object> params = null;
     private String pathInfo = null;
     private String servletPath = null;
     
@@ -145,7 +145,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
         try
         {
-            this.params = new HashMap();
+            this.params = new HashMap<String, Object>();
             List items = upload.parseRequest(this.servletRequest);
             for(Iterator i = items.iterator(); i.hasNext(); )
             {
