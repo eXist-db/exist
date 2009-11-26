@@ -17,8 +17,8 @@ public class XQDocHelper {
         controller.setEncodeURIs(false);
     }
 
-    public String scan(Source source) throws XQDocException, IOException {
-        XQDocPayload payload = controller.process(source.getReader(), source.getKey().toString());
+    public String scan(Source source, String name) throws XQDocException, IOException {
+        XQDocPayload payload = controller.process(source.getReader(), name);
         return payload.getXQDocXML();
     }
 }
