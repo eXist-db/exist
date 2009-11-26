@@ -12,11 +12,11 @@ public class AnalyzerConfig {
     private final static String ID_ATTRIBUTE = "id";
     private final static String CLASS_ATTRIBUTE = "class";
 
-    private Map analyzers = new TreeMap();
+    private Map<String, Analyzer> analyzers = new TreeMap<String, Analyzer>();
     private Analyzer defaultAnalyzer = null;
 
     public Analyzer getAnalyzerById(String id) {
-        return (Analyzer) analyzers.get(id);
+        return analyzers.get(id);
     }
 
     public Analyzer getDefaultAnalyzer() {
@@ -36,7 +36,7 @@ public class AnalyzerConfig {
         String className = config.getAttribute(CLASS_ATTRIBUTE);
         if (className != null && className.length() != 0) {
             try {
-                Class clazz = Class.forName(className);
+                Class<?> clazz = Class.forName(className);
                 if (!Analyzer.class.isAssignableFrom(clazz))
                     throw new DatabaseConfigurationException("Lucene index: analyzer class has to be" +
                             " a subclass of " + Analyzer.class.getName());

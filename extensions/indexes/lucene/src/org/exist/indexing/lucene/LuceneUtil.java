@@ -7,8 +7,8 @@ import java.util.*;
 
 public class LuceneUtil {
 
-    public static Map extractTerms(Query query) {
-        Map terms = new TreeMap();
+    public static Map<String, Query> extractTerms(Query query) {
+        Map<String, Query> terms = new TreeMap<String, Query>();
         extractTerms(query, terms);
         return terms;
     }
@@ -24,7 +24,7 @@ public class LuceneUtil {
      * @param query
      * @param terms
      */
-    public static void extractTerms(Query query, Map terms) {
+    public static void extractTerms(Query query, Map<String, Query> terms) {
         if (query instanceof BooleanQuery)
             extractTermsFromBoolean((BooleanQuery)query, terms);
         else if (query instanceof TermQuery)
@@ -40,39 +40,38 @@ public class LuceneUtil {
         else {
             // fallback to Lucene's Query.extractTerms if none of the
             // above matches
-            Set tempSet = new TreeSet();
+            Set<Term> tempSet = new TreeSet<Term>();
             query.extractTerms(tempSet);
-            for (Iterator i = tempSet.iterator(); i.hasNext();) {
-                Term t = (Term) i.next();
+            for (Term t : tempSet) {
                 terms.put(t.text(), query);
             }
         }
     }
 
-    private static void extractTermsFromBoolean(BooleanQuery query, Map terms) {
+    private static void extractTermsFromBoolean(BooleanQuery query, Map<String, Query> terms) {
         BooleanClause clauses[] = query.getClauses();
         for (int i = 0; i < clauses.length; i++) {
             extractTerms(clauses[i].getQuery(), terms);
         }
     }
 
-    private static void extractTermsFromTerm(TermQuery query, Map terms) {
+    private static void extractTermsFromTerm(TermQuery query, Map<String, Query> terms) {
         terms.put(query.getTerm().text(), query);
     }
 
-    private static void extractTermsFromWildcard(WildcardQuery query, Map terms) {
+    private static void extractTermsFromWildcard(WildcardQuery query, Map<String, Query> terms) {
         terms.put(query.getTerm().text(), query);
     }
 
-    private static void extractTermsFromFuzzy(FuzzyQuery query, Map terms) {
+    private static void extractTermsFromFuzzy(FuzzyQuery query, Map<String, Query> terms) {
         terms.put(query.getTerm().text(), query);
     }
 
-    private static void extractTermsFromPrefix(PrefixQuery query, Map terms) {
+    private static void extractTermsFromPrefix(PrefixQuery query, Map<String, Query> terms) {
         terms.put(query.getPrefix().text(), query);
     }
 
-    private static void extractTermsFromPhrase(PhraseQuery query, Map terms) {
+    private static void extractTermsFromPhrase(PhraseQuery query, Map<String, Query> terms) {
         Term[] t = query.getTerms();
         for (int i = 0; i < t.length; i++) {
             terms.put(t[i].text(), query);

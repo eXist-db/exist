@@ -50,9 +50,9 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private Match match;
 
-    private Map termMap;
+    private Map<String, Query> termMap;
 
-    private Map nodesWithMatch;
+    private Map<NodeId, Offset> nodesWithMatch;
 
     private LuceneIndex index;
 
@@ -86,7 +86,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
 
         getTerms();
-        nodesWithMatch = new TreeMap();
+        nodesWithMatch = new TreeMap<NodeId, Offset>();
         /* Check if an index is defined on an ancestor of the current node.
         * If yes, scan the ancestor to get the offset of the first character
         * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
@@ -129,7 +129,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     public void characters(CharSequence seq) throws SAXException {
         NodeId nodeId = getCurrentNode().getNodeId();
-        Offset offset = (Offset) nodesWithMatch.get(nodeId);
+        Offset offset = nodesWithMatch.get(nodeId);
         if (offset == null)
             super.characters(seq);
         else {
@@ -199,7 +199,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
             while ((token = stream.next()) != null) {
                 String text = token.term();
-                Query query = (Query) termMap.get(text);
+                Query query = termMap.get(text);
                 if (query != null) {
                     // phrase queries need to be handled differently to filter
                     // out wrong matches: only the phrase should be marked, not single
@@ -233,7 +233,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                     Token nextToken = tokenList.get(i);
                                     int idx = offsets.getIndex(nextToken.startOffset());
                                     NodeId nodeId = offsets.ids[idx];
-                                    Offset offset = (Offset) nodesWithMatch.get(nodeId);
+                                    Offset offset = nodesWithMatch.get(nodeId);
                                     if (offset != null)
                                         if (lastIdx == idx)
                                             offset.setEndOffset(nextToken.endOffset() - offsets.offsets[idx]);
@@ -250,7 +250,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     } else {
                         int idx = offsets.getIndex(token.startOffset());
                         NodeId nodeId = offsets.ids[idx];
-                        Offset offset = (Offset) nodesWithMatch.get(nodeId);
+                        Offset offset = nodesWithMatch.get(nodeId);
                         if (offset != null)
                             offset.add(token.startOffset() - offsets.offsets[idx],
                                 token.endOffset() - offsets.offsets[idx]);
@@ -284,8 +284,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * Get all query terms from the original queries.
      */
     private void getTerms() {
-        Set queries = new HashSet();
-        termMap = new TreeMap();
+        Set<Query> queries = new HashSet<Query>();
+        termMap = new TreeMap<String, Query>();
         Match nextMatch = this.match;
         while (nextMatch != null) {
             if (nextMatch.getIndexId() == LuceneIndex.ID) {
