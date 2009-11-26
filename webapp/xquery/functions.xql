@@ -109,20 +109,20 @@ $qs as xs:string?, $print as xs:boolean) as element()* {
         ()
 };
 
-declare function xqdoc:print-description($comment as element(xqdoc:comment)) {
+declare function xqdoc:print-description($comment as element(xqdoc:comment)?) {
     for $desc in tokenize($comment/xqdoc:description, "\n")
     return
     	<div class="f-description-para">{$desc}</div>
 };
 
-declare function xqdoc:print-parameters($comment as element(xqdoc:comment)) {
+declare function xqdoc:print-parameters($comment as element(xqdoc:comment)?) {
     let $params := $comment/xqdoc:param
     return
         if ($params[1] != '$a') then
             <table class="f-params">
             {
                 for $param in $comment/xqdoc:param
-                let $split := text:groups($param, "^(\$[^ ]+) (.*)$")
+                let $split := text:groups($param, "^\s*(\$[^ ]+) (.*)$")
                 return
                     <tr>
                         <td>{$split[2]}</td>
@@ -134,7 +134,7 @@ declare function xqdoc:print-parameters($comment as element(xqdoc:comment)) {
             ()
 };
 
-declare function xqdoc:print-return($comment as element(xqdoc:comment)) {
+declare function xqdoc:print-return($comment as element(xqdoc:comment)?) {
     let $returning := $comment/xqdoc:return
     return
         if (string-length($returning/text())) then
