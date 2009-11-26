@@ -465,12 +465,25 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  declare function xproc:resolve-data-binding($child){
  (: -------------------------------------------------------------------------- :)
     if ($child/@href) then
-    element {string($child/@wrapper)} {
+    element {
+    if ($child/@wrapper) then
+        string($child/@wrapper)
+    else
+        'c:data'
+    } {
+    
         if ($child/@xproc:escape eq 'true') then
             attribute xproc:escape{'true'}
         else
             (),
-        u:unparsed-data(string($child/@href),'text/plain')
+        if (contains($child/@href,'file:')) then
+              util:binary-doc($child/@href)
+        else
+	            util:binary-to-string(util:binary-doc($child/@href))
+
+
+(:          u:unparsed-data($child/@href,'text/plain')
+:)
     }
   else
      u:dynamicError('err:XD0002',concat("cannot access document:  ",$child/@href))

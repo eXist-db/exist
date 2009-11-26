@@ -247,55 +247,55 @@ let $result := u:safe-evalXPATH($select, $v, $primary)
 
 (: -------------------------------------------------------------------------- :)
 declare function std:http-request($primary,$secondary,$options) {
-let $v := u:get-primary($primary)
-let $href := $v/c:request/@href
-let $method := $v/c:request/@method
-let $content-type := $v/c:request/c:body/@content-type
-let $body := $v/c:request/c:body
-let $status-only := $v/c:request/@status-only
-let $detailed := $v/c:request/@detailed
-let $username := ''
-let $password := ''
-let $auth-method := ''
-let $send-authorization := ''
-let $override-content-type := ''
-let $follow-redirect := ''
-let $http-request := <http:request href="{$href}" method="{$method}">{
+    let $v := u:get-primary($primary)
+    let $href := $v/c:request/@href
+    let $method := $v/c:request/@method
+    let $content-type := $v/c:request/c:body/@content-type
+    let $body := $v/c:request/c:body
+    let $status-only := $v/c:request/@status-only
+    let $detailed := $v/c:request/@detailed
+    let $username := ''
+    let $password := ''
+    let $auth-method := ''
+    let $send-authorization := ''
+    let $override-content-type := ''
+    let $follow-redirect := ''
+    let $http-request := <http:request href="{$href}" method="{$method}">{
+            for $header in $v/c:request/c:header
+            return
+                <http:header name="{$header/@name}" value="{$header/@value}"/>,
 
-		for $header in $v/c:request/c:header
-		return
-			<http:header name="{$header/@name}" value="{$header/@value}"/>,
+            if (empty($body)) then
+                ()
+            else
+              <http:body content-type="{$content-type}">
+                 {$body}
+              </http:body>
+        }
+           </http:request>
+    let $raw-response := http:send-request($http-request)
+    let $response-headers := for $header in $raw-response//http:header
+            return
+                <c:header name="{$header/@name}" value="{$header/@value}"/>
 
-		if (empty($body)) then
-		    ()
-		else
-	      <http:body content-type="{$content-type}">
-	         {$body}
-	      </http:body>
-	}
-	   </http:request>
-let $raw-response := http:send-request( $http-request)
-let $response-headers := for $header in $raw-response//http:header
-        return
-            <c:header name="{$header/@name}" value="{$header/@value}"/>
+    let $response-body := if ($status-only) then
+            ()
+         else if ($detailed) then
+            <c:body>{$raw-response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]}</c:body>
+         else
+            $raw-response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]
 
-let $response-body := if ($status-only) then
-        ()
-     else if ($detailed) then
-		<c:body>{$raw-response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]}</c:body>
-     else
-		$raw-response/*[not(name(.) eq 'http:body')][not(name(.) eq 'http:header')]
+    return
 
-return
-    if (name($v/node()) ne 'c:request') then
-            u:dynamicError('err:XC0040',"source port must contain c:request element")
-    else if ($detailed) then
-      <c:response status="{$raw-response/@status}">
-        {$response-headers}
-        {$response-body}
-      </c:response>
-    else
-        $response-body
+        if (not($v/c:request)) then
+                u:dynamicError('err:XC0040',"source port must contain c:request element")
+        else if ($detailed) then
+          <c:response status="{$raw-response/@status}">
+            {$response-headers}
+            {$response-body}
+          </c:response>
+        else
+            $response-body
 };
 
 
