@@ -39,8 +39,74 @@
 
      <section>
         <title>Using XProc in eXist</title>
+<para>
+ The simplest way to execute an XProc file is to load it up into the database and point your
+    browser to it.
+<example>
+			<title>Running XProc from eXist</title>
+			<programlisting>
+			<markup>
+                
+http://127.0.0.1:8080/exist/xproc/examples/hello.xproc
+			</markup>
+			</programlisting>
+         <a href="examples/hello.xproc" target="_example">run xproc directly from database</a>
+</example>
+ </para>
+
+         <para>
+                You can provide a variety of URL params when calling an XProc within eXist.
+             <variablelist>
+                 <varlistentry>
+                     <term>stdin</term>
+                     <listitem>
+                         <para>supply the path for standard input into XProc</para>
+                     </listitem>
+                 </varlistentry>
+                 <varlistentry>
+                     <term>debug</term>
+                     <listitem>
+                         <para>set to 1 to return a full trace of XProc processing</para>
+                     </listitem>
+                 </varlistentry>
+                 <varlistentry>
+                     <term>binding</term>
+                     <listitem>
+                         <para>you can pass in input ports via an xml fragment with the following structure
+                             <synopsis>&lt;bindings&gt;
+	&lt;binding port="a"&gt;
+		&lt;test/&gt;
+	&lt;/binding&gt;
+	&lt;binding port="b"&gt;
+		&lt;anothertest/&gt;
+	&lt;/binding&gt;
+&lt;/bindings&gt;
+                             </synopsis>
+         </para>
+                     </listitem>
+                 </varlistentry>
+                 <varlistentry>
+                     <term>options</term>
+                     <listitem>
+                         <para>TBA: disabled for the time being</para>
+                     </listitem>
+                 </varlistentry>
+                 <varlistentry>
+                     <term>params</term>
+                     <listitem>
+                         <para>TBA: disabled for the time being</para>
+                     </listitem>
+                 </varlistentry>
+             </variablelist>
+
+
+
+         </para>
+
+
+
         <para>
-The following XQuery file is an example of how to run xprocxq from within eXist.
+The following XQuery file is an example of how to programatically run xprocxq from within eXist.
              </para>
 <example>
 			<title>Example of Running XProc from XQuery</title>
@@ -73,11 +139,9 @@ return
 ]]>
 			</markup>
 			</programlisting>
-         <a href="examples/hello.xqy" target="_example">run xproc from xquery</a>
+         <a href="examples/hello.xqy" target="_example">invoke xproc from xquery</a>
 </example>
- <para>
- list and define all xproc entry functions
- </para>
+
 <para> The result of running this xquery should resemble:</para>
 			<example>
 			<title>Result</title>
@@ -632,11 +696,7 @@ return
 <para>
 	Here is a list of the more severe limitations:
 <ul>
-	    <li>when selecting elements in a namespace u will have to generically select them</li>
-
-	    <li>due to my use of weak typing in XQuery there are several interrelated issues, but this will change as I sanitize the code</li>
-
-	    <li>have disabled namespace management for the time being which applies XProc namespace fixup rules</li>
+	    <li>there maybe some small issues with namespaces but most of the big issues have been addressed </li>
 
 	    <li>defining reusable pipelines using p:library, p:import and p:declare-step is currently disabled</li>
 
