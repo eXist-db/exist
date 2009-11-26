@@ -67,11 +67,11 @@ public class Query extends Function implements Optimizable {
         super(context, signature);
     }
 
-    public void setArguments(List arguments) throws XPathException {
-        Expression path = (Expression) arguments.get(0);
+    public void setArguments(List<Expression> arguments) throws XPathException {
+        Expression path = arguments.get(0);
         steps.add(path);
 
-        Expression arg = (Expression) arguments.get(1);
+        Expression arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         steps.add(arg);
@@ -133,7 +133,7 @@ public class Query extends Function implements Optimizable {
                 context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
         Item key = getKey(contextSequence, null);
-        List qnames = new ArrayList(1);
+        List<QName> qnames = new ArrayList<QName>(1);
         qnames.add(contextQName);
         try {
             if (Type.subTypeOf(key.getType(), Type.ELEMENT))
