@@ -38,7 +38,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
  */
 public class Main implements WrapperListener, Observer {
 
-	private Class klazz;
+	private Class<?> klazz;
 	private Object app;
 
 	private Main() {
@@ -72,7 +72,7 @@ public class Main implements WrapperListener, Observer {
 				klazz = cl.loadClass("org.exist.StandaloneServer");
 			
 			// find the run() method in the class
-			Class[] methodParamTypes = new Class[2];
+			Class<?>[] methodParamTypes = new Class[2];
 			methodParamTypes[0] = args.getClass();
             methodParamTypes[1] = Observer.class;
 			Method method = klazz.getDeclaredMethod("run", methodParamTypes);

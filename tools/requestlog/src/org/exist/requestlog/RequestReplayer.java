@@ -68,6 +68,7 @@ public class RequestReplayer extends JFrame {
 	private JLabel lblRequestCount = null;
 	private JTextField txtIterations = null;
 	private JTextField txtAlternateHost = null;
+	@SuppressWarnings("unused")
 	private JLabel lblWaitTimeRequest = null;
 	private JTextField txtWaitTimeRequest = null;
 	private JButton btnStart = null;
