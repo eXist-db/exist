@@ -66,21 +66,21 @@ public class ReentrantReadWriteLock implements Lock {
 
     protected Object id_ = null;
 	protected Thread owner_ = null;
-    protected Stack suspendedThreads = new Stack();
+    protected Stack<SuspendedWaiter> suspendedThreads = new Stack<SuspendedWaiter>();
     
     protected int holds_ = 0;
 	public int mode_ = Lock.NO_LOCK;
 //	private long timeOut_ = 240000L;
-	private Stack modeStack = new Stack();
+	private Stack<Integer> modeStack = new Stack<Integer>();
 	private int writeLocks = 0;
 	private boolean DEBUG = false;
-	private Stack seStack;
+	private Stack<StackTraceElement[]> seStack;
     private LockListener listener = null;
 
     public ReentrantReadWriteLock(Object id) {
         id_ = id;
         if (DEBUG)
-            seStack = new Stack();
+            seStack = new Stack<StackTraceElement[]>();
     }
 
     public String getId() {
@@ -141,7 +141,7 @@ public class ReentrantReadWriteLock implements Lock {
                 listener = waitingOnResource;
                 return true;
             } else {
-				long start = System.currentTimeMillis();
+//				long start = System.currentTimeMillis();
                 DeadlockDetection.addCollectionWaiter(caller, this);
 //                LOG.warn(caller.getName() + " waiting on lock held by " + owner_.getName());
                 try {
@@ -309,14 +309,14 @@ public class ReentrantReadWriteLock implements Lock {
 			if (DEBUG) {
 				LOG.debug("Lock was acquired by :");
 				while (!seStack.isEmpty()) {
-					StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+					StackTraceElement[] se = seStack.pop();
 					LOG.debug(se);
 			    	se = null;
 				}
 			}            
             return;
         }
-        Integer top = (Integer)modeStack.pop();
+        Integer top = modeStack.pop();
     	mode_ = top.intValue();
     	top = null; 	
     	if (mode_ != mode) {
@@ -328,13 +328,13 @@ public class ReentrantReadWriteLock implements Lock {
             writeLocks--;
         }
         if (DEBUG) {
-    		StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+    		StackTraceElement[] se = seStack.pop();
     		se = null;
     	}
 //        LOG.debug("Lock " + getId() + " released by " + owner_.getName());
         if (--holds_ == 0) {
 			if (!suspendedThreads.isEmpty()) {
-				SuspendedWaiter suspended = (SuspendedWaiter) suspendedThreads.pop();
+				SuspendedWaiter suspended = suspendedThreads.pop();
 				owner_ = suspended.thread;
 				mode_ = suspended.lockMode;
 				holds_ = suspended.lockCount;
