@@ -69,12 +69,12 @@ public class XmlrpcDownload {
             client.setConfig(config);
 
             // Setup xml serializer
-            Hashtable options = new Hashtable();
+            Hashtable<String, String> options = new Hashtable<String, String>();
             options.put("indent", "no");
             options.put("encoding", "UTF-8");
             
             // Setup client parameters
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.addElement( xmldbURL.getCollectionPath() );
             params.addElement( options );
             

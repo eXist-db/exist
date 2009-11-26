@@ -24,7 +24,6 @@ package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import java.net.URL;
@@ -85,7 +84,7 @@ public class XmlrpcUpload {
             }
             
             // Initialize xmlrpc parameters
-            List params = new ArrayList(5);
+            List<Object> params = new ArrayList<Object>(5);
             String handle=null;
             
             // Copy data from inputstream to database

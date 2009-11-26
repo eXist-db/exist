@@ -121,7 +121,8 @@ public class Put extends AbstractWebDAVMethod {
             }
             
 
-            LOG.debug("Storing document " + pathUri + "; content-type='" + contentType+"'");
+            if (LOG.isDebugEnabled())
+            	LOG.debug("Storing document " + pathUri + "; content-type='" + contentType+"'");
             
             DocumentImpl doc = null;
             if(mime.isXMLType()) {
