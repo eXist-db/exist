@@ -65,7 +65,8 @@ public class ConcurrencyTest {
 
         String query;
         int start = 0;
-        boolean protect = false;
+        @SuppressWarnings("unused")
+		boolean protect = false;
         
         private QueryTask(String query, int start, boolean protect) {
             this.query = query;

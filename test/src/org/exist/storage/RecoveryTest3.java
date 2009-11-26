@@ -22,8 +22,6 @@
 package org.exist.storage;
 
 import java.io.File;
-import java.io.StringWriter;
-import java.io.Writer;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
@@ -31,7 +29,6 @@ import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.SecurityManager;
-import org.exist.storage.btree.BTree;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;

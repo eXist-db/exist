@@ -28,7 +28,9 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public class XQueryFunctionsTest extends TestCase {
 
+	@SuppressWarnings("unused")
 	private String[] testvalues;
+	@SuppressWarnings("unused")
 	private String[] resultvalues;
 	
 	private XPathQueryService service;
@@ -453,6 +455,7 @@ public class XQueryFunctionsTest extends TestCase {
 	
 	public void bugtestUtilEval1() throws XPathException {
 		ResourceSet result 		= null;
+		@SuppressWarnings("unused")
 		String		r			= "";
 		try {
 			String query = "<a><b/></a>/util:eval('*')";
@@ -468,6 +471,7 @@ public class XQueryFunctionsTest extends TestCase {
         // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1629363&group_id=17691&atid=117691
 	public void testUtilEval2() throws XPathException {
 		ResourceSet result 		= null;
+		@SuppressWarnings("unused")
 		String		r			= "";
 		try {
 			String query = "let $context := <item/> "+
@@ -742,7 +746,8 @@ public class XQueryFunctionsTest extends TestCase {
         //
         ResourceSet result =  null;
         String r = "";
-        String message;
+        @SuppressWarnings("unused")
+		String message;
         
         try {
             result 	= service.query("seconds-from-dateTime(xs:dateTime(\"2005-12-22T13:35:21.000\") )");

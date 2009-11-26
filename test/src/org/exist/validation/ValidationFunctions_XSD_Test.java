@@ -83,7 +83,8 @@ public class ValidationFunctions_XSD_Test {
     
     private void clearGrammarCache() {
         logger.info("Clearing grammar cache");
-        ResourceSet result = null;
+        @SuppressWarnings("unused")
+		ResourceSet result = null;
         try {
             result = service.query("validation:clear-grammar-cache()");
             

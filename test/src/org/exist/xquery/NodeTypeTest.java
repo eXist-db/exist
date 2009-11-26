@@ -142,6 +142,7 @@ public class NodeTypeTest extends TestCase {
 	 * 
 	 * @param service the xquery service	 
 	 */
+	@SuppressWarnings("unused")
 	private final void xupdateRemove(String doc, XQueryService service) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
@@ -164,6 +165,7 @@ public class NodeTypeTest extends TestCase {
 	 * @param service the xquery service
 	 * @param document the document to load	 
 	 */
+	@SuppressWarnings("unused")
 	private final Node load(XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");

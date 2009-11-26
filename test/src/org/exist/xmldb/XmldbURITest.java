@@ -363,13 +363,15 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor1() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("exist:///db");
+            @SuppressWarnings("unused")
+			XmldbURI xmldbURI = XmldbURI.xmldbUriFor("exist:///db");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
         exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.create("exist:///db");
         } catch (Exception e) {
             exceptionThrown = true;
@@ -381,6 +383,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor2() {
         boolean exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:///db");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
@@ -388,6 +391,7 @@ public class XmldbURITest extends TestCase {
         assertTrue(exceptionThrown);
         exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.create("xmldb:///db");
         } catch (Exception e) {
             exceptionThrown = true;
@@ -398,6 +402,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor3() {
         boolean exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
@@ -405,6 +410,7 @@ public class XmldbURITest extends TestCase {
         assertTrue(exceptionThrown);
         exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.create("xmldb:exist://");
         } catch (Exception e) {
             exceptionThrown = true;
@@ -415,6 +421,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor4() {
         boolean exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
@@ -422,6 +429,7 @@ public class XmldbURITest extends TestCase {
         assertTrue(exceptionThrown);
         exceptionThrown = false;
         try{
+            @SuppressWarnings("unused")
             XmldbURI xmldbURI = XmldbURI.create("xmldb:exist://");
         } catch (Exception e) {
             exceptionThrown = true;
@@ -665,6 +673,7 @@ public class XmldbURITest extends TestCase {
     }
     
     public void testXmldbURIRelativizeContext3() {
+        @SuppressWarnings("unused")
         boolean exceptionThrown = false;
         try{
             XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db");
@@ -786,6 +795,7 @@ public class XmldbURITest extends TestCase {
     }
     
     public void testXmldbURIRelativizeCollectionName3() {
+        @SuppressWarnings("unused")
         boolean exceptionThrown = false;
         try{
             XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///");

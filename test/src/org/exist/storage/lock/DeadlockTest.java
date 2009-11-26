@@ -246,6 +246,7 @@ public class DeadlockTest {
 
 	private static class StoreTask implements Runnable {
 
+		@SuppressWarnings("unused")
 		private String id;
 		private int docCount;
 		private int collectionCount;

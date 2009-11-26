@@ -116,7 +116,8 @@ public class QuerySessionTest {
         }
     }
 
-    @BeforeClass
+    @SuppressWarnings("unchecked")
+	@BeforeClass
     public static void startServer() throws Exception {
         try {
             server = new StandaloneServer();

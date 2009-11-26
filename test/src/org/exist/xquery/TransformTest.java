@@ -28,7 +28,8 @@ public class TransformTest extends TestCase {
      * the transform:transform function.
      */
     public void testTransform() {
-    	String imports = 
+    	@SuppressWarnings("unused")
+		String imports = 
     		"import module namespace transform='http://exist-db.org/xquery/transform';\n";
     	
 		try {

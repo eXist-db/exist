@@ -56,7 +56,8 @@ public class RecoveryTest2 extends TestCase {
     
     private static String xmlDir = "/home/wolf/xml/Saami";
     
-    private static String TEST_XML =
+    @SuppressWarnings("unused")
+	private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<test>" +
         "  <title>Hello</title>" +

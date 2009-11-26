@@ -52,7 +52,8 @@ public abstract class RemoteDBTest extends TestCase {
         super(name);
     }
 
-    protected void initServer() {
+    @SuppressWarnings("unchecked")
+	protected void initServer() {
 		try {
 			if (server == null) {
 				server = new StandaloneServer();

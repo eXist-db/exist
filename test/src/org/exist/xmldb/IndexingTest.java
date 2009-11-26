@@ -41,7 +41,7 @@ public class IndexingTest extends TestCase {
 	private Node deepBranch;
 	private Random random;
 	
-	private static String driver = "org.exist.xmldb.DatabaseImpl";
+//	private static String driver = "org.exist.xmldb.DatabaseImpl";
 	private static String baseURI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 
 	private static String username = "admin";
@@ -49,6 +49,7 @@ public class IndexingTest extends TestCase {
 	private static String name = "test.xml";
 	private String EXIST_HOME = ""; // <<<
 	private int effectiveSiblingCount;
+	@SuppressWarnings("unused")
 	private int effectiveDepth;
 	private long startTime;
 	private int arity;
@@ -214,6 +215,7 @@ public class IndexingTest extends TestCase {
 		}
 	
 	/** This one doesn't provoke the Exception */
+	@SuppressWarnings("unused")
 	private int populateOK(Document doc) {
 		int childrenCount = addChildren (doc, siblingCount);
 		
@@ -312,6 +314,7 @@ public class IndexingTest extends TestCase {
 		return rlength;
 	}
 	
+	@SuppressWarnings("unused")
 	private void dumpCatabaseContent(Node n) {
 		try {
 			Transformer t = TransformerFactory.newInstance().newTransformer();

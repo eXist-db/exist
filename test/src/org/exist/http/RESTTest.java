@@ -21,6 +21,7 @@ public abstract class RESTTest {
 	private static StandaloneServer server = null;
 	protected static HttpClient client = new HttpClient();
 
+	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void startupServer() {
 		try {

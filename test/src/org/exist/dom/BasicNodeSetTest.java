@@ -116,7 +116,8 @@ public class BasicNodeSetTest extends TestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+            @SuppressWarnings("unused")
+			DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
             Sequence seq = executeQuery(broker, "//SPEECH", 2628, null);
             
             System.out.println("Testing ChildSelector ...");

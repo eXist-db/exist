@@ -175,7 +175,8 @@ public class XQueryTest extends XMLTestCase {
     public void testLet() {
         ResourceSet result;
         String query;
-        XMLResource resu;
+        @SuppressWarnings("unused")
+		XMLResource resu;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -470,7 +471,8 @@ public class XQueryTest extends XMLTestCase {
         ResourceSet result;
         String query;
         XMLResource resu;
-        boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
         String message;
         try {
             XPathQueryService service =
@@ -548,9 +550,12 @@ public class XQueryTest extends XMLTestCase {
     public void testVirtualNodesets() {
         ResourceSet result;
         String query;
-        XMLResource resu;
-        boolean exceptionThrown;
-        String message;
+        @SuppressWarnings("unused")
+		XMLResource resu;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		String message;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -589,9 +594,12 @@ public class XQueryTest extends XMLTestCase {
     public void testWhereClause() {
         ResourceSet result;
         String query;
-        XMLResource resu;
-        boolean exceptionThrown;
-        String message;
+        @SuppressWarnings("unused")
+		XMLResource resu;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		String message;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -620,7 +628,8 @@ public class XQueryTest extends XMLTestCase {
         ResourceSet result;
         String query;
         boolean exceptionThrown;
-        String message;
+        @SuppressWarnings("unused")
+		String message;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -769,8 +778,10 @@ public class XQueryTest extends XMLTestCase {
     public void testPrecedence() {
         ResourceSet result;
         String query;
-        boolean exceptionThrown;
-        String message;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		String message;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -792,7 +803,8 @@ public class XQueryTest extends XMLTestCase {
         ResourceSet result;
         String query;
         boolean exceptionThrown;
-        String message;
+        @SuppressWarnings("unused")
+		String message;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -987,8 +999,10 @@ public class XQueryTest extends XMLTestCase {
         Resource doc;
         ResourceSet result;
         String query;
-        XMLResource resu;
-        boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		XMLResource resu;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
         String message;
         try {
             Collection testCollection = getTestCollection();
@@ -1445,8 +1459,10 @@ public class XQueryTest extends XMLTestCase {
     public void testFunctionDoc() {
         ResourceSet result;
         String query;
-        boolean exceptionThrown;
-        String message;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		String message;
         try {
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
@@ -1513,7 +1529,8 @@ public class XQueryTest extends XMLTestCase {
         boolean hasInternetAccess = false;
         ResourceSet result;
         String query;
-        String message;
+        @SuppressWarnings("unused")
+		String message;
 
         //Checking that we have an Internet Aceess
         try {
@@ -1661,7 +1678,8 @@ public class XQueryTest extends XMLTestCase {
         XMLResource resu;
         try {
             System.out.println("testAttributeAxis 1: ========");
-            String large = createXMLContentWithLargeString();
+            @SuppressWarnings("unused")
+			String large = createXMLContentWithLargeString();
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(file_name, xml);
 
@@ -1696,7 +1714,8 @@ public class XQueryTest extends XMLTestCase {
     public void testLargeAttributeSimple() {
         ResourceSet result;
         String query;
-        XMLResource resu;
+        @SuppressWarnings("unused")
+		XMLResource resu;
         try {
             System.out.println("testLargeAttributeSimple 1: ========");
             String large = createXMLContentWithLargeString();
@@ -1791,10 +1810,12 @@ public class XQueryTest extends XMLTestCase {
     public void testLargeAttributeContains() {
         ResourceSet result;
         String query;
-        XMLResource resu;
+        @SuppressWarnings("unused")
+		XMLResource resu;
         try {
             System.out.println("testLargeAttributeSimple 1: ========");
-            String large = createXMLContentWithLargeString();
+            @SuppressWarnings("unused")
+			String large = createXMLContentWithLargeString();
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(file_name, xml);
 
@@ -1810,7 +1831,8 @@ public class XQueryTest extends XMLTestCase {
     public void testLargeAttributeKeywordOperator() {
         ResourceSet result;
         String query;
-        XMLResource resu;
+        @SuppressWarnings("unused")
+		XMLResource resu;
         try {
             System.out.println("testLargeAttributeSimple 1: ========");
             String large = createXMLContentWithLargeString();
@@ -1854,9 +1876,11 @@ public class XQueryTest extends XMLTestCase {
     }
 
     public void testSerialization() {
-        ResourceSet result;
+        @SuppressWarnings("unused")
+		ResourceSet result;
         String query;
-        boolean exceptionThrown;
+        @SuppressWarnings("unused")
+		boolean exceptionThrown;
         String message;
 
         try {
@@ -1919,7 +1943,8 @@ public class XQueryTest extends XMLTestCase {
     public void obsoleteTestLargeAttributeRealFile() {
         ResourceSet result;
         String query;
-        XMLResource resu;
+        @SuppressWarnings("unused")
+		XMLResource resu;
         try {
             System.out.println("testLargeAttributeRealFile 1: ========");
             String large;
@@ -1927,7 +1952,8 @@ public class XQueryTest extends XMLTestCase {
             if (attributeXML != null) {
                 large = attributeXML;
             }
-            String xml = "<details format='xml'><metadata docid='" + large +
+            @SuppressWarnings("unused")
+			String xml = "<details format='xml'><metadata docid='" + large +
                     "'></metadata></details>";
             final String FILE_NAME = "detail_xml.xml";
             XPathQueryService service =
@@ -2250,7 +2276,8 @@ public class XQueryTest extends XMLTestCase {
                     "return $foo[Bar ne \"B\"]";
 
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
-            ResourceSet result = service.query(query);
+            @SuppressWarnings("unused")
+			ResourceSet result = service.query(query);
 
             fail("result should have yielded into an error like " +
                     "'A sequence of more than one item is not allowed as the first " + "operand of 'ne'");

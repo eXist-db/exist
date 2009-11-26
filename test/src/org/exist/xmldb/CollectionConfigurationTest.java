@@ -1296,10 +1296,12 @@ public class CollectionConfigurationTest extends TestCase {
   }   
    
    public void testMissingRangeIndexes() { 
+       @SuppressWarnings("unused")
        ResourceSet result; 
        boolean exceptionThrown = false;
        try {
            //Configure collection automatically
+           @SuppressWarnings("unused")
            IndexQueryService idxConf = (IndexQueryService)
            testCollection.getService("IndexQueryService", "1.0");           
 

@@ -451,7 +451,8 @@ public class BTreeTest {
         }
         
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-            XMLString key = UTF8.decode(value.data(), value.start(), value.getLength());
+            @SuppressWarnings("unused")
+			XMLString key = UTF8.decode(value.data(), value.start(), value.getLength());
 //            System.out.println("\"" + key + "\": " + count);
             count++;
             return false;

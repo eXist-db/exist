@@ -17,6 +17,7 @@ public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 
 	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
+	@SuppressWarnings("unused")
 	private File tempFile;
 	
 	public ConcurrentQueryUpdateTest(String name) {

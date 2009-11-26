@@ -87,7 +87,8 @@ public class ResourceTest extends TestCase {
             
             broker.saveCollection(transaction, collection);
             
-            BinaryDocument doc =
+            @SuppressWarnings("unused")
+			BinaryDocument doc =
                     collection.addBinaryResource(transaction, broker,
                     DOCUMENT_NAME_URI , EMPTY_BINARY_FILE.getBytes(), "text/text");
             

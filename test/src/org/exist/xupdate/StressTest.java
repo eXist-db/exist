@@ -114,7 +114,8 @@ public class StressTest extends TestCase {
             "<xupdate:remove select=\"//" + tags[i] + "\"/>" +
             "</xupdate:modifications>";
             
-            long mods = service.updateResource("test.xml", xupdate);
+            @SuppressWarnings("unused")
+			long mods = service.updateResource("test.xml", xupdate);
             System.out.println("Removed: " + tags[i]);
             
             i += rand.nextInt(3);

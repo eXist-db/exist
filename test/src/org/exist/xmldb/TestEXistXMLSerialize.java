@@ -199,7 +199,8 @@ public class TestEXistXMLSerialize extends TestCase{
 	
 	    	resource = (XMLResource)c.getResource(resource.getId());
 	        assertNotNull(resource);
-	    	Node node = resource.getContentAsDOM();
+	    	@SuppressWarnings("unused")
+			Node node = resource.getContentAsDOM();
 	    	System.out.println("Attempting serialization using eXist's SAX serializer");
 	    	StringWriter writer = new StringWriter();
 	    	Properties outputProperties = new Properties();

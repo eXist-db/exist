@@ -448,7 +448,8 @@ public class XQueryUpdateTest extends TestCase {
                     "   xs:int(/progress/@done)\n" +
                     ")";
             XQuery xquery = broker.getXQueryService();
-            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+            @SuppressWarnings("unused")
+			Sequence result = xquery.execute(query, null, AccessContext.TEST);
 
             System.out.println("testAttrUpdate(): PASSED\n");
         } catch (Exception e) {
@@ -511,7 +512,8 @@ public class XQueryUpdateTest extends TestCase {
                 "return update insert $attrib into $node";
             
             XQuery xquery = broker.getXQueryService();
-            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+            @SuppressWarnings("unused")
+			Sequence result = xquery.execute(query, null, AccessContext.TEST);
 
             System.out.println(this.getName()+"(): PASSED\n");
         } catch (Exception e) {

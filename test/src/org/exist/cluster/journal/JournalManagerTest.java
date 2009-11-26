@@ -242,17 +242,17 @@ public class JournalManagerTest extends TestCase{
        saveEvent( journal , "test2", 2 );
        saveEvent( journal , "test3", 3 );
 
-       ArrayList events = journal.getNextEvents( new int[]{0,0,1}, new int[]{3,3,1}, new Integer(-1));
+       ArrayList<ClusterEvent> events = journal.getNextEvents( new int[]{0,0,1}, new int[]{3,3,1}, new Integer(-1));
        assertNotNull( "Wrong null events", events );
        assertEquals("Wrong event size", 1, events.size());
 
-       int idR = ((ClusterEvent)events.get(0)).getId();
+       int idR = events.get(0).getId();
        events = journal.getNextEvents( new int[]{0,0,1}, new int[]{3,3,1}, new Integer(idR));
 
        assertNotNull( "Wrong null events", events );
        assertEquals("Wrong event size", 4, events.size());
 
-       ClusterEvent ev = (ClusterEvent) events.get(2);
+       ClusterEvent ev = events.get(2);
        assertTrue( "Wrong event class", ev instanceof CreateCollectionClusterEvent);
        assertEquals("Wrong id", 2 , ev.getId());
        assertEquals("Wrong parent value", DBBroker.ROOT_COLLECTION + "/test", ((CreateCollectionClusterEvent)ev).getParent());

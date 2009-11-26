@@ -197,7 +197,8 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
-    private void initServer() {
+    @SuppressWarnings("unchecked")
+	private void initServer() {
         try {
             if (server == null) {
                 server = new StandaloneServer();
@@ -845,7 +846,8 @@ public class XPathQueryTest extends XMLTestCase {
                     "123456789123456789123456789",
                     result.getResource(0).getContent() );
             
-            boolean exceptionThrown = false;
+            @SuppressWarnings("unused")
+			boolean exceptionThrown = false;
             String message = "";
             try {
                 result = queryResource(service, "numbers.xml", "empty(() + (1, 2))", 1);
@@ -1496,7 +1498,8 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("boolean value of 5.6 should be true", "true",
                     result.getResource(0).getContent());
             
-            boolean exceptionThrown = false;
+            @SuppressWarnings("unused")
+			boolean exceptionThrown = false;
             String message = "";
             try {
                 result = queryResource(service, "numbers.xml", "boolean(current-time())", 1);
@@ -2048,7 +2051,8 @@ public class XPathQueryTest extends XMLTestCase {
     public void testIntersect() {
         try {
             XQueryService service = getQueryService();
-            ResourceSet result;
+            @SuppressWarnings("unused")
+			ResourceSet result;
             
             query = "()  intersect ()";
             result = queryAndAssert( service, query, 0, "");
@@ -2067,12 +2071,14 @@ public class XPathQueryTest extends XMLTestCase {
     public void testUnion() {
         try {
             XQueryService service = getQueryService();
-            ResourceSet result;
+            @SuppressWarnings("unused")
+			ResourceSet result;
             
             query = "()  union ()";
             result = queryAndAssert( service, query, 0, "");
             
-            boolean exceptionThrown = false;
+            @SuppressWarnings("unused")
+			boolean exceptionThrown = false;
             String message = "";
             try {
                 query = "()  union  (1)";

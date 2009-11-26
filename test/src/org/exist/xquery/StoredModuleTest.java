@@ -54,7 +54,7 @@ public class StoredModuleTest {
 
     private final static Logger LOG = Logger.getLogger(StoredModuleTest.class);
     private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
-    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+//    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String MODULE =
             "module namespace itg-modules = \"http://localhost:80/itg/xquery\";\n" +
             "declare variable $itg-modules:colls as xs:string+ external;\n" +

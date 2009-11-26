@@ -106,7 +106,8 @@ public class ValidationServiceTest  {
     @Before
     public void clearGrammarCache() throws XMLDBException {
         System.out.println("Clearing grammar cache");
-        ResourceSet result = service.query("validation:clear-grammar-cache()");
+        @SuppressWarnings("unused")
+		ResourceSet result = service.query("validation:clear-grammar-cache()");
     }
     
     @Test

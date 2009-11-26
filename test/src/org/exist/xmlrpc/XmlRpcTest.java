@@ -125,13 +125,15 @@ public class XmlRpcTest {
         try {
             List<String> params = new ArrayList<String>(1);
             params.add(TARGET_COLLECTION.toString());
-            Boolean b = (Boolean) xmlrpc.execute("removeCollection", params);
+            @SuppressWarnings("unused")
+			Boolean b = (Boolean) xmlrpc.execute("removeCollection", params);
         } catch (XmlRpcException e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
     }
 
+	@SuppressWarnings("unchecked")
 	private static void initServer() {
 		try {
 			if (server == null) {

@@ -107,7 +107,8 @@ public class MultiDBTest extends TestCase {
 	        ResourceSet result = service.query(query);
 	        System.out.println("Found " + result.getSize() + " results.");
 	        for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-	            String content = i.nextResource().getContent().toString();
+	            @SuppressWarnings("unused")
+				String content = i.nextResource().getContent().toString();
 	        }
         } catch (Exception e) {
             e.printStackTrace();

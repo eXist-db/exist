@@ -23,7 +23,8 @@ import java.io.File;
  */
 public class AntUnitTestRunner {
 
-    private XPathQueryService service;
+    @SuppressWarnings("unused")
+	private XPathQueryService service;
     private Collection root = null;
     private Database database = null;
 
