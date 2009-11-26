@@ -249,7 +249,9 @@ public class SendEmailFunction extends BasicFunction
 
     private class SMTPException extends Exception
     {
-        public SMTPException(String message)
+		private static final long serialVersionUID = 4859093648476395159L;
+
+		public SMTPException(String message)
         {
             super(message);
         }

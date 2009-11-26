@@ -66,6 +66,7 @@ import org.xml.sax.SAXException;
  */
 public class GetMetadataFunction extends BasicFunction
 {   
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(GetMetadataFunction.class);
 	
 	public final static FunctionSignature signature =
@@ -118,10 +119,10 @@ public class GetMetadataFunction extends BasicFunction
 			ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imgData));
 		
 			//get an image reader
-			Iterator readers = ImageIO.getImageReaders(iis);
+			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
 			if(readers.hasNext())
 			{
-				ImageReader imageReader = (ImageReader)readers.next();
+				ImageReader imageReader = readers.next();
 				imageReader.setInput(iis);
 				
 				//read the metadata

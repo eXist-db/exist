@@ -422,8 +422,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             cookies = current;
         } else {
             
-            java.util.HashMap replacements  = new java.util.HashMap();
-            java.util.Vector  additions     = new java.util.Vector();
+            java.util.HashMap<Integer, Cookie> replacements  = new java.util.HashMap<Integer, Cookie>();
+            java.util.Vector<Cookie>  additions     = new java.util.Vector<Cookie>();
             
             for( int i = 0; i < incoming.length; i++ ) {
                 boolean cookieExists = false;
@@ -448,7 +448,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             for( int c = 0; c < current.length; c++ ) {
                 if( replacements.containsKey( new Integer(c) ) ) {
                     //replace
-                    cookies[c] = (Cookie)replacements.get( new Integer(c) );
+                    cookies[c] = replacements.get( new Integer(c) );
                 } else {
                     //copy
                     cookies[c] = current[c];
@@ -457,7 +457,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             //resolve additions
             for( int a = 0; a < additions.size(); a++ ) {
                 int offset = current.length + a;
-                cookies[offset] = (Cookie)additions.get( a );
+                cookies[offset] = additions.get( a );
             }
         }
         

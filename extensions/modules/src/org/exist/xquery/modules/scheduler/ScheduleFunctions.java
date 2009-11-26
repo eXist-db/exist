@@ -239,7 +239,7 @@ public class ScheduleFunctions extends BasicFunction
 			try
 			{
 				//Check if the Class is a UserJob
-				Class jobClass = Class.forName(resource);
+				Class<?> jobClass = Class.forName(resource);
 				job = jobClass.newInstance();
 				if(!(job instanceof UserJavaJob))
 				{

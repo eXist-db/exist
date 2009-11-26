@@ -40,6 +40,7 @@ import org.exist.xquery.value.Type;
  */
 public class NoParamFunctions extends BasicFunction {
     
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
 
 	public final static FunctionSignature signature[] = {

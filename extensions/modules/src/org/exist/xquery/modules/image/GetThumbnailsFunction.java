@@ -67,6 +67,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetThumbnailsFunction extends BasicFunction {
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(GetThumbnailsFunction.class);
 	
 	private final static int MAXTHUMBHEIGHT = 100;

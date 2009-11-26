@@ -43,6 +43,7 @@ import org.exist.xquery.value.Type;
  */
 public class OneParamFunctions extends BasicFunction {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(OneParamFunctions.class);
     
     public final static FunctionSignature signature[] = {
