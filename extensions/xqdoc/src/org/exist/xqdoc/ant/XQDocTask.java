@@ -29,13 +29,14 @@ public class XQDocTask extends AbstractXMLDBTask {
         "import module namespace xdb=\"http://exist-db.org/xquery/xmldb\";\n" +
         "declare namespace xqdoc=\"http://www.xqdoc.org/1.0\"\n;" +
         "declare variable $uri external;\n" +
+        "declare variable $name external;\n" +
         "declare variable $collection external;\n" +
         "declare variable $data external;\n" +
         "let $xml :=\n" +
-            "if ($uri eq '') then\n" +
-            "   xqdm:scan-data($data)\n" +
-            "else\n" +
+            "if ($uri) then\n" +
             "   xqdm:scan(xs:anyURI($uri))\n" +
+            "else\n" +
+            "   xqdm:scan($data, $name)\n" +
         "let $moduleURI := $xml//xqdoc:module/xqdoc:uri\n" +
         "let $docName := concat(util:hash($moduleURI, 'MD5'), '.xml')\n" +
         "return\n" +
@@ -73,6 +74,7 @@ public class XQDocTask extends AbstractXMLDBTask {
             service.declareVariable("uri", "");
             if (moduleURI != null) {
                 service.declareVariable("uri", moduleURI);
+                service.declareVariable("data", "");
                 service.execute(source);
             } else {
                 for(FileSet fileSet: fileSets) {
@@ -87,6 +89,7 @@ public class XQDocTask extends AbstractXMLDBTask {
                         log("Storing " + files[i] + " ...\n");
                         byte[] data = read(file);
                         try {
+                            service.declareVariable("name", file.getName());
                             service.declareVariable("data", data);
                             service.execute(source);
                         } catch (XMLDBException e) {
