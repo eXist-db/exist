@@ -488,13 +488,13 @@ public class Propfind extends AbstractWebDAVMethod {
         serializer.endElement(WebDAV.DAV_NS, "propstat", "D:propstat");
         
         if(type == FIND_BY_PROPERTY) {
-            List unvisited = searchedProperties.unvisitedProperties();
+            List<QName> unvisited = searchedProperties.unvisitedProperties();
             if(unvisited.size() > 0) {
                 // there were unsupported properties. Report these to the client.
                 serializer.startElement(WebDAV.DAV_NS, "propstat", "D:propstat", attrs);
                 serializer.startElement(WebDAV.DAV_NS, "prop", "D:prop", attrs);
-                for(Iterator i = unvisited.iterator(); i.hasNext(); ) {
-                    writeEmptyElement((QName)i.next(), serializer);
+                for(QName qName : unvisited) {
+                    writeEmptyElement(qName, serializer);
                 }
                 serializer.endElement(WebDAV.DAV_NS, "prop", "D:prop");
                 writeSimpleElement(STATUS_PROP, "HTTP/1.1 404 Not Found", serializer);
@@ -617,9 +617,11 @@ public class Propfind extends AbstractWebDAVMethod {
         
     }
     
-    private static class DAVProperties extends HashMap {
+    private static class DAVProperties extends HashMap<QName, Visited> {
         
-        DAVProperties() {
+		private static final long serialVersionUID = 1237477678850062794L;
+
+		DAVProperties() {
             super();
         }
         
@@ -634,7 +636,7 @@ public class Propfind extends AbstractWebDAVMethod {
         }
         
         boolean includeProperty(QName property) {
-            Visited visited = (Visited)get(property);
+            Visited visited = get(property);
             if(visited == null)
                 return false;
             boolean include = !visited.isVisited();
@@ -642,19 +644,17 @@ public class Propfind extends AbstractWebDAVMethod {
             return include;
         }
         
-        List unvisitedProperties() {
-            List list = new ArrayList(5);
-            for(Iterator i = entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)i.next();
-                if(!((Visited)entry.getValue()).visited)
+        List<QName> unvisitedProperties() {
+            List<QName> list = new ArrayList<QName>(5);
+            for(Map.Entry<QName, Visited> entry : entrySet()) {
+                if(!entry.getValue().visited)
                     list.add(entry.getKey());
             }
             return list;
         }
         
         void reset() {
-            for(Iterator i = values().iterator(); i.hasNext(); ) {
-                Visited visited = (Visited)i.next();
+            for(Visited visited : values()) {
                 visited.setVisited(false);
             }
         }

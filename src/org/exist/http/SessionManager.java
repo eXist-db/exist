@@ -65,7 +65,7 @@ public class SessionManager {
         public void setName(String name) {
         }
 
-        public void execute(BrokerPool brokerpool, Map params) throws JobException {
+        public void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException {
             SessionManager manager = (SessionManager) params.get("session-manager");
             if (manager == null)
                 throw new JobException(JobException.JOB_ABORT, "parameter 'session-manager' is not set");
