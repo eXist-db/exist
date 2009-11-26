@@ -119,8 +119,17 @@ public class TransformerFactoryAllocator
 						LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + e );
 					}
 				}
+
+                /* TODO uncomment below for testing eXist-XSLT or once the eXist-XSLT is ready for general consumption
+                 at the moment the XSLT extension is not on the classpath, which make compilation fail for everyone
+                 else otherwise!
+                */
+                /*
+                if(factory instanceof org.exist.xslt.TransformerFactoryImpl)
+                    factory.setAttribute(PROPERTY_BROKER_POOL, pool);
+                 */
 				
-			} 
+			}
 			catch( ClassNotFoundException cnfe ) {
 				if( LOG.isDebugEnabled() ) {
 					LOG.debug("Cannot find the requested TrAX factory '" + transformerFactoryClassName + "'. Using default TrAX Transformer Factory instead." );
