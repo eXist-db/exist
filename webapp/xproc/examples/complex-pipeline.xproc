@@ -4,7 +4,7 @@
 
 <p:compare name="compare">                       (: compare test step :)
    <p:input port="alternate">
-       <p:document href="/db/xproc/test.xml"/> (: example of using p:document :)
+       <p:document href="/db/xproc/xml/test.xml"/> (: example of using p:document :)
    </p:input>
 </p:compare>
 
