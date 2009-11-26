@@ -67,10 +67,6 @@ class SortTestNodeId implements NodeId {
 		return compareTo((SortTestNodeId) arg0);
 	}
 
-	public int compareTo(Object arg0) {
-		return compareTo((SortTestNodeId) arg0);
-	}
-
 	public int computeRelation(NodeId arg0) {
 		throw new UnsupportedOperationException();
 	}

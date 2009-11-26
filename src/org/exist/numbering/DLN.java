@@ -293,10 +293,6 @@ public class DLN extends DLNBase implements NodeId {
         return super.equals((DLNBase) other);
     }
 
-    public int compareTo(Object other) {
-        return compareTo((DLN) other);
-    }
-    
     public int compareTo(NodeId otherId) {
         if (otherId == null)
             return 1;
