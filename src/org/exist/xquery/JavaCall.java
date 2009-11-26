@@ -117,7 +117,7 @@ public class JavaCall extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
-	public void setArguments(List arguments) throws XPathException {
+	public void setArguments(List<Expression> arguments) throws XPathException {
 		final int argCount = arguments.size();
 		for (int i = 0; i < argCount; i++)
 		    steps.add((Expression) arguments.get(i));
