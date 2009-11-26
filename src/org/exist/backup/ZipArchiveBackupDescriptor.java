@@ -8,12 +8,9 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.Date;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.ZipEntryInputSource;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.XPathException;
 
 public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor
 {
@@ -35,9 +32,9 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor
 			//looking for highest collection
 			//TODO: better to put some information on top? 
 			ZipEntry item = null;
-			Enumeration zipEnum = archive.entries();
+			Enumeration<? extends ZipEntry> zipEnum = archive.entries();
 			while(zipEnum.hasMoreElements()) {
-				item = (ZipEntry) zipEnum.nextElement();
+				item = zipEnum.nextElement();
 
 				if (!item.isDirectory()) {
 					if (item.getName().endsWith(BackupDescriptor.COLLECTION_DESCRIPTOR)) {

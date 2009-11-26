@@ -120,7 +120,7 @@ public class SystemExport {
         this.directAccess = direct;
     }
 
-    public File export(String targetDir, boolean incremental, boolean zip, List errorList) {
+    public File export(String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList) {
         return export(targetDir, incremental, -1, zip, errorList);
     }
 
@@ -136,7 +136,7 @@ public class SystemExport {
      *            a list of {@link ErrorReport} objects as returned by methods
      *            in {@link ConsistencyCheck}.
      */
-    public File export(String targetDir, boolean incremental, int maxInc, boolean zip, List errorList) {
+    public File export(String targetDir, boolean incremental, int maxInc, boolean zip, List<ErrorReport> errorList) {
         try {
             BackupDirectory directory = new BackupDirectory(targetDir);
             BackupDescriptor prevBackup = null;
@@ -204,12 +204,11 @@ public class SystemExport {
         }
     }
 
-    private static boolean isDamaged(DocumentImpl doc, List errorList) {
+    private static boolean isDamaged(DocumentImpl doc, List<ErrorReport> errorList) {
         if (errorList == null)
             return false;
-        org.exist.backup.ErrorReport report;
-        for (int i = 0; i < errorList.size(); i++) {
-            report = (org.exist.backup.ErrorReport) errorList.get(i);
+
+        for (org.exist.backup.ErrorReport report : errorList) {
             if (report.getErrcode() == org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED
                     && ((ErrorReport.ResourceError) report).getDocumentId() == doc.getDocId())
                 return true;
@@ -217,12 +216,12 @@ public class SystemExport {
         return false;
     }
 
-    private static boolean isDamaged(Collection collection, List errorList) {
+    @SuppressWarnings("unused")
+	private static boolean isDamaged(Collection collection, List<ErrorReport> errorList) {
         if (errorList == null)
             return false;
-        ErrorReport report;
-        for (int i = 0; i < errorList.size(); i++) {
-            report = (ErrorReport) errorList.get(i);
+
+        for (ErrorReport report : errorList) {
             if (report.getErrcode() == org.exist.backup.ErrorReport.CHILD_COLLECTION
                     && ((ErrorReport.CollectionError) report).getCollectionId() == collection.getId())
                 return true;
@@ -230,12 +229,11 @@ public class SystemExport {
         return false;
     }
 
-    private static boolean isDamagedChild(XmldbURI uri, List errorList) {
+    private static boolean isDamagedChild(XmldbURI uri, List<ErrorReport> errorList) {
         if (errorList == null)
             return false;
-        org.exist.backup.ErrorReport report;
-        for (int i = 0; i < errorList.size(); i++) {
-            report = (org.exist.backup.ErrorReport) errorList.get(i);
+
+        for (org.exist.backup.ErrorReport report : errorList) {
             if (report.getErrcode() == org.exist.backup.ErrorReport.CHILD_COLLECTION
                     && ((org.exist.backup.ErrorReport.CollectionError) report).getCollectionURI().equalsInternal(uri))
                 return true;
@@ -256,7 +254,7 @@ public class SystemExport {
      *            a list of {@link org.exist.backup.ErrorReport} objects as
      *            returned by methods in {@link ConsistencyCheck}
      */
-    private void exportOrphans(BackupWriter output, DocumentSet docs, List errorList) {
+    private void exportOrphans(BackupWriter output, DocumentSet docs, List<ErrorReport> errorList) {
         output.newCollection("/db/__lost_and_found__");
         try {
             Writer contents = output.newContents();
@@ -308,7 +306,7 @@ public class SystemExport {
      * @throws IOException
      * @throws SAXException
      */
-    private void export(Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List errorList, MutableDocumentSet docs) throws IOException, SAXException {
+    private void export(Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs) throws IOException, SAXException {
         if (callback != null)
             callback.startCollection(current.getURI().toString());
 
@@ -594,14 +592,14 @@ public class SystemExport {
         private BackupWriter writer;
         private BackupDescriptor prevBackup;
         private Date date;
-        private List errors;
+        private List<ErrorReport> errors;
         private MutableDocumentSet docs = new DefaultDocumentSet();
         private int collectionCount = 0;
         private boolean exportCollection;
         private int lastPercentage = -1;
         private Agent jmxAgent = AgentFactory.getInstance();
 
-        private CollectionCallback(BackupWriter writer, Date date, BackupDescriptor prevBackup, List errorList,
+        private CollectionCallback(BackupWriter writer, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList,
                 boolean exportCollection) {
             this.writer = writer;
             this.errors = errorList;
@@ -650,7 +648,7 @@ public class SystemExport {
     private class DocumentCallback implements BTreeCallback {
 
         private DocumentSet exportedDocs;
-        private Set writtenDocs = null;
+        private Set<String> writtenDocs = null;
         private SAXSerializer serializer;
         private BackupWriter output;
         private Date date;
@@ -664,7 +662,7 @@ public class SystemExport {
             this.date = date;
             this.prevBackup = prevBackup;
             if (checkNames) {
-                writtenDocs = new TreeSet();
+                writtenDocs = new TreeSet<String>();
             }
         }
 

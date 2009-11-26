@@ -7,12 +7,9 @@ import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.util.Properties;
-import java.util.Date;
 
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.DateTimeValue;
 
 public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 {

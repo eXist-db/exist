@@ -32,7 +32,9 @@ import org.exist.util.MimeType;
  */
 public class ExportGUI extends javax.swing.JFrame {
 
-    private BrokerPool pool = null;
+	private static final long serialVersionUID = -8104424554660744639L;
+
+	private BrokerPool pool = null;
     private int documentCount = 0;
     private PrintWriter logWriter = null;
 
@@ -302,7 +304,7 @@ public class ExportGUI extends javax.swing.JFrame {
                 openLog(outputDir.getText());
                 try {
                     currentTask.setText("Checking database consistency ...");
-                    List errors = checkDB();
+                    List<ErrorReport> errors = checkDB();
                     currentTask.setText("Exporting data ...");
                     exportDB(outputDir.getText(), errors);
                 } finally {
@@ -358,7 +360,7 @@ public class ExportGUI extends javax.swing.JFrame {
         }
     }// GEN-LAST:event_btnConfSelectActionPerformed
 
-    private void exportDB(String exportTarget, List errorList) {
+    private void exportDB(String exportTarget, List<ErrorReport> errorList) {
         if (!startDB())
             return;
         DBBroker broker = null;
@@ -407,7 +409,7 @@ public class ExportGUI extends javax.swing.JFrame {
         }
     }
 
-    private List checkDB() {
+    private List<ErrorReport> checkDB() {
         if (!startDB())
             return null;
         DBBroker broker = null;
@@ -436,7 +438,7 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setIndeterminate(true);
             messages.setText("");
             displayMessage("Checking collections ...");
-            List errors = checker.checkCollectionTree(cb);
+            List<ErrorReport> errors = checker.checkCollectionTree(cb);
             if (errors.size() == 0) {
                 displayMessage("No errors found.");
             } else {
