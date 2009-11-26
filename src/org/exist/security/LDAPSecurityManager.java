@@ -406,7 +406,7 @@ public class LDAPSecurityManager implements SecurityManager
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
          NamingEnumeration groups = context.search(groupBase,"(objectClass="+groupClassName+")",constraints);
-         List groupList = new ArrayList();
+         List<String> groupList = new ArrayList<String>();
          while (groups.hasMore()) {
             SearchResult result = (SearchResult)groups.next();
             groupList.add(getAttributeValue(groupNameAttr, result.getAttributes()));
@@ -476,7 +476,7 @@ public class LDAPSecurityManager implements SecurityManager
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
          NamingEnumeration users = context.search(userBase,"(objectClass="+userClassName+")",constraints);
-         List userList = new ArrayList();
+         List<User> userList = new ArrayList<User>();
          while (users.hasMore()) {
             SearchResult result = (SearchResult)users.next();
             userList.add(newUserFromAttributes(context,result.getAttributes()));

@@ -25,7 +25,7 @@ public class SessionManager {
 		TIMEOUT = timeout;
 	}
 
-	Map sessions = new TreeMap();
+	Map<String, Session> sessions = new TreeMap<String, Session>();
 	
 	public synchronized String createSession(User user) {
 		Session session = new Session(user);
@@ -47,6 +47,7 @@ public class SessionManager {
 		sessions.remove(id);
 	}
 	
+	@SuppressWarnings("unused")
 	private void checkResultSets() {
 		for (Iterator i = sessions.values().iterator(); i.hasNext();) {
 			Session session = (Session)i.next();

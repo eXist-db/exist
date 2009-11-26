@@ -20,7 +20,7 @@ import java.util.Vector;
  */
 public class Classpath {
 
-    Vector _elements = new Vector();    
+    Vector<File> _elements = new Vector<File>();    
 
     public Classpath()
     {}    
@@ -96,7 +96,7 @@ public class Classpath {
         URL[] urls = new URL[cnt];
         for (int i=0; i < cnt; i++) {
             try {
-                urls[i] = ((File)(_elements.elementAt(i))).toURI().toURL();
+                urls[i] = _elements.elementAt(i).toURI().toURL();
             } catch (MalformedURLException e) {}
         }
         

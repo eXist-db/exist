@@ -1,6 +1,5 @@
 package org.exist.source;
 
-import org.exist.security.MessageDigester;
 import org.exist.storage.DBBroker;
 
 import java.io.*;

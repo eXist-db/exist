@@ -19,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -117,9 +116,9 @@ public class Main {
     public static void invokeMain(ClassLoader classloader, String classname, String[] args)
             throws IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, ClassNotFoundException {
-        Class invoked_class = null;
+        Class<?> invoked_class = null;
         invoked_class = classloader.loadClass(classname);
-        Class[] method_param_types = new Class[1];
+        Class<?>[] method_param_types = new Class[1];
         method_param_types[0] = args.getClass();
         Method main = null;
         main = invoked_class.getDeclaredMethod("main", method_param_types);
@@ -132,7 +131,7 @@ public class Main {
 
         // Any files referenced in start.config that don't exist or cannot be resolved
         // are placed in this list.
-        List invalidJars = new ArrayList();
+        List<String> invalidJars = new ArrayList<String>();
 
         try {
             BufferedReader cfg = new BufferedReader(new InputStreamReader(config, "ISO-8859-1"));
@@ -140,7 +139,7 @@ public class Main {
             Version ver = new Version();
 
             // JAR's already processed
-            Hashtable done = new Hashtable();
+            Hashtable<String, String> done = new Hashtable<String, String>();
             String line = cfg.readLine();
             while (line != null) {
                 try {
@@ -284,10 +283,8 @@ public class Main {
         // Print message if any files from start.config were added
         // to the classpath but they could not be found.
         if (invalidJars.size() > 0) {
-            Iterator it = invalidJars.iterator();
             StringBuilder nonexistentJars = new StringBuilder();
-            while (it.hasNext()) {
-                String invalidJar = (String) it.next();
+            for (String invalidJar : invalidJars) {
                 nonexistentJars.append("    " + invalidJar + "\n");
             }
 			/*
