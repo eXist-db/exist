@@ -1,0 +1,41 @@
+package org.exist.xqdoc.xquery;
+
+import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDef;
+
+public class XQDocModule extends AbstractInternalModule {
+
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/xqdoc";
+
+    public static final String PREFIX = "xqdoc";
+
+    public final static String RELEASED_IN_VERSION = "eXist-1.4.1";
+
+    public static final FunctionDef[] functions = {
+        new FunctionDef(Scan.signature, Scan.class)
+    };
+
+    public XQDocModule() {
+        super(functions, true);
+    }
+
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
+
+    @Override
+    public String getDefaultPrefix() {
+        return PREFIX;
+    }
+
+    @Override
+    public String getDescription() {
+        return "XQDoc integration module.";
+    }
+
+    @Override
+    public String getReleaseVersion() {
+        return RELEASED_IN_VERSION;
+    }
+}
