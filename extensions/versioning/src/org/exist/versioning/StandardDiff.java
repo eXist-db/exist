@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Iterator;
 
 public class StandardDiff implements org.exist.versioning.Diff {
 
@@ -36,7 +35,7 @@ public class StandardDiff implements org.exist.versioning.Diff {
 
     private DBBroker broker;
 
-    private List changes = null;
+    private List<Difference> changes = null;
 
     public StandardDiff(DBBroker broker) {
         this.broker = broker;
@@ -108,9 +107,9 @@ public class StandardDiff implements org.exist.versioning.Diff {
     }
 
 
-    protected List getChanges(Diff.change script, DocumentImpl docA, DocumentImpl docB, DiffNode[] nodesA, DiffNode[] nodesB) throws XMLStreamException {
-        List changes = new ArrayList();
-        Map inserts = new TreeMap();
+    protected List<Difference> getChanges(Diff.change script, DocumentImpl docA, DocumentImpl docB, DiffNode[] nodesA, DiffNode[] nodesB) throws XMLStreamException {
+        List<Difference> changes = new ArrayList<Difference>();
+        Map<NodeId, Difference> inserts = new TreeMap<NodeId, Difference>();
         Diff.change next = script;
         while (next != null) {
             int start0 = next.line0;
@@ -188,15 +187,15 @@ public class StandardDiff implements org.exist.versioning.Diff {
             }
             next = next.link;
         }
-        for (Iterator i = inserts.values().iterator(); i.hasNext();) {
-            changes.add(i.next());
+        for (Difference diff : inserts.values()) {
+            changes.add(diff);
         }
         return changes;
     }
 
     protected DiffNode[] getNodes(DBBroker broker, DocumentImpl root) throws XMLStreamException, IOException {
         EmbeddedXMLStreamReader reader = broker.newXMLStreamReader(new NodeProxy(root, NodeId.DOCUMENT_NODE, root.getFirstChildAddress()), false);
-        List nodes = new ArrayList();
+        List<DiffNode> nodes = new ArrayList<DiffNode>();
         DiffNode node;
         while (reader.hasNext()) {
             int status = reader.next();
@@ -230,7 +229,7 @@ public class StandardDiff implements org.exist.versioning.Diff {
             }
         }
         DiffNode[] array = new DiffNode[nodes.size()];
-        return (DiffNode[]) nodes.toArray(array);
+        return nodes.toArray(array);
     }
 
 }

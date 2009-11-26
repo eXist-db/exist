@@ -23,7 +23,9 @@ package org.exist.versioning;
 
 public class DiffException extends Exception {
 
-    public DiffException(String message) {
+	private static final long serialVersionUID = 2294067063976070362L;
+
+	public DiffException(String message) {
         super(message);
     }
 

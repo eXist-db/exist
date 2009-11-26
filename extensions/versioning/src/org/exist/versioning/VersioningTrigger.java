@@ -333,7 +333,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
     public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
         receiver.startElement(PROPERTIES_ELEMENT, null);
-        for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
+        for (Iterator<Object> i = properties.keySet().iterator(); i.hasNext();) {
             String key = (String) i.next();
             QName qn = new QName(key, StandardDiff.NAMESPACE, StandardDiff.PREFIX);
             receiver.startElement(qn, null);

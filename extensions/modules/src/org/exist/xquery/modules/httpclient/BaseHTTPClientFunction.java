@@ -288,7 +288,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     */
     private void insertResponseBody( XQueryContext context, HttpMethod method, MemTreeBuilder builder ) throws IOException, XPathException
     {
-        boolean     parsed       = false;
+        @SuppressWarnings("unused")
+		boolean     parsed       = false;
         NodeImpl    responseNode = null;
         InputStream bodyAsStream = method.getResponseBodyAsStream();
         

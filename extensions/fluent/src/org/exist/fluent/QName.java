@@ -12,6 +12,8 @@ import org.w3c.dom.Document;
  */
 public class QName extends javax.xml.namespace.QName implements Comparable<QName> {
 	
+	private static final long serialVersionUID = -7374508115268644368L;
+
 	private final String tag;
 	
 	/**

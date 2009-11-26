@@ -8,6 +8,8 @@ package org.exist.fluent;
  */
 public class DatabaseException extends RuntimeException {
 	
+	private static final long serialVersionUID = -5795305208413473870L;
+
 	DatabaseException() {
 		super();
 	}

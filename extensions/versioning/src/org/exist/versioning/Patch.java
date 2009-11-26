@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Stack;
-import java.util.Iterator;
 
 /**
  * Patch a given source document by applying a diff in eXist's diff format.
@@ -72,12 +71,12 @@ public class Patch {
     
     private DBBroker broker;
 
-    private Map deletedNodes = null;
-    private Map insertedNodes = null;
-    private Map appendedNodes = null;
+    private Map<NodeId, String> deletedNodes = null;
+    private Map<NodeId, ElementImpl> insertedNodes = null;
+    private Map<NodeId, ElementImpl> appendedNodes = null;
 
     private boolean annotate = false;
-    private Stack elementStack = null;
+    private Stack<QName> elementStack = null;
 
     private NewArrayNodeSet changeSet = null;
     private DocumentImpl diffDoc;
@@ -110,17 +109,17 @@ public class Patch {
                 int status = reader.next();
                 NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
                 if (status != XMLStreamReader.END_ELEMENT) {
-                    ElementImpl insertedNode = (ElementImpl) insertedNodes.get(nodeId);
+                    ElementImpl insertedNode = insertedNodes.get(nodeId);
                     if (insertedNode != null) {
                         insertNode(insertedNode, receiver, null);
                     }
                 } else {
-                    ElementImpl appendedNode = (ElementImpl) appendedNodes.get(nodeId);
+                    ElementImpl appendedNode = appendedNodes.get(nodeId);
                     if (appendedNode != null) {
                         insertNode(appendedNode, receiver, null);
                     }
                 }
-                String opt = (String) deletedNodes.get(nodeId);
+                String opt = deletedNodes.get(nodeId);
                 if (opt == D_SUBTREE) {
                     if (status == XMLStreamReader.START_ELEMENT)
                         skipSubtree = nodeId;
@@ -148,7 +147,7 @@ public class Patch {
 
     public void annotate(ExtendedXMLStreamReader reader, Receiver receiver) throws DiffException {
         annotate = true;
-        elementStack = new Stack();
+        elementStack = new Stack<QName>();
         buildChangeSet();
         try {
             NodeId skipSubtree = null;
@@ -156,18 +155,18 @@ public class Patch {
                 int status = reader.next();
                 NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
                 if (status != XMLStreamReader.END_ELEMENT) {
-                    ElementImpl insertedNode = (ElementImpl) insertedNodes.get(nodeId);
+                    ElementImpl insertedNode = insertedNodes.get(nodeId);
                     if (insertedNode != null) {
                         insertNode(insertedNode, receiver, CHANGE_INSERT);
                     }
                 } else {
-                    ElementImpl appendedNode = (ElementImpl) appendedNodes.get(nodeId);
+                    ElementImpl appendedNode = appendedNodes.get(nodeId);
                     if (appendedNode != null) {
                         insertNode(appendedNode, receiver, CHANGE_APPEND);
                     }
                 }
                 boolean skip = false;
-                String opt = (String) deletedNodes.get(nodeId);
+                String opt = deletedNodes.get(nodeId);
                 if (opt != null) {
                     if (opt == D_SUBTREE) {
                         if (status == XMLStreamReader.START_ELEMENT)
@@ -270,7 +269,7 @@ public class Patch {
                     NodeId nodeId = reader.getAttributeId(i);
 
                     // check if an attribute has to be inserted before the current attribute
-                    ElementImpl insertedNode = (ElementImpl) insertedNodes.get(nodeId);
+                    ElementImpl insertedNode = insertedNodes.get(nodeId);
                     if (insertedNode != null) {
                         StoredNode child = (StoredNode) insertedNode.getFirstChild();
                         while (child != null) {
@@ -339,9 +338,9 @@ public class Patch {
     }
 
     private void parseDiff(DBBroker broker, DocumentImpl doc) throws XPathException {
-        deletedNodes = new TreeMap();
-        insertedNodes = new TreeMap();
-        appendedNodes = new TreeMap();
+        deletedNodes = new TreeMap<NodeId, String>();
+        insertedNodes = new TreeMap<NodeId, ElementImpl>();
+        appendedNodes = new TreeMap<NodeId, ElementImpl>();
         XQuery service = broker.getXQueryService();
         Sequence changes = service.execute("declare namespace v=\"http://exist-db.org/versioning\";" +
                 "doc('" + doc.getURI().toString() + "')/v:version/v:diff/*",
@@ -353,28 +352,28 @@ public class Patch {
                     child.getNamespaceURI().equals(StandardDiff.NAMESPACE)) {
                NodeId id = parseRef(broker, child, "ref");
                if (child.getLocalName().equals("delete")) {
-                   String event = ((Element) child).getAttribute("event");
+                   String event = child.getAttribute("event");
                    if (event == null || event.length() == 0)
                        deletedNodes.put(id, D_SUBTREE);
                    else if ("both".equals(event))
                        deletedNodes.put(id, D_BOTH);
                    else if ("start".equals(event)) {
-                       String opt = (String) deletedNodes.get(id);
+                       String opt = deletedNodes.get(id);
                        if (opt == D_END)
                            deletedNodes.put(id, D_BOTH);
                        else
                            deletedNodes.put(id, D_START);
                    } else {
-                       String opt = (String) deletedNodes.get(id);
+                       String opt = deletedNodes.get(id);
                        if (opt == D_START)
                            deletedNodes.put(id, D_BOTH);
                        else
                            deletedNodes.put(id, D_END);
                    }
                } else if (child.getLocalName().equals("insert")) {
-                   insertedNodes.put(id, child);
+                   insertedNodes.put(id, (ElementImpl)child);
                } else if (child.getLocalName().equals("append")) {
-                   appendedNodes.put(id, child);
+                   appendedNodes.put(id, (ElementImpl)child);
                }
             }
         }
@@ -398,16 +397,13 @@ public class Patch {
 
     private void buildChangeSet() {
         changeSet = new NewArrayNodeSet();
-        for (Iterator i = insertedNodes.keySet().iterator(); i.hasNext();) {
-            NodeId nodeId = (NodeId) i.next();
+        for (NodeId nodeId : insertedNodes.keySet()) {
             changeSet.add(new NodeProxy(diffDoc, nodeId));
         }
-        for (Iterator i = appendedNodes.keySet().iterator(); i.hasNext();) {
-            NodeId nodeId = (NodeId) i.next();
+        for (NodeId nodeId : appendedNodes.keySet()) {
             changeSet.add(new NodeProxy(diffDoc, nodeId));
         }
-        for (Iterator i = deletedNodes.keySet().iterator(); i.hasNext();) {
-            NodeId nodeId = (NodeId) i.next();
+        for (NodeId nodeId : deletedNodes.keySet()) {
             changeSet.add(new NodeProxy(diffDoc, nodeId));
         }
     }

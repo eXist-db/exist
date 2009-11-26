@@ -219,8 +219,10 @@ public class GetThumbnailsFunction extends BasicFunction {
 
 		DocumentImpl docImage = null;
 		BinaryDocument binImage = null;
+		@SuppressWarnings("unused")
 		BinaryDocument doc = null;
 		BufferedImage bImage = null;
+		@SuppressWarnings("unused")
 		byte[] imgData = null;
 		Image image = null;
 		ByteArrayOutputStream os = null;
