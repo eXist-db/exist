@@ -786,24 +786,16 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  if (empty($bindings)) then
      ()
  else
-     for $binding in $bindings/*
+    for $binding in $bindings/bindings/binding
     return
-    if ($binding/@port) then
         <xproc:output port-type="external" port="{$binding/@port}" step="{concat('!',$pipelinename)}">
-            {$binding/node()}
+            {
+            if ($binding/@uri) then
+                doc($binding/@uri)
+            else
+                $binding/*
+            }
         </xproc:output>
-    else
-        let $port := substring-before($binding,'=')
-        let $data := substring-after($binding,'=')
-            return
-            <xproc:output port-type="external" port="{$port}" step="{concat('!',$pipelinename)}">
-                {
-                if(contains($data,'http:') or contains($data,'file:') or starts-with($data,'/')) then
-                    doc($data) (: TODO - identify URI better :)
-                else
-                    util:parse($data)
-                }
-            </xproc:output>
  };
 
 
@@ -853,7 +845,6 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$dflag,$tflag,$bindings,$options){
  (: -------------------------------------------------------------------------- :)
-    let $namespaces := xproc:enum-namespaces($pipeline)
     let $internaldbg := 0
     return
          if ($internaldbg eq 1) then
@@ -868,10 +859,11 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                              naming:fixup($pipeline,$stdin)
                      )
          else if ($internaldbg eq 3) then
-                             naming:fixup($pipeline,$stdin)
+                $bindings
          else
      (
      (: STEP I: generate parse tree :)
+     let $namespaces := xproc:enum-namespaces($pipeline)
      let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))
      let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)
 
@@ -879,7 +871,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
      let $eval_result := xproc:parse_and_eval($xproc-binding,$namespaces,$stdin,$bindings)
 
      (: STEP III: serialize and return results :)
-     let $serialized_result := xproc:output($eval_result,"0")
+     let $serialized_result := xproc:output($eval_result,string($dflag))
      return
           if ($tflag="1") then
                  document
