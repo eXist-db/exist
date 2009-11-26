@@ -96,7 +96,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private static final String QNAME_ATTR = "qname";
 
     private static final byte IDX_QNAME = 0;
-    private static final byte IDX_GENERIC = 1;
+    @SuppressWarnings("unused")
+	private static final byte IDX_GENERIC = 1;
 
     private int mode = 0;
     private org.exist.indexing.ngram.NGramIndex index;
@@ -104,8 +105,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private int currentChar = 0;
     private DocumentImpl currentDoc = null;
     private DBBroker broker;
-    private IndexController controller;
-    private Map ngrams = new TreeMap();
+    @SuppressWarnings("unused")
+	private IndexController controller;
+    private Map<QNameTerm, OccurrenceList> ngrams = new TreeMap<QNameTerm, OccurrenceList>();
     private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
     private NGramMatchListener matchListener = null;
@@ -117,7 +119,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public String getIndexId() {
-        return index.ID;
+        return org.exist.indexing.ngram.NGramIndex.ID;
     }
     
     public String getIndexName() {
@@ -135,7 +137,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         // We use a map to store the QNames to be indexed
-        Map map = new TreeMap();
+        Map<QName, NGramIndexConfig> map = new TreeMap<QName, NGramIndexConfig>();
         Node node;
         for(int i = 0; i < configNodes.getLength(); i++) {
             node = configNodes.item(i);
@@ -169,10 +171,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void saveIndex() {
         if (ngrams.size() == 0)
             return;
-        for (Iterator iterator = ngrams.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            QNameTerm key = (QNameTerm) entry.getKey();
-            OccurrenceList occurences = (OccurrenceList) entry.getValue();
+        for (Map.Entry<QNameTerm, OccurrenceList> entry : ngrams.entrySet()) {
+            QNameTerm key = entry.getKey();
+            OccurrenceList occurences = entry.getValue();
             occurences.sort();
             os.clear();
             os.writeInt(currentDoc.getDocId());
@@ -226,10 +227,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void dropIndex(int mode) {
         if (ngrams.size() == 0)
             return;
-        for (Iterator iterator = ngrams.entrySet().iterator(); iterator.hasNext();) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            QNameTerm key = (QNameTerm) entry.getKey();
-            OccurrenceList occurencesList = (OccurrenceList) entry.getValue();
+        for (Map.Entry<QNameTerm, OccurrenceList> entry : ngrams.entrySet()) {
+            QNameTerm key = entry.getKey();
+            OccurrenceList occurencesList = entry.getValue();
             occurencesList.sort();
             os.clear();
 
@@ -357,7 +357,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public NodeSet search(int contextId, DocumentSet docs, List qnames, String query, String ngram, XQueryContext context, NodeSet contextSet, int axis)
+    public NodeSet search(int contextId, DocumentSet docs, List<QName> qnames, String query, String ngram, XQueryContext context, NodeSet contextSet, int axis)
         throws TerminatedException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
@@ -365,7 +365,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((org.exist.collections.Collection) iter.next()).getId();
             for (int i = 0; i < qnames.size(); i++) {
-                QName qname = (QName) qnames.get(i);
+                QName qname = qnames.get(i);
                 NGramQNameKey key = new NGramQNameKey(collectionId, qname, index.getBrokerPool().getSymbols(), query);
                 final Lock lock = index.db.getLock();
                 try {
@@ -395,8 +395,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param docs
      * @return
      */
-    private List getDefinedIndexes(DBBroker broker, DocumentSet docs) {
-        List indexes = new ArrayList(20);
+    private List<QName> getDefinedIndexes(DBBroker broker, DocumentSet docs) {
+        List<QName> indexes = new ArrayList<QName>(20);
         for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
@@ -418,7 +418,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
-        List qnames = hints == null ? null : (List)hints.get(QNAMES_KEY);
+        List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         //Expects a StringValue
     	Object start = hints == null ? null : hints.get(START_VALUE);
     	//Expects a StringValue
@@ -437,13 +437,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     Value startRef = new NGramQNameKey(collectionId);
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
-                    Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
+                    Value startRef = new NGramQNameKey(collectionId, qnames.get(q),
                     		index.getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else {
-                    Value startRef = new NGramQNameKey(collectionId, (QName)qnames.get(q), 
+                    Value startRef = new NGramQNameKey(collectionId, qnames.get(q), 
                     	index.getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
-                    Value endRef = new NGramQNameKey(collectionId, (QName)qnames.get(q),
+                    Value endRef = new NGramQNameKey(collectionId, qnames.get(q),
                     		index.getBrokerPool().getSymbols(), ((StringValue)end).getStringValue().toLowerCase());
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
@@ -464,7 +464,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
         Occurrences[] result = new Occurrences[cb.map.size()];
-        return (Occurrences[]) cb.map.values().toArray(result);
+        return cb.map.values().toArray(result);
     }
     
     //This listener is always the same whatever the document and the mode
@@ -585,7 +585,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         int len = ngram.length;
         for (int i = 0; i < len; i++) {
             QNameTerm key = new QNameTerm(qname, ngram[i]);
-            OccurrenceList list = (OccurrenceList) ngrams.get(key);
+            OccurrenceList list = ngrams.get(key);
             if (list == null) {
                 list = new OccurrenceList();
                 list.add(nodeId, i);
@@ -604,8 +604,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private Map config;
-    private Stack contentStack = null;
+    private Map<QName, ?> config;
+    private Stack<XMLString> contentStack = null;
 
     public void setDocument(DocumentImpl document) {
     	setDocument(document, StreamListener.UNKNOWN);
@@ -642,7 +642,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
-                if (contentStack == null) contentStack = new Stack();
+                if (contentStack == null) contentStack = new Stack<XMLString>();
                 XMLString contentBuf = new XMLString();
                 contentStack.push(contentBuf);
             }
@@ -658,7 +658,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
-                XMLString content = (XMLString) contentStack.pop();
+                XMLString content = contentStack.pop();
                 indexText(element.getNodeId(), element.getQName(), content);
             }
             super.endElement(transaction, element, path);
@@ -666,8 +666,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
-                for (int i = 0; i < contentStack.size(); i++) {
-                    XMLString next = (XMLString) contentStack.get(i);
+                for (XMLString next : contentStack) {
                     next.append(text.getXMLString());
                 }
             }
@@ -682,9 +681,10 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private class NGramMatchListener extends AbstractMatchListener {
 
         private Match match;
-        private Stack offsetStack = null;
+        private Stack<NodeOffset> offsetStack = null;
         private NGramMatchCallback callback = null;
-        private NodeProxy root;
+        @SuppressWarnings("unused")
+		private NodeProxy root;
 
         public NGramMatchListener(DBBroker broker, NodeProxy proxy) {
             reset(broker, proxy);
@@ -735,7 +735,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
                     }
                     if (offsetStack == null)
-                        offsetStack = new Stack();
+                        offsetStack = new Stack<NodeOffset>();
                     offsetStack.push(new NodeOffset(p.getNodeId(), startOffset));
                 }
             }
@@ -749,7 +749,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             while (nextMatch != null) {
                 if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
                     if (offsetStack == null)
-                        offsetStack = new Stack();
+                        offsetStack = new Stack<NodeOffset>();
                     offsetStack.push(new NodeOffset(nextMatch.getNodeId()));
                     break;
                 }
@@ -772,12 +772,12 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         public void characters(CharSequence seq) throws SAXException {
-            List offsets = null;    // a list of offsets to process
+            List<Match.Offset> offsets = null;    // a list of offsets to process
             if (offsetStack != null) {
                 // walk through the stack to find matches which start in
                 // the current string of text
                 for (int i = 0; i < offsetStack.size(); i++) {
-                    NodeOffset no = (NodeOffset) offsetStack.get(i);
+                    NodeOffset no = offsetStack.get(i);
                     int end = no.offset + seq.length();
                     // scan all matches
                     Match next = match;
@@ -790,7 +790,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                     offset.getOffset() + offset.getLength() > no.offset) {
                                     // add it to the list to be processed
                                     if (offsets == null) {
-                                        offsets = new ArrayList(4);
+                                        offsets = new ArrayList<Match.Offset>(4);
                                     }
                                     // adjust the offset and add it to the list
                                     int start = offset.getOffset() - no.offset;
@@ -816,8 +816,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 FastQSort.sort(offsets, 0, offsets.size() - 1);
                 String s = seq.toString();
                 int pos = 0;
-                for (int i = 0; i < offsets.size(); i++) {
-                    Match.Offset offset = (Match.Offset) offsets.get(i);
+                for (Match.Offset offset : offsets) {
                     if (offset.getOffset() > pos) {
                         super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
                     }
@@ -857,7 +856,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
     
-    private class QNameTerm implements Comparable {
+    private class QNameTerm implements Comparable<QNameTerm> {
 
         QName qname;
         String term;
@@ -867,8 +866,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.term = term;
         }
 
-        public int compareTo(Object o) {
-            QNameTerm other = (QNameTerm) o;
+        public int compareTo(QNameTerm other) {
             int cmp = qname.compareTo(other.qname);
             if (cmp == 0)
                 return term.compareTo(other.term);
@@ -892,7 +890,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
         }
 
-        public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols) {
+        @SuppressWarnings("unused")
+		public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols) {
             len = NGRAM_OFFSET;
             data = new byte[len];
             data[0] = IDX_QNAME;
@@ -922,7 +921,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private final class SearchCallback implements BTreeCallback {
 
         private int contextId;
-        private String query;
+        @SuppressWarnings("unused")
+		private String query;
         private String ngram;
         private DocumentSet docs;
         private NodeSet contextSet;
@@ -1025,8 +1025,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
 		private DocumentSet docs;
 		private NodeSet contextSet;
-		private Map map = new TreeMap();
+		private Map<String, Occurrences> map = new TreeMap<String, Occurrences>();
 
+		@SuppressWarnings("unused")
 		IndexScanCallback(DocumentSet docs) {
 			this.docs = docs;
 		}
@@ -1059,7 +1060,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     boolean docAdded = false;
 
                     int storedDocId = is.readInt();
-                    byte nameType = is.readByte();
+                    @SuppressWarnings("unused")
+					byte nameType = is.readByte();
                     int occurrences = is.readInt();
                     //Read (variable) length of node IDs + frequency + offsets
                     int length = is.readFixedInt();
@@ -1083,7 +1085,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             include = (parentNode != null);
                         }
                         if (include) {
-	                        Occurrences oc = (Occurrences) map.get(term);
+	                        Occurrences oc = map.get(term);
 	                        if (oc == null) {
 	                            oc = new Occurrences(term);
 	                            map.put(term, oc);

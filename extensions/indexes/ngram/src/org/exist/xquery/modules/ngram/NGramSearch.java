@@ -164,7 +164,7 @@ public class NGramSearch extends Function implements Optimizable {
         DocumentSet docs = contextSequence.getDocumentSet();
         String key = getArgument(1).eval(contextSequence).getStringValue();
         String[] ngrams = index.getDistinctNGrams(key);
-        List qnames = new ArrayList(1);
+        List<QName> qnames = new ArrayList<QName>(1);
         qnames.add(contextQName);
         preselectResult = processMatches(index, docs, qnames, ngrams, useContext ? contextSequence.toNodeSet() : null,
             NodeSet.DESCENDANT);
@@ -190,9 +190,9 @@ public class NGramSearch extends Function implements Optimizable {
 
                 String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
                 String[] ngrams = index.getDistinctNGrams(key);
-                List qnames = null;
+                List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList(1);
+                    qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
                 result = processMatches(index, docs, qnames, ngrams, inNodes, NodeSet.ANCESTOR);
@@ -204,7 +204,7 @@ public class NGramSearch extends Function implements Optimizable {
         return result;
     }
 
-    private NodeSet processMatches(NGramIndexWorker index, DocumentSet docs, List qnames, String[] ngrams, NodeSet nodeSet, int axis) throws TerminatedException {
+    private NodeSet processMatches(NGramIndexWorker index, DocumentSet docs, List<QName> qnames, String[] ngrams, NodeSet nodeSet, int axis) throws TerminatedException {
         NodeSet result = null;
         for (int i = 0; i < ngrams.length; i++) {
             long start = System.currentTimeMillis();
