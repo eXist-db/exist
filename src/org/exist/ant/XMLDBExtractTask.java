@@ -303,7 +303,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         this.subcollections = subcollections;
     }
 
-    public void setOverwrite(boolean createdirectories) {
-        this.overwrite = createdirectories;
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
     }
 }
