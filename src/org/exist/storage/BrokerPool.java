@@ -401,7 +401,7 @@ public class BrokerPool extends Observable {
 	/**
 	 * The number of active brokers for the database instance 
 	 */	
-	private Map activeBrokers = new HashMap();
+	private Map<Thread, DBBroker> activeBrokers = new HashMap<Thread, DBBroker>();
 		
 	/**
      * The configuration object for the database instance
@@ -1000,8 +1000,8 @@ public class BrokerPool extends Observable {
 		return activeBrokers.size();
 	}
 
-    public Map getActiveBrokers() {
-        return new HashMap(activeBrokers);
+    public Map<Thread, DBBroker> getActiveBrokers() {
+        return new HashMap<Thread, DBBroker>(activeBrokers);
     }
 
     /**
@@ -1217,7 +1217,7 @@ public class BrokerPool extends Observable {
 
 		synchronized(this) {
 			//Try to get an active broker
-			DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
+			DBBroker broker = activeBrokers.get(Thread.currentThread());
 			//Use it...
 			//TOUNDERSTAND (pb) : why not pop a broker from the inactive ones rather than maintaining reference counters ?
 	        // WM: a thread may call this more than once in the sequence of operations, i.e. calls to get/release can
