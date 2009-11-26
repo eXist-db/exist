@@ -1,13 +1,3 @@
-package org.exist.performance.actions;
-
-import org.exist.performance.Connection;
-import org.exist.performance.Runner;
-import org.exist.EXistException;
-import org.w3c.dom.Element;
-import org.xmldb.api.base.XMLDBException;
-
-import java.io.FileNotFoundException;
-
 /*
 *  eXist Open Source Native XML Database
 *  Copyright (C) 2001-06 The eXist Project
@@ -29,6 +19,14 @@ import java.io.FileNotFoundException;
 *  
 *  $Id$
 */
+
+package org.exist.performance.actions;
+
+import org.exist.performance.Connection;
+import org.exist.performance.Runner;
+import org.exist.EXistException;
+import org.w3c.dom.Element;
+import org.xmldb.api.base.XMLDBException;
 
 public interface Action {
 

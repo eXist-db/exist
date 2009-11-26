@@ -4,17 +4,10 @@ import org.exist.performance.AbstractAction;
 import org.exist.performance.Runner;
 import org.exist.performance.Connection;
 import org.exist.EXistException;
-import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.XUpdateQueryService;
-
-import javax.xml.transform.TransformerException;
-import java.io.StringWriter;
-import java.util.Properties;
 
 /**
  * Created by IntelliJ IDEA.

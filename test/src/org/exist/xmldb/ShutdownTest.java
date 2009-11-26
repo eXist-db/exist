@@ -29,7 +29,6 @@ import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.modules.CollectionManagementService;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;

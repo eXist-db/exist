@@ -32,7 +32,7 @@ public class DLNTest extends TestCase {
         junit.textui.TestRunner.run(DLNTest.class);
     }
 
-    private class TestItem implements Comparable {
+    private class TestItem implements Comparable<TestItem> {
         int id;
         NodeId dln;
         
@@ -49,8 +49,8 @@ public class DLNTest extends TestCase {
             return buf.toString();
         }
         
-        public int compareTo(Object other) {
-            return dln.compareTo(((TestItem) other).dln);
+        public int compareTo(TestItem other) {
+            return dln.compareTo(other.dln);
         }
     }
     

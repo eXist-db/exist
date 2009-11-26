@@ -22,8 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.apache.log4j.BasicConfigurator;
-
 import junit.framework.TestCase;
 
 /**

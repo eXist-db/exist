@@ -33,7 +33,6 @@ import org.apache.log4j.PatternLayout;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xquery.XPathException;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -72,7 +71,7 @@ public class ValidationFunctions_XSD_Test {
         
         logger.info("setUp");
         
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);

@@ -120,7 +120,7 @@ public class XQTS_To_junit {
 	
 	private void loadXQTS() {
 		File buildFile = new File("webapp/xqts/build.xml");
-		File xqtsFile = new File("webapp/xqts/build.xml");
+//		File xqtsFile = new File("webapp/xqts/build.xml");
 		Project p = new Project();
 		p.setUserProperty("ant.file", buildFile.getAbsolutePath());		
 		p.setUserProperty("config.basedir", "../../test/external/XQTS_1_0_2");		

@@ -64,7 +64,7 @@ public class MoveResourceTest extends TestCase {
     }
     
     private void createCollection(XmlRpcClient client, XmldbURI collection) throws IOException, XmlRpcException {
-        Vector params = new Vector();
+        Vector<Object> params = new Vector<Object>();
         params.addElement(collection.toString());
         Boolean result = (Boolean)client.execute("createCollection", params);
         assertTrue(result.booleanValue());
@@ -105,7 +105,7 @@ public class MoveResourceTest extends TestCase {
                     createCollection(xmlrpc, targetColl2);
 
                     System.out.println("Storing document ...");
-                    Vector params = new Vector();
+                    Vector<Object> params = new Vector<Object>();
                     params.addElement(readData());
                     params.addElement(sourceResource.toString());
                     params.addElement(new Integer(1));
@@ -124,7 +124,7 @@ public class MoveResourceTest extends TestCase {
                     xmlrpc.execute( "moveResource", params );
 
                     System.out.println("Retrieving document " + targetResource);
-                    Hashtable options = new Hashtable();
+                    Hashtable<String, String> options = new Hashtable<String, String>();
                     options.put("indent", "yes");
                     options.put("encoding", "UTF-8");
                     options.put("expand-xincludes", "yes");

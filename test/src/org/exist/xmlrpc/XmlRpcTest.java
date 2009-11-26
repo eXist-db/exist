@@ -33,16 +33,12 @@ import java.util.ArrayList;
 
 import javax.xml.transform.OutputKeys;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.custommonkey.xmlunit.XMLAssert;
-import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.util.MimeType;
 import org.exist.StandaloneServer;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -53,10 +49,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mortbay.util.MultiException;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -178,7 +170,7 @@ public class XmlRpcTest {
 		try {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			params.addElement(TARGET_COLLECTION.toString());
 			Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
 			Assert.assertTrue(result.booleanValue());
@@ -194,7 +186,7 @@ public class XmlRpcTest {
 
 			System.out.println("Documents stored.");
 
-            HashMap options = new HashMap();
+            HashMap<String, String> options = new HashMap<String, String>();
             params.clear();
             params.addElement(TARGET_RESOURCE.toString());
             params.addElement(options);
@@ -294,7 +286,7 @@ public class XmlRpcTest {
         storeData();
         XmlRpcClient xmlrpc = getClient();
         try {
-            List params = new ArrayList(1);
+            List<Object> params = new ArrayList<Object>(1);
             params.add(TARGET_COLLECTION.toString());
             Boolean b = (Boolean) xmlrpc.execute("hasCollection", params);
             Assert.assertTrue(b.booleanValue());
@@ -315,7 +307,7 @@ public class XmlRpcTest {
         storeData();
         XmlRpcClient xmlrpc = getClient();
         try {
-            List params = new ArrayList(1);
+            List<Object> params = new ArrayList<Object>(1);
             params.add(TARGET_RESOURCE.toString());
             Boolean b = (Boolean) xmlrpc.execute("hasDocument", params);
 
@@ -336,13 +328,13 @@ public class XmlRpcTest {
 	public void testRetrieveDoc() {
         storeData();
 		System.out.println("Retrieving document " + TARGET_RESOURCE);
-		Hashtable options = new Hashtable();
+		Hashtable<String, String> options = new Hashtable<String, String>();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
         options.put("expand-xincludes", "yes");
         options.put("process-xsl-pi", "no");
         
-        Vector params = new Vector();
+        Vector<Object> params = new Vector<Object>();
         params.addElement( TARGET_RESOURCE.toString() ); 
         params.addElement( options );
         
@@ -366,10 +358,10 @@ public class XmlRpcTest {
         storeData();
 		try {
 			System.out.println("Testing charsets returned by query");
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			String query = "distinct-values(//para)";
 			params.addElement(query.getBytes("UTF-8"));
-			params.addElement(new Hashtable());
+			params.addElement(new Hashtable<Object, Object>());
 			XmlRpcClient xmlrpc = getClient();
 	        HashMap result = (HashMap) xmlrpc.execute( "queryP", params );
 	        Object[] resources = (Object[]) result.get("results");
@@ -390,7 +382,7 @@ public class XmlRpcTest {
 	public void testQuery() {
         storeData();
 		try {
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			String query = 
 				"(::pragma exist:serialize indent=no::) //para";
 			params.addElement(query.getBytes("UTF-8"));
@@ -411,12 +403,12 @@ public class XmlRpcTest {
 	public void testQueryWithStylesheet() {
         storeData();
 		try {
-			HashMap options = new HashMap();
+			HashMap<String, String> options = new HashMap<String, String>();
 			options.put(EXistOutputKeys.STYLESHEET, "test.xsl");
 			options.put(EXistOutputKeys.STYLESHEET_PARAM + ".testparam", "Test");
 			options.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			//TODO : check the number of resources before !
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			String query = "//para[1]";
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(options);
@@ -444,10 +436,10 @@ public class XmlRpcTest {
 	public void testExecuteQuery() {
         storeData();
 		try {
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			String query = "distinct-values(//para)";
 			params.addElement(query.getBytes("UTF-8"));
-			params.addElement(new Hashtable());
+			params.addElement(new Hashtable<Object, Object>());
 			XmlRpcClient xmlrpc = getClient();
 			System.out.println("Executing query: " + query);
 	        Integer handle = (Integer) xmlrpc.execute( "executeQuery", params );
@@ -462,14 +454,14 @@ public class XmlRpcTest {
 	        Assert.assertEquals(hits.intValue(), 2);	        
         
 	        params.addElement(new Integer(0));
-	        params.addElement(new Hashtable());
+	        params.addElement(new Hashtable<Object, Object>());
 	        byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        System.out.println(new String(item, "UTF-8"));
 	        
 	        params.clear();
 	        params.addElement(handle);
 	        params.addElement(new Integer(1));
-	        params.addElement(new Hashtable());
+	        params.addElement(new Hashtable<Object, Object>());
 	        item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        System.out.println(new String(item, "UTF-8"));
 	    } catch (Exception e) {            
@@ -500,7 +492,7 @@ public class XmlRpcTest {
 			params.addElement(qp);
 			
 			XmlRpcClient xmlrpc = getClient();
-			HashMap<String, Object[]> result = (HashMap<String, Object[]>) xmlrpc.execute("queryP", params);
+			HashMap<String, Object[]> result = (HashMap) xmlrpc.execute("queryP", params);
 	        Object[] resources = (Object[]) result.get("results");
 	        Assert.assertEquals(resources.length, 2);
 	        String value = (String) resources[0];
@@ -520,7 +512,7 @@ public class XmlRpcTest {
         storeData();
 		try {
 			System.out.println("Creating collection with accents and spaces in name ...");
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			params.addElement(SPECIAL_COLLECTION.toString());
 			XmlRpcClient xmlrpc = getClient();
 			xmlrpc.execute( "createCollection", params );
@@ -552,7 +544,7 @@ public class XmlRpcTest {
 			Assert.assertTrue("added collection not found", foundMatch);
 			
 			System.out.println("Retrieving document '" + SPECIAL_RESOURCE.toString() + "'");
-			HashMap options = new HashMap();
+			HashMap<String, String> options = new HashMap<String, String>();
 	        options.put("indent", "yes");
 	        options.put("encoding", "UTF-8");
 	        options.put("expand-xincludes", "yes");

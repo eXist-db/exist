@@ -23,12 +23,10 @@ package org.exist.xquery.functions.validate;
 
 import org.junit.*;
 import static org.junit.Assert.*;
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.File;
 import java.io.FilenameFilter;
 
-import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.test.EmbeddedExistTester;
 

@@ -39,7 +39,7 @@ public class DOMTestJUnit extends RemoteDBTest {
 			//Don't worry about closing the server : the shutdown hook will do the job
 			initServer();
 			System.setProperty("exist.initdb", "true");
-			Class dbc = Class.forName(DB_DRIVER);
+			Class<?> dbc = Class.forName(DB_DRIVER);
 			database = (Database) dbc.newInstance();
 			DatabaseManager.registerDatabase(database);
 			

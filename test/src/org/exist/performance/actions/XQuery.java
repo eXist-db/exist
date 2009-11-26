@@ -33,7 +33,6 @@ import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.Resource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.apache.log4j.Logger;
 
 public class XQuery extends AbstractAction {
 

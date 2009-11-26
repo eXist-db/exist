@@ -21,8 +21,6 @@
 */
 package org.exist.xmldb.concurrent.action;
 
-import java.io.File;
-
 import junit.framework.Assert;
 
 import org.exist.xmldb.concurrent.DBUtils;

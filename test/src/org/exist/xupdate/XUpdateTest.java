@@ -62,7 +62,7 @@ public class XUpdateTest {
 
 	public void setUp() {
 		try {
-			Class cl = Class.forName(DRIVER);
+			Class<?> cl = Class.forName(DRIVER);
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);

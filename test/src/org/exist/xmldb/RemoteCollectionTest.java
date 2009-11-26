@@ -4,17 +4,13 @@ $Id$
  */
 package org.exist.xmldb;
 
-import java.net.BindException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import junit.textui.TestRunner;
 
-import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
 import org.exist.validation.service.RemoteValidationService;
 import org.exist.xquery.util.URIUtils;
-import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -123,13 +119,13 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	
 	public void testListResources() {
 		try {
-		    ArrayList xmlNames = new ArrayList();
+		    ArrayList<String> xmlNames = new ArrayList<String>();
 		    xmlNames.add("xml1");
 		    xmlNames.add("xml2");
 		    xmlNames.add("xml3");
 		    createResources(xmlNames, "XMLResource");
 		    
-		    ArrayList binaryNames = new ArrayList();
+		    ArrayList<String> binaryNames = new ArrayList<String>();
 		    binaryNames.add("b1");
 		    binaryNames.add("b2");
 		    createResources(binaryNames, "BinaryResource");
@@ -171,10 +167,10 @@ public class RemoteCollectionTest extends RemoteDBTest {
 		}
 	}
 	
-    private void createResources(ArrayList names, String type) {
+    private void createResources(ArrayList<String> names, String type) {
     	try {
-	        for (Iterator i = names.iterator(); i.hasNext(); ) {
-	            Resource res = getCollection().createResource((String) i.next(), type);
+	        for (String name : names) {
+	            Resource res = getCollection().createResource(name, type);
 	            if(type.equals("XMLResource"))
 	            	res.setContent(XML_CONTENT);
 	            else

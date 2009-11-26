@@ -41,12 +41,9 @@ import org.xmldb.api.base.Resource;
 import javax.xml.transform.TransformerException;
 import java.io.StringWriter;
 import java.io.File;
-import java.io.OutputStream;
 import java.io.Writer;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.util.Properties;
 

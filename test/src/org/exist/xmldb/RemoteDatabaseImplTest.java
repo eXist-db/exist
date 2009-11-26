@@ -20,16 +20,11 @@
  */
 package org.exist.xmldb;
 
-import java.net.BindException;
-import java.util.Iterator;
-
 import junit.textui.TestRunner;
 
-import org.exist.StandaloneServer;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.storage.DBBroker;
-import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -62,7 +57,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 	
     public void testGetCollection() {
     	try {
-	        Class cl = Class.forName(DB_DRIVER);
+	        Class<?> cl = Class.forName(DB_DRIVER);
 	        Database database = (Database) cl.newInstance();
 	        DatabaseManager.registerDatabase(database);
 	

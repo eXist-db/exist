@@ -144,7 +144,7 @@ public class QuerySessionTest {
         }
 
         // initialize XML:DB driver
-        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
 

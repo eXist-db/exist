@@ -467,7 +467,7 @@ public class XIncludeSerializerTest {
             
 			System.out.println("Creating collection " + XINCLUDE_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			params.addElement(XINCLUDE_COLLECTION.toString());
 			Boolean resultColl1 = (Boolean)xmlrpc.execute("createCollection", params);
 
@@ -538,7 +538,7 @@ public class XIncludeSerializerTest {
     public static void stopDB() throws Exception {
     	try{
 			XmlRpcClient xmlrpc = getClient();
-			Vector params = new Vector();
+			Vector<Object> params = new Vector<Object>();
 			params.clear();
 			params.addElement("/db/xinclude_test");
 			Boolean resultRemove = (Boolean)xmlrpc.execute("removeCollection", params);

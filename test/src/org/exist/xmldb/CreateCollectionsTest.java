@@ -35,7 +35,7 @@ public class CreateCollectionsTest extends TestCase {
 	protected void setUp() {
 		try {
 			// initialize driver
-			Class cl = Class.forName(DRIVER);
+			Class<?> cl = Class.forName(DRIVER);
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
@@ -108,7 +108,7 @@ public class CreateCollectionsTest extends TestCase {
 				storeResourceFromFile(files[i], testCollection);
 			}
 
-			HashSet fileNamesJustStored = new HashSet();
+			HashSet<String> fileNamesJustStored = new HashSet<String>();
 			for (int i = 0; i < files.length; i++) {
 				String file = files[i].toString();
 				int lastSeparator = file.lastIndexOf(File.separatorChar);
@@ -120,7 +120,7 @@ public class CreateCollectionsTest extends TestCase {
 			int resourceCount = testCollection.getResourceCount();
 			System.out.println(  "testCollection.getResourceCount()=" + resourceCount);
 
-			ArrayList fileNamesPresentInDatabase = new ArrayList();
+			ArrayList<String> fileNamesPresentInDatabase = new ArrayList<String>();
 			for (int i = 0; i < resourcesNames.length; i++) {
 				fileNamesPresentInDatabase.add( resourcesNames[i]);
 			}

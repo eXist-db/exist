@@ -66,7 +66,7 @@ public class Runner {
         for (int i = 0; i < nl.getLength(); i++) {
             Element elem = (Element) nl.item(i);
             try {
-                Class clazz = Class.forName(elem.getAttribute("class"));
+                Class<Action> clazz = (Class<Action>) Class.forName(elem.getAttribute("class"));
                 classes.put(elem.getAttribute("name"), clazz);
             } catch (ClassNotFoundException e) {
                 throw new EXistException("Class not found: " + elem.getAttribute("class"));

@@ -5,7 +5,6 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.util.Configuration;
 import org.exist.xquery.value.*;
-import org.xmldb.api.base.XMLDBException;
 
 import junit.framework.TestCase;
 
