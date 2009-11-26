@@ -8,7 +8,6 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -27,13 +26,12 @@ public class InMemoryNodeSet extends ValueSequence {
 
     public InMemoryNodeSet(Sequence otherSequence) throws XPathException {
         super(otherSequence);
-        Set docs = new HashSet();
+        Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
-            docs.add(node.getOwnerDocument());
+            docs.add(node.getDocument());
         }
-        for (Iterator i = docs.iterator(); i.hasNext(); ) {
-            DocumentImpl doc = (DocumentImpl) i.next();
+        for (DocumentImpl doc : docs) {
             doc.expand();
         }
     }

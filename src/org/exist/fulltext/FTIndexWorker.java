@@ -88,7 +88,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return engine;
     }
 
-    public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         // Not implemented
         return null;
     }

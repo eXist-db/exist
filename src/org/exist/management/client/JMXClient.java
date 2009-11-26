@@ -63,7 +63,7 @@ public class JMXClient {
     public void connect(String address,int port) throws IOException {
         JMXServiceURL url =
                 new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
-        Map env = new HashMap();
+        Map<String, String[]> env = new HashMap<String, String[]>();
         String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
 

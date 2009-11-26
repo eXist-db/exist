@@ -23,7 +23,6 @@
 package org.exist.memtree;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.exist.dom.NodeProxy;
@@ -31,7 +30,6 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
-import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -51,7 +49,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
 	private MemTreeBuilder builder = null;
 
-    private Map namespaces = null;
+    private Map<String, String> namespaces = null;
     private boolean explicitNSDecl = false;
 
 	public DocumentBuilderReceiver() {
@@ -106,7 +104,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         if (!explicitNSDecl)
             return;
         if (namespaces == null)
-            namespaces = new HashMap();
+            namespaces = new HashMap<String, String>();
         namespaces.put(prefix, namespace);
 	}
 
@@ -127,9 +125,8 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     private void declareNamespaces() {
         if (explicitNSDecl && namespaces != null) {
-            for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry) i.next();
-                builder.namespaceNode((String) entry.getKey(), (String) entry.getValue());
+            for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+                builder.namespaceNode(entry.getKey(), entry.getValue());
             }
             namespaces.clear();
         }

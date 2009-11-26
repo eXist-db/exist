@@ -462,8 +462,8 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @return a <code>Set</code> value
      */
-    public Set getPrefixes() {
-        HashSet set = new HashSet();
+    public Set<String> getPrefixes() {
+        HashSet<String> set = new HashSet<String>();
         int ns = document.alphaLen[nodeNumber];
         if (-1 < ns) {
             while (ns < document.nextNamespace
@@ -490,8 +490,8 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @return a <code>Map</code> value
      */
-    public Map getNamespaceMap() {    
-        Map map = new HashMap();
+    public Map<String, String> getNamespaceMap() {    
+        Map<String, String> map = new HashMap<String, String>();
         int ns = document.alphaLen[nodeNumber];
         if (-1 < ns) {
             while (ns < document.nextNamespace

@@ -75,9 +75,9 @@ public interface Item {
 
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
 	
-	public int conversionPreference(Class javaClass);
+	public int conversionPreference(Class<?> javaClass);
 	
-	public Object toJavaObject(Class target) throws XPathException;
+	public Object toJavaObject(Class<?> target) throws XPathException;
 
     /**
      * Nodes may implement this method to be informed of storage address
