@@ -2,9 +2,10 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.search.Query;
 
-public class TermInPhrase implements Comparable {
+public class TermInPhrase implements Comparable<TermInPhrase> {
 
-    private Query query;
+    @SuppressWarnings("unused")
+	private Query query;
     private String term;
 
     public TermInPhrase(Query query, String term) {
@@ -16,7 +17,7 @@ public class TermInPhrase implements Comparable {
         return term.equals(((TermInPhrase)obj).term);
     }
 
-    public int compareTo(Object obj) {
-        return term.compareTo(((TermInPhrase) obj).term);
+    public int compareTo(TermInPhrase obj) {
+        return term.compareTo(obj.term);
     }
 }

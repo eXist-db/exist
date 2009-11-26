@@ -43,7 +43,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
-import org.exist.util.XMLString;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
@@ -58,7 +57,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private static final FieldSelector NODE_FIELD_SELECTOR = new NodeFieldSelector();
     
     private LuceneIndex index;
-    private IndexController controller;
+    @SuppressWarnings("unused")
+	private IndexController controller;
 
     private LuceneMatchListener matchListener = null;
 
@@ -70,9 +70,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private int mode = 0;
     
     private LuceneConfig config;
-    private Stack contentStack = null;
-    private Set nodesToRemove = null;
-    private List nodesToWrite = null;
+    private Stack<TextExtractor> contentStack = null;
+    private Set<NodeId> nodesToRemove = null;
+    private List<PendingDoc> nodesToWrite = null;
     private int cachedNodesSize = 0;
 
     private int maxCachedNodesSize = 4096 * 1024;
@@ -133,13 +133,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         switch (mode) {
             case StreamListener.STORE:
                 if (nodesToWrite == null)
-                    nodesToWrite = new ArrayList();
+                    nodesToWrite = new ArrayList<PendingDoc>();
                 else
                     nodesToWrite.clear();
                 cachedNodesSize = 0;
                 break;
             case StreamListener.REMOVE_SOME_NODES:
-                nodesToRemove = new TreeSet();
+                nodesToRemove = new TreeSet<NodeId>();
                 break;
         }
     }
@@ -297,7 +297,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws ParseException
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-        List qnames, String queryStr, int axis)
+        List<QName> qnames, String queryStr, int axis)
         throws IOException, ParseException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes();
@@ -306,8 +306,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexSearcher searcher = null;
         try {
             searcher = index.getSearcher();
-            for (int i = 0; i < qnames.size(); i++) {
-                QName qname = (QName) qnames.get(i);
+            for (QName qname : qnames) {
                 String field = encodeQName(qname);
                 Analyzer analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 QueryParser parser = new QueryParser(field, analyzer);
@@ -339,7 +338,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws ParseException
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-                         List qnames, Element queryRoot, int axis)
+                         List<QName> qnames, Element queryRoot, int axis)
             throws IOException, ParseException, XPathException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes();
@@ -348,8 +347,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexSearcher searcher = null;
         try {
             searcher = index.getSearcher();
-            for (int i = 0; i < qnames.size(); i++) {
-                QName qname = (QName) qnames.get(i);
+            for (QName qname : qnames) {
                 String field = encodeQName(qname);
                 analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 Query query = queryTranslator.parse(field, queryRoot, analyzer);
@@ -443,8 +441,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return List of QName objects on which indexes are defined
      */
-    private List getDefinedIndexes() {
-        List indexes = new ArrayList(20);
+    private List<QName> getDefinedIndexes() {
+        List<QName> indexes = new ArrayList<QName>(20);
         IndexReader reader = null;
         try {
             reader = index.getReader();
@@ -483,18 +481,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
-        List qnames = hints == null ? null : (List)hints.get(QNAMES_KEY);
+        List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes();
         //Expects a StringValue
     	Object start = hints == null ? null : hints.get(START_VALUE);
         Object end = hints == null ? null : hints.get(END_VALUE);
-        TreeMap map = new TreeMap();
+        TreeMap<Term, Occurrences> map = new TreeMap<Term, Occurrences>();
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            for (int i = 0; i < qnames.size(); i++) {
-                QName qname = (QName) qnames.get(i);
+            for (QName qname : qnames) {
                 String field = encodeQName(qname);
                 TermEnum terms;
                 if (start == null)
@@ -531,7 +528,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                     include = (parentNode != null);
                                 }
                                 if (include) {
-                                    Occurrences oc = (Occurrences) map.get(term);
+                                    Occurrences oc = map.get(term);
                                     if (oc == null) {
                                         oc = new Occurrences(term.text());
                                         map.put(term, oc);
@@ -607,9 +604,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             // by default, Lucene only indexes the first 10,000 terms in a field
             writer.setMaxFieldLength(Integer.MAX_VALUE);
-            for (int i = 0; i < nodesToWrite.size(); i++) {
-                PendingDoc pending = (PendingDoc) nodesToWrite.get(i);
-
+            for (PendingDoc pending : nodesToWrite) {
                 Document doc = new Document();
                 if (pending.boost > 0)
                     doc.setBoost(pending.boost);
@@ -638,7 +633,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-            nodesToWrite = new ArrayList();
+            nodesToWrite = new ArrayList<PendingDoc>();
             cachedNodesSize = 0;
         }
     }
@@ -669,14 +664,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (mode == STORE && config != null) {
                 if (contentStack != null && !contentStack.isEmpty()) {
-                    for (int i = 0; i < contentStack.size(); i++) {
-                        TextExtractor extractor = (TextExtractor) contentStack.get(i);
+                    for (TextExtractor extractor : contentStack) {
                         extractor.startElement(element.getQName());
                     }
                 }
                 LuceneIndexConfig idxConf = config.getConfig(path);
                 if (idxConf != null) {
-                    if (contentStack == null) contentStack = new Stack();
+                    if (contentStack == null) contentStack = new Stack<TextExtractor>();
                     TextExtractor extractor = new DefaultTextExtractor();
                     extractor.configure(config, idxConf);
                     contentStack.push(extractor);
@@ -688,8 +682,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
                 if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
-                    for (int i = 0; i < contentStack.size(); i++) {
-                        TextExtractor extractor = (TextExtractor) contentStack.get(i);
+                    for (TextExtractor extractor : contentStack) {
                         extractor.endElement(element.getQName());
                     }
                 }
@@ -698,7 +691,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (mode == REMOVE_SOME_NODES) {
                         nodesToRemove.add(element.getNodeId());
                     } else {
-                        TextExtractor extractor = (TextExtractor) contentStack.pop();
+                        TextExtractor extractor = contentStack.pop();
                         indexText(element.getNodeId(), element.getQName(), path,
                                 extractor.getText(), idxConf.getBoost());
                     }
@@ -723,8 +716,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
-                for (int i = 0; i < contentStack.size(); i++) {
-                    TextExtractor extractor = (TextExtractor) contentStack.get(i);
+                for (TextExtractor extractor : contentStack) {
                     extractor.characters(text.getXMLString());
                 }
             }

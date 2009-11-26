@@ -212,7 +212,7 @@ public class XMLToQuery {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            List termList = new ArrayList(8);
+            List<Term> termList = new ArrayList<Term>(8);
             WildcardTermEnum terms = new WildcardTermEnum(reader, new Term(field, queryStr));
             Term term;
             do {
@@ -223,7 +223,7 @@ public class XMLToQuery {
             } while (terms.next());
             terms.close();
             Term[] matchingTerms = new Term[termList.size()];
-            return (Term[]) termList.toArray(matchingTerms);
+            return termList.toArray(matchingTerms);
         } catch (IOException e) {
             throw new XPathException("Lucene index error while creating query: " + e.getMessage(), e);
         } finally {

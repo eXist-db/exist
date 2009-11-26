@@ -166,9 +166,9 @@ public class Query extends Function implements Optimizable {
                 LuceneIndexWorker index = (LuceneIndexWorker)
                         context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                 Item key = getKey(contextSequence, contextItem);
-                List qnames = null;
+                List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList(1);
+                    qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
                 try {
