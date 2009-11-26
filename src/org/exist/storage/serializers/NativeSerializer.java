@@ -112,7 +112,7 @@ public class NativeSerializer extends Serializer {
     
     
     protected void serializeToReceiver(StoredNode node, Iterator iter,
-            DocumentImpl doc, boolean first, Match match, Set namespaces) throws SAXException {
+            DocumentImpl doc, boolean first, Match match, Set<String> namespaces) throws SAXException {
         if (node == null) 
         	node = (StoredNode) iter.next();
         if (node == null) 
