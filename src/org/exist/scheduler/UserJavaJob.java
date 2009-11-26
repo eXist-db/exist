@@ -79,5 +79,5 @@ public abstract class UserJavaJob extends UserJob
 	 * cleanupJob() should then be called, which will adjust the
 	 * jobs scheduling appropriately
 	 */
-	public abstract void execute(BrokerPool brokerpool, Map params) throws JobException;
+	public abstract void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException;
 }

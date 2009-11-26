@@ -34,6 +34,8 @@ import org.quartz.JobExecutionException;
  */
 public class JobException extends Exception
 {
+	private static final long serialVersionUID = 1567438994821964637L;
+
 	public final static int JOB_ABORT = 0;			//Abort this job, but continue scheduling
 	public final static int JOB_ABORT_THIS = 1;		//Abort this job and cancel this trigger
 	public final static int JOB_ABORT_ALL = 2;		//Abort this job and cancel all triggers

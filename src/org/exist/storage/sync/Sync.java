@@ -52,7 +52,7 @@ public class Sync extends UserJavaJob {
     public void setName(String name) {
     }
 
-	public void execute(BrokerPool pool, Map params) throws JobException
+	public void execute(BrokerPool pool, Map<String, ?> params) throws JobException
 	{
 		if(System.currentTimeMillis() - pool.getLastMajorSync() > pool.getMajorSyncPeriod())
 		{

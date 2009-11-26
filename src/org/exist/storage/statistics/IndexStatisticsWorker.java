@@ -59,7 +59,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         return index.getIndexName();
     }
 
-    public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         return null;
     }
 
@@ -119,7 +119,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         ElementImpl root = (ElementImpl) doc.getDocumentElement();
         try {
             NodePath path = new NodePath();
-            Stack stack = new Stack();
+            Stack<NodeStats> stack = new Stack<NodeStats>();
             QName qname;
             EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
@@ -127,7 +127,7 @@ public class IndexStatisticsWorker implements IndexWorker {
                 switch (status) {
                     case XMLStreamReader.START_ELEMENT:
                         for (int i = 0; i < stack.size(); i++) {
-                            NodeStats next = (NodeStats) stack.elementAt(i);
+                            NodeStats next = stack.elementAt(i);
                             next.incDepth();
                         }
                         qname = reader.getQName();
@@ -137,7 +137,7 @@ public class IndexStatisticsWorker implements IndexWorker {
                         break;
                     case XMLStreamReader.END_ELEMENT:
                         path.removeLastComponent();
-                        NodeStats stats = (NodeStats) stack.pop();
+                        NodeStats stats = stack.pop();
                         stats.updateMaxDepth();
                         break;
                 }
@@ -162,13 +162,13 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     private class StatisticsListener extends AbstractStreamListener {
 
-        private Stack stack = new Stack();
+        private Stack<NodeStats> stack = new Stack<NodeStats>();
         
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             super.startElement(transaction, element, path);
             if (perDocGuide != null) {
                 for (int i = 0; i < stack.size(); i++) {
-                    NodeStats next = (NodeStats) stack.elementAt(i);
+                    NodeStats next = stack.elementAt(i);
                     next.incDepth();
                 }
                 NodeStats nodeStats = perDocGuide.add(path);

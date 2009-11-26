@@ -67,7 +67,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     private Value previous = null;
 
-    private Stack elementStack = new Stack();
+    private Stack<ElementEvent> elementStack = new Stack<ElementEvent>();
 
     private int state = START_DOCUMENT;
 
@@ -83,7 +83,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     private XMLString text = new XMLString(256);
 
-    private List namespaces = new ArrayList(6);
+    private List<String[]> namespaces = new ArrayList<String[]>(6);
     private boolean nsRead = false;
     
     private AttrList attributes = null;
@@ -177,14 +177,14 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     public int getChildCount() {
         if (state == START_ELEMENT)
-            return ((ElementEvent)elementStack.peek()).getChildCount();
+            return elementStack.peek().getChildCount();
         return 0;
     }
     
     private void skipAttributes() throws XMLStreamException {
         if (attributes == null) {
             // attributes were not yet read. skip them...
-            final ElementEvent parent = (ElementEvent) elementStack.peek();
+            final ElementEvent parent = elementStack.peek();
             final int attrs = getAttributeCount();
             for (int i = 0; i < attrs; i++) {
                 iterator.next();
@@ -195,7 +195,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     private void readAttributes() {
         if (attributes == null) {
-            final ElementEvent parent = (ElementEvent) elementStack.peek();
+            final ElementEvent parent = elementStack.peek();
             final int count = getAttributeCount();
             attributes = new AttrList();
             for (int i = 0; i < count; i++) {
@@ -221,7 +221,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         if (state == START_ELEMENT && !reportAttribs)
             skipAttributes();
         if (!elementStack.isEmpty()) {
-            ElementEvent parent = (ElementEvent) elementStack.peek();
+            ElementEvent parent = elementStack.peek();
             if (parent.getChildCount() == parent.getCurrentChild()) {
                 elementStack.pop();
                 state = END_ELEMENT;
@@ -424,7 +424,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         readNamespaceDecls();
         if (i < 0 || i > namespaces.size())
             return null;
-        String[] decl = (String[]) namespaces.get(i);
+        String[] decl = namespaces.get(i);
         return decl[0];
     }
 
@@ -432,7 +432,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         readNamespaceDecls();
         if (i < 0 || i > namespaces.size())
             return null;
-        String[] decl = (String[]) namespaces.get(i);
+        String[] decl = namespaces.get(i);
         return decl[1];
     }
 
@@ -636,7 +636,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
             childCount = ByteConversion.byteToInt(data.data(), data.start() + StoredNode.LENGTH_SIGNATURE_LENGTH);
         }
 
-        public Value getData() {
+        @SuppressWarnings("unused")
+		public Value getData() {
             return data;
         }
 
@@ -648,7 +649,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
             return currentChild;
         }
 
-        public void setCurrentChild(int currentChild) {
+        @SuppressWarnings("unused")
+		public void setCurrentChild(int currentChild) {
             this.currentChild = currentChild;
         }
 
