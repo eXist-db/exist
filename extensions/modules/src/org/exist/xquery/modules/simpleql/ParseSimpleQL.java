@@ -42,6 +42,7 @@ import antlr.TokenStreamException;
 
 public class ParseSimpleQL extends BasicFunction {
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ParseSimpleQL.class);
 	
     public final static FunctionSignature signature =

@@ -46,7 +46,8 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class EchoFunction extends BasicFunction {
 
-    private final static Logger logger = Logger.getLogger(EchoFunction.class);
+    @SuppressWarnings("unused")
+	private final static Logger logger = Logger.getLogger(EchoFunction.class);
 
     public final static FunctionSignature signature =
 		new FunctionSignature(

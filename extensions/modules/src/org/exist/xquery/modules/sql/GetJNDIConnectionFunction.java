@@ -56,6 +56,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetJNDIConnectionFunction extends BasicFunction {
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(GetJNDIConnectionFunction.class);
 	
 	public final static FunctionSignature[] signatures = {

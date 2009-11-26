@@ -62,6 +62,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class RenderFunction extends BasicFunction {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(RenderFunction.class);
 	
 	public final static FunctionSignature signatures[] = {
@@ -247,6 +248,7 @@ public class RenderFunction extends BasicFunction {
 			this.broker = broker;
 		}
 
+		@SuppressWarnings("unused")
 		public FopConfigurationBuilder(DBBroker broker,
 				final boolean enableNamespaces) {
 			super(enableNamespaces);

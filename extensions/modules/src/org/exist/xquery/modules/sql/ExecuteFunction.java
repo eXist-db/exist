@@ -66,6 +66,7 @@ import org.w3c.dom.Node;
  */
 public class ExecuteFunction extends BasicFunction 
 {
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ExecuteFunction.class);
 	
 	public final static FunctionSignature[] signatures = { new FunctionSignature(
