@@ -177,7 +177,7 @@ public class Main {
 		// initialize driver
 		Database database;
 		try {
-			Class cl =
+			Class<?> cl =
 				Class.forName(properties.getProperty("driver", "org.exist.xmldb.DatabaseImpl"));
 			database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");

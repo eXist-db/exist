@@ -26,6 +26,8 @@ import org.xmldb.api.base.XMLDBException;
 
 public class CreateBackupDialog extends JPanel {
 
+	private static final long serialVersionUID = 4571248257313559856L;
+
 	JComboBox collections;
 	JTextField backupTarget;
     File backupDir;
@@ -59,7 +61,7 @@ public class CreateBackupDialog extends JPanel {
 		grid.setConstraints(label, c);
 		add(label);
 
-		Vector v = getAllCollections();
+		Vector<String> v = getAllCollections();
 		collections = new JComboBox(v);
 		c.gridx = 1;
 		c.gridy = 0;
@@ -119,8 +121,8 @@ public class CreateBackupDialog extends JPanel {
 		}
 	}
 
-	private Vector getAllCollections() {
-		Vector list = new Vector();
+	private Vector<String> getAllCollections() {
+		Vector<String> list = new Vector<String>();
 		try {
 			Collection root = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, user, passwd);
 			getAllCollections(root, list);
@@ -130,7 +132,7 @@ public class CreateBackupDialog extends JPanel {
 		return list;
 	}
 
-	private void getAllCollections(Collection collection, Vector collections)
+	private void getAllCollections(Collection collection, Vector<String> collections)
 		throws XMLDBException {
 		collections.add(collection.getName());
 		String[] childCollections = collection.listChildCollections();

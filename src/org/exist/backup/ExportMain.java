@@ -126,7 +126,7 @@ public class ExportMain {
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             ConsistencyCheck checker = new ConsistencyCheck(broker, direct);
-            List errors = checker.checkAll(new CheckCallback());
+            List<ErrorReport> errors = checker.checkAll(new CheckCallback());
             if (errors.size() > 0) {
                 System.err.println("ERRORS FOUND.");
                 retval = 1;

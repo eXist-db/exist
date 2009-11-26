@@ -19,6 +19,8 @@ import javax.swing.JTextField;
 
 public class BackupDialog extends JDialog {
 
+	private static final long serialVersionUID = -4960002499478536048L;
+
 	JTextField currentCollection;
 	JTextField currentFile;
 	JProgressBar progress;

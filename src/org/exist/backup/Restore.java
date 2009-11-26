@@ -52,7 +52,7 @@ public class Restore extends DefaultHandler {
 	private String pass;
 	private XMLReader reader;
 	private CollectionImpl current;
-	private Stack stack = new Stack();
+	private Stack<BackupDescriptor> stack = new Stack<BackupDescriptor>();
 	private RestoreDialog dialog = null;
 	private int version=0;
 	private RestoreListener listener;
@@ -135,7 +135,7 @@ public class Restore extends DefaultHandler {
 				public void run() {
 					while (!stack.isEmpty()) {
 						try {
-							contents = (BackupDescriptor) stack.pop();
+							contents = stack.pop();
                             dialog.setBackup(contents.getSymbolicPath());
 							reader.parse(contents.getInputSource());
 						} catch (FileNotFoundException e) {
@@ -162,7 +162,7 @@ public class Restore extends DefaultHandler {
 			}
 		} else {
 			while(!stack.isEmpty()) {
-				contents = (BackupDescriptor) stack.pop();
+				contents = stack.pop();
 				EXistInputSource is = contents.getInputSource();
 				is.setEncoding("UTF-8");
 				//restoring sysId

@@ -28,6 +28,8 @@ import org.exist.util.ProgressIndicator;
 
 public class RestoreDialog extends JDialog {
 
+	private static final long serialVersionUID = 3773486348231766907L;
+
 	JTextField currentCollection;
     JTextField currentBackup;
 	JTextField resource;

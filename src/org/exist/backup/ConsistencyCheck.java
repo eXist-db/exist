@@ -55,7 +55,7 @@ import org.w3c.dom.Node;
 
 public class ConsistencyCheck {
 
-    private Stack elementStack = new Stack();
+    private Stack<ElementNode> elementStack = new Stack<ElementNode>();
     private int documentCount = -1;
 
     private static class ElementNode {
@@ -89,8 +89,8 @@ public class ConsistencyCheck {
      * @return a list of {@link ErrorReport} objects or an empty list if no
      *         errors were found
      */
-    public List checkAll(ProgressCallback callback) {
-        List errors = checkCollectionTree(callback);
+    public List<ErrorReport> checkAll(ProgressCallback callback) {
+        List<ErrorReport> errors = checkCollectionTree(callback);
         checkDocuments(callback, errors);
         return errors;
     }
@@ -104,10 +104,10 @@ public class ConsistencyCheck {
      * @return a list of {@link ErrorReport} instances describing the errors
      *         found
      */
-    public List checkCollectionTree(ProgressCallback callback) {
+    public List<ErrorReport> checkCollectionTree(ProgressCallback callback) {
         User.enablePasswordChecks(false);
         try {
-            List errors = new ArrayList();
+            List<ErrorReport> errors = new ArrayList<ErrorReport>();
             Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
             checkCollection(root, errors, callback);
             return errors;
@@ -116,7 +116,7 @@ public class ConsistencyCheck {
         }
     }
 
-    private void checkCollection(Collection collection, List errors, ProgressCallback callback) {
+    private void checkCollection(Collection collection, List<ErrorReport> errors, ProgressCallback callback) {
         XmldbURI uri = collection.getURI();
         callback.startCollection(uri.toString());
 
@@ -169,8 +169,8 @@ public class ConsistencyCheck {
      * @return a list of {@link ErrorReport} instances describing the errors
      *         found
      */
-    public List checkDocuments(ProgressCallback progress) {
-        List errors = new ArrayList();
+    public List<ErrorReport> checkDocuments(ProgressCallback progress) {
+        List<ErrorReport> errors = new ArrayList<ErrorReport>();
         checkDocuments(progress, errors);
         return errors;
     }
@@ -185,7 +185,7 @@ public class ConsistencyCheck {
      *            error reports will be added to this list, using instances of
      *            class {@link ErrorReport}.
      */
-    public void checkDocuments(ProgressCallback progress, List errorList) {
+    public void checkDocuments(ProgressCallback progress, List<ErrorReport> errorList) {
         User.enablePasswordChecks(false);
         try {
             DocumentCallback cb = new DocumentCallback(errorList, progress, true);
@@ -221,7 +221,7 @@ public class ConsistencyCheck {
                         nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
                         ElementNode parent = null;
                         if (status != XMLStreamReader.END_ELEMENT && !elementStack.isEmpty()) {
-                            parent = (ElementNode) elementStack.peek();
+                            parent = elementStack.peek();
                             parent.childCount++;
                             // test parent-child relation
                             if (!nodeId.isChildOf(parent.elem.getNodeId()))
@@ -243,7 +243,7 @@ public class ConsistencyCheck {
                             if (elementStack.isEmpty())
                                 return new org.exist.backup.ErrorReport.ResourceError(ErrorReport.NODE_HIERARCHY,
                                         "Error in node hierarchy: received END_ELEMENT event " + "but stack was empty!");
-                            ElementNode lastElem = (ElementNode) elementStack.pop();
+                            ElementNode lastElem = elementStack.pop();
                             if (lastElem.childCount != lastElem.elem.getChildCount())
                                 return new ErrorReport.ResourceError(org.exist.backup.ErrorReport.NODE_HIERARCHY,
                                         "Element reports incorrect child count: expected " + lastElem.elem.getChildCount()
@@ -312,14 +312,14 @@ public class ConsistencyCheck {
 
     private class DocumentCallback implements BTreeCallback {
 
-        private List errors;
+        private List<ErrorReport> errors;
         private ProgressCallback progress;
         private int docCount = 0;
         private boolean checkDocs;
         private int lastPercentage = -1;
         private Agent jmxAgent = AgentFactory.getInstance();
 
-        private DocumentCallback(List errors, ProgressCallback progress, boolean checkDocs) {
+        private DocumentCallback(List<ErrorReport> errors, ProgressCallback progress, boolean checkDocs) {
             this.errors = errors;
             this.progress = progress;
             this.checkDocs = checkDocs;
