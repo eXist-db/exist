@@ -25,10 +25,8 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -63,7 +61,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
@@ -85,7 +82,7 @@ public class BrokerPool extends Observable {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
-	private final static TreeMap instances = new TreeMap();
+	private final static TreeMap<String, BrokerPool> instances = new TreeMap<String, BrokerPool>();
 
     public final static String SIGNAL_STARTUP = "startup";
     public final static String SIGNAL_SHUTDOWN = "shutdown";
@@ -207,7 +204,7 @@ public class BrokerPool extends Observable {
 		Configuration config)
             throws EXistException, DatabaseConfigurationException {
 		//Check if there is a database instance in the pool with the same id
-		BrokerPool instance = (BrokerPool) instances.get(instanceName);
+		BrokerPool instance = instances.get(instanceName);
 		if (instance == null) {
 			LOG.debug("configuring database instance '" + instanceName + "'...");
 			
@@ -260,7 +257,7 @@ public class BrokerPool extends Observable {
 	//TODO : in the future, we should implement a Configurable interface	
 	public final static boolean isConfigured(String id) {
 		//Check if there is a database instance in the pool with the same id
-		BrokerPool instance = (BrokerPool) instances.get(id);
+		BrokerPool instance = instances.get(id);
 		//No : it *can't* be configured
 		if (instance == null)
 			return false;
@@ -283,7 +280,7 @@ public class BrokerPool extends Observable {
 	 */
 	public final static BrokerPool getInstance(String instanceName) throws EXistException {
 		//Check if there is a database instance in the pool with the same id
-        BrokerPool instance = (BrokerPool) instances.get(instanceName);
+        BrokerPool instance = instances.get(instanceName);
         if (instance != null)
         	//TODO : call isConfigured(id) and throw an EXistException if relevant ?
         	return instance;
@@ -294,7 +291,7 @@ public class BrokerPool extends Observable {
 	/** Returns an iterator over the database instances.
 	 * @return The iterator
 	 */
-	public final static Iterator getInstances() {
+	public final static Iterator<BrokerPool> getInstances() {
 		return instances.values().iterator();
 	}
 
@@ -312,7 +309,7 @@ public class BrokerPool extends Observable {
 	 * @throws EXistException If the database instance is not available (not created, stopped or not configured)
 	 */
 	public final static void stop(String id) throws EXistException {		
-		BrokerPool instance = (BrokerPool) instances.get(id);
+		BrokerPool instance = instances.get(id);
 		if (instance == null)
 			throw new EXistException("database instance '" + id + "' is not available");
 		instance.shutdown();	
@@ -324,15 +321,14 @@ public class BrokerPool extends Observable {
 	 */
 	public final static void stopAll(boolean killed) {
 		//Create a temporary vector
-		Vector tmpInstances = new Vector();
-		for (Iterator i = instances.values().iterator(); i.hasNext();) {
+		Vector<BrokerPool> tmpInstances = new Vector<BrokerPool>();
+		for (BrokerPool instance : instances.values()) {
 			//and feed it with the living database instances
-			tmpInstances.add(i.next());
+			tmpInstances.add(instance);
 		}
-		BrokerPool instance;
+
 		//Iterate over the living database instances
-		for (Iterator i = tmpInstances.iterator(); i.hasNext();) {
-			instance = (BrokerPool) i.next();
+		for (BrokerPool instance : tmpInstances) {
 			if (instance.conf != null)
 				//Shut them down
 				instance.shutdown(killed);
@@ -396,7 +392,7 @@ public class BrokerPool extends Observable {
 	/**
 	 * The number of inactive brokers for the database instance 
 	 */	
-	private Stack inactiveBrokers = new Stack();
+	private Stack<DBBroker> inactiveBrokers = new Stack<DBBroker>();
 	
 	/**
 	 * The number of active brokers for the database instance 
@@ -706,7 +702,7 @@ public class BrokerPool extends Observable {
     protected SecurityManager newSecurityManager() 
     {
        try {
-          Class smClass = (Class)conf.getProperty(PROPERTY_SECURITY_CLASS);
+          Class<?> smClass = (Class<?>)conf.getProperty(PROPERTY_SECURITY_CLASS);
           return (SecurityManager)smClass.newInstance();
        } catch (Throwable ex) {
           LOG.warn("Exception while instantiating security manager class.", ex);
@@ -773,7 +769,7 @@ public class BrokerPool extends Observable {
 		createBroker();
 		//TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
-		DBBroker broker = (DBBroker) inactiveBrokers.peek();
+		DBBroker broker = inactiveBrokers.peek();
         
         if (broker.isReadOnly()) {
             transactionManager.setEnabled(false);
@@ -1259,7 +1255,7 @@ public class BrokerPool extends Observable {
 						}
 					}
 			}
-			broker = (DBBroker) inactiveBrokers.pop();
+			broker = inactiveBrokers.pop();
 			//activate the broker
 			activeBrokers.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
@@ -1348,7 +1344,7 @@ public class BrokerPool extends Observable {
             }
         }
         inServiceMode = true;
-        DBBroker broker = (DBBroker) inactiveBrokers.peek();
+        DBBroker broker = inactiveBrokers.peek();
         checkpoint = true;
         sync(broker, Sync.MAJOR_SYNC);
         checkpoint = false;
@@ -1457,7 +1453,7 @@ public class BrokerPool extends Observable {
                 // No other brokers are running at this time, so there's no risk.
 				//TODO : use get() then release the broker ?
                 // No, might lead to a deadlock.
-				DBBroker broker = (DBBroker) inactiveBrokers.pop();
+				DBBroker broker = inactiveBrokers.pop();
 				//Do the synchonization job
 				sync(broker, syncEvent);
             inactiveBrokers.push(broker);
@@ -1590,7 +1586,7 @@ public class BrokerPool extends Observable {
                     //TODO : this broker is *not* marked as active and may be reused by another process !
                     //TODO : use get() then release the broker ?
                     // WM: deadlock risk if not all brokers returned properly.
-                    broker = (DBBroker)inactiveBrokers.peek();
+                    broker = inactiveBrokers.peek();
 
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
                 // WM: yes, the database files are shared, so only one broker is needed to close them for all

@@ -848,7 +848,7 @@ public abstract class Paged {
 	 *  Page
 	 */
 
-	public final class Page implements Comparable {
+	public final class Page implements Comparable<Page> {
         
         public static final long NO_PAGE = -1;
 
@@ -1002,8 +1002,7 @@ public abstract class Paged {
 		/* (non-Javadoc)
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
-		public int compareTo(Object o) {
-			final Page other = (Page)o;
+		public int compareTo(Page other) {
 			if(pageNum == other.pageNum)
 				return Constants.EQUAL;
 			else if(pageNum > other.pageNum)

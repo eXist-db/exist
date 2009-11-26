@@ -51,25 +51,27 @@ package org.exist.storage.btree;
  * $Id$
  */
 
-
 /**
- * A BTreeException is thrown by the BTree if an exception occurs
- * in the managing of the BTree.
+ * A BTreeException is thrown by the BTree if an exception occurs in the
+ * managing of the BTree.
  */
 
 public class BTreeException extends DBException {
-   public BTreeException() {
-   }
-   
-   public BTreeException(String message) {
-      super(message);
-   }
 
-   public BTreeException(int faultCode) {
-      super(faultCode);
-   }
-   
-   public BTreeException(int faultCode, String message) {
-      super(faultCode, message);
-   }
+	private static final long serialVersionUID = -9164807722775875790L;
+
+	public BTreeException() {
+	}
+
+	public BTreeException(String message) {
+		super(message);
+	}
+
+	public BTreeException(int faultCode) {
+		super(faultCode);
+	}
+
+	public BTreeException(int faultCode, String message) {
+		super(faultCode, message);
+	}
 }
