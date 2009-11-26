@@ -395,7 +395,6 @@ public class Node extends Item {
 	/**
 	 * A null node, used as a placeholder where an actual <code>null</code> would be inappropriate.
 	 */
-	@SuppressWarnings("hiding")
 	static final Node NULL = new Node() {
 		@Override public ElementBuilder<Node> append() {throw new UnsupportedOperationException("cannot append to a null resource");}
 		@Override public void delete() {}

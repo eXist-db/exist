@@ -13,7 +13,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamReader;
 
-public abstract class Difference implements Comparable {
+public abstract class Difference implements Comparable<Difference> {
 
     public final static int INSERT = 0;
     public final static int DELETE = 1;
@@ -47,8 +47,7 @@ public abstract class Difference implements Comparable {
         return refChild.getNodeId().equals(other.refChild.getNodeId());
     }
 
-    public int compareTo(Object obj) {
-        Difference other = (Difference) obj;
+    public int compareTo(Difference other) {
         return refChild.getNodeId().compareTo(other.refChild.getNodeId());
     }
 

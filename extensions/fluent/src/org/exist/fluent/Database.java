@@ -610,7 +610,6 @@ public class Database {
 	
 	@SuppressWarnings("unchecked")
 	static final Iterable EMPTY_ITERABLE = new Iterable() {
-		@SuppressWarnings("unchecked")
 		public Iterator iterator() {return EMPTY_ITERATOR;}
 	};
 

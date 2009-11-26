@@ -11,7 +11,6 @@ public class DatabaseEmptiesTest extends DatabaseTestCase {
 		assertFalse(Database.EMPTY_ITERATOR.hasNext());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test(expected = NoSuchElementException.class)
 	public void next() {
 		Database.EMPTY_ITERATOR.next();
@@ -22,7 +21,6 @@ public class DatabaseEmptiesTest extends DatabaseTestCase {
 		Database.EMPTY_ITERATOR.remove();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test public void iterator() {
 		assertSame(Database.EMPTY_ITERATOR, Database.EMPTY_ITERABLE.iterator());
 	}

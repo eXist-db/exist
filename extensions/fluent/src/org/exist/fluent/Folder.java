@@ -221,7 +221,7 @@ public class Folder extends NamedResource implements Cloneable {
 	 */
 	public class DocumentsFacet extends Resource implements Iterable<Document> {
 		
-		@SuppressWarnings("hiding") private ListenersFacet listeners;
+		private ListenersFacet listeners;
 
 		/**
 		 * The facet that gives control over listeners for documents contained directly within
