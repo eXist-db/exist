@@ -143,4 +143,8 @@ public class BreakpointUpdate extends Command {
 		}
 		return null;
 	}
+
+	public void setBreakpoint(Breakpoint breakpoint) {
+		this.breakpoint = breakpoint; 
+	}
 }

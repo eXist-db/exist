@@ -31,6 +31,7 @@ public interface Response {
 
 	public String getTransactionID();
 
+	public boolean hasAttribute(String attr);
 	public String getAttribute(String attr);
 
 	public String getText();

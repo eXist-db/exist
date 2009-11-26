@@ -39,6 +39,7 @@ import org.exist.debugger.dbgp.CodecFactory;
 import org.exist.debugger.dbgp.ProtocolHandler;
 import org.exist.debugger.dbgp.ResponseImpl;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.BreakpointImpl;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.LocationImpl;
 import org.exist.debugger.model.Variable;
@@ -64,6 +65,8 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	private Map<String, DebuggingSource> sources = new HashMap<String, DebuggingSource>();
 
 	int currentTransactionId = 1;
+	
+	private String lastStatus = FIRST_RUN;
 
 	public DebuggerImpl() {
 	}
@@ -167,11 +170,6 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return variables;
 	}
 
-	public Breakpoint addBreakpoint(Breakpoint breakpoint) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public void sessionClosed() {
 		// TODO Auto-generated method stub
 	}
@@ -184,9 +182,14 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 				&& currentCommand.getTransactionId().equals(
 						response.getTransactionID()))
 			currentCommand.putResponse(response);
-		else
-			//it should be commands map, this implementation is dangerous
-			responses.put(response.getTransactionID(), response);
+
+		if (response.hasAttribute("status"))
+			lastStatus = response.getAttribute("status");
+		
+		//it should be commands map, this implementation is dangerous
+		//rethink!!!
+		responses.put(response.getTransactionID(), response);
+
 		notifyAll();
 	}
 
@@ -204,7 +207,10 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		while (!responses.containsKey(transactionID)) {
 			try {
-				wait(timeout);
+				if (timeout == 0)
+					wait(10); //slow down next check
+				else
+					wait(timeout);
 
 				if (timeout != 0
 						&& (System.currentTimeMillis() - sTime) > timeout)
@@ -231,8 +237,13 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		while (true) {
 			response = getResponse(transactionId);
 			
-			if (response.getAttribute("status").equals(status)) {
+			if (response != null && response.getAttribute("status").equals(status)) {
 				break;
+			}
+			
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
 			}
 		}
 	}
@@ -310,5 +321,47 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		command.toDebuggee();
 		
 		waitFor(command.getTransactionId(), BREAK);
+	}
+
+	public boolean setBreakpoint(Breakpoint breakpoint) {
+		BreakpointSet command = new BreakpointSet(session, " -i " + getNextTransaction());
+		command.setBreakpoint((BreakpointImpl) breakpoint);
+		
+		command.toDebuggee();
+		
+		Response response = getResponse(command.getTransactionId());
+		
+		//XXX: handle error
+
+		breakpoint.setState("enabled".equals(response.getAttribute("state")));
+		breakpoint.setId(Integer.parseInt(response.getAttribute("id")));
+		
+		return true;
+	}
+
+	public boolean updateBreakpoint(Breakpoint breakpoint) {
+		BreakpointUpdate command = new BreakpointUpdate(session, " -i " + getNextTransaction());
+		command.setBreakpoint(breakpoint);
+		
+		command.toDebuggee();
+
+		Response response = getResponse(command.getTransactionId());
+		
+		//XXX: handle error
+
+		return true;
+	}
+
+	public boolean removeBreakpoint(BreakpointImpl breakpoint) {
+		BreakpointRemove command = new BreakpointRemove(session, " -i " + getNextTransaction());
+		command.setBreakpoint(breakpoint);
+		
+		command.toDebuggee();
+
+		Response response = getResponse(command.getTransactionId());
+		
+		//XXX: handle error
+
+		return true;
 	}
 }

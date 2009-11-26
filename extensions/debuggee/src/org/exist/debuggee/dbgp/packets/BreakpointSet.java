@@ -138,7 +138,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 					" -r " + getTemporaryString(); 
 
 			if (getLineno() != null)
-				command += " -s " + getLineno(); 
+				command += " -n " + getLineno(); 
 					
 			if (getFunction() != null)
 				command += " -m " + getFunction(); 
@@ -269,5 +269,17 @@ public class BreakpointSet extends Command implements Breakpoint {
 		        "hit_count=\""+String.valueOf(getHitCount())+"\" >"+
 		      "<expression>"+getExpression()+"</expression>"+
 		      "</breakpoint>";
+	}
+
+	public boolean sync() {
+		return false;
+	}
+
+	public boolean remove() {
+		return false;
+	}
+
+	public void setBreakpoint(BreakpointImpl breakpoint) {
+		this.breakpoint = breakpoint;
 	}
 }
