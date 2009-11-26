@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <p:pipeline xmlns:p="http://www.w3.org/ns/xproc"
-                                     xmlns:c="http://www.w3.org/ns/xproc-step"
-                           name="pipeline">
+            xmlns:c="http://www.w3.org/ns/xproc-step"
+            name="pipeline">
 
 <p:http-request name="http-get">  
 <p:input port="source">
@@ -12,7 +12,5 @@
   </p:inline>
 </p:input>
 </p:http-request>
-
-<p:filter select="/doc"/>
 
 </p:pipeline>

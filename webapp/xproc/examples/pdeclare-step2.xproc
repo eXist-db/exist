@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <p:pipeline xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc"
-   xmlns:xproc="http://xproc.net/xproc" xmlns:t="http://exist-db.org/twitter" name="pipeline">
+   xmlns:xproc="http://xproc.net/xproc" xmlns:my="http://exist-db.org/twitter" name="pipeline">
 
-   <p:declare-step type="t:query-stored">
+   <p:declare-step type="my:query-stored">
        <p:output port="result" primary="true"/>
        <p:xquery>
            <p:input port="query">
@@ -11,5 +11,5 @@
        </p:xquery>
    </p:declare-step>
 
-   <t:query-stored name="gggg"/>
+   <my:query-stored name="gggg"/>
 </p:pipeline>

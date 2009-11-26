@@ -70,7 +70,7 @@ http://127.0.0.1:8080/exist/xproc/examples/hello.xproc
                      </listitem>
                  </varlistentry>
                  <varlistentry>
-                     <term>binding</term>
+                     <term>bindings</term>
                      <listitem>
                          <para>you can pass in input ports via an xml fragment with the following structure
                              <synopsis>&lt;bindings&gt;
@@ -677,7 +677,7 @@ return
         <title>xprocxq FAQ</title>
 
         <section>
-            <title>Why can't I access files from filesytem ?</title>
+            <title>Why can't I access files from filesystem ?</title>
         <para>By default, XProc is set to read files only from the XML Database. If you want to access
             files from the hard drive then you will need to enable eXist File extension module
             and make sure to use file:// prefix in your file paths.</para>
@@ -685,7 +685,8 @@ return
 
         <section>
             <title>What is xprocxq ?</title>
-        <para>Initially, development of eXist XProc processor was a standalone project, called xprocxq. The i</para>
+        <para>Initially, development of eXist XProc processor was a standalone project, called xprocxq. The intention was to build an XProc processor that could be executed using any compliant XQuery processor, but midway through
+        I decided that eXist was the right place to develop it as it would be able to take advantage of naturally processing larger datasets.</para>
         </section>
 
 <section>
@@ -698,6 +699,8 @@ return
 <ul>
 	    <li>there maybe some small issues with namespaces but most of the big issues have been addressed </li>
 
+        <li>namespace prefixes p, t , c are internally bound and cannot be used</li>
+    
 	    <li>defining reusable pipelines using p:library, p:import and p:declare-step is currently disabled</li>
 
 	    <li>errors are thrown as XQuery errors, making it difficult to report correct line numbers, not to mention that errors themselves look quite ugly</li>
