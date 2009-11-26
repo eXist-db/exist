@@ -108,7 +108,7 @@ declare function xqts:create-collections($parent as xs:string,
 declare function xqts:get-query($case as element(catalog:test-case)) {
     let $query-name := $case//catalog:query/@name
     let $filePath := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $query-name, ".xq" )
-    let $xq-string := util:file-read($filePath, "UTF-8")
+    let $xq-string := file:read($filePath, "UTF-8")
     return 
         $xq-string
 };
@@ -135,7 +135,7 @@ declare function xqts:get-input-value-uri($input as element(catalog:input-file))
 
 declare function xqts:get-variable($case as element(catalog:test-case), $varName as xs:string) as item()* {
     let $filePath := concat($xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $varName, ".xq")
-    let $xq-string := util:file-read($filePath, "UTF-8")
+    let $xq-string := file:read($filePath, "UTF-8")
     return
         if (empty($xq-string)) then
             ()
@@ -259,14 +259,14 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 <expected-result compare="{$compare}">                
                 {
                     if ($compare eq "Text") then
-                        xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
+                        xqts:normalize-and-expand(file:read($outputFilePath, "UTF-8"))
                     else if ($compare eq "UnnormalizedText") then
-                        xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
+                        xqts:normalize-and-expand(file:read($outputFilePath, "UTF-8"))
                     else if ($compare eq "TextAsXML") then
-                        xqts:normalize-and-expand(util:file-read($outputFilePath, "UTF-8"))
+                        xqts:normalize-and-expand(file:read($outputFilePath, "UTF-8"))
                     else if ($compare eq "XML") then
                         if ($inMemory) then
-                            util:parse(util:file-read($outputFilePath, "UTF-8"))
+                            util:parse(file:read($outputFilePath, "UTF-8"))
                         else
                             util:catch(
                                 "java.lang.Exception",
@@ -275,7 +275,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                                 util:log("ERROR", concat("Exception while loading expected result: ", $util:exception-message))
                             )
                     else if ($compare eq "Fragment") then
-                        let $xmlFrag := concat("<f>", util:file-read($outputFilePath, "UTF-8"), "</f>")
+                        let $xmlFrag := concat("<f>", file:read($outputFilePath, "UTF-8"), "</f>")
                         return
                             if ($inMemory) then
                                 util:parse($xmlFrag)

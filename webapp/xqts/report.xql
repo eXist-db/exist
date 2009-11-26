@@ -77,7 +77,7 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
    let $query-name := $case//catalog:query/@name
    let $path := concat(xqts:path-to-uri($xqts:XQTS_HOME), "Queries/XQuery/", 
        $case/@FilePath, $query-name, ".xq")
-   let $xq-string := util:file-read($path)
+   let $xq-string := file:read($path)
    return $xq-string
    (: let $tokenized := tokenize($xq-string, "\n")
    for $token in $tokenized return
