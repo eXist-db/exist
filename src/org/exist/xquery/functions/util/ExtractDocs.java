@@ -23,6 +23,7 @@ package org.exist.xquery.functions.util;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,11 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class ExtractDocs extends BasicFunction {
@@ -71,10 +68,14 @@ public class ExtractDocs extends BasicFunction {
         }
         MemTreeBuilder builder = context.getDocumentBuilder();
         int nodeNr = builder.startElement(XQDOC_NS, "xqdoc", "xqdoc", null);
+        builder.startElement(XQDOC_NS, "control", "control", null);
+        simpleElement(builder, "date", new DateTimeValue(new Date()).getStringValue());
+        simpleElement(builder, "version", "1.0");
+        builder.endElement();
         module(module, builder);
         functions(module, builder);
         builder.endElement();
-        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        return builder.getDocument().getNode(nodeNr);
     }
 
 	private void functions(Module module, MemTreeBuilder builder) {
@@ -84,8 +85,6 @@ public class ExtractDocs extends BasicFunction {
 		for (int i = 0; i < functions.length; i++) {
 			FunctionSignature function = functions[i];
 			builder.startElement(XQDOC_NS, "function", "function", null);
-			simpleElement(builder, "name", function.getName().getLocalName());
-			simpleElement(builder, "signature", function.toString());
 			builder.startElement(XQDOC_NS, "comment", "comment", null);
 			String functionDescription = function.getDescription();
 			simpleElement(builder, "description", functionDescription);
@@ -112,6 +111,8 @@ public class ExtractDocs extends BasicFunction {
 				simpleElement(builder, "deprecated", deprecated);
 			}
 			builder.endElement();
+            simpleElement(builder, "name", function.getName().getLocalName());
+			simpleElement(builder, "signature", function.toString());
 			builder.endElement();
 		}
 		builder.endElement();
@@ -140,7 +141,7 @@ public class ExtractDocs extends BasicFunction {
         builder.startElement(XQDOC_NS, "comment", "comment", null);
         simpleElement(builder, "description", module.getDescription());
         try {
-			simpleElement(builder, "release-version", module.getReleaseVersion());
+			simpleElement(builder, "since", module.getReleaseVersion());
         } catch (AbstractMethodError e) {
 			logger.error("Problem with function module for [" + module.getNamespaceURI() + "]", e);
 		} catch (Exception e) {
