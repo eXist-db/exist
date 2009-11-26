@@ -784,8 +784,8 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  declare function xproc:resolve-external-bindings($bindings,$pipelinename){
  (: -------------------------------------------------------------------------- :)
  if (empty($bindings)) then
-     ()
- else
+     () 
+ else if($bindings/bindings) then
     for $binding in $bindings/bindings/binding
     return
         <xproc:output port-type="external" port="{$binding/@port}" step="{concat('!',$pipelinename)}">
@@ -796,6 +796,13 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                 $binding/*
             }
         </xproc:output>
+ else
+    (: TODO- this is used for tests.xproc.org unit testing purposes :)
+    for $binding in $bindings/*
+    return
+   <xproc:output port-type="external" port="{$binding/@port}" step="{concat('!',$pipelinename)}">
+       {$binding/node()}
+   </xproc:output>
  };
 
 
