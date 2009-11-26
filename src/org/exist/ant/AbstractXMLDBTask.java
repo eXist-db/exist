@@ -109,7 +109,7 @@ public abstract class AbstractXMLDBTask extends Task
 				}
 			}
 			
-			Class clazz = Class.forName( driver );	
+			Class<?> clazz = Class.forName( driver );	
 			Database database = (Database)clazz.newInstance();
 			database.setProperty( "create-database", createDatabase ? "true" : "false" );
 			
