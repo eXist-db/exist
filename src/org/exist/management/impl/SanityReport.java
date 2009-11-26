@@ -58,7 +58,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private static String[] itemDescriptions = { "Error code", "Description of the error" };
     private static String[] indexNames = { "errcode" };
 
-    private static List NO_ERRORS = new LinkedList();
+    private static List<ErrorReport> NO_ERRORS = new LinkedList<ErrorReport>();
 
     private int seqNum = 0;
 
@@ -74,7 +74,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private TaskStatus taskstatus = new TaskStatus(TaskStatus.NEVER_RUN);
 
-    private List errors = NO_ERRORS;
+    private List<ErrorReport> errors = NO_ERRORS;
 
     private BrokerPool pool;
 
@@ -111,15 +111,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     public TabularData getErrors() {
-        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("errorInfo", "Provides information on a consistency check error", itemNames,
                     itemDescriptions, itemTypes);
             TabularType tabularType = new TabularType("errorList", "List of consistency check errors", infoType, indexNames);
             TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (int i = 0; i < errors.size(); i++) {
-                ErrorReport error = (ErrorReport) errors.get(i);
+            for (ErrorReport error : errors) {
                 Object[] itemValues = { error.getErrcodeString(), error.getMessage() };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
@@ -164,7 +163,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return properties;
     }
 
-    protected void updateErrors(List errorList) {
+    protected void updateErrors(List<ErrorReport> errorList) {
         try {
             if (errorList == null || errorList.isEmpty()) {
                 taskstatus.setStatus(TaskStatus.STOPPED_OK);
@@ -191,7 +190,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             actualCheckStart = null;
             lastCheckEnd = status.getStatusChangeTime();
             if (status.getReason() != null) {
-                this.errors = (List) status.getReason();
+                this.errors = (List<ErrorReport>) status.getReason();
             }
             lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
             break;
