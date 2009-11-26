@@ -378,7 +378,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-fluent,extension-xprocxq,extension-debuggee,test-compile"
+        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -512,6 +512,7 @@
         <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/xqdoc" target="clean" inheritall="false"/>
         <ant antfile="xprocxq.xml" dir="extensions" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
@@ -572,6 +573,10 @@
     
     <target name="extension-debuggee" depends="jar">
         <ant antfile="build.xml" dir="extensions/debuggee" inheritall="false"/>
+    </target>
+    
+    <target name="extension-xqdoc" depends="prepare-extensions,jar">
+        <ant antfile="build.xml" dir="extensions/xqdoc" inheritall="false"/>
     </target>
     
     <target name="extension-fluent" depends="jar">

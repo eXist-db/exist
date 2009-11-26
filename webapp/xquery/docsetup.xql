@@ -1,6 +1,9 @@
 module namespace setup="http://exist-db.org/xquery/docs/setup";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
+import module namespace xqdm="http://exist-db.org/xquery/xqdoc";
+
+declare namespace xqdoc="http://www.xqdoc.org/1.0";
 
 declare variable $setup:COLLECTION := "/db/xqdocs";
 
@@ -41,14 +44,35 @@ declare function setup:configure() {
 	xdb:chmod-collection("/db/xqdocs", 508)
 };
 
-declare function setup:load-fundocs() {
-	for $moduleURI in util:registered-modules()
+declare function setup:load-external($uri as xs:string) {
+    let $xml := xqdm:scan(xs:anyURI($uri))
+    let $moduleURI := $xml//xqdoc:module/xqdoc:uri
+    let $docName := concat(util:hash($moduleURI, "MD5"), ".xml")
+    return (
+		xdb:store($setup:COLLECTION, $docName, $xml, "text/xml"),
+		xdb:chmod-resource($setup:COLLECTION, $docName, 508)
+	)
+};
+
+declare function setup:load-external-modules() {
+    for $uri in util:mapped-modules()
+    return
+        setup:load-external($uri)
+};
+
+declare function setup:load-internal-modules() {
+    for $moduleURI in util:registered-modules()
 	let $moduleDocs := util:extract-docs($moduleURI)
 	let $docName := concat(util:hash($moduleURI, "MD5"), ".xml")
 	return (
 		xdb:store($setup:COLLECTION, $docName, $moduleDocs, "text/xml"),
 		xdb:chmod-resource($setup:COLLECTION, $docName, 508)
 	)
+};
+
+declare function setup:load-fundocs() {
+	setup:load-internal-modules(),
+	setup:load-external-modules()
 };
 
 declare function setup:load-documentation() {
