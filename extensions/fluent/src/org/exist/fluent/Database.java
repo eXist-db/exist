@@ -181,7 +181,6 @@ public class Database {
 	 * @return <code>true</code> if the database's internal data structures are consistent,
 	 * 		<code>false</code> if the database is corrupted
 	 */
-	@SuppressWarnings("unchecked")
 	public static boolean checkConsistency() {
 		synchronized(pool) {
 			try {
