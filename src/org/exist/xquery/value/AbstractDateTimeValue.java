@@ -309,7 +309,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		throw new XPathException("division is not supported for type " + Type.getTypeName(getType()));
 	}
 
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(DateValue.class)) return 0;
 		if (javaClass.isAssignableFrom(XMLGregorianCalendar.class)) return 1;
 		if (javaClass.isAssignableFrom(GregorianCalendar.class)) return 2;
@@ -317,7 +317,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		return Integer.MAX_VALUE;
 	}
 
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target == Object.class || target.isAssignableFrom(DateValue.class))
 			return this;
 		else if (target.isAssignableFrom(XMLGregorianCalendar.class))

@@ -332,13 +332,13 @@ public class DurationValue extends ComputableValue {
 		throw new XPathException("FORG0001: invalid operation on " + Type.getTypeName(this.getType()));				
 	}
 
-	public int conversionPreference(Class target) {
+	public int conversionPreference(Class<?> target) {
 		if (target.isAssignableFrom(getClass())) return 0;
 		if (target.isAssignableFrom(Duration.class)) return 1;
 		return Integer.MAX_VALUE;
 	}
 
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target.isAssignableFrom(getClass())) return this;
 		if (target.isAssignableFrom(Duration.class)) return duration;
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());

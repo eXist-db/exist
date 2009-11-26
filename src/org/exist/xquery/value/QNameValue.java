@@ -51,7 +51,7 @@ public class QNameValue extends AtomicValue {
 	public QNameValue(XQueryContext context, String name) throws XPathException {
         if (name.length() == 0)
             throw new XPathException("err:FORG0001: An empty string is not a valid lexical representation of xs:QName.");
-	    this.context = context;
+	    this.context = context; //UNDERSTAND: do we need context here??? -shabanovd
 	    try {
 	    	this.qname = QName.parse(context, name, context.getURIForPrefix(""));
 	    } catch (Exception e) {
@@ -186,7 +186,7 @@ public class QNameValue extends AtomicValue {
 	/**
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(QNameValue.class))
 			return 0;
 		if (javaClass == String.class)
@@ -200,7 +200,7 @@ public class QNameValue extends AtomicValue {
 	/**
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target.isAssignableFrom(QNameValue.class))
 			return this;
 		else if (target == String.class)

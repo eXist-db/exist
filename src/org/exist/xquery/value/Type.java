@@ -403,7 +403,7 @@ public class Type {
 		//TODO : optimize by swapping the arguments based on their numeric values ?
 		//Processing lower value first *should* reduce the size of the Set
 		//Collect type1's super-types
-		HashSet t1 = new HashSet();
+		HashSet<Integer> t1 = new HashSet<Integer>();
 		//Don't introduce a shortcut (starting at getSuperType(type1) here
 		//type2 might be a super-type of type1
 		int t;

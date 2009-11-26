@@ -226,7 +226,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(StringValue.class))
 			return 0;
 		if (javaClass == String.class || javaClass == CharSequence.class)
@@ -256,7 +256,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target.isAssignableFrom(UntypedAtomicValue.class))
 			return this;
 		else if (

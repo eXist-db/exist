@@ -206,7 +206,7 @@ public abstract class AbstractSequence implements Sequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#conversionPreference(java.lang.Class)
 	 */
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if(javaClass.isAssignableFrom(Sequence.class))
 			return 0;
 		else if(javaClass.isAssignableFrom(List.class) || javaClass.isArray())
@@ -223,11 +223,11 @@ public abstract class AbstractSequence implements Sequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if(Sequence.class.isAssignableFrom(target)) {
 			return this;
 		} else if(target.isArray()) {
-			Class componentType = target.getComponentType();
+			Class<?> componentType = target.getComponentType();
 			// assume single-dimensional, then double-check that instance really matches desired type
 			Object array = Array.newInstance(componentType, getItemCount());
 			if (!target.isInstance(array)) return null;
