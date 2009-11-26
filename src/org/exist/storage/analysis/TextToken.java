@@ -2,7 +2,7 @@ package org.exist.storage.analysis;
 
 import org.exist.util.XMLString;
 
-public class TextToken implements Comparable {
+public class TextToken implements Comparable<Object> {
 	
     public final static int ALPHA = 1;
     public final static int ALPHANUM = 2;

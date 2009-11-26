@@ -53,28 +53,31 @@ package org.exist.storage.btree;
 
 /**
  * A DBException is thrown by the database if an exception occurs in the
- * managing (creating, dropping) database objects such as Collections,
- * Indexes, and XMLObjects.
+ * managing (creating, dropping) database objects such as Collections, Indexes,
+ * and XMLObjects.
  */
 
 public class DBException extends Exception {
-   public int faultCode;
+	
+	private static final long serialVersionUID = 952318931514282901L;
+	
+	public int faultCode;
 
-   public DBException() {
-      this(0,  "");
-   }
+	public DBException() {
+		this(0, "");
+	}
 
-   public DBException(int faultCode) {
-      this(faultCode, "");
-   }
+	public DBException(int faultCode) {
+		this(faultCode, "");
+	}
 
-   public DBException(String message) {
-      this(0, message);
-   }
+	public DBException(String message) {
+		this(0, message);
+	}
 
-   public DBException(int faultCode, String message) {
-      super(message);
-      this.faultCode = faultCode;
-   }
+	public DBException(int faultCode, String message) {
+		super(message);
+		this.faultCode = faultCode;
+	}
 
 }
