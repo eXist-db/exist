@@ -157,14 +157,12 @@ public class PreorderedValueSequence extends AbstractSequence {
 		Arrays.sort(nodes, new OrderedComparator());
 	}
 	
-	private class OrderedComparator implements Comparator {
+	private class OrderedComparator implements Comparator<OrderedNodeProxy> {
 		
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
-		public int compare(Object o1, Object o2) {
-			final OrderedNodeProxy p1 = (OrderedNodeProxy)o1;
-			final OrderedNodeProxy p2 = (OrderedNodeProxy)o2;
+		public int compare(OrderedNodeProxy p1, OrderedNodeProxy p2) {
 			int cmp = 0;
 			AtomicValue a, b;
 			for(int i = 0; i < p1.values.length; i++) {

@@ -447,7 +447,7 @@ public class IntegerValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if(javaClass.isAssignableFrom(IntegerValue.class)) return 0;
 		if(javaClass == Long.class || javaClass == long.class) return 1;
 		if(javaClass == Integer.class || javaClass == int.class) return 2;
@@ -465,7 +465,7 @@ public class IntegerValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if(target.isAssignableFrom(IntegerValue.class)) 
 			return this;
 		else if(target == Long.class || target == long.class)

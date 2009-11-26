@@ -281,7 +281,7 @@ public class OrderedValueSequence extends AbstractSequence {
         return true;
     }
 
-    private class Entry implements Comparable {
+    private class Entry implements Comparable<Entry> {
 		
 		Item item;
 		AtomicValue values[];
@@ -304,8 +304,7 @@ public class OrderedValueSequence extends AbstractSequence {
 		/* (non-Javadoc)
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
-		public int compareTo(Object o) {
-			Entry other = (Entry)o;
+		public int compareTo(Entry other) {
 			int cmp = 0;
 			AtomicValue a, b;
 			for(int i = 0; i < values.length; i++) {

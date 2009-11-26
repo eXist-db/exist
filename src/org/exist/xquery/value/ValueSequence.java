@@ -325,14 +325,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
      * Expand those references to get a pure in-memory DOM tree.
      */
     private void expand() {
-        Set docs = new HashSet();
+        Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             if (node.getDocument().hasReferenceNodes())
                 docs.add(node.getDocument());
         }
-        for (Iterator i = docs.iterator(); i.hasNext(); ) {
-            DocumentImpl doc = (DocumentImpl) i.next();
+        for (DocumentImpl doc : docs) {
             doc.expand();
         }
     }
@@ -389,7 +388,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             if(!hasNodes)
             return;
-            Set nodes = new TreeSet();
+            Set<Item> nodes = new TreeSet<Item>();
             int j = 0;
             for (int i = 0; i <= size; i++) {
                 if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
@@ -727,9 +726,9 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		}
 	}
 
-    private static class InMemoryNodeComparator implements Comparator {
+    private static class InMemoryNodeComparator implements Comparator<Item> {
 
-        public int compare(Object o1, Object o2) {
+        public int compare(Item o1, Item o2) {
             NodeImpl n1 = (NodeImpl) o1;
             NodeImpl n2 = (NodeImpl) o2;
             final int docCmp = n1.getDocument().compareTo(n2.getDocument());

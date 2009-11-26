@@ -240,7 +240,7 @@ public class StringValue extends AtomicValue {
 		}
 	}
 
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if(javaClass.isAssignableFrom(StringValue.class)) return 0;
 		if(javaClass == String.class || javaClass == CharSequence.class) return 1;
 		if(javaClass == Character.class || javaClass == char.class) return 2;
@@ -256,7 +256,7 @@ public class StringValue extends AtomicValue {
 		return Integer.MAX_VALUE;
 	}
 	
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if(target.isAssignableFrom(StringValue.class))
 			return this;
 		else if(target == Object.class || target == String.class || target == CharSequence.class)

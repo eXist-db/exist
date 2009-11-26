@@ -89,7 +89,7 @@ public class HexBinary extends BinaryValue {
         return sb.toString();
     }
 
-    public Object toJavaObject(Class target) throws XPathException {
+    public Object toJavaObject(Class<?> target) throws XPathException {
         if(target.isAssignableFrom(HexBinary.class))
             return this;
         if (target.isArray() && target == Byte.class)

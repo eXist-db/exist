@@ -81,7 +81,7 @@ public class Base64Binary extends BinaryValue {
     	}
     }
     
-    public Object toJavaObject(Class target) throws XPathException {
+    public Object toJavaObject(Class<?> target) throws XPathException {
         if(target.isAssignableFrom(Base64Binary.class))
             return this;
         if (target == byte[].class)

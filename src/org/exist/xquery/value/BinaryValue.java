@@ -88,7 +88,7 @@ public abstract class BinaryValue extends AtomicValue {
                 Type.getTypeName(getType()));
     }
 
-    public int conversionPreference(Class javaClass) {
+    public int conversionPreference(Class<?> javaClass) {
         if (javaClass.isArray() && javaClass.isInstance(Byte.class))
             return 0;
         return Integer.MAX_VALUE;

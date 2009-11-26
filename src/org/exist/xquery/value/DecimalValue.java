@@ -39,6 +39,7 @@ public class DecimalValue extends NumericValue {
     // i × 10^-n where i, n = integers  and n >= 0
     // All ·minimally conforming· processors ·must· support decimal numbers 
     // with a minimum of 18 decimal digits (i.e., with a ·totalDigits· of 18)	
+	@SuppressWarnings("unused")
 	private static final BigDecimal ZERO_BIGDECIMAL = new BigDecimal("0");
 	//Copied from Saxon 8.6.1    
 	private static final int DIVIDE_PRECISION = 18;
@@ -435,7 +436,7 @@ public class DecimalValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
-	public int conversionPreference(Class javaClass) {
+	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(DecimalValue.class))
 			return 0;
 		if (javaClass == BigDecimal.class)
@@ -465,7 +466,7 @@ public class DecimalValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class target) throws XPathException {
+	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target.isAssignableFrom(DecimalValue.class))
 			return this;
 		else if(target == BigDecimal.class)
@@ -511,7 +512,7 @@ public class DecimalValue extends NumericValue {
 
 	        try {
 	            if (stripTrailingZerosMethod == null) {
-	                Class[] argTypes = {};
+	                Class<?>[] argTypes = {};
 	                stripTrailingZerosMethod = BigDecimal.class.getMethod("stripTrailingZeros", argTypes);
 	            }
 	            Object result = stripTrailingZerosMethod.invoke(value, EMPTY_OBJECT_ARRAY);

@@ -50,8 +50,9 @@ public class GroupedValueSequence extends AbstractSequence {
     //grouping keys values of this group 
     private GroupSpec groupSpecs[];  
     private Sequence groupKey; 
-    private XQueryContext context; 
-    private int groupKeyLength;
+//    private XQueryContext context; 
+    @SuppressWarnings("unused")
+	private int groupKeyLength;
      
     // used to keep track of the type of added items. 
     private int itemType = Type.ANY_TYPE; 
@@ -60,7 +61,7 @@ public class GroupedValueSequence extends AbstractSequence {
         this.groupSpecs = groupSpecs; 
         this.items = new Entry[size]; 
         this.groupKey = keySequence; 
-        this.context = aContext; 
+//        this.context = aContext; //UNDERSTAND: do we need context here??? -shabanovd
         this.groupKeyLength = groupKey.getItemCount();
     } 
      
@@ -202,7 +203,7 @@ public class GroupedValueSequence extends AbstractSequence {
         // TODO: is this ever relevant? 
     } 
      
-    private class Entry implements Comparable { 
+    private class Entry implements Comparable<Entry> { 
         Item item; 
         AtomicValue values[]; 
         public Entry(Item item) throws XPathException { 
@@ -224,8 +225,7 @@ public class GroupedValueSequence extends AbstractSequence {
         /* (non-Javadoc) 
          * @see java.lang.Comparable#compareTo(java.lang.Object) 
          */ 
-        public int compareTo(Object o){ 
-            Entry other = (Entry)o; 
+        public int compareTo(Entry other){ 
             int cmp = 0; 
             AtomicValue a, b; 
             for(int i = 0; i < values.length; i++) { 
