@@ -138,7 +138,7 @@ public class IndexTerms extends BasicFunction {
             Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();
 
-            Vector list = new Vector(len);
+            Vector<Integer> list = new Vector<Integer>(len);
             for (int j = 0; j < len; j++) {
                 if (!list.contains(new Integer(occur[j].getOccurrences()))) {
                     list.add(new Integer(occur[j].getOccurrences()));
@@ -146,7 +146,7 @@ public class IndexTerms extends BasicFunction {
             }
             Collections.sort(list);
             Collections.reverse(list);
-            HashMap map = new HashMap(list.size() * 2);
+            HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(list.size() * 2);
             for (int j = 0; j < list.size(); j++) {
                 map.put(list.get(j), new Integer(j + 1));
             }
@@ -156,7 +156,7 @@ public class IndexTerms extends BasicFunction {
                 data.add(new IntegerValue(occur[j].getOccurrences(), Type.UNSIGNED_INT));
                 data.add(new IntegerValue(occur[j].getDocuments(), Type.UNSIGNED_INT));
                 data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
-                data.add(new IntegerValue(((Integer) map.get(new Integer(occur[j].getOccurrences()))).intValue(), Type.UNSIGNED_INT));
+                data.add(new IntegerValue((map.get(new Integer(occur[j].getOccurrences()))).intValue(), Type.UNSIGNED_INT));
 
                 params[1] = data;
 
@@ -180,20 +180,19 @@ public class IndexTerms extends BasicFunction {
      * @return
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
-        Set indexes = new HashSet();
+        Set<QName> indexes = new HashSet<QName>();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
             final org.exist.collections.Collection collection = (org.exist.collections.Collection) i.next();
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
                 FulltextIndexSpec fIdxConf = idxConf.getFulltextIndexSpec();
-                final List qnames = fIdxConf.getIndexedQNames();
-                for (int j = 0; j < qnames.size(); j++) {
-                    final QName qName = (QName) qnames.get(j);
+                final List<QName> qnames = fIdxConf.getIndexedQNames();
+                for (QName qName : qnames) {
                     indexes.add(qName);
                 }
             }
         }
         QName qnames[] = new QName[indexes.size()];
-        return (QName[]) indexes.toArray(qnames);
+        return indexes.toArray(qnames);
     }
 }

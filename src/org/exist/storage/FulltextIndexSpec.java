@@ -62,13 +62,14 @@ public class FulltextIndexSpec {
 
     private static final NodePath[] ARRAY_TYPE = new NodePath[0];
     
-    private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
+    @SuppressWarnings("unused")
+	private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
     
     protected NodePath[] includePath;
     protected NodePath[] excludePath;
     protected NodePath[] mixedPath;
     protected NodePath[] preserveContent;
-    protected Map qnameSpecs = new TreeMap();
+    protected Map<QName, QNameSpec> qnameSpecs = new TreeMap<QName, QNameSpec>();
 
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
@@ -80,12 +81,12 @@ public class FulltextIndexSpec {
      * param def if set to true, include everything by default. In this case
      * use exclude elements to specify the excluded parts.
      */
-    public FulltextIndexSpec(Map namespaces, Element node) throws DatabaseConfigurationException {
+    public FulltextIndexSpec(Map<String, String> namespaces, Element node) throws DatabaseConfigurationException {
         includeByDefault = true;
-        ArrayList includeList = new ArrayList();
-        ArrayList excludeList = new ArrayList();
-        ArrayList preserveList = new ArrayList();
-        ArrayList mixedList = new ArrayList();
+        ArrayList<NodePath> includeList = new ArrayList<NodePath>();
+        ArrayList<NodePath> excludeList = new ArrayList<NodePath>();
+        ArrayList<NodePath> preserveList = new ArrayList<NodePath>();
+        ArrayList<NodePath> mixedList = new ArrayList<NodePath>();
 
         // check default settings
         String def = node.getAttribute(DEFAULT_ATTRIB);
@@ -159,16 +160,15 @@ public class FulltextIndexSpec {
                 qnameSpecs.put(qname, new QNameSpec(qname, elem));
             }
 		}
-        includePath = (NodePath[]) includeList.toArray(ARRAY_TYPE);
-        excludePath = (NodePath[]) excludeList.toArray(ARRAY_TYPE);
-        preserveContent = (NodePath[]) preserveList.toArray(ARRAY_TYPE);
-        mixedPath = (NodePath[]) mixedList.toArray(ARRAY_TYPE); 
+        includePath = includeList.toArray(ARRAY_TYPE);
+        excludePath = excludeList.toArray(ARRAY_TYPE);
+        preserveContent = preserveList.toArray(ARRAY_TYPE);
+        mixedPath = mixedList.toArray(ARRAY_TYPE); 
     }
 
-    public List getIndexedQNames() {
-        ArrayList qnames = new ArrayList(qnameSpecs.size());
-        for (Iterator i = qnameSpecs.keySet().iterator(); i.hasNext(); ) {
-            QName qname = (QName) i.next();
+    public List<QName> getIndexedQNames() {
+        ArrayList<QName> qnames = new ArrayList<QName>(qnameSpecs.size());
+        for (QName qname : qnameSpecs.keySet()) {
             qnames.add(qname);
         }
         return qnames;
@@ -273,7 +273,7 @@ public class FulltextIndexSpec {
     }
 
     public boolean preserveMixedContent(QName qname) {
-        QNameSpec spec = (QNameSpec) qnameSpecs.get(qname);
+        QNameSpec spec = qnameSpecs.get(qname);
         if (spec != null) {
             return spec.hasMixedContent();
         }
@@ -322,17 +322,17 @@ public class FulltextIndexSpec {
     					result.append("\tpreserve content : ").append(path.toString()).append('\n');   	  
     	  		}
     	  }  
-    	  for (Iterator i = qnameSpecs.values().iterator(); i.hasNext(); ) {
-    		  result.append("\tQName : ").append(i.next()).append('\n');   
+    	  for (QNameSpec spec : qnameSpecs.values()) {
+    		  result.append("\tQName : ").append(spec).append('\n');   
     	  }
     	  return result.toString();
       }
 
-    private static class QNameSpec implements Comparable {
+    private static class QNameSpec implements Comparable<QNameSpec> {
 
         private QName qname;
         private boolean mixedContent = false;
-        private Set preserve = new HashSet();
+        private Set<String> preserve = new HashSet<String>();
 
         QNameSpec(QName qname, Element node) {
             this.qname = qname;
@@ -355,7 +355,7 @@ public class FulltextIndexSpec {
             return mixedContent;
         }
 
-        public Set getPreserve() {
+        public Set<String> getPreserve() {
             return preserve;
         }
 
@@ -363,8 +363,8 @@ public class FulltextIndexSpec {
             return ((QNameSpec) obj).qname.equals(qname);
         }
 
-        public int compareTo(Object other) {
-            return ((QNameSpec) other).qname.compareTo(qname);
+        public int compareTo(QNameSpec other) {
+            return other.qname.compareTo(qname);
         }
 
         public String toString() {

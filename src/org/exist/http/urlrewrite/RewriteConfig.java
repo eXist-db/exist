@@ -6,7 +6,6 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.dom.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.memtree.SAXAdapter;

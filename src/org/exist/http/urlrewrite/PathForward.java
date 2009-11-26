@@ -22,7 +22,6 @@
 package org.exist.http.urlrewrite;
 
 import org.w3c.dom.Element;
-import org.exist.xmldb.XmldbURI;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterConfig;

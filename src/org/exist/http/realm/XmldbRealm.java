@@ -120,7 +120,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 		}
 		
 		// Accumulate the list of roles for this user
-		ArrayList list = new ArrayList();
+		ArrayList<String> list = new ArrayList<String>();
 		String[] groups = user.getGroups();
 		for (int i = 0; i < groups.length; i++) {
 			list.add(groups[i]);
@@ -152,7 +152,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 			}
 			
 			String driver = "org.exist.xmldb.DatabaseImpl";
-			Class cl = Class.forName(driver);			
+			Class<?> cl = Class.forName(driver);			
 			DatabaseManager.registerDatabase((Database) cl.newInstance());
 		
 			// try to get collection

@@ -33,7 +33,7 @@ public class LuceneIndexConfig {
 
     private Map<QName, String> specialNodes = null;
 
-    public LuceneIndexConfig(Element config, Map namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
+    public LuceneIndexConfig(Element config, Map<String, String> namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
             qname = parseQName(config, namespaces);
         } else {
@@ -62,7 +62,7 @@ public class LuceneIndexConfig {
         parse(config, namespaces);
     }
 
-    private void parse(Element root, Map namespaces) throws DatabaseConfigurationException {
+    private void parse(Element root, Map<String, String> namespaces) throws DatabaseConfigurationException {
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -110,7 +110,7 @@ public class LuceneIndexConfig {
         return specialNodes != null && specialNodes.get(qname) == N_INLINE;
     }
 
-    protected static QName parseQName(Element config, Map namespaces) throws DatabaseConfigurationException {
+    protected static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name == null || name.length() == 0)
             throw new DatabaseConfigurationException("Lucene index configuration error: element " + config.getNodeName() +
@@ -119,7 +119,7 @@ public class LuceneIndexConfig {
         return parseQName(name, namespaces);
     }
 
-    protected static QName parseQName(String name, Map namespaces) throws DatabaseConfigurationException {
+    protected static QName parseQName(String name, Map<String, String> namespaces) throws DatabaseConfigurationException {
         boolean isAttribute = false;
         if (name.startsWith("@")) {
             isAttribute = true;
@@ -130,7 +130,7 @@ public class LuceneIndexConfig {
             String localName = QName.extractLocalName(name);
             String namespaceURI = "";
             if (prefix != null) {
-                namespaceURI = (String) namespaces.get(prefix);
+                namespaceURI = namespaces.get(prefix);
                 if(namespaceURI == null) {
                     throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
                             " in index definition");

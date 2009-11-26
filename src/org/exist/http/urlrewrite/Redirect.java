@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class Redirect extends URLRewrite {
 

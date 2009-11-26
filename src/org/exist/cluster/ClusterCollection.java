@@ -224,7 +224,7 @@ public final class ClusterCollection extends Collection {
         return collection.collectionIterator();
     }
 
-    public List getDescendants(DBBroker broker, User user) {
+    public List<Collection> getDescendants(DBBroker broker, User user) {
         return collection.getDescendants(broker, user);
     }
 

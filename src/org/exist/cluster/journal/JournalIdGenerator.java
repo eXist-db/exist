@@ -21,7 +21,7 @@ public class JournalIdGenerator {
     private int lastId = ClusterEvent.NO_EVENT;
     private int counter = 0;
 
-    private HashMap idInUse = new HashMap();
+    private HashMap<String, String> idInUse = new HashMap<String, String>();
 
     public JournalIdGenerator(JournalManager journal, int maxItem) {
         System.out.println("MAX STORE IN ID GENERATOR = " + maxItem);

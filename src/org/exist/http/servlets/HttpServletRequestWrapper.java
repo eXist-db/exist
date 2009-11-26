@@ -190,9 +190,9 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 * params LinkedHashMap
 	 * ====================
 	 * params keys are String
-	 * params values are Vector of RequestParameter's
+	 * params values are Vector of RequestParamater's
 	 */
-	private LinkedHashMap params = null;			
+	private LinkedHashMap<String, Vector<RequestParamater>> params = null;			
 
 	/** the content Body of the POST request; 
 	 * it must be stored because once the Servlet input stream has been 
@@ -210,7 +210,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	{
 		this.request = request;
 		this.formEncoding = formEncoding;
-		params = new LinkedHashMap();
+		params = new LinkedHashMap<String, Vector<RequestParamater>>();
 		
 		initialiseWrapper();
 	}
@@ -337,14 +337,14 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			if(params.containsKey(thePair[0]))
 			{
 				//key exists in hash map, add value and type to vector
-				Vector vecValues = (Vector)params.get(thePair[0]);
+				Vector<RequestParamater> vecValues = params.get(thePair[0]);
 				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
 				params.put(thePair[0], vecValues);
 			}
 			else
 			{
 				//not in hash map so add a vector with the initial value
-				Vector vecValues = new Vector();
+				Vector<RequestParamater> vecValues = new Vector<RequestParamater>();
 				vecValues.add(new RequestParamater((thePair.length == 2 ? thePair[1] : new String()), type));
 				params.put(thePair[0], vecValues);
 			}
@@ -631,10 +631,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		if(params.containsKey(name))
 		{
 			//Get the parameters vector of values
-			Vector vecParameterValues = (Vector)params.get(name);
+			Vector<RequestParamater> vecParameterValues = params.get(name);
 
 			//return the first value in the vector
-			return ((RequestParamater)vecParameterValues.get(0)).getValue();
+			return (vecParameterValues.get(0)).getValue();
 		}
 		else
 		{
@@ -672,7 +672,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		if(params.containsKey(name))
 		{
 			//Get the parameters vector of values
-			Vector vecParameterValues = (Vector)params.get(name);
+			Vector<RequestParamater> vecParameterValues = params.get(name);
 			
 			//Create a string array to hold the values
 			String[] values = new String[vecParameterValues.size()];
@@ -680,7 +680,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			//Copy each value into the string array
 			for(int i = 0; i < vecParameterValues.size(); i++)
 			{
-				values[i] = ((RequestParamater)vecParameterValues.get(i)).getValue();
+				values[i] = vecParameterValues.get(i).getValue();
 			}
 			
 			//return the string array of values
@@ -696,30 +696,27 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 * get a Map of Request parameters (keys and values) from the local parameter store
 	 * @return		Map of Request Parameters. Key is of type String and Value is of type String[].
 	 */
-	public Map getParameterMap()
+	public Map<String, String[]> getParameterMap()
 	{
 		//Map to hold the parameters
-		LinkedHashMap mapParameters = new LinkedHashMap();
+		LinkedHashMap<String, String[]> mapParameters = new LinkedHashMap<String, String[]>();
 		
-		Set setParams = params.entrySet();
+		Set<Map.Entry<String, Vector<RequestParamater>>> setParams = params.entrySet();
 		
 		//iterate through the Request Parameters
-		for(Iterator itParams = setParams.iterator(); itParams.hasNext(); )
+		for(Map.Entry<String, Vector<RequestParamater>> me : setParams)
 		{
-			//Get the parameter
-			Map.Entry me = (Map.Entry)itParams.next();
-			
 			//Get the parameters values
-			Vector vecParamValues = (Vector)me.getValue();
+			Vector<RequestParamater> vecParamValues = me.getValue();
 			
 			//Create a string array to hold the parameter values
 			String[] values = new String[vecParamValues.size()];
 			
 			//Copy the parameter values into a string array
 			int i = 0;
-			for(Iterator itParamValues = vecParamValues.iterator(); itParamValues.hasNext(); i++)
+			for(Iterator<RequestParamater> itParamValues = vecParamValues.iterator(); itParamValues.hasNext(); i++)
 			{
-				values[i] = ((RequestParamater)itParamValues.next()).getValue();
+				values[i] = itParamValues.next().getValue();
 			}
 			mapParameters.put(me.getKey(), values); //Store the parameter in a map
 		}
@@ -890,16 +887,12 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 			// of the standard HttpServletRequest.toString() output
 			StringBuffer buf = new StringBuffer( request.toString());
 
-			Set setParams = params.entrySet();
+			Set<Map.Entry<String, Vector<RequestParamater>>> setParams = params.entrySet();
 
-			for (Iterator itParams = setParams.iterator(); itParams.hasNext();) {
-				Map.Entry me = (Map.Entry) itParams.next();
-				Vector vecParamValues = (Vector) me.getValue();
+			for (Map.Entry<String, Vector<RequestParamater>> me : setParams) {
+				Vector<RequestParamater> vecParamValues = me.getValue();
 
-				for (Iterator itParamValues = vecParamValues.iterator(); itParamValues
-						.hasNext();) {
-					RequestParamater p = (RequestParamater) itParamValues
-							.next();
+				for (RequestParamater p : vecParamValues) {
 
 					if (p.type == RequestParamater.PARAM_TYPE_CONTENT) {
 						if (buf.charAt(buf.length() - 1) != '\n')

@@ -30,7 +30,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 
 import org.apache.log4j.Logger;
 
@@ -52,8 +51,6 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
 import org.exist.security.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
@@ -89,14 +86,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -307,7 +301,7 @@ public class XQueryURLRewrite implements Filter {
                     if (status == HttpServletResponse.SC_NOT_MODIFIED) {
                         response.flushBuffer();
                     } else if (status < 400) {
-                        List views = modelView.views;
+                        List<URLRewrite> views = modelView.views;
                         for (int i = 0; i < views.size(); i++) {
                             URLRewrite view = (URLRewrite) views.get(i);
                             RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
@@ -469,7 +463,7 @@ public class XQueryURLRewrite implements Filter {
 
     private void configure() throws ServletException {
         try {
-            Class driver = Class.forName(DRIVER);
+            Class<?> driver = Class.forName(DRIVER);
             Database database = (Database) driver.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
@@ -757,7 +751,7 @@ public class XQueryURLRewrite implements Filter {
     private class ModelAndView {
 
         URLRewrite rewrite = null;
-        List views = new LinkedList();
+        List<URLRewrite> views = new LinkedList<URLRewrite>();
         boolean useCache = false;
 
         private ModelAndView() {
@@ -923,9 +917,8 @@ public class XQueryURLRewrite implements Filter {
         }
 
         public Enumeration getParameterNames() {
-            Vector v = new Vector();
-            for (Iterator i = addedParams.keySet().iterator(); i.hasNext(); ) {
-                String key = (String) i.next();
+            Vector<String> v = new Vector<String>();
+            for (String key : addedParams.keySet()) {
                 v.addElement(key);
             }
             return v.elements();

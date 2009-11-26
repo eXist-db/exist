@@ -27,7 +27,10 @@ import org.xmldb.api.base.XMLDBException;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
 public class DatabaseAdminServlet extends HttpServlet {
-    protected String confFile;
+
+	private static final long serialVersionUID = 866427121174932091L;
+
+	protected String confFile;
 
     protected Configuration configuration = null;
     protected String dbHome;
@@ -167,7 +170,7 @@ public class DatabaseAdminServlet extends HttpServlet {
         try {
 			this.log("registering XMLDB driver");
 			String driver = "org.exist.xmldb.DatabaseImpl";
-			Class clazz = Class.forName(driver);
+			Class<?> clazz = Class.forName(driver);
 			Database database = (Database)clazz.newInstance();
 			database.setProperty("auto-create", "true");
 			DatabaseManager.registerDatabase(database);

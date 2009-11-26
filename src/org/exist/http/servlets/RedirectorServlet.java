@@ -140,7 +140,7 @@ public class RedirectorServlet extends HttpServlet {
         }
 
         try {
-            Class driver = Class.forName(DRIVER);
+            Class<?> driver = Class.forName(DRIVER);
             Database database = (Database)driver.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
@@ -264,7 +264,7 @@ public class RedirectorServlet extends HttpServlet {
 
     private class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
-        Map addedParams = new HashMap();
+        Map<String, Object> addedParams = new HashMap<String, Object>();
 
         private RequestWrapper(HttpServletRequest request) {
             super(request);
@@ -283,6 +283,7 @@ public class RedirectorServlet extends HttpServlet {
             addedParams.put(name, value);
         }
 
+        //XXX: something wrong here, the value can be String[], see line 278
         public String getParameter(String name) {
             return (String) addedParams.get(name);
         }
@@ -292,9 +293,8 @@ public class RedirectorServlet extends HttpServlet {
         }
 
         public Enumeration getParameterNames() {
-            Vector v = new Vector();
-            for (Iterator i = addedParams.keySet().iterator(); i.hasNext(); ) {
-                String key = (String) i.next();
+            Vector<String> v = new Vector<String>();
+            for (String key : addedParams.keySet()) {
                 v.addElement(key);
             }
             return v.elements();

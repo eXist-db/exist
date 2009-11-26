@@ -65,6 +65,8 @@ import java.security.Principal;
  */
 public class EXistServlet extends HttpServlet {
 
+	private static final long serialVersionUID = -3563999345725645647L;
+
 	private String formEncoding = null;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	
