@@ -9,7 +9,9 @@ package org.exist.soap;
 
 public class AdminServiceLocator extends org.apache.axis.client.Service implements org.exist.soap.AdminService {
 
-    public AdminServiceLocator() {
+	private static final long serialVersionUID = 1705602226239282764L;
+
+	public AdminServiceLocator() {
     }
 
 
@@ -108,11 +110,11 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
         return new javax.xml.namespace.QName("urn:exist", "AdminService");
     }
 
-    private java.util.HashSet ports = null;
+    private java.util.HashSet<javax.xml.namespace.QName> ports = null;
 
-    public java.util.Iterator getPorts() {
+    public java.util.Iterator<javax.xml.namespace.QName> getPorts() {
         if (ports == null) {
-            ports = new java.util.HashSet();
+            ports = new java.util.HashSet<javax.xml.namespace.QName>();
             ports.add(new javax.xml.namespace.QName("urn:exist", "Admin"));
         }
         return ports.iterator();
