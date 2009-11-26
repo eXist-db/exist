@@ -123,7 +123,8 @@ public class XMLDBSecurityTest {
     public void groupCreateResource() {
         try {
             Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-            CollectionManagementService cms = (CollectionManagementService)
+            @SuppressWarnings("unused")
+			CollectionManagementService cms = (CollectionManagementService)
                 test.getService("CollectionManagementService", "1.0");
             Resource resource = test.createResource("createdByTest2.xml", "XMLResource");
             resource.setContent("<testMe/>");

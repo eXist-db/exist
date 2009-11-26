@@ -45,6 +45,7 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryUseCase {
 
+	@SuppressWarnings("unused")
 	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String baseDir = "samples/xquery/use-cases";
 

@@ -43,11 +43,13 @@ import org.exist.xmldb.XmldbURI;
  */
 public class CollectionTest extends TestCase {
 
-    private static String docs[] = { "hamlet.xml", "r_and_j.xml", "macbeth.xml" };
+    @SuppressWarnings("unused")
+	private static String docs[] = { "hamlet.xml", "r_and_j.xml", "macbeth.xml" };
     
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     
-    private static String TEST_XML =
+    @SuppressWarnings("unused")
+	private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<test>" +
         "  <title>Hello</title>" +

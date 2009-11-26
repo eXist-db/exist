@@ -103,7 +103,8 @@ public class DOMIndexerTest extends TestCase {
             IndexInfo info = collection.validateXMLResource(null, broker, TestConstants.TEST_XML_URI, XML);
             //TODO : unlock the collection here ?
             collection.store(null, broker, info, XML, false);
-            org.exist.dom.DocumentImpl doc = info.getDocument();
+            @SuppressWarnings("unused")
+			org.exist.dom.DocumentImpl doc = info.getDocument();
             broker.flush();
             broker.saveCollection(null, collection);
     	} catch (Exception e) {

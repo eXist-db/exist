@@ -62,7 +62,8 @@ public class CollectionConfigurationValidationModeTest {
     String xconf_yes = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"yes\"/></collection>";
     String xconf_no = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"no\"/></collection>";
     String xconf_auto = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><validation mode=\"auto\"/></collection>";
-    private static final Logger logger = Logger.getLogger(CollectionConfigurationValidationModeTest.class);
+    @SuppressWarnings("unused")
+	private static final Logger logger = Logger.getLogger(CollectionConfigurationValidationModeTest.class);
     private static XPathQueryService xpqservice;
     private static Collection root = null;
     private static Database database = null;
@@ -94,13 +95,15 @@ public class CollectionConfigurationValidationModeTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
         System.out.println("Clear grammar cache");
-        ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
+        @SuppressWarnings("unused")
+		ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
     }
 
     @Before
     public void setUp() throws Exception {
         System.out.println("Clear grammar cache");
-        ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
+        @SuppressWarnings("unused")
+		ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
     }
 
     @After

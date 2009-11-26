@@ -38,7 +38,6 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.EXistException;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -230,7 +229,8 @@ public void testReadAborted() {
 
 	public void testXMLDBStore() throws XMLDBException {
 		BrokerPool.FORCE_CORRUPTION = true;
-	    BrokerPool pool = startDB();
+	    @SuppressWarnings("unused")
+		BrokerPool pool = startDB();
 
 	    org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
 	    CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
@@ -256,7 +256,8 @@ public void testReadAborted() {
 
 	public void testXMLDBRead() throws XMLDBException {
 		BrokerPool.FORCE_CORRUPTION = false;
-	    BrokerPool pool = startDB();
+	    @SuppressWarnings("unused")
+		BrokerPool pool = startDB();
 
 	    org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION +  "/test", "admin", "");
 	    Resource res = test.getResource("new_test3.xml");

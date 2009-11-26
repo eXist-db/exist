@@ -79,18 +79,23 @@ public class JingOnvdlTest extends EmbeddedExistTester {
     public void setUp() throws Exception {
 
         String query = "xmldb:create-collection('xmldb:exist:///db','validate-test')";
-        ResourceSet result = executeQuery(query);
+        @SuppressWarnings("unused")
+		ResourceSet result = executeQuery(query);
 
         String query1 = "xmldb:store('/db/validate-test', 'test.nvdl'," + NVDL_DATA1 + ")";
+        @SuppressWarnings("unused")
         ResourceSet result1 = executeQuery(query1);
 
         String query2 = "xmldb:store('/db/validate-test', 'Book.rng'," + RNG_DATA1 + ")";
+        @SuppressWarnings("unused")
         ResourceSet result2 = executeQuery(query2);
 
         String data1 = "xmldb:store('/db/validate-test', 'valid.xml'," + XML_DATA1 + ")";
+        @SuppressWarnings("unused")
         ResourceSet result3 = executeQuery(data1);
 
         String data2 = "xmldb:store('/db/validate-test', 'invalid.xml'," + XML_DATA2 + ")";
+        @SuppressWarnings("unused")
         ResourceSet result4 = executeQuery(data2);
     }
 

@@ -51,7 +51,8 @@ public class StorageStressTest extends TestCase {
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String COLLECTION_NAME = "unit-testing-collection";
     
-    private final static String CONFIG =
+    @SuppressWarnings("unused")
+	private final static String CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
         "   <index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
         "       <fulltext default=\"all\" attributes=\"true\">" +  
@@ -86,6 +87,7 @@ public class StorageStressTest extends TestCase {
         setUpRemoteDatabase();
     }
     
+	@SuppressWarnings("unchecked")
 	private void initServer() {
 		try {
 			if (server == null) {

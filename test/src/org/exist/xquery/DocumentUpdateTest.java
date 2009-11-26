@@ -127,14 +127,16 @@ public class DocumentUpdateTest extends TestCase {
                 +"return update insert attribute AAA {\"BBB\"} into $elem, $doc) ";
 
         try {
-            String result1 = execQuery(query1);
+            @SuppressWarnings("unused")
+			String result1 = execQuery(query1);
         } catch (XMLDBException ex) {
             ex.printStackTrace();
             fail(ex.getMessage());
         }
         
         try {   
-            String result2 = execQuery(query2);
+            @SuppressWarnings("unused")
+			String result2 = execQuery(query2);
         } catch (XMLDBException ex) {
             ex.printStackTrace();
             fail(ex.getMessage());

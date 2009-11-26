@@ -22,33 +22,23 @@
 
 package org.exist.storage;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestDataGenerator;
-import org.exist.EXistException;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.w3c.dom.Document;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 
 /**

@@ -112,7 +112,8 @@ public class BTreeRecoverTest extends TestCase {
     
     public void testGet() {
         System.out.println("Recover and read the data ...\n");
-        TransactionManager mgr = pool.getTransactionManager();
+        @SuppressWarnings("unused")
+		TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
         DBBroker broker = null;
         try {

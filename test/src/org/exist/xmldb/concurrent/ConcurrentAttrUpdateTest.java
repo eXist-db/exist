@@ -21,6 +21,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 
 	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	
+	@SuppressWarnings("unused")
 	private final static String QUERY =
 		"//ELEMENT[@attribute-1]";
 	

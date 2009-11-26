@@ -146,7 +146,8 @@ public class RESTServiceTest extends TestCase {
         badCredentials = new String(enc.getCharArray());
     }
 
-    protected void setUp() {
+    @SuppressWarnings("unchecked")
+	protected void setUp() {
         //Don't worry about closing the server : the shutdown hook will do the job
         try {
             if (server == null) {

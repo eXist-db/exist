@@ -98,7 +98,8 @@ public class DOMFileRecoverTest extends TestCase {
             // put some more
             for (int i = 1; i <= 10000; i++) {
                 byte[] data = ("Value" + i).getBytes();
-                long addr = domDb.put(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)), data);
+                @SuppressWarnings("unused")
+				long addr = domDb.put(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)), data);
 //              TODO : test addr ?
             }
             

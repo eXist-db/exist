@@ -31,7 +31,8 @@ public class EntitiesTest extends XMLTestCase {
     private static StandaloneServer server = null;
     
     private Collection testCollection;
-    private String query;
+    @SuppressWarnings("unused")
+	private String query;
     
     protected void setUp() {
         if (uri.startsWith("xmldb:exist://localhost"))
@@ -62,7 +63,8 @@ public class EntitiesTest extends XMLTestCase {
         }
     }
     
-    private void initServer() {
+    @SuppressWarnings("unchecked")
+	private void initServer() {
         try {
             if (server == null) {
                 server = new StandaloneServer();
@@ -115,7 +117,8 @@ public class EntitiesTest extends XMLTestCase {
     /** Helper that performs an XQuery and does JUnit assertion on result size.
      * @see #queryResource(XQueryService, String, String, int, String)
      */
-    private ResourceSet queryResource(XQueryService service, String resource,
+    @SuppressWarnings("unused")
+	private ResourceSet queryResource(XQueryService service, String resource,
             String query, int expected) throws XMLDBException {
         return queryResource(service, resource, query, expected, null);
     }
@@ -163,7 +166,8 @@ public class EntitiesTest extends XMLTestCase {
      * @return the XQuery Service
      * @throws XMLDBException
      */
-    private XQueryService storeXMLStringAndGetQueryService(String documentName,
+    @SuppressWarnings("unused")
+	private XQueryService storeXMLStringAndGetQueryService(String documentName,
             String content) throws XMLDBException {
         XMLResource doc =
                 (XMLResource) testCollection.createResource(
@@ -181,7 +185,8 @@ public class EntitiesTest extends XMLTestCase {
      * @param result
      * @throws XMLDBException
      */
-    private void printResult(ResourceSet result) throws XMLDBException {
+    @SuppressWarnings("unused")
+	private void printResult(ResourceSet result) throws XMLDBException {
         for (ResourceIterator i = result.getIterator();
         i.hasMoreResources();
         ) {
@@ -193,7 +198,8 @@ public class EntitiesTest extends XMLTestCase {
     public void testAttributeConstructor() {
         try {
             XQueryService service = getQueryService();
-            ResourceSet result;
+            @SuppressWarnings("unused")
+			ResourceSet result;
             
             result = queryAndAssert( service,
                     "<foo "+
@@ -215,7 +221,8 @@ public class EntitiesTest extends XMLTestCase {
     public void testStringConstructor() {
         try {
             XQueryService service = getQueryService();
-            ResourceSet result;
+            @SuppressWarnings("unused")
+			ResourceSet result;
             
             result = queryAndAssert( service, "'&amp;'",1,null);
             result = queryAndAssert( service, "'&lt;'",1,null);

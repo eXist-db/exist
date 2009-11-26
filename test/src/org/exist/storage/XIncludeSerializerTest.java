@@ -434,7 +434,8 @@ public class XIncludeSerializerTest {
      * SetUp / TearDown functions
      *
      */
-    @BeforeClass
+    @SuppressWarnings("unchecked")
+	@BeforeClass
     public static void startDB() {
         //Don't worry about closing the server : the shutdown hook will do the job
         try {
@@ -469,10 +470,12 @@ public class XIncludeSerializerTest {
 			XmlRpcClient xmlrpc = getClient();
 			Vector<Object> params = new Vector<Object>();
 			params.addElement(XINCLUDE_COLLECTION.toString());
+			@SuppressWarnings("unused")
 			Boolean resultColl1 = (Boolean)xmlrpc.execute("createCollection", params);
 
 			params.clear();			
 			params.addElement(XINCLUDE_NESTED_COLLECTION.toString());
+			@SuppressWarnings("unused")
 			Boolean resultColl2 = (Boolean)xmlrpc.execute("createCollection", params);
 
 			System.out.println("Loading test document data");
@@ -480,54 +483,63 @@ public class XIncludeSerializerTest {
 			params.addElement(XML_DATA1);
 			params.addElement("/db/xinclude_test/test_simple.xml");
 			params.addElement(new Integer(1));			
+			@SuppressWarnings("unused")
 			Boolean resultFile1 = (Boolean)xmlrpc.execute("parse", params);
 
 			params.clear();
 			params.addElement(XML_DATA2);
 			params.addElement("/db/xinclude_test/metatags.xml");
 			params.addElement(new Integer(1));			
+			@SuppressWarnings("unused")
 			Boolean resultFile3 = (Boolean)xmlrpc.execute("parse", params);
 
 			params.clear();
 			params.addElement(XML_DATA2);
 			params.addElement("/db/xinclude_test/data/metatags.xml");
 			params.addElement(new Integer(1));			
+			@SuppressWarnings("unused")
 			Boolean resultFile4 = (Boolean)xmlrpc.execute("parse", params);
 			
 			params.clear();
 			params.addElement(XML_DATA3);
 			params.addElement("/db/xinclude_test/test_relative1.xml");
 			params.addElement(new Integer(1));			
+			@SuppressWarnings("unused")
 			Boolean resultFile5 = (Boolean)xmlrpc.execute("parse", params);
 
 			params.clear();
 			params.addElement(XML_DATA4);
 			params.addElement("/db/xinclude_test/test_relative2.xml");
 			params.addElement(new Integer(1));			
+			@SuppressWarnings("unused")
 			Boolean resultFile6 = (Boolean)xmlrpc.execute("parse", params);
 
             params.clear();
 			params.addElement(XML_DATA5);
 			params.addElement("/db/xinclude_test/test_xpointer1.xml");
 			params.addElement(new Integer(1));
+			@SuppressWarnings("unused")
 			Boolean resultFile7 = (Boolean)xmlrpc.execute("parse", params);
 
             params.clear();
 			params.addElement(XML_DATA6);
 			params.addElement("/db/xinclude_test/test_xpointer2.xml");
 			params.addElement(new Integer(1));
+			@SuppressWarnings("unused")
 			Boolean resultFile8 = (Boolean)xmlrpc.execute("parse", params);
 
             params.clear();
 			params.addElement(XML_DATA7);
 			params.addElement("/db/xinclude_test/test_fallback1.xml");
 			params.addElement(new Integer(1));
+			@SuppressWarnings("unused")
 			Boolean resultFile9 = (Boolean)xmlrpc.execute("parse", params);
 
             params.clear();
 			params.addElement(XML_DATA8);
 			params.addElement("/db/xinclude_test/test_fallback2.xml");
 			params.addElement(new Integer(1));
+			@SuppressWarnings("unused")
 			Boolean resultFile10 = (Boolean)xmlrpc.execute("parse", params);
         } catch (Exception e) {
             fail(e.getMessage());
@@ -541,6 +553,7 @@ public class XIncludeSerializerTest {
 			Vector<Object> params = new Vector<Object>();
 			params.clear();
 			params.addElement("/db/xinclude_test");
+			@SuppressWarnings("unused")
 			Boolean resultRemove = (Boolean)xmlrpc.execute("removeCollection", params);
 	} catch (Exception e) {
         fail(e.getMessage());	

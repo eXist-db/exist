@@ -30,7 +30,6 @@ import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.exist.source.FileSource;
-import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XQueryService;
 import org.junit.After;
 import org.junit.AfterClass;
