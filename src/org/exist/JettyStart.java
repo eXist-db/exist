@@ -238,7 +238,7 @@ public class JettyStart {
 		}
 
 		public void shutdown(String dbname, int remainingInstances) {
-			logger.error("Database shutdown: stopping server in 1sec ...");
+			logger.info("Database shutdown: stopping server in 1sec ...");
 			if (remainingInstances == 0) {
 				// give the webserver a 1s chance to complete open requests
 				Timer timer = new Timer();
