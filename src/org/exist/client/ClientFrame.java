@@ -907,7 +907,7 @@ public class ClientFrame extends JFrame
         try
 		{    
         	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            ArrayList alCollections = getCollections(root, new ArrayList());
+            ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } 
@@ -991,7 +991,7 @@ public class ClientFrame extends JFrame
         try
 		{    
         	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            ArrayList alCollections = getCollections(root, new ArrayList());
+            ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } 
@@ -1040,7 +1040,7 @@ public class ClientFrame extends JFrame
         new Thread(moveTask).start();
     }
     
-    private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
+    private ArrayList<PrettyXmldbURI> getCollections(Collection root, ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException
     {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         String[] childCollections= root.listChildCollections();
