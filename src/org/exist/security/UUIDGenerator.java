@@ -39,7 +39,8 @@ import org.apache.log4j.Logger;
  */
 public class UUIDGenerator {
     
-    private final static Logger LOG = Logger.getLogger(UUIDGenerator.class);
+    @SuppressWarnings("unused")
+	private final static Logger LOG = Logger.getLogger(UUIDGenerator.class);
     
     /**
      *  Generate random UUID code.

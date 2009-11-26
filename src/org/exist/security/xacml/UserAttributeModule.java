@@ -31,6 +31,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	
 	private ExistPDP pdp;
 	
+	@SuppressWarnings("unused")
 	private UserAttributeModule() {}
 	
 	/**
@@ -93,7 +94,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	{
 		String[] groupArray = user.getGroups();
 		int size = (groupArray == null) ? 0 : groupArray.length;
-		Set groupAttributes = new HashSet(size);
+		Set<StringAttribute> groupAttributes = new HashSet<StringAttribute>(size);
 		for(int i = 0; i < size; ++i)
 			groupAttributes.add(new StringAttribute(groupArray[i]));
 		AttributeValue value = new BagAttribute(XACMLConstants.STRING_TYPE, groupAttributes);
@@ -129,7 +130,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	* @return A <code>Set</code> indicating the supported
 	* designator type.
 	*/
-	public Set getSupportedDesignatorTypes()
+	public Set<Integer> getSupportedDesignatorTypes()
 	{
 		return Collections.singleton(new Integer(AttributeDesignator.SUBJECT_TARGET));
 	}
@@ -143,9 +144,9 @@ public class UserAttributeModule extends AttributeFinderModule
 	* @return A <code>Set</code> indicating the supported
 	* attribute ids.
 	*/
-	public Set getSupportedIds()
+	public Set<URI> getSupportedIds()
 	{
-		Set set = new HashSet(4);
+		Set<URI> set = new HashSet<URI>(4);
 		set.add(XACMLConstants.GROUP_ATTRIBUTE);
 		set.add(XACMLConstants.USER_NAME_ATTRIBUTE);
 		return set;
