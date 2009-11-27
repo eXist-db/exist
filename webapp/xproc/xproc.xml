@@ -100,6 +100,46 @@ http://127.0.0.1:8080/exist/xproc/examples/hello.xproc
              </variablelist>
 
 
+Using bindings, you can inject information into the XProc by defining other ports. To
+demonstrate this look at the examples/pidentity.xproc
+
+<example>
+			<title>Running XProc from eXist</title>
+			<programlisting>
+			<markup>
+<![CDATA[
+<p:pipeline xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc" name="pipeline">
+<p:identity>
+<p:input port="source">
+    <p:pipe step="pipeline" port="a"/>
+</p:input>
+</p:identity>
+</p:pipeline>
+]]>
+
+</markup>
+            </programlisting>
+</example>
+
+This XProc uses the p:identity step to output the 'a' input port, which we define using bindings.
+
+<example>
+			<title>Running XProc from eXist</title>
+			<programlisting>
+			<markup>
+<![CDATA[
+http://127.0.0.1:8080/exist/xproc/examples/pidentity.xproc?stdin=/db/xproc/xml/test.xml&bindings=<bindings><binding port="a"><test/></binding></bindings>
+]]>
+
+</markup>
+            </programlisting>
+         <a href="examples/pidentity.xproc?stdin=/db/xproc/xml/test.xml&amp;bindings=%3Cbindings%3E%3Cbinding%20port=%22a%22%3E%3Ctest/%3E%3C/binding%3E%3C/bindings%3E" target="_example">run xproc directly from database</a>
+</example>             
+
+The result should be the contents of the binding defined by the URL param bindings.
+
+
+
 
          </para>
 
