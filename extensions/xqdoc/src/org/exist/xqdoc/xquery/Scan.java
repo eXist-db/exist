@@ -5,10 +5,8 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.BinarySource;
-import org.exist.source.DBSource;
-import org.exist.source.Source;
-import org.exist.source.SourceFactory;
+import org.exist.security.xacml.AccessContext;
+import org.exist.source.*;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -22,6 +20,8 @@ import org.xqdoc.conversion.XQDocException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Scan extends BasicFunction {
 
@@ -55,6 +55,12 @@ public class Scan extends BasicFunction {
                 "the function docs.")
         )
     };
+
+    private final static Pattern NAME_PATTERN = Pattern.compile("([^/\\.]+)\\.?[^\\.]*$");
+
+    private final static String NORMALIZE_XQUERY = "resource:org/exist/xqdoc/xquery/normalize.xql";
+
+    private CompiledXQuery normalizeXQuery = null;
 
     public Scan(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -107,7 +113,7 @@ public class Scan extends BasicFunction {
                     uri = location;
                 try {
                     source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
-                    name = source.getKey().toString();
+                    name = extractName(uri);
                 } catch (IOException e) {
                     throw new XPathException(this, "failed to read module " + uri, e);
                 } catch (PermissionDeniedException e) {
@@ -121,7 +127,7 @@ public class Scan extends BasicFunction {
             NodeValue root = ModuleUtils.stringToXML(context, xml);
             if (root == null)
                 return Sequence.EMPTY_SEQUENCE;
-            return (NodeValue) ((Document) root).getDocumentElement();
+            return normalize((NodeValue) ((Document) root).getDocumentElement());
         } catch (XQDocException e) {
             throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);
         } catch (IOException e) {
@@ -129,5 +135,24 @@ public class Scan extends BasicFunction {
         } catch (SAXException e) {
             throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);
         }
+    }
+
+    private String extractName(String uri) {
+        Matcher matcher = NAME_PATTERN.matcher(uri);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return uri;
+    }
+
+    private Sequence normalize(NodeValue input) throws IOException, XPathException {
+        XQuery xquery = context.getBroker().getXQueryService();
+        if (normalizeXQuery == null) {
+            Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
+            XQueryContext xc = xquery.newContext(AccessContext.INITIALIZE);
+            normalizeXQuery = xquery.compile(xc, source);
+        }
+        normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
+        return xquery.execute(normalizeXQuery, Sequence.EMPTY_SEQUENCE);
     }
 }
