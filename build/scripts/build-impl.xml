@@ -617,7 +617,7 @@
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
         <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f build\scripts\jarsigner.xml&apos; "/>
         <echo message="!! once manually to use a default keystore to sign the core jars or put !!"/>
-	<echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling webstart !!"/>
+	    <echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling webstart !!"/>
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
 
         <!-- the core jars can NOT be signed in this build.xml file because -->
@@ -648,10 +648,12 @@
 
         <!-- Saxon XSLT2 Processor                 -->
         <!-- http://sourceforge.net/projects/saxon -->
-        <get src="http://sourceforge.net/projects/saxon/files/Saxon-B/9.1.0.8/saxonb9-1-0-8j.zip/download"
-            dest="${lib.endorsed}/saxon.zip" verbose="true"/>
+        <property name="saxon.zip" value="${lib.user}/saxon.zip"/>
+        
+        <get src="http://sourceforge.net/projects/saxon/files/Saxon-HE/9.2/saxonhe9-2-0-3j.zip/download"
+            dest="${lib.user}/saxon.zip" verbose="true"/>
 
-        <unzip src="${lib.endorsed}/saxon.zip" dest="${lib.endorsed}">
+        <unzip src="${saxon.zip}" dest="${lib.user}">
             <patternset>
                 <include name="**/saxon9he.jar"/>
                 <include name="**/saxon9.jar"/>
@@ -660,7 +662,7 @@
             </patternset>
         </unzip>
 
-        <delete failonerror="no" file="${lib.endorsed}/saxon.zip"/>
+        <delete failonerror="no" file="${saxon.zip}"/>
 
     </target>
 
