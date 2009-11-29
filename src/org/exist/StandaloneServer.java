@@ -122,6 +122,10 @@ public class StandaloneServer {
     }
 
     public void run(String[] args) throws Exception {
+        run(args, null);
+    }
+
+    public void run(String[] args, Observer observer) throws Exception {
         printNotice();
 
         //set default properties
@@ -170,6 +174,8 @@ public class StandaloneServer {
 
         LOG.info("Loading configuration ...");
         Configuration config = new Configuration("conf.xml");
+        if (observer != null)
+            BrokerPool.registerStatusObserver(observer);
         BrokerPool.configure(1, threads, config);
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
