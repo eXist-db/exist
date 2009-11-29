@@ -78,6 +78,8 @@
 		</javac>
         <copy file="${src}/org/exist/xqdoc/ant/antlib.xml"
             todir="${xqdoc.classes}/org/exist/xqdoc/ant"/>
+        <copy file="${src}/org/exist/xqdoc/xquery/normalize.xql"
+            todir="${xqdoc.classes}/org/exist/xqdoc/xquery"/>
 	</target>
 	
     <target name="jar" depends="compile" if="include.feature.xqdoc.config">
