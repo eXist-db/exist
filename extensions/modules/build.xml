@@ -1,19 +1,30 @@
 <!-- 
+    Ant build file for the exist-db extension modules.
+    
+    Requires a configuration file called local.build.properties or build.properties.
+    
     $Id$
 -->
 <project basedir="." default="jar" name="modules">
 
+    <!--
+        Reference to directories
+    -->
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
-	<property name="top.dir" value="../.."/>
-	
+    
+    <property name="top.dir" value="../.."/>
+    <property file="${top.dir}/build.properties"/>
+
     <property name="build.compiler" value="modern"/>
 
-	<property file="${top.dir}/build.properties"/>
-	
+    <!--
+        Get values from properies files. Note that the values in "local.build.properties" 
+        are leading to "build.properties".
+    -->
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
-
+    
     <condition property="include.module.simpleql.config">
         <istrue value="${include.module.simpleql}"/>
     </condition>
@@ -27,7 +38,7 @@
     </condition>
 
     <condition property="include.module.mail.config">
-      <istrue value="${include.module.mail}"/>
+        <istrue value="${include.module.mail}"/>
     </condition>
 
     <condition property="include.module.file.config">
@@ -45,121 +56,131 @@
     <condition property="include.module.svn.config">
         <istrue value="${include.module.svn}"/>
     </condition>
-    
+
     <condition property="include.module.jndi.config">
         <istrue value="${include.module.jndi}"/>
     </condition>
-    
+
     <condition property="include.module.jfreechart.config">
         <istrue value="${include.module.jfreechart}"/>
     </condition>
 
-    <!-- Special targets for XSLFO module -->
+    <!-- 
+        Special targets for XSLFO module 
+    -->
     <condition property="libs.available.xslfo">
-		<and>
-			<available file="${top.dir}/${lib.user}/fop.jar"/>
-			<available file="${top.dir}/${lib.user}/batik-all-1.7.jar"/>
-			<available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.3.1.jar"/>
-			<available file="${top.dir}/${lib.user}/avalon-framework-api-4.3.jar"/>
-			<available file="${top.dir}/${lib.user}/avalon-framework-impl-4.3.jar"/>
-	    </and>
-	</condition>
-	
-	<target name="prepare-libs-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
+        <and>
+            <available file="${top.dir}/${lib.user}/fop.jar"/>
+            <available file="${top.dir}/${lib.user}/batik-all-1.7.jar"/>
+            <available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.3.1.jar"/>
+            <available file="${top.dir}/${lib.user}/avalon-framework-api-4.3.jar"/>
+            <available file="${top.dir}/${lib.user}/avalon-framework-impl-4.3.jar"/>
+        </and>
+    </condition>
+
+    <target name="prepare-libs-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
         <echo message="Load: ${include.module.xslfo}"/>
         <echo message="------------------------------------------------------"/>
-	    <echo message="Downloading libraries required by the xsl-fo module"/>
-	    <echo message="------------------------------------------------------"/>
+        <echo message="Downloading libraries required by the xsl-fo module"/>
+        <echo message="------------------------------------------------------"/>
 
-		<!-- Apache FOP -->
-		<get src="${include.module.xslfo.url}" dest="fop-0.95-bin.zip" verbose="true" usetimestamp="true" />
-		<unzip src="fop-0.95-bin.zip" dest="${top.dir}/${lib.user}">
-			<patternset>
-				<include name="fop-0.95/build/fop.jar"/>
-				<include name="fop-0.95/lib/batik-all-1.7.jar"/>
-				<include name="fop-0.95/lib/xmlgraphics-commons-1.3.1.jar"/>
-			</patternset>
-			<mapper type="flatten"/>
-		</unzip>
-		<delete file="fop-0.95-bin.zip"/>
-		
-		<!-- Avalon API -->
-		<get src="${include.module.xslfo.avalon.api.url}" dest="avalon-framework-api-4.3.zip" verbose="true" usetimestamp="true" />
-		<unzip src="avalon-framework-api-4.3.zip" dest="${top.dir}/${lib.user}">
-			<patternset>
-				<include name="avalon-framework-api-4.3/avalon-framework-api-4.3.jar"/>
-			</patternset>
-			<mapper type="flatten"/>
-		</unzip>
-		<delete file="avalon-framework-api-4.3.zip"/>
-		
-		<!-- Avalon Impl -->
-		<get src="${include.module.xslfo.avalon.impl.url}" dest="avalon-framework-impl-4.3.zip" verbose="true" usetimestamp="true" />
-		<unzip src="avalon-framework-impl-4.3.zip" dest="${top.dir}/${lib.user}">
-			<patternset>
-				<include name="avalon-framework-impl-4.3/avalon-framework-impl-4.3.jar"/>
-			</patternset>
-			<mapper type="flatten"/>
-		</unzip>
-		<delete file="avalon-framework-impl-4.3.zip"/>
-		
-	</target>
-    
-    <!-- Special targets for simpleql module -->
-    <uptodate property="parser.uptodate"
-		srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
-		targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
+        <!-- Apache FOP -->
+        <get src="${include.module.xslfo.url}" dest="fop-0.95-bin.zip" verbose="true" usetimestamp="true"/>
+        <unzip src="fop-0.95-bin.zip" dest="${top.dir}/${lib.user}">
+            <patternset>
+                <include name="fop-0.95/build/fop.jar"/>
+                <include name="fop-0.95/lib/batik-all-1.7.jar"/>
+                <include name="fop-0.95/lib/xmlgraphics-commons-1.3.1.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        <delete file="fop-0.95-bin.zip"/>
 
-	<target name="prepare-simpleql" unless="parser.uptodate" if="include.module.simpleql.config">
+        <!-- Avalon API -->
+        <get src="${include.module.xslfo.avalon.api.url}" dest="avalon-framework-api-4.3.zip" verbose="true"
+            usetimestamp="true"/>
+        <unzip src="avalon-framework-api-4.3.zip" dest="${top.dir}/${lib.user}">
+            <patternset>
+                <include name="avalon-framework-api-4.3/avalon-framework-api-4.3.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        <delete file="avalon-framework-api-4.3.zip"/>
+
+        <!-- Avalon Impl -->
+        <get src="${include.module.xslfo.avalon.impl.url}" dest="avalon-framework-impl-4.3.zip" verbose="true"
+            usetimestamp="true"/>
+        <unzip src="avalon-framework-impl-4.3.zip" dest="${top.dir}/${lib.user}">
+            <patternset>
+                <include name="avalon-framework-impl-4.3/avalon-framework-impl-4.3.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        <delete file="avalon-framework-impl-4.3.zip"/>
+
+    </target>
+
+    <!-- 
+        Special targets for simpleql module 
+    -->
+    <uptodate property="parser.uptodate" srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+        targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
+
+    <target name="prepare-simpleql" unless="parser.uptodate" if="include.module.simpleql.config">
         <echo message="Running ANTLR to generate XQuery parser"/>
-		<antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
-                outputdirectory="${src}/org/exist/xquery/modules/simpleql"
-                traceparser="${antlr.traceParser}"
-                tracelexer="${antlr.traceLexer}">
+        <antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
+            outputdirectory="${src}/org/exist/xquery/modules/simpleql" traceparser="${antlr.traceParser}"
+            tracelexer="${antlr.traceLexer}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </antlr>
-	</target>
-    
-    <!-- Special targets for svn module -->
-    <property name="svn.svnkit.jar" value="${top.dir}/${lib.user}/svnkit.jar"/>
-    <available file="${svn.svnkit.jar}" property="svn-present"/>
-    
-    <target name="prepare-svn" if="include.module.svn.config" unless="svn-present">
-        <echo message="-------------------------------------------------------"/>
-	    <echo message="Downloading libraries required by the subversion module"/>
-	    <echo message="-------------------------------------------------------"/>
-        <get src="${include.module.svn.url}"
-      		dest="${svn.svnkit.jar}" verbose="true"/>
     </target>
 
-    <!-- Special targets for jfreechart module -->
+    <!-- 
+        Special targets for svn module 
+    -->
+    <property name="svn.svnkit.jar" value="${top.dir}/${lib.user}/svnkit.jar"/>
+    <available file="${svn.svnkit.jar}" property="svn-present"/>
+
+    <target name="prepare-svn" if="include.module.svn.config" unless="svn-present">
+        <echo message="-------------------------------------------------------"/>
+        <echo message="Downloading libraries required by the subversion module"/>
+        <echo message="-------------------------------------------------------"/>
+        <get src="${include.module.svn.url}" dest="${svn.svnkit.jar}" verbose="true"/>
+    </target>
+
+    <!-- 
+        Special targets for jfreechart module 
+    -->
     <property name="chart.jfreechart.zip" value="${top.dir}/${lib.user}/jfreechart.zip"/>
     <available classname="org.jfree.chart.JFreeChart" classpathref="classpath.core" property="jfreechart-present"/>
-    
+
     <target name="prepare-jfreechart" if="include.module.jfreechart.config" unless="jfreechart-present">
         <echo message="-------------------------------------------------------"/>
-	    <echo message="Downloading libraries required by the jfreechart module"/>
-	    <echo message="-------------------------------------------------------"/>
-        
-        <get src="${include.module.jfreechart.url}"
-      		dest="${chart.jfreechart.zip}" verbose="true"/>
+        <echo message="Downloading libraries required by the jfreechart module"/>
+        <echo message="-------------------------------------------------------"/>
+
+        <get src="${include.module.jfreechart.url}" dest="${chart.jfreechart.zip}" verbose="true"/>
 
         <unzip src="${chart.jfreechart.zip}" dest="${top.dir}/${lib.user}">
-			<patternset>
-				<include name="**/lib/jfreechart-*.jar"/>
+            <patternset>
+                <include name="**/lib/jfreechart-*.jar"/>
                 <include name="**/lib/jcommon-*.jar"/>
                 <exclude name="**/lib/jfreechart-*-*.jar"/>
-			</patternset>
-			<mapper type="flatten"/>
-		</unzip>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
 
         <delete file="${chart.jfreechart.zip}"/>
     </target>
-    
-    <!-- Special targets end -->
-    
+
+    <!-- 
+        ========================================
+        Below this line only generic build items
+        ========================================
+    -->
+
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
@@ -167,39 +188,38 @@
         <fileset dir="${top.dir}/${lib.optional}">
             <include name="*.jar"/>
         </fileset>
-		<fileset dir="${top.dir}/${lib.endorsed}">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${top.dir}/${lib.user}">
-			<include name="*.jar"/>
-		</fileset>
+        <fileset dir="${top.dir}/${lib.endorsed}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.user}">
+            <include name="*.jar"/>
+        </fileset>
         <fileset dir="${top.dir}/tools/ant/lib">
             <include name="*.jar"/>
         </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
-		<pathelement path="${top.dir}/exist-optional.jar"/>
-    	<pathelement path="${top.dir}/start.jar"/>
-		<pathelement path="${java.class.path}"/>
+        <pathelement path="${top.dir}/exist-optional.jar"/>
+        <pathelement path="${top.dir}/start.jar"/>
+        <pathelement path="${java.class.path}"/>
     </path>
-		
+
     <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql,prepare-jfreechart">
-		<mkdir dir="${classes}"/>
+        <mkdir dir="${classes}"/>
     </target>
-	
-	<target name="compile" depends="prepare">
-		<echo message="---------------------------"/>
+
+    <target name="compile" depends="prepare" description="Compile extension modules">
+        <echo message="---------------------------"/>
         <echo message="Compiling extension modules"/>
         <echo message="---------------------------"/>
 
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
-            
-		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
-			destdir="${classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${src}" 
-        	source="${build.compiler.source}" target="${build.compiler.target}">
+
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src}" source="${build.compiler.source}"
+            target="${build.compiler.target}">
             <classpath>
-            	<path refid="classpath.core"/>
+                <path refid="classpath.core"/>
             </classpath>
 
             <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
@@ -213,8 +233,8 @@
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
             <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
         </javac>
-	</target>
-	
+    </target>
+
     <target name="svn.resources" if="include.module.svn.config">
         <copy todir="${classes}/org/exist/xquery/modules/svn/">
             <fileset dir="${src}/org/exist/xquery/modules/svn/">
@@ -222,21 +242,21 @@
             </fileset>
         </copy>
     </target>
-    
-	<target name="jar" depends="compile,svn.resources">
-		<echo message="Creating exist-modules.jar ..."/>
-        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">  
-	        <manifest>
+
+    <target name="jar" depends="compile,svn.resources">
+        <echo message="Creating exist-modules.jar ..."/>
+        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">
+            <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
-	        </manifest>
-		</jar>
-	</target>
+            </manifest>
+        </jar>
+    </target>
 
-	<target name="clean">
-		<delete dir="${classes}"/>
-		<delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
-	</target>
+    <target name="clean">
+        <delete dir="${classes}"/>
+        <delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
+    </target>
 </project>
