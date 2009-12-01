@@ -178,17 +178,23 @@ public class DirectoryListFunction extends BasicFunction {
         int sizeDigits = sizeString.length();
         if (sizeDigits < 4) {
             humanSize = Long.toString(Math.abs(sizeLong));
-        } else if (sizeDigits >= 4 && sizeDigits <= 5) {
+        } else if (sizeDigits >= 4 && sizeDigits <= 6) {
             if (sizeLong < 1024) {
                 // We don't want 0KB för e.g. 1006 Bytes.
                 humanSize = Long.toString(Math.abs(sizeLong));
             } else {
-                humanSize = Math.abs((sizeLong / 1024)) + "KB";
+                humanSize = Math.abs(sizeLong / 1024) + "KB";
             }
-        } else if(sizeDigits >= 6 && sizeDigits <= 8) {
-            humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
-        } else if (sizeDigits >= 9) {
-            humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) +"GB";
+        } else if(sizeDigits >= 7 && sizeDigits <= 9) {
+            if (sizeLong < 1048576)
+                humanSize = Math.abs(sizeLong / 1024) + "KB";
+            else
+                humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
+        } else if (sizeDigits > 9) {
+            if (sizeLong < 1073741824)
+                humanSize = Math.abs((sizeLong / (1024 * 1024))) +"MB";
+            else
+                humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) +"GB";
         }
         return humanSize;
     }
