@@ -770,42 +770,45 @@ public class NativeBroker extends DBBroker {
                 }
             }
             Collection destCollection = null;
-            Lock lock = collectionsDb.getLock();
-            try {
-                lock.acquire(Lock.WRITE_LOCK);
-                //TODO : resolve URIs !!!
-                newUri = destination.getURI().append(newUri);
-                LOG.debug("Copying collection to '" + newUri + "'");
-                destCollection = getOrCreateCollection(transaction, newUri);
-                for(Iterator i = collection.iterator(this); i.hasNext(); ) {
-                    DocumentImpl child = (DocumentImpl) i.next();
-                    LOG.debug("Copying resource: '" + child.getURI() + "'");
-                    if (child.getResourceType() == DocumentImpl.XML_FILE) {
-                        //TODO : put a lock on newDoc ?
-                        DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
-                        newDoc.copyOf(child);
-                        newDoc.setDocId(getNextResourceId(transaction, destination));
-                        copyXMLResource(transaction, child, newDoc);
-                        storeXMLResource(transaction, newDoc);
-                        destCollection.addDocument(transaction, this, newDoc);
-                    } else {
-                        BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
-                        newDoc.copyOf(child);
-                        newDoc.setDocId(getNextResourceId(transaction, destination));
-                        /*
-                        byte[] data = getBinaryResource((BinaryDocument) child);
-                        storeBinaryResource(transaction, newDoc, data);
-                         */
-                        InputStream is = getBinaryResource((BinaryDocument)child);
-                        storeBinaryResource(transaction,newDoc,is);
-                        is.close();
-                        storeXMLResource(transaction, newDoc);
-                        destCollection.addDocument(transaction, this, newDoc);
+            final CollectionCache collectionsCache = pool.getCollectionsCache();
+    	    synchronized(collectionsCache) {
+                Lock lock = collectionsDb.getLock();
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+                    //TODO : resolve URIs !!!
+                    newUri = destination.getURI().append(newUri);
+                    LOG.debug("Copying collection to '" + newUri + "'");
+                    destCollection = getOrCreateCollection(transaction, newUri);
+                    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
+                        DocumentImpl child = (DocumentImpl) i.next();
+                        LOG.debug("Copying resource: '" + child.getURI() + "'");
+                        if (child.getResourceType() == DocumentImpl.XML_FILE) {
+                            //TODO : put a lock on newDoc ?
+                            DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
+                            newDoc.copyOf(child);
+                            newDoc.setDocId(getNextResourceId(transaction, destination));
+                            copyXMLResource(transaction, child, newDoc);
+                            storeXMLResource(transaction, newDoc);
+                            destCollection.addDocument(transaction, this, newDoc);
+                        } else {
+                            BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
+                            newDoc.copyOf(child);
+                            newDoc.setDocId(getNextResourceId(transaction, destination));
+                            /*
+                            byte[] data = getBinaryResource((BinaryDocument) child);
+                            storeBinaryResource(transaction, newDoc, data);
+                             */
+                            InputStream is = getBinaryResource((BinaryDocument)child);
+                            storeBinaryResource(transaction,newDoc,is);
+                            is.close();
+                            storeXMLResource(transaction, newDoc);
+                            destCollection.addDocument(transaction, this, newDoc);
+                        }
                     }
+                    saveCollection(transaction, destCollection);
+                } finally {
+                    lock.release(Lock.WRITE_LOCK);
                 }
-                saveCollection(transaction, destCollection);
-            } finally {
-                lock.release(Lock.WRITE_LOCK);
             }
 
             XmldbURI name = collection.getURI();
@@ -2027,70 +2030,73 @@ public class NativeBroker extends DBBroker {
         if(newName==null) {
         	newName = doc.getFileURI();
         }
-        Lock lock = collectionsDb.getLock();
-        try {
-            
-            lock.acquire(Lock.WRITE_LOCK);
-            // check if the move would overwrite a collection
-            if(getCollection(destination.getURI().append(newName)) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
-            DocumentImpl oldDoc = destination.getDocument(this, newName);
-            if(oldDoc != null) {
-                if(doc.getDocId() == oldDoc.getDocId())
-                    throw new PermissionDeniedException("Cannot copy resource to itself");
-                if(!destination.getPermissions().validate(getUser(), Permission.UPDATE))
-                    throw new PermissionDeniedException("Resource with same name exists in target " +
-							"collection and update is denied");
-                if(!oldDoc.getPermissions().validate(getUser(), Permission.UPDATE))
-                    throw new PermissionDeniedException("Resource with same name exists in target " +
-							"collection and update is denied");
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-                    destination.removeBinaryResource(transaction, this, oldDoc);
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+    	synchronized(collectionsCache) {
+            Lock lock = collectionsDb.getLock();
+            try {
+
+                lock.acquire(Lock.WRITE_LOCK);
+                // check if the move would overwrite a collection
+                if(getCollection(destination.getURI().append(newName)) != null)
+                    throw new PermissionDeniedException("A resource can not replace an existing collection");
+                DocumentImpl oldDoc = destination.getDocument(this, newName);
+                if(oldDoc != null) {
+                    if(doc.getDocId() == oldDoc.getDocId())
+                        throw new PermissionDeniedException("Cannot copy resource to itself");
+                    if(!destination.getPermissions().validate(getUser(), Permission.UPDATE))
+                        throw new PermissionDeniedException("Resource with same name exists in target " +
+                                "collection and update is denied");
+                    if(!oldDoc.getPermissions().validate(getUser(), Permission.UPDATE))
+                        throw new PermissionDeniedException("Resource with same name exists in target " +
+                                "collection and update is denied");
+                    if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+                        destination.removeBinaryResource(transaction, this, oldDoc);
+                    else
+                        destination.removeXMLResource(transaction, this, oldDoc.getFileURI());
+                } else {
+                    if(!destination.getPermissions().validate(getUser(), Permission.WRITE))
+                        throw new PermissionDeniedException("Insufficient privileges on target collection " +
+                                destination.getURI());
+                }
+                if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
+                {
+                    InputStream is = null;
+                    try
+                    {
+                        is = getBinaryResource((BinaryDocument) doc);
+                        destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
+                    }
+                    finally
+                    {
+                        if(is != null)
+                            is.close();
+                    }
+                }
                 else
-                    destination.removeXMLResource(transaction, this, oldDoc.getFileURI());
-            } else {
-                if(!destination.getPermissions().validate(getUser(), Permission.WRITE))
-                    throw new PermissionDeniedException("Insufficient privileges on target collection " +
-							destination.getURI());
-            }
-            if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
-            {
-                InputStream is = null;
-                try
                 {
-                    is = getBinaryResource((BinaryDocument) doc);
-                    destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
+                    DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
+                    newDoc.copyOf(doc);
+                    newDoc.setDocId(getNextResourceId(transaction, destination));
+                    newDoc.setPermissions(doc.getPermissions());
+                    newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                    try {
+                        copyXMLResource(transaction, doc, newDoc);
+                        destination.addDocument(transaction, this, newDoc);
+                        storeXMLResource(transaction, newDoc);
+                    } finally {
+                        newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+                    }
                 }
-                finally
-                {
-                    if(is != null)
-                        is.close();
-                }
+            //          saveCollection(destination);
+            } catch (EXistException e) {
+                LOG.warn("An error occurred while copying resource", e);
+            } catch (IOException e) {
+                LOG.warn("An error occurred while copying resource", e);
+            } catch (TriggerException e) {
+                throw new PermissionDeniedException(e.getMessage());
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
             }
-            else
-            {
-                DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
-                newDoc.copyOf(doc);
-                newDoc.setDocId(getNextResourceId(transaction, destination));
-                newDoc.setPermissions(doc.getPermissions());
-                newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-                try {
-	                copyXMLResource(transaction, doc, newDoc);
-	                destination.addDocument(transaction, this, newDoc);
-	                storeXMLResource(transaction, newDoc);
-                } finally {
-               	 newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-                }
-            }
-	    //          saveCollection(destination);
-        } catch (EXistException e) {
-            LOG.warn("An error occurred while copying resource", e);
-        } catch (IOException e) {
-            LOG.warn("An error occurred while copying resource", e);
-        } catch (TriggerException e) {
-            throw new PermissionDeniedException(e.getMessage());
-        } finally {
-            lock.release(Lock.WRITE_LOCK);
         }
     }
     
