@@ -34,7 +34,8 @@ declare variable $basepath := request:get-parameter('basepath', ());
 
 (: Render a function or a set of functions :)
 declare function local:render-function( $functionNode as element(xq:function)+, $showlinks as xs:boolean) as element() {
-    let $parentModule := $functionNode/ancestor::xq:xqdoc//xq:uri/text()
+    let $parentModule := $functionNode/ancestor::xq:xqdoc/xq:module/xq:uri/text()
+    let $parentModuleName := $functionNode/ancestor::xq:xqdoc/xq:module/xq:name/text()
     let $functionName := $functionNode/xq:name/text()
     let $functionSignature := $functionNode/xq:signature/text()
     let $functionDeprecated := $functionNode/xq:comment/xq:deprecated/text()
@@ -53,7 +54,7 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
                 else $functionName
             }</div>
             <hr/>
-            <div class="signature">{$functionSignature}</div>
+            <div class="signature">{if (not(starts-with($functionSignature, $parentModuleName))) then concat($parentModuleName, ':', $functionSignature) else $functionSignature}</div>
             <div class="description">{
                 for $desc in $functionParagraphs
                 return
@@ -97,8 +98,8 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
 (: Render a module or set of modules :)
 declare function local:render-module($moduleURIs as xs:string+, $functionName as xs:string?, $showlinks as xs:boolean) as element()+ {
     for $moduleURI in $moduleURIs
-	let $moduleDocs := util:extract-docs($moduleURI)
-	let $moduleName := $moduleDocs/xq:module/xq:name/text()
+	let $moduleDocs := /xq:xqdoc[xq:module/xq:uri eq $moduleURI]
+	let $moduleName := if ($moduleURI = 'http://www.w3.org/2005/xpath-functions') then 'fn' else $moduleDocs/xq:module/xq:name/text()
 	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/text()
 	order by $moduleURI
 	return 
@@ -132,13 +133,15 @@ declare function local:render-module($moduleURIs as xs:string+, $functionName as
 
 (: Constructs a URL from a module URI :)
 declare function local:moduleURI-to-URL($moduleURI as xs:string) as xs:string {
-    concat($basepath, tokenize($moduleURI, '/')[last()])
+    if ($moduleURI = 'http://www.w3.org/2005/xpath-functions') then 
+        concat($basepath, 'fn')
+    else 
+        concat($basepath, /xq:xqdoc/xq:module[xq:uri eq $moduleURI]/xq:name/text())
 };
 
 (: Constructs a URL from a module :)
 declare function local:module-to-URL($module as xs:string) as xs:string {
-    let $moduleURI := local:module-to-moduleURI($module)
-    return local:moduleURI-to-URL($moduleURI)
+    concat($basepath, $module)
 };
 
 (: Constructs a URL from a function :)
@@ -146,18 +149,23 @@ declare function local:function-to-URL($moduleURI as xs:string, $function as xs:
     concat(local:moduleURI-to-URL($moduleURI), '/', $function)
 };
 
-(: Derives a module URI from a shorthand :)
-declare function local:module-to-moduleURI($module as xs:string) as xs:string {
-    util:registered-modules()[ends-with(., $module)]
+(: Derives the module name from the module URI :)
+declare function local:moduleURI-to-module($moduleURI as xs:string) as xs:string {
+    if ($moduleURI = 'http://www.w3.org/2005/xpath-functions') then 
+        'fn'
+    else 
+        /xq:xqdoc/xq:module[xq:uri eq $moduleURI]/xq:name/text()
 };
 
 (: Lists all modules :)
 declare function local:list-modules($moduleURIs) {
     (
+    <p class="f-reload"><a href="{request:get-context-path()}/admin/admin.xql?panel=fundocs">Reload documentation</a>
+        (click here if you enabled/disabled additional modules)</p>
+    ,
     <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
-    build: {util:system-property("product-build")}.)</b> Modules have to be enabled 
-    in conf.xml to appear here.
-    </p>
+        build: {util:system-property("product-build")}, functions: {count(//xq:function)}.)</b> 
+        Modules have to be enabled in conf.xml to appear here.</p>
     ,
     <p><a href="{concat($basepath, 'all')}">Expand All</a> or select a single module:</p>
     ,
@@ -167,7 +175,7 @@ declare function local:list-modules($moduleURIs) {
         </thead>
         <tbody>{
             for $moduleURI in $moduleURIs
-            let $moduleDocs := util:extract-docs($moduleURI)
+            let $moduleDocs := /xq:xqdoc[xq:module/xq:uri eq $moduleURI]
         	let $moduleName := 
         	   if ($moduleURI eq 'http://www.w3.org/2005/xpath-functions') then 
         	       (: note: the xq:name for the xpath functions module is empty 
@@ -194,7 +202,7 @@ declare function local:breadcrumbs($module, $function, $viewall) {
         <a href="{$basepath}">Modules</a>
         {
         if ($viewall) then 
-            ' > All'
+            ' > All Modules and Functions'
         else if ($module and not($function)) then 
             (
             ' > '
@@ -235,14 +243,19 @@ declare function local:main() {
     (: Catch a request for 'all', i.e. the complete listing :) 
     let $viewall := $module eq 'all'
 
-    (: Derive proper module URIs :)
-    let $allModules := util:registered-modules()
-    let $matchingModules := if ($module) then $allModules[ends-with(., $module)] else ()
-    let $moduleURIs := if ($matchingModules) then $matchingModules else $allModules
+    (: Derive module URIs based on URL parameter $module :)
+    let $allModuleURIs := /xq:xqdoc/xq:module/xq:uri
+    let $matchingModuleURIs := if ($module) then 
+        if ($module = 'fn') then 
+            'http://www.w3.org/2005/xpath-functions' 
+        else 
+            $allModuleURIs[following-sibling::xq:name eq $module] 
+        else ()
+    let $moduleURIs := if ($matchingModuleURIs) then $matchingModuleURIs else $allModuleURIs
 
     return
         (
-        (: Show verbose module documentation :)
+        (: Show documentation for all modules:)
         if ($viewall) then 
             (
             local:breadcrumbs($module, $function, $viewall)
@@ -259,17 +272,28 @@ declare function local:main() {
             local:list-modules($moduleURIs)
             )
         (: Show a single module :)
-        else if ($module and $matchingModules) then
-            (
-            local:breadcrumbs($module, $function, $viewall)
-            ,
-            local:render-module($moduleURIs, $function, $showlinks)
-            ,
-            local:return-to-main()
-            )
-        (: Show error, since there was no matching module :)
+        else if ($module and $matchingModuleURIs) then
+            if (count($matchingModuleURIs) gt 1) then 
+                (: TODO: Add handling for resolving modules with the same 'name' :)
+                (
+                local:breadcrumbs($module, $function, $viewall)
+                ,
+                local:render-module($moduleURIs, $function, $showlinks)
+                ,
+                local:return-to-main()
+                )                
+            else
+                (
+                local:breadcrumbs($module, $function, $viewall)
+                ,
+                local:render-module($moduleURIs, $function, $showlinks)
+                ,
+                local:return-to-main()
+                )
+        (: Handle cases where there are no exact matching modules :)
         else 
             (: else if ($module and not($matchingModules)) :)
+            (: TODO add a fuzzy search :)
             (
             local:breadcrumbs((), (), $viewall)
             ,
@@ -286,7 +310,7 @@ declare function local:main() {
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>eXist Java-Based Function Modules</title>
+        <title>eXist Function Modules</title>
         <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 		<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
         <style language="text/css">
@@ -317,7 +341,7 @@ declare function local:main() {
         <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     
     <chapter>
-        <title>A RESTful browser for eXist Java-Based Function Modules</title>
+        <title>A RESTful browser for eXist Function Modules</title>
         { local:main() }
     </chapter>
 </book>
