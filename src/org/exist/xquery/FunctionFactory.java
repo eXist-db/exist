@@ -128,8 +128,6 @@ public class FunctionFactory {
 	            "Rewritten start-with as a general comparison with a right truncations");				
 				if (params.size() == 3) {
 					op.setCollation( (Expression)params.get(2));
-				} else {
-					op.setCollation( new StringValue( "?strength=identical" ) );
 				}
 				step = op;
 			}
@@ -152,8 +150,6 @@ public class FunctionFactory {
                 op.setLocation(ast.getLine(), ast.getColumn());
 				if (params.size() == 3) {
 					op.setCollation( (Expression)params.get(2));
-				} else {
-					op.setCollation( new StringValue( "?strength=identical" ) );
 				}
 				step = op;
 			}
@@ -176,8 +172,6 @@ public class FunctionFactory {
                 op.setLocation(ast.getLine(), ast.getColumn());
 				if (params.size() == 3) {
 					op.setCollation( (Expression)params.get(2));
-				} else {
-					op.setCollation( new StringValue( "?strength=identical" ) );
 				}
 				step = op;
 			}
