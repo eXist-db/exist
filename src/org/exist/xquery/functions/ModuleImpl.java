@@ -196,7 +196,9 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(QNameFunctions.localNameFromQName, QNameFunctions.class),
 		new FunctionDef(QNameFunctions.prefixFromQName, QNameFunctions.class),
 		new FunctionDef(QNameFunctions.namespaceURIFromQName, QNameFunctions.class),
-        new FunctionDef(FunResolveQName.signature, FunResolveQName.class)
+        new FunctionDef(FunResolveQName.signature, FunResolveQName.class),
+		new FunctionDef(FunEquals.signatures[0], FunEquals.class),
+        new FunctionDef(FunEquals.signatures[1], FunEquals.class)
 	};
     
     static {

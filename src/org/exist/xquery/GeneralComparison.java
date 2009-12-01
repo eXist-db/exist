@@ -43,6 +43,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.StringValue;
 
 import java.text.Collator;
 import java.util.Iterator;
@@ -81,7 +82,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 	 * Extra argument (to standard functions starts-with/contains etc.)
 	 * to indicate the collation to be used for string comparisons.
 	 */
-	protected Expression collationArg = null;
+	protected Object collationArg = null;
 	
 	/**
 	 * Set to true if this expression is called within the where clause
@@ -298,16 +299,24 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     LOG.trace("Using QName range index for key: " + key.getStringValue());
                 NodeSet temp;
                 NodeSet contextSet = useContext ? contextSequence.toNodeSet() : null;
+				Collator collator = ( collationArg != null ? getCollator( contextSequence ) : null );
                 if(truncation == Constants.TRUNC_NONE) {
                     temp =
                         context.getBroker().getValueIndex().find(relation, contextSequence.getDocumentSet(),
-                                contextSet, NodeSet.DESCENDANT, contextQName, (Indexable)key);
+                                contextSet, NodeSet.DESCENDANT, contextQName, (Indexable)key, collator);
                     hasUsedIndex = true;
                 } else {
                     try {
-                        temp = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), contextSet,
-                                NodeSet.DESCENDANT, getRegexp(key.getStringValue()).toString(),
-                                contextQName, DBBroker.MATCH_REGEXP);
+						String regex;
+						
+						if( collator == null ) {
+							regex = getRegexp(key.getStringValue()).toString();
+						} else {
+							// Don't change the key if we're going to do a Collator-based comparison
+							regex = key.getStringValue();
+						}
+						
+						temp = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, regex, contextQName, DBBroker.MATCH_REGEXP, collator, truncation);
                         hasUsedIndex = true;
                     } catch (EXistException e) {
                         throw new XPathException(this, "Error during index lookup: " + e.getMessage(), e);
@@ -340,7 +349,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         Sequence result;
-        
+
         // if the context sequence hasn't changed we can return a cached result
 		if (cached != null && cached.isValid(contextSequence, contextItem)) {
 			LOG.debug("Using cached results");
@@ -352,11 +361,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 			// if we were optimizing and the preselect did not return anything,
 	        // we won't have any matches and can return
-	        if (preselectResult != null && preselectResult.isEmpty())
-	            result = Sequence.EMPTY_SEQUENCE;	        
-	        else {
+	        if (preselectResult != null && preselectResult.isEmpty()) {
+	            result = Sequence.EMPTY_SEQUENCE;
+			} else {
 		        if (contextStep == null || preselectResult == null) {
-		            /*
+					/*
 		             * If we are inside a predicate and one of the arguments is a node set,
 		             * we try to speed up the query by returning nodes from the context set.
 		             * This works only inside a predicate. The node set will always be the left
@@ -366,21 +375,21 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		                    !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM) &&
 		                    Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
                             (contextSequence == null || contextSequence.isPersistentSet())) {
-		
-		                if(contextItem != null)
+						
+						if(contextItem != null)
 		                    contextSequence = contextItem.toSequence();
 		
 		                if ((!Dependency.dependsOn(rightOpDeps, Dependency.CONTEXT_ITEM))) {
-		                    result = quickNodeSetCompare(contextSequence);
+							result = quickNodeSetCompare(contextSequence);
 		                } else {
-		            		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+							NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
 		                    result = nodeSetCompare(nodes, contextSequence);
 		                }
 		            } else {
-		                result = genericCompare(contextSequence, contextItem);
+						result = genericCompare(contextSequence, contextItem);
 		            }
 		        } else {
-                    contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);		
+					contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);		
 		            result = getLeft().eval(contextSequence).toNodeSet();
 		        }
 		    }
@@ -575,8 +584,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 	    if(indexType != Type.ITEM) {
 	    	if (LOG.isTraceEnabled())
 	    		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
-
-            boolean indexScan = false;
+			
+			boolean indexScan = false;
             if (contextSequence != null) {
                 IndexFlags iflags = checkForQNameIndex(idxflags, context, contextSequence, contextQName);
                 boolean indexFound = false;
@@ -643,20 +652,22 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		        	if (LOG.isTraceEnabled())
 		        		LOG.trace("Checking if range index can be used for key: " + key.getStringValue());
 
-		        	if (Type.subTypeOf(key.getType(), indexType)) {
+					Collator collator = ( collationArg != null ? getCollator( contextSequence ) : null );
+					
+					if (Type.subTypeOf(key.getType(), indexType)) {
 			        	if(truncation == Constants.TRUNC_NONE) {
 			        		if (LOG.isTraceEnabled())
 			        			LOG.trace("Using range index for key: " + key.getStringValue());
-
-			        		//key without truncation, find key
+							
+							//key without truncation, find key
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
-		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
+		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'" );
 
                             NodeSet ns;
                             if (indexScan)
-                                ns = context.getBroker().getValueIndex().findAll(relation, docs, nodes, NodeSet.ANCESTOR, (Indexable)key);
+                                ns = context.getBroker().getValueIndex().findAll(relation, docs, nodes, NodeSet.ANCESTOR, (Indexable)key, collator);
                             else
-                                ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key);
+                                ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key, collator);
                             hasUsedIndex = true;
 
 		                    if (result == null)
@@ -668,19 +679,27 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 				        	//key with truncation, match key
                             if (LOG.isTraceEnabled())
                                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
-		                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
+		                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'" );
 
                             if (LOG.isTraceEnabled())
 			        			LOG.trace("Using range index for key: " + key.getStringValue());
                             
-                            try {
+							try {
                                 NodeSet ns;
+								
+								String regex;
+								
+								if( collator == null ) {
+									regex = getRegexp(key.getStringValue()).toString();
+								} else {
+									// Don't change the key if we're going to do a Collator-based comparison
+									regex = key.getStringValue();
+								}
+								
                                 if (indexScan)
-                                    ns = context.getBroker().getValueIndex().matchAll(docs, nodes, NodeSet.ANCESTOR,
-                                        getRegexp(key.getStringValue()).toString(), DBBroker.MATCH_REGEXP, 0, true);
+                                    ns = context.getBroker().getValueIndex().matchAll(docs, nodes, NodeSet.ANCESTOR, regex, DBBroker.MATCH_REGEXP, 0, true, collator, truncation);
                                 else
-                                    ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
-                                        getRegexp(key.getStringValue()).toString(), contextQName, DBBroker.MATCH_REGEXP);
+                                    ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR, regex, contextQName, DBBroker.MATCH_REGEXP, collator, truncation);
 								hasUsedIndex = true;
 
 								if (result == null)
@@ -920,11 +939,21 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 	protected Collator getCollator(Sequence contextSequence) throws XPathException {
 		if(collationArg == null)
 			return context.getDefaultCollator();
-		String collationURI = collationArg.eval(contextSequence).getStringValue();
+		
+		String collationURI;
+			
+		if( collationArg instanceof Expression ) {
+			collationURI = ((Expression)collationArg).eval(contextSequence).getStringValue();
+		} else if( collationArg instanceof StringValue ) {
+			collationURI = ((StringValue)collationArg).getStringValue();
+		} else {
+			return context.getDefaultCollator();
+		}
+		
 		return context.getCollator(collationURI);
 	}
 	
-	public void setCollation(Expression collationArg) {
+	public void setCollation(Object collationArg) {
 		this.collationArg = collationArg;
 	}
 

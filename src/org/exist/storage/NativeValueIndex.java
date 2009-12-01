@@ -44,6 +44,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
+import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
@@ -61,6 +62,7 @@ import org.w3c.dom.Node;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -626,32 +628,48 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.release(Lock.WRITE_LOCK);
         }
     }
-
-    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
+	
+	public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value) throws TerminatedException 
+	{
+		return( find( relation, docs, contextSet, axis, qname, value, null) );
+	}
+	
+    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator)
             throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null)
-            findAll(relation, docs, contextSet, axis, null, value, result);
+            findAll(relation, docs, contextSet, axis, null, value, result, collator);
         else {
             List qnames = new LinkedList();
             qnames.add(qname);
-            return findAll(relation, docs, contextSet, axis, qnames, value, result);
+            return findAll(relation, docs, contextSet, axis, qnames, value, result, collator);
         }
         return result;
     }
 
-    public NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value) throws TerminatedException {
+	public NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value) throws TerminatedException 
+	{
+		return( findAll( relation, docs, contextSet, axis, value, null) );
+	}
+	
+    public NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value, Collator collator) throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
-        findAll(relation, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
-        findAll(relation, docs, contextSet, axis, null, value, result);
+        findAll(relation, docs, contextSet, axis, getDefinedIndexes(docs), value, result, collator);
+        findAll(relation, docs, contextSet, axis, null, value, result, collator);
         return result;
     }
 
+  	private NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames, Indexable value, NodeSet result) throws TerminatedException
+	{
+		return( findAll( relation, docs, contextSet, axis, qnames, value, result, null) );
+	}
+							
+							
     /** find
 	 * @param relation binary operator used for the comparison
 	 * @param value right hand comparison value */
     private NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames,
-                            Indexable value, NodeSet result)
+                            Indexable value, NodeSet result, Collator collator)
             throws TerminatedException {
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
@@ -714,40 +732,60 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return result;
     }
 
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type)
+	public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type) throws TerminatedException, EXistException
+	{
+		return( match( docs, contextSet, axis, expr, qname, type, null, 0) );
+	}
+			
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, Collator collator, int truncation)
             throws TerminatedException, EXistException {
-        return match(docs, contextSet, axis, expr, qname, type, 0, true);
+        return match(docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation);
     }
-
+	
+	public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery) throws TerminatedException, EXistException 
+	{
+		return( match( docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, 0) );
+	}
+	
     public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type,
-                         int flags, boolean caseSensitiveQuery)
+                         int flags, boolean caseSensitiveQuery, Collator collator, int truncation)
             throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null)
-            matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
+            matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
         else {
             List qnames = new LinkedList();
             qnames.add(qname);
-            matchAll(docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result);
+            matchAll(docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation);
         }
         return result;
     }
+	
+	public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery) throws TerminatedException, EXistException 
+	{
+		return( matchAll( docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, 0) );
+	}
 
     public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags,
-                            boolean caseSensitiveQuery)
+                            boolean caseSensitiveQuery, Collator collator, int truncation)
             throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
-        matchAll(docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result);
-        matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
+        matchAll(docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result, collator, truncation);
+        matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
         return result;
     }
-
+	
+	public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result) throws TerminatedException, EXistException 
+	{     
+		return( matchAll( docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, null, 0) );
+	}
+	
     /** Regular expression search
 	 * @param type  like type argument for {@link org.exist.storage.RegexMatcher} constructor
 	 * @param flags like flags argument for {@link org.exist.storage.RegexMatcher} constructor
 	 *  */
     public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags,
-                            boolean caseSensitiveQuery, NodeSet result)
+                            boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation)
         throws TerminatedException, EXistException {        
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
@@ -764,7 +802,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.debug("Match will begin index scan at '" + startTerm + "'");
     		}
         }
-		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
+
+		TermMatcher comparator;
+		
+		if( collator == null ) {
+			comparator = new RegexMatcher(expr, type, flags);
+		} else {
+			comparator = new CollatorMatcher( expr, truncation, collator );
+		}
+
         final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
@@ -1014,6 +1060,61 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return this.getClass().getName() + " at "+ dbValues.getFile().getName() +
         " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")";
     }
+	
+	private class CollatorMatcher implements TermMatcher 
+	{
+    	private String expr;
+	    private int truncation;
+		private Collator collator;
+
+	    public CollatorMatcher( String expr, int truncation, Collator collator ) throws EXistException 
+		{ 
+	        if( collator == null ) {
+	            throw( new EXistException( "Collator must be non-null" ) );
+			} else {
+				switch( truncation ) {
+					case Constants.TRUNC_NONE:
+					case Constants.TRUNC_LEFT:
+					case Constants.TRUNC_RIGHT:
+					case Constants.TRUNC_BOTH:
+					case Constants.TRUNC_EQUALS:
+						this.expr = expr;
+						this.truncation = truncation;
+						this.collator = collator;
+						break;
+					
+					default:
+						throw( new EXistException( "Invalid truncation value: " + truncation ) );
+				}
+			}        
+	    }
+
+		public boolean matches( CharSequence term ) 
+		{
+	        boolean matches = false;
+			
+			switch( truncation ) {
+				case Constants.TRUNC_LEFT:
+					matches = Collations.endsWith( collator, term.toString(), expr );
+					break;
+					
+				case Constants.TRUNC_RIGHT:
+					matches = Collations.startsWith( collator, term.toString(), expr );
+					break;
+					
+				case Constants.TRUNC_BOTH:
+					matches = Collations.contains( collator, term.toString(), expr );
+					break;
+					
+				case Constants.TRUNC_NONE:
+				case Constants.TRUNC_EQUALS:
+				default:
+					matches = Collations.equals( collator, term.toString(), expr );
+			}
+			
+			return( matches );
+		}
+	}
     
 	/** TODO document */
     class SearchCallback implements BTreeCallback {

@@ -2258,8 +2258,8 @@ public class XQueryContext {
         try {
         	reader = source.getReader();
             if (reader == null) {
-                throw new XPathException("failed to load module '" + namespaceURI + "' from '" + source +
-                    ". Source not found. ");
+                throw new XPathException("failed to load module: '" + namespaceURI + "' from: '" + source + "', location: '" + location +
+                    "'. Source not found. ");
             }
         } catch (IOException e) {
         	throw new XPathException("IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e);
