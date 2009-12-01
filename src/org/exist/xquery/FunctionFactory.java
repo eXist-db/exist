@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.functions.ExtNear;
 import org.exist.xquery.functions.ExtPhrase;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 public class FunctionFactory {
@@ -124,9 +125,12 @@ public class FunctionFactory {
                 op.setLocation(ast.getLine(), ast.getColumn());
 				//TODO : not sure for parent -pb
 	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-	            "Rewritten start-with as a general comparison with a right truncature");				
-				if (params.size() == 3)
-					op.setCollation((Expression)params.get(2));
+	            "Rewritten start-with as a general comparison with a right truncations");				
+				if (params.size() == 3) {
+					op.setCollation( (Expression)params.get(2));
+				} else {
+					op.setCollation( new StringValue( "?strength=identical" ) );
+				}
 				step = op;
 			}
 	
@@ -144,10 +148,13 @@ public class FunctionFactory {
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
 				//TODO : not sure for parent -pb
 	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-	            "Rewritten ends-with as a general comparison with a left truncature");
+	            "Rewritten ends-with as a general comparison with a left truncations");
                 op.setLocation(ast.getLine(), ast.getColumn());
-				if (params.size() == 3)
-					op.setCollation((Expression)params.get(2));
+				if (params.size() == 3) {
+					op.setCollation( (Expression)params.get(2));
+				} else {
+					op.setCollation( new StringValue( "?strength=identical" ) );
+				}
 				step = op;
 			}
 	
@@ -165,12 +172,40 @@ public class FunctionFactory {
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
 				//TODO : not sure for parent -pb
 	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
-	            "Rewritten contains as a general comparison with left and right truncatures");
+	            "Rewritten contains as a general comparison with left and right truncations");
                 op.setLocation(ast.getLine(), ast.getColumn());
-				if (params.size() == 3)
-					op.setCollation((Expression)params.get(2));
+				if (params.size() == 3) {
+					op.setCollation( (Expression)params.get(2));
+				} else {
+					op.setCollation( new StringValue( "?strength=identical" ) );
+				}
 				step = op;
 			}
+			
+			// equals(node-set, string)
+			if (local.equals("equals")) {
+				if (params.size() < 2)
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function equals() requires two or three arguments");
+				if (params.size() > 3)
+					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function equals() requires two or three arguments");
+				PathExpr p0 = (PathExpr) params.get(0);
+				PathExpr p1 = (PathExpr) params.get(1);
+				if (p1.getLength() == 0)
+					throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to equals is empty");
+				GeneralComparison op =
+					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_EQUALS);
+				//TODO : not sure for parent -pb
+	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+	            "Rewritten contains as a general comparison with no truncations");
+                op.setLocation(ast.getLine(), ast.getColumn());
+				if (params.size() == 3) {
+					op.setCollation( (Expression)params.get(2));
+				} else {
+					op.setCollation( new StringValue( "?strength=identical" ) );
+				}
+				step = op;
+			}
+			
 		// Check if the namespace belongs to one of the schema namespaces.
 		// If yes, the function is a constructor function
 		} else if(uri.equals(Namespaces.SCHEMA_NS) || uri.equals(Namespaces.XPATH_DATATYPES_NS)) {

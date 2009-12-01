@@ -46,7 +46,7 @@ public class ClassLoaderSource extends URLSource {
             source = source.substring(1);
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         URL url = cl.getResource(source);
-        if(url == null)
+		if(url == null)
             throw new IOException("Source not found: " + source);
         setURL(url);
     }
