@@ -130,9 +130,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
         SAXParser saxParser = saxFactory.newSAXParser();
         XMLReader xmlReader = saxParser.getXMLReader();
-        setReaderFeature(xmlReader, "http://xml.org/sax/features/external-general-entities", true);
-        setReaderFeature(xmlReader, "http://xml.org/sax/features/external-parameter-entities", true);
-        setReaderFeature(xmlReader, "http://apache.org/xml/features/nonvalidating/load-external-dtd", true);
+
         // Setup grammar cache
         if(grammarPool!=null){
             setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);

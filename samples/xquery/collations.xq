@@ -1,6 +1,6 @@
-declare variable $words :=
+declare variable $words {
 	("wußte", "wüßte", "Apfel", "Äpfel", "Buch", "Bücher", "Jagen", "Jäger", "Bauer", "Bäuerin")
-;
+};
 
 <words>
 {

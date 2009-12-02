@@ -2,20 +2,19 @@
 <project basedir="." default="store" name="exist-ant-tasks">
 
 	<path id="classpath.core">
-		<fileset dir="${exist.home}/lib/core">
+		<fileset dir="lib/core">
 			<include name="*.jar"/>
 		</fileset>
-		<fileset dir="${exist.home}/tools/ant/lib">
-			<include name="*.jar"/>
-		</fileset>
-		<pathelement path="${exist.home}/exist.jar"/>
-		<pathelement path="${exist.home}/exist-optional.jar"/>
+		<pathelement path="exist.jar"/>
+		<pathelement path="exist-optional.jar"/>
 	</path>
 
-	<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"
-		classpathref="classpath.core" loaderref="classpath.core.loader"/>
-	
+	<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+		<classpath refid="classpath.core"/>
+	</typedef>
+
 	<target name="store" xmlns:xmldb="http://exist-db.org/ant">
+
 		<xmldb:store uri="xmldb:exist:///db/shakespeare/plays" initdb="true" createcollection="true">
 			<fileset dir="samples/shakespeare" includes="*.xml"/>
 		</xmldb:store>

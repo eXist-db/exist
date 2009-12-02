@@ -7,10 +7,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     
     <!-- Section: APPENDERS -->
-
- <appender name="socket" class="org.apache.log4j.net.SocketHubAppender"> 
- </appender>   
-
+    
     <!-- 
          writes log messages to the console. It outputs file name,
          method name and line number of the caller. This is slow,
@@ -201,7 +198,7 @@
     
     <root>
         <priority value="debug"/>
-        <appender-ref ref="console"/>
+        <appender-ref ref="exist.core"/>
     </root>
     
 </log4j:configuration>
