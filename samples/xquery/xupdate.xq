@@ -2,7 +2,7 @@ xquery version "1.0";
 
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
-declare variable $data :=
+declare variable $data {
     <todo-list>
         <todo>
             <description>Add support for binary objects</description>
@@ -12,9 +12,9 @@ declare variable $data :=
             <status>finished</status>
         </todo>
     </todo-list>
-;
+};
 
-declare variable $xupdate :=
+declare variable $xupdate {
     <xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
         <xu:rename select="/todo-list/todo/date">
             start-date
@@ -33,7 +33,7 @@ declare variable $xupdate :=
             closed
         </xu:update>
     </xu:modifications>
-;
+};
 
 let $isLoggedIn := xmldb:login("xmldb:exist:///db", "admin", ""),
     $collection := xmldb:create-collection("xmldb:exist:///db", "test"),

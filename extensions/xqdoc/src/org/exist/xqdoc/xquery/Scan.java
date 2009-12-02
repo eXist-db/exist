@@ -95,7 +95,7 @@ public class Scan extends BasicFunction {
                                 "declares a wrong mime-type");
                     }
                     source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
-                    name = doc.getFileURI().toString();
+                    name = doc.getURI().toString();
                 } catch (URISyntaxException e) {
                     throw new XPathException(this, "invalid module uri: " + uri + ": " + e.getMessage(), e);
                 } catch (LockException e) {

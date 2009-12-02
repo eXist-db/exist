@@ -1,9 +1,9 @@
 xquery version "1.0";
 
-declare variable $months :=
+declare variable $months {
 	("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
 	"Nov", "Dec")
-;
+};
 
 declare function local:format-date($date as xs:dateTime) as xs:string {
 	string-join((

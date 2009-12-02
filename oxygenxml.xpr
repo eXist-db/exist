@@ -16,11 +16,7 @@
                     </entry>
                     <entry>
                         <String xml:space="preserve">xquery.options.transformation.engine.v9</String>
-                        <String xml:space="preserve">Localhost8080</String>
-                    </entry>
-                    <entry>
-                        <String xml:space="preserve">xquery.size.limit.sequence.view</String>
-                        <Integer xml:space="preserve">2</Integer>
+                        <String xml:space="preserve">localhost</String>
                     </entry>
                     <entry>
                         <String xml:space="preserve">xquery.wrap.result</String>
@@ -185,6 +181,7 @@
             <folder name="admin">
                 <folder name="scripts">
                     <file name="webapp/admin/scripts/prettify.js"/>
+                    <file name="webapp/admin/scripts/utilities.js"/>
                 </folder>
                 <folder name="styles">
                     <file name="webapp/admin/styles/prettify.css"/>
@@ -3374,15 +3371,22 @@
                     <file name="webapp/xquery/resources/powered.gif"/>
                 </folder>
                 <folder name="scripts">
-                    <folder name="syntax"/>
+                    <folder name="syntax">
+                        <file
+                            name="webapp/xquery/scripts/syntax/sh-min.js"
+                        />
+                    </folder>
                     <file name="webapp/xquery/scripts/fundocs.js"/>
                     <file name="webapp/xquery/scripts/svnlog.js"/>
                 </folder>
                 <folder name="styles">
                     <file name="webapp/xquery/styles/acronyms.css"/>
+                    <file name="webapp/xquery/styles/default-style.css"/>
                     <file name="webapp/xquery/styles/docsearch.css"/>
                     <file name="webapp/xquery/styles/functions.css"/>
                     <file name="webapp/xquery/styles/fundocs.css"/>
+                    <file name="webapp/xquery/styles/niftyCorners.css"/>
+                    <file name="webapp/xquery/styles/niftycube.js"/>
                     <file name="webapp/xquery/styles/svn.css"/>
                     <file name="webapp/xquery/styles/xquery.css"/>
                 </folder>
@@ -3447,6 +3451,7 @@
                 <file name="webapp/xquery/json-test.xql"/>
                 <file name="webapp/xquery/login.css"/>
                 <file name="webapp/xquery/login.xql"/>
+                <file name="webapp/xquery/logo.jpg"/>
                 <file name="webapp/xquery/search.xql"/>
                 <file name="webapp/xquery/session.xql"/>
                 <file name="webapp/xquery/sidebar.xml"/>
