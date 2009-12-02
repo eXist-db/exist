@@ -16,23 +16,23 @@
   <property name="svn.patch.file" value="exist.patch"/>
 
   <property name="javasvn.jar" location="${svn.svnkit.jar}"/>
-  <available file="${javasvn.jar}" property="svn-present"/>
+  <available classname="org.tmatesoft.svn.cli.SVN" classpath="classpath.core" property="svn-present"/>
 
   <!-- 
     Try to read SVN info from entries-file (if file exist).
     Fallback to VERSION.txt if subversion is not available.
   -->
   <target name="svn-prepare" if="svn-present">
+    <echo>Determining SVN revision</echo>
     <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
       <classpath refid="classpath.core"/>
     </taskdef>
 
     <tstamp/>
 
-<!-- url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="anonymous"
-      password="anonymous" -->
     <svninfo />
 
+    <echo>Updating VERSION.txt</echo>
     <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit)">
       <entry key="project.version" value="${project.version}"/>
       <entry key="project.build" value="${DSTAMP}"/>
