@@ -490,6 +490,7 @@ public class Indexer extends Observable implements ContentHandler,
 	}
 
 	public void skippedEntity(String name) {
+        System.out.println("Skipped entity: " + name);
 	}
 
 	public void startCDATA() {
@@ -729,6 +730,7 @@ public class Indexer extends Observable implements ContentHandler,
 	}
 
 	public void startEntity(String name) {
+        System.out.println("Start entity: " + name);
 	}
 
 	public void startPrefixMapping(String prefix, String uri) {

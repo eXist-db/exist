@@ -73,7 +73,7 @@ restore_library_path() {
 
 set_client_java_options() {
     if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
-	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";
+	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx2048m -Dfile.encoding=UTF-8";
     fi
     JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
 }

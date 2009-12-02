@@ -57,7 +57,7 @@ public class DtdEntityTest extends EmbeddedExistTester {
 
     }
 
-    @Test @Ignore("Enitiy resolve bug")
+    @Test
     public void bugloadWithEntities() {
 
         String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" 
