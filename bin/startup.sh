@@ -44,7 +44,7 @@ set_locale_lang;
 # enable the JMX agent? If so, concat to $JAVA_OPTIONS:
 check_jmx_status;
 
-"${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} \
+"${JAVA_HOME}"/bin/java -agentlib:yjpagent ${JAVA_OPTIONS} ${OPTIONS} \
 	${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" \
 	jetty ${JAVA_OPTS[@]}
 

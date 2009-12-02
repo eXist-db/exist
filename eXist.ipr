@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project relativePaths="true" version="4">
+<project version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
@@ -42,10 +42,6 @@
     <option name="PROJECT_PROFILE" />
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
   </component>
-  <component name="CodeStyleSettingsManager">
-    <option name="PER_PROJECT_SETTINGS" />
-    <option name="USE_PER_PROJECT_SETTINGS" value="false" />
-  </component>
   <component name="ColorBrowser">
     <indexHtml>0</indexHtml>
     <indexColor>0</indexColor>
@@ -55,7 +51,6 @@
   </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
-    <option name="DEPLOY_AFTER_MAKE" value="0" />
     <excludeFromCompile>
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/xquery/modules/spatial/FunGeometricProperties.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndexWorker.java" />
@@ -94,6 +89,7 @@
       <entry name="?*.tld" />
       <entry name="?*.config" />
     </wildcardResourcePatterns>
+    <annotationProcessing enabled="false" useClasspath="true" />
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright />
@@ -128,18 +124,6 @@
     <option name="OUTPUT_DIRECTORY" />
   </component>
   <component name="IdProvider" IDEtalkID="EDCB317F9C51C9BBC9F54E158B17D480" />
-  <component name="InspectionProjectProfileManager">
-    <option name="PROJECT_PROFILE" value="Project Default" />
-    <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
-    <scopes />
-    <profiles>
-      <profile version="1.0" is_locked="false">
-        <option name="myName" value="Project Default" />
-        <option name="myLocal" value="false" />
-      </profile>
-    </profiles>
-    <list size="0" />
-  </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="false" />
@@ -308,7 +292,6 @@
   <component name="ProjectDetails">
     <option name="projectName" value="eXist" />
   </component>
-  <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectKey">
     <option name="state" value="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/eXist.ipr" />
   </component>
@@ -317,7 +300,7 @@
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6 (3)" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
@@ -370,17 +353,16 @@
   <component name="libraryTable">
     <library name="tools">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/tools/jetty/lib/org.mortbay.jetty.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
         <root url="file://$PROJECT_DIR$/tools/ant/lib" />
         <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />
+        <root url="file://$PROJECT_DIR$/tools/jetty/lib" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../Development/jetty-5.1.12/src" />
-      </SOURCES>
+      <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/jetty/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tools/wrapper/lib" recursive="false" />
     </library>
     <library name="core">
@@ -412,7 +394,9 @@
         <root url="file://$PROJECT_DIR$/lib/endorsed" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../Applications/xerces-2_9_1/src" />
+      </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
     </library>
     <library name="cocoon">
@@ -444,12 +428,14 @@
         <root url="file://$PROJECT_DIR$/extensions/fluent/lib" />
         <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
         <root url="file://$PROJECT_DIR$/lib/extensions" />
+        <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/xqdoc/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
     <library name="main">
