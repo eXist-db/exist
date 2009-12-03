@@ -111,6 +111,14 @@
 			The specified number corresponds to the number of nodes the
 			buffer can hold, in thousands. Usually, a good default could be
 			nodesBuffer="1000".
+    
+         - cacheShrinkThreshold:
+            The minimum number of pages that must be read from a
+            cache between check intervals to be not considered for 
+            shrinking. This is a measure for the "load" of the cache. Caches
+            with high load will never be shrinked. A negative value means that
+            shrinkage will not be performed.
+    
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
@@ -121,7 +129,7 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
-        files="@dataDir@" pageSize="4096" nodesBuffer="-1">
+        files="@dataDir@" pageSize="4096" nodesBuffer="-1" cacheShrinkThreshold="10000">
 
         <!--
             Specifies the default permissions for all resources and collections
