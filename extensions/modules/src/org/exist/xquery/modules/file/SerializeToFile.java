@@ -77,12 +77,38 @@ public class SerializeToFile extends BasicFunction
                         },
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
                 ),
+		new FunctionSignature(
+			new QName( FN_SERIALIZE_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX ),
+			"Writes the node set into a file on the file system, optionally appending to it. " +
+			"$parameters contains a sequence of zero or more serialization parameters specified as " +
+			"key=value pairs. The serialization options are the same as those recognized by " +
+			"\"declare option exist:serialize\". " +
+			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
+			"called from.  This method is only available to the DBA role.",
+			new SequenceType[] { 
+				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
+				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file" ),
+				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" ),
+				new FunctionParameterSequenceType( "append", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Should content be appended?")
+                        },
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
+                ),
                 new FunctionSignature(
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
 			"Writes binary data into a file on the file system.  This method is only available to the DBA role.",
 			new SequenceType[]{
 				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
 				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file")
+                        },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
+                ),
+                new FunctionSignature(
+			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
+			"Writes binary data into a file on the file system, optionally appending the content.  This method is only available to the DBA role.",
+			new SequenceType[]{
+				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
+				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file"),
+				new FunctionParameterSequenceType("append", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Should content be appended?")
                         },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
                 )
@@ -128,13 +154,15 @@ public class SerializeToFile extends BasicFunction
             {
                 //parse serialization options from third argument to function
                 Properties outputProperties = parseXMLSerializationOptions( args[2].iterate() );
+                boolean doAppend = (args.length > 3) && "true".equals(args[3].itemAt(0).getStringValue());
 
                 //do the serialization
-                serializeXML(args[0].iterate(), outputProperties, file);
+                serializeXML(args[0].iterate(), outputProperties, file, doAppend);
             }
             else if(isCalledAs(FN_SERIALIZE_BINARY_LN))
             {
-                serializeBinary((Base64Binary)args[0].itemAt(0), file);
+                boolean doAppend = (args.length > 2) && "true".equals(args[2].itemAt(0).getStringValue());
+                serializeBinary((Base64Binary)args[0].itemAt(0), file, doAppend);
             }
             else
             {
@@ -162,12 +190,12 @@ public class SerializeToFile extends BasicFunction
 	}
 	
 	
-	private void serializeXML( SequenceIterator siNode, Properties outputProperties, File file ) throws XPathException
+	private void serializeXML( SequenceIterator siNode, Properties outputProperties, File file, boolean doAppend ) throws XPathException
 	{
 		// serialize the node set
 		SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 		try {
-                        OutputStream os = new FileOutputStream(file);
+                        OutputStream os = new FileOutputStream(file, doAppend);
 			String encoding = outputProperties.getProperty( OutputKeys.ENCODING, "UTF-8" );
 			Writer writer = new OutputStreamWriter( os, encoding );
 			
@@ -198,11 +226,11 @@ public class SerializeToFile extends BasicFunction
 		}
 	}
 
-    private void serializeBinary(Base64Binary binary, File file) throws XPathException
+    private void serializeBinary(Base64Binary binary, File file, boolean doAppend) throws XPathException
     {
         try
         {
-            OutputStream fos = new BufferedOutputStream(new FileOutputStream(file));
+            OutputStream fos = new BufferedOutputStream(new FileOutputStream(file, doAppend));
 
             fos.write(binary.getBinaryData());
 
