@@ -64,6 +64,28 @@
     <condition property="include.module.jfreechart.config">
         <istrue value="${include.module.jfreechart}"/>
     </condition>
+    
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.endorsed}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.user}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+        <pathelement path="${top.dir}/exist-optional.jar"/>
+        <pathelement path="${top.dir}/start.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
 
     <!-- 
         Special targets for XSLFO module 
@@ -180,28 +202,6 @@
         Below this line only generic build items
         ========================================
     -->
-
-    <path id="classpath.core">
-        <fileset dir="${top.dir}/${lib.core}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.optional}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.endorsed}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.user}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/tools/ant/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <pathelement path="${top.dir}/exist.jar"/>
-        <pathelement path="${top.dir}/exist-optional.jar"/>
-        <pathelement path="${top.dir}/start.jar"/>
-        <pathelement path="${java.class.path}"/>
-    </path>
 
     <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql,prepare-jfreechart">
         <mkdir dir="${classes}"/>
