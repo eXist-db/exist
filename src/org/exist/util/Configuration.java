@@ -724,6 +724,16 @@ public class Configuration implements ErrorHandler
                 LOG.warn(nfe);
             }
         }
+		
+		String cacheShrinkThreshold = con.getAttribute(DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE);
+        if (cacheShrinkThreshold != null) {
+            try {
+                config.put(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, new Integer(cacheShrinkThreshold));
+                LOG.debug(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + ": " + config.get(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY));
+            } catch (NumberFormatException nfe) {
+                LOG.warn(nfe);
+            }
+        }
         
         String collectionCache = con.getAttribute(CollectionCacheManager.CACHE_SIZE_ATTRIBUTE);
         if (collectionCache != null) {

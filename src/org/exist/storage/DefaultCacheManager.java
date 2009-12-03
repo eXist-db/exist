@@ -73,13 +73,17 @@ public class DefaultCacheManager implements CacheManager {
      * The minimum number of pages that must be read from a
      * cache between check intervals to be not considered for 
      * shrinking. This is a measure for the "load" of the cache. Caches
-     * with high load will never be shrinked.
+     * with high load will never be shrinked. A negative value means that
+	 * shrinkage will not be performed.
      */
-    public final static int SHRINK_THRESHOLD = 10000;
+    public final static int DEFAULT_SHRINK_THRESHOLD = 10000;
     
     public static int DEFAULT_CACHE_SIZE = 64;
     public static final String CACHE_SIZE_ATTRIBUTE = "cacheSize";
     public static final String PROPERTY_CACHE_SIZE = "db-connection.cache-size";
+    
+	public static final String SHRINK_THRESHOLD_ATTRIBUTE = "cacheShrinkThreshold";
+    public static final String SHRINK_THRESHOLD_PROPERTY  = "db-connection.cache-shrink-threshold";
     
     /** Caches maintained by this class */
     private List caches = new ArrayList();
@@ -105,6 +109,16 @@ public class DefaultCacheManager implements CacheManager {
 
     private int pageSize;
 
+	 /**
+     * The minimum number of pages that must be read from a
+     * cache between check intervals to be not considered for 
+     * shrinking. This is a measure for the "load" of the cache. Caches
+     * with high load will never be shrinked. A negative value means that
+	 * shrinkage will not be performed.
+     */
+		
+	private int shrinkThreshold =  DEFAULT_SHRINK_THRESHOLD;
+
     /**
      * Signals that a resize had been requested by a cache, but
      * the request could not be accepted during normal operations.
@@ -124,6 +138,9 @@ public class DefaultCacheManager implements CacheManager {
         if ((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0) {
             cacheSize = DEFAULT_CACHE_SIZE;
         }
+		
+		shrinkThreshold = pool.getConfiguration().getInteger( SHRINK_THRESHOLD_PROPERTY );
+			
         totalMem = cacheSize * 1024 * 1024;
         long max = Runtime.getRuntime().maxMemory();
         long maxCache = max >= 768 * 1024 * 1024 ? max / 2 : max / 3;
@@ -139,7 +156,7 @@ public class DefaultCacheManager implements CacheManager {
         this.maxCacheSize = (int) (totalPageCount * MAX_MEM_USE);
         NumberFormat nf = NumberFormat.getNumberInstance();
         LOG.info("Cache settings: " + nf.format(totalMem / 1024) + "k; totalPages: " + nf.format(totalPageCount) + 
-        		"; maxCacheSize: " + nf.format(maxCacheSize));
+        		"; maxCacheSize: " + nf.format(maxCacheSize) + "; cacheShrinkThreshold: " + nf.format( shrinkThreshold ));
         registerMBean();
     }
 
@@ -205,7 +222,7 @@ public class DefaultCacheManager implements CacheManager {
      * Called from the global major sync event to check if caches can
      * be shrinked. To be shrinked, the size of a cache needs to be
      * larger than the factor defined by {@link #MIN_SHRINK_FACTOR}
-     * and its load needs to be lower than {@link #SHRINK_THRESHOLD}.
+     * and its load needs to be lower than {@link #DEFAULT_SHRINK_THRESHOLD}.
      *
      * If shrinked, the cache will be reset to the default initial cache size.
      */
@@ -213,22 +230,25 @@ public class DefaultCacheManager implements CacheManager {
         int minSize = (int) (totalPageCount * MIN_SHRINK_FACTOR);
         Cache cache;
         int load;
-        for (int i = 0; i < caches.size(); i++) {
-            cache = (Cache) caches.get(i);
-            if (cache.getGrowthFactor() > 1.0) {
-                load = cache.getLoad();
-                if (cache.getBuffers() > minSize && load < SHRINK_THRESHOLD) {
-                	if (LOG.isDebugEnabled()) {
-	                	NumberFormat nf = NumberFormat.getNumberInstance();
-	                    LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
-	                        ") to " + nf.format(cache.getBuffers()));
-                	}
-                    currentPageCount -= cache.getBuffers();
-                    cache.resize(getDefaultInitialSize());
-                    currentPageCount += getDefaultInitialSize();
-                }
-            }
-        }
+		
+		if( shrinkThreshold >= 0 ) {
+	        for (int i = 0; i < caches.size(); i++) {
+	            cache = (Cache) caches.get(i);
+	            if (cache.getGrowthFactor() > 1.0) {
+	                load = cache.getLoad();
+	                if (cache.getBuffers() > minSize && load < shrinkThreshold) {
+	                	if (LOG.isDebugEnabled()) {
+		                	NumberFormat nf = NumberFormat.getNumberInstance();
+		                    LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
+		                        ") to " + nf.format(cache.getBuffers()));
+	                	}
+	                    currentPageCount -= cache.getBuffers();
+	                    cache.resize(getDefaultInitialSize());
+	                    currentPageCount += getDefaultInitialSize();
+	                }
+	            }
+	        }
+		}
     }
     
     public void checkDistribution() {
