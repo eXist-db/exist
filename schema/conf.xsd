@@ -104,6 +104,7 @@
                         <xs:attribute name="free_mem_min" type="xs:integer" default="5"/>
                         <xs:attribute name="pageSize" type="xs:integer" default="4096"/>
                         <xs:attribute name="nodesBuffer" type="xs:integer" default="-1"/>
+                        <xs:attribute name="cacheShrinkThreshold" type="xs:integer" default="10000"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="indexer">
