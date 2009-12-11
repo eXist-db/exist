@@ -251,8 +251,8 @@ public class Transform extends BasicFunction {
             serializer.reset();
             try {
                 serializer.setProperties(serializeOptions);
+                serializer.setReceiver(receiver, true);
                 if (expandXIncludes) {
-                    XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
                     String xipath = serializeOptions.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                     if (xipath != null) {
                         File f = new File(xipath);
@@ -260,10 +260,8 @@ public class Transform extends BasicFunction {
                             xipath = new File(context.getModuleLoadPath(), xipath).getAbsolutePath();
                     } else
                         xipath = context.getModuleLoadPath();
-                    xinclude.setModuleLoadPath(xipath);
-                    receiver = xinclude;
+                    serializer.getXIncludeFilter().setModuleLoadPath(xipath);
                 }
-                serializer.setReceiver(receiver);
     			serializer.toSAX((NodeValue)inputNode);
     		} catch (Exception e) {
     			throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
