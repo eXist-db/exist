@@ -8,7 +8,7 @@
 	<!-- W3C XHTML DTD entries --> 
 	
 	<public publicId="-//W3C//DTD XHTML 1.0 Strict//EN" uri="entities/xhtml1-strict.dtd"/> 
-	<system systemId="xhtml1-strict.xsd" uri="entities/xhtml1-strict.dtd"/> 
+	<system systemId="xhtml1-strict.dtd" uri="entities/xhtml1-strict.dtd"/> 
 	<public publicId="-//W3C//ENTITIES Latin 1 for XHTML//EN" uri="entities/xhtml-lat1.ent"/> 
 	<system systemId="xhtml-lat1.ent" uri="entities/xhtml-lat1.ent"/> 
 	<public publicId="-//W3C//ENTITIES Symbols for XHTML//EN" uri="entities/xhtml-symbol.ent"/> 
@@ -17,7 +17,43 @@
 	<system systemId="xhtml-special.ent" uri="entities/xhtml-special.ent"/>
     <public publicId="-//W3C//DTD XHTML 1.0 Transitional//EN" uri="entities/xhtml1-transitional.dtd"/>
     <system systemId="xhtml1-transitional.dtd" uri="entities/xhtml1-transitional.dtd"/>
+
+    <public publicId="-//W3C//DTD XHTML Basic 1.0//EN" uri="entities/xhtml-basic10.dtd"/>
+    <system systemId="xhtml-basic10.dtd" uri="entities/xhtml-basic10.dtd"/> 
+
+
+    <!-- xhtml 1.1 -->
+    <public publicId="-//W3C//DTD XHTML 1.1//EN" uri="entities/xhtml11.dtd"/> 
+    <system systemId="xhtml11.dtd" uri="entities/xhtml11.dtd"/> 
+    <public publicId="-//W3C//DTD XHTML Basic 1.1//EN" uri="entities/xhtml-basic11.dtd"/>
+    <system systemId="xhtml-basic11.dtd" uri="entities/xhtml-basic11.dtd"/> 
+
+    <!-- svg 1.0 -->
+    <public publicId="-//W3C//DTD SVG 1.0//EN" uri="entities/svg10.dtd"/>
+    <system systemId="svg10.dtd" uri="entities/svg10.dtd"/>
 	
+    <!-- svg 1.1 -->
+    <public publicId="-//W3C//DTD SVG 1.1//EN" uri="entities/svg11.dtd"/>
+    <system systemId="svg11.dtd" uri="entities/svg11.dtd"/>
+    <public publicId="-//W3C//DTD SVG 1.1 Basic//EN" uri="entities/svg11-basic.dtd"/>
+    <system systemId="svg11-basic.dtd" uri="entities/svg11-basic.dtd"/>
+    <public publicId="-//W3C//DTD SVG 1.1 Tiny//EN" uri="entities/svg11-tiny.dtd"/>
+    <system systemId="svg11-tiny.dtd" uri="entities/svg11-tiny.dtd"/>
+
+    <!-- mathml 1.01 -->
+    <system systemId="mathml.dtd" uri="entities/mathml.dtd"/>
+
+    <!-- mathml 2.0 -->
+    <public publicId="-//W3C//DTD MathML 2.0//EN" uri="entities/mathml2.dtd"/>
+    <system systemId="mathml2.dtd" uri="entities/mathml2.dtd"/>
+
+    <!-- xhtml 1.1 + mathml 2.0 + svg 1.1 -->
+    <public publicId="-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" 
+	    uri="entities/xhtml-math-svg.dtd"/>
+    <system systemId="xhtml-math-svg.dtd" uri="entities/xhtml-math-svg.dtd"/>
+
+
+
     <uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/>
     
     <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
@@ -25,6 +61,9 @@
 	
     <uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" />
 
+    <!-- imdi 3.0 -->
     <uri name="http://www.mpi.nl/IMDI/Schema/IMDI" uri="entities/IMDI_3.0.xsd"/>
     <system systemId="standard-session.cfg" uri="entities/imdi-standard-session.cfg"/>
+    <!-- CMDI imdi -->
+    <uri name="http://www.clarin.eu/cmd/components/imdi/imdi_md_schema.xsd" uri="entities/imdi_md_schema.xsd"/>
 </catalog>
