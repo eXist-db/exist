@@ -561,6 +561,18 @@ public abstract class Serializer implements XMLReader {
     public void setReceiver(Receiver receiver) {
         this.receiver = receiver;
     }
+
+    public void setReceiver(Receiver receiver, boolean handleIncludes) {
+        if (handleIncludes && getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes")) {
+			xinclude.setReceiver(receiver);
+			this.receiver = xinclude;
+		} else
+			this.receiver = receiver;
+    }
+
+    public XIncludeFilter getXIncludeFilter() {
+        return xinclude;
+    }
     
 	/* (non-Javadoc)
 	 * @see org.xml.sax.XMLReader#setContentHandler(org.xml.sax.ContentHandler)
