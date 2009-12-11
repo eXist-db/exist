@@ -105,7 +105,7 @@
         <javadoc bottom="Copyright (C)  All rights reserved."
                  destdir="${javadoc}" doctitle="eXist Fluent Javadocs"
                  noindex="true" notree="true" access="public"
-                 maxmemory="512M" source="1.5">
+                 maxmemory="512M" source="${build.compiler.source}">
             <packageset dir="${src}">
                 <include name="org/**"/>
                 <exclude name="org/exist/fluent/*$*Test*"/>

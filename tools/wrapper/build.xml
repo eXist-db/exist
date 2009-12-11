@@ -5,6 +5,8 @@
 <!-- ======================================================================= -->
 <project basedir="." default="compile" name="eXistWrapper">
 
+    <property file="../../build.properties" />
+
     <property name="src" value="./src"/>
     <property name="lib" value="./lib"/>
     <property name="classes" value="./classes"/>
@@ -60,7 +62,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.5" target="1.5">
+        	source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
             	<path refid="classpath.wrapper"/>
             </classpath>
