@@ -1,0 +1,412 @@
+<!-- ....................................................................... -->
+<!-- XHTML 1.1 plus MathML 2.0 plus SVG 1.1 DTD  ........................... -->
+<!-- URI: http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd
+-->
+
+<!-- XHTML 1.1 plus MathML 2.0 plus SVG 1.1 DTD
+
+     This is a prototype extension of XHTML 1.1 incorporating MathML 2.0
+     and SVG 1.1.
+
+     Copyright 2002 World Wide Web Consortium
+        (Massachusetts Institute of Technology, Institut National de
+         Recherche en Informatique et en Automatique, Keio University).
+         All Rights Reserved.
+
+     Permission to use, copy, modify and distribute this DTD and its
+     accompanying documentation for any purpose and without fee is hereby
+     granted in perpetuity, provided that the above copyright notice and 
+     this paragraph appear in all copies.  The copyright holders make no
+     representation about the suitability of the DTD for any purpose.
+
+     It is provided "as is" without expressed or implied warranty.
+
+        Editors:    Murray M. Altheim <altheim@eng.sun.com> (XHTML modules)
+                    David Carlisle <davidc@nag.co.uk> (MathML modules)
+                    Jun Fujisawa <fujisawa.jun@canon.co.jp> (SVG modules)
+                    Masayasu Ishikawa <mimasa@w3.org> (DTD driver)
+        Revision:
+          $Id$
+
+-->
+<!-- This is the driver for an XHTML 1.1 plus MathML 2.0 plus SVG 1.1 DTD.
+-->
+
+<!-- Switches to include/ignore each vocabulary.
+-->
+<!ENTITY % XHTML.module  "INCLUDE" >
+<!ENTITY % MATHML.module "INCLUDE" >
+<!ENTITY % SVG.module    "INCLUDE" >
+
+<![%XHTML.module;[
+<!ENTITY % XHTML.version
+         "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" >
+]]>
+
+<!-- Switches to enable subsets.
+-->
+<!ENTITY % XHTML.Basic.module "IGNORE" >
+<!ENTITY % SVG.Basic.module   "IGNORE" >
+<!ENTITY % SVG.Tiny.module    "IGNORE" >
+
+<!-- Use the following entities to identify the namespaces:
+-->
+<!ENTITY % XHTML.xmlns       "http://www.w3.org/1999/xhtml" >
+<!ENTITY % MATHML.xmlns      "http://www.w3.org/1998/Math/MathML" >
+<!ENTITY % MATHML.pref.xmlns "http://www.w3.org/2002/Math/preference" >
+<!ENTITY % SVG.xmlns         "http://www.w3.org/2000/svg" >
+<!ENTITY % XLINK.xmlns       "http://www.w3.org/1999/xlink" >
+
+<!-- Declare base URIs for the relevant DTD modules.
+-->
+<![%XHTML.module;[
+<!ENTITY % XHTML.sysid.base
+         "http://www.w3.org/TR/xhtml-modularization/DTD/" >
+]]>
+<![%MATHML.module;[
+<!ENTITY % MATHML.sysid.base
+         "http://www.w3.org/Math/DTD/mathml2/" >
+]]>
+<![%SVG.module;[
+<!ENTITY % SVG.sysid.base
+         "http://www.w3.org/Graphics/SVG/1.1/DTD/" >
+]]>
+
+<!-- Declare system identifiers for the relevant DTD modules.
+-->
+<![%XHTML.module;[
+<![%XHTML.Basic.module;[
+<!ENTITY % XHTML.dtd.fpi
+         "-//W3C//DTD XHTML Basic 1.0//EN" >
+<!ENTITY % XHTML.dtd.sysid
+         "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd" >
+]]>
+<!ENTITY % XHTML.dtd.fpi
+         "-//W3C//DTD XHTML 1.1//EN" >
+<!ENTITY % XHTML.dtd.sysid
+         "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd" >
+]]>
+<![%MATHML.module;[
+<!ENTITY % MATHML.dtd.sysid
+         "%MATHML.sysid.base;mathml2.dtd" >
+<!ENTITY % MATHML.qname.sysid
+         "%MATHML.sysid.base;mathml2-qname-1.mod" >
+]]>
+<![%SVG.module;[
+<![%SVG.Tiny.module;[
+<!ENTITY % SVG.dtd.fpi
+         "-//W3C//DTD SVG 1.1 Tiny//EN" >
+<!ENTITY % SVG.dtd.sysid
+         "%SVG.sysid.base;svg11-tiny.dtd" >
+]]>
+<![%SVG.Basic.module;[
+<!ENTITY % SVG.dtd.fpi
+         "-//W3C//DTD SVG 1.1 Basic//EN" >
+<!ENTITY % SVG.dtd.sysid
+         "%SVG.sysid.base;svg11-basic.dtd" >
+]]>
+<!ENTITY % SVG.dtd.fpi
+         "-//W3C//DTD SVG 1.1//EN" >
+<!ENTITY % SVG.dtd.sysid
+         "%SVG.sysid.base;svg11.dtd" >
+]]>
+
+<!-- See the XHTML / MathML / SVG Qualified Names modules for information
+     on the use of namespace prefixes in the DTD.  Default values are
+     as follows:
+
+       <!ENTITY % NS.prefixed "IGNORE" >
+       <!ENTITY % XHTML.prefixed "%NS.prefixed;" >
+       <!ENTITY % XHTML.prefix  "" >
+       <!ENTITY % MATHML.prefixed "%NS.prefixed;" >
+       <!ENTITY % MATHML.prefix   "m" >
+       <!ENTITY % MATHML.pref.prefixed "IGNORE" >
+       <!ENTITY % MATHML.pref.prefix "pref" >
+       <!ENTITY % SVG.prefixed "%NS.prefixed;" >
+       <!ENTITY % SVG.prefix "" >
+       <!ENTITY % XLINK.prefix "xlink" >
+
+     In this DTD driver, XHTML and MathML are not prefixed, and SVG is
+     prefixed by default.  It can be changed by redeclaring the above
+     parameter entities.
+-->
+<!ENTITY % XHTML.prefixed       "IGNORE" >
+<!ENTITY % MATHML.prefixed      "IGNORE" >
+<!ENTITY % MATHML.prefix        "m" >
+<!ENTITY % MATHML.pref.prefixed "IGNORE" >
+<!ENTITY % MATHML.pref.prefix   "pref" >
+<!ENTITY % SVG.prefixed         "INCLUDE" >
+<!ENTITY % SVG.prefix           "svg" >
+<!ENTITY % XLINK.prefix         "xlink" >
+
+<!-- a URI reference, see [URI] -->
+<!ENTITY % URI.datatype "CDATA" >
+
+<!-- Declare a parameter entity %XLINK.xmlns.attrib; containing
+     the XML Namespace declarations for XLink.
+-->
+<!ENTITY % XLINK.xmlns.attrib
+    "xmlns:%XLINK.prefix; %URI.datatype; #FIXED '%XLINK.xmlns;'"
+>
+
+<!-- Allow universal MathML stylesheet-related declarations.
+     When it is used, it must always be prefixed.
+-->
+<![%MATHML.module;[
+<![%MATHML.pref.prefixed;[
+<!ENTITY % MATHML.pref.renderer.extra "">
+<!ENTITY % MATHML.pref.renderer
+    "css | mathplayer-dl | mathplayer | techexplorer-plugin | techexplorer">
+<!ENTITY % MATHML.pref.xmlns.attrib
+    "xmlns:%MATHML.pref.prefix; %URI.datatype; #FIXED '%MATHML.pref.xmlns;'
+     %MATHML.pref.prefix;:renderer
+     ( %MATHML.pref.renderer; %MATHML.pref.renderer.extra; ) #IMPLIED"
+>
+]]>
+]]>
+<!ENTITY % MATHML.pref.xmlns.attrib "" >
+
+<!-- The parameter entities %SVG.xmlns.extra.attrib; and
+     %XHTML.xmlns.extra.attrib; may be redeclared to contain
+     any foreign namespace declarations for namespaces embedded
+     in XHTML+MathML+SVG. The default value is an empty string.
+-->
+<!ENTITY % SVG.xmlns.extra.attrib "" >
+<!ENTITY % XHTML.xmlns.extra.attrib "" >
+
+<!-- Declare parameter entities to define XML Namespace declarations
+     for SVG, XHTML and MathML.
+-->
+<![%SVG.module;[
+<![%SVG.prefixed;[
+<!ENTITY % SVG.xmlns.decl.attrib
+    "xmlns:%SVG.prefix; %URI.datatype; #FIXED '%SVG.xmlns;'"
+>
+]]>
+<!ENTITY % SVG.xmlns.decl.attrib
+    "xmlns %URI.datatype; #FIXED '%SVG.xmlns;'"
+>
+]]>
+<!ENTITY % SVG.xmlns.decl.attrib "" >
+
+<![%XHTML.module;[
+<![%XHTML.prefixed;[
+<!ENTITY % XHTML.xmlns.decl.attrib
+    "xmlns:%XHTML.prefix; %URI.datatype; #FIXED '%XHTML.xmlns;'"
+>
+]]>
+<!ENTITY % XHTML.xmlns.decl.attrib
+    "xmlns %URI.datatype; #FIXED '%XHTML.xmlns;'"
+>
+]]>
+<!ENTITY % XHTML.xmlns.decl.attrib "" >
+
+<![%MATHML.module;[
+<![%MATHML.prefixed;[
+<!ENTITY % MATHML.xmlns.decl.attrib
+    "xmlns:%MATHML.prefix; %URI.datatype; #FIXED '%MATHML.xmlns;'"
+>
+]]>
+<!ENTITY % MATHML.xmlns.decl.attrib
+    "xmlns %URI.datatype; #FIXED '%MATHML.xmlns;'"
+>
+]]>
+<!ENTITY % MATHML.xmlns.decl.attrib "" >
+
+<!-- Declare common case for %NS.decl.attrib;.
+-->
+<!ENTITY % NS.common.decl.attrib
+    "%SVG.xmlns.decl.attrib;
+     %XHTML.xmlns.decl.attrib;
+     %MATHML.xmlns.decl.attrib;
+     %XLINK.xmlns.attrib;
+     %MATHML.pref.xmlns.attrib;
+     %SVG.xmlns.extra.attrib;
+     %XHTML.xmlns.extra.attrib;"
+>
+
+<!-- Redeclare the parameter entity %NS.decl.attrib; containing
+     all XML Namespace declarations used in the DTD, its form
+     dependent on whether prefixing is active.
+-->
+<![%SVG.prefixed;[
+<![%XHTML.prefixed;[
+<!-- SVG and XHTML are prefixed, MathML is either prefixed or not prefixed.
+-->
+<!ENTITY % NS.decl.attrib
+    "%NS.common.decl.attrib;"
+>
+]]>
+<![%MATHML.prefixed;[
+<!-- SVG and MathML are prefixed, XHTML is not prefixed.
+-->
+<!ENTITY % NS.decl.attrib
+    "%NS.common.decl.attrib;"
+>
+]]>
+<!-- SVG is prefixed, XHTML and MathML are not prefixed.
+     MathML namespace must always be specified on the math element.
+-->
+<!ENTITY % NS.decl.attrib
+    "%SVG.xmlns.decl.attrib;
+     %XHTML.xmlns.decl.attrib;
+     %XLINK.xmlns.attrib;
+     %MATHML.pref.xmlns.attrib;
+     %SVG.xmlns.extra.attrib;
+     %XHTML.xmlns.extra.attrib;"
+>
+]]>
+<![%XHTML.prefixed;[
+<![%MATHML.prefixed;[
+<!-- SVG is not prefixed, XHTML and MathML are prefixed.
+-->
+<!ENTITY % NS.decl.attrib
+    "%NS.common.decl.attrib;"
+>
+]]>
+<!-- SVG and MathML are not prefixed, which is not allowed.
+-->
+<!ENTITY % NS.decl.attrib "" >
+]]>
+<!-- SVG, MathML and XHTML are all not prefixed, which is not allowed.
+-->
+<!ENTITY % NS.decl.attrib "" >
+
+<!-- Redeclare parameter entities %SVG.xmlns.attrib; and
+     %XHTML.xmlns.attrib; containing all XML namespace declarations
+     used by XHTML+MathML+SVG, including a default xmlns declaration
+     when prefixing is inactive.
+-->
+<![%SVG.module;[
+<!ENTITY % SVG.xmlns.attrib
+    "%NS.decl.attrib;"
+>
+]]>
+
+<![%XHTML.module;[
+<!ENTITY % XHTML.xmlns.attrib
+    "%NS.decl.attrib;"
+>
+]]>
+
+<!-- Redeclare the parameter entity %MATHML.xmlns.extra.attrib;
+     containing XLink and MathML preferences namespace declarations
+     allowed on MathML elements.
+-->
+<![%MATHML.module;[
+<!ENTITY % MATHML.xmlns.extra.attrib
+    "%XLINK.xmlns.attrib;
+     %MATHML.pref.xmlns.attrib;"
+>
+]]>
+
+<!-- Framework Redeclaration placeholders  ....................... -->
+
+<![%XHTML.module;[
+<!ENTITY % XHTML.redecl.module "INCLUDE" >
+<![%XHTML.redecl.module;[
+<!-- Pre-Framework Redeclaration placeholder  .................... -->
+<!ENTITY % xhtml-prefw-redecl.mod "" >
+
+<!-- Post-Framework Redeclaration placeholder  ................... -->
+<!ENTITY % xhtml-postfw-redecl.mod "" >
+]]>
+]]>
+
+<![%SVG.module;[
+<!ENTITY % SVG.redecl.module "INCLUDE" >
+<![%SVG.redecl.module;[
+<!-- Pre-Framework Redeclaration placeholder ..................... -->
+<!ENTITY % svg-prefw-redecl.mod "" >
+
+<!-- Post-Framework Redeclaration placeholder .................... -->
+<!ENTITY % svg-postfw-redecl.mod "" >
+]]>
+]]>
+
+<!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+
+<!-- Declare MathML Qualified Names module as an extension of
+     XHTML's Qualified Names module.
+-->
+<![%MATHML.module;[
+<!ENTITY % xhtml-qname-extra.decl
+    'PUBLIC "-//W3C//ENTITIES MathML 2.0 Qualified Names 1.0//EN"
+            "%MATHML.qname.sysid;"'
+>
+<!ENTITY % xhtml-qname-extra.mod
+    %xhtml-qname-extra.decl;
+>
+]]>
+
+<!-- Declare location of math and svg contents in XHTML.
+-->
+
+<![%MATHML.module;[
+<![%MATHML.prefixed;[
+<!ENTITY % MATHML.pfx        "%MATHML.prefix;:" >
+]]>
+<!ENTITY % MATHML.pfx        "" >
+<!ENTITY % math.qname        "%MATHML.pfx;math" >
+<!ENTITY % MATHML.math.class "| %math.qname;" >
+]]>
+<!ENTITY % MATHML.math.class "" >
+
+<![%SVG.module;[
+<![%SVG.prefixed;[
+<!ENTITY % SVG.pfx           "%SVG.prefix;:" >
+]]>
+<!ENTITY % SVG.pfx           "" >
+<!ENTITY % SVG.svg.qname     "%SVG.pfx;svg" >
+<!ENTITY % SVG.svg.class     "| %SVG.svg.qname;" >
+]]>
+<!ENTITY % SVG.svg.class     "" >
+
+<![%XHTML.module;[
+<![%XHTML.Basic.module;[
+<!ENTITY % Misc.class
+    "%MATHML.math.class; %SVG.svg.class;" >
+]]>
+<!ENTITY % Misc.extra
+    "%MATHML.math.class; %SVG.svg.class;" >
+]]>
+
+<!-- Redeclare SVG's foreignObject content (allow anything).
+-->
+<![%SVG.module;[
+<!ENTITY % SVG.foreignObject.content "ANY" >
+]]>
+
+<!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+
+<!-- Instantiate SVG DTD  ........................................ -->
+<![%SVG.module;[
+<!ENTITY % SVG.dtd.decl
+    'PUBLIC "%SVG.dtd.fpi;"
+            "%SVG.dtd.sysid;"'
+>
+<!ENTITY % SVG.dtd %SVG.dtd.decl; >
+%SVG.dtd;
+]]>
+
+<!-- Instantiate XHTML DTD  ...................................... -->
+<![%XHTML.module;[
+<!ENTITY % XHTML.dtd.decl
+    'PUBLIC "%XHTML.dtd.fpi;"
+            "%XHTML.dtd.sysid;"'
+>
+<!ENTITY % XHTML.dtd %XHTML.dtd.decl; >
+%XHTML.dtd;
+]]>
+
+<!-- instantiate MathML 2.0 DTD  ................................. -->
+<![%MATHML.module;[
+<!ENTITY % MATHML.dtd.decl
+    'PUBLIC "-//W3C//DTD MathML 2.0//EN"
+            "%MATHML.dtd.sysid;"'
+>
+<!ENTITY % MATHML.dtd %MATHML.dtd.decl; >
+%MATHML.dtd;
+]]>
+
+<!-- end of xhtml-math-svg.dtd -->
