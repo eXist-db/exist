@@ -23,7 +23,7 @@
     Fallback to VERSION.txt if subversion is not available.
   -->
   <target name="svn-prepare" if="svn-present">
-    <echo>Determining SVN revision</echo>
+    <echo>Determining local SVN revision</echo>
     <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
       <classpath refid="classpath.core"/>
     </taskdef>
