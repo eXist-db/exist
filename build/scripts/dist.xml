@@ -65,6 +65,10 @@
 			<lib dir="extensions/indexes/lucene/lib">
 				<include name="*.jar"/>
 			</lib>
+                <!-- Include xqdoc jar, needed for xquery function documentation -->
+            <lib dir="extensions/xqdoc/lib">
+                <include name="*.jar"/>
+            </lib>
             <!-- Include spatial jars, when available -->
             <lib dir="extensions/indexes/spatial/lib">
                 <include name="*.jar"/>
