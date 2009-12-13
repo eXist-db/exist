@@ -61,7 +61,7 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         else $test/expected/node()
     let $OK :=
         if ($test/xpath) then
-            t:xpath($output, $test/xpath)
+            exists(t:xpath($output, $test/xpath))
         else if ($test/@output eq 'text') then
             normalize-space(string-join(for $x in $output return string($x),' ')) eq normalize-space($expected)
         else

@@ -92,7 +92,8 @@
             
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test fork="yes" name="xquery.RunTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.AxesTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.xinclude.XIncludeTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
