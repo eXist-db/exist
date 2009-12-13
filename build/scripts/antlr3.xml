@@ -37,9 +37,7 @@
         <fileset dir="${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${lib.cocoon}">
-            <include name="*.jar"/>
-        </fileset>
+
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
