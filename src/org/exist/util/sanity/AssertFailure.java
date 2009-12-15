@@ -30,7 +30,9 @@ package org.exist.util.sanity;
  */
 public class AssertFailure extends RuntimeException {
 
-    /**
+	private static final long serialVersionUID = -4753385398634599386L;
+
+	/**
      * 
      */
     public AssertFailure() {

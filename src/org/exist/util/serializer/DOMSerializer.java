@@ -21,7 +21,6 @@ package org.exist.util.serializer;
 
 import java.io.Writer;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -40,7 +39,7 @@ public class DOMSerializer {
 	
 	protected XMLWriter receiver;
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
-	protected HashMap namespaceDecls = new HashMap();
+	protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
 	protected Properties outputProperties;
 
 	public DOMSerializer() {
@@ -148,13 +147,8 @@ public class DOMSerializer {
 					}
 				}
 				// output all namespace declarations
-				Map.Entry nsEntry;
-				for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
-					nsEntry = (Map.Entry) i.next();
-					
-					receiver.namespace(
-						(String) nsEntry.getKey(),
-						(String) nsEntry.getValue());
+				for (Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
+					receiver.namespace( nsEntry.getKey(), nsEntry.getValue());
 				}
 				// output attributes
 				String name;

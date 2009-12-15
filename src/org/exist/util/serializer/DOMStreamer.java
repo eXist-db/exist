@@ -51,8 +51,8 @@ public class DOMStreamer {
 	private ContentHandler contentHandler = null;
 	private LexicalHandler lexicalHandler = null;
 	private NamespaceSupport nsSupport = new NamespaceSupport();
-	private HashMap namespaceDecls = new HashMap();
-    private Stack stack = new Stack();
+	private HashMap<String, String> namespaceDecls = new HashMap<String, String>();
+    private Stack<ElementInfo> stack = new Stack<ElementInfo>();
     
 	public DOMStreamer() {
 		super();
@@ -186,10 +186,10 @@ public class DOMStreamer {
 				if(namespaceDecls.size() > 0)
 					declaredPrefixes = new String[namespaceDecls.size()];
 				// output all namespace declarations
-				Map.Entry nsEntry;
+				Map.Entry<String, String> nsEntry;
 				int j = 0;
-				for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext(); j++) {
-					nsEntry = (Map.Entry) i.next();
+				for (Iterator<Map.Entry<String, String>> i = namespaceDecls.entrySet().iterator(); i.hasNext(); j++) {
+					nsEntry = i.next();
 					declaredPrefixes[j] = (String) nsEntry.getKey();
 					contentHandler.startPrefixMapping(
 						declaredPrefixes[j],
@@ -257,7 +257,7 @@ public class DOMStreamer {
 		if (node == null)
 			return;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
-            ElementInfo info = (ElementInfo)stack.pop();
+            ElementInfo info = stack.pop();
 			nsSupport.popContext();
 			contentHandler.endElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
             if(info.prefixes != null) {
@@ -269,7 +269,8 @@ public class DOMStreamer {
 	}
     
     private class ElementInfo {
-        Node element;
+        @SuppressWarnings("unused")
+		Node element;
         String[] prefixes = null;
         
         public ElementInfo(Node element) {

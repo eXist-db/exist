@@ -30,7 +30,7 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier
  */
-public abstract class AbstractHashtable {
+public abstract class AbstractHashtable<K,V> {
 
 	private final int defaultSize = 1031; // must be a prime number
 
@@ -75,8 +75,8 @@ public abstract class AbstractHashtable {
 		return items;
 	}
 	
-	public abstract Iterator iterator();
-	public abstract Iterator valueIterator();
+	public abstract Iterator<K> iterator();
+	public abstract Iterator<V> valueIterator();
 	
 	public final static boolean isPrime(long number) {
 		if (number < 2) return false;
@@ -130,6 +130,11 @@ public abstract class AbstractHashtable {
 	
 	protected final static class HashtableOverflowException extends Exception {
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 5786963685159736475L;
+
 		public HashtableOverflowException() {
 			super();
 		}

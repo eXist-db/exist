@@ -34,7 +34,6 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import java.io.Writer;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -61,8 +60,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 	protected XMLWriter receiver;
 	protected Properties outputProperties = defaultProperties;
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
-	protected HashMap namespaceDecls = new HashMap();
-	protected HashMap optionalNamespaceDecls = new HashMap();
+	protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
+	protected HashMap<String, String> optionalNamespaceDecls = new HashMap<String, String>();
 
 	public SAXSerializer() {
 		super();
@@ -213,19 +212,16 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 					}
 				}
 			}
-			Map.Entry nsEntry;
-			for (Iterator i = optionalNamespaceDecls.entrySet().iterator();	i.hasNext();) {
-				nsEntry = (Map.Entry) i.next();
-				String prefix = (String) nsEntry.getKey();
-				uri = (String) nsEntry.getValue(); 
+			for (Map.Entry<String, String> nsEntry : optionalNamespaceDecls.entrySet()) {
+				String prefix = nsEntry.getKey();
+				uri = nsEntry.getValue(); 
 				receiver.namespace(prefix, uri);
 				nsSupport.declarePrefix(prefix, uri); //nsSupport.declarePrefix(prefix, namespaceURI);
 			}
 			// output all namespace declarations
-			for (Iterator i = namespaceDecls.entrySet().iterator();	i.hasNext(); ) {
-				nsEntry = (Map.Entry) i.next();
-				String prefix = (String) nsEntry.getKey();
-				uri = (String) nsEntry.getValue(); 
+			for (Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
+				String prefix = nsEntry.getKey();
+				uri = nsEntry.getValue(); 
 				if(!optionalNamespaceDecls.containsKey(prefix)) {
 					receiver.namespace(prefix, uri);
 				}
@@ -297,23 +293,20 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 					}
 				}
 			}
-			Map.Entry nsEntry;
             String optPrefix;
-            for (Iterator i = optionalNamespaceDecls.entrySet().iterator(); i.hasNext();) {
-				nsEntry = (Map.Entry) i.next();
-				optPrefix = (String) nsEntry.getKey();
-				uri = (String) nsEntry.getValue(); 
+            for (Map.Entry<String, String> nsEntry : optionalNamespaceDecls.entrySet()) {
+				optPrefix = nsEntry.getKey();
+				uri = nsEntry.getValue(); 
 				receiver.namespace(optPrefix, uri);
 				nsSupport.declarePrefix(optPrefix, uri);
 			}
 			// output all namespace declarations
-			for (Iterator i = namespaceDecls.entrySet().iterator();	i.hasNext();) {
-				nsEntry = (Map.Entry) i.next();
-				optPrefix = (String) nsEntry.getKey();
+			for (Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
+				optPrefix = nsEntry.getKey();
 				if (optPrefix.equals("xmlns")) {
 					continue;
 				}
-				uri = (String) nsEntry.getValue(); 
+				uri = nsEntry.getValue(); 
 				if(!optionalNamespaceDecls.containsKey(optPrefix)) {
 					receiver.namespace(optPrefix, uri);
 				}
