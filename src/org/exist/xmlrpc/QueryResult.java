@@ -1,8 +1,6 @@
 package org.exist.xmlrpc;
 
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.Option;
 import org.exist.xquery.value.Sequence;
 
 import java.util.Properties;

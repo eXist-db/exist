@@ -62,7 +62,6 @@ import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.DocumentType;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -283,7 +282,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     protected QueryResult doQuery(DBBroker broker, String xpath,
-            NodeSet contextSet, HashMap parameters)
+            NodeSet contextSet, HashMap<String, Object> parameters)
             throws Exception {
         XQuery xquery = broker.getXQueryService();
         XQueryPool pool = xquery.getXQueryPool();
@@ -313,7 +312,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    protected LockedDocumentMap beginProtected(DBBroker broker, HashMap parameters) throws EXistException {
+    protected LockedDocumentMap beginProtected(DBBroker broker, HashMap<String, Object> parameters) throws EXistException {
         String protectColl = (String) parameters.get(RpcAPI.PROTECTED_MODE);
         if (protectColl == null)
             return null;
@@ -343,7 +342,7 @@ public class RpcConnection implements RpcAPI {
      * @exception XPathException if an error occurs
      * @exception IOException if an error occurs
      */
-    private CompiledXQuery compile(DBBroker broker, Source source, HashMap parameters) throws XPathException, IOException {
+    private CompiledXQuery compile(DBBroker broker, Source source, HashMap<String, Object> parameters) throws XPathException, IOException {
         XQuery xquery = broker.getXQueryService();
         XQueryPool pool = xquery.getXQueryPool();
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
@@ -355,17 +354,17 @@ public class RpcConnection implements RpcAPI {
     	String base = (String) parameters.get(RpcAPI.BASE_URI);
     	if(base!=null)
     		context.setBaseURI(new AnyURIValue(base));
-        HashMap namespaces = (HashMap)parameters.get(RpcAPI.NAMESPACES);
+        HashMap<String, String> namespaces = (HashMap)parameters.get(RpcAPI.NAMESPACES);
         if(namespaces != null && namespaces.size() > 0) {
             context.declareNamespaces(namespaces);
         }
         //  declare static variables
-        HashMap variableDecls = (HashMap)parameters.get(RpcAPI.VARIABLES);
+        HashMap<String, Object> variableDecls = (HashMap)parameters.get(RpcAPI.VARIABLES);
         if(variableDecls != null) {
-            for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry) i.next();
-                LOG.debug("declaring " + entry.getKey().toString() + " = " + entry.getValue());
-                context.declareVariable((String) entry.getKey(), entry.getValue());
+            for (Map.Entry<String, Object> entry : variableDecls.entrySet()) {
+            	if (LOG.isDebugEnabled())
+            		LOG.debug("declaring " + entry.getKey().toString() + " = " + entry.getValue());
+                context.declareVariable(entry.getKey(), entry.getValue());
             }
         }
         Object[] staticDocuments = (Object[])parameters.get(RpcAPI.STATIC_DOCUMENTS);
@@ -396,7 +395,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>String</code> value
      * @exception Exception if an error occurs
      */
-    public String printDiagnostics(String query, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public String printDiagnostics(String query, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -425,12 +424,12 @@ public class RpcConnection implements RpcAPI {
      *
      * @param context
      */
-    protected void checkPragmas(XQueryContext context, HashMap parameters) throws XPathException {
+    protected void checkPragmas(XQueryContext context, HashMap<String, Object> parameters) throws XPathException {
         Option pragma = context.getOption(Option.SERIALIZE_QNAME);
         checkPragmas(pragma, parameters);
     }
 
-    protected void checkPragmas(Option pragma, HashMap parameters) throws XPathException {
+    protected void checkPragmas(Option pragma, HashMap<String, Object> parameters) throws XPathException {
         if(pragma == null)
             return;
         String[] contents = pragma.tokenizeContents();
@@ -444,7 +443,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    public int executeQuery(byte[] xpath, String encoding, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public int executeQuery(byte[] xpath, String encoding, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         String xpathString = null;
         if (encoding != null)
             try {
@@ -468,7 +467,7 @@ public class RpcConnection implements RpcAPI {
      * @return an <code>int</code> value
      * @exception Exception if an error occurs
      */
-    public int executeQuery(String xpath, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public int executeQuery(String xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
         try {
@@ -528,7 +527,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap getCollectionDesc(String rootCollection) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> getCollectionDesc(String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return getCollectionDesc((rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
         } catch (Throwable e) {
@@ -544,7 +543,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    private HashMap getCollectionDesc(XmldbURI rootUri)
+    private HashMap<String, Object> getCollectionDesc(XmldbURI rootUri)
     throws Exception {
         DBBroker broker = factory.getBrokerPool().get(user);
         Collection collection = null;
@@ -552,14 +551,14 @@ public class RpcConnection implements RpcAPI {
             collection = broker.openCollection(rootUri, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + rootUri + " not found!");
-            HashMap desc = new HashMap();
-            Vector docs = new Vector();
-            Vector collections = new Vector();
+            HashMap<String, Object> desc = new HashMap<String, Object>();
+            Vector<Map<String, Object>> docs = new Vector<Map<String, Object>>();
+            Vector<String> collections = new Vector<String>();
             if (collection.getPermissions().validate(user, Permission.READ)) {
-                for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                	DocumentImpl doc = (DocumentImpl) i.next();
+                for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                	DocumentImpl doc = i.next();
                 	Permission perms = doc.getPermissions();
-                	HashMap hash = new HashMap(4);
+                	HashMap<String, Object> hash = new HashMap<String, Object>(4);
                     hash.put("name", doc.getFileURI().toString());
                     hash.put("owner", perms.getOwner());
                     hash.put("group", perms.getOwnerGroup());
@@ -570,8 +569,8 @@ public class RpcConnection implements RpcAPI {
                             : "XMLResource");
                     docs.addElement(hash);
                 }
-                for (Iterator i = collection.collectionIterator(); i.hasNext(); )
-                    collections.addElement(((XmldbURI) i.next()).toString());
+                for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
+                    collections.addElement(i.next().toString());
             }
             Permission perms = collection.getPermissions();
             desc.put("collections", collections);
@@ -598,7 +597,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap describeResource(String resourceName)
+    public HashMap<String, Object> describeResource(String resourceName)
     throws EXistException, PermissionDeniedException {
         try {
             return describeResource(XmldbURI.xmldbUriFor(resourceName));
@@ -616,11 +615,11 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private HashMap describeResource(XmldbURI resourceUri)
+    private HashMap<String, Object> describeResource(XmldbURI resourceUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = factory.getBrokerPool().get(user);
         DocumentImpl doc = null;
-        HashMap hash = new HashMap(5);
+        HashMap<String, Object> hash = new HashMap<String, Object>(5);
         try {
             doc = broker.getXMLResource(resourceUri, Lock.READ_LOCK);
             if (doc == null) {
@@ -659,7 +658,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap describeCollection(String rootCollection) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> describeCollection(String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return describeCollection((rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
         } catch (Throwable e) {
@@ -675,7 +674,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    private HashMap describeCollection(XmldbURI collUri)
+    private HashMap<String, Object> describeCollection(XmldbURI collUri)
     throws Exception {
         DBBroker broker = factory.getBrokerPool().get(user);
         Collection collection = null;
@@ -683,10 +682,10 @@ public class RpcConnection implements RpcAPI {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collUri + " not found!");
-            HashMap desc = new HashMap();
-            List collections = new ArrayList();
+            HashMap<String, Object> desc = new HashMap<String, Object>();
+            List<String> collections = new ArrayList<String>();
             if (collection.getPermissions().validate(user, Permission.READ)) {
-                for (Iterator i = collection.collectionIterator(); i.hasNext(); )
+                for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
                     collections.add(i.next().toString());
             }
             Permission perms = collection.getPermissions();
@@ -705,19 +704,19 @@ public class RpcConnection implements RpcAPI {
     }
 
 
-    public byte[] getDocument(String name, HashMap parametri) throws EXistException,
+    public byte[] getDocument(String name, HashMap<String, Object> parametri) throws EXistException,
             PermissionDeniedException {
 
         String encoding = "UTF-8";
         String compression = "no";
 
-        if (((String) parametri.get("encoding")) == null) {
+        if (parametri.get("encoding") == null) {
             encoding = "UTF-8";
         } else {
             encoding = (String) parametri.get("encoding");
         }
 
-        if (((String) parametri.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
+        if (parametri.get(EXistOutputKeys.COMPRESS_OUTPUT) != null) {
             compression = (String) parametri.get(EXistOutputKeys.COMPRESS_OUTPUT);
         }
 
@@ -758,7 +757,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public String getDocumentAsString(String docName, HashMap parametri) throws EXistException, PermissionDeniedException {
+    public String getDocumentAsString(String docName, HashMap<String, Object> parametri) throws EXistException, PermissionDeniedException {
         try {
             return getDocumentAsString(XmldbURI.xmldbUriFor(docName), parametri);
 
@@ -776,7 +775,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>String</code> value
      * @exception Exception if an error occurs
      */
-    private String getDocumentAsString(XmldbURI docUri, HashMap parametri)
+    private String getDocumentAsString(XmldbURI docUri, HashMap<String, Object> parametri)
     throws Exception {
         DBBroker broker = null;
         
@@ -825,7 +824,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    public HashMap getDocumentData(String docName, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> getDocumentData(String docName, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         Collection collection = null;
         DocumentImpl doc = null;
         DBBroker broker = null;
@@ -858,7 +857,7 @@ public class RpcConnection implements RpcAPI {
                 
                 Serializer serializer = broker.getSerializer();
                 serializer.setProperties(parameters);
-                HashMap result = new HashMap();
+                HashMap<String, Object> result = new HashMap<String, Object>();
                 // A tweak for very large XML resources
                 if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     File tempFile = File.createTempFile("eXistRPCC", ".xml");
@@ -883,7 +882,7 @@ public class RpcConnection implements RpcAPI {
                 }
                 return result;
             } else {
-                HashMap result = new HashMap();
+                HashMap<String, Object> result = new HashMap<String, Object>();
                 // A tweak for very large binary resources
                 if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     File tempFile = File.createTempFile("eXistRPCC", ".bin");
@@ -940,7 +939,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    public HashMap getNextChunk(String handle, int offset) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> getNextChunk(String handle, int offset) throws EXistException, PermissionDeniedException {
         try {
             File file = new File(handle);
             if(!(file.isFile() && file.canRead()))
@@ -950,7 +949,7 @@ public class RpcConnection implements RpcAPI {
             byte[] chunk = getChunk(file, offset);
             long nextChunk = offset + chunk.length;
 
-            HashMap result = new HashMap();
+            HashMap<String, Object> result = new HashMap<String, Object>();
             result.put("data", chunk);
             result.put("handle", handle);
             if(nextChunk > (long)Integer.MAX_VALUE || nextChunk == file.length()) {
@@ -974,7 +973,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-	public HashMap getNextExtendedChunk(String handle, String offset) throws EXistException, PermissionDeniedException {
+	public HashMap<String, Object> getNextExtendedChunk(String handle, String offset) throws EXistException, PermissionDeniedException {
         try {
             File file = new File(handle);
             if(!(file.isFile() && file.canRead()))
@@ -985,7 +984,7 @@ public class RpcConnection implements RpcAPI {
             byte[] chunk = getChunk(file, longOffset);
             long nextChunk = longOffset + chunk.length;
 
-            HashMap result = new HashMap();
+            HashMap<String, Object> result = new HashMap<String, Object>();
             result.put("data", chunk);
             result.put("handle", handle);
             if(nextChunk == file.length()) {
@@ -1262,13 +1261,13 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>Vector</code> value
      * @exception EXistException if an error occurs
      */
-    public Vector getDocumentListing() throws EXistException {
+    public Vector<String> getDocumentListing() throws EXistException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
             DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
             XmldbURI names[] = docs.getNames();
-            Vector vec = new Vector();
+            Vector<String> vec = new Vector<String>();
             for (int i = 0; i < names.length; i++)
                 vec.addElement(names[i].toString());
             
@@ -1287,7 +1286,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public Vector getDocumentListing(String collName)
+    public Vector<String> getDocumentListing(String collName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getDocumentListing(XmldbURI.xmldbUriFor(collName));
     }
@@ -1300,20 +1299,21 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private Vector getDocumentListing(XmldbURI collUri)
+    private Vector<String> getDocumentListing(XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
         try {
             broker = factory.getBrokerPool().get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            Vector vec = new Vector();
+            Vector<String> vec = new Vector<String>();
             if (collection == null) {
-                LOG.debug("collection " + collUri + " not found.");
+            	if (LOG.isDebugEnabled())
+            		LOG.debug("collection " + collUri + " not found.");
                 return vec;
             }
-             for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                vec.addElement(((DocumentImpl) i.next()).getFileURI().toString());
+             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                vec.addElement(i.next().getFileURI().toString());
             }
             return vec;
         } finally {
@@ -1420,7 +1420,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap listDocumentPermissions(String name)
+    public HashMap<String, List<Object>> listDocumentPermissions(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return listDocumentPermissions(XmldbURI.xmldbUriFor(name));
     }
@@ -1433,7 +1433,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private HashMap listDocumentPermissions(XmldbURI collUri)
+    private HashMap<String, List<Object>> listDocumentPermissions(XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
@@ -1445,11 +1445,11 @@ public class RpcConnection implements RpcAPI {
             if (!collection.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException(
                         "not allowed to read collection " + collUri);
-            HashMap result = new HashMap(collection.getDocumentCount());
-            for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-            	DocumentImpl doc = (DocumentImpl) i.next();
+            HashMap<String, List<Object>> result = new HashMap<String, List<Object>>(collection.getDocumentCount());
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+            	DocumentImpl doc = i.next();
             	Permission perm = doc.getPermissions();
-            	List tmp = new ArrayList(3);
+            	List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner());
                 tmp.add(perm.getOwnerGroup());
                 tmp.add(new Integer(perm.getPermissions()));
@@ -1472,7 +1472,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap listCollectionPermissions(String name)
+    public HashMap<XmldbURI, List<Object>> listCollectionPermissions(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return listCollectionPermissions(XmldbURI.xmldbUriFor(name));
     }
@@ -1485,7 +1485,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private HashMap listCollectionPermissions(XmldbURI collUri)
+    private HashMap<XmldbURI, List<Object>> listCollectionPermissions(XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
@@ -1496,13 +1496,13 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Collection " + collUri + " not found");
             if (!collection.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException("not allowed to read collection " + collUri);
-            HashMap result = new HashMap(collection.getChildCollectionCount());
-            for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-            	XmldbURI child = (XmldbURI) i.next();
+            HashMap<XmldbURI, List<Object>> result = new HashMap<XmldbURI, List<Object>>(collection.getChildCollectionCount());
+            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+            	XmldbURI child = i.next();
             	XmldbURI path = collUri.append(child);
                 Collection childColl = broker.getCollection(path);
                 Permission perm = childColl.getPermissions();
-                List tmp = new ArrayList(3);
+                List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner());
                 tmp.add(perm.getOwnerGroup());
                 tmp.add(new Integer(perm.getPermissions()));
@@ -1542,7 +1542,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap getPermissions(String name)
+    public HashMap<String, Object> getPermissions(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getPermissions(XmldbURI.xmldbUriFor(name));
     }
@@ -1555,7 +1555,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private HashMap getPermissions(XmldbURI uri)
+    private HashMap<String, Object> getPermissions(XmldbURI uri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
@@ -1577,7 +1577,7 @@ public class RpcConnection implements RpcAPI {
             } else {
                 perm = collection.getPermissions();
             }
-            HashMap result = new HashMap();
+            HashMap<String, Object> result = new HashMap<String, Object>();
             result.put("owner", perm.getOwner());
             result.put("group", perm.getOwnerGroup());
             result.put("permissions", new Integer(perm.getPermissions()));
@@ -1637,7 +1637,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public Vector getTimestamps(String documentPath)
+    public Vector<Date> getTimestamps(String documentPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getTimestamps(XmldbURI.xmldbUriFor(documentPath));
     }
@@ -1650,7 +1650,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception EXistException if an error occurs
      */
-    private Vector getTimestamps(XmldbURI docUri)
+    private Vector<Date> getTimestamps(XmldbURI docUri)
     throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
         DocumentImpl doc = null;
@@ -1662,7 +1662,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("document not found");
             }
             DocumentMetadata metadata = doc.getMetadata();
-            Vector vector = new Vector(2);
+            Vector<Date> vector = new Vector<Date>(2);
             vector.addElement(new Date(metadata.getCreated()));
             vector.addElement(new Date(metadata.getLastModified()));
             return vector;
@@ -1681,14 +1681,14 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public HashMap getUser(String name) throws EXistException,
+    public HashMap<String, Object> getUser(String name) throws EXistException,
             PermissionDeniedException {
         User u = factory.getBrokerPool().getSecurityManager().getUser(name);
         if (u == null)
             throw new EXistException("user " + name + " does not exist");
-        HashMap tab = new HashMap();
+        HashMap<String, Object> tab = new HashMap<String, Object>();
         tab.put("name", u.getName());
-        Vector groups = new Vector();
+        Vector<String> groups = new Vector<String>();
         String[] gl = u.getGroups();
 		for (int i = 0; i < gl.length; i++)
 			groups.addElement(gl[i]);
@@ -1705,14 +1705,14 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public Vector getUsers() throws EXistException,
+    public Vector<HashMap<String, Object>> getUsers() throws EXistException,
             PermissionDeniedException {
         User users[] = factory.getBrokerPool().getSecurityManager().getUsers();
-        Vector r = new Vector();
+        Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
         for (int i = 0; i < users.length; i++) {
-            final HashMap tab = new HashMap();
+            final HashMap<String, Object> tab = new HashMap<String, Object>();
             tab.put("name", users[i].getName());
-            Vector groups = new Vector();
+            Vector<String> groups = new Vector<String>();
             String[] gl = users[i].getGroups();
     		for (int j = 0; j < gl.length; j++)
                 groups.addElement(gl[j]);
@@ -1731,10 +1731,10 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public Vector getGroups() throws EXistException,
+    public Vector<String> getGroups() throws EXistException,
             PermissionDeniedException {
         String[] groups = factory.getBrokerPool().getSecurityManager().getGroups();
-        Vector v = new Vector(groups.length);
+        Vector<String> v = new Vector<String>(groups.length);
         for (int i = 0; i < groups.length; i++) {
             v.addElement(groups[i]);
         }
@@ -1940,7 +1940,8 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>boolean</code> value
      * @exception Exception if an error occurs
      */
-    private boolean parseLocal(String localFile, XmldbURI docUri,
+    @SuppressWarnings("unused")
+	private boolean parseLocal(String localFile, XmldbURI docUri,
             int overwrite, String mimeType) throws Exception {
         return parseLocal(localFile, docUri, overwrite, mimeType, null, null, null);
     }
@@ -1954,7 +1955,8 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>boolean</code> value
      * @exception Exception if an error occurs
      */
-    private boolean parseLocalExt(String localFile, XmldbURI docUri,
+    @SuppressWarnings("unused")
+	private boolean parseLocalExt(String localFile, XmldbURI docUri,
             int overwrite, String mimeType, int isXML) throws Exception {
         return parseLocal(localFile, docUri, overwrite, mimeType, new Boolean(isXML!=0), null, null);
     }
@@ -2114,7 +2116,8 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>boolean</code> value
      * @exception Exception if an error occurs
      */
-    private boolean storeBinary(byte[] data, XmldbURI docUri, String mimeType,
+    @SuppressWarnings("unused")
+	private boolean storeBinary(byte[] data, XmldbURI docUri, String mimeType,
             int overwrite) throws Exception {
         return storeBinary(data, docUri, mimeType, overwrite, null, null);
     }
@@ -2236,7 +2239,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     protected String printAll(DBBroker broker, Sequence resultSet, int howmany,
-            int start, HashMap properties, long queryTime) throws Exception {
+            int start, HashMap<String, Object> properties, long queryTime) throws Exception {
         if (resultSet.isEmpty()) {
             StringBuilder buf = new StringBuilder();
             String opt = (String) properties.get(OutputKeys.OMIT_XML_DECLARATION);
@@ -2295,8 +2298,8 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    public HashMap compile(String query, HashMap parameters) throws EXistException, PermissionDeniedException {
-        HashMap ret = new HashMap();
+    public HashMap<String, Object> compile(String query, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
+        HashMap<String, Object> ret = new HashMap<String, Object>();
         DBBroker broker = null;
         XQueryPool pool = null;
         CompiledXQuery compiled = null;
@@ -2336,7 +2339,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     public String query(String xpath, int howmany, int start,
-            HashMap parameters) throws EXistException, PermissionDeniedException {
+            HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         String result = null;
         DBBroker broker = null;
@@ -2373,8 +2376,8 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public HashMap queryP(String xpath, String documentPath,
-            String s_id, HashMap parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
+    public HashMap<String, Object> queryP(String xpath, String documentPath,
+            String s_id, HashMap<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return queryP(xpath,
                       (documentPath==null) ? null : XmldbURI.xmldbUriFor(documentPath),
                       s_id, parameters);
@@ -2390,13 +2393,13 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    private HashMap queryP(String xpath, XmldbURI docUri,
-            String s_id, HashMap parameters) throws EXistException, PermissionDeniedException {
+    private HashMap<String, Object> queryP(String xpath, XmldbURI docUri,
+            String s_id, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
         
-        HashMap ret = new HashMap();
-        List result = new ArrayList();
+        HashMap<String, Object> ret = new HashMap<String, Object>();
+        List<Object> result = new ArrayList<Object>();
         NodeSet nodes = null;
         QueryResult queryResult;
         Sequence resultSeq = null;
@@ -2440,7 +2443,7 @@ public class RpcConnection implements RpcAPI {
                 resultSeq = sorted;
             }
             NodeProxy p;
-            Vector entry;
+            Vector<String> entry;
             if (resultSeq != null) {
                 SequenceIterator i = resultSeq.iterate();
                 if (i != null) {
@@ -2448,7 +2451,7 @@ public class RpcConnection implements RpcAPI {
                     while (i.hasNext()) {
                         next = i.nextItem();
                         if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                            entry = new Vector();
+                            entry = new Vector<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
                                 entry.addElement(p.getDocument().getURI().toString());
@@ -2492,7 +2495,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    public HashMap execute(String pathToQuery, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> execute(String pathToQuery, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         byte[] doc = getBinaryResource(XmldbURI.createInternal(pathToQuery));
         String xpath = null;
@@ -2504,8 +2507,8 @@ public class RpcConnection implements RpcAPI {
         
         String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
         
-        HashMap ret = new HashMap();
-        Vector result = new Vector();
+        HashMap<String, Object> ret = new HashMap<String, Object>();
+        Vector<Object> result = new Vector<Object>();
         NodeSet nodes = null;
         QueryResult queryResult;
         Sequence resultSeq = null;
@@ -2537,7 +2540,7 @@ public class RpcConnection implements RpcAPI {
                 resultSeq = sorted;
             }
             NodeProxy p;
-            Vector entry;
+            Vector<String> entry;
             if (resultSeq != null) {
                 SequenceIterator i = resultSeq.iterate();
                 if (i != null) {
@@ -2545,7 +2548,7 @@ public class RpcConnection implements RpcAPI {
                     while (i.hasNext()) {
                         next = i.nextItem();
                         if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                            entry = new Vector();
+                            entry = new Vector<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
                                 entry.addElement(p.getDocument().getURI().toString());
@@ -2721,7 +2724,7 @@ public class RpcConnection implements RpcAPI {
         return true;
     }
 
-    public byte[] retrieve(String doc, String id, HashMap parameters)
+    public byte[] retrieve(String doc, String id, HashMap<String, Object> parameters)
             throws EXistException, PermissionDeniedException {
         String xml = null;
         try {
@@ -2753,7 +2756,7 @@ public class RpcConnection implements RpcAPI {
      * @exception URISyntaxException if an error occurs
      */
     public String retrieveAsString(String documentPath, String s_id,
-            HashMap parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
+            HashMap<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return retrieve(XmldbURI.xmldbUriFor(documentPath),s_id,parameters);
     }    
 
@@ -2767,7 +2770,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     private String retrieve(XmldbURI docUri, String s_id,
-            HashMap parameters) throws EXistException, PermissionDeniedException {
+            HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -2799,7 +2802,7 @@ public class RpcConnection implements RpcAPI {
 	 * @return a <code>HashMap</code> value
 	 * @exception Exception if an error occurs
 	 */
-	public HashMap retrieveFirstChunk(String docName, String id, HashMap parameters)
+	public HashMap<String, Object> retrieveFirstChunk(String docName, String id, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException
 	{
         	DBBroker broker = null;
@@ -2823,7 +2826,7 @@ public class RpcConnection implements RpcAPI {
 			serializer.reset();
 			serializer.setProperties(parameters);
 			
-                	HashMap result = new HashMap();
+                	HashMap<String, Object> result = new HashMap<String, Object>();
 			File tempFile = File.createTempFile("eXistRPCC", ".xml");
 			tempFile.deleteOnExit();
 			LOG.debug("Writing to temporary file: " + tempFile.getName());
@@ -2878,7 +2881,7 @@ public class RpcConnection implements RpcAPI {
         	}
 	}
 
-    public byte[] retrieve(int resultId, int num, HashMap parameters)
+    public byte[] retrieve(int resultId, int num, HashMap<String, Object> parameters)
             throws EXistException, PermissionDeniedException {
         String compression = "no";
         if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
@@ -2925,7 +2928,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     private String retrieveAsString(int resultId, int num,
-            HashMap parameters) throws Exception {
+            HashMap<String, Object> parameters) throws Exception {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -2941,8 +2944,7 @@ public class RpcConnection implements RpcAPI {
                 NodeValue nodeValue = (NodeValue)item;
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
-                for (Iterator i = qr.serialization.entrySet().iterator(); i.hasNext();) {
-                    Map.Entry entry = (Map.Entry) i.next();
+                for (Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
                     parameters.put(entry.getKey().toString(), entry.getValue().toString());
                 }
                 serializer.setProperties(parameters);
@@ -2964,7 +2966,7 @@ public class RpcConnection implements RpcAPI {
 	 * @return a <code>HashMap</code> value
 	 * @exception Exception if an error occurs
 	 */
-	public HashMap retrieveFirstChunk(int resultId, int num, HashMap parameters)
+	public HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException
 	{
 		String encoding = (String) parameters.get(OutputKeys.ENCODING);
@@ -2985,7 +2987,7 @@ public class RpcConnection implements RpcAPI {
 			if (item == null)
 				throw new EXistException("index out of range");
 			
-                	HashMap result = new HashMap();
+                	HashMap<String, Object> result = new HashMap<String, Object>();
 			File tempFile = File.createTempFile("eXistRPCC", ".xml");
 			tempFile.deleteOnExit();
 			LOG.debug("Writing to temporary file: " + tempFile.getName());
@@ -3005,8 +3007,7 @@ public class RpcConnection implements RpcAPI {
 						NodeValue nodeValue = (NodeValue)item;
 						Serializer serializer = broker.getSerializer();
 						serializer.reset();
-						for (Iterator i = qr.serialization.entrySet().iterator(); i.hasNext();) {
-							Map.Entry entry = (Map.Entry) i.next();
+						for (Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
 							parameters.put(entry.getKey().toString(), entry.getValue().toString());
 						}
 						serializer.setProperties(parameters);
@@ -3058,7 +3059,7 @@ public class RpcConnection implements RpcAPI {
 	}
 
 
-    public byte[] retrieveAll(int resultId, HashMap parameters) throws EXistException,
+    public byte[] retrieveAll(int resultId, HashMap<String, Object> parameters) throws EXistException,
             PermissionDeniedException {
         try {
             String xml = retrieveAllAsString(resultId, parameters);
@@ -3086,7 +3087,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>String</code> value
      * @exception Exception if an error occurs
      */
-    private String retrieveAllAsString(int resultId, HashMap parameters) throws Exception {
+    private String retrieveAllAsString(int resultId, HashMap<String, Object> parameters) throws Exception {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -3146,7 +3147,7 @@ public class RpcConnection implements RpcAPI {
 	 * @return a <code>String</code> value
 	 * @exception Exception if an error occurs
 	 */
-	public HashMap retrieveAllFirstChunk(int resultId, HashMap parameters)
+	public HashMap<String, Object> retrieveAllFirstChunk(int resultId, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException
 	{
 		String encoding = (String) parameters.get(OutputKeys.ENCODING);
@@ -3165,14 +3166,13 @@ public class RpcConnection implements RpcAPI {
 			qr.timestamp = System.currentTimeMillis();
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
-			for (Iterator i = qr.serialization.entrySet().iterator(); i.hasNext();) {
-				Map.Entry entry = (Map.Entry) i.next();
+			for (Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
 				parameters.put(entry.getKey().toString(), entry.getValue().toString());
 			}
 			serializer.setProperties(parameters);
 			SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 			
-                	HashMap result = new HashMap();
+                	HashMap<String, Object> result = new HashMap<String, Object>();
 			File tempFile = File.createTempFile("eXistRPCC", ".xml");
 			tempFile.deleteOnExit();
 			LOG.debug("Writing to temporary file: " + tempFile.getName());
@@ -3492,7 +3492,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     public boolean setUser(String name, String passwd, String passwdDigest,
-            Vector groups, String home) throws EXistException,
+            Vector<String> groups, String home) throws EXistException,
             PermissionDeniedException {
         if (passwd.length() == 0)
             passwd = null;
@@ -3515,9 +3515,8 @@ public class RpcConnection implements RpcAPI {
             u.setEncodedPassword(passwd);
             u.setPasswordDigest(passwdDigest);
         }
-        String g;
-        for (Iterator i = groups.iterator(); i.hasNext(); ) {
-            g = (String) i.next();
+
+        for (String g : groups) {
             if (!u.hasGroup(g)) {
                 if(!manager.hasAdminPrivileges(user))
                     throw new PermissionDeniedException(
@@ -3539,7 +3538,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
      */
-    public boolean setUser(String name, Vector groups) throws EXistException,
+    public boolean setUser(String name, Vector<String> groups) throws EXistException,
     PermissionDeniedException {
 
     	SecurityManager manager = factory.getBrokerPool()
@@ -3557,9 +3556,8 @@ public class RpcConnection implements RpcAPI {
     			throw new PermissionDeniedException(
                 	"you are not allowed to change this user");
     	}
-    	String g;
-    	for (Iterator i = groups.iterator(); i.hasNext(); ) {
-    		g = (String) i.next();
+
+    	for (String g : groups) {
     		if (!u.hasGroup(g)) {
     			if(!manager.hasAdminPrivileges(user))
     				throw new PermissionDeniedException(
@@ -3574,7 +3572,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
      */
-    public boolean setUser(String name, Vector groups, String rgroup) throws EXistException,
+    public boolean setUser(String name, Vector<String> groups, String rgroup) throws EXistException,
     PermissionDeniedException {
 
     	SecurityManager manager = factory.getBrokerPool()
@@ -3592,9 +3590,8 @@ public class RpcConnection implements RpcAPI {
     			throw new PermissionDeniedException(
                 	"you are not allowed to change this user");
     	}
-    	String g;
-    	for (Iterator i = groups.iterator(); i.hasNext(); ) {
-    		g = (String) i.next();
+
+    	for (String g : groups) {
     		if (g.equals(rgroup)) {
     			if(!manager.hasAdminPrivileges(user))
     				throw new PermissionDeniedException(
@@ -3770,18 +3767,18 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    public HashMap summary(String xpath) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> summary(String xpath) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            QueryResult qr = doQuery(broker, xpath, null, new HashMap());
+            QueryResult qr = doQuery(broker, xpath, null, new HashMap<String, Object>());
             if (qr == null)
-                return new HashMap();
+                return new HashMap<String, Object>();
             if (qr.hasErrors())
                 throw qr.getException();
-            HashMap map = new HashMap();
-            HashMap doctypes = new HashMap();
+            HashMap<String, NodeCount> map = new HashMap<String, NodeCount>();
+            HashMap<String, DoctypeCount> doctypes = new HashMap<String, DoctypeCount>();
             NodeProxy p;
             String docName;
             DocumentType doctype;
@@ -3796,7 +3793,7 @@ public class RpcConnection implements RpcAPI {
                         docName = p.getDocument().getURI().toString();
                         doctype = p.getDocument().getDoctype();
                         if (map.containsKey(docName)) {
-                            counter = (NodeCount) map.get(docName);
+                            counter = map.get(docName);
                             counter.inc();
                         } else {
                             counter = new NodeCount(p.getDocument());
@@ -3815,27 +3812,25 @@ public class RpcConnection implements RpcAPI {
                     }
                 }
             }
-            HashMap result = new HashMap();
+            HashMap<String, Object> result = new HashMap<String, Object>();
             result.put("queryTime", new Integer((int) (System
                     .currentTimeMillis() - startTime)));
             result.put("hits", new Integer(qr.result.getItemCount()));
-            Vector documents = new Vector();
-            Vector hitsByDoc;
-            for (Iterator i = map.values().iterator(); i.hasNext(); ) {
-                counter = (NodeCount) i.next();
-                hitsByDoc = new Vector();
-                hitsByDoc.addElement(counter.doc.getFileURI().toString());
-                hitsByDoc.addElement(new Integer(counter.doc.getDocId()));
-                hitsByDoc.addElement(new Integer(counter.count));
+            Vector<Vector<Object>> documents = new Vector<Vector<Object>>();
+            Vector<Object> hitsByDoc;
+            for (NodeCount nodeCounter : map.values()) {
+                hitsByDoc = new Vector<Object>();
+                hitsByDoc.addElement(nodeCounter.doc.getFileURI().toString());
+                hitsByDoc.addElement(new Integer(nodeCounter.doc.getDocId()));
+                hitsByDoc.addElement(new Integer(nodeCounter.count));
                 documents.addElement(hitsByDoc);
             }
             result.put("documents", documents);
-            Vector dtypes = new Vector();
-            Vector hitsByType;
-            DoctypeCount docTemp;
-            for (Iterator i = doctypes.values().iterator(); i.hasNext(); ) {
-                docTemp = (DoctypeCount) i.next();
-                hitsByType = new Vector();
+            Vector<Vector<Object>> dtypes = new Vector<Vector<Object>>();
+            Vector<Object> hitsByType;
+
+            for (DoctypeCount docTemp : doctypes.values()) {
+                hitsByType = new Vector<Object>();
                 hitsByType.addElement(docTemp.doctype.getName());
                 hitsByType.addElement(new Integer(docTemp.count));
                 dtypes.addElement(hitsByType);
@@ -3860,12 +3855,12 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception XPathException if an error occurs
      */
-    public HashMap summary(int resultId) throws EXistException, XPathException {
+    public HashMap<String, Object> summary(int resultId) throws EXistException, XPathException {
         QueryResult qr = factory.resultSets.get(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
         qr.timestamp = System.currentTimeMillis();
-        HashMap result = new HashMap();
+        HashMap<String, Object> result = new HashMap<String, Object>();
         result.put("queryTime", new Integer((int) qr.queryTime));
         if (qr.result == null) {
             result.put("hits", new Integer(0));
@@ -3873,8 +3868,8 @@ public class RpcConnection implements RpcAPI {
         }
         DBBroker broker = factory.getBrokerPool().get(user);
         try {
-            HashMap map = new HashMap();
-            HashMap doctypes = new HashMap();
+            HashMap<String, NodeCount> map = new HashMap<String, NodeCount>();
+            HashMap<String, DoctypeCount> doctypes = new HashMap<String, DoctypeCount>();
             NodeProxy p;
             String docName;
             DocumentType doctype;
@@ -3889,7 +3884,7 @@ public class RpcConnection implements RpcAPI {
                         docName = p.getDocument().getURI().toString();
                         doctype = p.getDocument().getDoctype();
                         if (map.containsKey(docName)) {
-                            counter = (NodeCount) map.get(docName);
+                            counter = map.get(docName);
                             counter.inc();
                         } else {
                             counter = new NodeCount(p.getDocument());
@@ -3909,23 +3904,20 @@ public class RpcConnection implements RpcAPI {
                 }
             }
             result.put("hits", new Integer(qr.result.getItemCount()));
-            Vector documents = new Vector();
-            Vector hitsByDoc;
-            for (Iterator i = map.values().iterator(); i.hasNext(); ) {
-                counter = (NodeCount) i.next();
-                hitsByDoc = new Vector();
-                hitsByDoc.addElement(counter.doc.getFileURI().toString());
-                hitsByDoc.addElement(new Integer(counter.doc.getDocId()));
-                hitsByDoc.addElement(new Integer(counter.count));
+            Vector<Vector<Object>> documents = new Vector<Vector<Object>>();
+            Vector<Object> hitsByDoc;
+            for (NodeCount nodeCounter : map.values()) {
+                hitsByDoc = new Vector<Object>();
+                hitsByDoc.addElement(nodeCounter.doc.getFileURI().toString());
+                hitsByDoc.addElement(new Integer(nodeCounter.doc.getDocId()));
+                hitsByDoc.addElement(new Integer(nodeCounter.count));
                 documents.addElement(hitsByDoc);
             }
             result.put("documents", documents);
-            Vector dtypes = new Vector();
-            Vector hitsByType;
-            DoctypeCount docTemp;
-            for (Iterator i = doctypes.values().iterator(); i.hasNext(); ) {
-                docTemp = (DoctypeCount) i.next();
-                hitsByType = new Vector();
+            Vector<Vector<Object>> dtypes = new Vector<Vector<Object>>();
+            Vector<Object> hitsByType;
+            for (DoctypeCount docTemp : doctypes.values()) {
+                hitsByType = new Vector<Object>();
                 hitsByType.addElement(docTemp.doctype.getName());
                 hitsByType.addElement(new Integer(docTemp.count));
                 dtypes.addElement(hitsByType);
@@ -3947,7 +3939,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public Vector getIndexedElements(String collectionName,
+    public Vector<Vector<Object>> getIndexedElements(String collectionName,
             boolean inclusive) throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getIndexedElements(XmldbURI.xmldbUriFor(collectionName),inclusive);
     }    
@@ -3961,7 +3953,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private Vector getIndexedElements(XmldbURI collUri,
+    private Vector<Vector<Object>> getIndexedElements(XmldbURI collUri,
             boolean inclusive) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
@@ -3972,10 +3964,10 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("collection " + collUri + " not found");
             Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
                     inclusive);
-            Vector result = new Vector(occurrences.length);
+            Vector<Vector<Object>> result = new Vector<Vector<Object>>(occurrences.length);
             for (int i = 0; i < occurrences.length; i++) {
                 QName qname = (QName)occurrences[i].getTerm();
-                Vector temp = new Vector(4);
+                Vector<Object> temp = new Vector<Object>(4);
                 temp.addElement(qname.getLocalName());
                 temp.addElement(qname.getNamespaceURI());
                 temp.addElement(qname.getPrefix() == null ? "" : qname.getPrefix());
@@ -4002,7 +3994,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public Vector scanIndexTerms(String collectionName,
+    public Vector<Vector<Object>> scanIndexTerms(String collectionName,
             String start, String end, boolean inclusive)
             throws PermissionDeniedException, EXistException, URISyntaxException {
     	return scanIndexTerms(XmldbURI.xmldbUriFor(collectionName),start,end,inclusive);
@@ -4019,7 +4011,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception EXistException if an error occurs
      */
-    private Vector scanIndexTerms(XmldbURI collUri,
+    private Vector<Vector<Object>> scanIndexTerms(XmldbURI collUri,
             String start, String end, boolean inclusive)
             throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
@@ -4032,7 +4024,7 @@ public class RpcConnection implements RpcAPI {
             MutableDocumentSet docs = new DefaultDocumentSet();
             collection.allDocs(broker, docs, inclusive, true);
             NodeSet nodes = docs.docsToNodeSet();
-            Vector result = scanIndexTerms(start, end, broker, docs, nodes);
+            Vector<Vector<Object>> result = scanIndexTerms(start, end, broker, docs, nodes);
             return result;
         } finally {
             if(collection != null)
@@ -4052,7 +4044,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception XPathException if an error occurs
      */
-    public Vector scanIndexTerms(String xpath,
+    public Vector<Vector<Object>> scanIndexTerms(String xpath,
             String start, String end)
             throws PermissionDeniedException, EXistException, XPathException {
         DBBroker broker = null;
@@ -4060,7 +4052,7 @@ public class RpcConnection implements RpcAPI {
             broker = factory.getBrokerPool().get(user);
             XQuery xquery = broker.getXQueryService();
             Sequence nodes = xquery.execute(xpath, null, AccessContext.XMLRPC);
-            Vector result = scanIndexTerms(start, end, broker, nodes.getDocumentSet(), nodes.toNodeSet());
+            Vector<Vector<Object>> result = scanIndexTerms(start, end, broker, nodes.getDocumentSet(), nodes.toNodeSet());
             return result;
         } finally {
             factory.getBrokerPool().release(broker);
@@ -4075,14 +4067,14 @@ public class RpcConnection implements RpcAPI {
      * @return
      * @throws PermissionDeniedException
      */
-    private Vector scanIndexTerms(String start, String end, DBBroker broker, DocumentSet docs, NodeSet nodes)
+    private Vector<Vector<Object>> scanIndexTerms(String start, String end, DBBroker broker, DocumentSet docs, NodeSet nodes)
     throws PermissionDeniedException {
         Occurrences occurrences[] =
                 broker.getTextEngine().scanIndexTerms(docs, nodes, start, end);
-        Vector result = new Vector(occurrences.length);
-        Vector temp;
+        Vector<Vector<Object>> result = new Vector<Vector<Object>>(occurrences.length);
+        Vector<Object> temp;
         for (int i = 0; i < occurrences.length; i++) {
-            temp = new Vector(2);
+            temp = new Vector<Object>(2);
             temp.addElement(occurrences[i].getTerm().toString());
             temp.addElement(new Integer(occurrences[i].getOccurrences()));
             result.addElement(temp);
@@ -4103,11 +4095,10 @@ public class RpcConnection implements RpcAPI {
      * @param parameters a <code>HashMap</code> value
      * @return a <code>Properties</code> value
      */
-    private Properties getProperties(HashMap parameters) {
+    private Properties getProperties(HashMap<String, Object> parameters) {
         Properties properties = new Properties();
-        for (Iterator i = parameters.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) i.next();
-            properties.setProperty((String) entry.getKey(), entry.getValue().toString());
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            properties.setProperty(entry.getKey(), entry.getValue().toString());
         }
         return properties;
     }
@@ -4469,7 +4460,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public Vector getDocType(String documentPath)
+    public Vector<String> getDocType(String documentPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getDocType(XmldbURI.xmldbUriFor(documentPath));
     }    
@@ -4482,7 +4473,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception EXistException if an error occurs
      */
-    private Vector getDocType(XmldbURI docUri)
+    private Vector<String> getDocType(XmldbURI docUri)
     throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
         DocumentImpl doc = null;
@@ -4495,7 +4486,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("document not found");
             }
             
-            Vector vector = new Vector(3);
+            Vector<String> vector = new Vector<String>(3);
                         
             if (doc.getDoctype() != null)
             {            	
@@ -4611,8 +4602,8 @@ public class RpcConnection implements RpcAPI {
         return moveOrCopyCollection(collectionPath, destinationPath, newName, true);
     }
 
-    public List getDocumentChunk(String name, HashMap parameters) throws EXistException, PermissionDeniedException, IOException {
-        List result = new ArrayList(2);
+    public List<String> getDocumentChunk(String name, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException, IOException {
+        List<String> result = new ArrayList<String>(2);
         File file;
         file = File.createTempFile("rpc", ".xml");
         file.deleteOnExit();
@@ -4628,12 +4619,12 @@ public class RpcConnection implements RpcAPI {
         try {
             createCollection(namedest);
 
-            HashMap parametri = new HashMap();
+            HashMap<String, Object> parametri = new HashMap<String, Object>();
             parametri.put(OutputKeys.INDENT, "no");
             parametri.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
             parametri.put(OutputKeys.ENCODING, "UTF-8");
 
-            HashMap lista = getCollectionDesc(name);
+            HashMap<String, Object> lista = getCollectionDesc(name);
             Object[] collezioni = (Object[]) lista.get("collections");
             Object[] documents = (Object[]) lista.get("documents");
 
@@ -4646,7 +4637,7 @@ public class RpcConnection implements RpcAPI {
             }
 
             //Copy i file
-            HashMap hash;
+            HashMap<String, Object> hash;
             int p, dsize = documents.length;
             for (int i = 0; i < dsize; i++) {
                 hash = (HashMap) documents[i];
@@ -4679,15 +4670,15 @@ public class RpcConnection implements RpcAPI {
         return setPermissions(resource, null, null, permissions);
     }
 
-    public boolean setUser(String name, String passwd, String digestPassword, Vector groups) throws EXistException, PermissionDeniedException {
+    public boolean setUser(String name, String passwd, String digestPassword, Vector<String> groups) throws EXistException, PermissionDeniedException {
         return setUser(name, passwd, digestPassword,groups, null);
     }
 
-    public HashMap querySummary(int resultId) throws EXistException, PermissionDeniedException, XPathException {
+    public HashMap<String, Object> querySummary(int resultId) throws EXistException, PermissionDeniedException, XPathException {
         return summary(resultId);
     }
 
-    public int executeQuery(byte[] xpath, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public int executeQuery(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return executeQuery(xpath, null, parameters);
     }
 
@@ -4756,12 +4747,12 @@ public class RpcConnection implements RpcAPI {
     }
 
     /** @deprecated Use XmldbURI version instead */
-    public HashMap querySummary(String xquery) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> querySummary(String xquery) throws EXistException, PermissionDeniedException {
         return summary(xquery);
     }
 
     /** @deprecated Use XmldbURI version instead */
-    public byte[] query(byte[] xquery, int howmany, int start, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public byte[] query(byte[] xquery, int howmany, int start, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             String result = query(new String(xquery, "UTF-8"), howmany, start, parameters);
             return result.getBytes("UTF-8");
@@ -4772,7 +4763,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    public HashMap queryP(byte[] xpath, String docName, String s_id, HashMap parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public HashMap<String, Object> queryP(byte[] xpath, String docName, String s_id, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
             return queryP(new String(xpath, "UTF-8"), docName, s_id, parameters);
         } catch (UnsupportedEncodingException e) {
@@ -4781,7 +4772,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    public HashMap queryP(byte[] xpath, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> queryP(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             return queryP(new String(xpath, "UTF-8"), (XmldbURI) null, null, parameters);
             
@@ -4791,7 +4782,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    public HashMap compile(byte[] xquery, HashMap parameters) throws EXistException, PermissionDeniedException {
+    public HashMap<String, Object> compile(byte[] xquery, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             return compile(new String(xquery, "UTF-8"), parameters);
             
@@ -4806,7 +4797,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     public String getDocumentAsString(String name, int prettyPrint, String stylesheet) throws EXistException, PermissionDeniedException {
-        HashMap parametri = new HashMap();
+        HashMap<String, Object> parametri = new HashMap<String, Object>();
 
         if (prettyPrint > 0) {
             parametri.put(OutputKeys.INDENT, "yes");
@@ -4825,7 +4816,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     public byte[] getDocument(String name, String encoding, int prettyPrint, String stylesheet) throws EXistException, PermissionDeniedException {
-        HashMap parametri = new HashMap();
+        HashMap<String, Object> parametri = new HashMap<String, Object>();
 
         if (prettyPrint > 0) {
             parametri.put(OutputKeys.INDENT, "yes");
