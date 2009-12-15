@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
@@ -198,7 +199,7 @@ public interface Sequence {
      * Return an iterator on all collections referenced by documents
      * contained in this sequence..
      */
-    public Iterator getCollectionIterator();
+    public Iterator<Collection> getCollectionIterator();
 
     /**
 	 * Returns a preference indicator, indicating the preference of

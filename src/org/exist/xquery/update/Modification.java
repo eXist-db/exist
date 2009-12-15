@@ -35,7 +35,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -204,11 +203,11 @@ public abstract class Modification extends AbstractExpression
 	}
 
     protected void finishTriggers(Txn transaction) {
-        Iterator iterator = modifiedDocuments.getDocumentIterator();
+        Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
 		DocumentImpl doc;
 		while(iterator.hasNext())
 		{
-			doc = (DocumentImpl) iterator.next();
+			doc = iterator.next();
             context.addModifiedDoc(doc);
 			finishTrigger(transaction, doc);
 		}
@@ -254,8 +253,8 @@ public abstract class Modification extends AbstractExpression
         if(transaction == null)
             transaction = txnMgr.beginTransaction();
         try {
-            for (Iterator i = docs.getDocumentIterator(); i.hasNext(); ) {
-                DocumentImpl next = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+                DocumentImpl next = i.next();
                 if(next.getMetadata().getSplitCount() > splitCount)
                     try {
                         next.getUpdateLock().acquire(Lock.WRITE_LOCK);
@@ -283,10 +282,10 @@ public abstract class Modification extends AbstractExpression
 		//if we are doing a batch update then only call prepare for the first update to that document
 		if(context.hasBatchTransaction())
 		{
-			Iterator itTrigDoc = modifiedDocuments.getDocumentIterator();
+			Iterator<DocumentImpl> itTrigDoc = modifiedDocuments.getDocumentIterator();
 	    	while(itTrigDoc.hasNext())
 	    	{
-	    		DocumentImpl trigDoc = (DocumentImpl)itTrigDoc.next();
+	    		DocumentImpl trigDoc = itTrigDoc.next();
 	    		if(trigDoc.getURI().equals(doc.getURI()))
 	    		{
 	    			return;

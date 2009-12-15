@@ -43,7 +43,8 @@ public class ExpressionDumper {
     }
     
     private PrintWriter out;
-    private int indentAmount;
+    @SuppressWarnings("unused")
+	private int indentAmount;
     private String spaces;
     
     private int verbosity;
