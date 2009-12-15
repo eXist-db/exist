@@ -830,8 +830,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
         //No host ;-)
         accessor.append("");
         //No port ;-)
-        if (-1 != -1)
-            accessor.append(":").append(-1);
+//        if (-1 != -1)
+//            accessor.append(":").append(-1);
         //No context ;-)
         //accessor.append(getContext());
         try {

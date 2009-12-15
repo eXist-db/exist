@@ -61,6 +61,7 @@ public class RemoteResourceIterator implements ResourceIterator {
         pos = next;
     }
     
+	@SuppressWarnings("unchecked")
 	public Resource nextResource() throws XMLDBException {
         if(pos >= resources.size())
             return null;

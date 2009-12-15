@@ -70,12 +70,12 @@ public class RetrieveChunked {
             client.setConfig(config);
 
             // Setup xml serializer
-            Hashtable options = new Hashtable();
+            Hashtable<String, String> options = new Hashtable<String, String>();
             options.put("indent", "no");
             options.put("encoding", "UTF-8");
             
             // Setup xmlrpc parameters
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.addElement( path );
             params.addElement( options );
             
@@ -83,7 +83,7 @@ public class RetrieveChunked {
             FileOutputStream fos = new FileOutputStream(filename);
             
             // Shoot first method write data
-            HashMap ht = (HashMap) client.execute("getDocumentData", params);
+            HashMap<?,?> ht = (HashMap<?,?>) client.execute("getDocumentData", params);
             int offset = ((Integer)ht.get("offset")).intValue();
             byte[]data= (byte[]) ht.get("data");
             String handle = (String) ht.get("handle");
@@ -97,7 +97,7 @@ public class RetrieveChunked {
                 params.addElement(new Integer(offset));
                 
                 // Get and write next chunk
-                ht = (HashMap) client.execute("getNextChunk", params);
+                ht = (HashMap<?,?>) client.execute("getNextChunk", params);
                 data= (byte[]) ht.get("data");
                 offset = ((Integer)ht.get("offset")).intValue();
                 fos.write(data);

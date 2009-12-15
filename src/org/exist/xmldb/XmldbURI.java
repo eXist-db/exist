@@ -45,7 +45,7 @@ import org.exist.xquery.value.AnyURIValue;
  * full uri support.  The create method creates a minimal object to keep memory
  * usage low.
  */
-public class XmldbURI implements Comparable {
+public class XmldbURI implements Comparable<Object> {
     
     protected final static Logger LOG = Logger.getLogger(XmldbURI.class);
 	

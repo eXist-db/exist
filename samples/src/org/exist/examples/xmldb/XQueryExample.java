@@ -53,7 +53,7 @@ public class XQueryExample {
             if ( args.length < 1 )
                 usage();
 
-            Class cl = Class.forName( driver );
+            Class<?> cl = Class.forName( driver );
             Database database = (Database) cl.newInstance();
             database.setProperty( "create-database", "true" );
             DatabaseManager.registerDatabase( database );

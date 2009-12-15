@@ -64,7 +64,7 @@ public class Store {
 		f.close();
 
 		// set parameters for XML-RPC call
-		Vector params = new Vector();
+		Vector<Object> params = new Vector<Object>();
 		params.addElement(xml.toString());
 		params.addElement(docName);
 		params.addElement(new Integer(0));
