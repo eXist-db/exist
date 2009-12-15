@@ -27,6 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationField;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -48,6 +50,7 @@ import org.exist.xmldb.XmldbURI;
  * @author wolf
  *
  */
+@ConfigurationClass("recovery")
 public class TransactionManager {
 	
 	public final static String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
@@ -64,10 +67,13 @@ public class TransactionManager {
 
     private Journal journal;
     
+    @ConfigurationField("enabled")
     private boolean enabled;
     
+    @ConfigurationField("group-commit")
     private boolean groupCommit = false;
 
+    @ConfigurationField("force-restart")
     private boolean forceRestart = false;
 
     private int activeTransactions = 0;

@@ -40,6 +40,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationField;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.SymbolTable;
@@ -77,7 +79,8 @@ import org.exist.xquery.PerformanceStats;
  *@author  Wolfgang Meier <wolfgang@exist-db.org>
  *@author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-//TODO : in the future, separate the design between the Map of DBInstances and their non static implementation 
+//TODO : in the future, separate the design between the Map of DBInstances and their non static implementation
+@ConfigurationClass("pool")
 public class BrokerPool extends Observable {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
@@ -360,7 +363,7 @@ public class BrokerPool extends Observable {
     
     /**
      * <code>true</code> if the database instance is able to handle transactions. 
-     */    
+     */
     private boolean transactionsEnabled;   	
 
 	/**
@@ -368,6 +371,7 @@ public class BrokerPool extends Observable {
 	 */
 	private String instanceName;
 
+	//TODO: change 0 = initializing, 1 = operating, -1 = shutdown  (shabanovd)
     private final static int OPERATING = 0;
     private final static int INITIALIZING = 1;
     private final static int SHUTDOWN = 2;
@@ -382,11 +386,13 @@ public class BrokerPool extends Observable {
 	/**
 	 * The minimal number of brokers for the database instance 
 	 */
+	@ConfigurationField("min")
 	private int minBrokers;
 	
 	/**
 	 * The maximal number of brokers for the database instance 
 	 */
+	@ConfigurationField("max")
 	private int maxBrokers;
 
 	/**
@@ -426,6 +432,7 @@ public class BrokerPool extends Observable {
     //TODO : for now, this member is used for recovery management
     private boolean isReadOnly;    
 
+    @ConfigurationField("pageSize")
     private int pageSize;
     
     private FileLock dataLock;
@@ -438,11 +445,13 @@ public class BrokerPool extends Observable {
 	/**
 	 * Delay (in ms) for running jobs to return when the database instance shuts down.
 	 */
+    @ConfigurationField("wait-before-shutdown")
 	private long maxShutdownWait;
 
 	/**
 	 * The scheduler for the database instance.
 	 */
+    @ConfigurationField("scheduler")
 	private Scheduler scheduler;
 
     /**
@@ -458,6 +467,7 @@ public class BrokerPool extends Observable {
     /**
 	 * Cache synchronization on the database instance.
 	 */
+    @ConfigurationField("sync-period")
 	private long majorSyncPeriod = DEFAULT_SYNCH_PERIOD;		//the period after which a major sync should occur		
 	private long lastMajorSync = System.currentTimeMillis();	//time the last major sync occurred
     
