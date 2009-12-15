@@ -27,8 +27,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class Step extends AbstractExpression {
 
@@ -38,7 +38,7 @@ public abstract class Step extends AbstractExpression {
 
     protected boolean abbreviatedStep = false;
 
-    protected List<Predicate> predicates = new ArrayList<Predicate>();
+    protected List<Predicate> predicates = new CopyOnWriteArrayList<Predicate>();
 
     protected NodeTest test;
 
