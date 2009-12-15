@@ -51,7 +51,8 @@ public class Runner {
 
     private int nextId = 0;
 
-    public Runner(Element root, TestResultWriter reporter) throws EXistException, XMLDBException {
+    @SuppressWarnings("unchecked")
+	public Runner(Element root, TestResultWriter reporter) throws EXistException, XMLDBException {
         this.resultWriter = reporter;
         initDb();
 

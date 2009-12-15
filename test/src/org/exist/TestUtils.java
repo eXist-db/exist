@@ -40,13 +40,13 @@ public class TestUtils {
             // Remove all collections below the /db root, except /db/system
             Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
             assertNotNull(root);
-            for (Iterator i = root.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
                 root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
             }
             broker.saveCollection(transaction, root);
-            for (Iterator i = root.collectionIterator(); i.hasNext(); ) {
-                XmldbURI childName = (XmldbURI) i.next();
+            for (Iterator<XmldbURI> i = root.collectionIterator(); i.hasNext(); ) {
+                XmldbURI childName = i.next();
                 if (childName.equals("system"))
                     continue;
                 Collection childColl = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append(childName));
