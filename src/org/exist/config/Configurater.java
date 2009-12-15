@@ -1,0 +1,89 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2008-2009 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id:$
+ */
+package org.exist.config;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.exist.config.annotation.ConfigurationField;
+
+/**
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *
+ */
+public class Configurater {
+	
+	private final static Logger LOG = Logger.getLogger(Configurater.class);
+
+	private static Map<Class<Configurable>, Map<String, Field>> map = 
+		new HashMap<Class<Configurable>, Map<String, Field>>();
+	
+	private static Map<String, Field> getProperyFieldMap(Class<?> clazz) {
+		if (map.containsKey(clazz))
+			return map.get(clazz);
+			
+		Map<String, Field> link = new HashMap<String, Field>();
+    	for (Field field : clazz.getDeclaredFields())
+    		if (field.isAnnotationPresent(ConfigurationField.class)) {
+    			link.put(field.getAnnotation(ConfigurationField.class).value(), field);
+    		}
+    	
+    	return link;
+	}
+	
+	public static boolean configure(Configurable instance, ConfigElementImpl configuration) {
+		Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+		List<String> properties = configuration.getProperties();
+		
+		if (properties.size() == 0)
+			LOG.info("no properties for "+instance.getClass()+" @ "+configuration.getLocalName());
+		
+		for (String property : properties) {
+			if (!properyFieldMap.containsKey(property)) {
+				LOG.warn("unused property "+property);
+				continue;
+			}
+			
+			Field field = properyFieldMap.get(property);
+			try {
+				if (field.getType().getName().equals("int")) {
+					Integer value = configuration.getPropertyInteger(property);
+					if (value != null)
+						field.set(instance, value);
+				} else {
+					throw new IllegalArgumentException("unsupported configuration value type "+field.getType());
+				}
+			} catch (IllegalArgumentException e) {
+				LOG.debug("configuration error",e);
+				return false;
+			} catch (IllegalAccessException e) {
+				LOG.debug("security error",e);
+				return false;
+			}
+		}
+		
+		return true;
+	}
+}
