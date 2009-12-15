@@ -57,9 +57,9 @@ public class ProcessMonitor {
 
 	private final static Logger LOG = Logger.getLogger(ProcessMonitor.class);
 	
-	private Set runningQueries = new HashSet();
+	private Set<XQueryWatchDog> runningQueries = new HashSet<XQueryWatchDog>();
 
-    private Map processes = new HashMap();
+    private Map<Thread, Object> processes = new HashMap<Thread, Object>();
 
 	public ProcessMonitor() {
 		super();
@@ -69,6 +69,7 @@ public class ProcessMonitor {
         startJob(action, null);
     }
 
+    //TODO: addInfo = XmldbURI ? -shabanovd
     public void startJob(String action, Object addInfo) {
         JobInfo info = new JobInfo(action);
         info.setAddInfo(addInfo);
@@ -88,6 +89,7 @@ public class ProcessMonitor {
             JobInfo jobs[] = new JobInfo[processes.size()];
             int j = 0;
             for (Iterator i = processes.values().iterator(); i.hasNext(); j++) {
+                //BUG: addInfo = XmldbURI ? -shabanovd
                 jobs[j] = (JobInfo) i.next();
             }
             return jobs;
@@ -108,9 +110,7 @@ public class ProcessMonitor {
 	
 	public void killAll(long waitTime) {
         // directly called from BrokerPool itself. no need to synchronize.
-		XQueryWatchDog watchdog;
-		for(Iterator i = runningQueries.iterator(); i.hasNext(); ) {
-			watchdog = (XQueryWatchDog) i.next();
+		for(XQueryWatchDog watchdog : runningQueries) {
 			LOG.debug("Killing query: " + 
 			        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
 			watchdog.kill(waitTime);
@@ -122,8 +122,8 @@ public class ProcessMonitor {
         synchronized (runningQueries) {
             XQueryWatchDog watchdogs[] = new XQueryWatchDog[runningQueries.size()];
             int j = 0;
-            for (Iterator i = runningQueries.iterator(); i.hasNext(); j++) {
-                watchdogs[j] = (XQueryWatchDog) i.next();
+            for (Iterator<XQueryWatchDog> i = runningQueries.iterator(); i.hasNext(); j++) {
+                watchdogs[j] = i.next();
             }
             return watchdogs;
         }

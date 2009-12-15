@@ -24,6 +24,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtNodeSet;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -31,6 +32,7 @@ import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.TreeMap;
 
@@ -42,7 +44,7 @@ public abstract class ElementIndex extends Observable {
     /** The broker that is using this value index */
     protected DBBroker broker;
     
-    protected TreeMap pending = new TreeMap();
+    protected TreeMap<QName, ArrayList<NodeProxy>> pending = new TreeMap<QName, ArrayList<NodeProxy>>();
     
     /** The current document */
     protected DocumentImpl doc;

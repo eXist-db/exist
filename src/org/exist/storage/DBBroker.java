@@ -168,7 +168,7 @@ public abstract class DBBroker extends Observable {
 	}
 	
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
-    protected List contentLoadingObservers = new ArrayList();	
+    protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<ContentLoadingObserver>();	
 	
     /** Remove all observers */
     public void clearContentLoadingObservers() {
@@ -320,7 +320,7 @@ public abstract class DBBroker extends Observable {
 	 * @param node
 	 * @return NodeIterator of node.
 	 */
-	public Iterator getNodeIterator(StoredNode node) {
+	public Iterator<StoredNode> getNodeIterator(StoredNode node) {
 		throw new RuntimeException("not implemented for this storage backend");
 	}
 

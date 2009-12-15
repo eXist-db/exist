@@ -20,7 +20,6 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
@@ -115,7 +114,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());        
         if (nativeFile == null) {
             File file = new File(dataDir + File.separatorChar + getFileName());
-            LOG.debug("Creating '" + file.getName() + "'...");
+            
+            if (LOG.isDebugEnabled())
+            	LOG.debug("Creating '" + file.getName() + "'...");
+            
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
             config.setProperty(getConfigKeyForFile(), nativeFile); 
@@ -146,10 +148,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     				proxy.getDocument().getDocId() + "') differ !");
     	}
         //Is this qname already pending ?
-        ArrayList buf = (ArrayList) pending.get(qname);
+        ArrayList<NodeProxy> buf = pending.get(qname);
         if (buf == null) {
             //Create a node list
-            buf = new ArrayList(50);
+            buf = new ArrayList<NodeProxy>(50);
             pending.put(qname, buf);
         }
         //Add node's proxy to the list
@@ -198,11 +200,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final int collectionId = this.doc.getCollection().getId(); 
         final Lock lock = dbNodes.getLock();   
         int count = 0;
-        for (Iterator i = pending.entrySet().iterator(); i.hasNext(); count++) {
-            Map.Entry entry = (Map.Entry) i.next();
-            QName qname = (QName) entry.getKey();
+        for (Iterator<Map.Entry<QName, ArrayList<NodeProxy>>> i = pending.entrySet().iterator(); i.hasNext(); count++) {
+            Map.Entry<QName, ArrayList<NodeProxy>> entry = i.next();
+            QName qname = entry.getKey();
             //TODO : NativeValueIndex uses LongLinkedLists -pb
-            ArrayList gids = (ArrayList) entry.getValue();            
+            ArrayList<NodeProxy> gids = entry.getValue();            
             int gidsCount = gids.size();
             //Don't forget this one
             FastQSort.sort(gids, 0, gidsCount - 1);
@@ -216,7 +218,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Compute the GIDs list
             NodeId previous = null;
             for (int j = 0; j < gidsCount; j++) {
-                NodeProxy storedNode = (NodeProxy) gids.get(j);
+                NodeProxy storedNode = gids.get(j);
                 if (doc.getDocId() != storedNode.getDocument().getDocId()) {
                     throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" +
                             storedNode.getDocument().getDocId() + "') differ !");
@@ -272,12 +274,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             return; 
         final int collectionId = this.doc.getCollection().getId();
         final Lock lock = dbNodes.getLock();
-        for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-            Map.Entry entry = (Map.Entry) i.next();
-            List storedGIDList = (ArrayList) entry.getValue();
-            QName qname = (QName) entry.getKey();
+        for (Map.Entry<QName, ArrayList<NodeProxy>> entry : pending.entrySet()) {
+            List<NodeProxy> storedGIDList = entry.getValue();
+            QName qname = entry.getKey();
             final Value key = computeKey(collectionId, qname);     
-            List newGIDList = new ArrayList();
+            List<NodeProxy> newGIDList = new ArrayList<NodeProxy>();
             os.clear();             
             try {
                 lock.acquire(Lock.WRITE_LOCK);
@@ -343,7 +344,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         NodeId previous = null;
                         NodeProxy storedNode;
                         for (int j = 0; j < gidsCount; j++) {
-                            storedNode = (NodeProxy) newGIDList.get(j);
+                            storedNode = newGIDList.get(j);
                             if (doc.getDocId() != storedNode.getDocument().getDocId()) {
                                 throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
                                         storedNode.getDocument().getDocId() + "') differ !");
@@ -420,10 +421,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            ArrayList elements = dbNodes.findKeys(query);
+            ArrayList<Value> elements = dbNodes.findKeys(query);
             for (int i = 0; i < elements.size(); i++) {
                 boolean changed = false;
-                Value key = (Value) elements.get(i);
+                Value key = elements.get(i);
                 VariableByteInput is = dbNodes.getAsStream(key);
                 if (is == null)
                     continue;
@@ -499,9 +500,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
         boolean descendantAxis = selector instanceof DescendantSelector;
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
-            Collection collection = (Collection) i.next();
+            Collection collection = i.next();
             int collectionId = collection.getId();
             final Value key = computeTypedKey(type, collectionId, qname);
             try {
@@ -590,9 +591,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
-            Collection collection = (Collection) i.next();
+            Collection collection = i.next();
             int collectionId = collection.getId();
             final Value key = computeTypedKey(type, collectionId, qname);
             try {
@@ -839,10 +840,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             try {
                 lock.acquire(Lock.READ_LOCK);
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
-                ArrayList values = dbNodes.findEntries(query);
-                for (Iterator j = values.iterator(); j.hasNext();) {
-                    //TOUNDERSTAND : what's in there ?
-                    Value val[] = (Value[]) j.next();
+                ArrayList<Value[]> values = dbNodes.findEntries(query);
+                //TOUNDERSTAND : what's in there ?
+                for (Value val[] : values) {
                     short sym = ByteConversion.byteToShort(val[0].getData(), OFFSET_SYMBOL);
                     short nsSymbol = ByteConversion.byteToShort(val[0].getData(), OFFSET_NSSYMBOL);
                     String name = symbols.getName(sym);
@@ -906,9 +906,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         try {
             lock.acquire(Lock.WRITE_LOCK);
             //TODO : NativeValueIndex uses LongLinkedLists -pb
-            ArrayList elements = dbNodes.findKeys(query);           
-            for (int i = 0; i < elements.size(); i++) {
-                Value key = (Value) elements.get(i);
+            ArrayList<Value> elements = dbNodes.findKeys(query);           
+            for (Value key : elements) {
                 Value value = dbNodes.get(key);
                 short sym = ByteConversion.byteToShort(key.data(), key.start() + OFFSET_SYMBOL);
                 String nodeName = symbols.getName(sym);
@@ -990,9 +989,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
       return new ElementValue(type, collectionId, sym, nsSym);
     }
     
-    private static boolean containsNode(List list, NodeId nodeId) {
-        for (int i = 0; i < list.size(); i++) {
-            if (((NodeProxy) list.get(i)).getNodeId().equals(nodeId)) 
+    private static boolean containsNode(List<NodeProxy> list, NodeId nodeId) {
+        for (NodeProxy item : list) {
+            if (item.getNodeId().equals(nodeId)) 
                 return true;
         }
         return false;
@@ -1024,15 +1023,15 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 	@Override
 	public boolean matchElementsByTagName(byte type, DocumentSet docs,
 			QName qname, NodeSelector selector) {
-        short nodeType = getIndexType(type);
+//        short nodeType = getIndexType(type);
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
         final Lock lock = dbNodes.getLock();
         // true if the output document set is the same as the input document set
         boolean sameDocSet = true;
-        boolean descendantAxis = selector instanceof DescendantSelector;
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+//        boolean descendantAxis = selector instanceof DescendantSelector;
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
             //Compute a key for the node
-            Collection collection = (Collection) i.next();
+            Collection collection = i.next();
             int collectionId = collection.getId();
             final Value key = computeTypedKey(type, collectionId, qname);
             try {
@@ -1062,17 +1061,17 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
                         if (selector == null) {
-                            long address = StorageAddress.read(is);
-                            NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
+//                            long address = StorageAddress.read(is);
+//                            NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
 //                            result.add(storedNode, gidsCount);
                             return true;
                         } else {
                             //Filter out the node if requested to do so
                             NodeProxy storedNode = selector.match(storedDocument, nodeId);
                             if (storedNode != null) {
-                                long address = StorageAddress.read(is);
-                                storedNode.setInternalAddress(address);
-                                storedNode.setNodeType(nodeType);
+//                                long address = StorageAddress.read(is);
+//                                storedNode.setInternalAddress(address);
+//                                storedNode.setNodeType(nodeType);
 //                                result.add(storedNode, gidsCount);
                                 return true;
                             } else {
