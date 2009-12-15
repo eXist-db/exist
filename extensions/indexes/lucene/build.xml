@@ -16,7 +16,7 @@
     </target>
 	
     <target name="clean">
-        <delete file="${top.dir}/${lib.extensions}/exist-lucene-module.jar"/>
+        <delete file="${top.dir}/${lib.extensions}/exist-lucene-module.jar" failonerror="false"/>
         <delete dir="${module.classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
     </target>

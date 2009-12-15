@@ -94,7 +94,7 @@
     <target name="clean">
         <delete dir="${module.classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
-        <delete file="${top.dir}/${lib.extensions}/exist-spatial-module.jar"/> 
+        <delete file="${top.dir}/${lib.extensions}/exist-spatial-module.jar" failonerror="false"/> 
     </target>
     
     <target name="all-clean">
