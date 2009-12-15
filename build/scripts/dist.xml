@@ -43,7 +43,7 @@
             </lib>
             <lib dir="${lib.core}">
                 <include name="*.jar"/>
-                <exclude name="javax.servlet-1.4.jar"/>
+                <exclude name="servlet-api-2.5-20081211.jar"/>
             </lib>
 			<lib dir="${lib.extensions}">
 				<include name="*.jar"/>
