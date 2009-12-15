@@ -40,7 +40,7 @@ public class MultipleDatabases {
 	
 	public static void main(String args[]) throws Exception {
 		// initialize database drivers
-		Class cl = Class.forName(driver);
+		Class<?> cl = Class.forName(driver);
 		// create the default database
 		Database database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");

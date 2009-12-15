@@ -56,13 +56,13 @@ public class Retrieve {
         config.setBasicPassword("guest");
         client.setConfig(config);
 
-        HashMap options = new HashMap();
+        HashMap<String, String> options = new HashMap<String, String>();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
         options.put("expand-xincludes", "yes");
         options.put("process-xsl-pi", "no");
         
-        Vector params = new Vector();
+        Vector<Object> params = new Vector<Object>();
         params.addElement( args[0] ); 
         params.addElement( options );
         String xml = (String)

@@ -69,7 +69,7 @@ public class StoreChunked {
             client.setConfig(config);
 
             // Initialize xmlrpc parameters
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             String handle=null;
             
             // Copy data from inputstream to database

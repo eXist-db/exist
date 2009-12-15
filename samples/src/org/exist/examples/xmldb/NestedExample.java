@@ -28,7 +28,7 @@ public class NestedExample {
 		"<para>Paragraph 2</para></chapter></book>";
 	
 	public static void main(String[] args) throws Exception {
-		Class cl = Class.forName( driver );
+		Class<?> cl = Class.forName( driver );
 		Database database = (Database) cl.newInstance();
 		database.setProperty( "create-database", "true" );
 		DatabaseManager.registerDatabase( database );

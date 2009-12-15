@@ -32,7 +32,7 @@ public class Put {
 
         // initialize driver
 		String driver = "org.exist.xmldb.DatabaseImpl";
-		Class cl = Class.forName(driver);			
+		Class<?> cl = Class.forName(driver);			
 		Database database = (Database)cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);

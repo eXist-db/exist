@@ -37,7 +37,7 @@ public class Retrieve {
 		String collection = args[0];
 
 		// initialize database drivers
-		Class cl = Class.forName(driver);
+		Class<?> cl = Class.forName(driver);
 		Database database = (Database) cl.newInstance();
 		DatabaseManager.registerDatabase(database);
 

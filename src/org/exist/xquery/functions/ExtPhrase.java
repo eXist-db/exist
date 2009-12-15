@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -216,7 +215,7 @@ public class ExtPhrase extends ExtFulltext {
 			current.setMatches(null);
 			// iterate on attach matches, with unicity of related nodeproxy gid
 			while(nextMatch != null) {
-				Hashtable matchTable = new Hashtable();
+				Hashtable<String, Match> matchTable = new Hashtable<String, Match>();
                 NodeId nodeId = nextMatch.getNodeId(); 
 				// if current gid has not been previously processed
 				if(!matchGid.contains(nodeId)) {
@@ -247,7 +246,7 @@ public class ExtPhrase extends ExtFulltext {
 								// all terms found
 								if(matchTable.containsKey(matchTerm)) {
 									// previously found matchTerm
-									Match match = (Match)(matchTable.get(matchTerm));
+									Match match = matchTable.get(matchTerm);
                                     match.addOffset(token.startOffset(), matchTerm.length());
 								} else {
 									Match match = nextMatch.createInstance(getExpressionId(), nodeId, matchTerm);
@@ -282,9 +281,9 @@ public class ExtPhrase extends ExtFulltext {
 					}
 					// one or more match found
 					if(matchTable.size()!=0) {
-						Enumeration eMatch = matchTable.elements();
+						Enumeration<Match> eMatch = matchTable.elements();
 						while(eMatch.hasMoreElements()){
-							Match match = (Match)(eMatch.nextElement());
+							Match match = eMatch.nextElement();
 							current.addMatch(match);
 					     }
 						// add current to result
