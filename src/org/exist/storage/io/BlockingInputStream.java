@@ -183,7 +183,8 @@ public class BlockingInputStream extends InputStream {
     }
 
     // DWES Never called?
-    private int availablePart2() {
+    @SuppressWarnings("unused")
+	private int availablePart2() {
         return (tail >= head) ? 0 : tail;
     }
 
@@ -344,7 +345,8 @@ public class BlockingInputStream extends InputStream {
     }
 
     // DWES Never called?
-    private int freePart2() {
+    @SuppressWarnings("unused")
+	private int freePart2() {
         int prevhead = prev(head);
         return (prevhead >= tail) ? 0 : prevhead;
     }

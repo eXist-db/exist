@@ -68,7 +68,6 @@ import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -281,7 +280,7 @@ public class XIncludeFilter implements Receiver {
         //String xpointer = null;
         //String docName = href;
 
-        Map params = null;
+        Map<String, String> params = null;
         DocumentImpl doc = null;
         org.exist.memtree.DocumentImpl memtreeDoc = null;
         boolean xqueryDoc = false;
@@ -443,9 +442,8 @@ public class XIncludeFilter implements Receiver {
 
                 // pass parameters as variables
                 if (params != null) {
-                    for (Iterator i = params.entrySet().iterator(); i.hasNext(); ) {
-                        Map.Entry entry = (Map.Entry) i.next();
-                        context.declareVariable(entry.getKey().toString(), entry.getValue());
+                    for (Map.Entry<String, String> entry : params.entrySet()) {
+                        context.declareVariable(entry.getKey(), entry.getValue());
                     }
                 }
 
@@ -557,8 +555,8 @@ public class XIncludeFilter implements Receiver {
 		return xpointer;
 	}
     
-    protected HashMap processParameters(String args) {
-        HashMap parameters = new HashMap();
+    protected HashMap<String, String> processParameters(String args) {
+        HashMap<String, String> parameters = new HashMap<String, String>();
         String param;
         String value; 
         int start = 0;

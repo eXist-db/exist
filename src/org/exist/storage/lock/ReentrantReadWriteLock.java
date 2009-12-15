@@ -328,7 +328,8 @@ public class ReentrantReadWriteLock implements Lock {
             writeLocks--;
         }
         if (DEBUG) {
-    		StackTraceElement[] se = seStack.pop();
+    		@SuppressWarnings("unused")
+			StackTraceElement[] se = seStack.pop();
     		se = null;
     	}
 //        LOG.debug("Lock " + getId() + " released by " + owner_.getName());

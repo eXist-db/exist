@@ -46,7 +46,7 @@ public class ExistSAXParserFactory {
      */
     public static SAXParserFactory getSAXParserFactory(String className) {
 
-        Class clazz = null;
+        Class<?> clazz = null;
         try {
             clazz = Class.forName(className);
 

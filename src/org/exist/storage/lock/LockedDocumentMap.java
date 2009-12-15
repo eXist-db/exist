@@ -75,7 +75,8 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
 
     public void unlock() {
 	    LockedDocument d;
-	    Lock dlock;
+	    @SuppressWarnings("unused")
+		Lock dlock;
         for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;
@@ -86,7 +87,8 @@ public class LockedDocumentMap extends Int2ObjectHashMap {
 
     public LockedDocumentMap unlockSome(DocumentSet keep) {
         LockedDocument d;
-        Lock dlock;
+        @SuppressWarnings("unused")
+		Lock dlock;
         for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;

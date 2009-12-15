@@ -39,13 +39,13 @@ public class DirectoryScanner {
 	public final static File[] scanDir(File baseDir, String pattern) {
         ///TODO : why this test ? File should make it ! -pb
 		pattern = pattern.replace('/', File.separatorChar).replace('\\',File.separatorChar);
-		ArrayList list = new ArrayList();
+		ArrayList<File> list = new ArrayList<File>();
 		scanDir(list, baseDir, "", pattern);
 		File[] files = new File[list.size()];
 		return (File[])list.toArray(files);
 	}
 	
-	private final static void scanDir(ArrayList list, File dir, String vpath, String pattern) {
+	private final static void scanDir(ArrayList<File> list, File dir, String vpath, String pattern) {
 		String files[] = dir.list();
 		if (files == null) {
 			return;

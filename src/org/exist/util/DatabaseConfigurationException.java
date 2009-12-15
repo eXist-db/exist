@@ -2,7 +2,9 @@ package org.exist.util;
 
 public class DatabaseConfigurationException extends Exception {
 
-    public DatabaseConfigurationException() {
+	private static final long serialVersionUID = 5583749487314182182L;
+
+	public DatabaseConfigurationException() {
 		super();
 	}
 

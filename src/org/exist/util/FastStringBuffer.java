@@ -36,7 +36,9 @@ import java.io.Writer;
 
 public final class FastStringBuffer implements CharSequence, Serializable {
 
-    private char[] array;
+	private static final long serialVersionUID = -504264698052799896L;
+
+	private char[] array;
     private int used = 0;
 
     public FastStringBuffer(int initialSize) {

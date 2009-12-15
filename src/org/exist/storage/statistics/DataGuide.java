@@ -90,7 +90,7 @@ public class DataGuide {
     }
 
     public String toString() {
-        List paths = new ArrayList();
+        List<StringBuilder> paths = new ArrayList<StringBuilder>();
         root.dump(new StringBuilder(), paths);
 
         StringBuilder buf = new StringBuilder();

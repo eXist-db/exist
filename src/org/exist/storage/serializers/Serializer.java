@@ -29,7 +29,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -267,7 +266,7 @@ public abstract class Serializer implements XMLReader {
 		if (properties == null)
 			return;
 		String key;
-		for(Enumeration e = properties.propertyNames(); e.hasMoreElements(); ) {
+		for(Enumeration<?> e = properties.propertyNames(); e.hasMoreElements(); ) {
 		    key = (String)e.nextElement();
 		    if(key.equals(Namespaces.SAX_LEXICAL_HANDLER))
 		        lexicalHandler = (LexicalHandler)properties.get(key);
@@ -276,13 +275,12 @@ public abstract class Serializer implements XMLReader {
 		}
 	}
 
-	public void setProperties(HashMap table)
+	public void setProperties(HashMap<String, Object> table)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		if(table == null)
 			return;
-		for(Iterator i = table.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry entry = (Map.Entry) i.next();
-			setProperty((String)entry.getKey(), entry.getValue().toString());
+		for(Map.Entry<String, Object> entry : table.entrySet()) {
+			setProperty(entry.getKey(), entry.getValue().toString());
 		}
 	}
 	
@@ -686,7 +684,7 @@ public abstract class Serializer implements XMLReader {
 	protected void checkStylesheetParams() {
 		if(xslHandler == null)
 			return;
-		for(Enumeration e = outputProperties.propertyNames(); e.hasMoreElements(); ) {
+		for(Enumeration<?> e = outputProperties.propertyNames(); e.hasMoreElements(); ) {
 			String property = (String)e.nextElement();
 			if(property.startsWith(EXistOutputKeys.STYLESHEET_PARAM)) {
 				String value = outputProperties.getProperty(property);
