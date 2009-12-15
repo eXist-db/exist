@@ -558,7 +558,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
            	
 			if (document == null) {
                 throw new EXistException("Resource "
-                        + document.getFileURI() + " not found");
+                        + docId + " not found");
             }
 			
 			if (!document.getPermissions().validate(user, Permission.UPDATE))
