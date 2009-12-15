@@ -133,8 +133,8 @@ public class LocationStep extends Step {
 
 		// TODO : normally, we should call this one...
 		// int deps = super.getDependencies(); ???
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
-			deps |= ((Predicate) i.next()).getDependencies();
+		for (Predicate pred : predicates) {
+			deps |= pred.getDependencies();
 		}
 
 		// TODO : should we remove the CONTEXT_ITEM dependency returned by the
@@ -250,10 +250,10 @@ public class LocationStep extends Step {
 			Sequence contextSequence) throws XPathException {
 		Predicate pred;
 		Sequence result = contextSequence;
-		for (Iterator i = predicates.iterator(); i.hasNext()
+		for (Iterator<Predicate> i = predicates.iterator(); i.hasNext()
 				&& (result instanceof VirtualNodeSet || !result.isEmpty());) {
 			// TODO : log and/or profile ?
-			pred = (Predicate) i.next();
+			pred = i.next();
 			pred.setContextDocSet(getContextDocSet());
 			result = pred.evalPredicate(outerSequence, result, axis);
 			// subsequent predicates operate on the result of the previous one
@@ -486,8 +486,8 @@ public class LocationStep extends Step {
 					} else if (Type.subTypeOf(contextSet.getItemType(),
 							Type.NODE)) {
 						NodeProxy p;
-						for (Iterator i = contextSet.iterator(); i.hasNext();) {
-							p = (NodeProxy) i.next();
+						for (Iterator<NodeProxy> i = contextSet.iterator(); i.hasNext();) {
+							p = i.next();
 							if (test.matches(p))
 								p.addContextNode(contextId, p);
 						}
@@ -662,8 +662,7 @@ public class LocationStep extends Step {
 
 		if (useDirectChildSelect) {
 			NewArrayNodeSet result = new NewArrayNodeSet();
-			for (Iterator i = contextSet.iterator(); i.hasNext();) {
-				NodeProxy p = (NodeProxy) i.next();
+			for (NodeProxy p : contextSet) {
 				result.addAll(p.directSelectChild(test.getName(), contextId));
 			}
 			return result;
@@ -840,8 +839,7 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
 			try {
-				for (Iterator i = contextSet.iterator(); i.hasNext();) {
-					NodeProxy current = (NodeProxy) i.next();
+				for (NodeProxy current : contextSet) {
 					NodeProxy parent = new NodeProxy(current.getDocument(),
 							current.getNodeId().getParentId());
 					StreamFilter filter;
@@ -978,8 +976,7 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			try {
 				NodeSet result = new NewArrayNodeSet();
-				for (Iterator i = contextSet.iterator(); i.hasNext();) {
-					NodeProxy next = (NodeProxy) i.next();
+				for (NodeProxy next : contextSet) {
 					NodeList cl = next.getDocument().getChildNodes();
 					for (int j = 0; j < cl.getLength(); j++) {
 						StoredNode node = (StoredNode) cl.item(j);
@@ -1075,8 +1072,7 @@ public class LocationStep extends Step {
 			// handle wildcard steps like following::node()
 			try {
 				NodeSet result = new NewArrayNodeSet();
-				for (Iterator i = contextSet.iterator(); i.hasNext();) {
-					NodeProxy next = (NodeProxy) i.next();
+				for (NodeProxy next : contextSet) {
 					NodeList cl = next.getDocument().getChildNodes();
 					for (int j = 0; j < cl.getLength(); j++) {
 						StoredNode node = (StoredNode) cl.item(j);
@@ -1148,8 +1144,7 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			NodeSet result = new NewArrayNodeSet();
 			result.setProcessInReverseOrder(true);
-			for (Iterator i = contextSet.iterator(); i.hasNext();) {
-				NodeProxy current = (NodeProxy) i.next();
+			for (NodeProxy current : contextSet) {
 				NodeProxy ancestor;
 				if (axis == Constants.ANCESTOR_SELF_AXIS
 						&& test.matches(current)) {

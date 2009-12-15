@@ -28,7 +28,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
-import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;

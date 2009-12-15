@@ -23,7 +23,6 @@
 package org.exist.xquery;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.NodeSet;
@@ -47,7 +46,7 @@ public class FilteredExpression extends AbstractExpression {
 
 	final protected Expression expression;
     protected boolean abbreviated = false;
-	final protected List predicates = new ArrayList(2);
+	final protected List<Predicate> predicates = new ArrayList<Predicate>(2);
     private Expression parent;
     
     /**
@@ -62,7 +61,7 @@ public class FilteredExpression extends AbstractExpression {
 		predicates.add(pred);
 	}
 
-    public List getPredicates() {
+    public List<Predicate> getPredicates() {
         return predicates;
     }
 
@@ -79,8 +78,7 @@ public class FilteredExpression extends AbstractExpression {
         parent = contextInfo.getParent();
         contextInfo.setParent(this);
         expression.analyze(contextInfo);
-        for (Iterator i = predicates.iterator(); i.hasNext();) {
-			Predicate pred = (Predicate) i.next();
+        for (Predicate pred : predicates) {
 			pred.analyze(contextInfo);
         }
     }
@@ -106,7 +104,7 @@ public class FilteredExpression extends AbstractExpression {
 		if (seq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
         else {
-            Predicate pred = (Predicate) predicates.get(0);
+            Predicate pred = predicates.get(0);
             // If the current step is an // abbreviated step, we have to treat the predicate
             // specially to get the context position right. //a[1] translates to /descendant-or-self::node()/a[1],
             // so we need to return the 1st a from any parent of a.
@@ -146,8 +144,7 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
     private Sequence processPredicate(Sequence contextSequence, Sequence seq) throws XPathException {
-        for (Iterator i = predicates.iterator(); i.hasNext();) {
-            Predicate pred = (Predicate) i.next();
+        for (Predicate pred : predicates) {
             seq = pred.evalPredicate(contextSequence, seq, Constants.DESCENDANT_SELF_AXIS);
             //subsequent predicates operate on the result of the previous one
             contextSequence = null;
@@ -160,16 +157,16 @@ public class FilteredExpression extends AbstractExpression {
     */
     public void dump(ExpressionDumper dumper) {
         expression.dump(dumper);
-        for (Iterator i = predicates.iterator(); i.hasNext();) {
-            ((Expression)i.next()).dump(dumper);
+        for (Predicate pred : predicates) {
+            pred.dump(dumper);
         }
     }
     
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(expression.toString());
-        for (Iterator i = predicates.iterator(); i.hasNext();) {
-        	result.append(((Expression)i.next()).toString());
+        for (Predicate pred : predicates) {
+        	result.append(pred.toString());
         }
         return result.toString();
     }    
@@ -187,8 +184,7 @@ public class FilteredExpression extends AbstractExpression {
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
 		expression.resetState(postOptimization);
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
-			Predicate pred = (Predicate) i.next();
+		for (Predicate pred : predicates) {
 			pred.resetState(postOptimization);
 		}
 	}
@@ -213,8 +209,8 @@ public class FilteredExpression extends AbstractExpression {
 	 */
 	public int getDependencies() {
 		int deps = Dependency.CONTEXT_SET;
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
-			deps |= ((Predicate) i.next()).getDependencies();
+		for (Predicate pred : predicates) {
+			deps |= pred.getDependencies();
 		}
 		return deps;
 	}

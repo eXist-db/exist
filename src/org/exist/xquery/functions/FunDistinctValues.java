@@ -116,7 +116,7 @@ public class FunDistinctValues extends CollatingFunction {
         
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence, contextItem, 2);		
-		TreeSet set = new TreeSet(new ValueComparator(collator));
+		TreeSet<AtomicValue> set = new TreeSet<AtomicValue>(new ValueComparator(collator));
 		ValueSequence result = new ValueSequence();
 		Item item;
 		AtomicValue value;
@@ -150,7 +150,7 @@ public class FunDistinctValues extends CollatingFunction {
         return result;
 	}
 
-	private final static class ValueComparator implements Comparator {
+	private final static class ValueComparator implements Comparator<AtomicValue> {
 		
 		Collator collator;
 		
@@ -161,17 +161,17 @@ public class FunDistinctValues extends CollatingFunction {
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
-		public int compare(Object o1, Object o2) {
+		public int compare(AtomicValue o1, AtomicValue o2) {
 			try {
-				if (ValueComparison.compareAtomic(collator, (AtomicValue) o1, (AtomicValue) o2, Constants.TRUNC_NONE, Constants.EQ))
+				if (ValueComparison.compareAtomic(collator, o1, o2, Constants.TRUNC_NONE, Constants.EQ))
 					return Constants.EQUAL;
-				else if (ValueComparison.compareAtomic(collator, (AtomicValue) o1, (AtomicValue) o2, Constants.TRUNC_NONE, Constants.LT))
+				else if (ValueComparison.compareAtomic(collator, o1, o2, Constants.TRUNC_NONE, Constants.LT))
 					return Constants.INFERIOR;
-				else if (ValueComparison.compareAtomic(collator, (AtomicValue) o1, (AtomicValue) o2, Constants.TRUNC_NONE, Constants.GT))
+				else if (ValueComparison.compareAtomic(collator, o1, o2, Constants.TRUNC_NONE, Constants.GT))
 					return Constants.SUPERIOR;
 				//Fallback
 				else
-					return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
+					return o1.compareTo(collator, o2);
 			} catch (XPathException e) {
 				//throw new IllegalArgumentException("cannot compare values");
                 //Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct

@@ -192,7 +192,7 @@ public class MatchRegexp extends Function implements Optimizable {
         Expression termsExpr = getArgument(1);
         Expression flagsExpr = (getArgumentCount() == 3) ? getArgument(2) : null;
         boolean matchAll = getMatchFlag(flagsExpr, contextSequence);
-        List terms = getSearchTerms(termsExpr, contextSequence);
+        List<String> terms = getSearchTerms(termsExpr, contextSequence);
 
         // lookup the terms in the fulltext index. returns one node set for each term
         NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
@@ -248,7 +248,7 @@ public class MatchRegexp extends Function implements Optimizable {
                     path == null
                         ? contextSequence.toNodeSet()
                         : path.eval(contextSequence).toNodeSet();
-                List terms = getSearchTerms(termsExpr, contextSequence);
+                List<String> terms = getSearchTerms(termsExpr, contextSequence);
                 result = evalQuery(nodes, terms, matchAll).toNodeSet();
             } else {
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
@@ -260,13 +260,13 @@ public class MatchRegexp extends Function implements Optimizable {
 		// otherwise we have to walk through each item in the context
 		} else {
 			Item current;
-			String arg;
+//			String arg;
 			NodeSet nodes;
 			result = new ExtArrayNodeSet();
 			Sequence temp;
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
 				current = i.nextItem();
-				List terms = getSearchTerms(termsExpr, contextSequence);
+				List<String> terms = getSearchTerms(termsExpr, contextSequence);
 				nodes =
 					path == null ? contextSequence.toNodeSet() : path.eval(current.toSequence()).toNodeSet();
 				temp = evalQuery(nodes, terms, matchAll);
@@ -281,8 +281,8 @@ public class MatchRegexp extends Function implements Optimizable {
         if (contextSequence == null || contextQName == null)
             return false;
         boolean hasQNameIndex = true;
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             FulltextIndexSpec config = collection.getFulltextIndexConfiguration(context.getBroker());
@@ -300,8 +300,8 @@ public class MatchRegexp extends Function implements Optimizable {
         return hasQNameIndex;
     }
 
-    protected List getSearchTerms(Expression termsExpr, Sequence contextSequence) throws XPathException {
-		List terms = new ArrayList();
+    protected List<String> getSearchTerms(Expression termsExpr, Sequence contextSequence) throws XPathException {
+		List<String> terms = new ArrayList<String>();
 		Sequence seq = termsExpr.eval(contextSequence);
         if(seq.hasOne())
             terms.add(translateRegexp(seq.itemAt(0).getStringValue()));
@@ -335,7 +335,7 @@ public class MatchRegexp extends Function implements Optimizable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.ExtFulltext#evalQuery(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
 	 */
-	public Sequence evalQuery(NodeSet nodes, List terms, boolean matchAll)
+	public Sequence evalQuery(NodeSet nodes, List<String> terms, boolean matchAll)
 		throws XPathException {
 		if(terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE;	// no search terms
@@ -352,7 +352,7 @@ public class MatchRegexp extends Function implements Optimizable {
 			return NodeSet.EMPTY_SET;
 	}
 
-    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List terms, boolean matchAll)
+    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List<String> terms, boolean matchAll)
     throws XPathException {
         NodeSet hits[] = new NodeSet[terms.size()];
         for (int k = 0; k < terms.size(); k++) {
@@ -361,9 +361,10 @@ public class MatchRegexp extends Function implements Optimizable {
                             context,
                             docs,
                             contextSet, axis,
-                            qname, (String) terms.get(k),
+                            qname, terms.get(k),
                             DBBroker.MATCH_REGEXP, matchAll);
-            LOG.debug("Matches for " + terms.get(k) + ": " + hits[k].getLength());
+            if (LOG.isDebugEnabled())
+            	LOG.debug("Matches for " + terms.get(k) + ": " + hits[k].getLength());
         }
         return hits;
     }

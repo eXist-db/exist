@@ -423,7 +423,7 @@ public class Predicate extends PathExpr {
 			// ... but grab some context positions ! -<8-P
 			if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)
 					&& Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-				Set positions = new TreeSet();
+				Set<NumericValue> positions = new TreeSet<NumericValue>();
 				for (SequenceIterator i = contextSequence.iterate(); i
 						.hasNext(); p++) {
 					context.setContextPosition(p);
@@ -435,14 +435,14 @@ public class Predicate extends PathExpr {
 					if (!nv.hasFractionalPart() && !nv.isZero())
 						positions.add(nv);
 				}
-				for (Iterator i = positions.iterator(); i.hasNext();) {
-					int position = ((NumericValue) i.next()).getInt();
+				for (NumericValue pos : positions) {
+					int position = pos.getInt();
 					// TODO : move this test above ?
 					if (position <= contextSequence.getItemCount())
 						result.add(contextSequence.itemAt(position - 1));
 				}
 			} else {
-				Set positions = new TreeSet();
+				Set<NumericValue> positions = new TreeSet<NumericValue>();
 				for (SequenceIterator i = contextSequence.iterate(); i
 						.hasNext(); p++) {
 					context.setContextPosition(p);
@@ -459,8 +459,8 @@ public class Predicate extends PathExpr {
 					} else if (innerSeq.effectiveBooleanValue())
 						result.add(item);
 				}
-				for (Iterator i = positions.iterator(); i.hasNext();) {
-					int position = ((NumericValue) i.next()).getInt();
+				for (NumericValue pos : positions) {
+					int position = pos.getInt();
 					// TODO : move this test above ?
 					if (position <= contextSequence.getItemCount())
 						result.add(contextSequence.itemAt(position - 1));
@@ -507,8 +507,8 @@ public class Predicate extends PathExpr {
 		}
 
 		DocumentImpl lastDoc = null;
-		for (Iterator i = nodes.iterator(); i.hasNext();) {
-			NodeProxy currentNode = (NodeProxy) i.next();
+		for (Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
+			NodeProxy currentNode = i.next();
 			int sizeHint = Constants.NO_SIZE_HINT;
 			if (lastDoc == null || currentNode.getDocument() != lastDoc) {
 				lastDoc = currentNode.getDocument();
@@ -731,7 +731,7 @@ public class Predicate extends PathExpr {
 							|| mode == Constants.ANCESTOR_SELF_AXIS
 							|| mode == Constants.PARENT_AXIS
 							|| mode == Constants.PRECEDING_AXIS || mode == Constants.PRECEDING_SIBLING_AXIS);
-			Set set = new TreeSet();
+			Set<NumericValue> set = new TreeSet<NumericValue>();
 			ValueSequence result = new ValueSequence();
 			for (SequenceIterator i = innerSeq.iterate(); i.hasNext();) {
 				NumericValue v = (NumericValue) i.nextItem();

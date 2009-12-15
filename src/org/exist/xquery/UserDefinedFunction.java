@@ -29,7 +29,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,7 +38,7 @@ public class UserDefinedFunction extends Function {
 
 	private Expression body;
 	
-	private List parameters = new ArrayList(5);
+	private List<QName> parameters = new ArrayList<QName>(5);
 	
 	private Sequence[] currentArguments = null;
 
@@ -83,10 +82,8 @@ public class UserDefinedFunction extends Function {
 			// Save the local variable stack
 			LocalVariable mark = context.markLocalVariables(true);
 			try {
-				QName varName;
 				LocalVariable var;
-				for(Iterator i = parameters.iterator(); i.hasNext(); ) {
-					varName = (QName)i.next();
+				for(QName varName : parameters) {
 					var = new LocalVariable(varName);
 					context.declareVariableBinding(var);
 				}
@@ -117,7 +114,7 @@ public class UserDefinedFunction extends Function {
 			LocalVariable var;
 			int j = 0;
 			for (int i = 0; i < parameters.size(); i++, j++) {
-				varName = (QName)parameters.get(i);
+				varName = parameters.get(i);
 				var = new LocalVariable(varName);
 				var.setValue(currentArguments[j]);
 				if (contextDocs != null)

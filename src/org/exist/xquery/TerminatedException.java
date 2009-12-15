@@ -28,20 +28,26 @@ package org.exist.xquery;
  */
 public class TerminatedException extends XPathException {
 
-    public TerminatedException(int line, int column, String message) {
+	private static final long serialVersionUID = 6055587317214098592L;
+
+	public TerminatedException(int line, int column, String message) {
         super(line, column, message);
     }
 
     public final static class TimeoutException extends TerminatedException {
         
-        public TimeoutException(int line, int column, String message) {
+		private static final long serialVersionUID = 1193758368058763151L;
+
+		public TimeoutException(int line, int column, String message) {
             super(line, column, message);
         }
     }
     
     public final static class SizeLimitException extends TerminatedException {
         
-        public SizeLimitException(int line, int column, String message) {
+		private static final long serialVersionUID = -697205233217384556L;
+
+		public SizeLimitException(int line, int column, String message) {
             super(line, column, message);
         }
     }

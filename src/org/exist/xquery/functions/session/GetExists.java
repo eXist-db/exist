@@ -22,7 +22,7 @@
  */
 package org.exist.xquery.functions.session;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetExists extends BasicFunction 
 {
-	private static final Logger logger = Logger.getLogger(GetExists.class);
+//	private static final Logger logger = Logger.getLogger(GetExists.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

@@ -29,7 +29,7 @@ import org.exist.dom.QName;
  * 
  * @author wolf
  */
-public class FunctionId implements Comparable {
+public class FunctionId implements Comparable<FunctionId> {
 
 	final private QName qname;
 	final private int argCount;
@@ -42,8 +42,7 @@ public class FunctionId implements Comparable {
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		final FunctionId other = (FunctionId)o;
+	public int compareTo(FunctionId other) {
 		final int cmp = qname.compareTo(other.qname);
 		if(cmp == 0) {
 			if(argCount == other.argCount || argCount == -1 || other.argCount == -1)

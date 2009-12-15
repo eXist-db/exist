@@ -38,7 +38,7 @@ import java.util.List;
 public class AttributeConstructor extends NodeConstructor {
 
 	final String qname;
-	final List contents = new ArrayList(5);
+	final List<Object> contents = new ArrayList<Object>(5);
 	boolean isNamespaceDecl = false;
 	
 	public AttributeConstructor(XQueryContext context, String name) {
@@ -73,8 +73,7 @@ public class AttributeConstructor extends NodeConstructor {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         contextInfo.setParent(this);
-        for(Iterator i = contents.iterator(); i.hasNext(); ) {
-			Object next = i.next();
+        for(Object next : contents) {
 			if(next instanceof Expression)
 				((Expression)next).analyze(contextInfo);
 		}
@@ -88,9 +87,8 @@ public class AttributeConstructor extends NodeConstructor {
 		Item contextItem)
 		throws XPathException {
 		StringBuilder buf = new StringBuilder();
-		Object next;
-		for(Iterator i = contents.iterator(); i.hasNext(); ) {
-			next = i.next();
+
+		for(Object next : contents) {
 			if(next instanceof Expression)
 				evalEnclosedExpr(((Expression)next).eval(contextSequence, contextItem), buf);
 			else
@@ -137,9 +135,8 @@ public class AttributeConstructor extends NodeConstructor {
         dumper.display("} ");
         dumper.display("{");
         dumper.startIndent();
-        Object next;
-		for(Iterator i = contents.iterator(); i.hasNext(); ) {
-			next = i.next();
+
+		for(Object next : contents) {
 			if(next instanceof Expression)
 				((Expression)next).dump(dumper);
 			else
@@ -157,9 +154,8 @@ public class AttributeConstructor extends NodeConstructor {
         result.append(qname);
         result.append("} "); 
         result.append("{");        
-        Object next;
-		for(Iterator i = contents.iterator(); i.hasNext(); ) {
-			next = i.next();
+
+		for(Object next : contents) {
 			if(next instanceof Expression)
 				result.append(next.toString());
 			else
@@ -174,15 +170,14 @@ public class AttributeConstructor extends NodeConstructor {
 	 */
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
-		Object object;
-		for(Iterator i = contents.iterator(); i.hasNext(); ) {
-			object = i.next();
+
+		for(Object object : contents) {
 			if(object instanceof Expression)
 				((Expression)object).resetState(postOptimization);
 		}
 	}
 
-    public Iterator contentIterator() {
+    public Iterator<Object> contentIterator() {
         return contents.iterator();
     }
 }

@@ -55,6 +55,7 @@ public class FunNot extends Function {
 				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input items")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the negated effective boolean value (ebv) of $arg"));
 
+	@SuppressWarnings("unused")
 	private boolean inWhereClause = false;
 	
 	public FunNot(XQueryContext context) {

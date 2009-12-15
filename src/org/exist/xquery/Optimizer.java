@@ -27,7 +27,6 @@ import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -71,15 +70,14 @@ public class Optimizer extends DefaultExpressionVisitor {
         boolean optimize = false;
         // only location steps with predicates can be optimized:
         if (locationStep.hasPredicates()) {
-            List preds = locationStep.getPredicates();
+            List<Predicate> preds = locationStep.getPredicates();
             // walk through the predicates attached to the current location step.
             // try to find a predicate containing an expression which is an instance
             // of Optimizable.
-            for (Iterator i = preds.iterator(); i.hasNext(); ) {
-                Predicate pred = (Predicate) i.next();
+            for (Predicate pred : preds) {
                 FindOptimizable find = new FindOptimizable();
                 pred.accept(find);
-                List list = find.getOptimizables();
+                List<Optimizable> list = find.getOptimizables();
                 if (list.size() > 0 && canOptimize(list)) {
                     optimize = true;
                     break;
@@ -114,15 +112,14 @@ public class Optimizer extends DefaultExpressionVisitor {
     public void visitFilteredExpr(FilteredExpression filtered) {
         super.visitFilteredExpr(filtered);
         boolean optimize = false;
-        List preds = filtered.getPredicates();
+        List<Predicate> preds = filtered.getPredicates();
         // walk through the predicates attached to the current location step.
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
-        for (Iterator i = preds.iterator(); i.hasNext(); ) {
-            Predicate pred = (Predicate) i.next();
+        for (Predicate pred : preds) {
             FindOptimizable find = new FindOptimizable();
             pred.accept(find);
-            List list = find.getOptimizables();
+            List<Optimizable> list = find.getOptimizables();
             if (list.size() > 0 && canOptimize(list)) {
                 optimize = true;
                 break;
@@ -191,9 +188,8 @@ public class Optimizer extends DefaultExpressionVisitor {
         --predicates;
     }
 
-    private boolean canOptimize(List list) {
-        for (int j = 0; j < list.size(); j++) {
-            Optimizable optimizable = (Optimizable) list.get(j);
+    private boolean canOptimize(List<Optimizable> list) {
+        for (Optimizable optimizable : list) {
             int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
                     axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
@@ -210,9 +206,9 @@ public class Optimizer extends DefaultExpressionVisitor {
      */
     private class FindOptimizable extends BasicExpressionVisitor {
 
-        List optimizables = new ArrayList();
+        List<Optimizable> optimizables = new ArrayList<Optimizable>();
 
-        public List getOptimizables() {
+        public List<Optimizable> getOptimizables() {
             return optimizables;
         }
 
@@ -237,7 +233,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         public void visitBuiltinFunction(Function function) {
             if (function instanceof Optimizable) {
-                optimizables.add(function);
+                optimizables.add((Optimizable) function);
             }
         }
     }

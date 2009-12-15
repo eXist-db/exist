@@ -83,8 +83,8 @@ public class RootNode extends Step {
             if (!context.inProtectedMode())
                 ds.lock(context.getBroker(), false, true);
 	        DocumentImpl doc;
-	        for (Iterator i = ds.getDocumentIterator(); i.hasNext();) {
-	            doc = (DocumentImpl) i.next();
+	        for (Iterator<DocumentImpl> i = ds.getDocumentIterator(); i.hasNext();) {
+	            doc = i.next();
                 if (context.inProtectedMode() && !context.getProtectedDocs().containsKey(doc.getDocId()))
                     continue;
                 if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources

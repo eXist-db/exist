@@ -118,10 +118,10 @@ public class XPathUtil {
             } finally {
                 SerializerPool.getInstance().returnObject(streamer);
             }
-        } else if (obj instanceof List) {
+        } else if (obj instanceof List<?>) {
             boolean createNodeSequence = true;
             Object next;
-            for (Iterator i = ((List) obj).iterator(); i.hasNext();) {
+            for (Iterator<?> i = ((List<?>) obj).iterator(); i.hasNext();) {
                 next = i.next();
                 if (!(next instanceof NodeProxy))
                     createNodeSequence = false;
@@ -131,7 +131,7 @@ public class XPathUtil {
                 seq = new AVLTreeNodeSet();
             else
                 seq = new ValueSequence();
-            for (Iterator i = ((List) obj).iterator(); i.hasNext();) {
+            for (Iterator<?> i = ((List<?>) obj).iterator(); i.hasNext();) {
                 seq.add((Item) javaObjectToXPath(i.next(), context, expandChars));
             }
             return seq;
@@ -181,7 +181,7 @@ public class XPathUtil {
             return new JavaObjectValue(obj);
     }
 
-    public final static int javaClassToXPath(Class clazz) {
+    public final static int javaClassToXPath(Class<?> clazz) {
         if (clazz == String.class)
             return Type.STRING;
         else if (clazz == Boolean.class || clazz == boolean.class)

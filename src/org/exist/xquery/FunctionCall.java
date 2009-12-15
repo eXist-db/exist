@@ -52,13 +52,13 @@ public class FunctionCall extends Function {
 
     // the name of the function. Used for forward references.
 	private QName name = null;
-	private List arguments = null;
+	private List<Expression> arguments = null;
 	
 	private boolean isRecursive = false;
 
     private VariableReference varDeps[];
 
-    public FunctionCall(XQueryContext context, QName name, List arguments) {
+    public FunctionCall(XQueryContext context, QName name, List<Expression> arguments) {
 		super(context);
 		this.name = name;
 		this.arguments = arguments;

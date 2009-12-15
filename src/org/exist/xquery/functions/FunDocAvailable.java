@@ -24,7 +24,6 @@ package org.exist.xquery.functions;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
-import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.util.DocUtils;

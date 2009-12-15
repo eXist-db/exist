@@ -181,8 +181,8 @@ public class IndexTerms extends BasicFunction {
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
         Set<QName> indexes = new HashSet<QName>();
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
-            final org.exist.collections.Collection collection = (org.exist.collections.Collection) i.next();
+        for (Iterator<org.exist.collections.Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            final org.exist.collections.Collection collection = i.next();
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
                 FulltextIndexSpec fIdxConf = idxConf.getFulltextIndexSpec();

@@ -127,11 +127,11 @@ public class PerformanceStats {
         }
     }
 
-    private static class CompareByTime implements Comparator {
+    private static class CompareByTime implements Comparator<FunctionStats> {
 
-        public int compare(Object o1, Object o2) {
-            long t1 = ((FunctionStats)o1).executionTime;
-            long t2 = ((FunctionStats)o2).executionTime;
+        public int compare(FunctionStats o1, FunctionStats o2) {
+            long t1 = o1.executionTime;
+            long t2 = o2.executionTime;
             return t1 == t2 ? 0 : (t1 > t2 ? 1 : -1);
         }
     }

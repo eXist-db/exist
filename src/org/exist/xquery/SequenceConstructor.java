@@ -27,8 +27,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import java.util.Iterator;
-
 /**
  * An XQuery sequence constructor ",". For example, ($a, $b) constructs a new
  * sequence containing items $a and $b.
@@ -77,10 +75,10 @@ public class SequenceConstructor extends PathExpr {
         }
         
         ValueSequence result = new ValueSequence();
-        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+        for(Expression step : steps) {
             context.pushDocumentContext();
             try {
-                Sequence temp = ((Expression)i.next()).eval(contextSequence, contextItem);
+                Sequence temp = step.eval(contextSequence, contextItem);
                 if(temp != null && !temp.isEmpty()) {
                       result.addAll(temp);
                 }
@@ -102,10 +100,10 @@ public class SequenceConstructor extends PathExpr {
         dumper.display("(");
         dumper.startIndent();
     	boolean moreThanOne = false;
-        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+        for(Expression step : steps) {
             if (moreThanOne) dumper.display(", ");
         	moreThanOne = true;
-            ((Expression) i.next()).dump(dumper);
+        	step.dump(dumper);
         }
         dumper.endIndent();
         dumper.nl().display(")");
@@ -115,10 +113,10 @@ public class SequenceConstructor extends PathExpr {
     	StringBuilder result = new StringBuilder();
     	result.append("( ");
     	boolean moreThanOne = false;
-        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+        for(Expression step : steps) {
         	if (moreThanOne) result.append(", ");
         	moreThanOne = true;
-        	result.append(((Expression) i.next()).toString());        	
+        	result.append(step.toString());        	
         }        
         result.append(" )");
         return result.toString();

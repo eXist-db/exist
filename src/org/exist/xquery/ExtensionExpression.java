@@ -40,7 +40,7 @@ import java.util.List;
 public class ExtensionExpression extends AbstractExpression {
 
     private Expression innerExpression;
-    private List pragmas = new ArrayList(3);
+    private List<Pragma> pragmas = new ArrayList<Pragma>(3);
     
     public ExtensionExpression(XQueryContext context) {
         super(context);
@@ -66,8 +66,7 @@ public class ExtensionExpression extends AbstractExpression {
             throws XPathException {
         callBefore();
         Sequence result = null;
-        for (int i = 0; i < pragmas.size(); i++) {
-            Pragma pragma = (Pragma) pragmas.get(i);
+        for (Pragma pragma : pragmas) {
             Sequence temp = pragma.eval(contextSequence, contextItem);
             if (temp != null) {
                 if (result != null)
@@ -83,15 +82,13 @@ public class ExtensionExpression extends AbstractExpression {
     }
 
     private void callAfter() throws XPathException {
-        for (int i = 0; i < pragmas.size(); i++) {
-            Pragma pragma = (Pragma) pragmas.get(i);
+        for (Pragma pragma : pragmas) {
             pragma.after(context, innerExpression);
         }
     }
 
     private void callBefore() throws XPathException {
-        for (int i = 0; i < pragmas.size(); i++) {
-            Pragma pragma = (Pragma) pragmas.get(i);
+        for (Pragma pragma : pragmas) {
             pragma.before(context, innerExpression);
         }
     }
@@ -102,16 +99,14 @@ public class ExtensionExpression extends AbstractExpression {
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
-        for (int i = 0; i < pragmas.size(); i++) {
-            Pragma pragma = (Pragma) pragmas.get(i);
+        for (Pragma pragma : pragmas) {
             pragma.analyze(newContext);
         }
         innerExpression.analyze(newContext);
     }
 
     public void dump(ExpressionDumper dumper) {
-        for (int i = 0; i < pragmas.size(); i++) {
-            Pragma pragma = (Pragma) pragmas.get(i);
+        for (Pragma pragma : pragmas) {
             dumper.display("(# " + pragma.getQName().getStringValue(), line);
             if (pragma.getContents() != null)
                 dumper.display(' ').display(pragma.getContents());
@@ -158,8 +153,7 @@ public class ExtensionExpression extends AbstractExpression {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         innerExpression.resetState(postOptimization);
-        for (int i = 0; i < pragmas.size(); i++) {
-            Pragma pragma = (Pragma) pragmas.get(i);
+        for (Pragma pragma : pragmas) {
             pragma.resetState(postOptimization);
         }
     }

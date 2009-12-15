@@ -57,7 +57,7 @@ public class TypeswitchExpression extends AbstractExpression {
     
     private Expression operand;
     private Case defaultClause = null;
-    private List cases = new ArrayList(5);
+    private List<Case> cases = new ArrayList<Case>(5);
     
     public TypeswitchExpression(XQueryContext context, Expression operand) {
         super(context);
@@ -158,10 +158,9 @@ public class TypeswitchExpression extends AbstractExpression {
         LocalVariable mark0 = context.markLocalVariables(false);
         
         try {
-        	for (int i = 0; i < cases.size(); i++) {
+        	for (Case next : cases) {
         		LocalVariable mark1 = context.markLocalVariables(false);
         		try {
-        			Case next = (Case) cases.get(i);
         			if (next.variable != null) {
         				LocalVariable var = new LocalVariable(next.variable);
         				var.setSequenceType(next.type);

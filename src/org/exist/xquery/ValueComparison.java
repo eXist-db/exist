@@ -82,8 +82,8 @@ public class ValueComparison extends GeneralComparison {
 		NodeSet result = new ExtArrayNodeSet();
         Collator collator = getCollator(contextSequence);
         if (contextSequence != null && !contextSequence.isEmpty()) {
-            for (Iterator i = nodes.iterator(); i.hasNext();) {
-                NodeProxy current = (NodeProxy) i.next();
+            for (Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
+                NodeProxy current = i.next();
                 ContextItem context = current.getContext();
                 if (context==null) {
                    throw new XPathException(this,"Context is missing for node set comparison");
@@ -104,8 +104,8 @@ public class ValueComparison extends GeneralComparison {
                 throw new XPathException(this,
                         "Type error: sequence with less or more than one item is not allowed here");
             AtomicValue rv = rs.itemAt(0).atomize();
-            for (Iterator i = nodes.iterator(); i.hasNext();) {
-                NodeProxy current = (NodeProxy) i.next();
+            for (Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
+                NodeProxy current = i.next();
                 AtomicValue lv = current.atomize();
                 if (compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
                     result.add(current);

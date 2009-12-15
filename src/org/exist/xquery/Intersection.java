@@ -72,7 +72,7 @@ public class Intersection extends CombiningExpression {
                 result = lval.toNodeSet().intersection(rval.toNodeSet());
             else {
                 result = new ValueSequence(true);
-                Set set = new TreeSet();
+                Set<Item> set = new TreeSet<Item>();
                 for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
                     set.add(i.nextItem());
                 for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); ) {

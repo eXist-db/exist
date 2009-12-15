@@ -1,4 +1,3 @@
-
 /*
  *  eXist Native XML Database
  *  Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
@@ -22,7 +21,6 @@
 package org.exist.xquery;
 
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -110,13 +108,13 @@ public abstract class Function extends PathExpr {
 		XQueryContext context,
 		XQueryAST ast,
 		FunctionDef def) throws XPathException {
-		Class fclass = def.getImplementingClass();
+		Class<? extends Function> fclass = def.getImplementingClass();
 		if (def == null || fclass == null)
 			throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
 		try {
 			Object initArgs[] = { context };
-			Class constructorArgs[] = { XQueryContext.class }; 
-			Constructor construct = null;
+			Class<?> constructorArgs[] = { XQueryContext.class }; 
+			Constructor<?> construct = null;
 			try {
 				construct = fclass.getConstructor(constructorArgs);
 			} catch(NoSuchMethodException e) {
@@ -408,8 +406,7 @@ public abstract class Function extends PathExpr {
         dumper.display(getName());
         dumper.display('(');
         boolean moreThanOne = false;
-        for (Iterator i = steps.iterator(); i.hasNext();) {
-			Expression e = (Expression) i.next();
+        for (Expression e : steps) {
 			if (moreThanOne) dumper.display(", ");
 			moreThanOne = true;			
 			e.dump(dumper);

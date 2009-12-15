@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
@@ -72,7 +73,7 @@ public abstract class DeferredFunctionCall implements Sequence {
         if (sequence != null) sequence.clearContext(contextId);
     }
 
-    public int conversionPreference(Class javaClass) {
+    public int conversionPreference(Class<?> javaClass) {
         if (sequence != null) 
             return sequence.conversionPreference(javaClass);
         else
@@ -109,7 +110,7 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public Iterator getCollectionIterator() {
+    public Iterator<Collection> getCollectionIterator() {
         try {
             realize();
             return sequence.getCollectionIterator();
@@ -235,7 +236,7 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public Object toJavaObject(Class target) throws XPathException {
+    public Object toJavaObject(Class<?> target) throws XPathException {
         realize();
         return sequence.toJavaObject(target);
     }

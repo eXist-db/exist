@@ -80,9 +80,8 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
 
     public void visitLocationStep(LocationStep locationStep) {
-        List predicates = locationStep.getPredicates();
-        for (int i = 0; i < predicates.size(); i++) {
-            Predicate pred = (Predicate) predicates.get(i);
+        List<Predicate> predicates = locationStep.getPredicates();
+        for (Predicate pred : predicates) {
 			pred.accept(this);
         }
     }

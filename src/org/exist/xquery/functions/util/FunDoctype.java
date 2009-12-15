@@ -77,8 +77,8 @@ public class FunDoctype extends Function {
 		}
         
 		NodeSet result = new ExtArrayNodeSet(1);
-		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
-			result.add(new NodeProxy((DocumentImpl) i.next(), NodeId.DOCUMENT_NODE));
+		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+			result.add(new NodeProxy(i.next(), NodeId.DOCUMENT_NODE));
 		}
         
         if (context.getProfiler().isEnabled()) 

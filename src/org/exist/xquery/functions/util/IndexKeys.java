@@ -112,7 +112,7 @@ public class IndexKeys extends BasicFunction {
         	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
         	if (indexWorker == null)
         		throw new XPathException(this, "Unknown index: " + args[4].itemAt(0).getStringValue());
-        	Map hints = new HashMap();
+        	Map<String, Object> hints = new HashMap<String, Object>();
         	hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
         	if (indexWorker instanceof OrderedValuesIndex)
         		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
@@ -184,12 +184,12 @@ public class IndexKeys extends BasicFunction {
      * @return
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
-        Set indexes = new HashSet();
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
-            final org.exist.collections.Collection collection = (org.exist.collections.Collection) i.next();
+        Set<QName> indexes = new HashSet<QName>();
+        for (Iterator<org.exist.collections.Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            final org.exist.collections.Collection collection = i.next();
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
-                final List qnames = idxConf.getIndexedQNames();
+                final List<QName> qnames = idxConf.getIndexedQNames();
                 for (int j = 0; j < qnames.size(); j++) {
                     final QName qName = (QName) qnames.get(j);
                     indexes.add(qName);
@@ -197,6 +197,6 @@ public class IndexKeys extends BasicFunction {
             }
         }
         QName qnames[] = new QName[indexes.size()];
-        return (QName[]) indexes.toArray(qnames);
+        return indexes.toArray(qnames);
     }
 }

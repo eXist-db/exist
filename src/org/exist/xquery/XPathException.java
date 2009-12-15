@@ -8,10 +8,12 @@ import org.exist.xquery.parser.XQueryAST;
 
 public class XPathException extends Exception {
 
+	private static final long serialVersionUID = 212844692232650666L;
+
 	private int line = 0;
 	private int column = 0;
 	private String message = null;
-	private List callStack = null;
+	private List<FunctionStackElement> callStack = null;
     
 	/**
 	 * @param message
@@ -92,7 +94,7 @@ public class XPathException extends Exception {
 	
     public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if (callStack == null)
-            callStack = new ArrayList();
+            callStack = new ArrayList<FunctionStackElement>();
         callStack.add(new FunctionStackElement(def, call.getLine(), call.getColumn()));
     }
 	
@@ -117,7 +119,7 @@ public class XPathException extends Exception {
 		}
         if (callStack != null) {
             buf.append("\nIn call to function:\n");
-            for (Iterator i = callStack.iterator(); i.hasNext(); ) {
+            for (Iterator<FunctionStackElement> i = callStack.iterator(); i.hasNext(); ) {
                 buf.append('\t').append(i.next());
                 if (i.hasNext())
                     buf.append('\n');
@@ -153,9 +155,8 @@ public class XPathException extends Exception {
         if (callStack != null) {
             buf.append("<table id=\"xquerytrace\">");
             buf.append("<caption>XQuery Stack Trace</caption>");
-            FunctionStackElement e;
-            for (Iterator i = callStack.iterator(); i.hasNext(); ) {
-                e = (FunctionStackElement) i.next();
+
+            for (FunctionStackElement e : callStack) {
                 buf.append("<tr><td class=\"func\">").append(e.function).append("</td>");
                 buf.append("<td class=\"lineinfo\">").append(e.line).append(':').append(e.column).append("</td>");
                 buf.append("</tr>");

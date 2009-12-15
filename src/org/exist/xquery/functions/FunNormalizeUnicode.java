@@ -54,11 +54,11 @@ public class FunNormalizeUnicode extends Function {
     protected static final Logger logger = Logger.getLogger(FunNormalizeUnicode.class);
 
 	private String normalizationForm = null;
-	private Class clazz = null;	
+	private Class<?> clazz = null;	
 	private Field  modeField = null;
 	private Object modeObject = null;
 	private static Integer DUMMY_INTEGER = new Integer(0);
-	private Constructor constructor = null;
+	private Constructor<?> constructor = null;
 	private Method method = null;
 	
 	protected static final String FUNCTION_DESCRIPTION_0_PARAM = 

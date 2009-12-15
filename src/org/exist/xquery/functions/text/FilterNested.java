@@ -17,11 +17,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 package org.exist.xquery.functions.text;
-
-import java.util.Iterator;
 
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
@@ -59,8 +57,7 @@ public class FilterNested extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         ExtArrayNodeSet inSet = (ExtArrayNodeSet) args[0].toNodeSet();
         NodeSet filtered = new ExtArrayNodeSet();
-        for (Iterator i = inSet.iterator(); i.hasNext(); ) {
-            NodeProxy p = (NodeProxy) i.next();
+        for (NodeProxy p : inSet) {
             if (inSet.hasDescendantsInSet(p.getDocument(), p.getNodeId(), false, -1) == null)
                 filtered.add(p);
         }

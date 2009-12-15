@@ -50,7 +50,7 @@ public class JavaCall extends Function {
 
 	private final QName qname;
 	private String name;
-	private Class myClass = null;
+	private Class<?> myClass = null;
 	private List candidateMethods = new ArrayList(5);
 
 	/**
@@ -124,10 +124,10 @@ public class JavaCall extends Function {
 
 		// search for candidate methods matching the given number of arguments
 		if (name.equals("new")) {
-			Constructor[] constructors = myClass.getConstructors();
+			Constructor<?>[] constructors = myClass.getConstructors();
 			for (int i = 0; i < constructors.length; i++) {
 				if (Modifier.isPublic(constructors[i].getModifiers())) {
-					Class paramTypes[] = constructors[i].getParameterTypes();
+					Class<?> paramTypes[] = constructors[i].getParameterTypes();
 					if (paramTypes.length == argCount) {
 						LOG.debug("Found constructor " + constructors[i].toString());
 						candidateMethods.add(constructors[i]);
@@ -145,7 +145,7 @@ public class JavaCall extends Function {
 			for (int i = 0; i < methods.length; i++) {
 				if (Modifier.isPublic(methods[i].getModifiers())
 					&& methods[i].getName().equals(name)) {
-					Class paramTypes[] = methods[i].getParameterTypes();
+					Class<?> paramTypes[] = methods[i].getParameterTypes();
 					if (Modifier.isStatic(methods[i].getModifiers())) {
 						if (paramTypes.length == argCount) {
 							LOG.debug("Found static method " + methods[i].toString());
@@ -216,10 +216,10 @@ public class JavaCall extends Function {
 			}
 		}
 //		LOG.debug("calling method " + bestMethod.toString());
-		Class paramTypes[] = null;
+		Class<?> paramTypes[] = null;
 		boolean isStatic = true;
-		if (bestMethod instanceof Constructor)
-			paramTypes = ((Constructor) bestMethod).getParameterTypes();
+		if (bestMethod instanceof Constructor<?>)
+			paramTypes = ((Constructor<?>) bestMethod).getParameterTypes();
 		else {
 			paramTypes = ((Method) bestMethod).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) bestMethod).getModifiers());
@@ -237,9 +237,9 @@ public class JavaCall extends Function {
 		}
         
         Sequence result;
-		if (bestMethod instanceof Constructor) {
+		if (bestMethod instanceof Constructor<?>) {
 			try {
-				Object object = ((Constructor) bestMethod).newInstance(params);
+				Object object = ((Constructor<?>) bestMethod).newInstance(params);
                 result = new JavaObjectValue(object);
 			} catch (IllegalArgumentException e) {
 				throw new XPathException(this,
@@ -309,15 +309,15 @@ public class JavaCall extends Function {
 	
 	private int[] getConversionPreferences(AccessibleObject method, Sequence[] args) {
 		int prefs[] = new int[args.length];
-		Class paramTypes[] = null;
+		Class<?> paramTypes[] = null;
 		boolean isStatic = true;
-		if (method instanceof Constructor)
-			paramTypes = ((Constructor) method).getParameterTypes();
+		if (method instanceof Constructor<?>)
+			paramTypes = ((Constructor<?>) method).getParameterTypes();
 		else {
 			paramTypes = ((Method) method).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) method).getModifiers());
 			if (!isStatic) {
-				Class nonStaticTypes[] = new Class[paramTypes.length + 1];
+				Class<?> nonStaticTypes[] = new Class[paramTypes.length + 1];
 				nonStaticTypes[0] = myClass;
 				System.arraycopy(paramTypes, 0, nonStaticTypes, 1, paramTypes.length);
 				paramTypes = nonStaticTypes;

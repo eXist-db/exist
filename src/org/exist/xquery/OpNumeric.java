@@ -72,7 +72,7 @@ public class OpNumeric extends BinaryOp {
 		} else {
 			if (Type.subTypeOf(ltype, Type.NUMBER)) ltype = Type.NUMBER;
 			if (Type.subTypeOf(rtype, Type.NUMBER)) rtype = Type.NUMBER;
-			OpEntry entry = (OpEntry) OP_TYPES.get(new OpEntry(operator, ltype, rtype));
+			OpEntry entry = OP_TYPES.get(new OpEntry(operator, ltype, rtype));
 			if (entry != null) returnType = entry.typeResult;
 		}
 
@@ -253,7 +253,7 @@ public class OpNumeric extends BinaryOp {
    	 Constants.MOD,		Type.NUMBER, 				Type.NUMBER,				Type.NUMBER,
     };
     
-    private static class OpEntry implements Comparable {
+    private static class OpEntry implements Comparable<OpEntry> {
    	 public final int op, typeA, typeB, typeResult;
    	 public OpEntry(int op, int typeA, int typeB) {
    		 this(op, typeA, typeB, Type.ATOMIC);
@@ -261,8 +261,7 @@ public class OpNumeric extends BinaryOp {
    	 public OpEntry(int op, int typeA, int typeB, int typeResult) {
    		 this.op = op; this.typeA = typeA; this.typeB = typeB; this.typeResult = typeResult;
    	 }
-   	 public int compareTo(Object o) {
-   		 OpEntry that = (OpEntry) o;
+   	 public int compareTo(OpEntry that) {
    		 if (this.op != that.op) return this.op - that.op;
    		 else if (this.typeA != that.typeA) return this.typeA - that.typeA;
    		 else if (this.typeB != that.typeB) return this.typeB - that.typeB;
@@ -279,7 +278,7 @@ public class OpNumeric extends BinaryOp {
    	 // TODO: implement hashcode, if needed
     }
     
-    private static final Map OP_TYPES = new TreeMap();
+    private static final Map<OpEntry, OpEntry> OP_TYPES = new TreeMap<OpEntry, OpEntry>();
     static {
    	 for (int i=0; i<OP_TABLE.length; i+=4) {
    		 OpEntry entry = new OpEntry(OP_TABLE[i], OP_TABLE[i+1], OP_TABLE[i+2], OP_TABLE[i+3]);

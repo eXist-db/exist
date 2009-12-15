@@ -160,7 +160,8 @@ public class FunStringToCodepoints extends BasicFunction {
         throws XPathException {
         StringBuilder substring = new StringBuilder(seq.getItemCount());
         int ch;
-        IntegerValue next;
+        @SuppressWarnings("unused")
+		IntegerValue next;
         if (seq.getItemCount() < end) {
             return subSequence(seq, start);
         }
@@ -213,7 +214,8 @@ public class FunStringToCodepoints extends BasicFunction {
      */
     public static int indexOf(final ValueSequence seq, final IntegerValue value) {
         int index = Constants.STRING_NOT_FOUND;
-        char ch;
+        @SuppressWarnings("unused")
+		char ch;
         for (int i = 0; i < seq.getItemCount(); i++) {
             if (value.compareTo(seq.itemAt(i)) == Constants.EQUAL) {
                 return i;

@@ -42,9 +42,6 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import java.util.Iterator;
-
-
 /**
  * Abstract superclass for the variable binding expressions "for" and "let".
  * 
@@ -181,9 +178,8 @@ public abstract class BindingExpression extends AbstractExpression {
 				boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;            
 				NodeSet result = new ExtArrayNodeSet();
 				DocumentImpl lastDoc = null;
-				int count = 0;
-				for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
-					NodeProxy current = (NodeProxy) i.next();                
+
+				for (NodeProxy current : nodes) {
 					int sizeHint = Constants.NO_SIZE_HINT;
 					if(lastDoc == null || current.getDocument() != lastDoc) {
 						lastDoc = current.getDocument();

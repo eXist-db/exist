@@ -34,7 +34,6 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -79,7 +78,7 @@ public class XMLDBDocument extends Function {
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the documents"),
 			true, "See the standard fn:doc() function");
 
-	private List cachedArgs = null;
+	private List<String> cachedArgs = null;
 	private Sequence cached = null;
 	private DocumentSet cachedDocs = null;
 	private UpdateListener listener = null;
@@ -122,7 +121,7 @@ public class XMLDBDocument extends Function {
 	    docs = mdocs;
 	    //	        }
 	} else {
-	    List args = getParameterValues(contextSequence, contextItem);
+	    List<String> args = getParameterValues(contextSequence, contextItem);
 	    if(cachedArgs != null)
 		cacheIsValid = compareArguments(cachedArgs, args);
 	    if(cacheIsValid) {
@@ -173,8 +172,8 @@ public class XMLDBDocument extends Function {
 	    if(result == null) {
 		result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
                 DocumentImpl doc;
-		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
-                    doc = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+                    doc = i.next();
 		    result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
                     if(lockOnLoad) {
                         context.addLockedDocument(doc);
@@ -197,8 +196,8 @@ public class XMLDBDocument extends Function {
 	return result;
     }
 	
-	private List getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
-        List args = new ArrayList(getArgumentCount() + 10);
+	private List<String> getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
+        List<String> args = new ArrayList<String>(getArgumentCount() + 10);
 	    for(int i = 0; i < getArgumentCount(); i++) {
 	        Sequence seq =
 				getArgument(i).eval(contextSequence, contextItem);
@@ -210,12 +209,12 @@ public class XMLDBDocument extends Function {
 	    return args;
     }
 
-    private boolean compareArguments(List args1, List args2) {
+    private boolean compareArguments(List<String> args1, List<String> args2) {
         if(args1.size() != args2.size())
             return false;
         for(int i = 0; i < args1.size(); i++) {
-            String arg1 = (String)args1.get(i);
-            String arg2 = (String)args2.get(i);
+            String arg1 = args1.get(i);
+            String arg2 = args2.get(i);
             if(!arg1.equals(arg2))
                 return false;
         }

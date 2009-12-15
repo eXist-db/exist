@@ -24,6 +24,8 @@ package org.exist.xquery;
 import java.text.NumberFormat;
 
 import org.apache.log4j.Logger;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationField;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
 import org.exist.xquery.util.ExpressionDumper;
@@ -32,10 +34,9 @@ import org.exist.xquery.util.ExpressionDumper;
 /**
  * @author wolf
  */
+@ConfigurationClass("watchdog")
 public class XQueryWatchDog {
-    /**
-     * Log4J Logger for this class
-     */
+
     private static final Logger LOG = Logger.getLogger(XQueryWatchDog.class);
     
     public static final String CONFIGURATION_ELEMENT_NAME = "watchdog";
@@ -45,7 +46,10 @@ public class XQueryWatchDog {
 
     private final XQueryContext context;
     
+    @ConfigurationField("query-timeout")
     private long timeout = Long.MAX_VALUE;
+    
+    @ConfigurationField("output-size-limit")
     private int maxNodesLimit = Integer.MAX_VALUE;
     
     private long startTime;
