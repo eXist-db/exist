@@ -125,7 +125,7 @@ public class SOAPServer
 	private final static String XSLT_WEBSERVICE_SOAP_RESPONSE = "/db/system/webservice/soap.response.xslt";
 	public final static String WEBSERVICE_MODULE_EXTENSION = ".xqws";
 
-	private HashMap XQWSDescriptionsCache = new HashMap();
+	private HashMap<String, XQWSDescription> XQWSDescriptionsCache = new HashMap<String, XQWSDescription>();
 	
     //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
 	private final static String QUERY_ERROR_HEAD =
@@ -475,7 +475,7 @@ public class SOAPServer
     	if(XQWSDescriptionsCache.containsKey(path))
     	{
     		//get the description from the cache
-    		description = (XQWSDescription)XQWSDescriptionsCache.get(path);
+    		description = XQWSDescriptionsCache.get(path);
     		
     		//is the description is invalid, refresh it
     		if(!description.isValid())
@@ -844,7 +844,7 @@ public class SOAPServer
     	
     	//Cache for XQWS (Human Readable) Function description
     	private long lastModifiedFunction = 0;
-    	private HashMap descriptionFunction = new HashMap(); //key: functionName as String, value: byte[]
+    	private HashMap<String, byte[]> descriptionFunction = new HashMap<String, byte[]>(); //key: functionName as String, value: byte[]
     	
     	
     	/**
@@ -1060,7 +1060,7 @@ public class SOAPServer
 	    		}
 	    		
 				//return the result of the transformation from the cache
-				return (byte[])descriptionFunction.get(functionName);
+				return descriptionFunction.get(functionName);
     		}
     		finally
     		{
