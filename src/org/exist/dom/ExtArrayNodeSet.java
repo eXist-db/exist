@@ -369,8 +369,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         if (other.hasOne()) {
             add((NodeProxy) other.itemAt(0));
         } else {
-            for (Iterator i = other.iterator(); i.hasNext();) {
-                add((NodeProxy) i.next());
+            for (NodeProxy node : other) {
+                add(node);
             }
         }
     }
@@ -461,10 +461,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                                        boolean copyMatches) {
         sort();
         NodeSet result = new ExtArrayNodeSet();
-		NodeProxy node;
+
 		Part part;
-		for (Iterator i = al.iterator(); i.hasNext(); ) {
-			node = (NodeProxy) i.next();
+		for (NodeProxy node : al) {
 			part = getPart(node.getDocument(), false, 0);
 	        if (part != null) {
 	        	part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId, copyMatches);

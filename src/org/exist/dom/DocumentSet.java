@@ -1,5 +1,6 @@
 package org.exist.dom;
 
+import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -12,9 +13,9 @@ public interface DocumentSet {
 
     public final static DocumentSet EMPTY_DOCUMENT_SET = new DefaultDocumentSet(9);
 
-    public Iterator getDocumentIterator();
+    public Iterator<DocumentImpl> getDocumentIterator();
 
-	public Iterator getCollectionIterator();
+	public Iterator<Collection> getCollectionIterator();
 
 	public int getDocumentCount();
 

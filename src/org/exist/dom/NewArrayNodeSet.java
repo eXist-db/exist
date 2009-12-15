@@ -82,7 +82,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 
     private int state = 0;
 
-    private DocumentSet cachedDocuments = null;
+    @SuppressWarnings("unused")
+	private DocumentSet cachedDocuments = null;
 
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
@@ -209,8 +210,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         if (other.hasOne()) {
             add((NodeProxy) other.itemAt(0));
         } else {
-            for (Iterator i = other.iterator(); i.hasNext();) {
-                add((NodeProxy) i.next());
+            for (NodeProxy node : other) {
+                add(node);
             }
         }
     }
@@ -438,10 +439,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                                        boolean copyMatches) {
         sort();
         NodeSet result = new NewArrayNodeSet();
-		NodeProxy node;
         int docIdx;
-        for (Iterator i = al.iterator(); i.hasNext(); ) {
-			node = (NodeProxy) i.next();
+        for (NodeProxy node : al) {
             docIdx = findDoc(node.getDocument());
 	        if (docIdx > -1) {
 	        	getDescendantsInSet(docIdx, result, node, childOnly, includeSelf, mode, contextId, copyMatches);
@@ -837,8 +836,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     public NodeSet selectPrecedingSiblings(NodeSet contextSet, int contextId) {
         sort();
         NodeSet result = new NewArrayNodeSet();
-        for (Iterator it = contextSet.iterator(); it.hasNext();) {
-            NodeProxy reference = (NodeProxy) it.next();
+        for (NodeProxy reference : contextSet) {
             NodeId parentId = reference.getNodeId().getParentId();
             int docIdx = findDoc(reference.getDocument());
             if (docIdx < 0)
@@ -902,8 +900,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     public NodeSet selectFollowingSiblings(NodeSet contextSet, int contextId) {
         sort();
         NodeSet result = new NewArrayNodeSet();
-        for (Iterator it = contextSet.iterator(); it.hasNext();) {
-            NodeProxy reference = (NodeProxy) it.next();
+        for (NodeProxy reference : contextSet) {
             NodeId parentId = reference.getNodeId().getParentId();
             int docIdx = findDoc(reference.getDocument());
             if (docIdx < 0)
@@ -963,8 +960,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     public NodeSet selectFollowing(NodeSet pl, int position, int contextId) throws XPathException, UnsupportedOperationException {
         sort();
         NodeSet result = new NewArrayNodeSet();
-        for (Iterator it = pl.iterator(); it.hasNext(); ) {
-            NodeProxy reference = (NodeProxy) it.next();
+        for (NodeProxy reference : pl) {
             int idx = findDoc(reference.getDocument());
             if (idx < 0)
                 continue;
@@ -1004,8 +1000,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     public NodeSet selectPreceding(NodeSet pl, int position, int contextId) throws XPathException, UnsupportedOperationException {
         sort();
         NodeSet result = new NewArrayNodeSet();
-        for (Iterator it = pl.iterator(); it.hasNext(); ) {
-            NodeProxy reference = (NodeProxy) it.next();
+        for (NodeProxy reference : pl) {
             int idx = findDoc(reference.getDocument());
             if (idx < 0)
                 continue;
@@ -1184,7 +1179,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         return new DocumentIterator();
     }
 
-    private class DocumentIterator implements Iterator {
+    private class DocumentIterator implements Iterator<DocumentImpl> {
 
         int currentDoc = 0;
 
@@ -1192,7 +1187,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             return currentDoc < documentCount;
         }
 
-        public Object next() {
+        public DocumentImpl next() {
             if (currentDoc == documentCount)
                 return null;
             else
@@ -1255,8 +1250,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 			if (other.contains(d.getDocId()))
 				r.add(d);
         }
-		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
 				r.add(d);
 		}
@@ -1268,8 +1263,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         if (other.getDocumentCount() > documentCount)
 			return false;
 		DocumentImpl d;
-		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (!contains(d.getDocId()))
 				return false;
 		}

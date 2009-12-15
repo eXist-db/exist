@@ -22,6 +22,7 @@
  */
 package org.exist.dom;
 
+import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Expression;
@@ -35,7 +36,7 @@ import java.util.Iterator;
 /**
  * @author wolf
  */
-public interface NodeSet extends Sequence, NodeList {
+public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 	
 	public final static int ANCESTOR = 0;
 
@@ -76,7 +77,7 @@ public interface NodeSet extends Sequence, NodeList {
      * Return an iterator on all collections referenced by documents
      * contained in this node set.
      */
-    public Iterator getCollectionIterator();
+    public Iterator<Collection> getCollectionIterator();
     
     /**
 	 * Add a new proxy object to the node set. Please note: node set

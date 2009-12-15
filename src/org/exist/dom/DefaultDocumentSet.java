@@ -49,8 +49,8 @@ import java.util.TreeSet;
  */
 public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
 	
-	private ArrayList list = null;
-	private TreeSet collections = new TreeSet();
+	private ArrayList<DocumentImpl> list = null;
+	private TreeSet<Collection> collections = new TreeSet<Collection>();
 	
 	public DefaultDocumentSet() {
 		super(29, 1.75);
@@ -62,7 +62,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	
 	public void clear() {
 		super.clear();
-		collections = new TreeSet();
+		collections = new TreeSet<Collection>();
 		list = null;
 	}
 
@@ -166,11 +166,11 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	
 	public DocumentImpl getDocumentAt(int pos) {
 		if (list == null) {
-			list = new ArrayList();
+			list = new ArrayList<DocumentImpl>();
 			for(Iterator i = valueIterator(); i.hasNext(); )
-				list.add(i.next());
+				list.add( (DocumentImpl) i.next());
 		}
-		return (DocumentImpl) list.get(pos);
+		return list.get(pos);
 	}
 
 	public DocumentImpl getDoc(int docId) {
