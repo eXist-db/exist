@@ -21,8 +21,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class MapResourceSet implements ResourceSet 
 {
-     protected Map resources = new HashMap();
-	protected Vector resourcesVector = new Vector();
+     protected Map<String, Resource> resources = new HashMap<String, Resource>();
+	protected Vector<Resource> resourcesVector = new Vector<Resource>();
 
     public MapResourceSet() {
     }
@@ -30,11 +30,11 @@ public class MapResourceSet implements ResourceSet
     /**
      *  Constructor 
      */
-    public MapResourceSet(Map resources) {
+    public MapResourceSet(Map<String, Resource> resources) {
         this.resources = resources;
-		Iterator iter = resources.values().iterator();
+		Iterator<Resource> iter = resources.values().iterator();
 		while ( iter.hasNext() ) {
-			Resource res = (Resource)iter.next();
+			Resource res = iter.next();
 			resourcesVector.add(res);
 		}
 	}
@@ -50,7 +50,7 @@ public class MapResourceSet implements ResourceSet
         }
     }
 
-    public Map getResourcesMap() {
+    public Map<String, Resource> getResourcesMap() {
         return resources;
     }
 
@@ -137,7 +137,7 @@ public class MapResourceSet implements ResourceSet
       *@exception  XMLDBException  thrown if pos is out of range
     */
       public void removeResource( long pos ) throws XMLDBException {
-		Resource r = (Resource)resourcesVector.get( (int) pos );
+		Resource r = resourcesVector.get( (int) pos );
 		resourcesVector.removeElementAt( (int) pos );
 		resources.remove( r.getId()  );
 	  }

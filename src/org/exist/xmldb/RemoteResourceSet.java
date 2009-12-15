@@ -30,7 +30,7 @@ public class RemoteResourceSet implements ResourceSet {
     protected RemoteCollection collection;
     protected int handle = -1;
     protected int hash = -1;
-    protected List resources;
+    protected List<Object> resources;
     protected Properties outputProperties;
     
     private static Logger LOG = Logger.getLogger(RemoteResourceSet.class.getName());
@@ -38,7 +38,7 @@ public class RemoteResourceSet implements ResourceSet {
     public RemoteResourceSet(RemoteCollection col, Properties properties, Object[] resources, int handle, int hash) {
         this.handle = handle;
         this.hash = hash;
-        this.resources = new ArrayList(resources.length);
+        this.resources = new ArrayList<Object>(resources.length);
         for (int i = 0; i < resources.length; i++) {
             this.resources.add(resources[i]);
         }
@@ -53,7 +53,7 @@ public class RemoteResourceSet implements ResourceSet {
     public void clear() throws XMLDBException {
         if (handle < 0)
             return;
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
     	params.add(new Integer(handle));
         if (hash > -1)
             params.add(new Integer(hash));
@@ -77,7 +77,7 @@ public class RemoteResourceSet implements ResourceSet {
 
 
     public Resource getMembersAsResource() throws XMLDBException {
-        List params = new ArrayList(2);
+        List<Object> params = new ArrayList<Object>(2);
     	params.add(new Integer(handle));
     	params.add(outputProperties);
 	FileOutputStream fos=null;
@@ -93,7 +93,7 @@ public class RemoteResourceSet implements ResourceSet {
 			fos=new FileOutputStream(tmpfile);
 			bos=new BufferedOutputStream(fos);
 			
-			Map table = (Map) collection.getClient().execute("retrieveAllFirstChunk", params);
+			Map<?,?> table = (Map<?,?>) collection.getClient().execute("retrieveAllFirstChunk", params);
 			
 			long offset = ((Integer)table.get("offset")).intValue();
 			byte[] data = (byte[])table.get("data");
@@ -117,7 +117,7 @@ public class RemoteResourceSet implements ResourceSet {
 				params.clear();
 				params.add(table.get("handle"));
 				params.add(Long.toString(offset));
-				table = (Map) collection.getClient().execute("getNextExtendedChunk", params);
+				table = (Map<?,?>) collection.getClient().execute("getNextExtendedChunk", params);
 				offset = new Long((String)table.get("offset")).longValue();
 				data = (byte[])table.get("data");
 				// One for the local cached file

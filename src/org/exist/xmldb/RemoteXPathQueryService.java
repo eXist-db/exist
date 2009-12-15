@@ -44,8 +44,8 @@ import java.util.Properties;
 public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
     protected RemoteCollection collection;
-	protected HashMap namespaceMappings = new HashMap(5);
-	protected HashMap variableDecls = new HashMap();
+	protected HashMap<String, String> namespaceMappings = new HashMap<String, String>(5);
+	protected HashMap<String, Object> variableDecls = new HashMap<String, Object>();
 	protected Properties outputProperties = null;
 	protected boolean protectedMode = false;
     
@@ -82,7 +82,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     public ResourceSet query(String query, String sortExpr)
         throws XMLDBException {
         try {
-        	HashMap optParams = new HashMap();
+        	HashMap<String, Object> optParams = new HashMap<String, Object>();
             if(sortExpr != null)
             	optParams.put(RpcAPI.SORT_EXPR, sortExpr);
             if(namespaceMappings.size() > 0)
@@ -93,10 +93,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                     outputProperties.getProperty("base-uri", collection.getPath()));
             if (protectedMode)
                 optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
-            List params = new ArrayList(2);
+            List<Object> params = new ArrayList<Object>(2);
 			params.add(query.getBytes("UTF-8"));
 			params.add(optParams);
-            HashMap result = (HashMap) collection.getClient().execute("queryP", params);
+            HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
             
             if(result.get(RpcAPI.ERROR) != null)
             	throwException(result);
@@ -141,17 +141,17 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
         try {
-            HashMap optParams = new HashMap();
+            HashMap<String, Object> optParams = new HashMap<String, Object>();
             if(namespaceMappings.size() > 0)
                 optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
             if(variableDecls.size() > 0)
                 optParams.put(RpcAPI.VARIABLES, variableDecls);
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
-            List params = new ArrayList(2);
+            List<Object> params = new ArrayList<Object>(2);
             params.add(query.getBytes("UTF-8"));
             params.add(optParams);
-            HashMap result = (HashMap) collection.getClient().execute( "compile", params );
+            HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute( "compile", params );
             
             if (result.get(RpcAPI.ERROR) != null)
                 throwXPathException(result);
@@ -169,7 +169,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      * @param result
      * @exception XMLDBException if an error occurs
      */
-    private void throwException(HashMap result) throws XMLDBException {
+    private void throwException(HashMap<?,?> result) throws XMLDBException {
 		String message = (String)result.get(RpcAPI.ERROR);
 		Integer lineInt = (Integer)result.get(RpcAPI.LINE);
 		Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
@@ -185,7 +185,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      * @param result a <code>Hashtable</code> value
      * @exception XPathException if an error occurs
      */
-    private void throwXPathException(HashMap result) throws XPathException {
+    private void throwXPathException(HashMap<?,?> result) throws XPathException {
         String message = (String)result.get(RpcAPI.ERROR);
         Integer lineInt = (Integer)result.get(RpcAPI.LINE);
         Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
@@ -233,7 +233,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         throws XMLDBException {
         RemoteXMLResource resource = (RemoteXMLResource) res;
         try {
-        	HashMap optParams = new HashMap();
+        	HashMap<String, Object> optParams = new HashMap<String, Object>();
         	if(namespaceMappings.size() > 0)
             	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
             if(variableDecls.size() > 0)
@@ -244,7 +244,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                     outputProperties.getProperty("base-uri", collection.getPath()));
             if (protectedMode)
                 optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
-            List params = new ArrayList(5);
+            List<Object> params = new ArrayList<Object>(5);
             params.add(query.getBytes("UTF-8"));
             params.add(resource.path.toString());
             if(resource.id == null)
@@ -252,7 +252,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             else
             	params.add(resource.id);
             params.add(optParams);
-			HashMap result = (HashMap) collection.getClient().execute("queryP", params);
+			HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
 			
 			if(result.get(RpcAPI.ERROR) != null)
             	throwException(result);
@@ -363,7 +363,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public void removeNamespace(final String ns)
         throws XMLDBException {
-        for(Iterator i = namespaceMappings.values().iterator(); i.hasNext(); ) {
+        for(Iterator<String> i = namespaceMappings.values().iterator(); i.hasNext(); ) {
         	if(i.next().equals(ns))
         		i.remove();
         }
@@ -441,14 +441,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     public void dump(CompiledExpression expression, Writer writer)
         throws XMLDBException {
         String query = ((RemoteCompiledExpression)expression).getQuery();
-        HashMap optParams = new HashMap();
+        HashMap<String, Object> optParams = new HashMap<String, Object>();
     	if(namespaceMappings.size() > 0)
         	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         if(variableDecls.size() > 0)
         	optParams.put(RpcAPI.VARIABLES, variableDecls);
         optParams.put(RpcAPI.BASE_URI, 
                 outputProperties.getProperty("base-uri", collection.getPath()));
-        List params = new ArrayList(2);
+        List<Object> params = new ArrayList<Object>(2);
         params.add(query);
         params.add(optParams);
         try {

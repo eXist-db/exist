@@ -265,7 +265,7 @@ public abstract class AbstractRemoteResource
 			fos=new FileOutputStream(tmpfile);
 			bos=new BufferedOutputStream(fos);
 			
-			Map table = (Map) parent.getClient().execute(command, params);
+			Map<?,?> table = (Map<?,?>) parent.getClient().execute(command, params);
 			String method;
 			boolean useLongOffset;
 			if(table.containsKey("supports-long-offset") && (Boolean)(table.get("supports-long-offset"))) {
@@ -303,7 +303,7 @@ public abstract class AbstractRemoteResource
 				params.clear();
 				params.add(table.get("handle"));
 				params.add(useLongOffset?Long.toString(offset):new Integer((int)offset));
-				table = (Map) parent.getClient().execute(method, params);
+				table = (Map<?,?>) parent.getClient().execute(method, params);
 				offset = useLongOffset?new Long((String)table.get("offset")).longValue():((Integer)table.get("offset")).longValue();
 				data = (byte[])table.get("data");
 				// One for the local cached file
@@ -509,7 +509,7 @@ public abstract class AbstractRemoteResource
 			params.add(path.toString());
 			params.add(properties);
 			try {
-				Map table = (Map) parent.getClient().execute("describeResource", params);
+				Map<?,?> table = (Map<?,?>) parent.getClient().execute("describeResource", params);
 				retval=((Integer)table.get("content-length")).intValue();
 			} catch (XmlRpcException xre) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);

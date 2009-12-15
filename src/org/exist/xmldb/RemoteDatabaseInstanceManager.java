@@ -31,7 +31,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 	 * @see org.exist.xmldb.DatabaseInstanceManager#shutdown()
 	 */
 	public void shutdown(long delay) throws XMLDBException {
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
 		if(delay > 0)
 			params.add(new Long(delay));
 		try {
@@ -45,7 +45,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
     public boolean enterServiceMode() throws XMLDBException {
 		try {
-			client.execute("enterServiceMode", new ArrayList(1));
+			client.execute("enterServiceMode", new ArrayList<Object>(1));
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Failed to switch db to service mode: " + e.getMessage(), e);
@@ -56,7 +56,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
     public void exitServiceMode() throws XMLDBException {
         try {
-			client.execute("exitServiceMode", new ArrayList(1));
+			client.execute("exitServiceMode", new ArrayList<Object>(1));
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Failed to switch db to service mode: " + e.getMessage(), e);
@@ -110,7 +110,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
 	public boolean isXACMLEnabled() throws XMLDBException {
 
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
 		try {
 			Object result = client.execute("isXACMLEnabled", params);
 			if(result instanceof Boolean)

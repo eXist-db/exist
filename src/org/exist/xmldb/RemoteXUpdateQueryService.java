@@ -33,7 +33,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	 */
 	public long update(String commands) throws XMLDBException {
 		LOG.debug("processing xupdate:\n" + commands);
-		Vector params = new Vector();
+		Vector<Object> params = new Vector<Object>();
 		byte[] xupdateData;
 		try {
 			xupdateData = commands.getBytes("UTF-8");
@@ -57,7 +57,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	 */
 	public long updateResource(String id, String commands) throws XMLDBException {
 		LOG.debug("processing xupdate:\n" + commands);
-		Vector params = new Vector();
+		Vector<Object> params = new Vector<Object>();
 		byte[] xupdateData;
 		try {
 			xupdateData = commands.getBytes("UTF-8");

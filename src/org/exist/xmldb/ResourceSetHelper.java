@@ -35,16 +35,16 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ResourceSetHelper {
 	public static ResourceSet intersection(ResourceSet s1, ResourceSet s2) throws XMLDBException {
-		Map m1 = new MapResourceSet(s1).getResourcesMap();
-		Map m2 = new MapResourceSet(s2).getResourcesMap();
-		Set set1 = m1.keySet();
-		Set set2 = m2.keySet();
+		Map<String, Resource> m1 = new MapResourceSet(s1).getResourcesMap();
+		Map<String, Resource> m2 = new MapResourceSet(s2).getResourcesMap();
+		Set<String> set1 = m1.keySet();
+		Set<String> set2 = m2.keySet();
 		set1.retainAll(set2);
-		Map m = new HashMap();
-		Iterator iter = set1.iterator();
+		Map<String, Resource> m = new HashMap<String, Resource>();
+		Iterator<String> iter = set1.iterator();
 		while ( iter.hasNext() ) {
-          String key = (String)iter.next();
-          Resource resource = (Resource)m1.get(key);
+          String key = iter.next();
+          Resource resource = m1.get(key);
           m.put(key, resource);
 		}
 		MapResourceSet res = new MapResourceSet(m); 
