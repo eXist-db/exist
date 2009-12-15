@@ -97,9 +97,9 @@ public class ExistPolicyModule extends PolicyFinderModule
 		try
 		{
 			XACMLUtil util = pdp.getUtil();
-			for(Iterator it = mainPolicyDocs.getDocumentIterator(); it.hasNext();)
+			for(Iterator<DocumentImpl> it = mainPolicyDocs.getDocumentIterator(); it.hasNext();)
 			{
-				policy = util.getPolicyDocument((DocumentImpl)it.next());
+				policy = util.getPolicyDocument(it.next());
 				match = policy.match(context);
 				result = match.getResult();
 				if(result == MatchResult.INDETERMINATE)

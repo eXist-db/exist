@@ -17,13 +17,13 @@ import java.util.Iterator;
 public class IndexUtils {
 
     public static void scanNode(DBBroker broker, Txn transaction, StoredNode node, StreamListener listener) {
-        Iterator iterator = broker.getNodeIterator(node);
+        Iterator<StoredNode> iterator = broker.getNodeIterator(node);
         iterator.next();
         NodePath path = node.getPath();
         scanNode(transaction, iterator, node, listener, path);
     }
 
-    private static void scanNode(Txn transaction, Iterator iterator, StoredNode node, StreamListener listener,
+    private static void scanNode(Txn transaction, Iterator<StoredNode> iterator, StoredNode node, StreamListener listener,
                                  NodePath currentPath) {
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
@@ -33,7 +33,7 @@ public class IndexUtils {
                 if (node.hasChildNodes()) {
                     int childCount = node.getChildCount();
                     for (int i = 0; i < childCount; i++) {
-                    	StoredNode child = (StoredNode) iterator.next();
+                    	StoredNode child = iterator.next();
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.addComponent(child.getQName());
                         scanNode(transaction, iterator, child, listener, currentPath);

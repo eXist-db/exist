@@ -259,7 +259,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      *
      *@return    Description of the Return Value
      */
-    public Iterator collectionIterator() {
+    public Iterator<XmldbURI> collectionIterator() {
         try {
             getLock().acquire(Lock.READ_LOCK);
             return subcollections.stableIterator();
@@ -271,7 +271,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         }
     }
 
-    public Iterator collectionIteratorNoLock() {
+    public Iterator<XmldbURI> collectionIteratorNoLock() {
         return subcollections.stableIterator();
     }
 
@@ -714,11 +714,11 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      *
      *@return A iterator of all the documents in the collection.
      */
-    public Iterator iterator(DBBroker broker) {
+    public Iterator<DocumentImpl> iterator(DBBroker broker) {
         return getDocuments(broker, new DefaultDocumentSet(), false).getDocumentIterator();
     }
 
-    public Iterator iteratorNoLock(DBBroker broker) {
+    public Iterator<DocumentImpl> iteratorNoLock(DBBroker broker) {
         return getDocumentsNoLock(broker, new DefaultDocumentSet(), false).getDocumentIterator();
     }
 

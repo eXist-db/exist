@@ -36,7 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -57,8 +56,8 @@ public class IndexController {
     public IndexController(DBBroker broker) {
     	this.broker = broker;
         IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
-        for (int i = 0; i < workers.length; i++) {
-            indexWorkers.put(workers[i].getIndexId(), workers[i]);
+        for (IndexWorker worker : workers) {
+            indexWorkers.put(worker.getIndexId(), worker);
         }
     }
 
@@ -112,8 +111,7 @@ public class IndexController {
      * @return instance of index worker
      */    
     public IndexWorker getWorkerByIndexName(String indexName) {
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-        	IndexWorker worker = (IndexWorker) i.next();
+        for (IndexWorker worker : indexWorkers.values()) {
         	if (indexName.equals(worker.getIndexName()))
         		return worker;
         }
@@ -130,9 +128,8 @@ public class IndexController {
         	//Reset listener
         	listener = null;
         currentDoc = doc;
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
+
+        for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setDocument(currentDoc);
         }    	
     }
@@ -148,9 +145,8 @@ public class IndexController {
         	//Reset listener
         	listener = null;
         currentMode = mode;
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
+
+        for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setMode(currentMode);
         }
     }
@@ -189,9 +185,7 @@ public class IndexController {
      * Flushes all index workers.
      */
     public void flush() {
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
+        for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.flush();
         }
     }  
@@ -203,9 +197,7 @@ public class IndexController {
      * @param broker the broker that will perform the operation
      */
     public void removeCollection(Collection collection, DBBroker broker) {
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
+        for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.removeCollection(collection, broker);
         }
     }    
@@ -256,10 +248,8 @@ public class IndexController {
      * @return the top-most root node to be reindexed
      */
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
-        IndexWorker indexWorker;
         StoredNode next, top = null;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
+        for (IndexWorker indexWorker : indexWorkers.values()) {
             next = indexWorker.getReindexRoot(node, path, includeSelf);
             if (next != null && (top == null || top.getNodeId().isDescendantOf(next.getNodeId())))
                 top = next;
@@ -290,9 +280,8 @@ public class IndexController {
         }
         StreamListener first = null;
         StreamListener current, previous = null;
-        IndexWorker worker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext();) {
-            worker = (IndexWorker) i.next();
+
+        for (IndexWorker worker : indexWorkers.values()) {
             // wolf: setDocument() should have been called before
 //            worker.setDocument(currentDoc, currentMode);
             current = worker.getListener();
@@ -394,9 +383,8 @@ public class IndexController {
     public MatchListener getMatchListener(NodeProxy proxy) {
         MatchListener first = null;
         MatchListener current, previous = null;
-        IndexWorker worker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            worker = (IndexWorker) i.next();
+
+        for (IndexWorker worker : indexWorkers.values()) {
             current = worker.getMatchListener(broker, proxy);
             if (current != null) {
                 if (first == null) {

@@ -24,7 +24,6 @@ package org.exist.security.xacml;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -211,12 +210,12 @@ public class ExistPDP
 		if(response == null)
 			throw new PermissionDeniedException("The response was null");
 
-		Set results = response.getResults();
+		Set<Result> results = response.getResults();
 		if(results == null || results.size() == 0)
 			throw new PermissionDeniedException("The response was empty");
 
-		for(Iterator it = results.iterator(); it.hasNext();)
-			handleResult((Result)it.next());
+		for(Result result : results)
+			handleResult(result);
 	}
 	
 	/**
