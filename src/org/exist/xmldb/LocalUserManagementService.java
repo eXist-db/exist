@@ -531,8 +531,8 @@ public class LocalUserManagementService implements UserManagementService {
 				new Permission[c.getDocumentCount()];
 			int j = 0;
 			DocumentImpl doc;
-			for (Iterator i = c.iterator(broker); i.hasNext(); j++) {
-				doc = (DocumentImpl) i.next();
+			for (Iterator<DocumentImpl> i = c.iterator(broker); i.hasNext(); j++) {
+				doc = i.next();
 				perms[j] = doc.getPermissions();
 			}
 			return perms;
@@ -561,8 +561,8 @@ public class LocalUserManagementService implements UserManagementService {
 			XmldbURI child;
 			org.exist.collections.Collection childColl;
 			int j = 0;
-			for (Iterator i = c.collectionIterator(); i.hasNext(); j++) {
-				child = (XmldbURI) i.next();
+			for (Iterator<XmldbURI> i = c.collectionIterator(); i.hasNext(); j++) {
+				child = i.next();
  				childColl =
 					broker.openCollection(collection.getPathURI().append(child), Lock.READ_LOCK);
 				if(childColl != null) {

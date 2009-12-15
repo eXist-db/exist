@@ -56,8 +56,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
-	protected TreeMap namespaceDecls = new TreeMap();
-	protected TreeMap variableDecls = new TreeMap();
+	protected TreeMap<String, String> namespaceDecls = new TreeMap<String, String>();
+	protected TreeMap<String, Object> variableDecls = new TreeMap<String, Object>();
 	protected boolean xpathCompatible = true;
 	protected String moduleLoadPath = null;
 	protected Properties properties = null;
@@ -67,6 +67,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 
     protected AccessContext accessCtx;
 	
+	@SuppressWarnings("unused")
 	private LocalXPathQueryService() {}
 	
 	public LocalXPathQueryService(
@@ -92,7 +93,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public String getNamespace(String prefix) throws XMLDBException {
-		return (String)namespaceDecls.get(prefix);
+		return namespaceDecls.get(prefix);
 	}
 	
 	public String getProperty(String property) throws XMLDBException {
@@ -250,18 +251,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	    }
 		if(moduleLoadPath != null)
 			context.setModuleLoadPath(moduleLoadPath);
-		Map.Entry entry;
+
 		// declare namespace/prefix mappings
-		for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
+		for (Map.Entry<String, String> entry : namespaceDecls.entrySet()) {
 			context.declareNamespace(
-				(String) entry.getKey(),
-				(String) entry.getValue());
+				entry.getKey(),
+				entry.getValue());
 		}
 		// declare static variables
-		for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
-			context.declareVariable((String) entry.getKey(), entry.getValue());
+		for (Map.Entry<String, Object> entry : variableDecls.entrySet()) {
+			context.declareVariable(entry.getKey(), entry.getValue());
 		}
 		//context.setBackwardsCompatibility(xpathCompatible);
 	}
@@ -351,8 +350,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     }
 	
 	public void removeNamespace(String ns) throws XMLDBException {
-		for (Iterator i = namespaceDecls.values().iterator(); i.hasNext();) {
-			if (((String) i.next()).equals(ns)) {
+		for (Iterator<String> i = namespaceDecls.values().iterator(); i.hasNext();) {
+			if (i.next().equals(ns)) {
 				i.remove();
 			}
 		}

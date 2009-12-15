@@ -1,4 +1,3 @@
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
@@ -69,7 +68,7 @@ public class RemoteCollection implements CollectionImpl {
 	private static final int MAX_CHUNK_LENGTH = 512 * 1024;
 	private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024;
 
-	protected Map childCollections = null;
+	protected Map<XmldbURI, Collection> childCollections = null;
 	protected XmldbURI path;
 	protected Permission permissions = null;
 	protected RemoteCollection parent = null;
@@ -103,14 +102,14 @@ public class RemoteCollection implements CollectionImpl {
 
 	public void close() throws XMLDBException {
 		try {
-			rpcClient.execute("sync", new ArrayList());
+			rpcClient.execute("sync", new ArrayList<Object>());
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
 		}
     }
 
 	public String createId() throws XMLDBException {
-        List params = new ArrayList(1);
+        List<String> params = new ArrayList<String>(1);
 	    params.add(getPath());
 	    try {
 			return (String)rpcClient.execute("createResourceId", params);
@@ -159,9 +158,9 @@ public class RemoteCollection implements CollectionImpl {
 		// stores reference to the collection found
 		Collection foundCollection = null;
 		if (name.numSegments()>1)
-			foundCollection = (Collection) childCollections.get(name);
+			foundCollection = childCollections.get(name);
 		else
-			foundCollection = (Collection) childCollections.get(getPathURI().append(name));
+			foundCollection = childCollections.get(getPathURI().append(name));
 
 		// if we did not find collection in cache set cache back to null to force full refresh
 		if (foundCollection == null && refreshCacheIfNotFound) {
@@ -223,7 +222,7 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public int getResourceCount() throws XMLDBException {
-        List params = new ArrayList(1);
+        List<String> params = new ArrayList<String>(1);
         params.add(getPath());
 	    try {
 			return ((Integer)rpcClient.execute("getResourceCount", params)).intValue();
@@ -292,8 +291,8 @@ public class RemoteCollection implements CollectionImpl {
 		String coll[] = new String[childCollections.size()];
 		int j = 0;
 		XmldbURI uri;
-		for (Iterator i = childCollections.keySet().iterator(); i.hasNext(); j++) {
-			uri = (XmldbURI) i.next();
+		for (Iterator<XmldbURI> i = childCollections.keySet().iterator(); i.hasNext(); j++) {
+			uri = i.next();
 			coll[j] = uri.lastSegment().toString();
 		}
 		return coll;
@@ -304,7 +303,7 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String[] listResources() throws XMLDBException {
-        List params = new ArrayList(1);
+        List<String> params = new ArrayList<String>(1);
 		params.add(getPath());
 		try {
 			Object[] r = (Object[]) rpcClient.execute("getDocumentListing", params);
@@ -324,7 +323,7 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Resource getResource(String name) throws XMLDBException {
-        List params = new ArrayList(1);
+        List<String> params = new ArrayList<String>(1);
 		XmldbURI docUri;
 		try {
 			docUri = XmldbURI.xmldbUriFor(name);
@@ -332,9 +331,9 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
 		params.add(getPathURI().append(docUri).toString());
-		HashMap hash;
+		HashMap<?,?> hash;
 		try {
-			hash = (HashMap) rpcClient.execute("describeResource", params);
+			hash = (HashMap<?,?>) rpcClient.execute("describeResource", params);
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
 		}
@@ -377,13 +376,13 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	private void readCollection() throws XMLDBException {
-		childCollections = new HashMap();
-        List params = new ArrayList(1);
+		childCollections = new HashMap<XmldbURI, Collection>();
+        List<String> params = new ArrayList<String>(1);
         params.add(getPath());
 
-		HashMap collection;
+		HashMap<?,?> collection;
 		try {
-			collection = (HashMap) rpcClient.execute("describeCollection", params);
+			collection = (HashMap<?,?>) rpcClient.execute("describeCollection", params);
 		} catch (XmlRpcException xre) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
 		}
@@ -424,7 +423,7 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {
-        List params = new ArrayList(1);
+        List<String> params = new ArrayList<String>(1);
 		try {
 			params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
 		} catch(URISyntaxException e) {
@@ -439,7 +438,7 @@ public class RemoteCollection implements CollectionImpl {
     }
 
 	public Date getCreationTime() throws XMLDBException {
-        List params = new ArrayList(1);
+        List<String> params = new ArrayList<String>(1);
 		params.add(getPath());
 		try {
 			return (Date) rpcClient.execute("getCreationDate", params);
@@ -503,7 +502,7 @@ public class RemoteCollection implements CollectionImpl {
 
 	private void store(RemoteXMLResource res) throws XMLDBException {
 		byte[] data = res.getData();
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
 		params.add(data);
 		try {
 			params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
@@ -529,7 +528,7 @@ public class RemoteCollection implements CollectionImpl {
 
 	private void store(RemoteBinaryResource res) throws XMLDBException {
 		byte[] data = (byte[])res.getContent();
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
 		params.add(data);
 		try {
 			params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
@@ -590,11 +589,11 @@ public class RemoteCollection implements CollectionImpl {
 		try {
 			int len;
 			String fileName = null;
-			List params;
+			List<Object> params;
 			byte[] compressed;
 			while ((len = is.read(chunk)) > -1) {
 			    compressed = Compressor.compress(chunk, len);
-				params = new ArrayList(3);
+				params = new ArrayList<Object>(3);
 				if (fileName != null)
 					params.add(fileName);
 				params.add(compressed);
@@ -604,14 +603,14 @@ public class RemoteCollection implements CollectionImpl {
 			// Zero length stream? Let's get a fileName!
 			if(fileName==null) {
 				compressed=Compressor.compress(new byte[0],0);
-				params = new ArrayList(3);
+				params = new ArrayList<Object>(3);
 				params.add(compressed);
 				params.add(new Integer(0));
 				fileName = (String) rpcClient.execute("uploadCompressed", params);
 			}
 
-			params = new ArrayList(6);
-			List paramsEx = new ArrayList(7);
+			params = new ArrayList<Object>(6);
+			List<Object> paramsEx = new ArrayList<Object>(7);
 			params.add(fileName);
 			paramsEx.add(fileName);
 			try {

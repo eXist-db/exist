@@ -67,7 +67,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
    public void reindexCollection(XmldbURI collectionPath) throws XMLDBException {
        if (parent != null)
     	   collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-            List params = new ArrayList(1);
+            List<Object> params = new ArrayList<Object>(1);
 		params.add(collectionPath.toString());
 		try {
 			rpcClient.execute("reindexCollection", params);
@@ -83,7 +83,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 */
 	public Occurrences[] getIndexedElements(boolean inclusive) throws XMLDBException {
 		try {
-            List params = new ArrayList(1);
+            List<Object> params = new ArrayList<Object>(1);
 			params.add(parent.getPath());
 			params.add(Boolean.valueOf(inclusive));
 			Object[] result = (Object[]) rpcClient.execute("getIndexedElements", params);
@@ -111,7 +111,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	public Occurrences[] scanIndexTerms(String start, String end, boolean inclusive)
 		throws XMLDBException {
 		try {
-            List params = new ArrayList(1);
+            List<Object> params = new ArrayList<Object>(1);
 			params.add(parent.getPath());
 			params.add(start);
 			params.add(end);
@@ -138,7 +138,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 */
 	public Occurrences[] scanIndexTerms(String xpath, String start, String end) throws XMLDBException {
 		try {
-            List params = new ArrayList(1);
+            List<Object> params = new ArrayList<Object>(1);
 			params.add(xpath);
 			params.add(start);
 			params.add(end);
@@ -199,7 +199,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 */
 	public void configureCollection(String configData) throws XMLDBException {
 	    String path = parent.getPath();
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
 		params.add(path);
 		params.add(configData);
 		try {

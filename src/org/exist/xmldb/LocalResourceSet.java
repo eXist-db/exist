@@ -61,6 +61,7 @@ public class LocalResourceSet implements ResourceSet {
 	protected Properties outputProperties;
 	private User user;
 
+	@SuppressWarnings("unused")
 	private LocalResourceSet() {}
 	
 	public LocalResourceSet(

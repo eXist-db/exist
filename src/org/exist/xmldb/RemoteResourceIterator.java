@@ -36,12 +36,12 @@ public class RemoteResourceIterator implements ResourceIterator {
 
 	protected XmlRpcClient rpcClient;
 	protected RemoteCollection collection;
-	protected Vector resources;
+	protected Vector<Object> resources;
 	protected int pos = 0 ;
 	protected int indentXML;
 	protected String encoding = "UTF-8";
 
-	public RemoteResourceIterator(RemoteCollection col, Vector resources, 
+	public RemoteResourceIterator(RemoteCollection col, Vector<Object> resources, 
 								int indentXML, String encoding) {
 		this.resources = resources;
 		this.collection = col;
@@ -65,13 +65,13 @@ public class RemoteResourceIterator implements ResourceIterator {
         if(pos >= resources.size())
             return null;
         // node or value?
-        if(resources.elementAt(pos) instanceof Vector) {
+        if(resources.elementAt(pos) instanceof Vector<?>) {
             // node
-            Vector v = (Vector)resources.elementAt(pos++);
-            String doc = (String)v.elementAt(0);
-            String s_id = (String)v.elementAt(1);
+            Vector<String> v = (Vector<String>)resources.elementAt(pos++);
+            String doc = v.elementAt(0);
+            String s_id = v.elementAt(1);
             
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.addElement(doc);
             params.addElement(s_id);
             params.addElement(new Integer(indentXML));

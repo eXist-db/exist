@@ -88,6 +88,7 @@ public class RemoteXMLResource
     protected Properties outputProperties = null;
     protected LexicalHandler lexicalHandler = null;
 	
+	@SuppressWarnings("unused")
 	private static Logger LOG = Logger.getLogger(RemoteXMLResource.class.getName());
 	
     public RemoteXMLResource(RemoteCollection parent, XmldbURI docId, String id)
@@ -382,7 +383,7 @@ public class RemoteXMLResource
 
     public  DocumentType getDocType() throws XMLDBException {
     	DocumentType result = null;
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
     	Object[] request = null;
     	params.add(path.toString());
     	try {
@@ -402,7 +403,7 @@ public class RemoteXMLResource
     
     public void setDocType(DocumentType doctype) throws XMLDBException {
     	if (doctype != null ) {
-            List params = new ArrayList(4);
+            List<Object> params = new ArrayList<Object>(4);
     		params.add(path.toString());
     		params.add(doctype.getName());
     		params.add(doctype.getPublicId() == null ? "" : doctype.getPublicId());

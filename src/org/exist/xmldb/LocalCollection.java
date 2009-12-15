@@ -107,7 +107,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
     
     private AccessContext accessCtx;
     
-    private LocalCollection() {}
+    @SuppressWarnings("unused")
+	private LocalCollection() {}
     /**
      * Create a collection with no parent (root collection).
      *
@@ -509,8 +510,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 return new String[0];
             String[] collections = new String[collection.getChildCollectionCount()];
             int j = 0;
-            for (Iterator i = collection.collectionIterator(); i.hasNext(); j++)
-                collections[j] = ((XmldbURI) i.next()).toString();
+            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); j++)
+                collections[j] = i.next().toString();
             return collections;
         } finally {
             collection.release(Lock.READ_LOCK);
@@ -534,8 +535,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
             
             List<XmldbURI> allresources = new ArrayList<XmldbURI>();
             DocumentImpl doc;
-            for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                doc = i.next();
                 
                 // Include only when (1) locktoken is present or (2)
                 // locktoken indicates that it is not a null resource

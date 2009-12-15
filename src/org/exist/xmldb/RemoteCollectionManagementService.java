@@ -71,7 +71,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if (parent != null)
         	collName = parent.getPathURI().resolveCollectionPath(collName);
 
-        List params = new ArrayList(2);
+        List<Object> params = new ArrayList<Object>(2);
         params.add( collName.toString() );
         
         if (created != null) {
@@ -134,7 +134,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if (parent != null)
         	collName = parent.getPathURI().resolveCollectionPath(collName);
 
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
         params.add( collName.toString() );
         try {
             client.execute( "removeCollection", params );
@@ -176,7 +176,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if(newName == null) {
             newName = collectionPath.lastSegment();
         }
-       List params = new ArrayList(1);
+       List<Object> params = new ArrayList<Object>(1);
         params.add( collectionPath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
@@ -211,7 +211,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             newName = resourcePath.lastSegment();
         }
 
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
         params.add( resourcePath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
@@ -247,7 +247,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             newName = collectionPath.lastSegment();
         }
 
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
         params.add( collectionPath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
@@ -282,7 +282,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if(newName == null) {
             newName = resourcePath.lastSegment();
         }
-        List params = new ArrayList(1);
+        List<Object> params = new ArrayList<Object>(1);
         params.add( resourcePath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );

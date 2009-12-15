@@ -55,7 +55,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     private static Logger LOG =
         Logger.getLogger( LocalCollectionManagementService.class );
         
-    private LocalCollectionManagementService() {}
+    @SuppressWarnings("unused")
+	private LocalCollectionManagementService() {}
     public LocalCollectionManagementService( User user, BrokerPool pool,
                                              LocalCollection parent,
 											 AccessContext accessCtx) {
