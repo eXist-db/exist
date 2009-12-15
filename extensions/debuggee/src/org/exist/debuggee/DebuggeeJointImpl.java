@@ -78,7 +78,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 	public void stackEnter(Expression expr) {
 		if (LOG.isDebugEnabled())
-			LOG.debug("stackEnter " + expr.getLine() + " expr = "+ expr.toString());
+			LOG.debug("" + expr.getLine() + " expr = "+ expr.toString());
 		
 		stack.add(expr);
 		stackDepth++;
@@ -87,7 +87,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
 	public void stackLeave(Expression expr) {
 		if (LOG.isDebugEnabled())
-			LOG.debug("stackLeave " + expr.getLine() + " expr = "+ expr.toString());
+			LOG.debug("" + expr.getLine() + " expr = "+ expr.toString());
 		
 		stack.remove(stack.size()-1);
 		stackDepth--;
@@ -104,7 +104,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
 		if (LOG.isDebugEnabled())
-			LOG.debug("expressionStart " + expr.getLine() + " expr = "+ expr.toString());
+			LOG.debug("" + expr.getLine() + " expr = "+ expr.toString());
 		
 		if (compiledXQuery == null)
 			return;
@@ -194,7 +194,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 */
 	public void expressionEnd(Expression expr) {
 		if (LOG.isDebugEnabled())
-			LOG.debug("expressionEnd expr = "+expr.toString());
+			LOG.debug("expr = "+expr.toString());
 
 		if (firstExpression == expr) {
 			firstExpression = null;
@@ -203,6 +203,14 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			command.setStatus(STOPPED);
 			
 			sessionClosed(true);
+
+			//TODO: check this values
+			stackDepth = 0;
+			stack = new ArrayList<Expression>();
+			
+			command = null;
+			commands = new Stack<CommandContinuation>();
+			
 		}
 		
 	}

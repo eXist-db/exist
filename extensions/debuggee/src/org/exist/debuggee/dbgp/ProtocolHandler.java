@@ -70,6 +70,9 @@ public class ProtocolHandler extends IoHandlerAdapter {
 		
 //		command.exec();
 		
+		if (LOG.isDebugEnabled())
+			LOG.debug("" + command.toString());
+
 		session.write(command);
 	}
 	
