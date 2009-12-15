@@ -152,7 +152,7 @@ class NodeStats {
         }
     }
 
-    protected void dump(StringBuilder currentPath, List paths) {
+    protected void dump(StringBuilder currentPath, List<StringBuilder> paths) {
         StringBuilder newPath;
         if (qname == null)
             newPath = currentPath;

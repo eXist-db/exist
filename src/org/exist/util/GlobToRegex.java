@@ -129,7 +129,8 @@ public class GlobToRegex {
      *         pattern.
      */
     public static String globToRegexp(CharSequence pattern) {
-        boolean inCharSet, starCannotMatchNull = false, questionMatchesZero;
+        @SuppressWarnings("unused")
+		boolean inCharSet, starCannotMatchNull = false, questionMatchesZero;
         int ch;
         StringBuilder buffer;
 
@@ -206,7 +207,8 @@ public class GlobToRegex {
         String str = "This is generated text";
         Pattern pattern = Pattern.compile(re);
         Matcher matcher = pattern.matcher(str);
-        boolean match = matcher.find();
+        @SuppressWarnings("unused")
+		boolean match = matcher.find();
         System.out.println(str.substring(matcher.start(), matcher.end()));
     }
 

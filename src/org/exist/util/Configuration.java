@@ -439,7 +439,7 @@ public class Configuration implements ErrorHandler
         config.put(PerformanceStats.CONFIG_PROPERTY_TRACE, trace);
         
         //built-in-modules
-        Map<String, Class> classMap = new HashMap<String, Class>();
+        Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
         Map<String, String> knownMappings = new HashMap<String, String>();
         XQueryContext.loadModuleClasses(xquery, classMap, knownMappings);
         config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);

@@ -47,10 +47,12 @@ public class LogEntryTypes {
         
         private static Class<?> constructorArgs[] = { DBBroker.class, long.class };
         
-        private byte type;
+        @SuppressWarnings("unused")
+		private byte type;
         private Class<Loggable> clazz;
         
-        public LogEntry(byte type, Class myClass) {
+        @SuppressWarnings("unchecked")
+		public LogEntry(byte type, Class myClass) {
             this.type = type;
             this.clazz = myClass;
         }
@@ -82,7 +84,7 @@ public class LogEntryTypes {
      * @param type
      * @param clazz the class implementing {@link Loggable}.
      */
-    public final static void addEntryType(byte type, Class clazz) {
+    public final static void addEntryType(byte type, Class<?> clazz) {
         LogEntry entry = new LogEntry(type, clazz);
         entryTypes.put(type, entry);
     }

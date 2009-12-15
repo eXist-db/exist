@@ -23,7 +23,9 @@ package org.exist.util;
 
 public class DeadlockException extends LockException {
 
-    public DeadlockException() {
+	private static final long serialVersionUID = -4851225988714944368L;
+
+	public DeadlockException() {
         super();
     }
 

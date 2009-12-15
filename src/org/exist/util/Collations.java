@@ -121,7 +121,7 @@ public class Collations {
             // java.text.RuleBasedCollator
             uri = uri.substring("java:".length());
             try {
-                Class collatorClass = Class.forName(uri);
+                Class<?> collatorClass = Class.forName(uri);
                 if (!Collator.class.isAssignableFrom(collatorClass)) {
                     logger.error("The specified collator class is not a subclass of java.text.Collator");
                     throw new XPathException(

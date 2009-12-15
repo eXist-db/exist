@@ -34,6 +34,7 @@ import java.util.Map;
  */
 public class Sync extends UserJavaJob {
 
+	@SuppressWarnings("unused")
 	private final static String JOB_GROUP = "eXist.internal";
 	private final static String JOB_NAME = "Sync";
 	

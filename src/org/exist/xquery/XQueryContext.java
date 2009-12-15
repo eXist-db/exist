@@ -217,6 +217,7 @@ public class XQueryContext {
 	 * Whether some modules were rebound to new instances since the last time this context's
 	 * query was analyzed.  (This assumes that each context is attached to at most one query.)
 	 */
+	@SuppressWarnings("unused")
 	private boolean modulesChanged = true;
 
 	/** 
@@ -689,13 +690,11 @@ public class XQueryContext {
 		}
 	}
 
-	public void declareNamespaces(Map namespaceMap) {
-		Map.Entry entry;
+	public void declareNamespaces(Map<String, String> namespaceMap) {
 		String prefix, uri;
-		for(Iterator i = namespaceMap.entrySet().iterator(); i.hasNext(); ) {
-			entry = (Map.Entry)i.next();
-			prefix = (String)entry.getKey();
-			uri = (String) entry.getValue();
+		for(Map.Entry<String, String> entry : namespaceMap.entrySet()) {
+			prefix = entry.getKey();
+			uri = entry.getValue();
 			if(prefix == null)
 				prefix = "";
 			if(uri == null)
@@ -1382,11 +1381,12 @@ public class XQueryContext {
         return initBuiltInModule(namespaceURI, moduleClass);
     }
 
-    protected Module initBuiltInModule(String namespaceURI, String moduleClass) {
+    @SuppressWarnings("unchecked")
+	protected Module initBuiltInModule(String namespaceURI, String moduleClass) {
         Module module = null;
         try {
             // lookup the class
-            Class mClass = Class.forName(moduleClass);
+            Class<?> mClass = Class.forName(moduleClass);
             if (!(Module.class.isAssignableFrom(mClass))) {
                 LOG.info(
                         "failed to load module. "
@@ -1394,7 +1394,7 @@ public class XQueryContext {
                                 + " is not an instance of org.exist.xquery.Module.");
                 return null;
             }
-            instantiateModule(namespaceURI, mClass);
+            instantiateModule(namespaceURI, (Class<Module>) mClass);
 			//LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
 		} catch (ClassNotFoundException e) {
 			LOG.warn("module class " + moduleClass + " not found. Skipping...");
@@ -1402,10 +1402,10 @@ public class XQueryContext {
         return module;
 	}
 
-    protected Module instantiateModule(String namespaceURI, Class mClass) {
+    protected Module instantiateModule(String namespaceURI, Class<Module> mClass) {
         Module module = null;
         try {
-            module = (Module) mClass.newInstance();
+            module = mClass.newInstance();
             if (!module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn("the module declares a different namespace URI. Expected: " + namespaceURI +
                         " found: " + module.getNamespaceURI());
@@ -2770,7 +2770,7 @@ public class XQueryContext {
      * @param xquery configuration root
      * @throws DatabaseConfigurationException
      */
-    public static void loadModuleClasses(Element xquery, Map<String, Class> classMap, Map<String, String> externalMap)
+    public static void loadModuleClasses(Element xquery, Map<String, Class<?>> classMap, Map<String, String> externalMap)
         throws DatabaseConfigurationException {
         // add the standard function module
         classMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class);
@@ -2795,7 +2795,7 @@ public class XQueryContext {
                         if (LOG.isDebugEnabled())
                             LOG.debug("Registered mapping for module '" + uri + "' to '" + source + "'");
                     } else {
-                        Class mClass = lookupModuleClass(uri, clazz);
+                        Class<?> mClass = lookupModuleClass(uri, clazz);
                         if (mClass != null)
                             classMap.put(uri, mClass);
                         if (LOG.isDebugEnabled())
@@ -2806,9 +2806,9 @@ public class XQueryContext {
         }
     }
 
-    private static Class lookupModuleClass(String uri, String clazz) throws DatabaseConfigurationException {
+    private static Class<?> lookupModuleClass(String uri, String clazz) throws DatabaseConfigurationException {
         try {
-            Class mClass = Class.forName(clazz);
+            Class<?> mClass = Class.forName(clazz);
             if (!(Module.class.isAssignableFrom(mClass))) {
                 throw new DatabaseConfigurationException("Failed to load module: " + uri + ". Class " +
                         clazz + " is not an instance of org.exist.xquery.Module.");
@@ -2831,23 +2831,21 @@ public class XQueryContext {
 
     private class ContextUpdateListener implements UpdateListener {
 
-		private List listeners = new ArrayList();
+		private List<UpdateListener> listeners = new ArrayList<UpdateListener>();
 
         public void addListener(UpdateListener listener) {
 			listeners.add(listener);
 		}
 		
 		public void documentUpdated(DocumentImpl document, int event) {
-			for (int i = 0; i < listeners.size(); i++) {
-                UpdateListener listener = (UpdateListener) listeners.get(i);
+			for (UpdateListener listener : listeners) {
                 if (listener != null)
                     listener.documentUpdated(document, event);
 			}
 		}
 
         public void unsubscribe() {
-            for (int i = 0; i < listeners.size(); i++) {
-                UpdateListener listener = (UpdateListener) listeners.get(i);
+            for (UpdateListener listener : listeners) {
                 if (listener != null) {
                     listener.unsubscribe();
                 }
