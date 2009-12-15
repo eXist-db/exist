@@ -29,5 +29,5 @@ package org.exist.config;
 public interface Proxy<E> {
 
 	public void setProxyObject(E object);
-//	public E getProxyObject();
+	public E getProxyObject();
 }

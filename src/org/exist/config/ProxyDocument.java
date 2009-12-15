@@ -269,7 +269,8 @@ public class ProxyDocument extends ProxyNode implements DocumentAtExist {
 	public void setXmlVersion(String xmlVersion) throws DOMException {
 		getProxyObject().setXmlVersion(xmlVersion);
 	}
-
+	
+	@Override
 	public DocumentAtExist getProxyObject() {
 		return document;
 	}
