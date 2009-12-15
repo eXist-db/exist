@@ -94,7 +94,9 @@ public class XIncludeFilter implements Receiver {
 
     private static class ResourceError extends Exception {
 
-        private ResourceError(String message, Throwable cause) {
+		private static final long serialVersionUID = 6371228263379093678L;
+
+		private ResourceError(String message, Throwable cause) {
             super(message, cause);
         }
 
@@ -108,7 +110,7 @@ public class XIncludeFilter implements Receiver {
     private DocumentImpl document = null;
     private String moduleLoadPath = null;
     
-    private HashMap namespaces = new HashMap(10);
+    private HashMap<String, String> namespaces = new HashMap<String, String>(10);
 
     private boolean inFallback = false;
 

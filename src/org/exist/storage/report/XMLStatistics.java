@@ -62,8 +62,8 @@ public class XMLStatistics {
 		atts.clear();
 		
 		BrokerPool instance;
-		for(Iterator i = BrokerPool.getInstances(); i.hasNext(); ) {
-			instance = (BrokerPool)i.next();
+		for(Iterator<BrokerPool> i = BrokerPool.getInstances(); i.hasNext(); ) {
+			instance = i.next();
 			atts.addAttribute("", "name", "name", "CDATA", instance.getId());
 			this.contentHandler.startElement(NAMESPACE, "database-instance", 
 				PREFIX + ":database-instance", atts);
