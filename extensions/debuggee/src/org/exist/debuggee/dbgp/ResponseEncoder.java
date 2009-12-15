@@ -21,6 +21,7 @@
  */
 package org.exist.debuggee.dbgp;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
@@ -33,12 +34,17 @@ import org.exist.debuggee.Packet;
  */
 public class ResponseEncoder extends ProtocolEncoderAdapter {
 
+    private final static Logger LOG = Logger.getLogger(ResponseEncoder.class);
+
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out)
 			throws Exception {
 		Packet packet = (Packet) message;
 		
 		byte[] response = packet.responseBytes();
 		String length = String.valueOf(response.length);
+
+		if (LOG.isDebugEnabled())
+			LOG.debug("" + length + " byte(s) : " + packet.toString());
 		
 		IoBuffer buffer = IoBuffer.allocate(response.length+length.length()+2, false);
 		buffer.put(length.getBytes());
