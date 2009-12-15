@@ -58,11 +58,12 @@ public class FileLockHeartBeat implements JobDescription, Job {
         return "eXist.internal";
     }
 
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    @SuppressWarnings("unchecked")
+	public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //get the file lock
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        Map params = (Map)jobDataMap.get("params");
-        FileLock lock = (FileLock)params.get(FileLock.class.getName());
+        Map<String, FileLock> params = (Map)jobDataMap.get("params");
+        FileLock lock = params.get(FileLock.class.getName());
 
 		if(lock != null)
 		{

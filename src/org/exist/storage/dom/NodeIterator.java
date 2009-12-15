@@ -25,7 +25,7 @@ import java.util.Iterator;
  * 
  * @author wolf
  */
-public final class NodeIterator implements Iterator {
+public final class NodeIterator implements Iterator<StoredNode> {
 
 	private final static Logger LOG = Logger.getLogger(NodeIterator.class);
 
@@ -97,7 +97,7 @@ public final class NodeIterator implements Iterator {
 	/**
 	 *  Returns the next node in document order. 
 	 */
-	public Object next() {
+	public StoredNode next() {
 		Lock lock = db.getLock();
 		try {
 			try {

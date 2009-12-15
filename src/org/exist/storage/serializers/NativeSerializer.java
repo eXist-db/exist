@@ -76,8 +76,8 @@ public class NativeSerializer extends Serializer {
     	}
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
-        Iterator domIter = broker.getNodeIterator(new StoredNode(p));
-        serializeToReceiver(null, domIter, p.getDocument(), checkAttributes, p.getMatches(), new TreeSet());
+        Iterator<StoredNode> domIter = broker.getNodeIterator(new StoredNode(p));
+        serializeToReceiver(null, domIter, p.getDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
         if (generateDocEvent) receiver.endDocument();
     }
     
@@ -91,17 +91,17 @@ public class NativeSerializer extends Serializer {
 		if (doc.getDoctype() != null){
 			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
 				final StoredNode n = (StoredNode) doc.getDoctype();
-				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet());
+				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet<String>());
 			}
 		}
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
     		StoredNode node = (StoredNode) children.item(i);
-    		Iterator domIter = broker.getNodeIterator(node);
+    		Iterator<StoredNode> domIter = broker.getNodeIterator(node);
     		domIter.next();
     		NodeProxy p = new NodeProxy(node);
     		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
-    				true, p.getMatches(), new TreeSet());
+    				true, p.getMatches(), new TreeSet<String>());
     	}
     	DocumentImpl documentImpl = doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()
@@ -111,10 +111,10 @@ public class NativeSerializer extends Serializer {
     }
     
     
-    protected void serializeToReceiver(StoredNode node, Iterator iter,
+    protected void serializeToReceiver(StoredNode node, Iterator<StoredNode> iter,
             DocumentImpl doc, boolean first, Match match, Set<String> namespaces) throws SAXException {
         if (node == null) 
-        	node = (StoredNode) iter.next();
+        	node = iter.next();
         if (node == null) 
         	return;
         // char ch[];
@@ -125,8 +125,8 @@ public class NativeSerializer extends Serializer {
 	        if (((ElementImpl) node).declaresNamespacePrefixes()) {
 	        	// declare namespaces used by this element
 	        	String prefix, uri;
-	        	for (Iterator i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
-	        		prefix = (String) i.next();
+	        	for (Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
+	        		prefix = i.next();
 	        		if (prefix.length() == 0) {
 	        			defaultNS = ((ElementImpl) node).getNamespaceForPrefix(prefix);
 	        			receiver.startPrefixMapping("", defaultNS);
@@ -207,8 +207,8 @@ public class NativeSerializer extends Serializer {
             receiver.endElement(node.getQName());
             if (((ElementImpl) node).declaresNamespacePrefixes()) {
                 String prefix;
-                for (Iterator i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
-                    prefix = (String) i.next();
+                for (Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
+                    prefix = i.next();
                     receiver.endPrefixMapping(prefix);
                 }
             }

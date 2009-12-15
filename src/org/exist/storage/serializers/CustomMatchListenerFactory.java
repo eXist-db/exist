@@ -24,13 +24,13 @@ public class CustomMatchListenerFactory {
     private CustomMatchListener last = null;
 
     public CustomMatchListenerFactory(DBBroker broker, Configuration config) {
-        List classes = (List) config.getProperty(CONFIG_MATCH_LISTENERS);
+        List<String> classes = (List) config.getProperty(CONFIG_MATCH_LISTENERS);
         if (classes == null)
             return;
         CustomMatchListener listener;
-        for (int i = 0; i < classes.size(); i++) {
+        for (String className : classes) {
             try {
-                Class listenerClass = Class.forName(classes.get(i).toString());
+                Class<?> listenerClass = Class.forName(className);
                 if (CustomMatchListener.class.isAssignableFrom(listenerClass)) {
                     listener = (CustomMatchListener) listenerClass.newInstance();
                     listener.setBroker(broker);

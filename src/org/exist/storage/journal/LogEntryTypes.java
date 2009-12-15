@@ -45,10 +45,10 @@ public class LogEntryTypes {
      */
     private static class LogEntry {
         
-        private static Class constructorArgs[] = { DBBroker.class, long.class };
+        private static Class<?> constructorArgs[] = { DBBroker.class, long.class };
         
         private byte type;
-        private Class clazz;
+        private Class<Loggable> clazz;
         
         public LogEntry(byte type, Class myClass) {
             this.type = type;
@@ -56,9 +56,8 @@ public class LogEntryTypes {
         }
         
         public Loggable newInstance(DBBroker broker, long transactId) throws Exception {
-            Constructor constructor = clazz.getConstructor(constructorArgs);
-            return (Loggable)
-                constructor.newInstance(new Object[] { broker, new Long(transactId) });
+            Constructor<Loggable> constructor = clazz.getConstructor(constructorArgs);
+            return constructor.newInstance(new Object[] { broker, new Long(transactId) });
         }
     }
     

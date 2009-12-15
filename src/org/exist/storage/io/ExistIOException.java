@@ -31,7 +31,9 @@ package org.exist.storage.io;
  */
 public class ExistIOException extends java.io.IOException {
     
-    /**
+	private static final long serialVersionUID = 7720766386860855917L;
+
+	/**
      * Constructs an <code>ExistIOException</code> with <code>null</code>
      * as its error detail message.  No underlying cause is set;
      * <code>getCause</code> will return <code>null</code>.
