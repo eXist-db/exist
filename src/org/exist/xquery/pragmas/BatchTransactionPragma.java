@@ -31,7 +31,8 @@ public class BatchTransactionPragma extends Pragma {
 
     public  final static QName BATCH_TRANSACTION_PRAGMA = new QName("batch-transaction", Namespaces.EXIST_NS, "exist");
     
-    private final static Logger LOG = Logger.getLogger(BatchTransactionPragma.class);
+    @SuppressWarnings("unused")
+	private final static Logger LOG = Logger.getLogger(BatchTransactionPragma.class);
     
     
     public BatchTransactionPragma(QName qname, String contents) throws XPathException
