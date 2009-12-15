@@ -220,9 +220,9 @@ public class LDAPSecurityManager implements SecurityManager
       SearchControls constraints = new SearchControls();
 
       constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-      NamingEnumeration users = context.search(userBase,"("+uidNumberAttr+"="+uid+")",constraints);
+      NamingEnumeration<SearchResult> users = context.search(userBase,"("+uidNumberAttr+"="+uid+")",constraints);
       while (users.hasMore()) {
-         SearchResult result = (SearchResult)users.next();
+         SearchResult result = users.next();
          return newUserFromAttributes(context, result.getAttributes());
       }
       return null;
@@ -234,9 +234,9 @@ public class LDAPSecurityManager implements SecurityManager
       LOG.info("Searching for "+gidNumberAttr+"="+gid+" in "+groupBase);
       SearchControls constraints = new SearchControls();
       constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-      NamingEnumeration groups = context.search(groupBase,"("+gidNumberAttr+"="+gid+")",constraints);
+      NamingEnumeration<SearchResult> groups = context.search(groupBase,"("+gidNumberAttr+"="+gid+")",constraints);
       while (groups.hasMore()) {
-         SearchResult result = (SearchResult)groups.next();
+         SearchResult result = groups.next();
          String cn = getAttributeValue(groupNameAttr, result.getAttributes());
          LOG.info("Constructing group "+cn);
          return new Group(cn, gid);
@@ -275,9 +275,9 @@ public class LDAPSecurityManager implements SecurityManager
       SearchControls constraints = new SearchControls();
 
       constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-      NamingEnumeration groups = context.search(groupBase,"("+gidNumberAttr+"="+gid+")",constraints);
+      NamingEnumeration<SearchResult> groups = context.search(groupBase,"("+gidNumberAttr+"="+gid+")",constraints);
       while (mainGroup==null && groups.hasMore()) {
-         SearchResult result = (SearchResult)groups.next();
+         SearchResult result = groups.next();
          mainGroup = getAttributeValue(groupNameAttr, result.getAttributes());
       }
       
@@ -405,10 +405,10 @@ public class LDAPSecurityManager implements SecurityManager
          SearchControls constraints = new SearchControls();
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-         NamingEnumeration groups = context.search(groupBase,"(objectClass="+groupClassName+")",constraints);
+         NamingEnumeration<SearchResult> groups = context.search(groupBase,"(objectClass="+groupClassName+")",constraints);
          List<String> groupList = new ArrayList<String>();
          while (groups.hasMore()) {
-            SearchResult result = (SearchResult)groups.next();
+            SearchResult result = groups.next();
             groupList.add(getAttributeValue(groupNameAttr, result.getAttributes()));
          }
          String [] retval = new String[groupList.size()];
@@ -475,10 +475,10 @@ public class LDAPSecurityManager implements SecurityManager
          SearchControls constraints = new SearchControls();
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-         NamingEnumeration users = context.search(userBase,"(objectClass="+userClassName+")",constraints);
+         NamingEnumeration<SearchResult> users = context.search(userBase,"(objectClass="+userClassName+")",constraints);
          List<User> userList = new ArrayList<User>();
          while (users.hasMore()) {
-            SearchResult result = (SearchResult)users.next();
+            SearchResult result = users.next();
             userList.add(newUserFromAttributes(context,result.getAttributes()));
          }
          User [] retval = new User[userList.size()];
