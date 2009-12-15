@@ -555,7 +555,7 @@ public class RegexTranslator {
     static final String SURROGATES2_CLASS = "[\uDC00-\uDFFF]";
     static final String NOT_ALLOWED_CLASS = "[\u0000&&[^\u0000]]";
 
-    static final class Range implements Comparable {
+    static final class Range implements Comparable<Range> {
         private final int min;
         private final int max;
 
@@ -572,8 +572,7 @@ public class RegexTranslator {
             return max;
         }
 
-        public int compareTo(Object o) {
-            Range other = (Range)o;
+        public int compareTo(Range other) {
             if (this.min < other.min)
                 return Constants.INFERIOR;
             if (this.min > other.min)
@@ -633,7 +632,7 @@ public class RegexTranslator {
                     needSep = true;
                     outputBmp(buf);
                 }
-                List ranges = new Vector();
+                List<Range> ranges = new Vector<Range>();
                 addNonBmpRanges(ranges);
                 sortRangeList(ranges);
                 String hi = highSurrogateRanges(ranges);
@@ -694,10 +693,9 @@ public class RegexTranslator {
             }
         }
 
-        static String highSurrogateRanges(List ranges) {
+        static String highSurrogateRanges(List<Range> ranges) {
             StringBuilder highRanges = new StringBuilder();
-            for (int i = 0, len = ranges.size(); i < len; i++) {
-                Range r = (Range)ranges.get(i);
+            for (Range r : ranges) {
                 char min1 = XMLChar.highSurrogate(r.getMin());
                 char min2 = XMLChar.lowSurrogate(r.getMin());
                 char max1 = XMLChar.highSurrogate(r.getMax());
@@ -714,10 +712,9 @@ public class RegexTranslator {
             return highRanges.toString();
         }
 
-        static String lowSurrogateRanges(List ranges) {
+        static String lowSurrogateRanges(List<Range> ranges) {
             StringBuilder lowRanges = new StringBuilder();
-            for (int i = 0, len = ranges.size(); i < len; i++) {
-                Range r = (Range)ranges.get(i);
+            for (Range r : ranges) {
                 char min1 = XMLChar.highSurrogate(r.getMin());
                 char min2 = XMLChar.lowSurrogate(r.getMin());
                 char max1 = XMLChar.highSurrogate(r.getMax());
@@ -752,21 +749,21 @@ public class RegexTranslator {
             return -1;
         }
 
-        void addNonBmpRanges(List ranges) {
+        void addNonBmpRanges(List<Range> ranges) {
         }
 
 
-        static void sortRangeList(List ranges) {
+        static void sortRangeList(List<Range> ranges) {
             Collections.sort(ranges);
             int toIndex = 0;
             int fromIndex = 0;
             int len = ranges.size();
             while (fromIndex < len) {
-                Range r = (Range)ranges.get(fromIndex);
+                Range r = ranges.get(fromIndex);
                 int min = r.getMin();
                 int max = r.getMax();
                 while (++fromIndex < len) {
-                    Range r2 = (Range)ranges.get(fromIndex);
+                    Range r2 = ranges.get(fromIndex);
                     if (r2.getMin() > max + 1)
                         break;
                     if (r2.getMax() > max)
@@ -847,7 +844,7 @@ public class RegexTranslator {
             return c;
         }
 
-        void addNonBmpRanges(List ranges) {
+        void addNonBmpRanges(List<Range> ranges) {
             ranges.add(new Range(c, c));
         }
     }
@@ -896,7 +893,7 @@ public class RegexTranslator {
                 buf.append('\uFFFF');
         }
 
-        void addNonBmpRanges(List ranges) {
+        void addNonBmpRanges(List<Range> ranges) {
             if (upper >= NONBMP_MIN)
                 ranges.add(new Range(lower < NONBMP_MIN ? NONBMP_MIN : lower, upper));
         }
@@ -955,21 +952,20 @@ public class RegexTranslator {
             buf.append(']');
         }
 
-        void addNonBmpRanges(List ranges) {
-            List posList = new Vector();
+        void addNonBmpRanges(List<Range> ranges) {
+            List<Range> posList = new Vector<Range>();
             cc1.addNonBmpRanges(posList);
-            List negList = new Vector();
+            List<Range> negList = new Vector<Range>();
             cc2.addNonBmpRanges(negList);
             sortRangeList(posList);
             sortRangeList(negList);
-            Iterator negIter = negList.iterator();
+            Iterator<Range> negIter = negList.iterator();
             Range negRange;
             if (negIter.hasNext())
-                negRange = (Range)negIter.next();
+                negRange = negIter.next();
             else
                 negRange = null;
-            for (int i = 0, len = posList.size(); i < len; i++) {
-                Range posRange = (Range)posList.get(i);
+            for (Range posRange : posList) {
                 while (negRange != null && negRange.getMax() < posRange.getMin()) {
                     if (negIter.hasNext())
                         negRange = (Range)negIter.next();
@@ -986,7 +982,7 @@ public class RegexTranslator {
                     if (min > posRange.getMax())
                         break;
                     if (negIter.hasNext())
-                        negRange = (Range)negIter.next();
+                        negRange = negIter.next();
                     else
                         negRange = null;
                 }
@@ -997,28 +993,27 @@ public class RegexTranslator {
     }
 
     static class Union extends CharClass {
-        private final List members;
+        private final List<CharClass> members;
 
         Union(CharClass[] v) {
             this(toList(v));
         }
 
-        static private List toList(CharClass[] v) {
-            List members = new Vector();
+        static private List<CharClass> toList(CharClass[] v) {
+            List<CharClass> members = new Vector<CharClass>();
             for (int i = 0; i < v.length; i++)
                 members.add(v[i]);
             return members;
         }
 
-        Union(List members) {
+        Union(List<CharClass> members) {
             super(computeContainsBmp(members), computeContainsNonBmp(members));
             this.members = members;
         }
 
         void outputBmp(StringBuilder buf) {
             buf.append('[');
-            for (int i = 0, len = members.size(); i < len; i++) {
-                CharClass cc = (CharClass)members.get(i);
+            for (CharClass cc : members) {
                 if (cc.getContainsBmp() != NONE) {
                     if (cc instanceof SimpleCharClass)
                         ((SimpleCharClass)cc).inClassOutputBmp(buf);
@@ -1031,9 +1026,7 @@ public class RegexTranslator {
 
         void outputComplementBmp(StringBuilder buf) {
             boolean first = true;
-            int len = members.size();
-            for (int i = 0; i < len; i++) {
-                CharClass cc = (CharClass)members.get(i);
+            for (CharClass cc : members) {
                 if (cc.getContainsBmp() != NONE && cc instanceof SimpleCharClass) {
                     if (first) {
                         buf.append("[^");
@@ -1042,8 +1035,7 @@ public class RegexTranslator {
                     ((SimpleCharClass)cc).inClassOutputBmp(buf);
                 }
             }
-            for (int i = 0; i < len; i++) {
-                CharClass cc = (CharClass)members.get(i);
+            for (CharClass cc : members) {
                 if (cc.getContainsBmp() != NONE && !(cc instanceof SimpleCharClass)) {
                     if (first) {
                         buf.append('[');
@@ -1062,22 +1054,22 @@ public class RegexTranslator {
                 buf.append(']');
         }
 
-        void addNonBmpRanges(List ranges) {
-            for (int i = 0, len = members.size(); i < len; i++)
-                ((CharClass)members.get(i)).addNonBmpRanges(ranges);
+        void addNonBmpRanges(List<Range> ranges) {
+            for (CharClass member : members)
+                member.addNonBmpRanges(ranges);
         }
 
-        private static int computeContainsBmp(List members) {
+        private static int computeContainsBmp(List<CharClass> members) {
             int ret = NONE;
-            for (int i = 0, len = members.size(); i < len; i++)
-                ret = Math.max(ret, ((CharClass)members.get(i)).getContainsBmp());
+            for (CharClass member : members)
+                ret = Math.max(ret, member.getContainsBmp());
             return ret;
         }
 
-        private static int computeContainsNonBmp(List members) {
+        private static int computeContainsNonBmp(List<CharClass> members) {
             int ret = NONE;
-            for (int i = 0, len = members.size(); i < len; i++)
-                ret = Math.max(ret, ((CharClass)members.get(i)).getContainsNonBmp());
+            for (CharClass member : members)
+                ret = Math.max(ret, member.getContainsNonBmp());
             return ret;
         }
     }
@@ -1130,7 +1122,10 @@ public class RegexTranslator {
      * Thrown when an syntactically incorrect regular expression is detected.
      */
     static public class RegexSyntaxException extends Exception {
-        private final int position;
+
+		private static final long serialVersionUID = 6728094638079375675L;
+
+		private final int position;
 
         /**
          * Represents an unknown position within a string containing a regular expression.
@@ -1214,13 +1209,12 @@ public class RegexTranslator {
             cc.outputBmp(buf);
         }
 
-        void addNonBmpRanges(List ranges) {
-            List tem = new Vector();
+        void addNonBmpRanges(List<Range> ranges) {
+            List<Range> tem = new Vector<Range>();
             cc.addNonBmpRanges(tem);
             sortRangeList(tem);
             int c = NONBMP_MIN;
-            for (int i = 0, len = tem.size(); i < len; i++) {
-                Range r = (Range)tem.get(i);
+            for (Range r : tem) {
                 if (r.getMin() > c)
                     ranges.add(new Range(c, r.getMin() - 1));
                 c = r.getMax() + 1;
@@ -1283,7 +1277,7 @@ public class RegexTranslator {
 
 
     static private CharClass makeCharClass(String categories, String includes, String excludeRanges) {
-        List includeList = new Vector();
+        List<CharClass> includeList = new Vector<CharClass>();
         for (int i = 0, len = categories.length(); i < len; i += 2)
             includeList.add(new Property(categories.substring(i, i + 2)));
         for (int i = 0, len = includes.length(); i < len; i++) {
@@ -1299,7 +1293,7 @@ public class RegexTranslator {
                 includeList.add(new CharRange(includes.charAt(i), includes.charAt(j)));
             i = j;
         }
-        List excludeList = new Vector();
+        List<CharClass> excludeList = new Vector<CharClass>();
         for (int i = 0, len = excludeRanges.length(); i < len; i += 2) {
             char min = excludeRanges.charAt(i);
             char max = excludeRanges.charAt(i + 1);
@@ -1473,7 +1467,7 @@ public class RegexTranslator {
             compl = true;
         } else
             compl = false;
-        List members = new Vector();
+        List<CharClass> members = new Vector<CharClass>();
         do {
             CharClass lower = parseCharClassEscOrXmlChar();
             members.add(lower);
@@ -1497,7 +1491,7 @@ public class RegexTranslator {
         } while (curChar != ']');
         CharClass result;
         if (members.size() == 1)
-            result = (CharClass)members.get(0);
+            result = members.get(0);
         else
             result = new Union(members);
         if (compl)
@@ -1595,7 +1589,7 @@ public class RegexTranslator {
     static private final String CATEGORY_Pf = "\u00BB\u2019\u201D\u203A"; // Java doesn't know about category Pf
 
     static private CharClass computeCategoryCharClass(char code) {
-        List classes = new Vector();
+        List<CharClass> classes = new Vector<CharClass>();
         classes.add(new Property(new String(new char[]{code})));
         for (int ci = CATEGORY_NAMES.indexOf(code); ci >= 0; ci = CATEGORY_NAMES.indexOf(code, ci + 1)) {
             int[] addRanges = CATEGORY_RANGES[ci / 2];
@@ -1613,7 +1607,7 @@ public class RegexTranslator {
             classes.add(new Subtraction(new Property("Cn"),
                                         new Union(new CharClass[]{new SingleChar(UNICODE_3_1_ADD_Lu),
                                                                   new SingleChar(UNICODE_3_1_ADD_Ll)})));
-            List assignedRanges = new Vector();
+            List<CharClass> assignedRanges = new Vector<CharClass>();
             for (int i = 0; i < CATEGORY_RANGES.length; i++)
                 for (int j = 0; j < CATEGORY_RANGES[i].length; j += 2)
                     assignedRanges.add(new CharRange(CATEGORY_RANGES[i][j],
@@ -1632,7 +1626,7 @@ public class RegexTranslator {
         if (sci == Constants.STRING_NOT_FOUND) {
             if (name.equals("Cn")) {
                 // Unassigned
-                List assignedRanges = new Vector();
+                List<CharClass> assignedRanges = new Vector<CharClass>();
                 assignedRanges.add(new SingleChar(UNICODE_3_1_ADD_Lu));
                 assignedRanges.add(new SingleChar(UNICODE_3_1_ADD_Ll));
                 for (int i = 0; i < CATEGORY_RANGES.length; i++)
@@ -1648,7 +1642,7 @@ public class RegexTranslator {
                 return makeCharClass(CATEGORY_Pf);
             return base;
         }
-        List classes = new Vector();
+        List<CharClass> classes = new Vector<CharClass>();
         classes.add(base);
         int[] addRanges = CATEGORY_RANGES[sci / 2];
         for (int i = 0; i < addRanges.length; i += 2)
@@ -1667,7 +1661,7 @@ public class RegexTranslator {
     }
 
     private static CharClass makeCharClass(String members) {
-        List list = new Vector();
+        List<CharClass> list = new Vector<CharClass>();
         for (int i = 0, len = members.length(); i < len; i++)
             list.add(new SingleChar(members.charAt(i)));
         return new Union(list);

@@ -28,12 +28,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
@@ -48,7 +42,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.URLSource;
-import org.exist.util.XMLReaderPool;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
