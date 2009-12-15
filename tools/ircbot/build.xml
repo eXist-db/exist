@@ -17,7 +17,7 @@
     <path id="classpath.xbot">
         <pathelement path="${lib}/pircbot.jar"/>
         <pathelement path="${server.dir}/lib/core/xmldb.jar"/>
-        <pathelement path="${server.dir}/lib/core/javax.servlet-1.4.jar"/>
+        <pathelement path="${server.dir}/lib/core/servlet-api-2.5-20081211.jar"/>
         <pathelement path="${server.dir}/exist.jar"/>
     </path>
 	
