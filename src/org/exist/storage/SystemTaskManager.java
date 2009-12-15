@@ -13,7 +13,7 @@ public class SystemTaskManager {
     /**
 	 * The pending system maintenance tasks of the database instance.
 	 */
-	private final Stack waitingSystemTasks = new Stack();
+	private final Stack<SystemTask> waitingSystemTasks = new Stack<SystemTask>();
 
     private BrokerPool pool;
     
@@ -38,7 +38,7 @@ public class SystemTaskManager {
                 broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
                 while (!waitingSystemTasks.isEmpty()) {
                     pool.sync(broker, Sync.MAJOR_SYNC);
-                    SystemTask task = (SystemTask) waitingSystemTasks.pop();
+                    SystemTask task = waitingSystemTasks.pop();
                     runSystemTask(task, broker);
                 }
             } catch(Exception e) {

@@ -155,9 +155,8 @@ public class ConsistencyCheckTask implements SystemTask {
         return lastExportedBackup;
     }
 
-    private boolean fatalErrorsFound(List errors) {
-        for (int i = 0; i < errors.size(); i++) {
-            ErrorReport error = (ErrorReport) errors.get(i);
+    private boolean fatalErrorsFound(List<ErrorReport> errors) {
+        for (ErrorReport error : errors) {
             switch (error.getErrcode()) {
             // the following errors are considered fatal: export the db and
                 // stop the task
@@ -191,8 +190,8 @@ public class ConsistencyCheckTask implements SystemTask {
             this.log = log;
         }
 
-        public void startDocument(String path) {
-        }
+//        public void startDocument(String path) {
+//        }
 
         public void startDocument(String name, int current, int count) {
             if ((current % 1000 == 0) || (current == count)) {

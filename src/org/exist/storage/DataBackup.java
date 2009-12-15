@@ -79,7 +79,7 @@ public class DataBackup implements SystemTask {
 		if (!(broker instanceof NativeBroker))
 			throw new EXistException("DataBackup system task can only be used " +
 					"with the native storage backend");
-		NativeBroker nbroker = (NativeBroker) broker;
+//		NativeBroker nbroker = (NativeBroker) broker;
 		
 		LOG.debug("Backing up data files ...");
 		
