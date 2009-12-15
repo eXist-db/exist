@@ -63,6 +63,7 @@ import org.w3c.dom.UserDataHandler;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  *  Represents a persistent document object in the database;
@@ -70,7 +71,7 @@ import java.io.IOException;
  *  
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class DocumentImpl extends NodeImpl implements Document, Comparable {
+public class DocumentImpl extends NodeImpl implements Document, Comparable<DocumentImpl>, Iterable<NodeImpl> {
 
     public final static int UNKNOWN_DOCUMENT_ID = -1;
     
@@ -581,8 +582,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * @param other an <code>Object</code> value
      * @return an <code>int</code> value
      */
-    public final int compareTo(Object other) {
-	final long otherId = ((DocumentImpl)other).docId;
+    public final int compareTo(DocumentImpl other) {
+	final long otherId = other.docId;
 	if (otherId == docId)
 	    return Constants.EQUAL;
 	else if (docId < otherId)
@@ -1345,4 +1346,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	return getURI() + " - <" + 
 	    ( getDocumentElement() != null ? getDocumentElement().getNodeName() : null ) + ">";	
     }
+
+	public Iterator<NodeImpl> iterator() {
+		//XXX: implement
+		return null;
+	}
 }

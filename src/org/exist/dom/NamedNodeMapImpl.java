@@ -1,4 +1,3 @@
-
 /* eXist Open Source Native XML Database
  * Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
@@ -26,7 +25,9 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class NamedNodeMapImpl extends ArrayList implements NamedNodeMap {
+public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
+
+	private static final long serialVersionUID = -7913316703165379285L;
 
 	public NamedNodeMapImpl() {
 		super();
@@ -47,23 +48,23 @@ public class NamedNodeMapImpl extends ArrayList implements NamedNodeMap {
 
 	public Node item(int index) {
 		if (index < size())
-			return (Node) get(index);
+			return get(index);
 		return null;
 	}
 
 	public Node getNamedItem(String name) {
 		int i = indexOf(new QName(name));
-		return (i < 0) ? null : (Node) get(i);
+		return (i < 0) ? null : get(i);
 	}
 
 	public Node getNamedItemNS(String namespaceURI, String name) {
 		int i = indexOf(new QName(name, namespaceURI, null));
-		return (i < 0) ? null : (Node) get(i);
+		return (i < 0) ? null : get(i);
 	}
 
 	public Node removeNamedItem(String name) throws DOMException {
 		int i = indexOf(new QName(name));
-		Node node = (Node) get(i);
+		Node node = get(i);
 		remove(i);
 		return node;
 	}
@@ -71,14 +72,14 @@ public class NamedNodeMapImpl extends ArrayList implements NamedNodeMap {
 	public Node removeNamedItemNS(String namespaceURI, String name)
 		throws DOMException {
 		int i = indexOf(new QName(name, namespaceURI, null));
-		Node node = (Node) get(i);
+		Node node = get(i);
 		remove(i);
 		return node;
 	}
 
 	private int indexOf(QName name) {
 		for (int i = 0; i < size(); i++) {
-			Node temp = (Node) get(i);
+			Node temp = get(i);
 			if (temp.getLocalName().equals(name.getLocalName())
 				&& temp.getNamespaceURI().equals(name.getNamespaceURI()))
 				return i;
