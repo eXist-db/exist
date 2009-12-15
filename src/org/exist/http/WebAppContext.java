@@ -28,7 +28,7 @@ package org.exist.http;
 public class WebAppContext extends org.mortbay.jetty.webapp.WebAppContext {
 	
 	public String toString() {
-		return "eXist-db";
+		return "eXist XML Database";
 	}
 
 }
