@@ -21,18 +21,12 @@
  */
 package org.exist.xquery.functions;
 
-import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
 
 /**
  * @author wolf

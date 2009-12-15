@@ -20,7 +20,7 @@
 
 package org.exist.xquery;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -29,7 +29,7 @@ import org.exist.xquery.value.ValueSequence;
 
 public class Union extends CombiningExpression {
 
-	private final static Logger LOG = Logger.getLogger(Union.class);
+//	private final static Logger LOG = Logger.getLogger(Union.class);
 	
     public Union(XQueryContext context, PathExpr left, PathExpr right) {
         super(context, left, right);

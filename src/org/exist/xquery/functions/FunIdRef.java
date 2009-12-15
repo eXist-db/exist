@@ -52,7 +52,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -181,16 +180,15 @@ public class FunIdRef extends Function {
 
 	private void getIdRef(NodeSet result, DocumentSet docs, String id) throws XPathException {
 		NodeSet attribs = context.getBroker().getValueIndex().find(Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
-		NodeProxy n;
-		for (Iterator i = attribs.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();
+
+		for (NodeProxy n : attribs) {
             n.setNodeType(Node.ATTRIBUTE_NODE);
             result.add(n);
 		}
 	}
 
     private void getIdRef(Sequence result, Sequence seq, String id) throws XPathException {
-        Set visitedDocs = new TreeSet();
+        Set<org.exist.memtree.DocumentImpl> visitedDocs = new TreeSet<org.exist.memtree.DocumentImpl>();
         for (SequenceIterator i = seq.iterate(); i.hasNext();) {
             org.exist.memtree.NodeImpl v = (org.exist.memtree.NodeImpl) i.nextItem();
             org.exist.memtree.DocumentImpl doc = v.getDocument();

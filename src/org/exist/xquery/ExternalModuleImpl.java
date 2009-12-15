@@ -41,9 +41,9 @@ public class ExternalModuleImpl implements ExternalModule {
 	final private String mNamespaceURI;
 	final private String mPrefix;
 
-	final private TreeMap mFunctionMap = new TreeMap();
-	final private TreeMap mGlobalVariables = new TreeMap();
-	final private TreeMap mStaticVariables = new TreeMap();
+	final private TreeMap<FunctionId, UserDefinedFunction> mFunctionMap = new TreeMap<FunctionId, UserDefinedFunction>();
+	final private TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<QName, VariableDeclaration>();
+	final private TreeMap<QName, Variable> mStaticVariables = new TreeMap<QName, Variable>();
 
 	private Source mSource = null;
 	
@@ -71,7 +71,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	
 	public UserDefinedFunction getFunction(QName qname, int arity) {
 		FunctionId id = new FunctionId(qname, arity);
-		return (UserDefinedFunction) mFunctionMap.get(id);
+		return mFunctionMap.get(id);
 	}
 
 	/* (non-Javadoc)
@@ -108,8 +108,8 @@ public class ExternalModuleImpl implements ExternalModule {
 	public FunctionSignature[] listFunctions() {
 		FunctionSignature signatures[] = new FunctionSignature[mFunctionMap.size()];
 		int j = 0;
-		for (Iterator i = mFunctionMap.values().iterator(); i.hasNext(); j++) {
-			signatures[j] = ((UserDefinedFunction) i.next()).getSignature();
+		for (Iterator<UserDefinedFunction> i = mFunctionMap.values().iterator(); i.hasNext(); j++) {
+			signatures[j] = i.next().getSignature();
 		}
 		return signatures;
 	}
@@ -119,8 +119,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	 */
 	public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
 		ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
-		for (Iterator i = mFunctionMap.values().iterator(); i.hasNext(); ) {
-			UserDefinedFunction func = (UserDefinedFunction) i.next();
+		for (UserDefinedFunction func : mFunctionMap.values()) {
 			if(func.getName().compareTo(qname) == 0)
 				signatures.add(func.getSignature());
 		}
@@ -132,7 +131,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	 */
 	public Variable declareVariable(QName qname, Object value) throws XPathException {
 		Sequence val = XPathUtil.javaObjectToXPath(value, mContext);
-		Variable var = (Variable) mStaticVariables.get(qname);
+		Variable var = mStaticVariables.get(qname);
 		if (var == null) {
 			var = new Variable(qname);
 			mStaticVariables.put(qname, var);
@@ -163,18 +162,17 @@ public class ExternalModuleImpl implements ExternalModule {
 	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
-		VariableDeclaration decl = (VariableDeclaration)mGlobalVariables.get(qname);
-        Variable var = (Variable) mStaticVariables.get(qname);
+		VariableDeclaration decl = mGlobalVariables.get(qname);
+        Variable var = mStaticVariables.get(qname);
 		if(decl != null && (var == null || var.getValue() == null)) {
             decl.eval(null);
-            var = (Variable) mStaticVariables.get(qname);
+            var = mStaticVariables.get(qname);
 		}
 		return var;
 	}
 
     public void analyzeGlobalVars() throws XPathException {
-        for (Iterator it = mGlobalVariables.values().iterator(); it.hasNext();) {
-            VariableDeclaration decl = (VariableDeclaration) it.next();
+        for (VariableDeclaration decl : mGlobalVariables.values()) {
             decl.resetState(false);
             decl.analyze(new AnalyzeContextInfo());
         }

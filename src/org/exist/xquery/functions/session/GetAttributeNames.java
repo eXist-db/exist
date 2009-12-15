@@ -24,7 +24,7 @@ package org.exist.xquery.functions.session;
 
 import java.util.Enumeration;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.BasicFunction;
@@ -33,7 +33,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -47,7 +46,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetAttributeNames extends BasicFunction {
 	
-	private static final Logger logger = Logger.getLogger(GetAttributeNames.class);
+//	private static final Logger logger = Logger.getLogger(GetAttributeNames.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

@@ -232,6 +232,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 		// otherwise we have to walk through each item in the context
 		} else {
 			Item current;
+			@SuppressWarnings("unused")
 			String arg;
 			NodeSet nodes;
 			result = new ExtArrayNodeSet();
@@ -256,8 +257,8 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
         if (contextSequence == null || contextQName == null)
             return false;
         boolean hasQNameIndex = true;
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             FulltextIndexSpec config = collection.getFulltextIndexConfiguration(context.getBroker());

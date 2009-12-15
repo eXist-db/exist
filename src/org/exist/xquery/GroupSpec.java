@@ -35,7 +35,8 @@ import org.exist.xquery.util.ExpressionDumper;
  
 public class GroupSpec { 
  
-    private final XQueryContext context; 
+    @SuppressWarnings("unused")
+	private final XQueryContext context; 
     private final Expression expression; 
     private String keyVarName = null; 
      

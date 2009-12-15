@@ -29,7 +29,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.VirtualNodeSet;
-import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;

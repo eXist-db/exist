@@ -259,8 +259,8 @@ public class ExtFulltext extends Function implements Optimizable {
         if (contextSequence == null || contextQName == null)
             return false;
         boolean hasQNameIndex = true;
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             FulltextIndexSpec config = collection.getFulltextIndexConfiguration(context.getBroker());
@@ -324,7 +324,7 @@ public class ExtFulltext extends Function implements Optimizable {
 
     protected String[] getSearchTerms(String searchString)
 		throws EXistException {
-		List tokens = new ArrayList();
+		List<String> tokens = new ArrayList<String>();
 		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
 		tokenizer.setText(searchString);
 		org.exist.storage.analysis.TextToken token;
@@ -334,7 +334,7 @@ public class ExtFulltext extends Function implements Optimizable {
 			tokens.add(word);
 		}
 		String[] terms = new String[tokens.size()];
-		return (String[]) tokens.toArray(terms);
+		return tokens.toArray(terms);
     }
 
     protected NodeSet processQuery(String[] terms, NodeSet contextSet)

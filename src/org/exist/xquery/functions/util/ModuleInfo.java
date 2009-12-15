@@ -107,14 +107,14 @@ public class ModuleInfo extends BasicFunction {
 			return new BooleanValue(module != null);
         } else if ("mapped-modules".equals(getSignature().getName().getLocalName())) {
             ValueSequence resultSeq = new ValueSequence();
-            for (Iterator i = context.getMappedModuleURIs(); i.hasNext();) {
+            for (Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
                 resultSeq.add(new StringValue(i.next().toString()));
             }
             return resultSeq;
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
-			for(Iterator i = context.getRootModules(); i.hasNext(); ) {
-				Module module = (Module)i.next();
+			for(Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
+				Module module = i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));
 			}
 			return resultSeq;

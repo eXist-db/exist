@@ -92,7 +92,7 @@ public class Parse extends BasicFunction {
             XMLReader xr = null;
             if (isCalledAs("parse-html")) {
                 try {
-                    Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
+                    Class<?> clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
                     xr = (XMLReader) clazz.newInstance();
                     //do not modify the case of elements and attributes
                     xr.setProperty("http://cyberneko.org/html/properties/names/elems", "match");

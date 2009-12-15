@@ -159,8 +159,7 @@ public class ExtNear extends ExtFulltext {
 		NodeSet r = new ExtArrayNodeSet();
 		final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         String term;
-		for (Iterator i = result.iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();
+		for (NodeProxy current : result) {
             String value = current.getNodeValueSeparated();
 			tok.setText(value);
             int j = 0;
@@ -231,8 +230,7 @@ public class ExtNear extends ExtFulltext {
 		Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         Matcher matcher;
         TextToken token;    
-		for (Iterator i = result.iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();
+		for (NodeProxy current : result) {
             String value = current.getNodeValueSeparated();
 			tok.setText(value);
             int j = 0;

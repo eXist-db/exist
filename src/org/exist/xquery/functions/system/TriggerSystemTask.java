@@ -69,7 +69,7 @@ public class TriggerSystemTask extends BasicFunction {
             parseParameters(((NodeValue) args[1].itemAt(0)).getNode(), properties);
         }
         try {
-            Class clazz = Class.forName(className);
+            Class<?> clazz = Class.forName(className);
             Object taskObject = clazz.newInstance();
             if (!(taskObject instanceof SystemTask)) {
                 XPathException xPathException = new XPathException(this, className + " is not an instance of org.exist.storage.SystemTask");

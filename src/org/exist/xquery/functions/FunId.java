@@ -54,7 +54,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -205,16 +204,15 @@ public class FunId extends Function {
 
 	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
 		NodeSet attribs = context.getBroker().getValueIndex().find(Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
-		NodeProxy n, p;
-		for (Iterator i = attribs.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();
+		NodeProxy p;
+		for (NodeProxy n : attribs) {
 			p = new NodeProxy(n.getDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}
 
     private void getId(Sequence result, Sequence seq, String id) throws XPathException {
-        Set visitedDocs = new TreeSet();
+        Set<DocumentImpl> visitedDocs = new TreeSet<DocumentImpl>();
         for (SequenceIterator i = seq.iterate(); i.hasNext();) {
             NodeImpl v = (NodeImpl) i.nextItem();
             DocumentImpl doc = v.getDocument();

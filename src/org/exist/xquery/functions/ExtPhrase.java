@@ -105,9 +105,8 @@ public class ExtPhrase extends ExtFulltext {
 				matchTerm = matchTerm + "\\W*"; 
 		}
 		// iterate on results
-		for (Iterator i = result.iterator(); i.hasNext();) {            
-			Vector matchGid = new Vector();
-            NodeProxy current = (NodeProxy) i.next();
+		for (NodeProxy current : result) {            
+			Vector<NodeId> matchGid = new Vector<NodeId>();
 			// get first match
             Match nextMatch = current.getMatches();
 			// remove previously found matches on current
@@ -208,10 +207,9 @@ public class ExtPhrase extends ExtFulltext {
 		ExtArrayNodeSet r = new ExtArrayNodeSet();		
 		final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         Matcher matcher;
-		for (Iterator i = result.iterator(); i.hasNext();) {
+		for (NodeProxy current : result) {
 			Match nextMatch;
-			Vector matchGid = new Vector();
-            NodeProxy current = (NodeProxy) i.next();
+			Vector<NodeId> matchGid = new Vector<NodeId>();
 			// get first match
 			nextMatch = current.getMatches();
 			// remove previously found matches on current

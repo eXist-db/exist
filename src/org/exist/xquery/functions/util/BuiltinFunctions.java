@@ -102,15 +102,14 @@ public class BuiltinFunctions extends BasicFunction {
 	}
 
 	private void addFunctionsFromModule(ValueSequence resultSeq, Module module) {
-		Set set = new TreeSet();
+		Set<QName> set = new TreeSet<QName>();
 		FunctionSignature signatures[] = module.listFunctions();
 		// add to set to remove duplicate QName's
 		for(int j = 0; j < signatures.length; j++) {
 			QName qname = signatures[j].getName();
 			set.add(qname);
 		}
-		for(Iterator it = set.iterator(); it.hasNext(); ) {
-			QName qname = (QName)it.next();
+		for(QName qname : set) {
 			resultSeq.add(new QNameValue(context, qname));
 		}
 	}

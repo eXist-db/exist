@@ -104,8 +104,8 @@ public class FunResolveQName extends BasicFunction {
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     NodeProxy proxy = (NodeProxy) node;
                     NodeSet ancestors = proxy.getAncestors(contextId, true);
-                    for (Iterator i = ancestors.iterator(); i.hasNext();) {
-                        proxy = (NodeProxy) i.next();
+                    for (Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
+                        proxy = i.next();
                         ElementImpl e = (ElementImpl) proxy.getNode(); 
                         uri = findNamespaceURI(e, prefix);
                         if (uri != null) {
@@ -159,8 +159,8 @@ public class FunResolveQName extends BasicFunction {
             return namespaceURI;
         }
         if (element.declaresNamespacePrefixes()) {
-            for (Iterator i = element.getPrefixes(); i.hasNext();) {            	
-                String elementPrefix = (String) i.next();
+            for (Iterator<String> i = element.getPrefixes(); i.hasNext();) {            	
+                String elementPrefix = i.next();
                 context.declareInScopeNamespace(elementPrefix, element.getNamespaceForPrefix(elementPrefix));
                 if (prefix.equals(elementPrefix)) {
                     return element.getNamespaceForPrefix(prefix);

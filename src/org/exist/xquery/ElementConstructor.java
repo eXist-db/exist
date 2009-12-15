@@ -1,4 +1,3 @@
-
 /*
  *  eXist Native XML Database
  *  Copyright (C) 2001-06,  Wolfgang M. Meier (wolfgang@exist-db.org)
@@ -304,8 +303,8 @@ public class ElementConstructor extends NodeConstructor {
 	        dumper.startIndent();
 	    }
         if(content != null) {
-            for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
-                Expression expr = (Expression) i.next();
+            for(Iterator<Expression> i = content.steps.iterator(); i.hasNext(); ) {
+                Expression expr = i.next();
                 expr.dump(dumper);
                 if(i.hasNext())
                     dumper.nl();
@@ -333,8 +332,8 @@ public class ElementConstructor extends NodeConstructor {
 			}
 		}
         if(content != null) {
-            for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
-                Expression expr = (Expression) i.next();
+            for(Iterator<Expression> i = content.steps.iterator(); i.hasNext(); ) {
+                Expression expr = i.next();
                 result.append(expr.toString());
                 if(i.hasNext())
                 	result.append(" ");

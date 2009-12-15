@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
@@ -45,7 +45,7 @@ import org.exist.xquery.value.Sequence;
  */
 public abstract class AbstractInternalModule implements InternalModule {
 
-	private final static Logger LOG = Logger.getLogger(AbstractInternalModule.class);
+//	private final static Logger LOG = Logger.getLogger(AbstractInternalModule.class);
 
     public static class FunctionComparator implements Comparator<FunctionDef> {
         public int compare(FunctionDef o1, FunctionDef o2) {
@@ -68,6 +68,7 @@ public abstract class AbstractInternalModule implements InternalModule {
         this.ordered = functionsOrdered;
     }
 
+	@SuppressWarnings("unused")
 	private AbstractInternalModule() {
 	}
 	

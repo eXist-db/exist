@@ -64,7 +64,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 	}
 	
 	public Sequence evalQuery(NodeSet nodes,
-								List terms) throws XPathException {
+								List<String> terms) throws XPathException {
 		if (terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE; // no search terms
 		double threshold = 0.65;
@@ -80,7 +80,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 		String term;
 		TermMatcher matcher;
 		for (int k = 0; k < terms.size(); k++) {
-		    term = (String)terms.get(k);
+		    term = terms.get(k);
 			if(term.length() == 0)
 				hits[k] = null;
 			else {

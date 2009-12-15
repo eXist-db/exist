@@ -114,12 +114,12 @@ public class HighlightMatches extends BasicFunction {
             nodeNr = builder.characters(text.getXMLString());
             result.add(builder.getDocument().getNode(nodeNr));
         } else {
-            List offsets = null;
+            List<Match.Offset> offsets = null;
             Match next = match;
             while (next != null) {
                 if (next.getNodeId().equals(text.getNodeId())) {
                     if (offsets == null)
-                        offsets = new ArrayList();
+                        offsets = new ArrayList<Match.Offset>();
                     int freq = next.getFrequency();
                     for (int i = 0; i < freq; i++) {
                         offsets.add(next.getOffset(i));
@@ -132,10 +132,9 @@ public class HighlightMatches extends BasicFunction {
                 FastQSort.sort(offsets, 0, offsets.size() - 1);
                 
                 XMLString str = text.getXMLString();
-                Match.Offset offset;
+
                 int pos = 0;
-                for (int i = 0; i < offsets.size(); i++) {
-                    offset = (Match.Offset) offsets.get(i);
+                for (Match.Offset offset : offsets) {
                     if (offset.getOffset() > pos) {
                         nodeNr = builder.characters(str.substring(pos, offset.getOffset() - pos));
                         result.add(builder.getDocument().getNode(nodeNr));

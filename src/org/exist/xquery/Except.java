@@ -73,7 +73,7 @@ public class Except extends CombiningExpression {
                 result = lval.toNodeSet().except(rval.toNodeSet());
             else { 
                 result = new ValueSequence();
-                Set set = new TreeSet();
+                Set<Item> set = new TreeSet<Item>();
                 for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
                     set.add(i.nextItem());
                 for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); ) {

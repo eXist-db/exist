@@ -337,9 +337,8 @@ public class ForExpr extends BindingExpression {
 		// bv : Special processing for groupBy : one return per group in groupedSequence 
 		//TODO : positional variable ! 
 		if(groupSpecs!=null){ 
-			for(Iterator it = groupedSequence.iterate(); it.hasNext(); ){ 
-				Object key = it.next();
-				GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(key); 
+			for(Iterator<String> it = groupedSequence.iterate(); it.hasNext(); ){ 
+				GroupedValueSequence currentGroup = groupedSequence.get(it.next()); 
 				
 				context.proceed(this); 
 				//context.setContextPosition(k); //bv : not tested 

@@ -21,18 +21,15 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.ExtCollection;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -41,7 +38,7 @@ import org.exist.xquery.value.Type;
  * @author ljo
  */
 public class FunXCollection extends ExtCollection {
-    private static final Logger logger = Logger.getLogger(FunXCollection.class);
+//    private static final Logger logger = Logger.getLogger(FunXCollection.class);
 	public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("xcollection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

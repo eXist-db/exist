@@ -96,7 +96,7 @@ public class CatchFunction extends Function {
                 Item next = i.nextItem();
                 try {
 					String exClassName = next.getStringValue();
-					Class exClass = null;
+					Class<?> exClass = null;
 					
 					if( !exClassName.equals( "*" ) ) {
                      	exClass = Class.forName(next.getStringValue());

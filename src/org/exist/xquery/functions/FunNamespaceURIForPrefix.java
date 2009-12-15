@@ -96,12 +96,12 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 			namespace = Namespaces.XML_NS;
 		} else {
 			NodeValue node = (NodeValue) args[1].itemAt(0);		
-			Map prefixes = new HashMap();
+			Map<String, String> prefixes = new HashMap<String, String>();
 			if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				NodeProxy proxy = (NodeProxy) node;
 				NodeSet ancestors = proxy.getAncestors(contextId, true);
-				for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
-					proxy = (NodeProxy) i.next();
+				for (Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext(); ) {
+					proxy = i.next();
 					FunInScopePrefixes.collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
 				}
 			} else { // In-memory node
@@ -111,7 +111,7 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 					next = (NodeImpl) next.getParentNode();
 				} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
 			}  
-			namespace = (String) prefixes.get(prefix);
+			namespace = prefixes.get(prefix);
 		}
 		Sequence result;
 		if (namespace == null)

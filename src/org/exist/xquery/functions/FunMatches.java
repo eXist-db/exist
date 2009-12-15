@@ -44,7 +44,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -395,8 +394,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         if (LOG.isTraceEnabled())
             LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
         result = new ExtArrayNodeSet();
-        for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-            NodeProxy node = (NodeProxy) i.next();
+        for(NodeProxy node : nodes) {
             if (match(node.getStringValue(), pattern, flags))
                 result.add(node);
         }

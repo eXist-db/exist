@@ -73,7 +73,7 @@ public class FunInScopePrefixes extends BasicFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
         }
         
-		Map prefixes = new LinkedHashMap();
+		Map<String, String> prefixes = new LinkedHashMap<String, String>();
 		NodeValue nodeValue = (NodeValue) args[0].itemAt(0);		
 		if (nodeValue.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			//NodeProxy proxy = (NodeProxy) node;
@@ -145,9 +145,8 @@ public class FunInScopePrefixes extends BasicFunction {
 		}
 
 		ValueSequence result = new ValueSequence();
-		String prefix;
-		for (Iterator i = prefixes.keySet().iterator(); i.hasNext(); ) {
-			prefix = (String) i.next();
+
+		for (String prefix : prefixes.keySet()) {
 			//The predefined namespaces (e.g. "exist" for temporary nodes) could have been removed from the static context
 			if (!(context.getURIForPrefix(prefix) == null && 
 					("exist".equals(prefix) || "xs".equals(prefix) || "xsi".equals(prefix) ||
@@ -161,7 +160,7 @@ public class FunInScopePrefixes extends BasicFunction {
         return result;          
 	}
 	
-	public static void collectNamespacePrefixes(Element element, Map prefixes) {
+	public static void collectNamespacePrefixes(Element element, Map<String, String> prefixes) {
 		String namespaceURI = element.getNamespaceURI();
 		if (namespaceURI != null && namespaceURI.length() > 0) {
 			String prefix = element.getPrefix();
@@ -172,8 +171,8 @@ public class FunInScopePrefixes extends BasicFunction {
 		} else {
 			ElementImpl elementImpl = (org.exist.dom.ElementImpl) element;
 			if (elementImpl.declaresNamespacePrefixes()) {
-				for (Iterator i = elementImpl.getPrefixes(); i.hasNext(); ) {
-					String prefix = (String) i.next();
+				for (Iterator<String> i = elementImpl.getPrefixes(); i.hasNext(); ) {
+					String prefix = i.next();
 					prefixes.put(prefix, elementImpl.getNamespaceForPrefix(prefix));
 				}
 			}

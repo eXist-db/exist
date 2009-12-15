@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -44,7 +44,7 @@ import org.xmldb.api.base.Collection;
  *
  */
 public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator {
-    private static final Logger logger = Logger.getLogger(XMLDBCollectionAvailable.class);
+//    private static final Logger logger = Logger.getLogger(XMLDBCollectionAvailable.class);
     public final static FunctionSignature signatures[] = {
 	new FunctionSignature(
 			      new QName("collection-exists", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

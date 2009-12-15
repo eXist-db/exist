@@ -34,7 +34,6 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
-import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
@@ -80,8 +79,10 @@ public class ExtCollection extends Function {
 
 	private boolean includeSubCollections = false;
 	
-	private List cachedArgs = null;
+	@SuppressWarnings("unused")
+	private List<?> cachedArgs = null;
 
+	@SuppressWarnings("unused")
 	private Sequence cached = null;
 	private UpdateListener listener = null;
 	
@@ -110,7 +111,7 @@ public class ExtCollection extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }       
         
-	    List args = getParameterValues(contextSequence, contextItem);
+	    List<String> args = getParameterValues(contextSequence, contextItem);
         // TODO: disabled cache for now as it may cause concurrency issues
         // better use compile-time inspection and maybe a pragma to mark those
         // sections in the query that can be safely cached
@@ -136,8 +137,7 @@ public class ExtCollection extends Function {
     			docs = context.getStaticallyKnownDocuments();
 		    } else {
                 MutableDocumentSet ndocs = new DefaultDocumentSet();
-                for (int i = 0; i < args.size(); i++) {
-					String next = (String)args.get(i);
+                for (String next : args) {
 					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
 				    Collection coll = context.getBroker().getCollection(uri);            
 				    if(coll == null) {
@@ -163,8 +163,8 @@ public class ExtCollection extends Function {
 		NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
 		Lock dlock;
 		DocumentImpl doc;
-		for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
-		    doc = (DocumentImpl)i.next();
+		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+		    doc = i.next();
 		    dlock = doc.getUpdateLock();
             boolean lockAcquired = false;
             try {
@@ -196,8 +196,8 @@ public class ExtCollection extends Function {
      * @param contextItem
      * @throws XPathException
      */
-    private List getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
-        List args = new ArrayList(getArgumentCount() + 10);
+    private List<String> getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
+        List<String> args = new ArrayList<String>(getArgumentCount() + 10);
 	    for(int i = 0; i < getArgumentCount(); i++) {
 	        Sequence seq =
 				getArgument(i).eval(contextSequence, contextItem);
@@ -209,12 +209,13 @@ public class ExtCollection extends Function {
 	    return args;
     }
 
-    private boolean compareArguments(List args1, List args2) {
+    @SuppressWarnings("unused")
+	private boolean compareArguments(List<String> args1, List<String> args2) {
         if(args1.size() != args2.size())
             return false;
         for(int i = 0; i < args1.size(); i++) {
-            String arg1 = (String)args1.get(i);
-            String arg2 = (String)args2.get(i);
+            String arg1 = args1.get(i);
+            String arg2 = args2.get(i);
             if(!arg1.equals(arg2))
                 return false;
         }

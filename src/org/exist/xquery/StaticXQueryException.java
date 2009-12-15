@@ -1,9 +1,9 @@
 package org.exist.xquery;
 
-import org.exist.xquery.parser.XQueryAST;
-
 public class StaticXQueryException extends XPathException
 {
+	private static final long serialVersionUID = -8229758099980343418L;
+
 	public StaticXQueryException(String message) {
 		super(message);
 	}

@@ -24,7 +24,6 @@ package org.exist.xquery;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Sequence;
 import org.exist.storage.BrokerPool;
 
@@ -64,7 +63,7 @@ public class Profiler {
      */
     private Logger log = Logger.getLogger("xquery.profiling");
     
-    private Stack stack = new Stack();
+    private Stack<ProfiledExpr> stack = new Stack<ProfiledExpr>();
     
     private final StringBuilder buf = new StringBuilder(64);
     
@@ -258,7 +257,7 @@ public class Profiler {
             return;        
         
         try {         	     	
-			ProfiledExpr e = (ProfiledExpr) stack.pop(); 
+			ProfiledExpr e = stack.pop(); 
 		
 			if (e.expr != expr) {
 			    log.warn("Error: the object passed to end() does not correspond to the expression on top of the stack.");

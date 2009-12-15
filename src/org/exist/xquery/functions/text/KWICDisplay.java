@@ -142,7 +142,7 @@ public class KWICDisplay extends BasicFunction {
             FunctionCall callback, FunctionCall resultCallback, Sequence extraArgs) throws XPathException {
         StringBuilder str = new StringBuilder();
         NodeValue node;
-        List offsets = null;
+        List<Match.Offset> offsets = null;
         NodeProxy firstProxy = null;
         
         // First step: scan the passed node sequence and collect the string values of all nodes.
@@ -162,7 +162,7 @@ public class KWICDisplay extends BasicFunction {
             while (next != null) {
                 if (next.getNodeId().equals(text.getNodeId())) {
                     if (offsets == null)
-                        offsets = new ArrayList();
+                        offsets = new ArrayList<Match.Offset>();
                     int freq = next.getFrequency();
                     for (int j = 0; j < freq; j++) {
                         // translate the relative offset into an absolute offset and add it to the list
@@ -206,7 +206,7 @@ public class KWICDisplay extends BasicFunction {
             // handle the first match: if the text to the left of the match
             // is larger than half of the width, truncate it. 
             if (str.length() > width) {
-                Match.Offset firstMatch = (Match.Offset) offsets.get(nextOffset++);
+                Match.Offset firstMatch = offsets.get(nextOffset++);
                 if (firstMatch.getOffset() > 0) {
                     int leftWidth = (width - firstMatch.getLength()) / 2;
                     if (firstMatch.getOffset() > leftWidth) {
@@ -259,7 +259,7 @@ public class KWICDisplay extends BasicFunction {
             // output the rest of the text and matches
             Match.Offset offset;
             for (int i = nextOffset; i < offsets.size() && currentWidth < width; i++) {
-                offset = (Match.Offset) offsets.get(i);
+                offset = offsets.get(i);
                 if (offset.getOffset() > pos) {
                     int len = offset.getOffset() - pos;
                     if (currentWidth + len > width)

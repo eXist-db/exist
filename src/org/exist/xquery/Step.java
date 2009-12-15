@@ -28,7 +28,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class Step extends AbstractExpression {
@@ -39,7 +38,7 @@ public abstract class Step extends AbstractExpression {
 
     protected boolean abbreviatedStep = false;
 
-    protected ArrayList predicates = new ArrayList();
+    protected List<Predicate> predicates = new ArrayList<Predicate>();
 
     protected NodeTest test;
 
@@ -60,7 +59,7 @@ public abstract class Step extends AbstractExpression {
     }
 
     public void addPredicate( Expression expr ) {
-        predicates.add( expr );
+        predicates.add( (Predicate) expr );
     }
 
     public void insertPredicate(Expression previous, Expression predicate) {
@@ -69,14 +68,14 @@ public abstract class Step extends AbstractExpression {
             LOG.warn("Old predicate not found: " + ExpressionDumper.dump(previous) + "; in: " + ExpressionDumper.dump(this));
             return;
         }
-        predicates.add(idx + 1, predicate);
+        predicates.add(idx + 1, (Predicate) predicate);
     }
 
     public boolean hasPredicates() {
         return predicates.size() > 0;
     }
 
-    public List getPredicates() {
+    public List<Predicate> getPredicates() {
         return predicates;
     }
     
@@ -98,8 +97,8 @@ public abstract class Step extends AbstractExpression {
 	        newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
 	    	newContext.setParent(this);
             newContext.setContextStep(this);
-            for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-	            ((Predicate) i.next()).analyze(newContext);
+            for (Predicate pred : predicates) {
+            	pred.analyze(newContext);
 	        }
             if (predicates.size() == 1 && (newContext.getFlags() & POSITIONAL_PREDICATE) != 0)
                 hasPositionalPredicate = true;
@@ -148,8 +147,8 @@ public abstract class Step extends AbstractExpression {
         else
             dumper.display( "node()" );
         if ( predicates.size() > 0 )
-            for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-                ( (Predicate) i.next() ).dump(dumper);
+            for (Predicate pred : predicates) {
+            	pred.dump(dumper);
             }
     }
     
@@ -163,8 +162,8 @@ public abstract class Step extends AbstractExpression {
         else
         	result.append( "node()" );
         if ( predicates.size() > 0 )
-            for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-            	result.append(i.next().toString());
+            for (Predicate pred : predicates) {
+            	result.append(pred.toString());
             }
         return result.toString();
     }    
@@ -210,8 +209,7 @@ public abstract class Step extends AbstractExpression {
 	 */
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
-			Predicate pred = (Predicate) i.next();
+		for (Predicate pred : predicates) {
 			pred.resetState(postOptimization);
 		}
 	}
