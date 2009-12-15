@@ -57,7 +57,6 @@ public abstract class DatabaseTestCase {
 		}
 	}
     
-	@SuppressWarnings("unchecked")
 	private static void wipeDatabase() throws Exception {
 		Transaction tx = db.requireTransactionWithBroker();
 		try {

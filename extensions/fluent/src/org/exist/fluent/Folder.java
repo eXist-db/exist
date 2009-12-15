@@ -189,7 +189,6 @@ public class Folder extends NamedResource implements Cloneable {
 		public Iterator<Folder> iterator() {
 			staleMarker.check();
 			return new Iterator<Folder>() {
-				@SuppressWarnings("unchecked")
 				private Iterator<XmldbURI> delegate = getQuickHandle().collectionIterator();
 				private Folder last;
 				public void remove() {
@@ -494,7 +493,6 @@ public class Folder extends NamedResource implements Cloneable {
 		 * 
 		 * @return an iterator over the folder's immediate documents
 		 */
-		@SuppressWarnings("unchecked")
 		public Iterator<Document> iterator() {
 			return new Iterator<Document>() {
 				private Iterator<DocumentImpl> delegate;
@@ -817,7 +815,6 @@ public class Folder extends NamedResource implements Cloneable {
 	 * Delete this folder, including all documents and descendants.  If invoked on the root folder,
 	 * deletes all documents and descendants but does not delete the root folder itself.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override public void delete() {
 		transact(Lock.NO_LOCK);
 		try {
