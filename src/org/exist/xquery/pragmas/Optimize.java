@@ -186,9 +186,8 @@ public class Optimize extends Pragma {
             }
 
             public void visitLocationStep(LocationStep locationStep) {
-                List predicates = locationStep.getPredicates();
-                for (int i = 0; i < predicates.size(); i++) {
-                    Predicate pred = (Predicate) predicates.get(i);
+                List<Predicate> predicates = locationStep.getPredicates();
+                for (Predicate pred : predicates) {
                     pred.accept(this);
                 }
             }
@@ -197,9 +196,9 @@ public class Optimize extends Pragma {
                 Expression filteredExpr = filtered.getExpression();
                 if (filteredExpr instanceof VariableReference)
                     contextVar = (VariableReference) filteredExpr;
-                List predicates = filtered.getPredicates();
-                for (int i = 0; i < predicates.size(); i++) {
-                    Predicate pred = (Predicate) predicates.get(i);
+
+                List<Predicate> predicates = filtered.getPredicates();
+                for (Predicate pred : predicates) {
                     pred.accept(this);
                 }
             }
@@ -279,8 +278,8 @@ public class Optimize extends Pragma {
         if (contextSequence == null || qname == null)
             return Type.ITEM;
         int indexType = Type.ITEM;
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);

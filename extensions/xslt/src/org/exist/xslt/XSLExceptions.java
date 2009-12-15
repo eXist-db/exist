@@ -27,6 +27,8 @@ package org.exist.xslt;
  */
 public class XSLExceptions extends Exception {
 
+	private static final long serialVersionUID = 7803214101131815784L;
+
 	//Static errors
 
 	/**
