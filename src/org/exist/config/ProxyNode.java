@@ -30,7 +30,7 @@ import org.w3c.dom.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ProxyNode implements NodeAtExist, Proxy<Object> {
+public class ProxyNode implements NodeAtExist, Proxy {
 	
 	private NodeAtExist node;
 	
