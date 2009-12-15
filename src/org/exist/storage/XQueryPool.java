@@ -26,6 +26,8 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationField;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Object2ObjectHashMap;
@@ -41,6 +43,7 @@ import org.exist.xquery.*;
  * 
  * @author wolf
  */
+@ConfigurationClass("query-pool")
 public class XQueryPool extends Object2ObjectHashMap {
 
     public final static int MAX_POOL_SIZE = 128;
@@ -55,12 +58,16 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     private long lastTimeOutCheck;
 
+	@ConfigurationField("size")
     private int maxPoolSize;
     
+    @ConfigurationField("max-stack-size")
     private int maxStackSize;
 
+    @ConfigurationField("timeout")
     private long timeout;
 
+    @ConfigurationField("timeout-check-interval")
     private long timeoutCheckInterval;
     
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
