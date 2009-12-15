@@ -30,6 +30,7 @@ import java.util.Vector;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
@@ -118,7 +119,7 @@ public interface RpcAPI {
 	 *@param  parameters                      HashMap of parameters.
 	 *@return                                The document value
 	 */		
-	byte[] getDocument(String name, HashMap parameters)
+	byte[] getDocument(String name, HashMap<String, Object> parameters)
 			throws EXistException, PermissionDeniedException;	
 		
 
@@ -128,7 +129,7 @@ public interface RpcAPI {
 	String getDocumentAsString(String name, int prettyPrint, String stylesheet)
 		throws EXistException, PermissionDeniedException;
 	
-	String getDocumentAsString(String name, HashMap parameters)
+	String getDocumentAsString(String name, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 	
 	/**
@@ -140,13 +141,13 @@ public interface RpcAPI {
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	HashMap getDocumentData(String name, HashMap parameters)
+	HashMap<String, Object> getDocumentData(String name, HashMap<String, Object> parameters)
 	throws EXistException, PermissionDeniedException;
 	
-	HashMap getNextChunk(String handle, int offset)
+	HashMap<String, Object> getNextChunk(String handle, int offset)
     throws EXistException, PermissionDeniedException;
 	
-	HashMap getNextExtendedChunk(String handle, String offset)
+	HashMap<String, Object> getNextExtendedChunk(String handle, String offset)
     throws EXistException, PermissionDeniedException;
 	
 	byte[] getBinaryResource(String name)
@@ -181,7 +182,7 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	Vector getDocumentListing() throws EXistException, PermissionDeniedException;
+	Vector<String> getDocumentListing() throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Get a list of all documents contained in the collection.
@@ -191,13 +192,13 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	Vector getDocumentListing(String collection)
+	Vector<String> getDocumentListing(String collection)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	HashMap listDocumentPermissions(String name)
+	HashMap<String, List<Object>> listDocumentPermissions(String name)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	HashMap listCollectionPermissions(String name)
+	HashMap<XmldbURI, List<Object>> listCollectionPermissions(String name)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
@@ -239,13 +240,13 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	HashMap getCollectionDesc(String rootCollection)
+	HashMap<String, Object> getCollectionDesc(String rootCollection)
 		throws EXistException, PermissionDeniedException;
 
-	HashMap describeCollection(String collectionName)
+	HashMap<String, Object> describeCollection(String collectionName)
 		throws EXistException, PermissionDeniedException;
 	
-	HashMap describeResource(String resourceName)
+	HashMap<String, Object> describeResource(String resourceName)
 		throws EXistException, PermissionDeniedException;
 	
 	/**
@@ -283,7 +284,7 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(String doc, String id, HashMap parameters)
+	byte[] retrieve(String doc, String id, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -298,24 +299,24 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	HashMap retrieveFirstChunk(String doc, String id, HashMap parameters)
+	HashMap<String, Object> retrieveFirstChunk(String doc, String id, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	String retrieveAsString(String doc, String id, HashMap parameters)
+	String retrieveAsString(String doc, String id, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	public byte[] retrieveAll(int resultId, HashMap parameters)
+	public byte[] retrieveAll(int resultId, HashMap<String, Object> parameters)
 	throws EXistException, PermissionDeniedException;
 	
-	public HashMap retrieveAllFirstChunk(int resultId, HashMap parameters)
+	public HashMap<String, Object> retrieveAllFirstChunk(int resultId, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 	
-   HashMap compile(byte[] xquery, HashMap parameters) throws Exception;
+   HashMap<String, Object> compile(byte[] xquery, HashMap<String, Object> parameters) throws Exception;
    
-	HashMap queryP(byte[] xpath, HashMap parameters)
+	HashMap<String, Object> queryP(byte[] xpath, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	HashMap queryP(byte[] xpath, String docName, String s_id, HashMap parameters)
+	HashMap<String, Object> queryP(byte[] xpath, String docName, String s_id, HashMap<String, Object> parameters)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 	
 	/**
@@ -338,7 +339,7 @@ public interface RpcAPI {
 		byte[] xquery,
 		int howmany,
 		int start,
-		HashMap parameters)
+		HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -408,7 +409,7 @@ public interface RpcAPI {
 	 *@deprecated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
-	HashMap querySummary(String xquery)
+	HashMap<String, Object> querySummary(String xquery)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -419,7 +420,7 @@ public interface RpcAPI {
 	 * @param query
 	 * @throws EXistException
 	 */
-	public String printDiagnostics(String query, HashMap parameters)
+	public String printDiagnostics(String query, HashMap<String, Object> parameters)
 	throws EXistException, PermissionDeniedException;
 	
 	String createResourceId(String collection)
@@ -586,19 +587,19 @@ public interface RpcAPI {
      * @exception  EXistException             Description of the Exception
      * @exception  PermissionDeniedException  Description of the Exception
      */
-    int executeQuery(byte[] xpath, String encoding, HashMap parameters)
+    int executeQuery(byte[] xpath, String encoding, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	int executeQuery(byte[] xpath, HashMap parameters) throws EXistException, PermissionDeniedException;
+	int executeQuery(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException;
 
-	int executeQuery(String xpath, HashMap parameters) throws EXistException, PermissionDeniedException;
+	int executeQuery(String xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Execute XPath/Xquery from path file (stored inside eXist)
 	 *  returned reference may be used later to get a summary of results or
 	 *  retrieve the actual hits.
 	 */
-	HashMap execute(String path, HashMap parameters)
+	HashMap<String, Object> execute(String path, HashMap<String, Object> parameters)
 	throws EXistException, PermissionDeniedException;
 	
 	/**
@@ -666,10 +667,10 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	HashMap querySummary(int resultId)
+	HashMap<String, Object> querySummary(int resultId)
 		throws EXistException, PermissionDeniedException, XPathException;
 
-	HashMap getPermissions(String resource)
+	HashMap<String, Object> getPermissions(String resource)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	/**
@@ -693,7 +694,7 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(int resultId, int num, HashMap parameters)
+	byte[] retrieve(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -709,13 +710,13 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	HashMap retrieveFirstChunk(int resultId, int num, HashMap parameters)
+	HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(String name, String passwd, String digestPassword,Vector groups, String home)
+	boolean setUser(String name, String passwd, String digestPassword,Vector<String> groups, String home)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(String name, String passwd, String digestPassword,Vector groups)
+	boolean setUser(String name, String passwd, String digestPassword,Vector<String> groups)
 		throws EXistException, PermissionDeniedException;
 
 	boolean setPermissions(String resource, String permissions)
@@ -749,18 +750,18 @@ public interface RpcAPI {
 	public String hasUserLock(String path)
 	throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	HashMap getUser(String name) throws EXistException, PermissionDeniedException;
+	HashMap<String, Object> getUser(String name) throws EXistException, PermissionDeniedException;
 
-	Vector getUsers() throws EXistException, PermissionDeniedException;
+	Vector<HashMap<String, Object>> getUsers() throws EXistException, PermissionDeniedException;
 
 	boolean removeUser(String name) throws EXistException, PermissionDeniedException;
 
-	Vector getGroups() throws EXistException, PermissionDeniedException;
+	Vector<String> getGroups() throws EXistException, PermissionDeniedException;
 
-	Vector getIndexedElements(String collectionName, boolean inclusive)
+	Vector<Vector<Object>> getIndexedElements(String collectionName, boolean inclusive)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-	Vector scanIndexTerms(
+	Vector<Vector<Object>> scanIndexTerms(
 
 		String collectionName,
 		String start,
@@ -768,7 +769,7 @@ public interface RpcAPI {
 		boolean inclusive)
 		throws PermissionDeniedException, EXistException, URISyntaxException;
 
-	Vector scanIndexTerms(String xpath,
+	Vector<Vector<Object>> scanIndexTerms(String xpath,
 			String start, String end)
 			throws PermissionDeniedException, EXistException, XPathException;
 	
@@ -789,13 +790,13 @@ public interface RpcAPI {
 	Date getCreationDate(String collectionName)
 		throws PermissionDeniedException, EXistException, URISyntaxException;
 	
-	Vector getTimestamps(String documentName)
+	Vector<Date> getTimestamps(String documentName)
 		throws PermissionDeniedException, EXistException, URISyntaxException;
 		
 	boolean copyCollection(String name, String namedest)
 	    throws PermissionDeniedException, EXistException;
 
-	List getDocumentChunk(String name, HashMap parameters)
+	List<String> getDocumentChunk(String name, HashMap<String, Object> parameters)
 	throws EXistException, PermissionDeniedException, IOException;
 	
 	byte[] getDocumentChunk(String name, int start, int stop)
@@ -824,7 +825,7 @@ public interface RpcAPI {
     /// DWES
     boolean isValid(String name)	throws EXistException, PermissionDeniedException, URISyntaxException;
     
-    Vector getDocType(String documentName)
+    Vector<String> getDocType(String documentName)
 	throws PermissionDeniedException, EXistException, URISyntaxException;
     
     boolean setDocType(String documentName, String doctypename, String publicid, String systemid)

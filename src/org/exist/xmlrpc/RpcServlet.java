@@ -40,7 +40,9 @@ import org.exist.http.servlets.HttpServletRequestWrapper;
 
 public class RpcServlet extends XmlRpcServlet {
 
-    @Override
+	private static final long serialVersionUID = -1003413291835771186L;
+
+	@Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         // Request logger
 
