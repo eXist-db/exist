@@ -100,8 +100,8 @@ public class RecoverBinaryTest2 extends TestCase {
             assertNotNull(broker);
 
             Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
-            for (Iterator i = test2.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
                 System.out.println(doc.getURI().toString());
             }
             
@@ -137,8 +137,8 @@ public class RecoverBinaryTest2 extends TestCase {
             assertNotNull(broker);
 
             Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
-            for (Iterator i = test2.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
                 System.out.println(doc.getURI().toString());
             }
             

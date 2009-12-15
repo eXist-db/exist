@@ -145,7 +145,8 @@ public class StorageStressTest extends TestCase {
 	        res.setContent(f);
 	        collection.storeResource(res);
 	        
-	        IndexQueryService idxConf = (IndexQueryService)
+	        @SuppressWarnings("unused")
+			IndexQueryService idxConf = (IndexQueryService)
 	            collection.getService("IndexQueryService", "1.0");
 //	        idxConf.configureCollection(CONFIG);
         } catch (Exception e) {            

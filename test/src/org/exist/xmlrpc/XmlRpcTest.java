@@ -216,7 +216,7 @@ public class XmlRpcTest {
             params.clear();
             params.addElement(TARGET_RESOURCE.toString());
             params.addElement(options);
-            HashMap table = (HashMap) xmlrpc.execute("getDocumentData", params);
+            HashMap<?,?> table = (HashMap<?,?>) xmlrpc.execute("getDocumentData", params);
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             int offset = ((Integer)table.get("offset")).intValue();
             data = (byte[])table.get("data");
@@ -225,7 +225,7 @@ public class XmlRpcTest {
                 params.clear();
                 params.add(table.get("handle"));
                 params.add(new Integer(offset));
-                table = (HashMap) xmlrpc.execute("getNextChunk", params);
+                table = (HashMap<?,?>) xmlrpc.execute("getNextChunk", params);
                 offset = ((Integer)table.get("offset")).intValue();
                 data = (byte[])table.get("data");
                 os.write(data);
@@ -365,7 +365,7 @@ public class XmlRpcTest {
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(new Hashtable<Object, Object>());
 			XmlRpcClient xmlrpc = getClient();
-	        HashMap result = (HashMap) xmlrpc.execute( "queryP", params );
+	        HashMap<?,?> result = (HashMap<?,?>) xmlrpc.execute( "queryP", params );
 	        Object[] resources = (Object[]) result.get("results");
 	        //TODO : check the number of resources before !
 	        Assert.assertEquals(resources.length, 2);

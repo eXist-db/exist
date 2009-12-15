@@ -77,7 +77,8 @@ public class HashtableTest extends TestCase {
 			assertEquals(values[i], v);
 		}
 		int c = 0;
-		for(Iterator i = table.iterator(); i.hasNext(); c++) {
+		for(Iterator<?> i = table.iterator(); i.hasNext(); c++) {
+			@SuppressWarnings("unused")
 			Integer v = (Integer)i.next();
 		}
 		System.out.println(table.size() + " = " + c);
@@ -140,7 +141,7 @@ public class HashtableTest extends TestCase {
 		
 		// check SequencedLongHashMap.iterator()
         int c = 0;
-        for(Iterator i = table.iterator(); i.hasNext(); c++) {
+        for(Iterator<?> i = table.iterator(); i.hasNext(); c++) {
             Long v = (Long)i.next();
             assertEquals(keys[c], v.longValue());
         }
@@ -161,7 +162,7 @@ public class HashtableTest extends TestCase {
 		// iterate through the sequence again
 		int k = 0;
 		c = 0;
-		for(Iterator i = table.iterator(); i.hasNext(); k++, c++) {
+		for(Iterator<?> i = table.iterator(); i.hasNext(); k++, c++) {
 			while(values[k] == null)
 				k++;
 			Long v = (Long)i.next();
@@ -206,7 +207,8 @@ public class HashtableTest extends TestCase {
         
 		// check SequencedLongHashMap.iterator()
 		c = 0;
-		for(Iterator i = table.iterator(); i.hasNext(); c++) {
+		for(Iterator<?> i = table.iterator(); i.hasNext(); c++) {
+			@SuppressWarnings("unused")
 			Long v = (Long)i.next();
 		}
 		assertEquals(c, table.size());
@@ -216,7 +218,7 @@ public class HashtableTest extends TestCase {
 			table.removeFirst();
 		}
 		System.gc();
-		Iterator iter = table.iterator();
+		Iterator<?> iter = table.iterator();
 		assertFalse("Hashtable should be empty", iter.hasNext());
 		assertTrue(table.size() == 0);
 		

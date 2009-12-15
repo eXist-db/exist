@@ -167,10 +167,10 @@ public class DOMFileRecoverTest extends TestCase {
             
             IndexQuery query = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500));
             assertNotNull(query);
-            List keys = domDb.findKeys(query);
+            List<?> keys = domDb.findKeys(query);
             assertNotNull(keys);
             int count = 0;
-            for (Iterator i = keys.iterator(); i.hasNext(); count++) {
+            for (Iterator<?> i = keys.iterator(); i.hasNext(); count++) {
                 Value key = (Value) i.next();
                 assertNotNull(key);
                 Value value = domDb.get(key);

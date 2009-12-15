@@ -87,8 +87,8 @@ public class ConcurrentStoreTest extends TestCase {
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test2);
             System.out.println("Contents of collection " + test.getURI() + ":");
-            for (Iterator i = test.iterator(broker); i.hasNext(); ) {
-                DocumentImpl next = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
+                DocumentImpl next = i.next();
                 System.out.println("- " + next.getURI());
             }
 	    } catch (Exception e) {            
@@ -195,8 +195,8 @@ public class ConcurrentStoreTest extends TestCase {
                 
                 System.out.println("Transaction started ...");
                 
-                Iterator i = test.iterator(broker);
-                DocumentImpl doc = (DocumentImpl)i.next();
+                Iterator<DocumentImpl> i = test.iterator(broker);
+                DocumentImpl doc = i.next();
                 
                 System.out.println("\nREMOVING DOCUMENT\n");
                 test.removeXMLResource(transaction, broker, doc.getFileURI());

@@ -160,7 +160,8 @@ public class BTreeRecoverTest extends TestCase {
     	
         public boolean indexInfo(Value value, long pointer)
                 throws TerminatedException {
-        	final byte[] data = value.data();
+        	@SuppressWarnings("unused")
+			final byte[] data = value.data();
 //        	NodeId id = pool.getNodeFactory().createFromData(data[value.start() + 4], data, value.start() + 5);
 //            System.out.println(id + " -> " + pointer);
             count++;

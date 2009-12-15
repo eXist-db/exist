@@ -130,8 +130,8 @@ public class RemoveCollectionTest {
             System.out.println("Transaction started ...");
 
             System.out.println("Removing documents one by one ...");
-            for (Iterator i = test.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
                 broker.removeXMLResource(transaction, doc);
             }
             broker.saveCollection(transaction, test);
@@ -168,8 +168,8 @@ public class RemoveCollectionTest {
             File[] files = generator.generate(broker, test, generateXQ);
 
             int j = 0;
-            for (Iterator i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
+                DocumentImpl doc = i.next();
                 InputSource is = new InputSource(files[j].toURI().toASCIIString());
                 assertNotNull(is);
                 IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
