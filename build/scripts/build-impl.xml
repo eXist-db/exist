@@ -517,6 +517,10 @@
         <antcall target="extensions-xslt"/>
     </target>
 
+    <target name="clean-conf" description="Cleanup config file">
+        <delete failonerror="no" file="conf.xml"/>
+    </target>
+
     <target name="clean-all" description="Cleanup deeper" depends="prepare-extensions">
         <!-- javadoc -->
         <delete dir="${src.webapp}/api"/>
