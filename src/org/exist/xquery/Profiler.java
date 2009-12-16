@@ -406,7 +406,8 @@ public class Profiler {
     
     //TODO : find a way to preview "abstract" sequences
     // never used locally
-    private String sequencePreview(Sequence sequence) {
+    @SuppressWarnings("unused")
+	private String sequencePreview(Sequence sequence) {
         StringBuilder truncation = new StringBuilder();
         if (sequence.isEmpty())
             truncation.append(sequence.toString());

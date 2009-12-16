@@ -6,7 +6,7 @@ import org.exist.xquery.Constants;
 
 public class LongLinkedList {
 
-	public static class ListItem implements Comparable {
+	public static class ListItem implements Comparable<ListItem> {
 		
 		public long l;
 		
@@ -31,8 +31,8 @@ public class LongLinkedList {
 		/**
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
-		public int compareTo(Object o) {
-            final long ol = ((ListItem)o).l;
+		public int compareTo(ListItem o) {
+            final long ol = o.l;
             if(ol == l)
                 return Constants.EQUAL;
             else if(l < ol)

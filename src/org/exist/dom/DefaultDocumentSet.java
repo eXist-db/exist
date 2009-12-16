@@ -148,11 +148,11 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 		collections.add(collection);
 	}
 
-	public Iterator getDocumentIterator() {
+	public Iterator<DocumentImpl> getDocumentIterator() {
 		return valueIterator();
 	}
 
-	public Iterator getCollectionIterator() {
+	public Iterator<Collection> getCollectionIterator() {
 		return collections.iterator();
 	}
 
@@ -165,10 +165,11 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	}
 	
 	public DocumentImpl getDocumentAt(int pos) {
+		//UNDERSTAND: do we need that list??? (shabanovd)
 		if (list == null) {
 			list = new ArrayList<DocumentImpl>();
-			for(Iterator i = valueIterator(); i.hasNext(); )
-				list.add( (DocumentImpl) i.next());
+			for(Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); )
+				list.add(i.next());
 		}
 		return list.get(pos);
 	}
@@ -181,7 +182,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 		XmldbURI result[] = new XmldbURI[size()];
 		DocumentImpl d;
 		int j = 0;
-		for (Iterator i = getDocumentIterator(); i.hasNext(); j++) {
+		for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); j++) {
 			d = (DocumentImpl) i.next();
 			result[j] = d.getFileURI();
 		}
@@ -192,13 +193,13 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	public DocumentSet intersection(DocumentSet other) {
 		DefaultDocumentSet r = new DefaultDocumentSet();
 		DocumentImpl d;
-		for (Iterator i = getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (other.contains(d.getDocId()))
 				r.add(d);
 		}
-		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
 				r.add(d);
 		}
@@ -209,8 +210,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 		DefaultDocumentSet result = new DefaultDocumentSet();
 		result.addAll(other);
 		DocumentImpl d;
-		for (Iterator i = getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (!result.contains(d.getDocId()))
 				result.add(d);
 		}
@@ -221,8 +222,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 		if (other.getDocumentCount() > size())
 			return false;
 		DocumentImpl d;		
-		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (!contains(d.getDocId()))
 				return false;
 		}
@@ -236,8 +237,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	public NodeSet docsToNodeSet() {
 		NodeSet result = new NewArrayNodeSet(getDocumentCount());
 		DocumentImpl doc;
-        for (Iterator i = getDocumentIterator(); i.hasNext();) {
-            doc = (DocumentImpl) i.next();
+        for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+            doc = i.next();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
             	result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
             }
@@ -248,8 +249,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	public int getMinDocId() {
 		int min = DocumentImpl.UNKNOWN_DOCUMENT_ID; 
         DocumentImpl d;
-		for (Iterator i = getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (min == DocumentImpl.UNKNOWN_DOCUMENT_ID)
 				min = d.getDocId();
 			else if (d.getDocId() < min)
@@ -261,8 +262,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 	public int getMaxDocId() {
 		int max = DocumentImpl.UNKNOWN_DOCUMENT_ID;
 		DocumentImpl d;
-		for (Iterator i = getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (d.getDocId() > max)
 				max = d.getDocId();
 		}

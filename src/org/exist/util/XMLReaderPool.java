@@ -43,7 +43,8 @@ public class XMLReaderPool extends StackObjectPool {
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
-    private Configuration config;
+    @SuppressWarnings("unused")
+	private Configuration config;
 
     /**
      * 

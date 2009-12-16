@@ -137,8 +137,8 @@ public final class SelectorUtils {
             return false;
         }
 
-        Vector patDirs = tokenizePath (pattern);
-        Vector strDirs = tokenizePath (str);
+        Vector<String> patDirs = tokenizePath (pattern);
+        Vector<String> strDirs = tokenizePath (str);
 
         int patIdxStart = 0;
         int patIdxEnd   = patDirs.size()-1;
@@ -147,11 +147,11 @@ public final class SelectorUtils {
 
         // up to first '**'
         while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = (String)patDirs.elementAt(patIdxStart);
+            String patDir = patDirs.elementAt(patIdxStart);
             if (patDir.equals("**")) {
                 break;
             }
-            if (!match(patDir,(String)strDirs.elementAt(strIdxStart),
+            if (!match(patDir,strDirs.elementAt(strIdxStart),
                     isCaseSensitive)) {
                 return false;
             }
@@ -211,8 +211,8 @@ public final class SelectorUtils {
             return false;
         }
 
-        Vector patDirs = tokenizePath (pattern);
-        Vector strDirs = tokenizePath (str);
+        Vector<String> patDirs = tokenizePath (pattern);
+        Vector<String> strDirs = tokenizePath (str);
 
         int patIdxStart = 0;
         int patIdxEnd   = patDirs.size()-1;
@@ -221,11 +221,11 @@ public final class SelectorUtils {
 
         // up to first '**'
         while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = (String)patDirs.elementAt(patIdxStart);
+            String patDir = patDirs.elementAt(patIdxStart);
             if (patDir.equals("**")) {
                 break;
             }
-            if (!match(patDir,(String)strDirs.elementAt(strIdxStart),
+            if (!match(patDir,strDirs.elementAt(strIdxStart),
                     isCaseSensitive)) {
                 return false;
             }
@@ -249,11 +249,11 @@ public final class SelectorUtils {
 
         // up to last '**'
         while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = (String)patDirs.elementAt(patIdxEnd);
+            String patDir = patDirs.elementAt(patIdxEnd);
             if (patDir.equals("**")) {
                 break;
             }
-            if (!match(patDir,(String)strDirs.elementAt(strIdxEnd),
+            if (!match(patDir,strDirs.elementAt(strIdxEnd),
                     isCaseSensitive)) {
                 return false;
             }
@@ -291,8 +291,8 @@ public final class SelectorUtils {
 strLoop:
             for (int i = 0; i <= strLength - patLength; i++) {
                 for (int j = 0; j < patLength; j++) {
-                    String subPat = (String)patDirs.elementAt(patIdxStart+j+1);
-                    String subStr = (String)strDirs.elementAt(strIdxStart+i+j);
+                    String subPat = patDirs.elementAt(patIdxStart+j+1);
+                    String subStr = strDirs.elementAt(strIdxStart+i+j);
                     if (!match(subPat,subStr, isCaseSensitive)) {
                         continue strLoop;
                     }
@@ -511,8 +511,8 @@ strLoop:
      *
      * @return a Vector of path elements from the tokenized path
      */
-    public static Vector tokenizePath (String path) {
-        Vector ret = new Vector();
+    public static Vector<String> tokenizePath (String path) {
+        Vector<String> ret = new Vector<String>();
         StringTokenizer st = new StringTokenizer(path,File.separator);
         while (st.hasMoreTokens()) {
             ret.addElement(st.nextToken());

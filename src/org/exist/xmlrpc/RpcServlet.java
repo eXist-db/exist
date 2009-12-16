@@ -91,7 +91,7 @@ public class RpcServlet extends XmlRpcServlet {
         private DefaultHandlerMapping() throws XmlRpcException {
         }
 
-        public void loadDefault(Class clazz) throws XmlRpcException {
+        public void loadDefault(Class<?> clazz) throws XmlRpcException {
             registerPublicMethods("Default", clazz);
         }
 

@@ -37,7 +37,8 @@ public class SingleInstanceConfiguration extends Configuration {
          * on the same system.
          */
     
-    private final static Logger LOG = Logger.getLogger(SingleInstanceConfiguration.class); //Logger
+    @SuppressWarnings("unused")
+	private final static Logger LOG = Logger.getLogger(SingleInstanceConfiguration.class); //Logger
     protected static String _configFile = null; //config file (conf.xml by default)
     protected static File _existHome = null;
     
@@ -127,7 +128,8 @@ public class SingleInstanceConfiguration extends Configuration {
      * @param dir the directory
      * @return <code>true</code> if the directory contains a configuration file
      */
-    private static boolean containsConfig(File dir, String config) {
+    @SuppressWarnings("unused")
+	private static boolean containsConfig(File dir, String config) {
         if (dir != null && dir.exists() && dir.isDirectory() && dir.canRead()) {
             File c = new File(dir, config);
             return c.exists() && c.isFile() && c.canRead();

@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.exist.Namespaces;
@@ -49,7 +48,7 @@ public class FunctionFactory {
 	 * optimizes some function calls like starts-with, ends-with or
 	 * contains. 
 	 */
-	public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List params)
+	public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params)
 		throws XPathException {
 		QName qname = null;
 		try {
@@ -247,7 +246,7 @@ public class FunctionFactory {
 					// for internal modules: create a new function instance from the class
 					FunctionDef def = ((InternalModule)module).getFunctionDef(qname, params.size());
 					if (def == null) {
-						List funcs = ((InternalModule)module).getFunctionsByName(qname);
+						List<FunctionSignature> funcs = ((InternalModule)module).getFunctionsByName(qname);
 						if (funcs.size() == 0)
 							throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() + "() " +
 								" is not defined in module namespace: " + qname.getNamespaceURI());
@@ -257,8 +256,7 @@ public class FunctionFactory {
                             buf.append(params.size() + " parameter(s) in call to function ");
                             buf.append("'" + qname.getStringValue() +  "()'. ");
                             buf.append("Defined function signatures are:\r\n");
-							for (Iterator i = funcs.iterator(); i.hasNext(); ) {
-								FunctionSignature sig = (FunctionSignature) i.next();
+							for (FunctionSignature sig : funcs) {
 								buf.append(sig.toString()).append("\r\n");
 							}
 							throw new XPathException(ast.getLine(), ast.getColumn(), buf.toString());

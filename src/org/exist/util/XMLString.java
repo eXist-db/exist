@@ -27,7 +27,7 @@ import org.xml.sax.SAXException;
  * Faster string implementation which uses a CharArrayPool to
  * pool the backing char arrays.
  */
-public final class XMLString implements CharSequence, Comparable {
+public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
 	public final static int SUPPRESS_NONE = 0;
 	public final static int SUPPRESS_LEADING_WS = 0x01;
@@ -246,8 +246,7 @@ public final class XMLString implements CharSequence, Comparable {
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public final int compareTo(Object o) {
-        CharSequence cs = (CharSequence) o;
+	public final int compareTo(CharSequence cs) {
         for (int i = 0; i < length_ && i < cs.length(); i++) {
             if (value_[start_ + i] < cs.charAt(i))
                 return Constants.INFERIOR;

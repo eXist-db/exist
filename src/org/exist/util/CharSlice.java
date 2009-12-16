@@ -18,7 +18,9 @@ import java.io.Writer;
  */
 public final class CharSlice implements CharSequence, Serializable {
 
-    private char[] array;
+	private static final long serialVersionUID = -2668084569793755681L;
+
+	private char[] array;
     private int offset;
     private int count;
 

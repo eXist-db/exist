@@ -44,9 +44,11 @@ import java.util.Iterator;
  */
 public class RootNode extends Step {
 
-    private NodeSet cached = null;
+    @SuppressWarnings("unused")
+	private NodeSet cached = null;
 
-    private DocumentSet cachedDocs = null;
+    @SuppressWarnings("unused")
+	private DocumentSet cachedDocs = null;
 
     private UpdateListener listener = null;
     

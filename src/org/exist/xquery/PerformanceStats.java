@@ -228,7 +228,8 @@ public class PerformanceStats {
        }
     }
 
-    private String createKey(QName qname, String source) {
+    @SuppressWarnings("unused")
+	private String createKey(QName qname, String source) {
         return qname.getNamespaceURI() + ":" + qname.getLocalName() + ":" + source;
     }
 
