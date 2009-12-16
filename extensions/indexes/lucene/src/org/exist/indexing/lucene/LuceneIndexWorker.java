@@ -231,8 +231,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getWritingReader();
-            for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
                 Term dt = new Term("docId", Integer.toString(doc.getDocId()));
                 TermDocs td = reader.termDocs(dt);
                 while (td.next()) {
@@ -446,8 +446,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            java.util.Collection fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
-            for (Iterator i = fields.iterator(); i.hasNext(); ) {
+            java.util.Collection<?> fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
+            for (Iterator<?> i = fields.iterator(); i.hasNext(); ) {
                 String field = (String) i.next();
                 if (!"docId".equals(field))
                     indexes.add(decodeQName(field));
@@ -461,8 +461,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private Analyzer getAnalyzer(QName qname, DBBroker broker, DocumentSet docs) {
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
                 LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
@@ -791,7 +791,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static class NodeFieldSelector implements FieldSelector {
 
-        public FieldSelectorResult accept(String fieldName) {
+		private static final long serialVersionUID = -4899170629980829109L;
+
+		public FieldSelectorResult accept(String fieldName) {
             if ("nodeId".equals(fieldName) || "docId".equals(fieldName))
                 return FieldSelectorResult.LOAD;
             return FieldSelectorResult.NO_LOAD;

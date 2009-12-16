@@ -1249,7 +1249,7 @@ public class LuceneIndexTest {
     private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, String term, int expected) throws PermissionDeniedException {
         LuceneIndexWorker index = (LuceneIndexWorker)
             broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        Map hints = new HashMap();
+        Map<String, Object> hints = new HashMap<String, Object>();
         if (term != null)
             hints.put(OrderedValuesIndex.START_VALUE, term);
         if (qn != null && qn.length > 0) {
