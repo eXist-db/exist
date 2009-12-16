@@ -3,6 +3,8 @@ package org.exist.util;
 
 public class ReadOnlyException extends Exception {
 
+	private static final long serialVersionUID = 7077941517830242672L;
+
 	/**
 	 * Constructor for ReadOnlyException.
 	 */

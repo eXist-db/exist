@@ -10,7 +10,8 @@ package org.exist.util;
  */
 public class LockException extends Exception {
 
-    
+	private static final long serialVersionUID = -6273549212242606084L;
+
 	/**
 	 * Constructor for LockException.
 	 */

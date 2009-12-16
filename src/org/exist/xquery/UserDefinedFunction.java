@@ -209,7 +209,7 @@ public class UserDefinedFunction extends Function {
      * 
      * @return List of function parameters
      */
-    public List getParameters()
+    public List<QName> getParameters()
     {
     	return parameters;
     }

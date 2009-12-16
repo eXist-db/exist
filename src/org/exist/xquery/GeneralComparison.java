@@ -96,7 +96,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     
     private boolean hasUsedIndex = false;
     
-    private int actualReturnType = Type.ITEM;
+    @SuppressWarnings("unused")
+	private int actualReturnType = Type.ITEM;
 
     private LocationStep contextStep = null;
     private QName contextQName = null;
@@ -500,8 +501,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		final Collator collator = getCollator(contextSequence);
 		if (contextSequence != null && !contextSequence.isEmpty() && !contextSequence.getDocumentSet().contains(nodes.getDocumentSet()))
 		{
-			for (Iterator i1 = nodes.iterator(); i1.hasNext();) {
-				NodeProxy item = (NodeProxy) i1.next();
+			for (NodeProxy item : nodes) {
 				ContextItem context = item.getContext();
 				if (context == null)
 					throw new XPathException(this, "Internal error: context node missing");
@@ -517,8 +517,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 				} while ((context = context.getNextDirect()) != null);
 			}
 		} else { 
-			for (Iterator i1 = nodes.iterator(); i1.hasNext();) {
-		    	NodeProxy item = (NodeProxy) i1.next();
+			for (NodeProxy item : nodes) {
 				AtomicValue lv = item.atomize();
 				Sequence rs = getRight().eval(contextSequence);				
 				for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)	{
@@ -854,7 +853,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * @return Whether or not <code>lv</code> is an empty string
 	 * @throws XPathException
      */
-    private static boolean isEmptyString(AtomicValue lv) throws XPathException {
+    @SuppressWarnings("unused")
+	private static boolean isEmptyString(AtomicValue lv) throws XPathException {
         if(Type.subTypeOf(lv.getType(), Type.STRING) || lv.getType() == Type.ATOMIC) {
             if(lv.getStringValue().length() == 0)
                 return true;
@@ -959,8 +959,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     public final static IndexFlags checkForQNameIndex(IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName) {
         idxflags.reset(contextQName != null);
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             if (collection.getURI().equalsInternal(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             IndexSpec idxcfg = collection.getIndexConfiguration(context.getBroker());

@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -97,9 +96,9 @@ public class MimeTable {
         return instance;
     }
     
-    private Map mimeTypes = new TreeMap();
-    private Map extensions = new TreeMap();
-    private Map preferredExtension = new TreeMap();
+    private Map<String, MimeType> mimeTypes = new TreeMap<String, MimeType>();
+    private Map<String, MimeType> extensions = new TreeMap<String, MimeType>();
+    private Map<String, String> preferredExtension = new TreeMap<String, String>();
     
     public MimeTable() {
         load();
@@ -123,7 +122,7 @@ public class MimeTable {
     //TODO: deprecate?
     public MimeType getContentTypeFor(String fileName) {
         String ext = getExtension(fileName);
-        return ext == null ? null : (MimeType) extensions.get(ext);
+        return ext == null ? null : extensions.get(ext);
     }
     
     public MimeType getContentTypeFor(XmldbURI fileName) {
@@ -131,29 +130,28 @@ public class MimeTable {
     }
     
     public MimeType getContentType(String mimeType) {
-        return (MimeType) mimeTypes.get(mimeType);
+        return mimeTypes.get(mimeType);
     }
     
-    public Vector getAllExtensions(MimeType mimeType)
+    public Vector<String> getAllExtensions(MimeType mimeType)
     {
     	return getAllExtensions(mimeType.getName());
     }
     
-    public Vector getAllExtensions(String mimeType)
+    public Vector<String> getAllExtensions(String mimeType)
     {
-    	Vector extns = new Vector();
+    	Vector<String> extns = new Vector<String>();
     	
-    	for(Iterator itExtensions = extensions.keySet().iterator(); itExtensions.hasNext();)
+    	for(String extKey : extensions.keySet())
     	{
-    		String extKey = (String)itExtensions.next();
-    		MimeType mt = (MimeType)extensions.get(extKey);
+    		MimeType mt = extensions.get(extKey);
     		if(mt.getName().equals(mimeType))
     		{
     			extns.add(extKey);
     		}
     	}
     	
-    	String preferred = (String)preferredExtension.get(mimeType);
+    	String preferred = preferredExtension.get(mimeType);
     	if(preferred != null && !extns.contains(preferred))
     	{
     		extns.add(0, preferred);
@@ -167,14 +165,14 @@ public class MimeTable {
      }
     
     public String getPreferredExtension(String mimeType) {
-       return (String)preferredExtension.get(mimeType);
+       return preferredExtension.get(mimeType);
     }
     
     public boolean isXMLContent(String fileName) {
         String ext = getExtension(fileName);
         if (ext == null)
             return false;
-        MimeType type = (MimeType) extensions.get(ext);
+        MimeType type = extensions.get(ext);
         if (type == null)
             return false;
         return type.getType() == MimeType.XML;
@@ -273,11 +271,11 @@ public class MimeTable {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setValidating(false);
-        InputSource src = new InputSource(stream);
+		InputSource src = new InputSource(stream);
         SAXParser parser = factory.newSAXParser();
         XMLReader reader = parser.getXMLReader();
         reader.setContentHandler(new MimeTableHandler());
-        reader.parse(new InputSource(stream));
+        reader.parse(src);
     }
 
     private class MimeTableHandler extends DefaultHandler {

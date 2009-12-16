@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 public class OrderedLinkedList {
 
+	@SuppressWarnings("unused")
 	private final static Logger LOG = Logger.getLogger(OrderedLinkedList.class);
 	
 	public abstract static class Node {

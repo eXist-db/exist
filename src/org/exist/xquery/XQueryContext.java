@@ -1989,6 +1989,7 @@ public class XQueryContext {
 	/**
 	 * Push all in-scope namespace declarations onto the stack.
 	 */
+	@SuppressWarnings("unchecked")
 	public void pushInScopeNamespaces(boolean inherit) {
 		//TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap
 		HashMap<String, String> m = (HashMap) inScopeNamespaces.clone();
@@ -2019,6 +2020,7 @@ public class XQueryContext {
 		inheritedInScopeNamespaces = namespaceStack.pop();
 	}
 
+	@SuppressWarnings("unchecked")
 	public void pushNamespaceContext() {
 		HashMap<String, String> m = (HashMap) staticNamespaces.clone();
 		HashMap<String, String> p = (HashMap) staticPrefixes.clone();		
@@ -2214,9 +2216,10 @@ public class XQueryContext {
      * @param namespaceURI the URI of the module
      * @return the location string
      */
-    public String getModuleLocation(String namespaceURI) {
-        Map moduleMap = (Map) broker.getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
-        return (String) moduleMap.get(namespaceURI);
+    @SuppressWarnings("unchecked")
+	public String getModuleLocation(String namespaceURI) {
+        Map<String, String> moduleMap = (Map) broker.getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
+        return moduleMap.get(namespaceURI);
     }
 
     /**
@@ -2224,8 +2227,9 @@ public class XQueryContext {
      * mapped to a known location.
      * @return an iterator
      */
-    public Iterator getMappedModuleURIs() {
-        Map moduleMap = (Map) broker.getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
+    @SuppressWarnings("unchecked")
+	public Iterator<String> getMappedModuleURIs() {
+        Map<String, String> moduleMap = (Map) broker.getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
         return moduleMap.keySet().iterator();
     }
 
@@ -2234,8 +2238,8 @@ public class XQueryContext {
 		if (module == null) {
 			module = compileModule(prefix, namespaceURI, location, source);
 		} else {
-            for (Iterator it = module.getContext().getAllModules(); it.hasNext();) {
-                Module importedModule = (Module) it.next();
+            for (Iterator<Module> it = module.getContext().getAllModules(); it.hasNext();) {
+                Module importedModule = it.next();
                 if (importedModule != null && 
 					!allModules.containsKey(importedModule.getNamespaceURI())) {
                     setRootModule(importedModule.getNamespaceURI(), importedModule);
@@ -2586,10 +2590,10 @@ public class XQueryContext {
     public void setBatchTransactionTrigger(DocumentImpl doc)
     {
     	//we want the last updated version of the document, so remove any previous version (matched by xmldburi)
-    	Iterator itTrigDoc = batchTransactionTriggers.getDocumentIterator();
+    	Iterator<DocumentImpl> itTrigDoc = batchTransactionTriggers.getDocumentIterator();
     	while(itTrigDoc.hasNext())
     	{
-    		DocumentImpl trigDoc = (DocumentImpl)itTrigDoc.next();
+    		DocumentImpl trigDoc = itTrigDoc.next();
     		if(trigDoc.getURI().equals(doc.getURI()))
     		{
     			itTrigDoc.remove();
@@ -2614,10 +2618,10 @@ public class XQueryContext {
     		txnMgr.commit(batchTransaction);
     	
     		//finish any triggers
-    		Iterator itDoc = batchTransactionTriggers.getDocumentIterator();
+    		Iterator<DocumentImpl> itDoc = batchTransactionTriggers.getDocumentIterator();
     		while(itDoc.hasNext())
     		{
-    			DocumentImpl doc = (DocumentImpl)itDoc.next();
+    			DocumentImpl doc = itDoc.next();
     			
     			//finish the trigger
     	        CollectionConfiguration config = doc.getCollection().getConfiguration(getBroker());
@@ -2652,6 +2656,7 @@ public class XQueryContext {
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.
 	 */
+	@SuppressWarnings("unchecked")
 	protected void loadDefaults(Configuration config) {
 		this.watchdog = new XQueryWatchDog(this);
 		
@@ -2679,12 +2684,11 @@ public class XQueryContext {
         raiseErrorOnFailedRetrieval = option != null && option.booleanValue();
         
         // load built-in modules
-        Map modules = (Map) config.getProperty(PROPERTY_BUILT_IN_MODULES);
+        Map<String, Class<Module>> modules = (Map) config.getProperty(PROPERTY_BUILT_IN_MODULES);
         if (modules != null) {
-            for (Iterator i = modules.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) i.next();
-                Class mClass = (Class) entry.getValue();
-                String namespaceURI = (String) entry.getKey();
+            for (Map.Entry<String, Class<Module>> entry : modules.entrySet()) {
+                Class<Module> mClass = entry.getValue();
+                String namespaceURI = entry.getKey();
                 // first check if the module has already been loaded
                 // in the parent context
                 Module module = getModule(namespaceURI);

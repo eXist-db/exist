@@ -130,9 +130,6 @@ public abstract class AbstractHashtable<K,V> {
 	
 	protected final static class HashtableOverflowException extends Exception {
 		
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 5786963685159736475L;
 
 		public HashtableOverflowException() {

@@ -32,7 +32,7 @@ import java.util.Stack;
  */
 public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
-    private Stack functionStack = new Stack();
+    private Stack<UserDefinedFunction> functionStack = new Stack<UserDefinedFunction>();
 
     public void visitPathExpr(PathExpr expression) {
         for (int i = 0; i < expression.getLength(); i++) {
@@ -101,7 +101,7 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     public void visitAttribConstructor(AttributeConstructor constructor) {
-        for (Iterator i = constructor.contentIterator(); i.hasNext(); ) {
+        for (Iterator<Object> i = constructor.contentIterator(); i.hasNext(); ) {
             Object next = i.next();
             if (next instanceof Expression)
                 ((Expression)next).accept(this);
