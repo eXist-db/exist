@@ -14,7 +14,7 @@
         <echo message="Building XProcXQ"/>
         <echo message="-------------------------------------"/>
         <ant dir="${xprocxq.dir}" antfile="build.xml" target="exist-jar" inheritall="false"/>
-        <delete dir="${top.dir}/lib/extensions" includes="xprocxq*.jar"/>
+        <delete dir="${top.dir}/lib/extensions" includes="xprocxq*.jar" failonerror="false"/>
         <copy todir="${top.dir}/lib/extensions">
             <fileset dir="${xprocxq.dir}/dist">
                 <include name="*.jar"/>
