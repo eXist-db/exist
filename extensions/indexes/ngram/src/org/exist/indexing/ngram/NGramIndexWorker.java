@@ -362,8 +362,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
         final NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 250);
-        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            final int collectionId = ((org.exist.collections.Collection) iter.next()).getId();
+        for (Iterator<org.exist.collections.Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
+            final int collectionId = iter.next().getId();
             for (int i = 0; i < qnames.size(); i++) {
                 QName qname = qnames.get(i);
                 NGramQNameKey key = new NGramQNameKey(collectionId, qname, index.getBrokerPool().getSymbols(), query);
@@ -397,13 +397,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     private List<QName> getDefinedIndexes(DBBroker broker, DocumentSet docs) {
         List<QName> indexes = new ArrayList<QName>(20);
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
-                Map config = (Map) idxConf.getCustomIndexSpec(NGramIndex.ID);
+                Map<?,?> config = (Map<?,?>) idxConf.getCustomIndexSpec(NGramIndex.ID);
                 if (config != null) {
-                    for (Iterator ci = config.keySet().iterator(); ci.hasNext();) {
+                    for (Iterator<?> ci = config.keySet().iterator(); ci.hasNext();) {
                         QName qn = (QName) ci.next();
                         indexes.add(qn);
                     }
@@ -430,8 +430,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	final Lock lock = index.db.getLock(); 
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
         for (int q = 0; q < qnames.size(); q++) {
-            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-                final int collectionId = ((Collection) i.next()).getId();
+            for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
+                final int collectionId = i.next().getId();
                 final IndexQuery query;
                 if (start == null) {
                     Value startRef = new NGramQNameKey(collectionId);
@@ -504,7 +504,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return null;
         IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
-            Map config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
+            Map<?,?> config = (Map<?,?>) indexConf.getCustomIndexSpec(NGramIndex.ID);
             if (config == null)
                 return null;
             boolean reindexRequired = false;
@@ -716,8 +716,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 nextMatch = nextMatch.getNextMatch();
             }
             if (ancestors != null && !ancestors.isEmpty()) {
-                for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
-                    NodeProxy p = (NodeProxy) i.next();
+                for (NodeProxy p : ancestors) {
                     int startOffset = 0;
                     try {
                         XMLStreamReader reader = broker.getXMLStreamReader(p, false);

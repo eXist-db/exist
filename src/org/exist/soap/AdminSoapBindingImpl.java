@@ -496,8 +496,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 DocumentImpl doc;
 //              Hashtable hash;
                 Permission perms;
-                for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                    doc = (DocumentImpl) i.next();
+                for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                    doc = i.next();
                     perms = doc.getPermissions();
                     DocumentDesc dd = new DocumentDesc();
 //                    hash = new Hashtable(4);
@@ -510,8 +510,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                             : DocumentType.XMLResource);
                     docs.addElement(dd);
                 }
-                for (Iterator i = collection.collectionIterator(); i.hasNext(); )
-                    collections.addElement(((XmldbURI)i.next()).toString());
+                for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
+                    collections.addElement(i.next().toString());
             }
             Permission perms = collection.getPermissions();
             desc.setCollections(new Strings(collections.toArray(new String[collections.size()])));
@@ -1088,8 +1088,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             Collection childColl;
             Permission perm;
             int cnt = 0;
-            for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-                child = (XmldbURI) i.next();
+            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+                child = i.next();
                 path = name.append(child);
                 childColl = broker.getCollection(path);
                 perm = childColl.getPermissions();
@@ -1134,8 +1134,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             DocumentImpl doc;
             Permission perm;
             int cnt = 0;
-            for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                doc = i.next();
                 perm = doc.getPermissions();
                 result[cnt] = new EntityPermissions();
                 result[cnt].setName(doc.getFileURI().toString());

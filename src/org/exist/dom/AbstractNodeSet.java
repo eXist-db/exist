@@ -190,14 +190,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public DocumentSet getDocumentSet() {
         MutableDocumentSet ds = new DefaultDocumentSet();
         NodeProxy p;
-        for(Iterator i = iterator(); i.hasNext(); ) {
-            p = (NodeProxy)i.next();
+        for(Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
+            p = i.next();
             ds.add(p.getDocument());
         }
         return ds;
     }
 
-    public Iterator getCollectionIterator() {
+    public Iterator<Collection> getCollectionIterator() {
         return new CollectionIterator();
     }
 
@@ -352,8 +352,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet getParents(int contextId) {
         NodeSet parents = new ExtArrayNodeSet();
         NodeProxy parent = null;
-        for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            NodeProxy current = i.next();
             NodeId parentID = current.getNodeId().getParentId();
             //Filter out the temporary nodes wrapper element 
             // Moved the parentID != NodeId.DOCUMENT_NODE test inside for /a/parent::node() to work 
@@ -395,8 +395,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public NodeSet getAncestors(int contextId, boolean includeSelf) {
         ExtArrayNodeSet ancestors = new ExtArrayNodeSet();
-        for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            NodeProxy current = i.next();
             if (includeSelf) {
                 if (Expression.NO_CONTEXT_ID != contextId)
                     current.addContextNode(contextId, current);
@@ -442,8 +442,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet intersection(NodeSet other) {
         AVLTreeNodeSet r = new AVLTreeNodeSet();
         NodeProxy l, p;
-        for (Iterator i = iterator(); i.hasNext();) {
-            l = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            l = i.next();
             if ((p = other.get(l)) != null) {
                 l.addMatches(p);
                 r.add(l);
@@ -465,16 +465,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    //ExtArrayNodeSet r = new ExtArrayNodeSet();
         AVLTreeNodeSet r = new AVLTreeNodeSet();
         NodeProxy l, p, q;
-        for (Iterator i = iterator(); i.hasNext();) {
-            l = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            l = i.next();
             if ((p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
                 if (p.getNodeId().equals(l.getNodeId()))
                     p.addMatches(l);
                 r.add(p);
             }
         }
-        for (Iterator i = other.iterator(); i.hasNext();) {
-            l = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = other.iterator(); i.hasNext();) {
+            l = i.next();
             if ((q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
                 if ((p = r.get(q)) != null) {
                     p.addMatches(l);
@@ -488,8 +488,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet except(NodeSet other) {
         AVLTreeNodeSet r = new AVLTreeNodeSet();
         NodeProxy l;
-        for (Iterator i = iterator(); i.hasNext();) {
-            l = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            l = i.next();
             if (!other.contains(l)) {
                 r.add(l);
             }
@@ -500,8 +500,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet filterDocuments(NodeSet otherSet) {
         DocumentSet docs = otherSet.getDocumentSet();
         NodeSet newSet = new ExtArrayNodeSet();
-        for (Iterator i = iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            NodeProxy p = i.next();
             if (docs.contains(p.getDocument().getDocId()))
                 newSet.add(p);
         }
@@ -526,8 +526,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         ExtArrayNodeSet result = new ExtArrayNodeSet();
         result.addAll(other);
         NodeProxy p, c;
-        for (Iterator i = iterator(); i.hasNext();) {
-            p = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            p = i.next();
             if (other.contains(p)) {
                 c = other.get(p);
                 if(c != null)
@@ -551,8 +551,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         ContextItem contextNode;
         ExtArrayNodeSet result = new ExtArrayNodeSet();
         DocumentImpl lastDoc = null;
-        for (Iterator i = iterator(); i.hasNext();) {
-            current = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+            current = i.next();
             contextNode = current.getContext();
             while (contextNode != null) {
                 if (contextNode.getContextId() == contextId) {
@@ -615,8 +615,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         if (indexType == Type.ANY_TYPE) {
             hasTextIndex = true;
             hasMixedContent = true;
-            for (Iterator i = iterator(); i.hasNext();) {
-                NodeProxy node = (NodeProxy) i.next();
+            for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
+                NodeProxy node = i.next();
                 if (node.getDocument().getCollection().isTempCollection()) {
                     //Temporary nodes return default values
                     indexType = Type.ITEM;
@@ -670,8 +670,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     public void clearContext(int contextId) throws XPathException {
         NodeProxy p;
-        for (Iterator i = iterator(); i.hasNext(); ) {
-            p = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
+            p = i.next();
             p.clearContext(contextId);
         }
     }
@@ -710,7 +710,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
         CollectionIterator() {
             if (nodeIterator.hasNext()) {
-                NodeProxy p = (NodeProxy) nodeIterator.next();
+                NodeProxy p = nodeIterator.next();
                 nextCollection = p.getDocument().getCollection();
             }
         }
@@ -723,7 +723,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             Collection oldCollection = nextCollection;
             nextCollection = null;
             while (nodeIterator.hasNext()) {
-                NodeProxy p = (NodeProxy) nodeIterator.next();
+                NodeProxy p = nodeIterator.next();
                 if (!p.getDocument().getCollection().equals(oldCollection)) {
                     nextCollection = p.getDocument().getCollection();
                     break;
