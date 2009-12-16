@@ -105,8 +105,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         if (ancestors != null && !ancestors.isEmpty()) {
-            for (Iterator i = ancestors.iterator(); i.hasNext();) {
-                NodeProxy p = (NodeProxy) i.next();
+            for (NodeProxy p : ancestors) {
                 scanMatches(p);
             }
         }
