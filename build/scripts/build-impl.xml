@@ -334,6 +334,8 @@
             <exclude name="org/exist/ant/**"/>
             <exclude name="org/exist/http/servlets/**"/>
             <exclude name="org/exist/xquery/functions/request/**"/>
+            <exclude name="org/exist/xquery/functions/response/**"/>
+            <exclude name="org/exist/xquery/functions/session/**"/>
             <exclude name="org/exist/cocoon/**"/>
             <exclude name="org/exist/source/CocoonSource.java"/>
             <exclude name="org/exist/*.xsl"/>
@@ -366,6 +368,8 @@
             <include name="org/exist/ant/**"/>
             <include name="org/exist/http/servlets/**"/>
             <include name="org/exist/xquery/functions/request/**"/>
+            <include name="org/exist/xquery/functions/response/**"/>
+            <include name="org/exist/xquery/functions/session/**"/>
             <include name="org/exist/cocoon/**"/>
             <include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/*.xsl"/>
