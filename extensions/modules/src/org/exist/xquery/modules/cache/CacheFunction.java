@@ -61,7 +61,10 @@ public class CacheFunction extends BasicFunction {
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		String name = args[0].itemAt(0).getStringValue();
-		logger.debug("Get/create cache [" + name + "]");
+		if( logger.isDebugEnabled() ) {
+			logger.debug("Get/create cache [" + name + "]");
+		}
+		
 		return new JavaObjectValue(Cache.getInstance(name));
 	}
 }

@@ -72,14 +72,21 @@ public class ClearFunction extends BasicFunction {
 		} else {
 			Item item = args[0].itemAt(0);
 			if (item.getType()==Type.STRING){
-				logger.info("Clearing cache [" + item.getStringValue() + "]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("Clearing cache [" + item.getStringValue() + "]");
+				}
 				Cache.clear(item.getStringValue());
 			} else {
-				logger.info("Clearing cache [" + item.toJavaObject(Cache.class).toString() + "]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("Clearing cache [" + item.toJavaObject(Cache.class).toString() + "]");
+				}
 				((Cache)item.toJavaObject(Cache.class)).clear();
 			}
 		}
-		logger.info("Cache cleared");
+		if( logger.isDebugEnabled() ) {
+			logger.debug("Cache cleared");
+		}
+		
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }
