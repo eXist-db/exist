@@ -321,7 +321,7 @@
 		</copy>
 
 		<!-- copy XFormsFilter servlet dependency JAR file to our lib folder -->
-		<copy description="copy XFormsFilter dependencies" file="${temp.build.dir}/lib/servlet-api-2.5-20081211.jar" todir="${lib.dir}"/>
+		<copy description="copy XFormsFilter dependencies" file="${temp.build.dir}/lib/servlet-api-2.5.jar" todir="${lib.dir}"/>
 		
 		<!-- copy Chiba Web's default.xml to chiba.default.xml -->
 		<copy description="copy Chiba Web's default.xml" file="${temp.build.dir}/build/WEB-INF/chiba-config.xml" tofile="chiba.default.xml"/>
