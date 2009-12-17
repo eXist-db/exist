@@ -43,13 +43,14 @@
             </lib>
             <lib dir="${lib.core}">
                 <include name="*.jar"/>
-                <exclude name="servlet-api-2.5-20081211.jar"/>
             </lib>
 			<lib dir="${lib.extensions}">
 				<include name="*.jar"/>
 			</lib>
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
+                <exclude name="servlet-api-*.jar"/>
+                <exclude name="jsp-api-*.jar"/>
             </lib>
             <lib dir="${lib.user}">
                 <include name="*.jar"/>
