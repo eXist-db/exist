@@ -726,6 +726,9 @@ public class Configuration implements ErrorHandler
         }
 		
 		String cacheShrinkThreshold = con.getAttribute(DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE);
+		if( cacheShrinkThreshold == null ) {
+			cacheShrinkThreshold = DefaultCacheManager.DEFAULT_SHRINK_THRESHOLD_STRING;
+		}
         if (cacheShrinkThreshold != null) {
             try {
                 config.put(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, new Integer(cacheShrinkThreshold));

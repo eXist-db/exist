@@ -76,7 +76,8 @@ public class DefaultCacheManager implements CacheManager {
      * with high load will never be shrinked. A negative value means that
 	 * shrinkage will not be performed.
      */
-    public final static int DEFAULT_SHRINK_THRESHOLD = 10000;
+    public final static int DEFAULT_SHRINK_THRESHOLD 			= 10000;
+	public final static String DEFAULT_SHRINK_THRESHOLD_STRING 	= "10000";
     
     public static int DEFAULT_CACHE_SIZE = 64;
     public static final String CACHE_SIZE_ATTRIBUTE = "cacheSize";
