@@ -67,10 +67,14 @@ public class PutFunction extends CacheBasicFunction {
 		try {
 			String key = serialize(args[1]);
 			if (item.getType()==Type.STRING){
-				logger.info("putting cache value [" + item.getStringValue() + ", " + key +"]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("putting cache value [" + item.getStringValue() + ", " + key +"]");
+				}
 				return Cache.put(item.getStringValue(), key, value);
 			} else {
-				logger.info("putting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("putting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				}
 				return ((Cache)item.toJavaObject(Cache.class)).put(key, value);
 			}
 		} catch (SAXException e) {

@@ -65,10 +65,14 @@ public class GetFunction extends CacheBasicFunction {
 		try {
 			String key = serialize(args[1]);
 			if (item.getType()==Type.STRING){
-				logger.info("getting cache value [" + item.getStringValue() + ", " + key +"]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("getting cache value [" + item.getStringValue() + ", " + key +"]");
+				}
 				return Cache.get(item.getStringValue(), key);
 			} else {
-				logger.info("getting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("getting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				}
 				return ((Cache)item.toJavaObject(Cache.class)).get(key);
 			}
 		} catch (SAXException e) {

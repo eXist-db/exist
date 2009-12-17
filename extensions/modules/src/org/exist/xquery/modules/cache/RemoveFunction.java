@@ -65,10 +65,14 @@ public class RemoveFunction extends CacheBasicFunction {
 		try {
 			String key = serialize(args[1]);
 			if (item.getType()==Type.STRING){
-				logger.info("removing cache value [" + item.getStringValue() + ", " + key +"]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("removing cache value [" + item.getStringValue() + ", " + key +"]");
+				}
 				return Cache.remove(item.getStringValue(), key);
 			} else {
-				logger.info("removing cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				if( logger.isDebugEnabled() ) {
+					logger.debug("removing cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				}
 				return ((Cache)item.toJavaObject(Cache.class)).remove(key);
 			}
 		} catch (SAXException e) {
