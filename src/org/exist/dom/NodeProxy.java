@@ -368,7 +368,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return long
      */
     public long getInternalAddress() {
-	return internalAddress;
+	    return internalAddress;
     }
 
     /**
@@ -385,19 +385,25 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public int getIndexType() {
-	return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
+        if (internalAddress == -1)
+            return Type.ITEM;
+	    return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
     public boolean hasTextIndex() {
-	return RangeIndexSpec.hasFulltextIndex(StorageAddress.indexTypeFromPointer(internalAddress));
+        if (internalAddress == -1)
+            return false;
+	    return RangeIndexSpec.hasFulltextIndex(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
     public boolean hasMixedContent() {
-	return RangeIndexSpec.hasMixedContent(StorageAddress.indexTypeFromPointer(internalAddress));
+        if (internalAddress == -1)
+            return false;
+	    return RangeIndexSpec.hasMixedContent(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
     public Match getMatches() {
-	return match;
+	    return match;
     }
 
     public void setMatches(Match match) {
