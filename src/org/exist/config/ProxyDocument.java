@@ -30,9 +30,9 @@ import org.w3c.dom.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ProxyDocument extends ProxyNode implements DocumentAtExist {
+public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> implements DocumentAtExist {
 	
-	private DocumentAtExist document;
+	private E document;
 	
 	/* (non-Javadoc)
 	 * @see org.exist.i.dom.DocumentAtExist#getFirstChildFor(int)
@@ -271,13 +271,13 @@ public class ProxyDocument extends ProxyNode implements DocumentAtExist {
 	}
 	
 	@Override
-	public DocumentAtExist getProxyObject() {
+	public E getProxyObject() {
 		return document;
 	}
     
-	public void setProxyObject(Object object) {
+	public void setProxyObject(E object) {
 		if (object instanceof DocumentAtExist) {
-			document = (DocumentAtExist) object;
+			document = (E) object;
 			super.setProxyObject(document);
 		} else
 			throw new IllegalArgumentException("Only DocumentAtExist allowed");

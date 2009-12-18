@@ -34,9 +34,9 @@ import org.w3c.dom.TypeInfo;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ProxyElement extends ProxyNode implements ElementAtExist {
+public class ProxyElement<E extends ElementAtExist> extends ProxyNode<E> implements ElementAtExist {
 
-	private ElementAtExist element;
+	private E element;
 	
 	/* (non-Javadoc)
 	 * @see org.exist.i.dom.ElementAteXist#getNamespaceMap()
@@ -196,13 +196,13 @@ public class ProxyElement extends ProxyNode implements ElementAtExist {
 	/**
 	 * @return the element
 	 */
-	public ElementAtExist getProxyObject() {
+	public E getProxyObject() {
 		return element;
 	}
 
-	public void setProxyObject(Object object) {
+	public void setProxyObject(E object) {
 		if (object instanceof ElementAtExist) {
-			this.element = (ElementAtExist) object;
+			this.element = (E) object;
 		} else
 			throw new IllegalArgumentException("Only ElementAtExist allowed");
 	}
