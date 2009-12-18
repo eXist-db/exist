@@ -41,6 +41,27 @@ public interface MemoryNodeSet extends Sequence {
 
     public NodeImpl get(int which);
 
-    public Boolean matchSelf(NodeTest test) throws XPathException;
+    public boolean matchAttributes(NodeTest test) throws XPathException;
 
+    public boolean matchDescendantAttributes(NodeTest test) throws XPathException;
+
+    public boolean matchChildren(NodeTest test) throws XPathException;
+
+//    public Sequence matchDescendants(boolean includeSelf, NodeTest test) throws XPathException;
+//
+//    public Sequence matchAncestors(boolean includeSelf, NodeTest test) throws XPathException;
+//
+//    public Sequence matchParents(NodeTest test) throws XPathException;
+
+    public boolean matchSelf(NodeTest test) throws XPathException;
+
+//    public Sequence matchPrecedingSiblings(NodeTest test) throws XPathException;
+//
+//    public Sequence matchPreceding(NodeTest test, int position) throws XPathException;
+//
+//    public Sequence matchFollowingSiblings(NodeTest test) throws XPathException;
+//    
+//    public Sequence matchFollowing(NodeTest test, int position) throws XPathException;
+//
+//    public Sequence matchChildrenForParent(NodeImpl parent);
 }

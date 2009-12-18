@@ -740,8 +740,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         }
     }
 
-	public Boolean matchSelf(NodeTest test) throws XPathException {
-		//is it required? -shabanovd
+	public boolean matchSelf(NodeTest test) throws XPathException {
+		//UNDERSTAND: is it required? -shabanovd
 		sortInDocumentOrder();
 		for (int i = 0; i <= size; i++) {
 			NodeImpl node = (NodeImpl) values[i];
@@ -751,4 +751,37 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 			}
 		return false;
 	}
+
+    public boolean matchChildren(NodeTest test) throws XPathException {
+		//UNDERSTAND: is it required? -shabanovd
+        sortInDocumentOrder();
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            if (node.matchChildren(test))
+            	return true;
+        }
+        return false;
+    }
+
+    public boolean matchAttributes(NodeTest test) throws XPathException {
+		//UNDERSTAND: is it required? -shabanovd
+        sortInDocumentOrder();
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            if (node.matchAttributes(test))
+            	return true;
+        }
+        return false;
+    }
+
+    public boolean matchDescendantAttributes(NodeTest test) throws XPathException {
+		//UNDERSTAND: is it required? -shabanovd
+        sortInDocumentOrder();
+        for (int i = 0; i <= size; i++) {
+            NodeImpl node = (NodeImpl) values[i];
+            if (node.matchDescendantAttributes(test))
+            	return true;
+        }
+        return false;
+    }
 }
