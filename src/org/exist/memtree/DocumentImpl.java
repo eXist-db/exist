@@ -699,6 +699,46 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return null;
     }
 
+    public boolean matchChildren(NodeTest test) throws XPathException {
+        if (size == 1) return false;
+        NodeImpl next = (NodeImpl) getFirstChild();
+        while (next != null) {
+            if (test.matches(next))
+                return true;
+            next = (NodeImpl) next.getNextSibling();
+        }
+        return false;
+    }
+
+    public boolean matchDescendants(boolean includeSelf, NodeTest test) throws XPathException {
+        if (includeSelf && test.matches(this))
+            return true;
+        
+        if (size == 1) return true;
+        NodeImpl next = (NodeImpl) getFirstChild();
+        while (next != null) {
+            if (test.matches(next))
+                return true;
+            if (next.matchDescendants(includeSelf, test))
+            	return true;
+            next = (NodeImpl) next.getNextSibling();
+        }
+        return false;
+    }
+
+    public boolean matchDescendantAttributes(NodeTest test) throws XPathException {
+        if (size == 1) return false;
+        NodeImpl next = (NodeImpl) getFirstChild();
+        while (next != null) {
+            if (test.matches(next))
+                return true;
+            if (next.matchDescendantAttributes(test))
+            	return true;
+            next = (NodeImpl) next.getNextSibling();
+        }
+        return false;
+    }
+
     /*
     * (non-Javadoc)
     *
