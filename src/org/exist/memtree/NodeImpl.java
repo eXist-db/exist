@@ -384,7 +384,9 @@ public class NodeImpl implements NodeAtExist, NodeValue {
 	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */
 	public boolean hasChildNodes() {
-        throw new RuntimeException("Can not call hasChildNodes() on node type " + this.getNodeType());
+//        throw new RuntimeException("Can not call hasChildNodes() on node type " + this.getNodeType());
+		//the default value is
+		return false;
 	}
 
 	/* (non-Javadoc)
@@ -897,6 +899,129 @@ public class NodeImpl implements NodeAtExist, NodeValue {
                 nextNode++;
             }
         }
+    }
+
+    public boolean matchAttributes(NodeTest test) throws XPathException {
+        // do nothing
+    	return false;
+    }
+
+    public boolean matchDescendantAttributes(NodeTest test) throws XPathException {
+        // do nothing
+    	return false;
+    }
+    
+    public boolean matchChildren(NodeTest test) throws XPathException {
+        // do nothing
+    	return false;
+    }
+
+    public boolean matchDescendants(boolean includeSelf, NodeTest test) throws XPathException {
+        return (includeSelf && test.matches(this));
+    }
+
+    public boolean matchAncestors(boolean includeSelf, NodeTest test) throws XPathException {
+        if (nodeNumber < 2)
+            return false;
+        if (includeSelf) {
+            NodeImpl n = document.getNode(nodeNumber);
+            if (test.matches(n))
+                return true;
+        }
+        int nextNode = document.getParentNodeFor(nodeNumber);
+        while (nextNode > 0) {
+            NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                return true;
+            nextNode = document.getParentNodeFor(nextNode);
+        }
+        return false;
+    }
+
+    public boolean matchPrecedingSiblings(NodeTest test) throws XPathException {
+        int parent = document.getParentNodeFor(nodeNumber);
+        int nextNode = document.getFirstChildFor(parent);
+        while (nextNode >= parent && nextNode < nodeNumber) {
+            NodeImpl n = document.getNode(nextNode);
+            if (test.matches(n))
+                return true;
+            nextNode = document.next[nextNode];
+        }
+        return false;
+    }
+
+    public boolean matchPreceding(NodeTest test, int position) throws XPathException {
+        NodeId myNodeId = getNodeId();
+        int count = 0;
+        for (int i = nodeNumber - 1; i > 0; i--) {
+            NodeImpl n = document.getNode(i);
+            if (!myNodeId.isDescendantOf(n.getNodeId()) && test.matches(n)) {
+                if (position < 0 || ++count == position)
+                    return true;
+                if (count == position)
+                    break;
+            }
+        }
+        return false;
+    }
+
+    public boolean matchFollowingSiblings(NodeTest test) throws XPathException {
+        int parent = document.getParentNodeFor(nodeNumber);
+        if (parent == 0) {
+            // parent is the document node
+            if (getNodeType() == Node.ELEMENT_NODE)
+                return false;
+            NodeImpl next = (NodeImpl) getNextSibling();
+            while (next != null) {
+                if (test.matches(next))
+                    return true;
+                if (next.getNodeType() == Node.ELEMENT_NODE)
+                    break;
+                next = (NodeImpl) next.getNextSibling();
+            }
+        } else {
+            int nextNode = document.getFirstChildFor(parent);
+            while (nextNode > parent) {
+                NodeImpl n = document.getNode(nextNode);
+                if (nextNode > nodeNumber && test.matches(n))
+                    return true;
+                nextNode = document.next[nextNode];
+            }
+        }
+        return false;
+    }
+
+    public boolean matchFollowing(NodeTest test, int position) throws XPathException {
+        int parent = document.getParentNodeFor(nodeNumber);
+        if (parent == 0) {
+            // parent is the document node
+            if (getNodeType() == Node.ELEMENT_NODE)
+                return false;
+            NodeImpl next = (NodeImpl) getNextSibling();
+            while (next != null) {
+                if (test.matches(next))
+                    if (next.matchDescendants(true, test))
+                    	return true;
+                if (next.getNodeType() == Node.ELEMENT_NODE)
+                    break;
+                next = (NodeImpl) next.getNextSibling();
+            }
+        } else {
+            NodeId myNodeId = getNodeId();
+            int count = 0;
+            int nextNode = nodeNumber + 1;
+            while (nextNode < document.size) {
+                NodeImpl n = document.getNode(nextNode);
+                if (!n.getNodeId().isDescendantOf(myNodeId) && test.matches(n)) {
+                    if (position < 0 || ++count == position)
+                        return true;
+                    if (count == position)
+                        break;
+                }
+                nextNode++;
+            }
+        }
+        return false;
     }
 
     /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
