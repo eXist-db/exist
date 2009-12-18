@@ -236,6 +236,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.selectParentChild(this, al, mode, contextId);
     }
 
+    public boolean matchParentChild(NodeSet al, int mode, int contextId) {
+        return NodeSetHelper.matchParentChild(this, al, mode, contextId);
+    }
+
     /**
      * Check if any descendant nodes are found within this node set for a given
      * set of potential ancestor nodes.
@@ -259,6 +263,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 
+    public boolean matchAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId,
+            boolean copyMatches) {
+    	return NodeSetHelper.matchAncestorDescendant(this, al, mode, includeSelf, contextId);
+    }
+
     /**
      * For a given set of potential ancestor nodes, return all ancestors
      * having descendants in this node set.
@@ -270,6 +279,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId) {
         return NodeSetHelper.selectAncestors(this, descendants, includeSelf, contextId);
+    }
+
+    public boolean matchAncestors(NodeSet descendants, boolean includeSelf, int contextId) {
+        return NodeSetHelper.matchAncestors(this, descendants, includeSelf, contextId);
     }
 
     public NodeSet selectFollowing(NodeSet fl, int contextId) throws XPathException {
@@ -310,6 +323,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest qname, int contextId) {
         return NodeSetHelper.directSelectAttributes(broker, this, qname, contextId);
+    }
+
+    public boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest qname, int contextId) {
+        return NodeSetHelper.directMatchAttributes(broker, this, qname, contextId);
     }
 
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
