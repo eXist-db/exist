@@ -98,4 +98,9 @@ public class TextConstructor extends NodeConstructor {
 	public String getText() {
 		return text;
 	}
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return true;
+	}
 }

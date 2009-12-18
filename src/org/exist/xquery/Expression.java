@@ -221,4 +221,6 @@ public interface Expression {
 
     //check will item process by the expression 
 	public Boolean match(Sequence contextSequence, Item item) throws XPathException;
+
+	public boolean allowMixNodesInReturn();
 }

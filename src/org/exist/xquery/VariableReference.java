@@ -167,4 +167,9 @@ public class VariableReference extends AbstractExpression {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitVariableReference(this);
     }
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return true;
+	}
 }

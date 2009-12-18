@@ -146,4 +146,9 @@ public class DebuggableExpression implements Expression {
 	public Boolean match(Sequence contextSequence, Item item) throws XPathException {
 		return expression.match(contextSequence, item);
 	}
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return false;
+	}
 }
