@@ -33,7 +33,7 @@ import org.w3c.dom.Document;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface DocumentAtExist extends NodeAtExist, Document, Comparable {
+public interface DocumentAtExist extends NodeAtExist, Document {
 
 //	public void setContext(ContextAtExist context);
 //	public ContextAtExist getContext();
