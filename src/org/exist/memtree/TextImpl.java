@@ -33,9 +33,9 @@ public class TextImpl extends NodeImpl implements Text {
 		super(doc, nodeNumber);
 	}
 
-    public boolean hasChildNodes() {
-        return false;
-    }
+//    public boolean hasChildNodes() {
+//        return false;
+//    }
 
     public String getStringValue() {
 		//Quick and (not so ?) dirty...
