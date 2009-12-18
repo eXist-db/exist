@@ -413,4 +413,9 @@ public class LetExpr extends BindingExpression {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitLetExpression(this);
     }
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return true;
+	}
 }

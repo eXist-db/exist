@@ -146,4 +146,9 @@ public class EnclosedExpr extends PathExpr {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitPathExpr(this);
     }
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return true;
+	}
 }

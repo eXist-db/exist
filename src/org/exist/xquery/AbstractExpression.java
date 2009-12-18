@@ -160,4 +160,9 @@ public abstract class AbstractExpression implements Expression {
 		//default
 		return false;
 	}
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return false;
+	}
 }
