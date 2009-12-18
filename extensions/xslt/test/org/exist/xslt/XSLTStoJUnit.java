@@ -120,7 +120,7 @@ public class XSLTStoJUnit implements ContentHandler {
 	private void writeTestCase() throws IOException {
        out.write("	/* "+name+" */\n" +
 		"	@Test\n" +
-		"	public void test_"+adoptString(name)+"() {\n" +
+		"	public void test_"+adoptString(name)+"() throws Exception {\n" +
 		"		testCase(\""+sourceDocument+"\", \""+stylesheet+"\", \""+resultDocument+"\");\n"+
 		"	}\n\n");
 	}
@@ -148,7 +148,7 @@ public class XSLTStoJUnit implements ContentHandler {
 		
 		if (localName.equals(TESTCASES)) {
 			try {
-				newTestFile(atts.getValue("name"));
+				newTestFile(adoptString(atts.getValue("name")));
 			} catch (IOException e) {
 				throw new SAXException(e);
 			}
@@ -181,6 +181,7 @@ public class XSLTStoJUnit implements ContentHandler {
    	    out.write("package org.exist.xslt.xslts;\n\n"+
 //   	    		"import org.exist.xquery.xqts.XQTS_case;\n" +
 //   	    		"import static org.junit.Assert.*;\n" +
+   	    		"import org.exist.xslt.XSLTS_case;\n" +
    	    		"import org.junit.Test;\n\n" +
    	    		"public class "+name+" extends XSLTS_case {\n");
 	}
@@ -195,6 +196,11 @@ public class XSLTStoJUnit implements ContentHandler {
 	}
 
 	private String adoptString(String caseName) {
+		if (caseName.equals("for"))
+			return "_for_";
+		else if (caseName.equals("if"))
+			return "_if_";
+
 		String result = caseName.replace("-", "_");
 		result = result.replace(".", "_");
 		return result;
