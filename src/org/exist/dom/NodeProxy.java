@@ -1262,11 +1262,19 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return NodeSetHelper.selectParentChild(this, al, mode, contextId);
     }
 
+    public boolean matchParentChild(NodeSet al, int mode, int contextId) {
+        return NodeSetHelper.matchParentChild(this, al, mode, contextId);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, int)
      */
     public NodeSet selectAncestors(NodeSet al, boolean includeSelf, int contextId) {
         return NodeSetHelper.selectAncestors(this, al, includeSelf, contextId);
+    }
+
+    public boolean matchAncestors(NodeSet al, boolean includeSelf, int contextId) {
+        return NodeSetHelper.matchAncestors(this, al, includeSelf, contextId);
     }
 
     /* (non-Javadoc)
@@ -1289,6 +1297,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId,
                                             boolean copyMatches) {
         return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
+    }
+
+    public boolean matchAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId,
+            boolean copyMatches) {
+    	return NodeSetHelper.matchAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 
     /* (non-Javadoc)
@@ -1535,5 +1548,52 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 		if (other.getDocumentCount() != 1)
 			return false;
         return other.getDocumentAt(0).getDocId() == doc.getDocId();
+    }
+
+    public boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId) {
+        if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
+            return false;
+        try {
+            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
+            int status = reader.next();
+            if (status != XMLStreamReader.START_ELEMENT)
+                return false;
+            int attrs = reader.getAttributeCount();
+            for (int i = 0; i < attrs; i++) {
+                status = reader.next();
+                if (status != XMLStreamReader.ATTRIBUTE)
+                    break;
+                AttrImpl attr = (AttrImpl) reader.getNode();
+                if (test.matches(attr)) {
+                	return true;
+                }
+            }
+            return false;
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public boolean directMatchChild(QName qname, int contextId) {
+        if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
+            return false;
+        NodeImpl node = (NodeImpl) getNode();
+        if (node.getNodeType() != Node.ELEMENT_NODE)
+            return false;
+        NodeList children = node.getChildNodes();
+        if (children.getLength() == 0)
+            return false;
+//        System.out.println("Retrieving child nodes for " + node + ": " + children.getLength());
+        NewArrayNodeSet result = new NewArrayNodeSet();
+        StoredNode child;
+        for (int i = 0; i < children.getLength(); i++) {
+            child = (StoredNode) children.item(i);
+            if (child.getQName().equals(qname)) {
+            	return true;
+            }
+        }
+        return false;
     }
 }
