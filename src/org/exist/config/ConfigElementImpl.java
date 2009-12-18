@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.w3c.dom.Element;
+import org.exist.dom.ElementAtExist;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
@@ -38,7 +38,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ConfigElementImpl extends ProxyElement {
+public class ConfigElementImpl extends ProxyElement<ElementAtExist> {
 	
 	private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
 	
@@ -47,7 +47,7 @@ public class ConfigElementImpl extends ProxyElement {
 	protected ConfigElementImpl() {
 	}
 
-	protected ConfigElementImpl(Element element) {
+	protected ConfigElementImpl(ElementAtExist element) {
 		setProxyObject(element);
 	}
 
@@ -73,7 +73,7 @@ public class ConfigElementImpl extends ProxyElement {
 			List<ConfigElementImpl> list = new ArrayList<ConfigElementImpl>();
 		
 			for (int i = 0; i < nodes.getLength(); i++) {
-				ConfigElementImpl config = new ConfigElementImpl((Element) nodes.item(i));
+				ConfigElementImpl config = new ConfigElementImpl((ElementAtExist) nodes.item(i));
 				list.add(config);
 			}
 			

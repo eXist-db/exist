@@ -30,9 +30,9 @@ import org.w3c.dom.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ProxyNode implements NodeAtExist, Proxy {
+public class ProxyNode<E extends NodeAtExist> implements NodeAtExist, Proxy<E> {
 	
-	private NodeAtExist node;
+	private E node;
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
@@ -325,13 +325,13 @@ public class ProxyNode implements NodeAtExist, Proxy {
 		return getProxyObject().compareTo(o);
 	}
 	
-	public NodeAtExist getProxyObject() {
+	public E getProxyObject() {
 		return node;
 	}
 
-	public void setProxyObject(Object object) {
+	public void setProxyObject(E object) {
 		if (object instanceof NodeAtExist) {
-			this.node = (NodeAtExist) object;
+			this.node = (E) object;
 		} else
 			throw new IllegalArgumentException("Only NodeAtExist allowed");
 	}
