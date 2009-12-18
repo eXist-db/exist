@@ -86,7 +86,7 @@ public class Factory {
 		qns.put(new QName("non-matching-substring", namespaceURI, prefix), NonMatchingSubstring.class);
 		qns.put(new QName("otherwise", namespaceURI, prefix), Otherwise.class);
 		qns.put(new QName("perform-sort", namespaceURI, prefix), PerformSort.class);
-		qns.put(new QName("sequence", namespaceURI, prefix), Sequence.class);
+		qns.put(new QName("sequence", namespaceURI, prefix), SequenceConstructor.class);
 		qns.put(new QName("when", namespaceURI, prefix), When.class);
 
 		qns.put(new QName("copy-of", namespaceURI, prefix), CopyOf.class);

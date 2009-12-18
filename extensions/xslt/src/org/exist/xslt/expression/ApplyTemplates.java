@@ -21,8 +21,6 @@
  */
 package org.exist.xslt.expression;
 
-import java.util.Iterator;
-
 import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -39,7 +37,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
-import org.exist.xquery.XQueryContext;
 import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;

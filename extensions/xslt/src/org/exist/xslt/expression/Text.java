@@ -118,4 +118,9 @@ public class Text extends Declaration {
         result.append("</xsl:text> ");
         return result.toString();
     }    
+
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return true;
+	}
 }

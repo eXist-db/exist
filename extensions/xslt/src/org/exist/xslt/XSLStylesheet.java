@@ -53,8 +53,6 @@ import org.exist.xslt.expression.Template;
 import org.exist.xslt.expression.XSLExpression;
 import org.exist.xslt.expression.i.Parameted;
 import org.w3c.dom.Attr;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * <(xsl:stylesheet|xsl:transform)
