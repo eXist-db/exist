@@ -117,7 +117,7 @@ public abstract class XSLPathExpr extends PathExpr implements XSLExpression {
 
 
 	public void addText(String text) throws XPathException {
-		text = StringValue.trimWhitespace(text);
+//UNDERSTAND: what is whitespace?		text = StringValue.trimWhitespace(text);
 		TextConstructor constructer = new TextConstructor(getContext(), text);
 		add(constructer);
 	}

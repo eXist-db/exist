@@ -24,15 +24,15 @@ package org.exist.dom;
 
 import org.exist.dom.QNameable;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XPathException;
+//import org.exist.xquery.NodeTest;
+//import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface NodeAtExist extends Node, QNameable, Comparable {
+public interface NodeAtExist extends Node, QNameable, Comparable<Object> {
 	
 	public DocumentAtExist getDocumentAtExist();
 	

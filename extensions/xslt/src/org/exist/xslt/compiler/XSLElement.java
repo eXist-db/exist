@@ -28,12 +28,12 @@ import java.util.Map;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.AttributeConstructor;
-import org.exist.xquery.CDATAConstructor;
-import org.exist.xquery.CommentConstructor;
+//import org.exist.xquery.CDATAConstructor;
+//import org.exist.xquery.CommentConstructor;
 import org.exist.xquery.ElementConstructor;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeConstructor;
-import org.exist.xquery.NodeTest;
+//import org.exist.xquery.NodeTest;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
@@ -171,7 +171,7 @@ public class XSLElement implements ElementAtExist, Names {
 		
 			compileNode(context, content_sub, node);
 		} else if (node.getNodeType() == Node.COMMENT_NODE) {
-			constructer = new CommentConstructor((XQueryContext) context, node.getNodeName());
+//UNDERSTAND:			constructer = new CommentConstructor((XQueryContext) context, node.getNodeName());
 		} else if (node.getNodeType() == Node.TEXT_NODE) {
 			if (content instanceof XSLPathExpr) {
 				XSLPathExpr xslExpr = (XSLPathExpr) content;
@@ -179,14 +179,14 @@ public class XSLElement implements ElementAtExist, Names {
 			} else
 				constructer = new TextConstructor((XQueryContext) context, node.getNodeValue());
 		} else if (node.getNodeType() == Node.CDATA_SECTION_NODE) {
-			constructer = new CDATAConstructor((XQueryContext) context, node.getNodeName());
+//UNDERSTAND:			constructer = new CDATAConstructor((XQueryContext) context, node.getNodeName());
+		} else if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
 		} else {
 			throw new XPathException("not supported node type: "+node.getNodeType());
 //	    	ATTRIBUTE_NODE            = 2;
 //	    	CDATA_SECTION_NODE        = 4;
 //	    	ENTITY_REFERENCE_NODE     = 5;
 //	    	ENTITY_NODE               = 6;
-//	    	PROCESSING_INSTRUCTION_NODE = 7;
 //	    	DOCUMENT_NODE             = 9;
 //	    	DOCUMENT_TYPE_NODE        = 10;
 //	    	DOCUMENT_FRAGMENT_NODE    = 11;
