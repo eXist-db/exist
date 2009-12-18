@@ -77,4 +77,6 @@ public abstract class ElementIndex extends Observable {
 
 	public abstract boolean matchElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
 	
+    public abstract boolean matchDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, 
+    		ExtNodeSet contextSet,  int contextId);
 }

@@ -1102,4 +1102,229 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         return false;
 	}
 
+    public boolean matchDescendantsByTagName(byte type, QName qname, int axis,
+    		DocumentSet docs, ExtNodeSet contextSet,  int contextId) {
+//        LOG.debug(contextSet.toString());
+        short nodeType = getIndexType(type);
+        ByDocumentIterator citer = contextSet.iterateByDocument();
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        final Lock lock = dbNodes.getLock();
+        // true if the output document set is the same as the input document set
+        boolean sameDocSet = true;
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
+            //Compute a key for the node
+            Collection collection = i.next();
+            int collectionId = collection.getId();
+            final Value key = computeTypedKey(type, collectionId, qname);
+            try {
+                lock.acquire(Lock.READ_LOCK);
+                VariableByteInput is;
+                /*
+                //TODO : uncomment and implement properly
+                //TODO : beware of null NS prefix : it looks to be polysemic (none vs. all)
+                //Test for "*" prefix
+                if (qname.getPrefix() == null) {
+                	try {
+	                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
+	                    ArrayList elements = dbNodes.findKeys(query);	                     
+                    } catch (BTreeException e) {
+                        LOG.error(e.getMessage(), e);
+                        //TODO : throw an exception ? -pb
+                    } catch (TerminatedException e) {
+                        LOG.warn(e.getMessage(), e);                        
+                    }
+                    //TODO : iterate over the keys 
+                } else */                
+                	is = dbNodes.getAsStream(key); 
+                //Does the node already has data in the index ?
+                if (is == null) {
+                	sameDocSet = false;
+                    continue;
+                }
+                int lastDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
+                NodeProxy ancestor = null;
+                
+                while (is.available() > 0) {
+                    int storedDocId = is.readInt();
+                    byte ordered = is.readByte();
+                    int gidsCount = is.readInt();
+                    //TOUNDERSTAND -pb
+                    int size = is.readFixedInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    //Exit if the document is not concerned
+                    if (storedDocument == null) {
+                        is.skipBytes(size);
+                        continue;
+                    }
+                    // position the context iterator on the next document
+                    if (storedDocId != lastDocId || ordered == ENTRIES_UNORDERED) {
+                    	citer.nextDocument(storedDocument);
+                    	lastDocId = storedDocId;
+                    	ancestor = citer.nextNode();
+                    }
+                    // no ancestor node in the context set, skip the document
+                    if (ancestor == null || gidsCount == 0) {
+                    	is.skipBytes(size);
+                        continue;
+                    }
+
+                    NodeId ancestorId = ancestor.getNodeId();
+                    long prevPosition = ((BFile.PageInputStream)is).position();
+                    long markedPosition = prevPosition;
+                    NodeId markedId = null;
+                    NodeId previousId = null;
+                    NodeProxy lastAncestor = null;
+
+                    // Process the nodes for the current document
+                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);
+                    previousId = nodeId;
+                    long address = StorageAddress.read(is);
+ 
+                    while (true) {
+                        int relation = nodeId.computeRelation(ancestorId);
+//                        System.out.println(ancestorId + " -> " + nodeId + ": " + relation);
+                        if (relation != -1) {
+                            // current node is a descendant. walk through the descendants
+                            // and add them to the result
+                            if (((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) && relation == NodeId.IS_CHILD) || 
+                            		(axis == Constants.DESCENDANT_AXIS && (relation == NodeId.IS_DESCENDANT || relation == NodeId.IS_CHILD)) ||
+                            		axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS
+                        		) {
+                            	return true;
+//                                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
+//                                result.add(storedNode, gidsCount);
+//                                if (Expression.NO_CONTEXT_ID != contextId) {
+//                                    storedNode.deepCopyContext(ancestor, contextId);
+//                                } else
+//                                    storedNode.copyContext(ancestor);
+//                                storedNode.addMatches(ancestor);
+                            }
+                            prevPosition = ((BFile.PageInputStream)is).position();
+                            NodeId next = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);
+                            previousId = next;
+                            if (next != DLN.END_OF_DOCUMENT) {
+                                // retrieve the next descendant from the stream
+                                nodeId = next;
+                                address = StorageAddress.read(is);
+                            } else {
+                                // no more descendants. check if there are more ancestors
+                                if (citer.hasNextNode()) {
+                                    NodeProxy nextNode = citer.peekNode();
+                                    // reached the end of the input stream:
+                                    // if the ancestor set has more nodes and the following ancestor
+                                    // is a descendant of the previous one, we have to rescan the input stream
+                                    // for further matches
+                                    if (nextNode.getNodeId().isDescendantOf(ancestorId)) {
+                                        prevPosition = markedPosition;
+                                        ((BFile.PageInputStream)is).seek(markedPosition);
+                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
+                                        previousId = nodeId;
+                                        address = StorageAddress.read(is);
+                                        ancestor = citer.nextNode();
+                                        ancestorId = ancestor.getNodeId();
+                                    } else {
+//                                        ancestorId = ancestor.getNodeId();
+                                        break;
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            // current node is not a descendant of the ancestor node. Compare the
+                            // node ids and proceed with next descendant or ancestor.
+                            int cmp = ancestorId.compareTo(nodeId);
+                            if (cmp < 0) {
+                                // check if we have more ancestors
+                                if (citer.hasNextNode()) {
+                                    NodeProxy next = citer.nextNode();
+                                    // if the ancestor set has more nodes and the following ancestor
+                                    // is a descendant of the previous one, we have to rescan the input stream
+                                    // for further matches
+                                    if (next.getNodeId().isDescendantOf(ancestorId)) {
+                                        // rewind the input stream to the position from where we started
+                                        // for the previous ancestor node
+                                        prevPosition = markedPosition;
+                                        ((BFile.PageInputStream)is).seek(markedPosition);
+                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
+                                        previousId = nodeId;
+                                        address = StorageAddress.read(is);
+                                    } else {
+                                        // mark the current position in the input stream
+                                        markedPosition = prevPosition;
+                                        markedId = nodeId;
+                                    }
+                                    ancestor = next;
+                                    ancestorId = ancestor.getNodeId();
+                                } else {
+                                    // no more ancestors: skip the remaining descendants for this document
+                                    while ((previousId = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is))
+                                            != DLN.END_OF_DOCUMENT) {
+                                        StorageAddress.read(is);
+                                    }
+                                    break;
+                                }
+                            } else {
+                                // load the next descendant from the input stream
+                                prevPosition = ((BFile.PageInputStream)is).position();
+                                NodeId nextId = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);
+                                previousId = nextId;
+                                if (nextId != DLN.END_OF_DOCUMENT) {
+                                    nodeId = nextId;
+                                    address = StorageAddress.read(is);
+                                } else {
+                                    // We need to remember the last ancestor in case there are more docs to process.
+                                    // Next document should start with this ancestor.
+                                    if (lastAncestor == null)
+                                        lastAncestor = ancestor;
+                                    
+                                    // check if we have more ancestors
+                                    if (citer.hasNextNode()) {
+                                        ancestor = citer.nextNode();
+                                        // if the ancestor set has more nodes and the following ancestor
+                                        // is a descendant of the previous one, we have to rescan the input stream
+                                        // for further matches
+                                        if (ancestor.getNodeId().isDescendantOf(ancestorId)) {
+                                            // rewind the input stream to the position from where we started
+                                            // for the previous ancestor node
+                                            prevPosition = markedPosition;
+                                            ((BFile.PageInputStream)is).seek(markedPosition);
+                                            nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
+                                            previousId = nodeId;
+                                            address = StorageAddress.read(is);
+                                            ancestorId = ancestor.getNodeId();
+                                        } else {
+                                            ancestorId = ancestor.getNodeId();
+                                            break;
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+//                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
+                    if (lastAncestor != null) {
+                        ancestor = lastAncestor;
+                        citer.setPosition(ancestor);
+                    }
+                }
+            } catch (EOFException e) {
+                //EOFExceptions are expected here
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);           
+                //TODO : return ?
+            } finally {
+                lock.release(Lock.READ_LOCK);
+            }
+        }
+//        LOG.debug("Found: " + result.getLength() + " for " + qname);
+//        if (sameDocSet) {
+//        	result.setDocumentSet(docs);
+//        }
+        return false;
+    }
 }
