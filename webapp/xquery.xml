@@ -198,7 +198,7 @@ at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
                         >collection()</command> and <command>doc()</command> as absolute or relative
                     paths, leading to some collection or document within the database. For
                     example:</para>
-                <synopsis>doc("/db/collection1/collection2/resource.xml)</synopsis>
+                <synopsis>doc("/db/collection1/collection2/resource.xml")</synopsis>
                 <para>refers to a resource stored in <filename
                         >/db/collection1/collection2</filename>.</para>
                 <synopsis>doc("resource.xml")</synopsis>
