@@ -152,6 +152,8 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 	
 	public NodeSet selectParentChild(NodeSet al, int mode, int contextId);
 		
+	public boolean matchParentChild(NodeSet al, int mode, int contextId);
+
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
 	 * set of potential ancestor nodes.
@@ -172,6 +174,9 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId,
                                             boolean copyMatches);
 		
+	public boolean matchAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId,
+            boolean copyMatches);
+
 	/**
 	 * For a given set of potential ancestor nodes, return all ancestors
 	 * having descendants in this node set.
@@ -262,7 +267,9 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      */
     public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
     
-	/**
+    public boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
+
+    /**
 	 * If all nodes in this set have an index, returns the common
 	 * supertype used to build the index, e.g. xs:integer or xs:string.
 	 * If the nodes have different index types or no node has been indexed,
