@@ -116,7 +116,9 @@ public class DirectoryListFunction extends BasicFunction {
 		File baseDir = new File( args[0].getStringValue() );
 		Sequence patterns = args[1];
 		
-		logger.info("Listing matching files in directory: " + baseDir);
+		if( logger.isDebugEnabled() ) {
+			logger.debug("Listing matching files in directory: " + baseDir);
+		}
 		
 		Sequence xmlResponse = null;
 		
@@ -131,10 +133,14 @@ public class DirectoryListFunction extends BasicFunction {
 			File[] files 	= DirectoryScanner.scanDir( baseDir, pattern );
 			String relDir 	= null;
 			
-			logger.info("Found: " + files.length);
+			if( logger.isDebugEnabled() ) {
+				logger.debug("Found: " + files.length);
+			}
 			
 			for (int j = 0; j < files.length; j++) {
-				logger.info("Found: " + files[j].getAbsolutePath());
+				if( logger.isDebugEnabled() ) {
+					logger.debug("Found: " + files[j].getAbsolutePath());
+				}
 				
 				String relPath = files[j].toString().substring(baseDir.toString().length() + 1);
 				
