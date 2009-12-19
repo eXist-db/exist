@@ -276,19 +276,24 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         Sequence result;
         if (contextStep == null || preselectResult == null) {
             Sequence input = getArgument(0).eval(contextSequence, contextItem);
-            if (input.isEmpty())
-                result = Sequence.EMPTY_SEQUENCE;
-            else if (inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
+
+            if (inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
                 if (context.isProfilingEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");
-                result = evalWithIndex(contextSequence, contextItem, input);
+                if (input.isEmpty())
+                    result = Sequence.EMPTY_SEQUENCE;
+                else
+                    result = evalWithIndex(contextSequence, contextItem, input);
                 if (context.getProfiler().traceFunctions())
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
                         PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
             } else {
                 if (context.isProfilingEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");
-                result = evalGeneric(contextSequence, contextItem, input);
+                if (input.isEmpty())
+                    result = BooleanValue.FALSE;
+                else
+                    result = evalGeneric(contextSequence, contextItem, input);
                 if (context.getProfiler().traceFunctions())
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
                         PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
