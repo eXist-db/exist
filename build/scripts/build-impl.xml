@@ -329,16 +329,19 @@
                 <attribute name="Project-CodeName" value="${project.codename}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
-            <exclude name="org/exist/start/**"/>
-            <exclude name="org/exist/soap/**"/>
+            <exclude name="org/exist/*.xsl"/>
             <exclude name="org/exist/ant/**"/>
-            <exclude name="org/exist/http/servlets/**"/>
+            <exclude name="org/exist/atom/**"/>
+            <exclude name="org/exist/cocoon/**"/>
+            <exclude name="org/exist/http/**"/>
+            <exclude name="org/exist/jsp/**"/>
+            <exclude name="org/exist/soap/**"/>
+            <exclude name="org/exist/source/CocoonSource.java"/>
+            <exclude name="org/exist/start/**"/>
+            <exclude name="org/exist/webstart/**"/>
             <exclude name="org/exist/xquery/functions/request/**"/>
             <exclude name="org/exist/xquery/functions/response/**"/>
             <exclude name="org/exist/xquery/functions/session/**"/>
-            <exclude name="org/exist/cocoon/**"/>
-            <exclude name="org/exist/source/CocoonSource.java"/>
-            <exclude name="org/exist/*.xsl"/>
         </jar>
         <echo message="Creating start.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="start.jar">
@@ -364,15 +367,19 @@
                 <attribute name="Project-CodeName" value="${project.codename}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
-            <include name="org/exist/soap/**"/>
+            <include name="org/exist/*.xsl"/>
             <include name="org/exist/ant/**"/>
-            <include name="org/exist/http/servlets/**"/>
+            <include name="org/exist/atom/**"/>
+            <include name="org/exist/cocoon/**"/>
+            <include name="org/exist/http/**"/>
+            <include name="org/exist/jsp/**"/>
+            <include name="org/exist/soap/**"/>
+            <include name="org/exist/source/CocoonSource.java"/>
+            <include name="org/exist/start/**"/>
+            <include name="org/exist/webstart/**"/>
             <include name="org/exist/xquery/functions/request/**"/>
             <include name="org/exist/xquery/functions/response/**"/>
             <include name="org/exist/xquery/functions/session/**"/>
-            <include name="org/exist/cocoon/**"/>
-            <include name="org/exist/source/CocoonSource.java"/>
-            <include name="org/exist/*.xsl"/>
         </jar>
     </target>
 
