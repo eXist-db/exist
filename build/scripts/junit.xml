@@ -361,4 +361,21 @@
             <test name="org.exist.xquery.xqts.XQTS_1_0_2.AllTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
+
+    <!-- Test XSLTS : XML XSL Test Suite -->
+    <target name="test-xslts" depends="prepare-xslts, test-prepare">
+        <echo message="--------------"/>
+        <echo message="XSLTS tests    "/>
+        <echo message="--------------"/>
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="512m">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.ant_launcher"/>
+            <classpath refid="classpath.junit"/>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <test name="org.exist.xslt.xslts.AllTests" todir="${junit.reports.dat}"/>
+        </junit>
+    </target>
 </project>
