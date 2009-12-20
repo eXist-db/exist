@@ -109,8 +109,4 @@ public class FunRemove extends Function {
         return result;         
 	}
 
-	public int getDependencies() {
-		return Dependency.NO_DEPENDENCY;
-	}
-
 }

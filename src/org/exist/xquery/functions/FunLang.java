@@ -147,11 +147,5 @@ public class FunLang extends Function {
         
         return result;          
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.functions.Function#getDependencies()
-	 */
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET;
-	}
+
 }
