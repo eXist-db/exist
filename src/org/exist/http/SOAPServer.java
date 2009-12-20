@@ -1115,7 +1115,8 @@ public class SOAPServer
     	 * 
     	 * @return NodeList of parameter's
     	 */
-    	public NodeList getFunctionParameters(String functionName)
+    	@SuppressWarnings("unused")
+		public NodeList getFunctionParameters(String functionName)
     	{
     		Node internalFunction = getFunction(functionName);
     		if(internalFunction != null)
@@ -1154,7 +1155,8 @@ public class SOAPServer
     	 * 
     	 * @return The Name of the parameter
     	 */
-    	public String getFunctionParameterName(Node internalFunctionParameter)
+    	@SuppressWarnings("unused")
+		public String getFunctionParameterName(Node internalFunctionParameter)
     	{
     		//first element child of <parameter> is <name>
     		NodeList nlParamArgs = internalFunctionParameter.getChildNodes(); 
@@ -1601,7 +1603,7 @@ public class SOAPServer
 			if(parameters != null)
 			{
 				Transformer transformer = handler.getTransformer();
-				Enumeration parameterKeys = parameters.keys();
+				Enumeration<?> parameterKeys = parameters.keys();
 				while(parameterKeys.hasMoreElements())
 				{
 					String paramName = (String)parameterKeys.nextElement();

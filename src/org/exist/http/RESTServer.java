@@ -458,6 +458,7 @@ public class RESTServer {
 	public void doHead(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, NotFoundException, IOException
 	{
 		Properties outputProperties = new Properties(defaultOutputKeysProperties);
+		@SuppressWarnings("unused")
 		String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
 		  
 		String encoding;
@@ -618,6 +619,7 @@ public class RESTServer {
 		int start = 1;
 		boolean enclose = true;
 		boolean cache = false;
+		@SuppressWarnings("unused")
 		String mime = MimeType.XML_TYPE.getName();
 		String query = null;
 		TransactionManager transact = broker.getBrokerPool()
@@ -708,6 +710,7 @@ public class RESTServer {
 				}
 				// execute query
 				if (query != null) {
+					@SuppressWarnings("unused")
 					String result;
 					try {
 						search(broker, query, path, nsExtractor.getNamespaces(), howmany, start,
@@ -1562,8 +1565,8 @@ public class RESTServer {
 			serializer.startElement(Namespaces.EXIST_NS, "collection",
 					"exist:collection", attrs);
 
-			for (Iterator i = collection.collectionIterator(); i.hasNext();) {
-				XmldbURI child = (XmldbURI) i.next();
+			for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext();) {
+				XmldbURI child = i.next();
 				Collection childCollection = broker.getCollection(collection
 						.getURI().append(child));
 				if (childCollection != null
@@ -1595,8 +1598,8 @@ public class RESTServer {
 				}
 			}
 
-			for (Iterator i = collection.iterator(broker); i.hasNext();) {
-				DocumentImpl doc = (DocumentImpl) i.next();
+			for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
+				DocumentImpl doc = i.next();
 				if (doc.getPermissions().validate(broker.getUser(),
 						Permission.READ)) {
 					XmldbURI resource = doc.getFileURI();

@@ -56,6 +56,7 @@ public class CollectionURI
 	
 	public void removeLastSegment()
 	{
+		@SuppressWarnings("unused")
 		char c;
 		int pos = length - 1;
 		while((c = uri[pos]) != FRAGMENT_SEPARATOR)
