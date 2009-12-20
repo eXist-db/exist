@@ -343,8 +343,8 @@
         <mkdir dir="${junit.reports}/external"/>
         
         <!-- XML XSL Test Suite -->
-        <!-- http://www.w3.org/XML/Query/test-suite/          -->
-        <get src=""
+        <!-- http://www.w3.org/XML/Group/xslt20-test/PublishedTestSuites/XSLTS_1_1_0.zip          -->
+        <get src="http://www.w3.org/XML/Group/xslt20-test/PublishedTestSuites/XSLTS_1_1_0.zip"
             dest="${junit.reports}/external/XSLTS_1_1_0.zip" verbose="true" usetimestamp="true"/>
         
         <unzip src="${junit.reports}/external/XSLTS_1_1_0.zip" dest="${junit.reports}/external/XSLTS_1_1_0"/>
@@ -355,7 +355,7 @@
     <target name="prepare-xslts" depends="download-xslts" unless="xslts_junit.present">
         <!--
             <delete>
-            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
+            <fileset dir="${junit.reports}/src/org/exist/xsl/xslts/"/>
             </delete>
         -->
         
