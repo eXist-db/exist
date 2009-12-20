@@ -10,6 +10,7 @@ package org.exist.storage.analysis;
  */
 public class SimpleTokenizer implements Tokenizer {
 	private int pos = 0;
+	@SuppressWarnings("unused")
 	private boolean stem = false;
 	private CharSequence text;
 	private int len = 0;
