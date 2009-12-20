@@ -60,6 +60,7 @@ public class XSLTStoJUnit implements ContentHandler {
     private String sep = File.separator;
     
     private BufferedWriter out;
+    private BufferedWriter outAll;
 
 	private Vector<String> currentPath = new Vector<String>();
 	
@@ -97,6 +98,14 @@ public class XSLTStoJUnit implements ContentHandler {
 	}
 
 	public void endDocument() throws SAXException {
+		try {
+			outAll.write("\n})\n\n"+
+					"public class AllTests {\n\n" +
+					"}");
+			outAll.close();
+		} catch (IOException e) {
+			throw new SAXException(e);
+		}
 	}
 
 	public void endElement(String uri, String localName, String qName) throws SAXException {
@@ -118,7 +127,7 @@ public class XSLTStoJUnit implements ContentHandler {
 	}
 
 	private void writeTestCase() throws IOException {
-       out.write("	/* "+name+" */\n" +
+		out.write("	/* "+name+" */\n" +
 		"	@Test\n" +
 		"	public void test_"+adoptString(name)+"() throws Exception {\n" +
 		"		testCase(\""+sourceDocument+"\", \""+stylesheet+"\", \""+resultDocument+"\");\n"+
@@ -141,6 +150,20 @@ public class XSLTStoJUnit implements ContentHandler {
 	}
 
 	public void startDocument() throws SAXException {
+   	    try {
+   	   		File jTest = new File(folder.getAbsolutePath()+sep+"AllTests.java");
+
+   	   		FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
+   	   		outAll = new BufferedWriter(fstream);
+
+   	   	    outAll.write("package org.exist.xslt.xslts;\n\n" +
+					"import org.junit.runner.RunWith;\n" +
+					"import org.junit.runners.Suite;\n\n" +
+					"@RunWith(Suite.class)\n" +
+					"@Suite.SuiteClasses({\n");
+		} catch (IOException e) {
+			throw new SAXException(e);
+		}
 	}
 
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
@@ -184,6 +207,8 @@ public class XSLTStoJUnit implements ContentHandler {
    	    		"import org.exist.xslt.XSLTS_case;\n" +
    	    		"import org.junit.Test;\n\n" +
    	    		"public class "+name+" extends XSLTS_case {\n");
+
+		outAll.write("	"+name+".class,\n");
 	}
 
 	private void endTestFile() throws IOException {
