@@ -355,7 +355,8 @@ public class FulltextIndexSpec {
             return mixedContent;
         }
 
-        public Set<String> getPreserve() {
+        @SuppressWarnings("unused")
+		public Set<String> getPreserve() {
             return preserve;
         }
 
