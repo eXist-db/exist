@@ -56,13 +56,6 @@ public class FunEmpty extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Function#getDependencies()
-	 */
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
-	}
-	
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
