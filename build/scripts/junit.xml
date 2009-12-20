@@ -337,6 +337,44 @@
         <echo>JUnit tests generated.</echo>
     </target>
 
+    <available file="${junit.reports}/external/XSLTS_1_1_0" property="xslts.present"/>
+    
+    <target name="download-xslts" description="Download XSLTS file." unless="xslts.present">
+        <mkdir dir="${junit.reports}/external"/>
+        
+        <!-- XML XSL Test Suite -->
+        <!-- http://www.w3.org/XML/Query/test-suite/          -->
+        <get src=""
+            dest="${junit.reports}/external/XSLTS_1_1_0.zip" verbose="true" usetimestamp="true"/>
+        
+        <unzip src="${junit.reports}/external/XSLTS_1_1_0.zip" dest="${junit.reports}/external/XSLTS_1_1_0"/>
+    </target>
+    
+    <available file="${junit.reports}/src/org/exist/xsl/xslts/" property="xslts_junit.present"/>
+    
+    <target name="prepare-xslts" depends="download-xslts" unless="xslts_junit.present">
+        <!--
+            <delete>
+            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
+            </delete>
+        -->
+        
+        <echo message="---------------------------------------"/>
+        <echo message="Generating junit tests from XSLTS ......"/>
+        <echo message="---------------------------------------"/>
+        <delete failonerror="false">
+            <fileset dir="${junit.reports}/src/org/exist/xsl/xslts/"/>
+        </delete>
+        <java classname="org.exist.xsl.XSLTStoJUnit">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.jmxagent" value="" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+        </java>
+        <echo>JUnit tests generated.</echo>
+    </target>
+    
     <property name="ant.dir" value="tools/ant"/>
 
     <path id="classpath.ant_launcher">
