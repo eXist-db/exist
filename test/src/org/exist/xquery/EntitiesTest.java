@@ -1,21 +1,12 @@
 package org.exist.xquery;
 
-import java.net.BindException;
-import java.util.Iterator;
-
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.StandaloneServer;
+import org.exist.JettyStart;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
-import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
@@ -28,7 +19,7 @@ public class EntitiesTest extends XMLTestCase {
         uri = collectionURI;
     }
     
-    private static StandaloneServer server = null;
+    private static JettyStart server = null;
     
     private Collection testCollection;
     @SuppressWarnings("unused")
@@ -67,29 +58,9 @@ public class EntitiesTest extends XMLTestCase {
 	private void initServer() {
         try {
             if (server == null) {
-                server = new StandaloneServer();
-                if (!server.isStarted()) {
-                    try {
-                        System.out.println("Starting standalone server...");
-                        String[] args = {};
-                        server.run(args);
-                        while (!server.isStarted()) {
-                            Thread.sleep(1000);
-                        }
-                    } catch (MultiException e) {
-                        boolean rethrow = true;
-                        Iterator i = e.getThrowables().iterator();
-                        while (i.hasNext()) {
-                            Exception e0 = (Exception)i.next();
-                            if (e0 instanceof BindException) {
-                                System.out.println("A server is running already !");
-                                rethrow = false;
-                                break;
-                            }
-                        }
-                        if (rethrow) throw e;
-                    }
-                }
+                server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
             }
         } catch(Exception e) {
             fail(e.getMessage());

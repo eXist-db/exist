@@ -2,23 +2,20 @@ package org.exist.xmlrpc;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
-import org.exist.StandaloneServer;
-import org.exist.xmldb.XmldbURI;
-import org.mortbay.util.MultiException;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.apache.log4j.BasicConfigurator;
+import org.exist.JettyStart;
+import org.exist.xmldb.XmldbURI;
 
-import java.util.Iterator;
-import java.util.Vector;
-import java.util.Hashtable;
-import java.net.BindException;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.net.MalformedURLException;
-import java.io.*;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Test for deadlocks when moving resources from one collection to another.
@@ -35,7 +32,7 @@ public class MoveResourceTest extends TestCase {
         TestRunner.run(MoveResourceTest.class);
     }
     
-    private StandaloneServer server;
+    private JettyStart server;
 
     private final static String URI = "http://localhost:8088/xmlrpc";
 
@@ -225,29 +222,9 @@ public class MoveResourceTest extends TestCase {
 	private void initServer() {
 		try {
 			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {
-					try {
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception)i.next();
-							if (e0 instanceof BindException) {
-								System.out.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow) throw e;
-					}
-				}
+				server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
 			}
 	    } catch (Exception e) {
 	        fail(e.getMessage());

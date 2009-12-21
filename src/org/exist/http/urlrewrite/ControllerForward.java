@@ -58,8 +58,12 @@ public class ControllerForward extends URLRewrite {
         if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             XmldbURI dbURI = XmldbURI.create(target);
             this.uri = "/rest";
-            request.setPaths("/rest" + dbURI.getCollectionPath() + request.getInContextPath(), "/rest");
-            request.setBasePath("/rest" + dbURI.getCollectionPath());
+            String colPath = dbURI.getCollectionPath();
+            String contextPath = request.getInContextPath();
+            if (contextPath.startsWith(colPath))
+                colPath = "";
+            request.setPaths("/rest" + colPath + contextPath, "/rest");
+            request.setBasePath("/rest" + colPath);
         }
     }
 }

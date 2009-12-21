@@ -21,22 +21,18 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
-import java.net.BindException;
-import java.util.Iterator;
-
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
-
+import org.exist.JettyStart;
 import org.exist.storage.DBBroker;
-import org.exist.StandaloneServer;
 import org.exist.xmldb.concurrent.DBUtils;
-import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.io.File;
 
 /**
  * @author ???
@@ -44,7 +40,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class StorageStressTest extends TestCase {
 
-	private static StandaloneServer server = null;
+	private static JettyStart server = null;
 	//TODO : why a remote test ?
 	protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";    
 	//protected final static String URI = "xmldb:exist://";    
@@ -91,29 +87,9 @@ public class StorageStressTest extends TestCase {
 	private void initServer() {
 		try {
 			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {			
-					try {				
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception)i.next();
-							if (e0 instanceof BindException) {
-								System.out.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow) throw e;
-					}
-				}
+				server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
 			}
         } catch (Exception e) {            
             fail(e.getMessage()); 
