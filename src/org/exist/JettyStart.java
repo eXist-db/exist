@@ -21,6 +21,7 @@
  */
 package org.exist;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,11 +32,13 @@ import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.util.SingleInstanceConfiguration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
 
+import org.mortbay.component.LifeCycle;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
@@ -60,7 +63,7 @@ import org.exist.xquery.functions.system.GetVersion;
  * 
  * @author wolf
  */
-public class JettyStart {
+public class JettyStart implements LifeCycle.Listener {
 
     protected static final Logger logger = Logger.getLogger(JettyStart.class);
 
@@ -69,11 +72,25 @@ public class JettyStart {
         start.run(args, null);
     }
 
+    private final static int STATUS_STARTING = 0;
+    private final static int STATUS_STARTED = 1;
+    private final static int STATUS_STOPPING = 2;
+    private final static int STATUS_STOPPED = 3;
+
+    private int status = STATUS_STOPPED;
+    
     public JettyStart() {
         // Additional checks XML libs @@@@
         XmlLibraryChecker.check();
     }
 
+    public void run() {
+        File home = ConfigurationHelper.getExistHome();
+        File jettyHome = new File(home, "tools/jetty");
+        System.setProperty("jetty.home", jettyHome.getAbsolutePath());
+        run(new String[]{jettyHome.getAbsolutePath() + "/etc/standalone.xml"}, null);
+    }
+    
     public void run(String[] args, Observer observer) {
         if (args.length == 0) {
             logger.info("No configuration file specified!");
@@ -167,7 +184,7 @@ public class JettyStart {
             configuration.configure(server);
             
             server.setStopAtShutdown(true);
-
+            server.addLifeCycleListener(this);
             BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
             server.start();
 
@@ -238,8 +255,14 @@ public class JettyStart {
         }
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         BrokerPool.stopAll(false);
+        while (status != STATUS_STOPPED) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     /**
@@ -270,6 +293,7 @@ public class JettyStart {
                             if (cluster != null) {
                                 cluster.stop();
                             }
+                            server.join();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -287,5 +311,46 @@ public class JettyStart {
         }
 
         ClusterComunication.configure(c);
+    }
+
+    public synchronized boolean isStarted() {
+        if (status == STATUS_STARTED || status == STATUS_STARTING)
+            return true;
+        if (status == STATUS_STOPPED)
+            return false;
+        while (status != STATUS_STOPPED) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+        return false;
+    }
+
+    public synchronized void lifeCycleStarting(LifeCycle lifeCycle) {
+        logger.info("Jetty server starting...");
+        status = STATUS_STARTING;
+        notifyAll();
+    }
+
+    public synchronized void lifeCycleStarted(LifeCycle lifeCycle) {
+        logger.info("Jetty server started.");
+        status = STATUS_STARTED;
+        notifyAll();
+    }
+
+    public void lifeCycleFailure(LifeCycle lifeCycle, Throwable throwable) {
+    }
+
+    public synchronized void lifeCycleStopping(LifeCycle lifeCycle) {
+        logger.info("Jetty server stopping...");
+        status = STATUS_STOPPING;
+        notifyAll();
+    }
+
+    public synchronized void lifeCycleStopped(LifeCycle lifeCycle) {
+        logger.info("Jetty server stopped");
+        status = STATUS_STOPPED;
+        notifyAll();
     }
 }

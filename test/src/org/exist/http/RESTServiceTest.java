@@ -38,12 +38,11 @@ import java.util.Map;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.JettyStart;
 import org.exist.Namespaces;
-import org.exist.StandaloneServer;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.DBBroker;
 import org.exist.util.Base64Encoder;
-import org.mortbay.util.MultiException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.w3c.dom.Document;
@@ -58,7 +57,7 @@ import javax.xml.parsers.SAXParser;
  */
 public class RESTServiceTest extends TestCase {
 
-    private static StandaloneServer server = null;
+    private static JettyStart server = null;
 
     private final static String SERVER_URI = "http://localhost:8088";
 
@@ -151,29 +150,12 @@ public class RESTServiceTest extends TestCase {
         //Don't worry about closing the server : the shutdown hook will do the job
         try {
             if (server == null) {
-                server = new StandaloneServer();
-                if (!server.isStarted()) {
-                    try {
-                        System.out.println("Starting standalone server...");
-                        String[] args = {};
-                        server.run(args);
-                        while (!server.isStarted()) {
-                            Thread.sleep(1000);
-                        }
-                    } catch (MultiException e) {
-                        boolean rethrow = true;
-                        Iterator i = e.getThrowables().iterator();
-                        while (i.hasNext()) {
-                            Exception e0 = (Exception) i.next();
-                            if (e0 instanceof BindException) {
-                                System.out.println("A server is running already !");
-                                rethrow = false;
-                                break;
-                            }
-                        }
-                        if (rethrow)
-                            throw e;
-                    }
+                server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                String[] args = {};
+                server.run();
+                while (!server.isStarted()) {
+                    Thread.sleep(1000);
                 }
             }
         } catch (Exception e) {
@@ -696,7 +678,7 @@ public class RESTServiceTest extends TestCase {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("POST");
             connect.setDoOutput(true);
-            connect.setRequestProperty("ContentType", "text/xml");
+            connect.setRequestProperty("Content-Type", "text/xml");
 
             Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
             writer.write(content);

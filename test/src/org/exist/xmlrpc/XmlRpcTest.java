@@ -21,34 +21,25 @@
  */
 package org.exist.xmlrpc;
 
-import java.net.BindException;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-
-import javax.xml.transform.OutputKeys;
-
+import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.apache.xmlrpc.XmlRpcException;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.custommonkey.xmlunit.XMLAssert;
-import org.exist.util.MimeType;
-import org.exist.StandaloneServer;
+import org.exist.JettyStart;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.TestConstants;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mortbay.util.MultiException;
+
+import javax.xml.transform.OutputKeys;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -58,7 +49,7 @@ import org.mortbay.util.MultiException;
  */
 public class XmlRpcTest {    
 	
-	private static StandaloneServer server = null;
+	private static JettyStart server = null;
     private final static String URI = "http://localhost:8088/xmlrpc";
         
     private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
@@ -137,30 +128,10 @@ public class XmlRpcTest {
 	private static void initServer() {
 		try {
 			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {			
-					try {				
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception)i.next();
-							if (e0 instanceof BindException) {
-								System.out.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow) throw e;
-					}
-				}
-			}
+				server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
+            }
 	    } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());  

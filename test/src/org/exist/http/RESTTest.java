@@ -1,16 +1,12 @@
 package org.exist.http;
 
-import static org.junit.Assert.fail;
-
-import java.net.BindException;
-import java.util.Iterator;
-
 import org.apache.commons.httpclient.HttpClient;
-import org.exist.StandaloneServer;
+import org.exist.JettyStart;
 import org.exist.storage.DBBroker;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.mortbay.util.MultiException;
+
+import static org.junit.Assert.fail;
 
 public abstract class RESTTest {
 
@@ -18,7 +14,7 @@ public abstract class RESTTest {
 	protected final static String COLLECTION_ROOT_URL = REST_URL
 			+ DBBroker.ROOT_COLLECTION;
 
-	private static StandaloneServer server = null;
+	private static JettyStart server = null;
 	protected static HttpClient client = new HttpClient();
 
 	@SuppressWarnings("unchecked")
@@ -26,32 +22,10 @@ public abstract class RESTTest {
 	public static void startupServer() {
 		try {
 			if (server == null) {
-				server = new StandaloneServer();
-				if (!server.isStarted()) {
-					try {
-						System.out.println("Starting standalone server...");
-						String[] args = {};
-						server.run(args);
-						while (!server.isStarted()) {
-							Thread.sleep(1000);
-						}
-					} catch (MultiException e) {
-						boolean rethrow = true;
-						Iterator i = e.getThrowables().iterator();
-						while (i.hasNext()) {
-							Exception e0 = (Exception) i.next();
-							if (e0 instanceof BindException) {
-								System.out
-										.println("A server is running already !");
-								rethrow = false;
-								break;
-							}
-						}
-						if (rethrow)
-							throw e;
-					}
-				}
-			}
+				server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
+            }
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}

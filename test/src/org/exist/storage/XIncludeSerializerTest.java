@@ -21,29 +21,26 @@
  */
 package org.exist.storage;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.BindException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.Iterator;
-import java.util.Vector;
-
-import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.Diff;
-import org.exist.StandaloneServer;
+import org.exist.JettyStart;
 import org.exist.storage.serializers.XIncludeFilter;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mortbay.util.MultiException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Vector;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -57,7 +54,7 @@ import org.mortbay.util.MultiException;
  */
 public class XIncludeSerializerTest {
 
-	private static StandaloneServer server = null;
+	private static JettyStart server = null;
     
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
     private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
@@ -440,32 +437,11 @@ public class XIncludeSerializerTest {
         //Don't worry about closing the server : the shutdown hook will do the job
         try {
             if (server == null) {
-                server = new StandaloneServer();
-                if (!server.isStarted()) {
-                    try {
-                        System.out.println("Starting standalone server...");
-                        String[] args = {};
-                        server.run(args);
-                        while (!server.isStarted()) {
-                            Thread.sleep(1000);
-                        }
-                    } catch (MultiException e) {
-                        boolean rethrow = true;
-                        Iterator i = e.getThrowables().iterator();
-                        while (i.hasNext()) {
-                            Exception e0 = (Exception) i.next();
-                            if (e0 instanceof BindException) {
-                                System.out.println("A server is running already !");
-                                rethrow = false;
-                                break;
-                            }
-                        }
-                        if (rethrow)
-                            throw e;
-                    }
-                }
+                server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
             }
-            
+
 			System.out.println("Creating collection " + XINCLUDE_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
 			Vector<Object> params = new Vector<Object>();

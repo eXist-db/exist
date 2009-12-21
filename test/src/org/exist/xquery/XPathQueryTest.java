@@ -1,26 +1,18 @@
 package org.exist.xquery;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.StandaloneServer;
+import org.exist.JettyStart;
 import org.exist.TestUtils;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
-import org.mortbay.util.MultiException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -29,14 +21,7 @@ import org.xmldb.api.modules.XQueryService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.net.BindException;
-import java.util.Iterator;
+import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -163,7 +148,7 @@ public class XPathQueryTest extends XMLTestCase {
         uri = collectionURI;
     }
     
-    private static StandaloneServer server = null;
+    private static JettyStart server = null;
     
     private Collection testCollection;
     private String query;
@@ -201,29 +186,9 @@ public class XPathQueryTest extends XMLTestCase {
 	private void initServer() {
         try {
             if (server == null) {
-                server = new StandaloneServer();
-                if (!server.isStarted()) {
-                    try {
-                        System.out.println("Starting standalone server...");
-                        String[] args = {};
-                        server.run(args);
-                        while (!server.isStarted()) {
-                            Thread.sleep(1000);
-                        }
-                    } catch (MultiException e) {
-                        boolean rethrow = true;
-                        Iterator i = e.getThrowables().iterator();
-                        while (i.hasNext()) {
-                            Exception e0 = (Exception)i.next();
-                            if (e0 instanceof BindException) {
-                                System.out.println("A server is running already !");
-                                rethrow = false;
-                                break;
-                            }
-                        }
-                        if (rethrow) throw e;
-                    }
-                }
+                server = new JettyStart();
+                System.out.println("Starting standalone server...");
+                server.run();
             }
         } catch(Exception e) {
             fail(e.getMessage());

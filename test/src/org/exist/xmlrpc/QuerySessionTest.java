@@ -1,21 +1,18 @@
 package org.exist.xmlrpc;
 
-import org.exist.StandaloneServer;
+import org.exist.JettyStart;
 import org.exist.TestDataGenerator;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.File;
-import java.net.BindException;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +55,7 @@ public class QuerySessionTest {
 
     private final static int DOC_COUNT = 100;
     
-    private static StandaloneServer server;
+    private static JettyStart server;
 
     private Random random = new Random();
 
@@ -119,30 +116,10 @@ public class QuerySessionTest {
     @SuppressWarnings("unchecked")
 	@BeforeClass
     public static void startServer() throws Exception {
-        try {
-            server = new StandaloneServer();
-            System.out.println("Starting standalone server...");
-            String[] args = {};
-            System.out.println("Waiting for server to start...");
-            server.run(args);
-            while (!server.isStarted()) {
-                synchronized (server) {
-                    server.wait(10000);
-                }
-            }
-        } catch (MultiException e) {
-            boolean rethrow = true;
-            Iterator i = e.getThrowables().iterator();
-            while (i.hasNext()) {
-                Exception e0 = (Exception)i.next();
-                if (e0 instanceof BindException) {
-                    System.out.println("A server is running already !");
-                    rethrow = false;
-                    break;
-                }
-            }
-            if (rethrow) throw e;
-        }
+        server = new JettyStart();
+        System.out.println("Starting standalone server...");
+        System.out.println("Waiting for server to start...");
+        server.run();
 
         // initialize XML:DB driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
