@@ -1,0 +1,28 @@
+<!--
+  ++ Base configuration for eXist's URL rewriting. This file defines
+  ++ all basic path mappings. A path can be mapped to a servlet or
+  ++ the root of a directory or collection hierarchy.
+  ++
+  ++ This configuration is limited
+  ++ to the XML-RPC, REST, Atom and WebDAV servlets, plus XQueryURLRewrite for the URL
+  ++ handling. Use this configuration if you need a minimum setup with web content
+  ++ stored in the db.
+-->
+<configuration xmlns="http://exist.sourceforge.net/NS/exist">
+    <!-- REST interface -->
+    <forward pattern="/rest" servlet="EXistServlet"/>
+    <!-- XMLRPC servlet -->
+	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
+    <!-- WebDAV interface -->
+	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
+    <!-- Atom Publishing Protocol -->
+    <forward pattern="/atom/" servlet="AtomServlet"/>
+    
+    <!-- 
+        ++ Main web application is served from the
+        ++ database. URLs starting with /db are handled
+        ++ by the REST servlet.
+    -->
+    <root pattern="/db.*" path="xmldb:exist:///db"/>
+    <root pattern=".*" path="xmldb:exist:///db/www"/>
+</configuration>

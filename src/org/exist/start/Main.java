@@ -304,16 +304,13 @@ public class Main {
                 //_classname = "org.exist.client.InteractiveClient";
                 _classname = "org.exist.client.InteractiveClient";
                 _mode = "client";
-            } else if (args[0].equals("standalone")) {
-                _classname = "org.exist.StandaloneServer";
-                _mode = "standalone";
             } else if (args[0].equals("backup")) {
                 _classname = "org.exist.backup.Main";
                 _mode = "backup";
-            } else if (args[0].equals("jetty")) {
+            } else if (args[0].equals("jetty") || args[0].equals("standalone")) {
                 //_classname = "org.mortbay.jetty.Server";
                 _classname = "org.exist.JettyStart";
-                _mode = "jetty";
+                _mode = args[0];
             } else if (args[0].equals("shutdown")) {
                 _classname = "org.exist.ServerShutdown";
                 _mode = "other";
@@ -346,7 +343,7 @@ public class Main {
             System.setProperty("user.dir", _home_dir.getPath());
 
             // try to find Jetty
-            if (_mode.equals("jetty") | _mode.equals("cluster")) {
+            if (_mode.equals("jetty") || _mode.equals("cluster") || _mode.equals("standalone")) {
                 File _tools_dir = new File(_home_dir.getAbsolutePath() + File.separatorChar + "tools");
                 if (!_tools_dir.exists()) {
                     System.err.println("ERROR: tools directory not found in " + _home_dir.getAbsolutePath());
@@ -365,13 +362,13 @@ public class Main {
                 }
                 System.setProperty("jetty.home",
                         _tools_dir.getAbsolutePath() + File.separatorChar + _jetty_dir);
-                args =
-                        new String[]{
-                            System.getProperty("jetty.home")
-                        + File.separatorChar
-                        + "etc"
-                        + File.separatorChar
-                        + "jetty.xml"};
+                String config;
+                if (_mode.equals("jetty"))
+                    config = "jetty.xml";
+                else
+                    config = "standalone.xml";
+                args = new String[]{ System.getProperty("jetty.home") + File.separatorChar + "etc"
+                        + File.separatorChar + config };
             }
 
             // find log4j.xml
