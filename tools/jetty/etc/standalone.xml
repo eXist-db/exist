@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!-- $Id: jetty.xml 10753 2009-12-15 18:23:27Z shabanovd $ -->
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+<!--
+    This is the jetty configuration for the standalone server. It assumes that 
+    web content will be primarily stored into the db. The web application directory
+    (tools/jetty/etc/standalone) is only used for configuration purposes, but is empty
+    otherwise.
+    
+    The web.xml configures the REST, XML-RPC and WebDAV servlets, plus XQueryURLRewrite.
+    No other functionality is provided.
+-->
+<Configure id="Server" class="org.mortbay.jetty.Server">
+
+    <!-- Setup connector -->
+    <New id="connector" class="org.mortbay.jetty.nio.SelectChannelConnector">
+        <Set name="port">
+            <SystemProperty name="jetty.port" default="8088"/>
+        </Set>
+    </New>
+
+    <!-- Setup connectors  -->
+    <Set name="Connectors">
+        <Array type="org.mortbay.jetty.Connector">
+            <Item>
+                <Ref id="connector"/>
+            </Item>
+        </Array>
+    </Set>
+
+    <!-- Setup webapplication -->
+    <New id="webapp" class="org.exist.http.WebAppContext">
+        <!-- can either be '/exist' or '/' -->
+        <Set name="contextPath">/</Set>
+        <Set name="baseResource">
+            <Call class="org.mortbay.resource.Resource" name="newResource">
+                <Arg><SystemProperty name="jetty.home" default="."/>/etc/standalone</Arg>
+            </Call>
+        </Set>
+        <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+    </New>
+
+    <!-- Setup Handlers -->
+    <Set name="handler">
+        <New id="Handlers" class="org.mortbay.jetty.handler.HandlerCollection">
+            <Set name="handlers">
+                <Array type="org.mortbay.jetty.Handler">
+                    <Item>
+                        <!-- Reference to exist-db -->
+                        <Ref id="webapp"/>
+                    </Item>
+                    <Item>
+                        <!-- If not handler by existdb then do something -->
+                        <New id="DefaultHandler" class="org.mortbay.jetty.handler.DefaultHandler"/>
+                    </Item>
+                    <Item>
+                        <New id="RequestLog" class="org.mortbay.jetty.handler.RequestLogHandler"/>
+                    </Item>
+                </Array>
+            </Set>
+        </New>
+    </Set>
+
+</Configure>

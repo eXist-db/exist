@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--+
+    | Plain configuration file for the web application. This configuration is limited
+    | to the XML-RPC, REST and WebDAV servlets, plus XQueryURLRewrite for the URL
+    | handling. Use this configuration if you need a minimum setup with web content
+    | stored in the db.
+    | $Id$
+    +-->
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+    
+    <description>eXist Open Source Native XML Database</description>
+    <display-name>eXist XML Database</display-name>
+
+    <!-- 
+        Initialize Log4j using a servlet.
+        Only needed when eXist is deployed as a .war file in e.g. Tomcat.
+    -->
+    <servlet>
+        <servlet-name>log4j-init</servlet-name>
+        <servlet-class>org.exist.http.servlets.Log4jInit</servlet-class>
+
+        <init-param>
+            <param-name>log4j-init-file</param-name>
+            <param-value>WEB-INF/log4j.xml</param-value>
+        </init-param>
+        
+        <init-param>
+            <param-name>log4j-log-dir</param-name>
+            <param-value>WEB-INF/logs</param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+
+    <!--
+        RpcServlet provides XML-RPC access to eXist
+    -->
+    <servlet>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+        <init-param>
+          <param-name>enabledForExtensions</param-name>
+          <param-value>true</param-value>
+        </init-param>
+    </servlet>
+
+    <!-- 
+        DatabaseAdminServlet: this servlet can be used to ensure that
+        eXist is running in the background. Just set the start-parameter 
+        to true and load-on-startup to 1 
+    -->
+    <servlet>
+        <servlet-name>EXistServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
+    
+        <!--
+            where to find eXist's configuration file relative to the basedir 
+            of the web-application.
+        -->
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
+
+        <!-- 
+            eXist's home directory. All file names in the configuration file 
+            will be relative to this directory.
+        -->
+        <init-param>
+            <param-name>basedir</param-name>
+            <param-value>WEB-INF/</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>start</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <!-- 
+        Servlet that enables webDAV 
+    -->
+    <servlet>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
+
+        <init-param>
+            <param-name>authentication</param-name>
+            <param-value>basic</param-value>
+        </init-param>
+    </servlet>
+	
+    <filter>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
+
+        <!-- Defines the location of the controller-config.xml file, which defines
+             the root mappings. -->
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>WEB-INF/controller-config.xml</param-value>
+        </init-param>
+    </filter>
+    
+    <servlet>
+        <servlet-name>XSLTServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
+    </servlet>
+
+    <!-- Atom Atom Publishing Protocol -->
+    <servlet>
+        <servlet-name>AtomServlet</servlet-name>
+        <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
+    </servlet>
+    
+    <!-- ====================== URL space mappings ======================= -->
+    
+    <!-- IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
+         entry point into the web application. All eXist-related URL
+         mappings are handled by XQueryURLRewrite (see controller-config.xml). 
+         The servlet mappings below are thus commented out. We keep them here 
+         for documentation purposes. If you need to switch to the old setup, 
+         you can re-enable the mappings below and disable them in 
+         controller-config.xml. However, please note that some features of the
+         website will only work if XQueryURLRewrite controls the /rest servlet
+         (EXistServlet). -->
+    <filter-mapping>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>
