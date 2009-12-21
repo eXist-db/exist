@@ -42,7 +42,8 @@ import java.util.Map;
 public class Runner {
 
     private Map<String, Connection> connections = new HashMap<String, Connection>();
-
+    private Connection firstConnection = null;
+    
     private Map<String, Class<Action>> classes = new HashMap<String, Class<Action>>();
 
     private Map<String, Group> groups = new HashMap<String, Group>();
@@ -79,6 +80,8 @@ public class Runner {
             Element elem = (Element) nl.item(i);
             Connection con = new Connection(elem);
             connections.put(con.getId(), con);
+            if (firstConnection == null)
+                firstConnection = con;
         }
 
         nl = root.getElementsByTagNameNS(Namespaces.EXIST_NS, "group");
@@ -106,6 +109,10 @@ public class Runner {
         return connections.get(connection);
     }
 
+    public Connection getConnection() {
+        return firstConnection;
+    }
+    
     public Class<Action> getClassForAction(String action) {
         return classes.get(action);
     }
@@ -119,7 +126,8 @@ public class Runner {
     }
 
     public void shutdown() {
-        resultWriter.close();
+        if (resultWriter != null)
+            resultWriter.close();
         try {
             shutdownDb();
         } catch (XMLDBException e) {
@@ -146,35 +154,6 @@ public class Runner {
                         collection.getService("DatabaseInstanceManager", "1.0");
                 mgr.shutdown();
             }
-        }
-    }
-
-    public static void main(String[] args) {
-        if (args.length == 0) {
-            System.out.println("Usage: org.exist.performance.Runner test-definition.xml [group]");
-            return;
-        }
-        String xmlFile = args[0];
-        String group = null;
-        if (args.length == 2)
-            group = args[1];
-        Runner runner = null;
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setValidating(false);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File(xmlFile));
-
-            TestResultWriter writer = new TestResultWriter("out.xml");
-            runner = new Runner(doc.getDocumentElement(), writer);
-            runner.run(group);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("ERROR: " + e.getMessage());
-        } finally {
-            if (runner != null)
-                runner.shutdown();
         }
     }
 }

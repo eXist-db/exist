@@ -44,6 +44,10 @@ public class Connection {
         getCollection("/db");
     }
 
+    public Collection getCollection() throws XMLDBException {
+        return DatabaseManager.getCollection(base, user, password);
+    }
+
     public Collection getCollection(String relativePath) throws XMLDBException {
         return DatabaseManager.getCollection(base + '/' + relativePath, user, password);
     }

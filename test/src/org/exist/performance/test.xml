@@ -247,9 +247,7 @@
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="none" attributes="false">
-                            <create qname="author"/>
                             <create qname="title"/>
-                            <create qname="booktitle"/>
                         </fulltext>
 
                         <create qname="title" type="xs:string"/>
@@ -272,10 +270,6 @@
             <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
                 description="storing DBLP library data" overwrite="no"/>
             <sequence repeat="15" description="Fulltext queries" optimize="yes">
-                <xquery collection="/db/library" query="//book[author &amp;= 'kernighan']"/>
-                <xquery collection="/db/library" query="//book[author &amp;= 'brian kernighan']"/>
-                <xquery collection="/db/library" query="//*[author &amp;= 'brian kernighan']"/>
-                <xquery collection="/db/library" query=" //book[author &amp;= 'kernighan']/title"/>
                 <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml']"/>
                 <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml xquery']"/>
                 <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt']"/>
