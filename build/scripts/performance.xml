@@ -13,7 +13,7 @@
 	<import file="../../build.xml"/>	
 
     <property name="benchmark.output" value="${junit.reports}/benchmark"/>
-    <property name="benchmark.src" value="${junit.reports}/src"/>
+    <property name="benchmark.src" value="test/src"/>
     <property name="benchmark.data" value="${benchmark.output}/data"/>
 
     <available property="benchmark.jgoethe.available"
@@ -23,55 +23,26 @@
     <available property="benchmark.imdi.available"
         file="01_Content.imdi" filepath="${benchmark.data}/imdi"/>
 
-    <target name="benchmark" depends="run-benchmark, post-process-benchmark"/>
+    <target name="benchmark" depends="run-benchmark"/>
 
-    <target name="run-benchmark" depends="test-compile, install-data-goethe, install-data-dblp, install-data-imdi"
-            xmlns:test="http://exist-db.org/test">
-        <typedef resource="org/exist/performance/ant/antlib.xml" uri="http://exist-db.org/test">
-            <classpath>
-                <path refid="classpath.core"/>
-                <path refid="classpath.junit"/>
-            </classpath>
-        </typedef>
-
+    <target name="run-benchmark" depends="test-compile, install-data-goethe, install-data-dblp, install-data-imdi">
         <delete dir="${benchmark.output}/temp" failonerror="false"/>
         <mkdir dir="${benchmark.output}"/>
         <mkdir dir="${benchmark.output}/temp"/>
-        <!--test:benchmark outputFile="${benchmark.output}/update-replace.xml"
-            source="${benchmark.src}/org/exist/performance/trapeze.xml"
-            group="store-replace"/-->
-        <test:benchmark outputFile="${benchmark.output}/ft-tests-result.xml"
-                source="${benchmark.src}/org/exist/performance/test.xml"
-                group="ft-tests"/>
-        <test:benchmark outputFile="${benchmark.output}/large-docs-result.xml"
-                source="${benchmark.src}/org/exist/performance/test.xml"
-                group="large-documents"/>
-       <test:benchmark outputFile="${benchmark.output}/imdi-result.xml"
-                source="${benchmark.src}/org/exist/performance/test.xml"
-                group="imdi-tests"/>
-        <!--test:benchmark outputFile="${benchmark.output}/updates-result.xml"
-                source="${benchmark.src}/org/exist/performance/test.xml"
-                group="updates"/-->
-        <!--test:benchmark outputFile="${benchmark.output}/updates-result.xml"
-                source="${benchmark.src}/org/exist/performance/test.xml"
-                group="updates"/-->
-    </target>
-
-    <target name="post-process-benchmark" xmlns:xdb="http://exist-db.org/ant">
-        <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-            <classpath refid="classpath.core"/>
-        </typedef>
-
-        <xdb:store uri="xmldb:exist:///db/bench" createcollection="true" initdb="true">
-			<fileset dir="${benchmark.output}">
-                <include name="*.xml"/>
-            </fileset>
-        </xdb:store>
-        <xdb:xquery uri="xmldb:exist:///db/bench"
-               queryFile="${benchmark.src}/org/exist/performance/log2html.xql"
-                outputProperty="benchmark.result"/>
-        <echo file="${benchmark.output}/results.html" message="${benchmark.result}"/>
-        <copy todir="${benchmark.output}" file="${benchmark.src}/org/exist/performance/style.css"/>
+        <echo message="Running test file: ${benchmark.src}/org/exist/performance/test.xml"/>
+	    <java fork="true" classname="org.exist.performance.Main"
+            maxmemory="2048m">
+	        <sysproperty key="exist.home" value="${basedir}" />
+	        <sysproperty key="log4j.configuration" value="file:log4j.xml"/>
+	        <classpath refid="classpath.core"/>
+	        <classpath refid="classpath.junit"/>
+            <arg value="-d ${benchmark.output}"/>
+	        <arg value="-f ${benchmark.src}/org/exist/performance/test.xml"/>
+	        <arg value="-r"/>
+	        <arg value="large-documents"/>
+	        <arg value="ft-tests"/>
+	        <arg value="imdi-tests"/>
+        </java>
     </target>
 
     <target name="install-data-goethe" unless="benchmark.jgoethe.available">
@@ -79,11 +50,10 @@
         <echo>-------------------------</echo>
         <echo>Downloading XML data: this may take a few minutes ...</echo>
         <mkdir dir="${benchmark.data}"/>
-        <mkdir dir="${benchmark.data}/jgoethe"/>
-        <get src="http://data.exist-db.org/jgoethe-tei.zip"
+        <get src="http://demo.exist-db.org/jgoethe-tei.zip"
             dest="${benchmark.data}/jgoethe-tei.zip" verbose="on"/>
         <unzip src="${benchmark.data}/jgoethe-tei.zip"
-            dest="${benchmark.data}/jgoethe"/>
+            dest="${benchmark.data}"/>
         <delete file="${benchmark.data}/jgoethe-tei.zip" failonerror="false"/>
         <available property="benchmark.jgoethe.available"
             file="jgoethe.xml" filepath="${benchmark.data}/jgoethe"/>

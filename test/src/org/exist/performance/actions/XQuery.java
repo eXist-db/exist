@@ -62,7 +62,6 @@ public class XQuery extends AbstractAction {
             }
             query = buf.toString();
         }
-        LOG.debug("Query: " + query);
         if (!config.hasAttribute("collection"))
             throw new EXistException(StoreFromFile.class.getName() + " requires an attribute 'collection'");
         collectionPath = config.getAttribute("collection");
