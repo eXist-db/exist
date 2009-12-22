@@ -67,9 +67,9 @@ public class Main implements WrapperListener, Observer {
 
 			// determine class to load
 			if (args[0].equals("jetty"))
-				klazz = cl.loadClass("org.exist.JettyStart");
+				klazz = cl.loadClass("org.exist.jetty.JettyStart");
 			else
-				klazz = cl.loadClass("org.exist.StandaloneServer");
+				klazz = cl.loadClass("org.exist.jetty.StandaloneServer");
 			
 			// find the run() method in the class
 			Class<?>[] methodParamTypes = new Class[2];

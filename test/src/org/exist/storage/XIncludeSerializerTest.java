@@ -24,7 +24,7 @@ package org.exist.storage;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.Diff;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.storage.serializers.XIncludeFilter;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;

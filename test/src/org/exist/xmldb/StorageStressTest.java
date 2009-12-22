@@ -23,7 +23,7 @@ package org.exist.xmldb;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;

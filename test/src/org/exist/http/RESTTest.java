@@ -1,7 +1,7 @@
 package org.exist.http;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.storage.DBBroker;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

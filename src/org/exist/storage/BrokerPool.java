@@ -150,7 +150,7 @@ public class BrokerPool extends Observable {
 	 */
     //TODO : rename as activateShutdownHook ? or registerShutdownHook(Thread aThread)
     // WM: it is probably not necessary to allow users to register their own hook. This method
-    // is only used once, by class org.exist.JettyStart, which registers its own hook.
+    // is only used once, by class org.exist.jetty.JettyStart, which registers its own hook.
 	public final static void setRegisterShutdownHook(boolean register) {
 		/*
 		 * TODO : call Runtime.getRuntime().removeShutdownHook or Runtime.getRuntime().registerShutdownHook 

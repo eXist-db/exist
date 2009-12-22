@@ -627,7 +627,7 @@
         <option value="$PROJECT_DIR$/src/org/exist/source/BinarySource.java" />
         <option value="$PROJECT_DIR$/extensions/xqdoc/src/org/exist/xqdoc/xquery/XQDocModule.java" />
         <option value="$PROJECT_DIR$/src/org/exist/xquery/XPathUtil.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/JettyStart.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/jetty/JettyStart.java" />
         <option value="$PROJECT_DIR$/src/org/exist/storage/NodePath.java" />
         <option value="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneIndexWorker.java" />
         <option value="$PROJECT_DIR$/extensions/xqdoc/src/org/exist/xqdoc/XQDocHelper.java" />

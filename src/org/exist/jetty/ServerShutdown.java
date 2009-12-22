@@ -3,7 +3,7 @@
  * 
  * @author wolf
  */
-package org.exist;
+package org.exist.jetty;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;

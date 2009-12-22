@@ -211,7 +211,7 @@
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
-        <java classname="org.exist.StandaloneServer">
+        <java classname="org.exist.jetty.StandaloneServer">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>

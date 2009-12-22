@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist;
+package org.exist.jetty;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -78,6 +78,7 @@ import org.xmldb.api.base.Database;
  * 
  * @author wolf
  */
+@Deprecated
 public class StandaloneServer {
 
     public interface ServletBootstrap {

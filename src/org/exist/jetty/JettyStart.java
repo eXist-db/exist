@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist;
+package org.exist.jetty;
 
 import java.io.File;
 import java.io.FileInputStream;
