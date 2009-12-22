@@ -64,7 +64,7 @@ public class GetVersion extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-    	logger.info("Entering the " + SystemModule.PREFIX + ":get-version XQuery function");
+    	logger.debug("Entering the " + SystemModule.PREFIX + ":get-version XQuery function");
 		Properties sysProperties = new Properties();
 		try
 		{
