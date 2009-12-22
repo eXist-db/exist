@@ -3068,7 +3068,7 @@ src/org/exist/memtree/ReferenceNode.java,97
 public class ReferenceNodeReferenceNode32,1086
     public ReferenceNode(ReferenceNode38,1192
 
-src/org/exist/StandaloneServer.java,2327
+src/org/exist/jetty/StandaloneServer.java,2327
 public class StandaloneServerStandaloneServer81,3065
    public interface ServletBootstrapServletBootstrap83,3098
         DEFAULT_PROPERTIES.setProperty(DEFAULT_PROPERTIES.setProperty107,4268
@@ -6104,7 +6104,7 @@ public class GroupGroup11,168
 	public Group(Group16,253
 	public Group(Group21,330
 
-src/org/exist/JettyStart.java,1266
+src/org/exist/jetty/JettyStart.java,1266
 public class JettyStartJettyStart44,1665
         public JettyStart(JettyStart51,1797
                 System.out.println(System.out.println54,1931
@@ -8542,7 +8542,7 @@ src/org/exist/xquery/BasicFunction.java,103
 public abstract class BasicFunctionBasicFunction34,1245
 	public BasicFunction(BasicFunction36,1301
 
-src/org/exist/ServerShutdown.java,510
+src/org/exist/jetty/ServerShutdown.java,510
 public class ServerShutdownServerShutdown33,876
             System.err.println(System.err.println61,2102
                     System.out.println(System.out.println75,2665
@@ -14322,7 +14322,7 @@ src/org/exist/memtree/ReferenceNode.java,327
     public NamedNodeMap getAttributes(getAttributes65,1961
     public Node getFirstChild(getFirstChild70,2107
 
-src/org/exist/StandaloneServer.java,920
+src/org/exist/jetty/StandaloneServer.java,920
       void bootstrap(bootstrap84,3137
     public void run(run123,4863
     public boolean isStarted(isStarted202,8046
@@ -18349,7 +18349,7 @@ src/org/exist/security/Group.java,153
 	public int compareTo(compareTo41,839
 	public String toString(toString47,1012
 
-src/org/exist/JettyStart.java,285
+src/org/exist/jetty/JettyStart.java,285
 	public static void main(main46,1692
 	public void  run(run76,3088
 					public void run(run118,4355
@@ -22482,7 +22482,7 @@ src/org/exist/xquery/BasicFunction.java,81
 	public Sequence eval(eval43,1537
 	public abstract Sequence eval(eval79,2978
 
-src/org/exist/ServerShutdown.java,112
+src/org/exist/jetty/ServerShutdown.java,112
     public static void main(main58,1941
     private static Properties loadProperties(loadProperties112,4241
 
@@ -31642,7 +31642,7 @@ src/org/exist/memtree/ReferenceNode.java,181
         int p =p43,1330
     	StringBuffer result =result48,1455
 
-src/org/exist/StandaloneServer.java,4163
+src/org/exist/jetty/StandaloneServer.java,4163
  *  as published by the Free Software Foundation;Foundation8,255
  *  but WITHOUT ANY WARRANTY;WARRANTY12,454
     private final static Logger LOG =LOG86,3210
@@ -39378,7 +39378,7 @@ src/org/exist/security/Group.java,128
 		String groupId =groupId23,445
 		StringBuffer buf =buf48,1040
 
-src/org/exist/JettyStart.java,606
+src/org/exist/jetty/JettyStart.java,606
  *  as published by the Free Software Foundation;Foundation7,257
  *  but WITHOUT ANY WARRANTY;WARRANTY11,454
 		JettyStart start =start47,1734
@@ -48761,7 +48761,7 @@ src/org/exist/xquery/BasicFunction.java,252
 		for (int i =i58,2378
         Sequence result =result62,2495
 
-src/org/exist/ServerShutdown.java,898
+src/org/exist/jetty/ServerShutdown.java,898
     private final static int HELP_OPT =HELP_OPT36,935
     private final static int URI_OPT =URI_OPT38,981
     private final static int USER_OPT =USER_OPT40,1026

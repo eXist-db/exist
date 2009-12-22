@@ -117,14 +117,14 @@
     
     <!-- Section: CATEGORIES -->
     
-    <category name="org.exist.JettyStart" additivity="false">
+    <category name="org.exist.jetty.JettyStart" additivity="false">
         <priority value="trace"/>
         <appender-ref ref="console"/>
         <appender-ref ref="exist.core"/>
         <appender-ref ref="exist.xmldb"/>
     </category>
     
-    <category name="org.exist.StandaloneServer" additivity="false">
+    <category name="org.exist.jetty.StandaloneServer" additivity="false">
         <priority value="trace"/>
         <appender-ref ref="console"/>
         <appender-ref ref="exist.core"/>

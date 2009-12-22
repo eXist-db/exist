@@ -175,7 +175,7 @@
                     url="devguide.xml">Developer's Guide</ulink>.</para>
             <para>By default, the stand-alone server listens on port <filename>8088</filename>,
                 though this can be changed (see configuration below). The Java class for launching
-                the server is <classname>org.exist.StandaloneServer</classname>.</para>
+                the server is <classname>org.exist.jetty.StandaloneServer</classname>.</para>
             <section>
                 <title>Starting the Stand-alone Server</title>
                 <para>To start the server, launch either the Unix shell script:</para>

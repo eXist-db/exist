@@ -38,7 +38,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.Namespaces;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.DBBroker;

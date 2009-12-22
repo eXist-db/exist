@@ -25,7 +25,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.XMLAssert;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.TestConstants;

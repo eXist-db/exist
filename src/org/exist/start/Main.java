@@ -309,10 +309,10 @@ public class Main {
                 _mode = "backup";
             } else if (args[0].equals("jetty") || args[0].equals("standalone")) {
                 //_classname = "org.mortbay.jetty.Server";
-                _classname = "org.exist.JettyStart";
+                _classname = "org.exist.jetty.JettyStart";
                 _mode = args[0];
             } else if (args[0].equals("shutdown")) {
-                _classname = "org.exist.ServerShutdown";
+                _classname = "org.exist.jetty.ServerShutdown";
                 _mode = "other";
             } else {
                 _classname = args[0];

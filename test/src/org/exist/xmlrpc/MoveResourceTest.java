@@ -6,7 +6,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.*;

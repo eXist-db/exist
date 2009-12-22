@@ -21,7 +21,7 @@
 package org.exist.xmldb;
 
 import junit.framework.TestCase;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;

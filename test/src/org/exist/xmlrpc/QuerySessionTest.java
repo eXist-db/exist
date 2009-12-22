@@ -1,6 +1,6 @@
 package org.exist.xmlrpc;
 
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.TestDataGenerator;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;

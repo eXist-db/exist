@@ -1,7 +1,7 @@
 package org.exist.xquery;
 
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.TestUtils;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.DBBroker;

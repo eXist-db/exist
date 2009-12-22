@@ -1,7 +1,7 @@
 package org.exist.xquery;
 
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;

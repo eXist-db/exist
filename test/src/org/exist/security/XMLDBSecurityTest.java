@@ -1,6 +1,6 @@
 package org.exist.security;
 
-import org.exist.JettyStart;
+import org.exist.jetty.JettyStart;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
 import org.junit.*;

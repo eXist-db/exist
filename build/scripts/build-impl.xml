@@ -334,6 +334,7 @@
             <exclude name="org/exist/atom/**"/>
             <exclude name="org/exist/cocoon/**"/>
             <exclude name="org/exist/http/**"/>
+						<exclude name="org/exist/jetty/**"/>
             <exclude name="org/exist/jsp/**"/>
             <exclude name="org/exist/soap/**"/>
             <exclude name="org/exist/source/CocoonSource.java"/>
@@ -372,6 +373,7 @@
             <include name="org/exist/atom/**"/>
             <include name="org/exist/cocoon/**"/>
             <include name="org/exist/http/**"/>
+						<include name="org/exist/jetty/**"/>
             <include name="org/exist/jsp/**"/>
             <include name="org/exist/soap/**"/>
             <include name="org/exist/source/CocoonSource.java"/>
