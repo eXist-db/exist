@@ -20,7 +20,7 @@
  *  $Id$
  */
 
-package org.exist;
+package org.exist.installer;
 
 import org.exist.security.User;
 import org.exist.xmldb.DatabaseInstanceManager;

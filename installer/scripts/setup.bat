@@ -16,6 +16,6 @@ set JAVA_OPTS="-Xms16000k -Xmx128000k -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 echo "JAVA_HOME: %JAVA_HOME%"
 echo "EXIST_HOME: %EXIST_HOME%"
 
-%JAVA_CMD% "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" org.exist.Setup %1 %2 %3 %4 %5 %6 %7 %8 %9
+%JAVA_CMD% "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" org.exist.installer.Setup %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 :eof
