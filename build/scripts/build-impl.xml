@@ -334,7 +334,7 @@
             <exclude name="org/exist/atom/**"/>
             <exclude name="org/exist/cocoon/**"/>
             <exclude name="org/exist/http/**"/>
-						<exclude name="org/exist/jetty/**"/>
+			<exclude name="org/exist/jetty/**"/>
             <exclude name="org/exist/jsp/**"/>
             <exclude name="org/exist/soap/**"/>
             <exclude name="org/exist/source/CocoonSource.java"/>
