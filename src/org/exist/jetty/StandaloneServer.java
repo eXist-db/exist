@@ -449,7 +449,7 @@ public class StandaloneServer {
         String file = System.getProperty("server.xml", "server.xml");
         File f = ConfigurationHelper.lookup(file);
         if (!f.canRead()) {
-            is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/server.xml");
+            is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/jetty/server.xml");
             if (is == null) {
                 throw new IOException("Server configuration not found!");
             }

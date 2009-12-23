@@ -3,6 +3,8 @@
     Configures the stand-alone server: the stand-alone server is a minimal
     webserver with just three services enabled by default:
     webdav, xmlrpc, rest.
+
+		$Id$
 -->
 <server port="8088">
     <!-- 
