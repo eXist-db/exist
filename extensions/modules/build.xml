@@ -136,7 +136,7 @@
 
     <!-- Special targets for jfreechart module -->
     <property name="chart.jfreechart.zip" value="${top.dir}/${lib.user}/jfreechart.zip"/>
-    <available file="${chart.jfreechart.zip}" property="jfreechart-present"/>
+    <available classname="org.jfree.chart.JFreeChart" classpathref="classpath.core" property="jfreechart-present"/>
     
     <target name="prepare-jfreechart" if="include.module.jfreechart.config" unless="jfreechart-present">
         <echo message="-------------------------------------------------------"/>
@@ -155,7 +155,7 @@
 			<mapper type="flatten"/>
 		</unzip>
 
-        <!--delete file="${chart.jfreechart.zip}"/-->
+        <delete file="${chart.jfreechart.zip}"/>
     </target>
     
     <!-- Special targets end -->
