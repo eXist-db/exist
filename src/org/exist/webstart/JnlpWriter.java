@@ -122,7 +122,7 @@ public class JnlpWriter {
         out.println("</security>");
         
         out.println("<resources>");
-        out.println("<j2se version=\"1.5+\"/>");
+        out.println("<j2se version=\"1.6+\"/>");
         
         out.println("  <jar href=\"" + jnlpFiles.getMainJar().getName()
         +"\" size=\""+ jnlpFiles.getMainJar().length()
