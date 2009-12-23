@@ -52,7 +52,6 @@ public class JnlpJarFiles {
         "jEdit-syntax",
         "jline-%latest%",
         "log4j-%latest%",
-        "stax-api-%latest%",
         "sunxacml-%latest%"
     };
     
