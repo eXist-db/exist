@@ -852,7 +852,7 @@
         <builtin-logicsheet>
           <parameter name="prefix" value="xdb"/>
           <parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
-          <parameter name="href" value="resource://org/exist/xmldb.xsl"/>
+          <parameter name="href" value="resource://org/exist/cocoon/xmldb.xsl"/>
         </builtin-logicsheet>
 
 <!--..... End configuration from 'esql' -->

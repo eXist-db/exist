@@ -121,13 +121,6 @@
                     <homepage>http://jedit.org/</homepage>
                 </file>
                 <file>
-                    <title>StAX</title>
-                    <description>StAX interfaces</description>
-                    <used-by>exist</used-by>
-                    <lib>endorsed/stax-api-1.0.1.jar</lib>
-					<homepage>http://stax.codehaus.org/</homepage>
-                </file>
-                <file>
                     <title>XML-RPC Common</title>
                     <description>Java implementation of XML-RPC, a popular protocol that uses XML over
                         HTTP to implement remote procedure calls.</description>

@@ -501,7 +501,7 @@ DatabaseManager.registerDatabase(database1);
             <para>The Cocoon version included with eXist is already configured to recognize the
                     <filename>xmldb</filename> namespace and associate it with the XML:DB
                 logicsheet. The logicsheet is defined in <filename moreinfo="none"
-                    >src/org/exist/xmldb.xsl</filename>. To use the logicsheet from our page we just
+                    >src/org/exist/cocoon/xmldb.xsl</filename>. To use the logicsheet from our page we just
                 declare the xmldb namespace (i.e. xmlns:xdb="http://exist-db.org/xmldb/1.0").</para>
             <para>The above sample code retrieves a document from the collection <filename
                     moreinfo="none">/db/shakespeare/plays</filename>. The name of the document is

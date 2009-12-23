@@ -294,9 +294,7 @@
         <copy file="${src}/org/exist/xquery/util/messages.properties"
             todir="${build.classes}/org/exist/xquery/util"/>
         <copy file="${src}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
-        <copy file="${src}/org/exist/exist.xsl" todir="${build.classes}/org/exist"/>
-        <copy file="${src}/org/exist/xmldb.xsl" todir="${build.classes}/org/exist"/>
-        <copy file="${src}/org/exist/xmldb2.xsl" todir="${build.classes}/org/exist"/>
+
         <copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
         <copy file="${src}/org/exist/security/security.properties"
             todir="${build.classes}/org/exist/security"/>
