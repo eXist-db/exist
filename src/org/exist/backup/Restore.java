@@ -3,6 +3,7 @@ package org.exist.backup;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
@@ -224,7 +225,7 @@ public class Restore extends DefaultHandler {
                         throw new SAXException("Collection not found: " + collUri);
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
-					UserImpl u = new UserImpl(owner, null, group);
+					User u = new UserImpl(owner, null, group);
 					service.chown(u, group);
 					service.chmod(Integer.parseInt(mode, 8));
 				} catch (Exception e) {
@@ -339,7 +340,7 @@ public class Restore extends DefaultHandler {
 
                         UserManagementService service =
                                 (UserManagementService) current.getService("UserManagementService", "1.0");
-                        UserImpl u = new UserImpl(owner, null, group);
+                        User u = new UserImpl(owner, null, group);
                         try {
                             service.chown(res, u, group);
                         } catch (XMLDBException e1) {

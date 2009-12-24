@@ -28,7 +28,7 @@ import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -372,7 +372,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
      *
      * @param user an <code>User</code> value
      */
-    public void setUserLock(UserImpl user) {
+    public void setUserLock(User user) {
 	getMetadata().setUserLock(user == null ? 0 : user.getUID());
     }
 	
@@ -381,7 +381,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
      *
      * @return an <code>User</code> value
      */
-    public UserImpl getUserLock() {
+    public User getUserLock() {
 	int lockOwnerId = getMetadata().getUserLock();
 	if(lockOwnerId == 0)
 	    return null;
@@ -498,7 +498,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
                 ostream.writeInt(1);
                 ostream.writeInt(1);
             } else {
-                UserImpl user = secman.getUser(permissions.getOwner());
+                User user = secman.getUser(permissions.getOwner());
                 Group group = secman.getGroup(permissions.getOwnerGroup());
                 if (group == null)
                     group = secman.getGroup(SecurityManager.GUEST_GROUP);

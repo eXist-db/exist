@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id:$
+ * $Id$
  */
 package org.exist.security;
 
@@ -40,10 +40,10 @@ import java.util.Properties;
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
-public class UserImpl {
+public class UserImpl implements User {
 
    private final static Logger LOG = Logger.getLogger(UserImpl.class);
-    public final static UserImpl DEFAULT =
+    public final static User DEFAULT =
         new UserImpl( "guest", null, "guest" );
         
     private final static String GROUP = "group";
@@ -54,11 +54,7 @@ public class UserImpl {
     private final static String HOME = "home";
     private static String realm = "exist";
 
-    public final static int PLAIN_ENCODING = 0;
-	public final static int SIMPLE_MD5_ENCODING = 1;
-	public final static int MD5_ENCODING = 2;
-	
-	public static int PASSWORD_ENCODING;
+    public static int PASSWORD_ENCODING;
     public static boolean CHECK_PASSWORDS = true;
         
 	static {
@@ -196,11 +192,9 @@ public class UserImpl {
     }
 
 
-    /**
-     *  Add the user to a group
-     *
-     *@param  group  The feature to be added to the Group attribute
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#addGroup(java.lang.String)
+	 */
     public final void addGroup( String group ) {
     	if (groups == null) {
     		groups = new String[1];
@@ -216,12 +210,9 @@ public class UserImpl {
     		hasDbaRole = true;
     }
     
-    /**
-     *  Remove the user to a group
-     *  Added by {Marco.Tampucci and Massimo.Martinelli}@isti.cnr.it  
-     *
-     *@param  group  The feature to be removed to the Group attribute
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#remGroup(java.lang.String)
+	 */
     public final void remGroup( String group ) {
     	if (groups == null) {
     		groups = new String[1];
@@ -257,6 +248,9 @@ public class UserImpl {
     		hasDbaRole = false;
     }
 
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#setGroups(java.lang.String[])
+	 */
     public final void setGroups(String[] groups) {
     	this.groups = groups;
     	for (int i = 0; i < groups.length; i++)
@@ -264,28 +258,30 @@ public class UserImpl {
     			hasDbaRole = true;
     }
 
-    /**
-     *  Get all groups this user belongs to
-     *
-     *@return    The groups value
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#getGroups()
+	 */
     public final String[] getGroups() {
         return groups == null ? new String[0] : groups;
     }
 
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#hasDbaRole()
+	 */
     public final boolean hasDbaRole() {
     	return hasDbaRole;
     }
     
-    /**
-     *  Get the user name
-     *
-     *@return    The user value
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#getName()
+	 */
     public final String getName() {
         return user;
     }
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getUID()
+	 */
 	public final int getUID() {
 		return uid;
 	}
@@ -304,11 +300,9 @@ public class UserImpl {
     }
 
 
-    /**
-     *  Get the primary group this user belongs to
-     *
-     *@return    The primaryGroup value
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#getPrimaryGroup()
+	 */
     public final String getPrimaryGroup() {
         if ( groups == null || groups.length == 0 )
             return null;
@@ -316,12 +310,9 @@ public class UserImpl {
     }
 
 
-    /**
-     *  Is the user a member of group?
-     *
-     *@param  group  Description of the Parameter
-     *@return        Description of the Return Value
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#hasGroup(java.lang.String)
+	 */
     public final boolean hasGroup( String group ) {
     	if (groups == null)
     		return false;
@@ -333,11 +324,9 @@ public class UserImpl {
     }
 
 
-    /**
-     *  Sets the password attribute of the User object
-     *
-     *@param  passwd  The new password value
-     */
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#setPassword(java.lang.String)
+	 */
     public final void setPassword( String passwd ) {
        if (passwd==null) {
           this.password = null;
@@ -483,10 +472,16 @@ public class UserImpl {
     	this.uid = uid;
     }
     
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
+	 */
     public void setHome(XmldbURI homeCollection) {
     	home = homeCollection;
     }
     
+    /* (non-Javadoc)
+	 * @see org.exist.security.User#getHome()
+	 */
     public XmldbURI getHome() {
     	return home;
     }

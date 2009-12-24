@@ -1,6 +1,7 @@
 
 package org.exist.xmldb;
 import org.exist.security.Permission;
+import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -56,7 +57,7 @@ public interface UserManagementService extends Service {
      *@param  group               Description of the Parameter
      *@exception  XMLDBException  Description of the Exception
      */
-    public void chown( UserImpl u, String group ) throws XMLDBException;
+    public void chown( User u, String group ) throws XMLDBException;
 
 
     /**
@@ -67,7 +68,7 @@ public interface UserManagementService extends Service {
      *@param  group               Description of the Parameter
      *@exception  XMLDBException  Description of the Exception
      */
-    public void chown( Resource res, UserImpl u, String group )
+    public void chown( Resource res, User u, String group )
          throws XMLDBException;
 
 
@@ -122,7 +123,7 @@ public interface UserManagementService extends Service {
      * @param u
      * @throws XMLDBException
      */
-    public void lockResource(Resource res, UserImpl u) throws XMLDBException;
+    public void lockResource(Resource res, User u) throws XMLDBException;
     
     /**
      * Check if the resource has a user lock.
@@ -181,7 +182,7 @@ public interface UserManagementService extends Service {
      *@return                     The users value
      *@exception  XMLDBException  Description of the Exception
      */
-    public UserImpl[] getUsers() throws XMLDBException;
+    public User[] getUsers() throws XMLDBException;
 
 	/**
 	 * Retrieve a list of all existing groups.
@@ -271,7 +272,7 @@ public interface UserManagementService extends Service {
      *@param  user                User
      *@exception  XMLDBException
      */
-    public void removeUser( UserImpl user ) throws XMLDBException;
+    public void removeUser( User user ) throws XMLDBException;
     
     /**
 	 *  Update the specified user without update user's password
@@ -280,7 +281,7 @@ public interface UserManagementService extends Service {
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-    public void addUserGroup(UserImpl user) throws XMLDBException;
+    public void addUserGroup(User user) throws XMLDBException;
     
     /**
 	 *  Update the specified user removing a group from user's group
@@ -290,7 +291,7 @@ public interface UserManagementService extends Service {
 	 *@param  rmgroup             Description of group to remove 
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-    public void removeGroup(UserImpl user, String rmgroup) throws XMLDBException;
+    public void removeGroup(User user, String rmgroup) throws XMLDBException;
 }
 
 

@@ -23,6 +23,7 @@ package org.exist.xquery.functions.system;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -76,7 +77,7 @@ public class AsUser extends Function {
             throw exception;
         }
         if (user.validate(passwd)) {
-            UserImpl oldUser = context.getBroker().getUser();
+            User oldUser = context.getBroker().getUser();
             try {
                 logger.info("Setting the authenticated user to: [" + userName + "]");
                 context.getBroker().setUser(user);

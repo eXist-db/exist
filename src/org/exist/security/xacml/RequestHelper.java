@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.exist.dom.QName;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
@@ -111,7 +111,7 @@ public class RequestHelper
 	*/
 	public RequestCtx createReflectionRequest(XQueryContext context, Module contextModule, String className, String methodName)
 	{
-		UserImpl user = context.getUser();
+		User user = context.getUser();
 		Set<Subject> subjects = createQuerySubjects(user, contextModule);
 		Set<Attribute> resourceAttributes = createReflectionResource(className, methodName);
 		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.INVOKE_METHOD_ACTION);
@@ -173,7 +173,7 @@ public class RequestHelper
 			return null;
 		}
 		
-		UserImpl user = context.getUser();
+		User user = context.getUser();
 		Set<Subject> subjects = createQuerySubjects(user, contextModule);
 
 		Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
@@ -201,7 +201,7 @@ public class RequestHelper
 	* @param user The user making the request
 	* @return A <code>Subject</code> for use in a <code>RequestCtx</code>
 	*/
-	public Subject createUserSubject(UserImpl user)
+	public Subject createUserSubject(User user)
 	{
 		AttributeValue value = new StringAttribute(user.getName());
 		Attribute attr = new Attribute(XACMLConstants.SUBJECT_ID_ATTRIBUTE, null, null, value);
@@ -330,7 +330,7 @@ public class RequestHelper
 	* @return A <code>Set</code> containing a <code>Subject</code> for each
 	* the context module if there is one and the user.
 	*/
-	public Set<Subject> createQuerySubjects(UserImpl user, Module contextModule)
+	public Set<Subject> createQuerySubjects(User user, Module contextModule)
 	{
 		if(user == null)
 			throw new NullPointerException("User cannot be null");

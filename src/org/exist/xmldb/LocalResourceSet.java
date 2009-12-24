@@ -30,7 +30,7 @@ import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.SortedNodeSet;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -59,13 +59,13 @@ public class LocalResourceSet implements ResourceSet {
 	protected LocalCollection collection;
 	protected Vector<Object> resources = new Vector<Object>();
 	protected Properties outputProperties;
-	private UserImpl user;
+	private User user;
 
 	@SuppressWarnings("unused")
 	private LocalResourceSet() {}
 	
 	public LocalResourceSet(
-		UserImpl user,
+		User user,
 		BrokerPool pool,
 		LocalCollection col,
 		Properties properties,

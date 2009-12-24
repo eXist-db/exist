@@ -9,7 +9,7 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -31,7 +31,7 @@ public class ListUsersTask extends UserTask
     try
     {
       log("Listing all users", Project.MSG_DEBUG);
-      UserImpl[] users = service.getUsers();
+      User[] users = service.getUsers();
       if (users != null)
       {
         StringBuilder buf = new StringBuilder();

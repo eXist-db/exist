@@ -4,7 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -16,9 +16,9 @@ import org.xmldb.api.base.XMLDBException;
 public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 
 	protected BrokerPool pool;
-	protected UserImpl user;
+	protected User user;
 	
-	public LocalDatabaseInstanceManager(UserImpl user, BrokerPool pool) {
+	public LocalDatabaseInstanceManager(User user, BrokerPool pool) {
 		this.pool = pool;
 		this.user = user;
 	}

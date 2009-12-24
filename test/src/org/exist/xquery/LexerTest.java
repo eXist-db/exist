@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -76,7 +76,7 @@ public class LexerTest extends TestCase {
 			e1.printStackTrace();
 			fail(e1.getMessage());
 		}
-		UserImpl user = pool.getSecurityManager().getUser("admin");
+		User user = pool.getSecurityManager().getUser("admin");
 		DBBroker broker = null;
 		TransactionManager transact = null;
 		Txn transaction = null;
