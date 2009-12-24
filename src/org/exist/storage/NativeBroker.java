@@ -2104,12 +2104,14 @@ public class NativeBroker extends DBBroker {
         LOG.debug("Copying document " + oldDoc.getFileURI() + " to " + 
 		  newDoc.getURI());
         final long start = System.currentTimeMillis();
+        indexController.setDocument(newDoc, StreamListener.STORE);
+        StreamListener listener = indexController.getStreamListener();
         NodeList nodes = oldDoc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
 		    StoredNode node = (StoredNode) nodes.item(i);
 		    Iterator iterator = getNodeIterator(node);
             iterator.next();
-            copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, true);
+            copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, true, listener);
         }
         flush();
         closeDocument();
@@ -2529,14 +2531,16 @@ public class NativeBroker extends DBBroker {
             DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
             tempDoc.copyOf(doc);
             tempDoc.setDocId(doc.getDocId());
-            
+
+            indexController.setDocument(doc, StreamListener.STORE);
+            StreamListener listener = indexController.getStreamListener();
             // copy the nodes
             NodeList nodes = doc.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
             	Iterator iterator = getNodeIterator(node);
                 iterator.next();                
-                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true);
+                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true, listener);
             }
             flush();
             // checkTree(tempDoc);
@@ -2736,12 +2740,12 @@ public class NativeBroker extends DBBroker {
     }
 
     private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
-			   DocumentImpl newDoc, boolean defrag, boolean index) {
-        copyNodes(transaction, iterator, node, currentPath, newDoc, defrag, index, null);
+			   DocumentImpl newDoc, boolean defrag, boolean index, StreamListener listener) {
+        copyNodes(transaction, iterator, node, currentPath, newDoc, defrag, index, listener, null);
     }
 
     private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
-			   DocumentImpl newDoc, boolean defrag, boolean index, NodeId oldNodeId) {
+			   DocumentImpl newDoc, boolean defrag, boolean index, StreamListener listener, NodeId oldNodeId) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -2763,7 +2767,24 @@ public class NativeBroker extends DBBroker {
         if (node.getNodeId().getTreeLevel() == 1)
             newDoc.appendChild(node);
         node.setOwnerDocument(doc);
-
+        if (listener != null) {
+            switch (node.getNodeType()) {
+                case Node.TEXT_NODE :
+                    listener.characters(transaction, (TextImpl) node, currentPath);
+                    break;
+                case Node.ELEMENT_NODE :
+                    listener.startElement(transaction, (ElementImpl) node, currentPath);
+                    break;
+                case Node.ATTRIBUTE_NODE :
+                    listener.attribute(transaction, (AttrImpl) node, currentPath);
+                    break;
+                case Node.COMMENT_NODE :
+                case Node.PROCESSING_INSTRUCTION_NODE :
+                    break;
+                default :
+                    LOG.debug("Unhandled node type: " + node.getNodeType());
+            }
+        }
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
             NodeId nodeId = node.getNodeId();
@@ -2777,10 +2798,12 @@ public class NativeBroker extends DBBroker {
 			nodeId = nodeId.nextSibling();
                     child.setNodeId(nodeId);
                 }
-                copyNodes(transaction, iterator, child, currentPath, newDoc, defrag, index, oldNodeId);
+                copyNodes(transaction, iterator, child, currentPath, newDoc, defrag, index, listener, oldNodeId);
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
+            if (listener != null)
+                listener.endElement(transaction, (ElementImpl) node, currentPath);
             currentPath.removeLastComponent();
         }
     }
