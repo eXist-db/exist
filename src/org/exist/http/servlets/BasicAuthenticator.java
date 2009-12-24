@@ -29,7 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Base64Decoder;
 import org.exist.xquery.XQueryContext;
@@ -50,7 +50,7 @@ public class BasicAuthenticator implements Authenticator {
 	/* (non-Javadoc)
 	 * @see org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public User authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException
+	public UserImpl authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
 		String credentials = request.getHeader("Authorization");
                 String username = null;
@@ -68,10 +68,10 @@ public class BasicAuthenticator implements Authenticator {
                 
 		//get the user from the session if possible
 		HttpSession session = request.getSession( false );
-		User user = null;
+		UserImpl user = null;
 		if(session != null)
 		{
-			user = (User)session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+			user = (UserImpl)session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
 			if (user != null && (username==null || user.getName().equals(username))) {
 				return user;
 			}

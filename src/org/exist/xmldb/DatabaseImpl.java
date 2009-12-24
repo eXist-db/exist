@@ -26,7 +26,7 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -182,7 +182,7 @@ public class DatabaseImpl implements Database {
     } catch (EXistException e) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, "Can not access to local database instance", e);
     }
-    User u = getUser(user, password, pool);
+    UserImpl u = getUser(user, password, pool);
     try {
       Collection current = new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
       return (current != null) ? current : null;
@@ -257,13 +257,13 @@ public class DatabaseImpl implements Database {
    * @return the User object corresponding to the username in <code>user</code>
    * @throws XMLDBException
    */
-  private User getUser(String user, String password, BrokerPool pool) throws XMLDBException {
+  private UserImpl getUser(String user, String password, BrokerPool pool) throws XMLDBException {
     if (user == null) {
       user = "guest";
       password = "guest";
     }
     SecurityManager securityManager = pool.getSecurityManager();
-    User u = securityManager.getUser(user);
+    UserImpl u = securityManager.getUser(user);
     if (u == null) {
       throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "User '" + user + "' does not exist");
     }

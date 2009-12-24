@@ -129,7 +129,7 @@ public class XQueryURLRewrite implements Filter {
 
     private final Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
 
-    protected User user;
+    protected UserImpl user;
     protected BrokerPool pool;
 
     // path to the query

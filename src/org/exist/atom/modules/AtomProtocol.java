@@ -30,7 +30,7 @@ import org.exist.http.NotFoundException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UUIDGenerator;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;

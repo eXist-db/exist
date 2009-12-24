@@ -44,7 +44,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
@@ -99,7 +99,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     protected BrokerPool brokerPool = null;
     protected Properties properties = new Properties(defaultProperties);
     protected LocalCollection parent = null;
-    protected User user = null;
+    protected UserImpl user = null;
     protected ArrayList<Observer> observers = new ArrayList<Observer>(1);
     protected boolean needsSync = false;
     
@@ -117,7 +117,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
      * @param collection
      * @throws XMLDBException
      */
-    public LocalCollection(User user, BrokerPool brokerPool, XmldbURI collection, AccessContext accessCtx)
+    public LocalCollection(UserImpl user, BrokerPool brokerPool, XmldbURI collection, AccessContext accessCtx)
     throws XMLDBException {
         this(user, brokerPool, null, collection, accessCtx);
     }
@@ -132,7 +132,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
      * @throws XMLDBException
      */
     public LocalCollection(
-            User user,
+            UserImpl user,
             BrokerPool brokerPool,
             LocalCollection parent,
             XmldbURI name,
@@ -142,7 +142,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new NullAccessContextException();
         this.accessCtx = accessCtx;
         if (user == null)
-            user = new User("guest", "guest", "guest");
+            user = new UserImpl("guest", "guest", "guest");
         this.user = user;
         this.parent = parent;
         this.brokerPool = brokerPool;
@@ -222,7 +222,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         }
     }
     
-    protected boolean checkOwner(Collection collection, User user) throws XMLDBException {
+    protected boolean checkOwner(Collection collection, UserImpl user) throws XMLDBException {
         return user.getName().equals(collection.getPermissions().getOwner());
     }
     

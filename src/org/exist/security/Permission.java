@@ -105,7 +105,7 @@ public interface Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner(User user);
+    public void setOwner(UserImpl user);
 
     /**
      *  Set the owner
@@ -167,5 +167,5 @@ public interface Permission {
      *@param  perm  The requested permissions
      *@return       true if user has the requested permissions
      */
-    public boolean validate(User user, int perm);	
+    public boolean validate(UserImpl user, int perm);	
 }

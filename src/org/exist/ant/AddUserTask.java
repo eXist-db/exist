@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.XMLDBException;
 
@@ -38,7 +38,7 @@ public class AddUserTask extends UserTask
 
     try
     {
-      User usr = new User(name);
+      UserImpl usr = new UserImpl(name);
       if (secret != null)
         usr.setPassword(secret);
       if (home != null)

@@ -86,7 +86,7 @@ public class XMLDBSecurityTest {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         UserManagementService ums = (UserManagementService)
             test.getService("UserManagementService", "1.0");
-        User guest = ums.getUser("guest");
+        UserImpl guest = ums.getUser("guest");
         // make myself the owner ;-)
         ums.chown(guest, "guest");
     }
@@ -99,7 +99,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        User test2 = ums.getUser("guest");
+        UserImpl test2 = ums.getUser("guest");
         ums.chown(resource, test2, "guest");
     }
 
@@ -186,7 +186,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        User test2 = ums.getUser("test2");
+        UserImpl test2 = ums.getUser("test2");
         ums.chown(test2, "users");
         Permission perms = ums.getPermissions(test);
         assertEquals("test2", perms.getOwner());
@@ -200,7 +200,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        User test2 = ums.getUser("test2");
+        UserImpl test2 = ums.getUser("test2");
         ums.chown(resource, test2, "users");
     }
 
@@ -210,10 +210,10 @@ public class XMLDBSecurityTest {
             Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", null);
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
-            User user = new User("test1", "test1", "users");
+            UserImpl user = new UserImpl("test1", "test1", "users");
             ums.addUser(user);
 
-            user = new User("test2", "test2", "users");
+            user = new UserImpl("test2", "test2", "users");
             ums.addUser(user);
 
             // create a collection /db/securityTest as user "test1"
@@ -222,7 +222,7 @@ public class XMLDBSecurityTest {
             Collection test = cms.createCollection("securityTest1");
             ums = (UserManagementService) test.getService("UserManagementService", "1.0");
             // pass ownership to test1
-            User test1 = ums.getUser("test1");
+            UserImpl test1 = ums.getUser("test1");
             ums.chown(test1, "users");
             // full permissions for user and group, none for world
             ums.chmod(0770);
@@ -248,9 +248,9 @@ public class XMLDBSecurityTest {
             if (root.getChildCollection("securityTest1") != null)
                 cms.removeCollection("securityTest1");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
-            User test1 = ums.getUser("test1");
+            UserImpl test1 = ums.getUser("test1");
             ums.removeUser(test1);
-            User test2 = ums.getUser("test2");
+            UserImpl test2 = ums.getUser("test2");
             ums.removeUser(test2);
         } catch (XMLDBException e) {
             e.printStackTrace();

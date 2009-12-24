@@ -27,7 +27,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -566,13 +566,13 @@ public class SystemExport {
 
     public int getCollectionCount() {
         if (collectionCount == -1) {
-            User.enablePasswordChecks(false);
+            UserImpl.enablePasswordChecks(false);
             try {
                 CollectionCallback cb = new CollectionCallback(null, null, null, null, false);
                 broker.getCollectionsFailsafe(cb);
                 collectionCount = cb.collectionCount;
             } finally {
-                User.enablePasswordChecks(true);
+                UserImpl.enablePasswordChecks(true);
             }
         }
         return collectionCount;

@@ -88,14 +88,14 @@ public class RpcConnection implements RpcAPI {
 
     protected XmldbRequestProcessorFactory factory;
 
-    protected User user;
+    protected UserImpl user;
 
     /**
      * Creates a new <code>RpcConnection</code> instance.
      *
      * @exception EXistException if an error occurs
      */
-    public RpcConnection(XmldbRequestProcessorFactory factory, User user)
+    public RpcConnection(XmldbRequestProcessorFactory factory, UserImpl user)
     {
         super();
         this.factory = factory;
@@ -1683,7 +1683,7 @@ public class RpcConnection implements RpcAPI {
      */
     public HashMap<String, Object> getUser(String name) throws EXistException,
             PermissionDeniedException {
-        User u = factory.getBrokerPool().getSecurityManager().getUser(name);
+        UserImpl u = factory.getBrokerPool().getSecurityManager().getUser(name);
         if (u == null)
             throw new EXistException("user " + name + " does not exist");
         HashMap<String, Object> tab = new HashMap<String, Object>();
@@ -1707,7 +1707,7 @@ public class RpcConnection implements RpcAPI {
      */
     public Vector<HashMap<String, Object>> getUsers() throws EXistException,
             PermissionDeniedException {
-        User users[] = factory.getBrokerPool().getSecurityManager().getUsers();
+        UserImpl users[] = factory.getBrokerPool().getSecurityManager().getUsers();
         Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
         for (int i = 0; i < users.length; i++) {
             final HashMap<String, Object> tab = new HashMap<String, Object>();
@@ -3498,12 +3498,12 @@ public class RpcConnection implements RpcAPI {
             passwd = null;
         SecurityManager manager = factory.getBrokerPool()
                 .getSecurityManager();
-        User u;
+        UserImpl u;
         if (!manager.hasUser(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new PermissionDeniedException(
                         "not allowed to create user");
-            u = new User(name);
+            u = new UserImpl(name);
             u.setEncodedPassword(passwd);
             u.setPasswordDigest(passwdDigest);
         } else {
@@ -3543,12 +3543,12 @@ public class RpcConnection implements RpcAPI {
 
     	SecurityManager manager = factory.getBrokerPool()
         	.getSecurityManager();
-    	User u;
+    	UserImpl u;
     	if (!manager.hasUser(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
                 	"not allowed to create user");
-    		u = new User(name);
+    		u = new UserImpl(name);
     	} else {
     		u = manager.getUser(name);
     		if (!(u.getName().equals(user.getName()) || manager
@@ -3577,12 +3577,12 @@ public class RpcConnection implements RpcAPI {
 
     	SecurityManager manager = factory.getBrokerPool()
         	.getSecurityManager();
-    	User u;
+    	UserImpl u;
     	if (!manager.hasUser(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
                 	"not allowed to create user");
-    		u = new User(name);
+    		u = new UserImpl(name);
     	} else {
     		u = manager.getUser(name);
     		if (!(u.getName().equals(user.getName()) || manager
@@ -3642,7 +3642,7 @@ public class RpcConnection implements RpcAPI {
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
                         "to lock the resource for user " + userName);
-            User lockOwner = doc.getUserLock();
+            UserImpl lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
@@ -3692,7 +3692,7 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             if (doc == null)
                 throw new EXistException("Resource " + docURI + " not found");
-            User u = doc.getUserLock();
+            UserImpl u = doc.getUserLock();
             return u == null ? "" : u.getName();
 
         } catch (Throwable e) {
@@ -3737,7 +3737,7 @@ public class RpcConnection implements RpcAPI {
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
             SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-            User lockOwner = doc.getUserLock();
+            UserImpl lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());

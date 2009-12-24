@@ -34,7 +34,7 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
 
 import org.exist.collections.Collection;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
@@ -78,7 +78,7 @@ public class DatabaseInsertResources_WithValidation_Test {
             pool = BrokerPool.getInstance();
 
 
-            broker = pool.get(User.DEFAULT);
+            broker = pool.get(UserImpl.DEFAULT);
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 

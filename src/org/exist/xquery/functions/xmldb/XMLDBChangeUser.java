@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -84,8 +84,8 @@ public class XMLDBChangeUser extends BasicFunction {
 	try {
 	    collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-	    User oldUser = ums.getUser(userName);
-	    User user = new User(oldUser.getName());
+	    UserImpl oldUser = ums.getUser(userName);
+	    UserImpl user = new UserImpl(oldUser.getName());
 	    if (user == null) {
             logger.error("User " + userName + " not found");
             throw new XPathException(this, "User " + userName + " not found");

@@ -5,7 +5,7 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
@@ -31,7 +31,7 @@ public class ChownTask extends UserTask
 
     try
     {
-      User usr = service.getUser(name);
+      UserImpl usr = service.getUser(name);
       if (resource != null)
       {
         Resource res = base.getResource(resource);

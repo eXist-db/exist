@@ -217,7 +217,7 @@ public class Database {
 	 * @throws DatabaseException if the user could not be logged in
 	 */
 	public static Database login(String username, String password) {
-		User user = pool.getSecurityManager().getUser(username);
+		UserImpl user = pool.getSecurityManager().getUser(username);
 		if (user == null || !user.validate(password)) throw new DatabaseException("invalid user credentials");
 		return new Database(user);
 	}
@@ -245,11 +245,11 @@ public class Database {
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
 	private static final WeakHashMap<NativeBroker,Boolean> instrumentedBrokers = new WeakHashMap<NativeBroker,Boolean>();
 	
-	private final User user;
+	private final UserImpl user;
 	private final NamespaceMap namespaceBindings;
 	String defaultCharacterEncoding = "UTF-8";
 	
-	Database(User user) {
+	Database(UserImpl user) {
 		this.user = user;
 		this.namespaceBindings = new NamespaceMap();
 	}

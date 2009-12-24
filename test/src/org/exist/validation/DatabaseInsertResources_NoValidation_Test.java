@@ -23,7 +23,7 @@ package org.exist.validation;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
@@ -72,7 +72,7 @@ public class DatabaseInsertResources_NoValidation_Test {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
 
-            broker = pool.get(User.DEFAULT);
+            broker = pool.get(UserImpl.DEFAULT);
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 

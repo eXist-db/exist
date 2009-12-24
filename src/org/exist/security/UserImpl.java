@@ -1,4 +1,24 @@
-
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2003-2009 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id:$
+ */
 package org.exist.security;
 
 import org.apache.log4j.Logger;
@@ -17,14 +37,14 @@ import java.util.Properties;
 /**
  *  Represents a user within the database.
  *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
  * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
-public class User {
+public class UserImpl {
 
-   private final static Logger LOG = Logger.getLogger(User.class);
-    public final static User DEFAULT =
-        new User( "guest", null, "guest" );
+   private final static Logger LOG = Logger.getLogger(UserImpl.class);
+    public final static UserImpl DEFAULT =
+        new UserImpl( "guest", null, "guest" );
         
     private final static String GROUP = "group";
     private final static String NAME = "name";
@@ -45,7 +65,7 @@ public class User {
 		Properties props = new Properties(); 
 		try {
 			props.load(
-					User.class.getClassLoader().getResourceAsStream("org/exist/security/security.properties")
+					UserImpl.class.getClassLoader().getResourceAsStream("org/exist/security/security.properties")
 			);
 		} catch (IOException e) {
 		}
@@ -95,7 +115,7 @@ public class User {
      *@param  user      Description of the Parameter
      *@param  password  Description of the Parameter
      */
-    public User( String user, String password ) {
+    public UserImpl( String user, String password ) {
         this.user = user;
         setPassword( password );
 
@@ -107,7 +127,7 @@ public class User {
      *
      *@param  user  Description of the Parameter
      */
-    public User( String user ) {
+    public UserImpl( String user ) {
         this.user = user;
     }
 
@@ -119,7 +139,7 @@ public class User {
      *@param  password      Description of the Parameter
      *@param  primaryGroup  Description of the Parameter
      */
-    public User( String user, String password, String primaryGroup ) {
+    public UserImpl( String user, String password, String primaryGroup ) {
         this( user, password );
         addGroup( primaryGroup );
     }
@@ -131,7 +151,7 @@ public class User {
      *@param  node                                Description of the Parameter
      *@exception  DatabaseConfigurationException  Description of the Exception
      */
-    public User( int majorVersion, int minorVersion,Element node ) throws DatabaseConfigurationException {
+    public UserImpl( int majorVersion, int minorVersion,Element node ) throws DatabaseConfigurationException {
        this.user = node.getAttribute( NAME );
        if ( user == null || user.length() == 0)
           throw new DatabaseConfigurationException( "user needs a name" );
@@ -475,7 +495,7 @@ public class User {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
-		User other = (User)obj;
+		UserImpl other = (UserImpl)obj;
 		
 		if(other != null)
 		{

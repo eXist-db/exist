@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -47,7 +47,7 @@ public class DigestAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 	
-	public User authenticate(HttpServletRequest request, HttpServletResponse response)
+	public UserImpl authenticate(HttpServletRequest request, HttpServletResponse response)
 	throws IOException {
 		String credentials = request.getHeader("Authorization");
 		if(credentials == null) {
@@ -57,7 +57,7 @@ public class DigestAuthenticator implements Authenticator {
 		Digest digest = new Digest(request.getMethod());
 		parseCredentials(digest, credentials);
 		SecurityManager secman = pool.getSecurityManager();
-		User user = secman.getUser(digest.username);
+		UserImpl user = secman.getUser(digest.username);
 		if(user == null) {
 			//If user does not exist then send a challenge request again
 			sendChallenge(request, response);

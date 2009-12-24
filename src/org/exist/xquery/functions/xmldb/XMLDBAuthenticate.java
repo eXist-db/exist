@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -160,7 +160,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 			
             if( isCalledAs( "login" ) ) {
                 UserManagementService ums = (UserManagementService)root.getService( "UserManagementService", "1.0" );
-                User user = ums.getUser( userName );
+                UserImpl user = ums.getUser( userName );
                 context.getBroker().setUser( user );
                 
                 /** if there is a http session cache the user in the http session */
@@ -180,7 +180,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 * @param user	The User to cache in the session
 	 * @param createSession	Create session?
 	 */
-	private void cacheUserInHttpSession( User user, boolean createSession ) throws XPathException
+	private void cacheUserInHttpSession( UserImpl user, boolean createSession ) throws XPathException
 	{
 		Variable var = getSessionVar( createSession );
 		

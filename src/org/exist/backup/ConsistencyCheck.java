@@ -38,7 +38,7 @@ import org.exist.dom.StoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -105,14 +105,14 @@ public class ConsistencyCheck {
      *         found
      */
     public List<ErrorReport> checkCollectionTree(ProgressCallback callback) {
-        User.enablePasswordChecks(false);
+        UserImpl.enablePasswordChecks(false);
         try {
             List<ErrorReport> errors = new ArrayList<ErrorReport>();
             Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
             checkCollection(root, errors, callback);
             return errors;
         } finally {
-            User.enablePasswordChecks(true);
+            UserImpl.enablePasswordChecks(true);
         }
     }
 
@@ -148,13 +148,13 @@ public class ConsistencyCheck {
 
     public int getDocumentCount() {
         if (documentCount == -1) {
-            User.enablePasswordChecks(false);
+            UserImpl.enablePasswordChecks(false);
             try {
                 DocumentCallback cb = new DocumentCallback(null, null, false);
                 broker.getResourcesFailsafe(cb, directAccess);
                 documentCount = cb.docCount;
             } finally {
-                User.enablePasswordChecks(true);
+                UserImpl.enablePasswordChecks(true);
             }
         }
         return documentCount;
@@ -186,12 +186,12 @@ public class ConsistencyCheck {
      *            class {@link ErrorReport}.
      */
     public void checkDocuments(ProgressCallback progress, List<ErrorReport> errorList) {
-        User.enablePasswordChecks(false);
+        UserImpl.enablePasswordChecks(false);
         try {
             DocumentCallback cb = new DocumentCallback(errorList, progress, true);
             broker.getResourcesFailsafe(cb, directAccess);
         } finally {
-            User.enablePasswordChecks(true);
+            UserImpl.enablePasswordChecks(true);
         }
     }
 

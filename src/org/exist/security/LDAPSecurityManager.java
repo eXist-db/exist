@@ -39,8 +39,8 @@ public class LDAPSecurityManager implements SecurityManager
 {
 
    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
-   protected Map<String, User> userByNameCache = new HashMap<String, User>();
-   protected Map<Integer, User> userByIdCache = new HashMap<Integer, User>();
+   protected Map<String, UserImpl> userByNameCache = new HashMap<String, UserImpl>();
+   protected Map<Integer, UserImpl> userByIdCache = new HashMap<Integer, UserImpl>();
    protected Map<String, Group> groupByNameCache = new HashMap<String, Group>();
    protected Map<Integer, Group> groupByIdCache = new HashMap<Integer, Group>();
    
@@ -202,7 +202,7 @@ public class LDAPSecurityManager implements SecurityManager
       }
    }
 
-   protected User getUserByName(DirContext context, String username)
+   protected UserImpl getUserByName(DirContext context, String username)
       throws NamingException
    {
       // Form the dn from the user pattern
@@ -213,7 +213,7 @@ public class LDAPSecurityManager implements SecurityManager
       return getUser(context,dn);
    }
       
-   protected User getUserById(DirContext context, int uid)
+   protected UserImpl getUserById(DirContext context, int uid)
       throws NamingException
    {
       LOG.info("Searching for "+uidNumberAttr+"="+uid+" in "+userBase);
@@ -261,7 +261,7 @@ public class LDAPSecurityManager implements SecurityManager
       return null;
    }
    
-   protected User newUserFromAttributes(DirContext context,Attributes attrs)
+   protected UserImpl newUserFromAttributes(DirContext context,Attributes attrs)
       throws NamingException
    {
       String username = getAttributeValue(uidAttr,attrs);
@@ -287,7 +287,7 @@ public class LDAPSecurityManager implements SecurityManager
 
       int uid = Integer.parseInt(getAttributeValue(uidNumberAttr, attrs));
       LOG.info("Constructing user "+username+"/"+uid+" in group "+(mainGroup==null ? "<none>" : mainGroup));
-      User user = new User(username, null, mainGroup);
+      UserImpl user = new UserImpl(username, null, mainGroup);
       user.setUID(uid);
       if (password!=null) {
          if (password.charAt(0)=='{') {
@@ -324,7 +324,7 @@ public class LDAPSecurityManager implements SecurityManager
       return user;
    }
       
-   protected User getUser(DirContext context, String dn)
+   protected UserImpl getUser(DirContext context, String dn)
       throws NamingException
    {
       
@@ -356,7 +356,7 @@ public class LDAPSecurityManager implements SecurityManager
    {
    }
 
-   public void deleteUser(User user) throws PermissionDeniedException
+   public void deleteUser(UserImpl user) throws PermissionDeniedException
    {
    }
 
@@ -435,10 +435,10 @@ public class LDAPSecurityManager implements SecurityManager
       return Permission.DEFAULT_PERM;
    }
 
-   public User getUser(int uid)
+   public UserImpl getUser(int uid)
    {
       Integer iuid = new Integer(uid);
-      User user = userByIdCache.get(iuid);
+      UserImpl user = userByIdCache.get(iuid);
       if (user==null) {
          try {
             user = getUserById(context,uid);
@@ -452,9 +452,9 @@ public class LDAPSecurityManager implements SecurityManager
       return user;
    }
 
-   public User getUser(String name)
+   public UserImpl getUser(String name)
    {
-      User user = userByNameCache.get(name);
+      UserImpl user = userByNameCache.get(name);
       if (user==null) {
          try {
             user = getUserByName(context,name);
@@ -469,19 +469,19 @@ public class LDAPSecurityManager implements SecurityManager
    }
 
    // This needs to be an enumeration
-   public User[] getUsers()
+   public UserImpl[] getUsers()
    {
       try {
          SearchControls constraints = new SearchControls();
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
          NamingEnumeration<SearchResult> users = context.search(userBase,"(objectClass="+userClassName+")",constraints);
-         List<User> userList = new ArrayList<User>();
+         List<UserImpl> userList = new ArrayList<UserImpl>();
          while (users.hasMore()) {
             SearchResult result = users.next();
             userList.add(newUserFromAttributes(context,result.getAttributes()));
          }
-         User [] retval = new User[userList.size()];
+         UserImpl [] retval = new UserImpl[userList.size()];
          System.arraycopy(userList.toArray(), 0, retval,0, retval.length);
          return retval;
       } catch (NamingException ex) {
@@ -491,7 +491,7 @@ public class LDAPSecurityManager implements SecurityManager
    }
 
    // TODO: this shouldn't be in this interface
-   public synchronized boolean hasAdminPrivileges(User user) {
+   public synchronized boolean hasAdminPrivileges(UserImpl user) {
       return user.hasDbaRole();
    }
    
@@ -516,7 +516,7 @@ public class LDAPSecurityManager implements SecurityManager
    }
 
    // TODO: this should be addUser
-   public void setUser(User user)
+   public void setUser(UserImpl user)
    {
    }
    

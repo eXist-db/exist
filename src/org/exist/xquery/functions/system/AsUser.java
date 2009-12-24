@@ -23,7 +23,7 @@ package org.exist.xquery.functions.system;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
@@ -69,14 +69,14 @@ public class AsUser extends Function {
         String userName = userSeq.getStringValue();
         String passwd = passwdSeq.getStringValue();
         org.exist.security.SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
-        User user = security.getUser(userName);
+        UserImpl user = security.getUser(userName);
 		if (user == null) {
 	        XPathException exception = new XPathException(this, "Authentication failed");
         	logger.error("Authentication failed for setting the user to [" + userName + "] because user does not exist, throwing an exception!", exception);
             throw exception;
         }
         if (user.validate(passwd)) {
-            User oldUser = context.getBroker().getUser();
+            UserImpl oldUser = context.getBroker().getUser();
             try {
                 logger.info("Setting the authenticated user to: [" + userName + "]");
                 context.getBroker().setUser(user);
