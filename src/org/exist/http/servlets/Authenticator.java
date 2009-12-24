@@ -26,7 +26,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 
 /**
  * Interface for HTTP authentication methods.
@@ -43,7 +43,7 @@ public interface Authenticator {
      * @return The authenticated user or null if the user isn't autenticated
      * @throws IOException
      */
-	public User authenticate(HttpServletRequest request, HttpServletResponse response)
+	public UserImpl authenticate(HttpServletRequest request, HttpServletResponse response)
 	throws IOException;
 	
 	/**

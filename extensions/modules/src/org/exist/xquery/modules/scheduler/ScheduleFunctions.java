@@ -27,7 +27,7 @@ import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.scheduler.UserJob;
 import org.exist.scheduler.UserXQueryJob;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -207,7 +207,7 @@ public class ScheduleFunctions extends BasicFunction
             repeatValue = ((IntegerValue)args[5].itemAt(0)).getInt();
 		}
 
-		User user = context.getUser();
+		UserImpl user = context.getUser();
 		
 		//Check if the user is a DBA
 		if(!user.hasDbaRole())

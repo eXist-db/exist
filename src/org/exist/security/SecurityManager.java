@@ -47,7 +47,7 @@ public interface SecurityManager {
    public final static String GUEST_GROUP = "guest";
    public final static String GUEST_USER = "guest";
 
-   public final static User SYSTEM_USER = new User(DBA_USER, null, DBA_GROUP);
+   public final static UserImpl SYSTEM_USER = new UserImpl(DBA_USER, null, DBA_GROUP);
    
    void attach(BrokerPool pool, DBBroker sysBroker);
 
@@ -58,14 +58,14 @@ public interface SecurityManager {
    void deleteUser(String name) 
      throws PermissionDeniedException;
 
-   void deleteUser(User user) 
+   void deleteUser(UserImpl user) 
      throws PermissionDeniedException;
 
-   User getUser(String name);
+   UserImpl getUser(String name);
 
-   User getUser(int uid);
+   UserImpl getUser(int uid);
 
-   User[] getUsers();
+   UserImpl[] getUsers();
 
    void addGroup(String name);
 
@@ -77,11 +77,11 @@ public interface SecurityManager {
 
    String[] getGroups();
 
-   boolean hasAdminPrivileges(User user);
+   boolean hasAdminPrivileges(UserImpl user);
 
    boolean hasUser(String name);
 
-   void setUser(User user);
+   void setUser(UserImpl user);
 
    int getResourceDefaultPerms();
 

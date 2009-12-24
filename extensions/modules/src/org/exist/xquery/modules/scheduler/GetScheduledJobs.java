@@ -27,7 +27,7 @@ import org.exist.dom.QName;
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJob;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -103,7 +103,7 @@ public class GetScheduledJobs extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		User user = context.getUser();
+		UserImpl user = context.getUser();
 		
 		boolean userhasDBARole = user.hasDbaRole();
 		

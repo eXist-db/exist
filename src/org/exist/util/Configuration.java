@@ -31,7 +31,7 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
@@ -834,7 +834,7 @@ public class Configuration implements ErrorHandler
             config.put("db-connection.security.password-encoding",encoding);
             if (encoding!=null) {
                 LOG.info("db-connection.security.password-encoding: " + config.get("db-connection.security.password-encoding"));
-                User.setPasswordEncoding(encoding);
+                UserImpl.setPasswordEncoding(encoding);
             } else {
                 LOG.info("No password encoding set, defaulting.");
             }
@@ -843,7 +843,7 @@ public class Configuration implements ErrorHandler
             config.put("db-connection.security.password-realm",realm);
             if (realm!=null) {
                 LOG.info("db-connection.security.password-realm: " + config.get("db-connection.security.password-realm"));
-                User.setPasswordRealm(realm);
+                UserImpl.setPasswordRealm(realm);
             } else {
                 LOG.info("No password realm set, defaulting.");
             }

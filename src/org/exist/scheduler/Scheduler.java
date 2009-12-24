@@ -24,7 +24,7 @@ package org.exist.scheduler;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
@@ -521,7 +521,7 @@ public class Scheduler
 				else
 				{
 					//create an XQuery job
-					User guestUser = brokerpool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
+					UserImpl guestUser = brokerpool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
 					job = new UserXQueryJob(jobConfig.getJobName(), jobConfig.getResourceName(), guestUser);
                     try {
                         // check if a job with the same name is already registered

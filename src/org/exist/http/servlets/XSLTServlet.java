@@ -27,7 +27,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -127,7 +127,7 @@ public class XSLTServlet extends HttpServlet {
 
         try {
             pool = BrokerPool.getInstance();
-            User user = pool.getSecurityManager().getUser(userParam);
+            UserImpl user = pool.getSecurityManager().getUser(userParam);
             if (user != null) {
                 if (!user.validate(passwd)) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
@@ -217,7 +217,7 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
-    private Templates getSource(User user, HttpServletRequest request, HttpServletResponse response,
+    private Templates getSource(UserImpl user, HttpServletRequest request, HttpServletResponse response,
                                 SAXTransformerFactory factory, String stylesheet)
         throws ServletException, IOException {
         String base;
@@ -306,7 +306,7 @@ public class XSLTServlet extends HttpServlet {
         Templates templates = null;
         String uri;
 
-        public CachedStylesheet(SAXTransformerFactory factory, User user, String uri, String baseURI) throws ServletException {
+        public CachedStylesheet(SAXTransformerFactory factory, UserImpl user, String uri, String baseURI) throws ServletException {
             this.factory = factory;
             this.uri = uri;
             if (!baseURI.startsWith("xmldb:exist://"))
@@ -314,7 +314,7 @@ public class XSLTServlet extends HttpServlet {
             getTemplates(user);
         }
 
-        public Templates getTemplates(User user) throws ServletException {
+        public Templates getTemplates(UserImpl user) throws ServletException {
             if (uri.startsWith("xmldb:exist://")) {
                 String docPath = uri.substring("xmldb:exist://".length());
                 DocumentImpl doc = null;

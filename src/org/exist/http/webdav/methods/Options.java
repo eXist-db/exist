@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.exist.http.webdav.WebDAVMethod;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -36,7 +36,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class Options implements WebDAVMethod {
 	
-	public void process(User user, HttpServletRequest request,
+	public void process(UserImpl user, HttpServletRequest request,
 			HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
             
         // TODO DWES changed to 2 ; check regression

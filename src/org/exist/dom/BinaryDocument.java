@@ -25,7 +25,7 @@ package org.exist.dom;
 import org.exist.collections.Collection;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
@@ -98,7 +98,7 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(1);
 			ostream.writeInt(1);
 		} else {
-			User user = secman.getUser(permissions.getOwner());
+			UserImpl user = secman.getUser(permissions.getOwner());
 			Group group = secman.getGroup(permissions.getOwnerGroup());
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());

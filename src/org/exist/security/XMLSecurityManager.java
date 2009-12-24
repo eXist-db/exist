@@ -75,7 +75,7 @@ public class XMLSecurityManager implements SecurityManager {
 	public final static String GUEST_GROUP = "guest";
 	public final static String GUEST_USER = "guest";
 	
-	public final static User SYSTEM_USER = new User(DBA_USER, null, DBA_GROUP);
+	public final static UserImpl SYSTEM_USER = new UserImpl(DBA_USER, null, DBA_GROUP);
 	
 	private final static Logger LOG =
 		Logger.getLogger(SecurityManager.class);
@@ -126,11 +126,11 @@ public class XMLSecurityManager implements SecurityManager {
              docElement = acl.getDocumentElement();
           if (docElement == null) {
              LOG.debug("creating system users");
-             User user = new User(DBA_USER, null);
+             UserImpl user = new UserImpl(DBA_USER, null);
              user.addGroup(DBA_GROUP);
              user.setUID(++nextUserId);
              users.put(user.getUID(), user);
-             user = new User(GUEST_USER, GUEST_USER, GUEST_GROUP);
+             user = new UserImpl(GUEST_USER, GUEST_USER, GUEST_GROUP);
              user.setUID(++nextUserId);
              users.put(user.getUID(), user);
              newGroup(DBA_GROUP);
@@ -152,7 +152,7 @@ public class XMLSecurityManager implements SecurityManager {
              NodeList nl = root.getChildNodes();
              Node node;
              Element next;
-             User user;
+             UserImpl user;
              NodeList ul;
              String lastId;
              Group group;
@@ -171,7 +171,7 @@ public class XMLSecurityManager implements SecurityManager {
                       node = ul.item(j);
                       if(node.getNodeType() == Node.ELEMENT_NODE &&
                               node.getLocalName().equals("user")) {
-                         user = new User(major,minor,(Element)node);
+                         user = new UserImpl(major,minor,(Element)node);
                          users.put(user.getUID(), user);
                       }
                    }
@@ -224,10 +224,10 @@ public class XMLSecurityManager implements SecurityManager {
 		deleteUser(getUser(name));
 	}
 	
-	public synchronized void deleteUser(User user) throws PermissionDeniedException {
+	public synchronized void deleteUser(UserImpl user) throws PermissionDeniedException {
 		if(user == null)
 			return;
-		user = (User)users.remove(user.getUID());
+		user = (UserImpl)users.remove(user.getUID());
 		if(user != null)
 			LOG.debug("user " + user.getName() + " removed");
 		else
@@ -247,10 +247,10 @@ public class XMLSecurityManager implements SecurityManager {
 		}
 	}
 
-	public synchronized User getUser(String name) {
-		User user;
+	public synchronized UserImpl getUser(String name) {
+		UserImpl user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
-			user = (User) i.next();
+			user = (UserImpl) i.next();
 			if (user.getName().equals(name))
 				return user;
 		}
@@ -258,19 +258,19 @@ public class XMLSecurityManager implements SecurityManager {
 		return null;
 	}
 
-	public synchronized User getUser(int uid) {
-		final User user = (User)users.get(uid);
+	public synchronized UserImpl getUser(int uid) {
+		final UserImpl user = (UserImpl)users.get(uid);
 		if(user == null) {
 //			LOG.debug("user with uid " + uid + " not found");
         }
 		return user;
 	}
 	
-	public synchronized User[] getUsers() {
-		User u[] = new User[users.size()];
+	public synchronized UserImpl[] getUsers() {
+		UserImpl u[] = new UserImpl[users.size()];
 		int j = 0;
 		for (Iterator i = users.valueIterator(); i.hasNext(); j++)
-			u[j] = (User) i.next();
+			u[j] = (UserImpl) i.next();
 		return u;
 	}
 
@@ -332,14 +332,14 @@ public class XMLSecurityManager implements SecurityManager {
 		return gl;
 	}
 	
-	public synchronized boolean hasAdminPrivileges(User user) {
+	public synchronized boolean hasAdminPrivileges(UserImpl user) {
 		return user.hasDbaRole();
 	}
 
 	public synchronized boolean hasUser(String name) {
-		User user;
+		UserImpl user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
-			user = (User) i.next();
+			user = (UserImpl) i.next();
 			if (user.getName().equals(name))
 				return true;
 		}
@@ -366,7 +366,7 @@ public class XMLSecurityManager implements SecurityManager {
 		buf.append(Integer.toString(nextUserId));
 		buf.append("\">");
 		for (Iterator i = users.valueIterator(); i.hasNext();)
-			buf.append(((User) i.next()).toString());
+			buf.append(((UserImpl) i.next()).toString());
 		buf.append("</users>");
 		buf.append("</auth>");
         
@@ -399,7 +399,7 @@ public class XMLSecurityManager implements SecurityManager {
 		broker.sync(Sync.MAJOR_SYNC);
 	}
 
-	public synchronized void setUser(User user) {
+	public synchronized void setUser(UserImpl user) {
 		if (user.getUID() < 0)
 			user.setUID(++nextUserId);
 		users.put(user.getUID(), user);
@@ -441,7 +441,7 @@ public class XMLSecurityManager implements SecurityManager {
 		return defCollectionPermissions;
 	}
 	
-	private void createUserHome(DBBroker broker, Txn transaction, User user) 
+	private void createUserHome(DBBroker broker, Txn transaction, UserImpl user) 
 	throws EXistException, PermissionDeniedException, IOException {
 		if(user.getHome() == null)
 			return;

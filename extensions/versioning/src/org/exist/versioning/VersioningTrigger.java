@@ -111,7 +111,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
         this.broker = broker;
         this.documentPath = documentPath;
-        User activeUser = broker.getUser();
+        UserImpl activeUser = broker.getUser();
 
         try {
             broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
@@ -176,7 +176,7 @@ public class VersioningTrigger extends FilteringTrigger {
         if (documentPath.startsWith(VERSIONS_COLLECTION))
             return;
         
-        User activeUser = broker.getUser();
+        UserImpl activeUser = broker.getUser();
 
         try {
             broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);

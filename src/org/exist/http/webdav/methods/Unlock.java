@@ -32,7 +32,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -54,7 +54,7 @@ public class Unlock extends AbstractWebDAVMethod {
         super(pool);
     }
     
-    public void process(User user, HttpServletRequest request,
+    public void process(UserImpl user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         
@@ -95,7 +95,7 @@ public class Unlock extends AbstractWebDAVMethod {
 	                //It is used below though...
 	            }
 	            
-	            User lock = resource.getUserLock();
+	            UserImpl lock = resource.getUserLock();
 	            if(lock==null){
 	                // No lock found, can not be unlocked
 	                LOG.debug("No lock found");

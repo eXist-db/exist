@@ -9,7 +9,7 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -32,7 +32,7 @@ public class RemoveUserTask extends UserTask
 
     try
     {
-      User u = service.getUser(name);
+      UserImpl u = service.getUser(name);
       if (u != null)
       {
         service.removeUser(u);

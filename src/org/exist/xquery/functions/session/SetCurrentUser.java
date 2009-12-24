@@ -27,7 +27,7 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -93,7 +93,7 @@ public class SetCurrentUser extends BasicFunction {
 			
 			//try and validate the user and password
 			SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
-			User user = security.getUser(userName);
+			UserImpl user = security.getUser(userName);
 			if (user == null)
 				return Sequence.EMPTY_SEQUENCE;
 			if (user.validate(passwd))

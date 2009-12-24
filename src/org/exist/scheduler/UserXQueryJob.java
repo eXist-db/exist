@@ -26,7 +26,7 @@ import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -63,7 +63,7 @@ public class UserXQueryJob extends UserJob
 	private String JOB_NAME = "XQuery";
 	
 	private String XQueryResource = null;
-	private User user = null;
+	private UserImpl user = null;
 	
 	/**
 	 * Default Constructor for Quartz
@@ -75,7 +75,7 @@ public class UserXQueryJob extends UserJob
 	/**
 	 * Constructor for Creating a new XQuery User Job
 	 */
-    public UserXQueryJob(String jobName, String XQueryResource, User user) {
+    public UserXQueryJob(String jobName, String XQueryResource, UserImpl user) {
         this.XQueryResource = XQueryResource;
 		this.user = user;
         if (jobName == null)
@@ -108,7 +108,7 @@ public class UserXQueryJob extends UserJob
 	 * 
 	 * @return The User for this Job
 	 */
-	protected User getUser()
+	protected UserImpl getUser()
 	{
 		return user;
 	}
@@ -119,7 +119,7 @@ public class UserXQueryJob extends UserJob
 		BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
 		DBBroker broker = null;
 		String xqueryresource = (String)jobDataMap.get("xqueryresource");
-		User user = (User)jobDataMap.get("user");
+		UserImpl user = (UserImpl)jobDataMap.get("user");
 		Properties params = (Properties)jobDataMap.get("params"); 
 			
 		//if invalid arguments then abort

@@ -23,7 +23,7 @@
 package org.exist.xquery.modules.scheduler;
 
 import org.exist.dom.QName;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJob;
 import org.exist.xquery.BasicFunction;
@@ -89,7 +89,7 @@ public class ResumeScheduledJob extends BasicFunction
 	{
 		String jobName = args[0].getStringValue();
 		
-		User user = context.getUser();
+		UserImpl user = context.getUser();
 		
 		//Check if the user is a DBA
 		if(!user.hasDbaRole())

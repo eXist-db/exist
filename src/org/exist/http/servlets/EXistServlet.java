@@ -31,7 +31,7 @@ import org.exist.http.RESTServer;
 import org.exist.http.SOAPServer;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -80,7 +80,7 @@ public class EXistServlet extends HttpServlet {
         
     private Authenticator authenticator;
         
-    private User defaultUser;
+    private UserImpl defaultUser;
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
@@ -187,7 +187,7 @@ public class EXistServlet extends HttpServlet {
     	}
 		
 		//third, authenticate the user
-		User user = authenticate(request,response);
+		UserImpl user = authenticate(request,response);
 		if (user == null) {
                         // You now get a challenge if there is no user
 			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -299,7 +299,7 @@ public class EXistServlet extends HttpServlet {
     	}
 		
     	//third, authenticate the user
-		User user = authenticate(request,response);
+		UserImpl user = authenticate(request,response);
 		if (user == null) {
                         // You now get a challenge if there is no user
 			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -376,7 +376,7 @@ public class EXistServlet extends HttpServlet {
     	}
     	
 		//third, authenticate the user
-		User user = authenticate(request,response);
+		UserImpl user = authenticate(request,response);
 		if (user == null) {
                         // You now get a challenge if there is no user
 			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -443,7 +443,7 @@ public class EXistServlet extends HttpServlet {
     	}
 		
 		//third, authenticate the user
-		User user = authenticate(request,response);
+		UserImpl user = authenticate(request,response);
 		if (user == null) {
                         // You now get a challenge if there is no user
 			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -533,7 +533,7 @@ public class EXistServlet extends HttpServlet {
     	}
 		
     	//third, authenticate the user
-		User user = authenticate(request,response);
+		UserImpl user = authenticate(request,response);
 		if (user == null) {
                         // You now get a challenge if there is no user
 			//response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -602,7 +602,7 @@ public class EXistServlet extends HttpServlet {
         BrokerPool.stopAll(false);
     }
     
-	private User authenticate(HttpServletRequest request,HttpServletResponse response)
+	private UserImpl authenticate(HttpServletRequest request,HttpServletResponse response)
           throws java.io.IOException
         {
 		// First try to validate the principal if passed from the Servlet engine
@@ -613,7 +613,7 @@ public class EXistServlet extends HttpServlet {
 			String password = ((XmldbPrincipal)principal).getPassword();
 			
 			LOG.info("Validating Principle: " + principal.getName());
-			User user = pool.getSecurityManager().getUser(username);
+			UserImpl user = pool.getSecurityManager().getUser(username);
 			
 			if (user != null){
 				if (password.equalsIgnoreCase(user.getPassword())){
@@ -652,9 +652,9 @@ public class EXistServlet extends HttpServlet {
                  */
 	}
 	
-	private User getDefaultUser() {
+	private UserImpl getDefaultUser() {
 		if (defaultUsername != null) {
-			User user = pool.getSecurityManager().getUser(defaultUsername);
+			UserImpl user = pool.getSecurityManager().getUser(defaultUsername);
 			if (user != null) {
 				if (!user.validate(defaultPassword))
 					return null;

@@ -23,7 +23,7 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -86,7 +86,7 @@ public class XMLDBCreateUser extends BasicFunction {
 		
         String user = args[0].getStringValue();
         String pass = args[1].getStringValue();
-        User userObj = new User(user, pass);
+        UserImpl userObj = new UserImpl(user, pass);
         
         logger.info("Attempting to create user " + user);
         
