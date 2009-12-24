@@ -32,7 +32,7 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
 import org.xml.sax.InputSource;
@@ -74,7 +74,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
         
         DatabaseResources databaseResources = new DatabaseResources(brokerPool);
         
-        UserImpl user = brokerPool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
+        User user = brokerPool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
         
         if( xri.getNamespace() !=null ){
             

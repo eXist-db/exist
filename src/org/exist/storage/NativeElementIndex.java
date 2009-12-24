@@ -38,7 +38,7 @@ import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
@@ -820,7 +820,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     
     public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
             throws PermissionDeniedException {
-        final UserImpl user = broker.getUser();
+        final User user = broker.getUser();
         if (!collection.getPermissions().validate(user, Permission.READ))
             throw new PermissionDeniedException("User '" + user.getName() + 
                     "' has no permission to read collection '" + collection.getURI() + "'");        

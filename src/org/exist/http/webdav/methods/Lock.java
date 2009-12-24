@@ -40,7 +40,7 @@ import org.exist.dom.LockToken;
 import org.exist.http.webdav.WebDAV;
 import org.exist.http.webdav.WebDAVUtil;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -68,7 +68,7 @@ public class Lock extends AbstractWebDAVMethod {
         docFactory.setNamespaceAware(true);
     }
     
-    private LockToken getDefaultToken(UserImpl user){
+    private LockToken getDefaultToken(User user){
         
         // Fill in default information
         LockToken lockToken = new LockToken();
@@ -80,7 +80,7 @@ public class Lock extends AbstractWebDAVMethod {
         return lockToken;
     }
     
-    private void createNullResource(UserImpl user,
+    private void createNullResource(User user,
             HttpServletRequest request, HttpServletResponse response,
             XmldbURI path){
         
@@ -185,7 +185,7 @@ public class Lock extends AbstractWebDAVMethod {
     /* (non-Javadoc)
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
-    public void process(UserImpl user, HttpServletRequest request,
+    public void process(User user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         
@@ -244,7 +244,7 @@ public class Lock extends AbstractWebDAVMethod {
                         +"for owner " + lockToken.getOwner());
                 
                 // Get current userlock
-                UserImpl lock = resource.getUserLock();
+                User lock = resource.getUserLock();
                 
                 // Check if Resource is already locked.
                 if( lock!=null && !lock.getName().equals(user.getName()) ){

@@ -24,6 +24,7 @@ package org.exist.protocolhandler.embedded;
 
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 
@@ -41,7 +42,7 @@ public class EmbeddedUser {
      * @param pool     Exist broker pool, provides access to database.
      * @return         USER when user exists and password is OK, or NULL
      */
-    public static UserImpl authenticate(XmldbURL xmldbURL, BrokerPool pool){
+    public static User authenticate(XmldbURL xmldbURL, BrokerPool pool){
         
         if(!xmldbURL.hasUserInfo()){
             return null;
@@ -65,7 +66,7 @@ public class EmbeddedUser {
      * @param pool  Exist broker pool, provides access to database.
      * @return      eXist GUEST user.
      */
-    public static UserImpl getUserGuest(BrokerPool pool){
+    public static User getUserGuest(BrokerPool pool){
         return pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
     }
     

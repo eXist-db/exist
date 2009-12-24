@@ -177,7 +177,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( UserImpl user ) {
+    public void setOwner( User user ) {
     	// FIXME: assume guest identity if user gets lost due to a database corruption
     	if(user == null) {
     		this.owner = SecurityManager.GUEST_USER;
@@ -311,7 +311,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The requested permissions
      *@return       true if user has the requested permissions
      */
-    public boolean validate( UserImpl user, int perm ) {
+    public boolean validate( User user, int perm ) {
         // group dba has full access
         if ( user.hasDbaRole() )
             return true;

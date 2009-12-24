@@ -52,7 +52,7 @@ import org.exist.numbering.NodeIdFactory;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
@@ -536,7 +536,7 @@ public class BrokerPool extends Observable {
     // WM: no, we need one lock per database instance. Otherwise we would lock another database.
 	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
-    private UserImpl serviceModeUser = null;
+    private User serviceModeUser = null;
     private boolean inServiceMode = false;
 
     /** Creates and configures the database instance.
@@ -1216,7 +1216,7 @@ public class BrokerPool extends Observable {
 	 * @throws EXistException If the instance is not available (stopped or not configured)
 	 */
     //TODO : rename as getBroker ? getInstance (when refactored) ?
-	public DBBroker get(UserImpl user) throws EXistException {
+	public DBBroker get(User user) throws EXistException {
 		if (!isInstanceConfigured()) {		
 			throw new EXistException("database instance '" + instanceName + "' is not available");
 		}
@@ -1339,7 +1339,7 @@ public class BrokerPool extends Observable {
 		}
 	}
 
-    public DBBroker enterServiceMode(UserImpl user) throws PermissionDeniedException {
+    public DBBroker enterServiceMode(User user) throws PermissionDeniedException {
         if (!user.hasDbaRole())
             throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");
         serviceModeUser = user;
@@ -1362,7 +1362,7 @@ public class BrokerPool extends Observable {
         return broker;
     }
 
-    public void exitServiceMode(UserImpl user) throws PermissionDeniedException {
+    public void exitServiceMode(User user) throws PermissionDeniedException {
         if (!user.equals(serviceModeUser))
             throw new PermissionDeniedException("The db has been locked by a different user");
         serviceModeUser = null;
@@ -1413,7 +1413,7 @@ public class BrokerPool extends Observable {
 	//TODO : make it protected ?
 	protected void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
-		UserImpl user = broker.getUser();
+		User user = broker.getUser();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(SecurityManager.SYSTEM_USER);
         if (status != SHUTDOWN)

@@ -7,7 +7,7 @@ import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -37,7 +37,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		Logger.getLogger(LocalXUpdateQueryService.class);
 
 	private BrokerPool pool;
-	private UserImpl user;
+	private User user;
 	private LocalCollection parent;
 	private XUpdateProcessor processor = null;
 	
@@ -45,7 +45,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	 * Constructor for LocalXUpdateQueryService.
 	 */
 	public LocalXUpdateQueryService(
-		UserImpl user,
+		User user,
 		BrokerPool pool,
 		LocalCollection parent) {
 		this.pool = pool;

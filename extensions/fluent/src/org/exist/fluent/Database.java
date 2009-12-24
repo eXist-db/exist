@@ -245,11 +245,11 @@ public class Database {
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
 	private static final WeakHashMap<NativeBroker,Boolean> instrumentedBrokers = new WeakHashMap<NativeBroker,Boolean>();
 	
-	private final UserImpl user;
+	private final User user;
 	private final NamespaceMap namespaceBindings;
 	String defaultCharacterEncoding = "UTF-8";
 	
-	Database(UserImpl user) {
+	Database(User user) {
 		this.user = user;
 		this.namespaceBindings = new NamespaceMap();
 	}

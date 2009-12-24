@@ -24,7 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -71,7 +71,7 @@ public class XMLDBIsAdmin extends BasicFunction {
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			UserImpl user = ums.getUser(userName);
+			User user = ums.getUser(userName);
 
 			if(user == null)
                 // todo - why not just return false()? /ljo

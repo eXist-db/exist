@@ -7,6 +7,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -27,10 +28,10 @@ public class LocalUserManagementService implements UserManagementService {
 	private LocalCollection collection;
 
 	private BrokerPool pool;
-	private UserImpl user;
+	private User user;
 
 	public LocalUserManagementService(
-		UserImpl user,
+		User user,
 		BrokerPool pool,
 		LocalCollection collection) {
 		this.pool = pool;
@@ -318,7 +319,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	public void chown(UserImpl u, String group) throws XMLDBException {
+	public void chown(User u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasUser(u.getName()))
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
@@ -366,7 +367,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	public void chown(Resource res, UserImpl u, String group)
+	public void chown(Resource res, User u, String group)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasUser(u.getName()))
@@ -410,7 +411,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 		    broker = pool.get(user);
 		    doc = ((AbstractEXistResource) res).openDocument(broker, Lock.READ_LOCK);
-			UserImpl lockOwner = doc.getUserLock();
+			User lockOwner = doc.getUserLock();
 			return lockOwner == null ? null : lockOwner.getName();
 		} catch (EXistException e) {
 		    throw new XMLDBException(
@@ -423,7 +424,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 	
-	public void lockResource(Resource res, UserImpl u) throws XMLDBException {
+	public void lockResource(Resource res, User u) throws XMLDBException {
 		DocumentImpl doc = null;
 		DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
@@ -440,7 +441,7 @@ public class LocalUserManagementService implements UserManagementService {
 						"User " + user.getName() + " is not allowed to lock resource for " +
 						"user " + u.getName());
 			}
-			UserImpl lockOwner = doc.getUserLock();
+			User lockOwner = doc.getUserLock();
 			if(lockOwner != null) {
 				if(lockOwner.equals(u))
 					return;
@@ -473,7 +474,7 @@ public class LocalUserManagementService implements UserManagementService {
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 						"User is not allowed to lock resource " + res.getId());
 			org.exist.security.SecurityManager manager = pool.getSecurityManager();
-			UserImpl lockOwner = doc.getUserLock();
+			User lockOwner = doc.getUserLock();
 			if(lockOwner != null && !(lockOwner.equals(user) || manager.hasAdminPrivileges(user))) {
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"Resource is already locked by user " + lockOwner.getName());
@@ -595,7 +596,7 @@ public class LocalUserManagementService implements UserManagementService {
 		return manager.getUser(name);
 	}
 
-	public UserImpl[] getUsers() throws XMLDBException {
+	public User[] getUsers() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		return manager.getUsers();
 	}
@@ -609,7 +610,7 @@ public class LocalUserManagementService implements UserManagementService {
 		return "1.0";
 	}
 
-	public void removeUser(UserImpl u) throws XMLDBException {
+	public void removeUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
@@ -640,7 +641,7 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");
-		UserImpl old = manager.getUser(u.getName());
+		User old = manager.getUser(u.getName());
 		if (old == null)
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -656,11 +657,11 @@ public class LocalUserManagementService implements UserManagementService {
 		manager.setUser(u);
 	}
 	
-	public void addUserGroup(UserImpl user) throws XMLDBException {
+	public void addUserGroup(User user) throws XMLDBException {
 		
 	}
 	
-	public void removeGroup(UserImpl user, String rmgroup) throws XMLDBException {
+	public void removeGroup(User user, String rmgroup) throws XMLDBException {
 		
 	}
 }

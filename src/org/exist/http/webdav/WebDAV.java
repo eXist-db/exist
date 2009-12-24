@@ -35,7 +35,7 @@ import org.exist.EXistException;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.http.servlets.DigestAuthenticator;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -113,7 +113,7 @@ public class WebDAV {
      */
     public void process(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        UserImpl user = authenticate(request, response);
+        User user = authenticate(request, response);
         if(user == null){
             // TODO Return error code ?
 //            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, 
@@ -167,7 +167,7 @@ public class WebDAV {
         	
     }
     
-    private UserImpl authenticate(HttpServletRequest request, HttpServletResponse response)
+    private User authenticate(HttpServletRequest request, HttpServletResponse response)
     throws IOException {
         String credentials = request.getHeader("Authorization");
         if(credentials == null) {

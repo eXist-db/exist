@@ -356,7 +356,7 @@ public class LDAPSecurityManager implements SecurityManager
    {
    }
 
-   public void deleteUser(UserImpl user) throws PermissionDeniedException
+   public void deleteUser(User user) throws PermissionDeniedException
    {
    }
 
@@ -435,7 +435,7 @@ public class LDAPSecurityManager implements SecurityManager
       return Permission.DEFAULT_PERM;
    }
 
-   public UserImpl getUser(int uid)
+   public User getUser(int uid)
    {
       Integer iuid = new Integer(uid);
       UserImpl user = userByIdCache.get(iuid);
@@ -469,7 +469,7 @@ public class LDAPSecurityManager implements SecurityManager
    }
 
    // This needs to be an enumeration
-   public UserImpl[] getUsers()
+   public User[] getUsers()
    {
       try {
          SearchControls constraints = new SearchControls();
@@ -481,7 +481,7 @@ public class LDAPSecurityManager implements SecurityManager
             SearchResult result = users.next();
             userList.add(newUserFromAttributes(context,result.getAttributes()));
          }
-         UserImpl [] retval = new UserImpl[userList.size()];
+         User [] retval = new User[userList.size()];
          System.arraycopy(userList.toArray(), 0, retval,0, retval.length);
          return retval;
       } catch (NamingException ex) {
@@ -491,7 +491,7 @@ public class LDAPSecurityManager implements SecurityManager
    }
 
    // TODO: this shouldn't be in this interface
-   public synchronized boolean hasAdminPrivileges(UserImpl user) {
+   public synchronized boolean hasAdminPrivileges(User user) {
       return user.hasDbaRole();
    }
    

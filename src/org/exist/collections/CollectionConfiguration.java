@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -268,11 +268,11 @@ public class CollectionConfiguration {
     	return defResPermissions;
     }
     
-    public String getDefCollGroup(UserImpl user) {
+    public String getDefCollGroup(User user) {
     	return (defCollGroup != null) ? defCollGroup : user.getPrimaryGroup();
     }
     
-    public String getDefResGroup(UserImpl user) {
+    public String getDefResGroup(User user) {
     	return (defResGroup != null) ? defResGroup : user.getPrimaryGroup();
     }
     

@@ -12,7 +12,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -224,7 +224,7 @@ public final class ClusterCollection extends Collection {
         return collection.collectionIterator();
     }
 
-    public List<Collection> getDescendants(DBBroker broker, UserImpl user) {
+    public List<Collection> getDescendants(DBBroker broker, User user) {
         return collection.getDescendants(broker, user);
     }
 

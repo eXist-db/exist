@@ -26,7 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
@@ -47,11 +47,11 @@ public class LocalValidationService implements ValidationService {
     private static Logger logger = Logger.getLogger(LocalValidationService.class);
     
     private BrokerPool brokerPool ;
-    private UserImpl user;
+    private User user;
     private LocalCollection localCollection;
     private Validator validator;
     
-    public LocalValidationService(UserImpl user, BrokerPool pool, LocalCollection collection) {
+    public LocalValidationService(User user, BrokerPool pool, LocalCollection collection) {
         logger.info("Starting LocalValidationService");
         this.user = user;
         this.brokerPool = pool;

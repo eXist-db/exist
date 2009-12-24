@@ -571,7 +571,7 @@ public class NativeBroker extends DBBroker {
      */
     private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException, IOException
     {
-        UserImpl u = getUser();
+        User u = getUser();
         try
         {
             setUser( pool.getSecurityManager().getUser(SecurityManager.DBA_USER) );
@@ -1457,7 +1457,7 @@ public class NativeBroker extends DBBroker {
     public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) throws EXistException, PermissionDeniedException, LockException
     {
         //store the currentUser
-        UserImpl currentUser = getUser();
+        User currentUser = getUser();
         
         //elevate getUser() to DBA_USER
         setUser( pool.getSecurityManager().getUser(SecurityManager.DBA_USER) );
@@ -2135,7 +2135,7 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Insufficient privileges to move resource " +
 						doc.getFileURI());
       
-        UserImpl docUser = doc.getUserLock();
+        User docUser = doc.getUserLock();
         if (docUser != null) {
         	if(!(getUser().getName()).equals(docUser.getName()))
                 throw new PermissionDeniedException("Cannot move '" + doc.getFileURI() + 
