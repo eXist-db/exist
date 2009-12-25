@@ -24,7 +24,7 @@ package org.exist.dom;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
-import org.exist.security.Group;
+import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
@@ -499,7 +499,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
                 ostream.writeInt(1);
             } else {
                 User user = secman.getUser(permissions.getOwner());
-                Group group = secman.getGroup(permissions.getOwnerGroup());
+                GroupImpl group = secman.getGroup(permissions.getOwnerGroup());
                 if (group == null)
                     group = secman.getGroup(SecurityManager.GUEST_GROUP);
                 ostream.writeInt(user.getUID());
@@ -540,7 +540,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
                 permissions.setGroup(SecurityManager.DBA_GROUP);
             } else {
                 permissions.setOwner(secman.getUser(uid));
-                Group group = secman.getGroup(gid);
+                GroupImpl group = secman.getGroup(gid);
                 if (group != null)
                     permissions.setGroup(group.getName());
             }

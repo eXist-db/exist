@@ -41,8 +41,8 @@ public class LDAPSecurityManager implements SecurityManager
    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
    protected Map<String, UserImpl> userByNameCache = new HashMap<String, UserImpl>();
    protected Map<Integer, UserImpl> userByIdCache = new HashMap<Integer, UserImpl>();
-   protected Map<String, Group> groupByNameCache = new HashMap<String, Group>();
-   protected Map<Integer, Group> groupByIdCache = new HashMap<Integer, Group>();
+   protected Map<String, GroupImpl> groupByNameCache = new HashMap<String, GroupImpl>();
+   protected Map<Integer, GroupImpl> groupByIdCache = new HashMap<Integer, GroupImpl>();
    
    static String getProperty(String name,String defaultValue) {
       String value = System.getProperty(name);
@@ -228,7 +228,7 @@ public class LDAPSecurityManager implements SecurityManager
       return null;
    }
    
-   protected Group getGroupById(DirContext context,int gid) 
+   protected GroupImpl getGroupById(DirContext context,int gid) 
       throws NamingException
    {
       LOG.info("Searching for "+gidNumberAttr+"="+gid+" in "+groupBase);
@@ -239,12 +239,12 @@ public class LDAPSecurityManager implements SecurityManager
          SearchResult result = groups.next();
          String cn = getAttributeValue(groupNameAttr, result.getAttributes());
          LOG.info("Constructing group "+cn);
-         return new Group(cn, gid);
+         return new GroupImpl(cn, gid);
       }
       return null;
    }
    
-   protected Group getGroupByName(DirContext context,String name)
+   protected GroupImpl getGroupByName(DirContext context,String name)
       throws NamingException
    {
       String g_dn = groupByNamePatternFormat.format(new String[] { name });
@@ -255,7 +255,7 @@ public class LDAPSecurityManager implements SecurityManager
          Attributes attrs = context.getAttributes(g_dn);
          String cn = getAttributeValue(groupNameAttr, attrs);
          int gid = Integer.parseInt(getAttributeValue(gidNumberAttr, attrs));
-         return new Group(cn, gid);
+         return new GroupImpl(cn, gid);
       } catch (NameNotFoundException e) {
       }
       return null;
@@ -365,10 +365,10 @@ public class LDAPSecurityManager implements SecurityManager
       return Permission.DEFAULT_PERM;
    }
 
-   public Group getGroup(int gid)
+   public GroupImpl getGroup(int gid)
    {
       Integer igid = new Integer(gid);
-      Group group = groupByIdCache.get(igid);
+      GroupImpl group = groupByIdCache.get(igid);
       if (group==null) {
          try {
             group = getGroupById(context,gid);
@@ -382,9 +382,9 @@ public class LDAPSecurityManager implements SecurityManager
       return group;
    }
 
-   public Group getGroup(String name)
+   public GroupImpl getGroup(String name)
    {
-      Group group = groupByNameCache.get(name);
+      GroupImpl group = groupByNameCache.get(name);
       if (group==null) {
          try {
             group = getGroupByName(context,name);

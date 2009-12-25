@@ -155,7 +155,7 @@ public class XMLSecurityManager implements SecurityManager {
              User user;
              NodeList ul;
              String lastId;
-             Group group;
+             GroupImpl group;
              for (int i = 0; i < nl.getLength(); i++) {
                 if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
                    continue;
@@ -186,7 +186,7 @@ public class XMLSecurityManager implements SecurityManager {
                       node = ul.item(j);
                       if(node.getNodeType() == Node.ELEMENT_NODE &&
                               node.getLocalName().equals("group")) {
-                         group = new Group((Element)node);
+                         group = new GroupImpl((Element)node);
                          groups.put(group.getId(), group);
                       }
                    }
@@ -275,7 +275,7 @@ public class XMLSecurityManager implements SecurityManager {
 	}
 
 	protected void newGroup(String name) {
-		Group group = new Group(name, ++nextGroupId);
+		GroupImpl group = new GroupImpl(name, ++nextGroupId);
 		groups.put(group.getId(), group);
 	}
 
@@ -297,34 +297,34 @@ public class XMLSecurityManager implements SecurityManager {
     }
     
 	public synchronized boolean hasGroup(String name) {
-		Group group;
+		GroupImpl group;
 		for (Iterator i = groups.valueIterator(); i.hasNext();) {
-			group = (Group) i.next();
+			group = (GroupImpl) i.next();
 			if (group.getName().equals(name))
 				return true;
 		}
 		return false;
 	}
 
-	public synchronized Group getGroup(String name) {
-		Group group;
+	public synchronized GroupImpl getGroup(String name) {
+		GroupImpl group;
 		for (Iterator i = groups.valueIterator(); i.hasNext();) {
-			group = (Group) i.next();
+			group = (GroupImpl) i.next();
 			if (group.getName().equals(name))
 				return group;
 		}
 		return null;
 	}
 
-	public synchronized Group getGroup(int gid) {
-		return (Group)groups.get(gid);
+	public synchronized GroupImpl getGroup(int gid) {
+		return (GroupImpl)groups.get(gid);
 	}
 	
 	public synchronized String[] getGroups() {
 		ArrayList list = new ArrayList(groups.size());
-		Group group;
+		GroupImpl group;
 		for(Iterator i = groups.valueIterator(); i.hasNext(); ) {
-			group = (Group) i.next();
+			group = (GroupImpl) i.next();
 			list.add(group.getName());
 		}
 		String[] gl = new String[list.size()];
@@ -358,7 +358,7 @@ public class XMLSecurityManager implements SecurityManager {
 		buf.append(Integer.toString(nextGroupId));
 		buf.append("\">");
 		for (Iterator i = groups.valueIterator(); i.hasNext();)
-			buf.append(((Group) i.next()).toString());
+			buf.append(((GroupImpl) i.next()).toString());
 		buf.append("</groups>");
 		//save users
         buf.append("<!-- Please do not remove the admin user. -->");

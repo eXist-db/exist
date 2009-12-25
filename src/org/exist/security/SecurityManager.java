@@ -71,9 +71,9 @@ public interface SecurityManager {
 
    boolean hasGroup(String name);
 
-   Group getGroup(String name);
+   GroupImpl getGroup(String name);
 
-   Group getGroup(int gid);
+   GroupImpl getGroup(int gid);
 
    String[] getGroups();
 
