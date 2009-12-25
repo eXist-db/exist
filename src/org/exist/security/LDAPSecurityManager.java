@@ -365,7 +365,7 @@ public class LDAPSecurityManager implements SecurityManager
       return Permission.DEFAULT_PERM;
    }
 
-   public GroupImpl getGroup(int gid)
+   public Group getGroup(int gid)
    {
       Integer igid = new Integer(gid);
       GroupImpl group = groupByIdCache.get(igid);
@@ -382,7 +382,7 @@ public class LDAPSecurityManager implements SecurityManager
       return group;
    }
 
-   public GroupImpl getGroup(String name)
+   public Group getGroup(String name)
    {
       GroupImpl group = groupByNameCache.get(name);
       if (group==null) {
