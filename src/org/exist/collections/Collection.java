@@ -35,7 +35,7 @@ import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
-import org.exist.security.GroupImpl;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
@@ -746,7 +746,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             permissions.setGroup(SecurityManager.DBA_GROUP);
         } else {
             permissions.setOwner(secman.getUser(uid));
-            GroupImpl group = secman.getGroup(gid);
+            Group group = secman.getGroup(gid);
             if (group != null)
                 permissions.setGroup(group.getName());
         }
@@ -1572,7 +1572,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             ostream.writeInt(1);
         } else {
             User user = secman.getUser(permissions.getOwner());
-            GroupImpl group = secman.getGroup(permissions.getOwnerGroup());
+            Group group = secman.getGroup(permissions.getOwnerGroup());
             if (user==null) {
                throw new IllegalStateException("The user "+permissions.getOwner()+" for the collection cannot be found.");
             }

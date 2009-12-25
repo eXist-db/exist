@@ -23,7 +23,7 @@
 package org.exist.dom;
 
 import org.exist.collections.Collection;
-import org.exist.security.GroupImpl;
+import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -99,7 +99,7 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(1);
 		} else {
 			User user = secman.getUser(permissions.getOwner());
-			GroupImpl group = secman.getGroup(permissions.getOwnerGroup());
+			Group group = secman.getGroup(permissions.getOwnerGroup());
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
@@ -122,7 +122,7 @@ public class BinaryDocument extends DocumentImpl {
 			permissions.setGroup(SecurityManager.DBA_GROUP);
 		} else {
 			permissions.setOwner(secman.getUser(uid));
-            GroupImpl group = secman.getGroup(groupId);
+            Group group = secman.getGroup(groupId);
             if (group != null)
                 permissions.setGroup(group.getName());
 		}

@@ -17,14 +17,14 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id:$
+ *  $Id$
  */
 package org.exist.security;
 
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
-public class GroupImpl implements Comparable {
+public class GroupImpl implements Comparable, Group {
 
 	private String name;
 	private int id;
@@ -46,10 +46,16 @@ public class GroupImpl implements Comparable {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.exist.security.Group#getName()
+	 */
 	public String getName() {
 		return name;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.exist.security.Group#getId()
+	 */
 	public int getId() {
 		return id;
 	}
