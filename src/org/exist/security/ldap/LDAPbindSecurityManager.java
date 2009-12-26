@@ -6,7 +6,7 @@
  * (C) Andrew Hart
  */
 
-package org.exist.security;
+package org.exist.security.ldap;
 
 import java.util.Hashtable;
 
@@ -16,6 +16,7 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
 import org.apache.log4j.Logger;
+import org.exist.security.SecurityManager;
 
 /**
  * Code to use LDAP's bind to authenticate technology
