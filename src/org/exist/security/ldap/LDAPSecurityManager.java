@@ -6,7 +6,7 @@
  * (C) R. Alexander Milowski alex@milowski.com
  */
 
-package org.exist.security;
+package org.exist.security.ldap;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -27,6 +27,13 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
+import org.exist.security.Group;
+import org.exist.security.GroupImpl;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

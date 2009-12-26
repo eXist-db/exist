@@ -23,6 +23,7 @@ package org.exist.security;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.security.ldap.LDAPbindSecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
