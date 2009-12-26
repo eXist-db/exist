@@ -67,8 +67,13 @@ public class Configurater {
 			}
 			
 			Field field = properyFieldMap.get(property);
+			String typeName = field.getType().getName();
 			try {
-				if (field.getType().getName().equals("int")) {
+				if (typeName.equals("java.lang.String")) {
+					String value = configuration.getProperty(property);
+					if (value != null)
+						field.set(instance, value);
+				} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
 					Integer value = configuration.getPropertyInteger(property);
 					if (value != null)
 						field.set(instance, value);
@@ -76,7 +81,7 @@ public class Configurater {
 					throw new IllegalArgumentException("unsupported configuration value type "+field.getType());
 				}
 			} catch (IllegalArgumentException e) {
-				LOG.debug("configuration error",e);
+				LOG.warn("configuration error",e);
 				return false;
 			} catch (IllegalAccessException e) {
 				LOG.debug("security error",e);
