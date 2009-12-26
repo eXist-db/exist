@@ -278,18 +278,18 @@
                 as in the following example:
             
             Example: <security> class Attribute (LDAP)
-            <security class="org.exist.security.LDAPSecurityManager" />
+            <security class="org.exist.security.ldap.SecurityManagerImpl" />
             
             eXist is distributed with the following built-in security manager
             implementations:
             
-                - org.exist.security.XMLSecurityManager
+                - org.exist.security.internal.SecurityManagerImpl
             
                 stores the user information in the database. This is the 
                 default manager if the <security> element is not included 
                 in <db-connection>.
             
-                - org.exist.security.LDAPSecurityManager 
+                - org.exist.security.ldap.SecurityManagerImpl 
             
                 retrieves the user and groups from the LDAP database. This
                 requires addition configuration parameters which are 
@@ -312,7 +312,7 @@
                 challenges.
         -->
         <!--
-        <security class="org.exist.security.LDAPSecurityManager" />
+        <security class="org.exist.security.ldap.SecurityManagerImpl" />
         -->
 
         <!--

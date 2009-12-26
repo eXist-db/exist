@@ -119,7 +119,7 @@ public class BrokerPool extends Observable {
 	//TODO : move elsewhere ?
 	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
 	//TODO : move elsewhere ? Get fully qualified class name ?
-	public final static String DEFAULT_SECURITY_CLASS = "org.exist.security.XMLSecurityManager";
+	public final static String DEFAULT_SECURITY_CLASS = "org.exist.security.internal.SecurityManagerImpl";
 	public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
 	public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
     public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
