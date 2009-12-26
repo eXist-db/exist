@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * \$Id\$
+ * $Id:$
  */
 
 package org.exist.performance;
@@ -27,19 +27,14 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.commons.io.FileUtils;
-import org.exist.EXistException;
 import org.exist.source.ClassLoaderSource;
-import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -75,7 +70,7 @@ public class Main {
         for (String arg : args) {
             System.out.println("ARG: " + arg);
         }
-        List opt = optParser.getArguments();
+        List<?> opt = optParser.getArguments();
         int size = opt.size();
         CLOption option;
         File outputDir = null;
@@ -169,7 +164,7 @@ public class Main {
                     (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
                 collection = cmgt.createCollection("benchmark");
             }
-            for (Iterator i = FileUtils.iterateFiles(directory, new String[] { "xml" }, false); i.hasNext(); ) {
+            for (Iterator<?> i = FileUtils.iterateFiles(directory, new String[] { "xml" }, false); i.hasNext(); ) {
                 File file = (File) i.next();
                 Resource resource = collection.createResource(file.getName(), "XMLResource");
                 resource.setContent(file);
