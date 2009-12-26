@@ -32,7 +32,7 @@ import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.UserImpl;
-import org.exist.security.XMLSecurityManager;
+import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
@@ -876,7 +876,7 @@ public class Configuration implements ErrorHandler
         if (recoveries.getLength() > 0) {
             configureRecovery(dbHome, (Element)recoveries.item(0));
         }
-        NodeList defaultPermissions = con.getElementsByTagName(XMLSecurityManager.CONFIGURATION_ELEMENT_NAME); 
+        NodeList defaultPermissions = con.getElementsByTagName(SecurityManagerImpl.CONFIGURATION_ELEMENT_NAME); 
         if (defaultPermissions.getLength() > 0) {
             configurePermissions((Element)defaultPermissions.item(0));
         }
@@ -938,23 +938,23 @@ public class Configuration implements ErrorHandler
     }
     
     private void configurePermissions(Element defaultPermission) throws DatabaseConfigurationException {
-        String option = defaultPermission.getAttribute(XMLSecurityManager.COLLECTION_ATTRIBUTE);
+        String option = defaultPermission.getAttribute(SecurityManagerImpl.COLLECTION_ATTRIBUTE);
         if (option != null && option.length() > 0) {
             try {
                 Integer perms = new Integer(Integer.parseInt(option, 8));
-                setProperty(XMLSecurityManager.PROPERTY_PERMISSIONS_COLLECTIONS, perms);
-                LOG.debug(XMLSecurityManager.PROPERTY_PERMISSIONS_COLLECTIONS + ": " + config.get(XMLSecurityManager.PROPERTY_PERMISSIONS_COLLECTIONS));
+                setProperty(SecurityManagerImpl.PROPERTY_PERMISSIONS_COLLECTIONS, perms);
+                LOG.debug(SecurityManagerImpl.PROPERTY_PERMISSIONS_COLLECTIONS + ": " + config.get(SecurityManagerImpl.PROPERTY_PERMISSIONS_COLLECTIONS));
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
                     "to be an octal number");
             }
         }
-        option = defaultPermission.getAttribute(XMLSecurityManager.RESOURCE_ATTRIBUTE);
+        option = defaultPermission.getAttribute(SecurityManagerImpl.RESOURCE_ATTRIBUTE);
         if (option != null && option.length() > 0) {
             try {
                 Integer perms = new Integer(Integer.parseInt(option, 8));
-                setProperty(XMLSecurityManager.PROPERTY_PERMISSIONS_RESOURCES, perms);
-                LOG.debug(XMLSecurityManager.PROPERTY_PERMISSIONS_RESOURCES + ": " + config.get(XMLSecurityManager.PROPERTY_PERMISSIONS_RESOURCES));
+                setProperty(SecurityManagerImpl.PROPERTY_PERMISSIONS_RESOURCES, perms);
+                LOG.debug(SecurityManagerImpl.PROPERTY_PERMISSIONS_RESOURCES + ": " + config.get(SecurityManagerImpl.PROPERTY_PERMISSIONS_RESOURCES));
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
                     "to be an octal number");

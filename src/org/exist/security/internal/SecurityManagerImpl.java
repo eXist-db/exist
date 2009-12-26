@@ -20,7 +20,7 @@
  * 
  *  $Id$
  */
-package org.exist.security;
+package org.exist.security.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +33,13 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.Group;
+import org.exist.security.GroupImpl;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -61,7 +68,7 @@ import org.xml.sax.SAXException;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
-public class XMLSecurityManager implements SecurityManager {
+public class SecurityManagerImpl implements SecurityManager {
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
 	public static final String COLLECTION_ATTRIBUTE = "collection";
@@ -91,7 +98,7 @@ public class XMLSecurityManager implements SecurityManager {
     
     private ExistPDP pdp;
 
-    public XMLSecurityManager() {
+    public SecurityManagerImpl() {
        
     }
 	/**
