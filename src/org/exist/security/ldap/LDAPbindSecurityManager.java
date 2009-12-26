@@ -22,7 +22,7 @@ import org.exist.security.SecurityManager;
  * Code to use LDAP's bind to authenticate technology
  * @author Andrew Hart
  */
-public class LDAPbindSecurityManager extends LDAPSecurityManager implements SecurityManager
+public class LDAPbindSecurityManager extends SecurityManagerImpl implements SecurityManager
 {
    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
    public boolean bind(String user, String passwd)

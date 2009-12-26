@@ -42,7 +42,7 @@ import org.exist.storage.DBBroker;
  * Note: A lot of this code is "borrowed" from Tomcat's JNDIRealm.java
  * @author R. Alexander Milowski
  */
-public class LDAPSecurityManager implements SecurityManager
+public class SecurityManagerImpl implements SecurityManager
 {
 
    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
@@ -92,8 +92,8 @@ public class LDAPSecurityManager implements SecurityManager
    
    protected ExistPDP pdp = null;
    
-   /** Creates a new instance of LDAPSecurityManager */
-   public LDAPSecurityManager()
+   /** Creates a new instance of LDAP SecurityManager */
+   public SecurityManagerImpl()
    {
       setUserByNamePattern(uidAttr+"={0},"+userBase);
       setUserByIdPattern(uidNumberAttr+"={0},"+userBase);
