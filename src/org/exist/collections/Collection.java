@@ -41,7 +41,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.security.XMLSecurityManager;
+import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
@@ -1048,7 +1048,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             LOG.debug("document stored.");
             // if we are running in privileged mode (e.g. backup/restore), notify the SecurityManager about changes
             if (getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI) 
-                && document.getFileURI().equals(XMLSecurityManager.ACL_FILE_URI)
+                && document.getFileURI().equals(SecurityManagerImpl.ACL_FILE_URI)
                 && privileged == false) {
                 // inform the security manager that system data has changed
                 LOG.debug("users.xml changed");

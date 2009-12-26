@@ -36,6 +36,7 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -1225,7 +1226,7 @@ public class RpcConnection implements RpcAPI {
     public boolean sync() {
         DBBroker broker = null;
         try {
-            broker = factory.getBrokerPool().get(XMLSecurityManager.SYSTEM_USER);
+            broker = factory.getBrokerPool().get(SecurityManagerImpl.SYSTEM_USER);
             broker.sync(Sync.MAJOR_SYNC);
         } catch (EXistException e) {
         	LOG.warn(e.getMessage(), e);
