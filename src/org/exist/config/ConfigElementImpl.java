@@ -190,7 +190,7 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> {
     	NamedNodeMap attrs = getAttributes();
     	
     	List<String> properties = new ArrayList<String>();
-    	for (int index = 0; index <= attrs.getLength(); index++) {
+    	for (int index = 0; index < attrs.getLength(); index++) {
     		properties.add(attrs.item(index).getLocalName());
     	}
     	
