@@ -6,6 +6,9 @@ import java.util.Iterator;
 
 import org.exist.collections.Collection;
 import org.exist.dom.*;
+import org.exist.fluent.Database;
+import org.exist.fluent.DatabaseException;
+import org.exist.fluent.Transaction;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
