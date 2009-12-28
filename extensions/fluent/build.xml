@@ -44,6 +44,11 @@
     <path id="classpath.jar">
         <pathelement path="${top.dir}/exist-fluent.jar"/>
     </path>
+    <path id="classpath.test-libs">
+         <fileset dir="${top.dir}/${lib.test}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
     <path id="classpath.test">
         <pathelement path="${test}/classes"/>
     </path>
@@ -82,6 +87,7 @@
                source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
+                <path refid="classpath.test-libs"/>
                 <pathelement path="${classes}"  />
             </classpath>
         </javac>
@@ -130,6 +136,7 @@
                 <path refid="classpath.core"/>
                 <path refid="classpath.jar"/>
                 <path refid="classpath.test"/>
+                <path refid="classpath.test-libs"/>
                 <pathelement path="${classes}"  />
             </classpath>
 
