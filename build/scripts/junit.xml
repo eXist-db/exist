@@ -9,11 +9,17 @@
 	
     <description>jUnit tests for eXist</description>
     
-	<!-- import common targets -->
-	<import file="../../build.xml"/>
+    <!-- import common targets -->
+    <import file="../../build.xml"/>
 
-	<path id="classpath.junit">
+    <path id="classpath.junit">
         <pathelement path="${junit.reports}/classes"/>
+    </path>
+
+     <path id="classpath.test-libs">
+         <fileset dir="${lib.test}">
+            <include name="*.jar"/>
+        </fileset>
     </path>
 
 
@@ -39,6 +45,7 @@
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
+                <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
         <copy todir="${junit.reports}/classes/org/exist/performance/ant"
@@ -89,6 +96,7 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -142,6 +150,7 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -168,6 +177,7 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             
             <formatter type="plain"/>
             <formatter type="xml"/>
@@ -184,6 +194,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.storage.AllStorageTests" todir="${junit.reports.dat}"/>
@@ -232,6 +243,7 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
 
@@ -256,6 +268,7 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
 
@@ -273,7 +286,8 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
-
+            <classpath refid="classpath.test-libs"/>
+            
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xquery.XQueryUpdateTest" todir="${junit.reports.dat}"/>
@@ -394,6 +408,7 @@
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.ant_launcher"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.xquery.xqts.XQTS_1_0_2.AllTests" todir="${junit.reports.dat}"/>
@@ -411,6 +426,7 @@
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.ant_launcher"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.xslt.xslts.AllTests" todir="${junit.reports.dat}"/>

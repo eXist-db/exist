@@ -56,6 +56,12 @@
     	<pathelement path="${test.classes}"/>
     </path>
 
+    <path id="classpath.test-libs">
+         <fileset dir="${top.dir}/${lib.test}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
     <target name="prepare">
 		<mkdir dir="${xqdoc.classes}"/>
     </target>
@@ -108,6 +114,7 @@
         	source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
             	<path refid="classpath.core"/>
+                <path refid="classpath.test-libs"/>
             </classpath>
 		</javac>
 	</target>
@@ -117,6 +124,7 @@
 
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
 
             <formatter type="plain"/>
             <formatter type="xml"/>
