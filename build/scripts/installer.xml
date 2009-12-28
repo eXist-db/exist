@@ -14,7 +14,7 @@
         <ant antfile="build.xml" dir="tools/izpack"/>
     </target>
 
-    <target depends="all,samples,javadocs" name="prepare-installer">
+    <target depends="all,samples,javadocs,copy_scripts" name="prepare-installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
                 classname="com.izforge.izpack.ant.IzPackTask"/>
         <tstamp/>
@@ -111,4 +111,19 @@
                 installerType="standard"/>
     </target-->
 
+    <target name="copy_scripts">
+        <filter filtersfile="installer/scripts/scripts.properties" />
+        
+        <copy todir="installer/scripts" filtering="true" overwrite="true">
+            <fileset dir="bin">
+                <include name="*.sh"/>
+                <exclude name="run.sh"/>
+                <exclude name="startupCluster.sh"/>
+                
+                <include name="*.bat"/>
+                <exclude name="run.bat"/>
+                <exclude name="startupCluster.bat"/>
+            </fileset>
+        </copy>
+    </target>
 </project>
