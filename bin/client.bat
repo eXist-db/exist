@@ -12,20 +12,24 @@ set JAVA_ARGS=
 
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 
+rem @WINDOWS_INSTALLER_1@
+
 echo Java environment not found. Please set
 echo your JAVA_HOME environment variable to
 echo the home of your JDK.
 goto :eof
 
 :gotJavaHome
+rem @WINDOWS_INSTALLER_2@
+
 if not "%EXIST_HOME%" == "" goto gotExistHome
 
 rem try to guess (will be set by the installer)
 set EXIST_HOME=.
+if exist "%EXIST_HOME%\start.jar" goto gotExistHome
 
-if exist %EXIST_HOME%\start.jar goto gotExistHome
 set EXIST_HOME=..
-if exist %EXIST_HOME%\start.jar goto gotExistHome
+if exist "%EXIST_HOME%\start.jar" goto gotExistHome
 
 echo EXIST_HOME not found. Please set your
 echo EXIST_HOME environment variable to the
