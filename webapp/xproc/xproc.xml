@@ -86,6 +86,13 @@ http://127.0.0.1:8080/exist/xproc/examples/hello.xproc
                      </listitem>
                  </varlistentry>
                  <varlistentry>
+                     <term>autobind</term>
+                     <listitem>
+                         <para>setting this parameter to true will convert all url parameters to available input ports</para>
+                     </listitem>
+                 </varlistentry>
+
+                 <varlistentry>
                      <term>options</term>
                      <listitem>
                          <para>TBA: disabled for the time being</para>
