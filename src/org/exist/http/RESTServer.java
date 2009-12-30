@@ -1266,6 +1266,9 @@ public class RESTServer {
         String bindings = request.getParameter("bindings");
         context.declareVariable("bindings",  bindings == null ? "<bindings/>" : bindings);
 
+        String autobind = request.getParameter("autobind");
+        context.declareVariable("autobind",  autobind == null ? "0" : "1");
+
         String options = request.getParameter("options");
         context.declareVariable("options",  options == null ? "<options/>" : options);
 

@@ -117,7 +117,8 @@ public class Eval extends BasicFunction {
 	
 	protected static final FunctionParameterSequenceType EVAL_ARGUMENT = new FunctionParameterSequenceType("expression", Type.ITEM, Cardinality.EXACTLY_ONE, evalArgumentText); 
 	protected static final FunctionParameterSequenceType INLINE_CONTEXT = new FunctionParameterSequenceType("inline-context", Type.ITEM, Cardinality.ZERO_OR_MORE, "The inline context");
-	protected static final FunctionParameterSequenceType CONTEXT_ARGUMENT = new FunctionParameterSequenceType("context", Type.NODE, Cardinality.ZERO_OR_ONE, contextArgumentText); 
+
+	protected static final FunctionParameterSequenceType CONTEXT_ARGUMENT = new FunctionParameterSequenceType("context", Type.NODE, Cardinality.ZERO_OR_ONE, contextArgumentText);
 	protected static final FunctionParameterSequenceType CACHE_FLAG = new FunctionParameterSequenceType("cache-flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag for whether the compiled query should be cached.  The cached query will be globally available within the db instance.");
 
 	protected static final FunctionReturnSequenceType RETURN_NODE_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
@@ -210,6 +211,7 @@ public class Eval extends BasicFunction {
 		
 		// save some context properties
         context.pushNamespaceContext();
+
         LocalVariable mark = context.markLocalVariables(false);
 
         DocumentSet oldDocs = context.getStaticallyKnownDocuments();
