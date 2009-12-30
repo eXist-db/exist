@@ -77,37 +77,17 @@ return
 
 (: -------------------------------------------------------------------------- :)
 declare function std:add-xml-base($primary,$secondary,$options) {
-
-(: TODO: need to refactor to pass in pipeline uri and any external input uri :)
-
 let $v := u:get-primary($primary)
-let $all := xs:boolean(u:get-option('all',$options,$v))
-let $relative := xs:boolean(u:get-option('relative',$options,$v))
-let $attrNames := xs:QName('xml:base')
-let $attrValues := base-uri($v) 
-
+let $all := u:get-option('all',$options,$v)
+let $relative := u:get-option('relative',$options,$v)
+let $matchresult := u:evalXPATH('//*', $v, $primary)
+let $attribute-name := "xml:base"
+let $attribute-value := base-uri($v)
 return
-    if ($all) then
-    for $element in $v/*
-       return element { node-name($element)}
-                      { for $attrName at $seq in $attrNames
-                        return if ($element/@*[node-name(.) = $attrName])
-                               then ()
-                               else attribute {$attrName}
-                                              {$attrValues[$seq]},
-                        $element/@*,
-                        $element/node() }
-else
-    for $element in $v/*
-       return element { node-name($element)}
-                      { for $attrName at $seq in $attrNames
-                        return if ($element/@*[node-name(.) = $attrName])
-                               then ()
-                               else attribute {$attrName}
-                                              {$attrValues[$seq]},
-                        $element/@*,
-                        $element/node() }
-};
+<test uri="{$attribute-value}">{$v}</test>
+(:
+	u:add-attribute-matching-elements($v,$matchresult,$attribute-name,$attribute-value)
+:)};
 
 
 (: -------------------------------------------------------------------------- :)
@@ -233,10 +213,11 @@ return
 
 (: -------------------------------------------------------------------------- :)
 declare function std:filter($primary,$secondary,$options) {
+(: TODO - broken :)
 u:assert(exists($options/p:with-option[@name='select']/@select),'p:with-option match is required'),
 let $v := u:get-primary($primary)
 let $select := string(u:get-option('select',$options,$v))
-let $result := u:safe-evalXPATH($select, $v, $primary)
+let $result := u:evalXPATH($select, $v, $primary)
     return
         if(exists($result)) then
         	$result
@@ -396,7 +377,10 @@ return
 
     for $child at $count in $v
     return
-	    element {$wrapper}{$child,$alternate[$count]}
+	    element {$wrapper}{
+	        $child,
+	        $alternate
+	    }
 };
 
 
@@ -565,26 +549,28 @@ return
 
 (: -------------------------------------------------------------------------- :)
 declare function std:unwrap($primary,$secondary,$options) {
-let $v := u:get-primary($primary)
-let $match := u:get-option('match',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
-return
-	u:unwrap-matching-elements($v/*,$matchresult)
+    let $v := u:get-primary($primary)
+    let $match := u:get-option('match',$options,$v)
+    let $query := if (contains($match,'/')) then
+                    $match
+                  else
+                    concat('//',$match)
+    let $matchresult := u:evalXPATH($query, $v, $primary)
+    return
+        u:unwrap-matching-elements($v/*,$matchresult)
 };
 
 
 (: -------------------------------------------------------------------------- :)
 declare function std:xslt($primary,$secondary,$options){
-
     u:assert(exists($secondary/xproc:input[@port='stylesheet']/*),'stylesheet is required'),
 	let $v := u:get-primary($primary)
     let $stylesheet := u:get-secondary('stylesheet',$secondary)
     return
+    $v
+    (:
         u:xslt($stylesheet,$v)
+:)
 };
 
 

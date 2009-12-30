@@ -52,7 +52,7 @@
    
 <!-- Input alternatives //-->    
 
-    <xproc:element type="p:iteration-source" xproc:support="false"/>
+    <xproc:element type="p:iteration-source" xproc:support="true"/>
     <xproc:element type="p:viewport-source" xproc:support="false"/>
     <xproc:element type="p:xpath-context" xproc:support="false"/>
 
@@ -65,7 +65,7 @@
     <xproc:element type="p:option" xproc:support="true"/>            
     <xproc:element type="p:with-option" xproc:support="true"/>            
     <xproc:element type="p:with-param"/>            
-    <xproc:element type="p:variable"/>            
+    <xproc:element type="p:variable" xproc:support="true"/>            
 
 <!-- //-->    
 

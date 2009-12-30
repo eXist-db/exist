@@ -57,7 +57,10 @@
 (: -------------------------------------------------------------------------- :)
 declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outputs) {
 (: -------------------------------------------------------------------------- :)
- let $v := u:get-primary($primary)
+ let $v := if ($currentstep/p:for-each/p:iteration-source/@select) then
+                u:evalXPATH(string($currentstep/p:iteration-source/@select), u:get-primary($primary), $primary)
+            else
+                u:get-primary($primary)
  let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
  let $subpipeline := $currentstep/node()
  let $namespaces := xproc:enum-namespaces($subpipeline)
@@ -74,6 +77,7 @@ declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outpu
                     {$child}
                   </xproc:output>
     return
+
         (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
         {$subpipeline}</p:declare-step>,$namespaces,$child,(),($outputs,$iteration-source))/.)[last()]/node()
  };
@@ -476,8 +480,14 @@ declare function xproc:explicitbindings($xproc,$unique_id){
             attribute xproc:escape{'true'}
         else
             (),
-        if (contains($child/@href,'file:')) then
+        if (starts-with($child/@href,'file:')) then
               util:binary-doc($child/@href)
+        else if (ends-with($child/@href,'.xml')) then
+        let $result :=  doc($child/@href)
+        let $namespaces := u:declare-ns(xproc:enum-namespaces($result))
+        return
+          $result
+        
         else
 	            util:binary-to-string(util:binary-doc($child/@href))
 
