@@ -36,7 +36,7 @@
       <p:output port="result" primary="true" select="/"/>
       <p:input port="parameters" kind="parameter" select="/"/>
       <p:option name="value" required="true"/>
-      <p:option name="algorithm" required="true" select="'md5'"/>
+      <p:option name="algorithm" required="true"/>
       <p:option name="version"/>
       <p:option name="match" required="true"/>
    </p:declare-step>

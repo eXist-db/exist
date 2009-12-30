@@ -8,7 +8,7 @@
       <p:option name="attribute-name" required="true"/>
       <p:option name="attribute-value" required="true"/>
    </p:declare-step>
-   <p:declare-step type="p:add-xml-base" xml:id="add-xml-base">
+   <p:declare-step type="p:add-xml-base" xml:id="add-xml-base" xmlns:xproc="http://xproc.net/xproc"  xproc:support="true">
       <p:input port="source" primary="true" select="/"/>
       <p:output port="result" primary="true" select="/"/>
       <p:option name="all" select="'false'"/>

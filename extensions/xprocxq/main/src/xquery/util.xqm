@@ -32,6 +32,13 @@ declare variable $u:NDEBUG :=0;
 (: -------------------------------------------------------------------------- :)
 (: manage namespaces                                                          :)
 (: -------------------------------------------------------------------------- :)
+
+
+declare function u:declarens($element){
+    u:declare-ns(u:enum-ns($element))
+};
+
+
 declare function u:declare-ns($namespaces){
     for $ns in $namespaces//ns
     return
@@ -217,9 +224,10 @@ declare function u:get-option($option-name as xs:string,$options,$v){
 
 let $option := xs:string($options/*[@name=$option-name]/@select)
 return
+	(: TODO - if required this could be an error :)
     if (empty($option)) then
-		(: TODO - if required this could be an error :)
         ()
+    (: TODO- need to remove this branch at some point :)
     else if(contains($option,"'")) then
     	string(replace($option,"'",""))
     else
@@ -323,6 +331,8 @@ declare function u:xquery($query as xs:string){
                 concat('.',$query)
 			  else if(contains($query,'(/')) then
 				replace($query,'\(/','(./')
+              else if($query eq '') then
+			    u:dynamicError('err:XD0001','query is empty and/or XProc step is not supported')
               else
                   $query
     let $result := util:eval($qry)   

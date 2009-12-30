@@ -318,8 +318,12 @@ let $steps := <p:declare-step >
                for $import in $xproc/*/p:import
                 return
                     if (doc-available($import/@href)) then
-                          (: TODO - add file: support :)
-                          doc($import/@href)/p:library/*
+                    let $imported := doc($import/@href)
+                    return
+                          if ($imported/p:library)then
+                            $imported/p:library/*
+                          else
+                            $imported/p:pipeline/*
                     else
                           u:dynamicError('XD0002',"cannot import pipeline document ")
             }
