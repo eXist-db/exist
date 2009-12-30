@@ -21,9 +21,11 @@
  */
 package org.exist.security;
 
+import java.security.Principal;
+
 import org.exist.xmldb.XmldbURI;
 
-public interface User {
+public interface User extends Principal {
 
 	public final static int PLAIN_ENCODING = 0;
 	public final static int SIMPLE_MD5_ENCODING = 1;
@@ -55,13 +57,6 @@ public interface User {
 
 	public boolean hasDbaRole();
 
-	/**
-	 *  Get the user name
-	 *
-	 *@return    The user value
-	 */
-	public String getName();
-
 	public int getUID();
 
 	/**
@@ -82,7 +77,7 @@ public interface User {
 	/**
 	 *  Sets the password attribute of the User object
 	 *
-	 *@param  passwd  The new password value
+	 * @param  passwd  The new password value
 	 */
 	public void setPassword(String passwd);
 

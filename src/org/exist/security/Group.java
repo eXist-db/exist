@@ -21,10 +21,9 @@
  */
 package org.exist.security;
 
-public interface Group {
+import java.security.Principal;
 
-	public String getName();
+public interface Group extends Principal {
 
 	public int getId();
-
 }
