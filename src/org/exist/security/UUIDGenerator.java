@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
+ *  $Id:$
  */
 
 package org.exist.security;
@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
  * </UL>
  * @author Dannes Wessels
  */
+//TODO: move to utils ? -shabanovd
 public class UUIDGenerator {
     
     @SuppressWarnings("unused")
