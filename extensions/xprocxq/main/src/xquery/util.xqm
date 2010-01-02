@@ -319,7 +319,11 @@ declare function u:xquery($query,$xml){
               else
                   $query
 
-    let $result := util:eval-with-context($qry,$static-content,false())
+
+let $result : = util:eval-inline($xml,$query)
+
+(:  let $result := util:eval-with-context($qry,$static-content,false())
+:)
     return
         $result
 };

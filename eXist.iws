@@ -82,31 +82,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" name="Default" comment="[ignore] convert external variables of type byte[] to a base64 binary value within XQuery.">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-004.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-004.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/filter-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/filter-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/build.properties" afterPath="$PROJECT_DIR$/extensions/build.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-extension.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-extension.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/xslt-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/xslt-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/hash-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/hash-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/labelelements-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/labelelements-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xproc/extension-xproc-steps.xml" afterPath="$PROJECT_DIR$/webapp/xproc/extension-xproc-steps.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/xproc/examples/extxsltform.xproc" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-002.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-002.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/xproc/unit-test/w3c-test-result.xsl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-003.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-003.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/ext.xqm" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/ext.xqm" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-004.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-004.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/webapp/xproc/examples/xform.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/etc/w3c-test-result.xsl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/etc/test.xsl" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/etc/test.xsl" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-001.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xproc/xspec-v0.1/xspec.sh" afterPath="$PROJECT_DIR$/webapp/xproc/xspec-v0.1/xspec.sh" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/import-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/import-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql" afterPath="$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/xsl-formatter-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/xsl-formatter-001.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/hash-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/hash-001.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/labelelements-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/labelelements-001.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/add-xml-base-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/add-xml-base-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-002.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-002.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-003.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-003.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/for-each-002.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/for-each-002.xml" />
     </list>
     <list name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
@@ -315,28 +304,46 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="util.xqm" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="util.xqm" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="337" column="28" selection-start="11489" selection-end="11489" vertical-scroll-proportion="40.5">
+            <state line="374" column="24" selection-start="12502" selection-end="12502" vertical-scroll-proportion="-13.2">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pipeline-extension.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-extension.xml">
+      <file leaf-file-name="pipeline-optional.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-optional.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="22" selection-start="1196" selection-end="1196" vertical-scroll-proportion="0.0">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ext.xqm" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="opt.xqm" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/opt.xqm">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="148" column="63" selection-start="5964" selection-end="5964" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ext.xqm" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/ext.xqm">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="67" column="40" selection-start="2364" selection-end="2364" vertical-scroll-proportion="0.8102767">
+            <state line="55" column="20" selection-start="1990" selection-end="1990" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="xprocxq.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/extensions/xprocxq.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="33" selection-start="476" selection-end="476" vertical-scroll-proportion="-9.73913">
               <folding />
             </state>
           </provider>
@@ -346,15 +353,6 @@
         <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/const.xqm">
           <provider selected="true" editor-type-id="text-editor">
             <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="w3c-test-result.xsl" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/w3c-test-result.xsl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="57" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -523,6 +521,144 @@
         </PATH_ELEMENT>
         <PATH_ELEMENT>
           <option name="myItemId" value="xsltforms" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xquery" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="src" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="eXist" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="extensions" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="xprocxq" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="main" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="etc" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -1505,48 +1641,6 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/exist/http/run-xproc.xq">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="18" selection-start="469" selection-end="469" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/xslt-001.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="49" selection-start="1187" selection-end="1187" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/test.xsl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="0" selection-start="1648" selection-end="1673" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/xproc.xq">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="55" selection-start="856" selection-end="878" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/test-result.xsl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/xforms/hello.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="1283" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/testrunner.xql">
       <provider selected="true" editor-type-id="text-editor">
         <state line="128" column="123" selection-start="3884" selection-end="3884" vertical-scroll-proportion="0.0">
@@ -1575,30 +1669,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/build.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="26" column="34" selection-start="771" selection-end="771" vertical-scroll-proportion="-0.35968378">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/xproc/unit-test/w3c-test-result.xsl">
       <provider selected="true" editor-type-id="text-editor">
         <state line="57" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-extension.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="22" selection-start="1196" selection-end="1196" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/xproc/examples/xform.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="337" column="28" selection-start="11489" selection-end="11489" vertical-scroll-proportion="40.5">
           <folding />
         </state>
       </provider>
@@ -1612,7 +1692,63 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/ext.xqm">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="40" selection-start="2364" selection-end="2364" vertical-scroll-proportion="0.8102767">
+        <state line="55" column="20" selection-start="1990" selection-end="1990" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="33" selection-start="476" selection-end="476" vertical-scroll-proportion="-9.73913">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/xproc-component.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/std.xqm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-optional.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/etc/pipeline-extension.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="24" column="0" selection-start="1111" selection-end="1415" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/opt.xqm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="148" column="63" selection-start="5964" selection-end="5964" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/xproc/examples/xform.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="374" column="24" selection-start="12502" selection-end="12502" vertical-scroll-proportion="-13.2">
           <folding />
         </state>
       </provider>
