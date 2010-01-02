@@ -88,7 +88,7 @@ http://127.0.0.1:8080/exist/xproc/examples/hello.xproc
                  <varlistentry>
                      <term>autobind</term>
                      <listitem>
-                         <para>setting this parameter to true will convert all url parameters to available input ports</para>
+                         <para>setting this parameter to 1 will convert all url parameters to available input ports</para>
                      </listitem>
                  </varlistentry>
 
