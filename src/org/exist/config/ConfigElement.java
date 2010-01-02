@@ -37,4 +37,5 @@ public interface ConfigElement {
 	
 	public String getProperty(String name);
     public Integer getPropertyInteger(String name);
+    public Boolean getPropertyBoolean(String name);
 }
