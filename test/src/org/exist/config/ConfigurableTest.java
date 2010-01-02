@@ -32,7 +32,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.exist.dom.ElementAtExist;
 import org.exist.memtree.SAXAdapter;
 import org.junit.Test;
-import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -43,11 +42,12 @@ import org.xml.sax.XMLReader;
  */
 public class ConfigurableTest {
 
-	String config = "<instance value1=\"a\" value2=\"5\"></instance>";
+	String config1 = "<instance value1=\"a\" value2=\"5\"></instance>";
+	String config2 = "<config value1=\"b\"><instance value1=\"a\" value2=\"5\"></instance></config>";
 	
 	@Test
 	public void simple() throws Exception {
-		InputStream is = new ByteArrayInputStream(config.getBytes("UTF-8"));
+		InputStream is = new ByteArrayInputStream(config1.getBytes("UTF-8"));
 		
         // initialize xml parser
         // we use eXist's in-memory DOM implementation to work
@@ -70,4 +70,28 @@ public class ConfigurableTest {
         assertEquals(Integer.valueOf(5), object.someInteger);
 	}
 
+	@Test
+	public void subelement() throws Exception {
+		InputStream is = new ByteArrayInputStream(config2.getBytes("UTF-8"));
+		
+        // initialize xml parser
+        // we use eXist's in-memory DOM implementation to work
+        // around a bug in Xerces
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        InputSource src = new InputSource(is);
+        SAXParser parser = factory.newSAXParser();
+        XMLReader reader = parser.getXMLReader();
+        SAXAdapter adapter = new SAXAdapter();
+        reader.setContentHandler(adapter);
+        reader.parse(src);
+        
+        ConfigElementImpl config = new ConfigElementImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+        
+        ConfigurableObject object = new ConfigurableObject(config);
+        
+        assertEquals("a", object.some);
+        
+        assertEquals(Integer.valueOf(5), object.someInteger);
+	}
 }

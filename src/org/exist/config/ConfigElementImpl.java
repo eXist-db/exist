@@ -38,11 +38,11 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ConfigElementImpl extends ProxyElement<ElementAtExist> {
+public class ConfigElementImpl extends ProxyElement<ElementAtExist> implements ConfigElement {
 	
 	private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
 	
-	private Map<String, List<ConfigElementImpl>> configs = new HashMap<String, List<ConfigElementImpl>>();
+	private Map<String, List<ConfigElement>> configs = new HashMap<String, List<ConfigElement>>();
 	
 	protected ConfigElementImpl() {
 	}
@@ -51,8 +51,12 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> {
 		setProxyObject(element);
 	}
 
-	public ConfigElementImpl getConfiguration(String name) {
-		List<ConfigElementImpl> list = getConfigurations(name);
+	public ConfigElement getConfiguration(String name) {
+		if (getLocalName().equals(name)) {
+			return this;
+		}
+		
+		List<ConfigElement> list = getConfigurations(name);
 		
 		if (list == null)
 			return null;
@@ -63,17 +67,17 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> {
 		return null;
 	}
 
-	public List<ConfigElementImpl> getConfigurations(String name) {
+	public List<ConfigElement> getConfigurations(String name) {
 		if (configs.containsKey(name))
 			return configs.get(name);
 		
 		NodeList nodes = getElementsByTagName(name);
 
 		if (nodes.getLength() > 0) { 
-			List<ConfigElementImpl> list = new ArrayList<ConfigElementImpl>();
+			List<ConfigElement> list = new ArrayList<ConfigElement>();
 		
 			for (int i = 0; i < nodes.getLength(); i++) {
-				ConfigElementImpl config = new ConfigElementImpl((ElementAtExist) nodes.item(i));
+				ConfigElement config = new ConfigElementImpl((ElementAtExist) nodes.item(i));
 				list.add(config);
 			}
 			
