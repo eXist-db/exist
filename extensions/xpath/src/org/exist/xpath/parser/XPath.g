@@ -2,6 +2,12 @@ grammar XPath;
 
 options {
   language = Java;
+  k=1;  
+}
+
+tokens {
+    QName; 
+    FOR;
 }
 
 // XPath 2.0
@@ -21,27 +27,27 @@ ExprSingle
   ;
 //[4]
 ForExpr
-  : SimpleForClause 'return' ExprSingle
+  : SimpleForClause RETURN ExprSingle
   ;
 //[5]
 SimpleForClause
-  : 'for' '$' VarName 'in' ExprSingle (',' '$' VarName 'in' ExprSingle)*
+  : FOR '$' VarName IN ExprSingle (',' '$' VarName IN ExprSingle)*
   ;
 //[6]
 QuantifiedExpr
-  : ('some' | 'every') '$' VarName 'in' ExprSingle (',' '$' VarName 'in' ExprSingle)* 'satisfies' ExprSingle
+  : (SOME | EVERY) '$' VarName IN ExprSingle (',' '$' VarName IN ExprSingle)* SATISFIES ExprSingle
   ;
 //[7]
 IfExpr
-  : 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
+  : IF '(' Expr ')' THEN ExprSingle ELSE ExprSingle
   ;
 //[8]
 OrExpr
-  : AndExpr ( 'or' AndExpr )*
+  : AndExpr ( OR AndExpr )*
   ;
 //[9]
 AndExpr
-  : ComparisonExpr ( 'and' ComparisonExpr )*
+  : ComparisonExpr ( AND ComparisonExpr )*
   ;
 //[10]
 ComparisonExpr
@@ -54,7 +60,7 @@ ComparisonExpr
   ;
 //[11]
 RangeExpr
-  : AdditiveExpr ( 'to' AdditiveExpr )?
+  : AdditiveExpr ( TO AdditiveExpr )?
   ;
 //[12]
 AdditiveExpr
@@ -62,31 +68,31 @@ AdditiveExpr
   ;
 //[13]
 MultiplicativeExpr
-  : UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr )*
+  : UnionExpr ( ('*' | DIV | IDIV | MOD) UnionExpr )*
   ;
 //[14]
 UnionExpr
-  : IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr )*
+  : IntersectExceptExpr ( (UNION | '|') IntersectExceptExpr )*
   ;
 //[15]
 IntersectExceptExpr
-  : InstanceofExpr ( ('intersect' | 'except') InstanceofExpr )*
+  : InstanceofExpr ( (INTERSECT | EXCEPT) InstanceofExpr )*
   ;
 //[16]
 InstanceofExpr
-  : TreatExpr ( 'instance' 'of' SequenceType )?
+  : TreatExpr ( INSTANCE OF SequenceType )?
   ;
 //[17]
 TreatExpr
-  : CastableExpr ( 'treat' 'as' SequenceType )?
+  : CastableExpr ( TREAT AS SequenceType )?
   ;
 //[18]
 CastableExpr
-  : CastExpr ( 'castable' 'as' SingleType )?
+  : CastExpr ( CASTABLE AS SingleType )?
   ;
 //[19]
 CastExpr
-  : UnaryExpr ( 'cast' 'as' SingleType )?
+  : UnaryExpr ( CAST AS SingleType )?
   ;
 //[20]
 UnaryExpr
@@ -98,15 +104,15 @@ ValueExpr
   ;
 //[22]
 GeneralComp
-  : '=' | '!=' | '<' | '<=' | '>' | '>='
+  : SymEq | '!=' | LAngle | '<=' | RAngle | '>='
   ;
 //[23]
 ValueComp
-  : 'eq' | 'ne' | 'lt' | 'le' | 'gt' | 'ge'
+  : EQ | NE | LT | LE | GT | GE
   ;
 //[24]
 NodeComp
-  : 'is' | '<<' | '>>'
+  : IS | '<<' | '>>'
   ;
 //[25]
 PathExpr
@@ -134,14 +140,14 @@ ForwardStep
   ;
 //[30]
 ForwardAxis
-  : ('child' '::')
-  | ('descendant' '::')
-  | ('attribute' '::')
-  | ('self' '::')
-  | ('descendant-or-self' '::')
-  | ('following-sibling' '::')
-  | ('following' '::')
-  | ('namespace' '::')
+  : (CHILD '::')
+  | (DESCENDANT '::')
+  | (ATTRIBUTE '::')
+  | (SELF '::')
+  | (DESCENDANT_OR_SELF '::')
+  | (FOLLOWING_SIBLING '::')
+  | (FOLLOWING '::')
+  | (NAMESPACE '::')
   ;
 //[31]
 AbbrevForwardStep
@@ -154,11 +160,11 @@ ReverseStep
   ;
 //[33]
 ReverseAxis
-  : ('parent' '::')
-  | ('ancestor' '::')
-  | ('preceding-sibling' '::')
-  | ('preceding' '::')
-  | ('ancestor-or-self' '::')
+  : (PARENT '::')
+  | (ANCESTOR '::')
+  | (PRECEDING_SIBLING '::')
+  | (PRECEDING '::')
+  | (ANCESTOR_OR_SELF '::')
   ;
 //[34]
 AbbrevReverseStep
@@ -231,7 +237,7 @@ SingleType
   ;
 //[50]
 SequenceType
-  : ('empty-sequence' '(' ')')
+  : (EMPTY_SEQUENCE '(' ')')
   | (ItemType OccurrenceIndicator?)
   ;
 //[51]
@@ -240,7 +246,7 @@ OccurrenceIndicator
   ;
 //[52]
 ItemType
-  : KindTest | ('item' '(' ')') | AtomicType
+  : KindTest | (ITEM '(' ')') | AtomicType
   ;
 //[53]
 AtomicType
@@ -260,27 +266,27 @@ KindTest
   ;
 //[55]
 AnyKindTest
-  : 'node' '(' ')'
+  : NODE '(' ')'
   ;
 //[56]
 DocumentTest
-  : 'document-node' '(' (ElementTest | SchemaElementTest)? ')'
+  : DOCUMENT_NODE '(' (ElementTest | SchemaElementTest)? ')'
   ;
 //[57]
 TextTest
-  : 'text' '(' ')'
+  : TEXT '(' ')'
   ;
 //[58]
 CommentTest
-  : 'comment' '(' ')'
+  : COMMENT '(' ')'
   ;
 //[59]
 PITest
-  : 'processing-instruction' '(' (NCName | StringLiteral)? ')'
+  : PROCESSING_INSTRUCTION '(' (NCName | StringLiteral)? ')'
   ;
 //[60]
 AttributeTest
-  : 'attribute' '(' (AttribNameOrWildcard (',' TypeName)?)? ')'
+  : ATTRIBUTE '(' (AttribNameOrWildcard (',' TypeName)?)? ')'
   ;
 //[61]
 AttribNameOrWildcard
@@ -288,7 +294,7 @@ AttribNameOrWildcard
   ;
 //[62]
 SchemaAttributeTest
-  : 'schema-attribute' '(' AttributeDeclaration ')'
+  : SCHEMA_ATTRIBUTE '(' AttributeDeclaration ')'
   ;
 //[63]
 AttributeDeclaration
@@ -296,7 +302,7 @@ AttributeDeclaration
   ;
 //[64]
 ElementTest
-  : 'element' '(' (ElementNameOrWildcard (',' TypeName '?'?)?)? ')'
+  : ELEMENT '(' (ElementNameOrWildcard (',' TypeName '?'?)?)? ')'
   ;
 //[65]
 ElementNameOrWildcard
@@ -304,7 +310,7 @@ ElementNameOrWildcard
   ;
 //[66]
 SchemaElementTest
-  : 'schema-element' '(' ElementDeclaration ')'
+  : SCHEMA_ELEMENT '(' ElementDeclaration ')'
   ;
 //[67]
 ElementDeclaration
@@ -410,8 +416,71 @@ Name
 	:	NameStartChar (NameChar)*
 	;
 
-Quot	:	'"';
-Apos	:	'\'';
+Quot		:	'"';
+Apos		:	'\'';
+
+RETURN	:	'return';
+FOR		:	'for';
+IN		:	'in';
+IF		:	'if';
+THEN		:	'then';
+ELSE		:	'else';
+IS		:	'is';
+EQ		:	'eq';
+NE		:	'ne';
+LT		:	'lt';
+LE		:	'le';
+GT		:	'gt';
+GE		:	'ge';
+SOME		:	'some';
+EVERY	:	'every';
+SATISFIES	:	'satisfies';
+OR		:	'or';
+AND		:	'and';
+TO		:	'to';
+DIV		:	'div';
+IDIV		:	'idiv';
+MOD		:	'mod';
+
+UNION	:	'union';
+INTERSECT	:	'intersect';
+EXCEPT	:	'except';
+INSTANCE	:	'instance';
+OF		:	'of';
+TREAT	:	'treat';
+AS		:	'as';
+CASTABLE	:	'castable';
+CAST		:	'cast';
+
+NODE					:	'node';
+DOCUMENT_NODE			:	'document-node';
+TEXT					:	'text';
+COMMENT				:	'comment';
+PROCESSING_INSTRUCTION	:	'processing-instruction';
+SCHEMA_ATTRIBUTE		:	'schema-attribute';
+ELEMENT				:	'element';
+SCHEMA_ELEMENT		:	'schema-element';
+EMPTY_SEQUENCE		:	'empty-sequence';
+ITEM					:	'item';
+
+SymEq	:	'=';
+LAngle	:	'<';
+RAngle	:	'>';
+
+CHILD				:	'child';
+DESCENDANT		:	'descendant';
+ATTRIBUTE			:	'attribute';
+SELF				:	'self';
+DESCENDANT_OR_SELF	:	'descendant-or-self';
+FOLLOWING_SIBLING	:	'following-sibling';
+FOLLOWING			:	'following';
+NAMESPACE			:	'namespace';
+
+PARENT			:	'parent';
+ANCESTOR			:	'ancestor';
+PRECEDING_SIBLING	:	'preceding-sibling';
+PRECEDING			:	'preceding';
+ANCESTOR_OR_SELF	:	'ancestor-or-self';
 
 fragment 
 CommonContentChar
