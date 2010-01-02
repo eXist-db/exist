@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.config;
 
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
 
 /**
@@ -53,12 +54,25 @@ public class Configurater {
     	return link;
 	}
 	
-	public static boolean configure(Configurable instance, ConfigElementImpl configuration) {
+	public static boolean configure(Configurable instance, ConfigElement configuration) {
+		Class<?> clazz = instance.getClass();
+		instance.getClass().getAnnotations();
+		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
+			LOG.info("no configuration name at "+instance.getClass());
+			return false;
+		}
+		
+		String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+		
+		return configureByCurrent(instance, configuration.getConfiguration(configName));
+	}
+
+	private static boolean configureByCurrent(Configurable instance, ConfigElement configuration) {
 		Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
 		List<String> properties = configuration.getProperties();
 		
 		if (properties.size() == 0)
-			LOG.info("no properties for "+instance.getClass()+" @ "+configuration.getLocalName());
+			LOG.info("no properties for "+instance.getClass()+" @ "+configuration);
 		
 		for (String property : properties) {
 			if (!properyFieldMap.containsKey(property)) {
