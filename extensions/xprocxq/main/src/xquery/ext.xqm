@@ -24,6 +24,7 @@ import module namespace u = "http://xproc.net/xproc/util";
 declare variable $ext:pre := util:function(xs:QName("ext:pre"), 3);
 declare variable $ext:post := util:function(xs:QName("ext:post"), 3);
 declare variable $ext:xproc := util:function(xs:QName("ext:xproc"), 3);
+declare variable $ext:xsltforms := util:function(xs:QName("ext:xsltforms"), 3);
 
 
 (: -------------------------------------------------------------------------- :)
@@ -51,6 +52,17 @@ declare function ext:xproc($primary,$secondary,$options){
     ()
 };
 
+
+(:-------------------------------------------------------------------------- :)
+declare function ext:xsltforms($primary,$secondary,$options){
+(: TODO- unsure about the logic of this :)
+(: -------------------------------------------------------------------------- :)
+(
+  <?xml-stylesheet href="/exist/xforms/xsltforms/xsltforms.xsl"
+type="text/xsl"?>,
+  document{u:get-primary($primary)}
+)
+};
 
 
 

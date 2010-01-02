@@ -124,5 +124,7 @@ let	$params :=
 return
     if (request:get-parameter("format", ()) eq 'html') then
       transform:transform(document{$final-result}, xs:anyURI("xmldb:exist:///db/xproc/unit-test/test-result.xsl"), ())
+    else if (request:get-parameter("format", ()) eq 'w3c') then
+      transform:transform(document{$final-result}, xs:anyURI("xmldb:exist:///db/xproc/unit-test/w3c-test-result.xsl"), ())
     else
         $final-result
