@@ -22,4 +22,11 @@
         <p:option name="tflag" select="'0'"/>
     </p:declare-step>
 
+    <p:declare-step type="ext:xsltforms" xproc:support="true">
+           <p:input port="source" sequence="true" primary="true" select="/"/>
+           <p:output port="result" primary="true" select="/"/>
+           <p:option name="xsltformsURI"/>
+           <p:option name="debug"/>
+    </p:declare-step>
+
 </p:library>

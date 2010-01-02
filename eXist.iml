@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/extensions/debuggee/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/fluent/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/fluent/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/lucene/src" isTestSource="false" />
@@ -13,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/spatial/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/versioning/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/samples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
@@ -21,8 +23,6 @@
       <sourceFolder url="file://$MODULE_DIR$/tools/izpack/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tools/requestlog/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/wrapper/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/debuggee/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/test/benchmark" />
       <excludeFolder url="file://$MODULE_DIR$/test/junit" />
       <excludeFolder url="file://$MODULE_DIR$/test/temp" />
