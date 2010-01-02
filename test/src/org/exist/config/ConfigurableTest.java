@@ -42,8 +42,14 @@ import org.xml.sax.XMLReader;
  */
 public class ConfigurableTest {
 
-	String config1 = "<instance value1=\"a\" value2=\"5\"></instance>";
-	String config2 = "<config value1=\"b\"><instance value1=\"a\" value2=\"5\"></instance></config>";
+	String config1 = "<instance " +
+			"valueString=\"a\" " +
+			"valueInteger=\"5\" " +
+			"valueInt=\"5\" " +
+			"valueboolean=\"true\" " +
+			"valueBoolean=\"false\" " +
+			"></instance>";
+	String config2 = "<config valueString=\"b\"><instance valueString=\"a\" valueInteger=\"5\"></instance></config>";
 	
 	@Test
 	public void simple() throws Exception {
@@ -68,6 +74,12 @@ public class ConfigurableTest {
         assertEquals("a", object.some);
         
         assertEquals(Integer.valueOf(5), object.someInteger);
+        assertTrue(object.simpleInteger == 5);
+        assertTrue(object.defaultInteger == 3);
+
+        assertTrue(object.someboolean);
+
+        assertFalse(object.someBoolean);
 	}
 
 	@Test

@@ -91,6 +91,10 @@ public class Configurater {
 					Integer value = configuration.getPropertyInteger(property);
 					if (value != null)
 						field.set(instance, value);
+				} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+					Boolean value = configuration.getPropertyBoolean(property);
+					if (value != null)
+						field.set(instance, value);
 				} else {
 					throw new IllegalArgumentException("unsupported configuration value type "+field.getType());
 				}

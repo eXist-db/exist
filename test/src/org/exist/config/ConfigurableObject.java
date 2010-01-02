@@ -31,11 +31,23 @@ import org.exist.config.annotation.ConfigurationField;
 @ConfigurationClass("instance")
 public class ConfigurableObject implements Configurable {
 	
-	@ConfigurationField("value1")
+	@ConfigurationField("valueString")
 	protected String some = "default";
 
-	@ConfigurationField("value2")
+	@ConfigurationField("valueInteger")
 	protected Integer someInteger = 7;
+
+	@ConfigurationField("valueInt")
+	protected int simpleInteger = 5;
+
+	@ConfigurationField("value")
+	protected int defaultInteger = 3;
+
+	@ConfigurationField("valueboolean")
+	protected boolean someboolean = false;
+
+	@ConfigurationField("valueBoolean")
+	protected Boolean someBoolean = true;
 
 	public ConfigurableObject(ConfigElementImpl config) {
 		Configurater.configure(this, config);

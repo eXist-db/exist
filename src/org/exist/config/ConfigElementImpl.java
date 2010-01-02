@@ -120,7 +120,26 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> implements C
         runtimeProperties.put(name, obj);
     }
     
-    public Boolean getPropertyBoolean(String name, boolean defaultValue) {
+    public Boolean getPropertyBoolean(String name) {
+    	String value = getProperty(name);
+        
+    	if(value == null)
+            return null;
+        
+    	if ("yes".equalsIgnoreCase(value))
+    		return true;
+    	else if ("no".equalsIgnoreCase(value))
+    		return false;
+    	else if ("true".equalsIgnoreCase(value))
+    		return true;
+    	else if ("false".equalsIgnoreCase(value))
+    		return false;
+    	
+    	//???
+    	return null;
+    }
+
+	public Boolean getPropertyBoolean(String name, boolean defaultValue) {
     	String value = getProperty(name);
         if(value == null)
             return Boolean.valueOf(defaultValue);     
