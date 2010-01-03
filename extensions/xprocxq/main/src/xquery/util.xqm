@@ -319,6 +319,24 @@ declare function u:xquery($query,$xml){
               else
                   $query
 
+let $result := util:eval-with-context($qry,$static-content,false())
+    return
+        $result
+};
+
+
+(: -------------------------------------------------------------------------- :)
+declare function u:xquery-with-context($query,$xml){
+    let $static-content := <static-context>
+						<default-context>{$xml}</default-context>
+						</static-context>
+    let $qry := if (starts-with(normalize-space($query),'/') or starts-with(normalize-space($query),'//')) then
+                concat('.',$query)
+			  else if(contains($query,'(/')) then
+				replace($query,'\(/','(./')
+              else
+                  $query
+
 
 let $result : = util:eval-inline($xml,$query)
 
