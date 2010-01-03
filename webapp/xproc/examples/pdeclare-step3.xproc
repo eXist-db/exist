@@ -4,7 +4,7 @@
 
    <p:declare-step type="mine:teststep">
        <p:output port="result" primary="true"/>
-        <p:xquery>
+        <p:xquery xproc:preserve-context="true">
         <p:input port="source"/>
         <p:input port="query">
            <p:inline>
