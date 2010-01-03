@@ -77,5 +77,39 @@ href="/db/xproc/examples/xform.xml"/>
 			<a href="examples/extxsltform.xproc" target="_example">run extxsltform.xproc</a>
 			</example>
     </section>
-    
+
+    <section>
+        <a name="compression"/>
+        <para>The following extension steps take advantage of eXist compression module, which will need
+        to be enabled for them to operate.</para>
+
+    <section>
+		<a name="ext:unzip"/>
+        <title>ext:unzip</title>
+        <para>This step unzips a zip document.</para>
+			<example>
+			<title>Outputting a rendered XForm</title>
+			<programlisting>
+			<markup>
+				<![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<p:pipeline xmlns="http://www.w3.org/1999/xhtml"
+xmlns:c="http://www.w3.org/ns/xproc-step"
+xmlns:p="http://www.w3.org/ns/xproc" xmlns:ext="http://xproc.net/xproc/ext"
+name="formarePaginaAcces">
+   <ext:xsltforms>
+       <p:input port="source">
+           <p:document
+href="/db/xproc/examples/xform.xml"/>
+       </p:input>
+   </ext:xsltforms>
+</p:pipeline>                ]]>
+			</markup>
+			</programlisting>
+			<a href="examples/extxsltform.xproc" target="_example">run extxsltform.xproc</a>
+			</example>
+    </section>
+
+    </section>
+
 </article>
