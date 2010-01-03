@@ -80,33 +80,30 @@ href="/db/xproc/examples/xform.xml"/>
 
     <section>
         <a name="compression"/>
-        <para>The following extension steps take advantage of eXist compression module, which will need
+        <para>The following extension steps take advantage of eXist compression extension module, which will need
         to be enabled for them to operate.</para>
 
     <section>
-		<a name="ext:unzip"/>
-        <title>ext:unzip</title>
-        <para>This step unzips a zip document.</para>
+		<a name="compression:zip"/>
+        <title>compression:zip</title>
+        <para>This step zips up the /db/xproc/examples collection and outputs a zip document as per the eXist compression:zip xquery extension function.</para>
 			<example>
-			<title>Outputting a rendered XForm</title>
+			<title>Outputting a zip file in a c:result element</title>
 			<programlisting>
 			<markup>
 				<![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
-<p:pipeline xmlns="http://www.w3.org/1999/xhtml"
-xmlns:c="http://www.w3.org/ns/xproc-step"
-xmlns:p="http://www.w3.org/ns/xproc" xmlns:ext="http://xproc.net/xproc/ext"
-name="formarePaginaAcces">
-   <ext:xsltforms>
-       <p:input port="source">
-           <p:document
-href="/db/xproc/examples/xform.xml"/>
-       </p:input>
-   </ext:xsltforms>
-</p:pipeline>                ]]>
+<p:pipeline xmlns:c="http://www.w3.org/ns/xproc-step"
+xmlns:p="http://www.w3.org/ns/xproc"
+xmlns:compress="http://exist-db.org/xquery/compression"
+name="pipeline">
+    <p:import href="resource:net/xproc/xprocxq/lib/compression-library.xml"/>
+    <compress:zip name="aaa"/>
+</p:pipeline>
+               ]]>
 			</markup>
 			</programlisting>
-			<a href="examples/extxsltform.xproc" target="_example">run extxsltform.xproc</a>
+			<a href="examples/compressionzip.xproc" target="_example">run compressionzip.xproc</a>
 			</example>
     </section>
 
