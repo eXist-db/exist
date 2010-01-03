@@ -87,7 +87,6 @@
                     <td>retrieve html page using p:http-request</td>
                 </tr>
             </tbody>
-
         </table>
 
         <note>
