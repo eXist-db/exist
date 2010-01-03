@@ -1,5 +1,3 @@
-<!-- Generates html version of Unit Test results //-->
-<!-- TODO: uses XSLT 2.0 at the moment //-->
 <xsl:stylesheet
  xmlns:xsl='http://www.w3.org/1999/XSL/Transform'
  xmlns:fn='http://www.w3.org/2003/05/xpath-functions'
@@ -7,11 +5,8 @@
 
 <xsl:output indent="yes"/>
 
-<xsl:variable name="total" select="count(testsuite/test)"/>
-<xsl:variable name="success" select="count(testsuite/test[contains(result,expected)])"/>
-<xsl:variable name="failed" select="count(testsuite/test[not(contains(result,expected))])"/>
 
-<xsl:template match ='testsuite'>
+<xsl:template match ='/'>
     <test-report xmlns='http://xproc.org/ns/testreport'>
     <title>XProc Test Results for XML Calabash</title>
     <date>2009-12-01T09:55:12</date>
