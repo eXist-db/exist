@@ -42,7 +42,7 @@ declare function u:declarens($element){
 declare function u:declare-ns($namespaces){
     for $ns in $namespaces//ns
     return
-        util:declare-namespace($ns/@prefix,xs:anyURI($ns/@URI))
+        util:catch("*",util:declare-namespace($ns/@prefix,xs:anyURI($ns/@URI)),())
 };
 
 
