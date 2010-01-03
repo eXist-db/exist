@@ -82,6 +82,7 @@
       <p:input port="query"  primary="false" select="/"/>
       <p:input port="parameters" kind="parameter" select="/"/>
       <p:output port="result" primary="true" sequence="true" select="/"/>
+      <p:option name="xproc:preserve-context" select="'false'"/>
    </p:declare-step>
    <p:declare-step type="p:xsl-formatter" xml:id="xsl-formatter" xproc:support="true">
       <p:input port="source" primary="true" select="/"/>
