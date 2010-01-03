@@ -243,9 +243,7 @@ else
                              $is_standard_step,
                              $is_optional_step,
                              $is_extension_step)
-
             let $is_component := $const:comp-steps//xproc:element[@type=$stepname]
-
             return
                if ( name($step) eq 'p:import') then
                     ()
@@ -259,7 +257,6 @@ else
                else if (exists($is_component)) then
                     (: generate p:declare-step and all other xproc components :)
                     naming:generate-component($xproc,$is_component,$step,$stepname)
-
                else
                     (: throws error on unknown element in pipeline namespace :)
                     u:staticError('err:XS0044', concat("static error during explicit naming pass:  ",$stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
@@ -289,7 +286,7 @@ else
 declare function naming:fixup($xproc as item(),$stdin){
 (: -------------------------------------------------------------------------- :)
 let $pipeline := $xproc/p:*[name(.) = "p:pipeline" or name(.) ="p:declare-step"]
-let $steps := <p:declare-step >
+let $steps := <p:declare-step>
                <ext:pre name="!{$pipeline/@name}">
             {
             if ($pipeline/p:input[@primary='true']) then

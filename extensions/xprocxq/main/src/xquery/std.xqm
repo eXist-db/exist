@@ -523,7 +523,7 @@ return
 declare function std:wrap($primary,$secondary,$options) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if (contains($match,'/')) then
+let $query := if(contains($match,'/')) then
 				$match
 			  else
 				concat('//',$match)
@@ -531,7 +531,12 @@ let $matchresult := u:evalXPATH($query, $v, $primary)
 let $wrapper := u:get-option('wrapper',$options,$v)
 let $group-adjacent := u:get-option('group-adjacent',$options,$v)
 return
-	u:wrap-matching-elements($v/*,$matchresult,$wrapper)
+    if ($match eq '/') then
+        element {$wrapper}{
+	    	$v
+	    }
+	else
+	    u:wrap-matching-elements($v/*,$matchresult,$wrapper)
 };
 
 
