@@ -9,7 +9,11 @@
         <p:input port="query">
            <p:inline>
                <c:query xproc:escape="true">
-                   <test>{request:get-parameter-names()}</test>
+                   <request hostname="">
+                        <urlparamnames>{request:get-parameter-names()}</urlparamnames>
+                        <cookienames>{request:get-cookie-names()}</cookienames>
+                        <headernames>{request:get-header-names()}</headernames>
+                   </request>
                </c:query>
            </p:inline>
         </p:input>
