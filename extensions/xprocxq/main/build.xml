@@ -41,6 +41,7 @@
     <target name="exist-jar" depends="clean">
       <delete dir="${dist}/xprocxq.jar"/>
       <zip destfile="${dist}/xprocxq.jar">
+          <zipfileset dir="lib" includes="**/**/**.xml" prefix="net/xproc/xprocxq/lib"/>
         <zipfileset dir="src/xquery" includes="**/**/**.*" prefix="net/xproc/xprocxq/src/xquery"/>
         <zipfileset dir="src/expath" includes="**/**/**.*" prefix="org/expath/www/mod/http-client"/>
         <zipfileset dir="etc" includes="**/**/*.*" prefix="net/xproc/xprocxq/etc"/>
