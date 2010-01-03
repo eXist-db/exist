@@ -587,10 +587,9 @@ return
                 <li><b><a href="extension-xproc-steps.xml#ext:xsltforms">ext:xsltforms</a>:</b>convert xform</li>
 
             </ul>
-            <para>The following are 3rd party libraries available within eXist XProc.</para>
+            <para>The following are 3rd party libraries available within eXist XProc. To use you will need to enable the relevent extension module.</para>
             <ul>
-                <li><b><a href="compression-library.xml.xml#compression:zip">compression:zip</a>:</b>zip up files or collections</li>
-                <li><b><a href="compression-library.xml#compression:unzip">compression:unzip</a>:</b>unzip</li>
+                <li><b><a href="compression-library.xml.xml#compression">compression library</a>:</b>zip up files or collections</li>
 
             </ul>
 		</section>
