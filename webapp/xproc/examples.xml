@@ -68,7 +68,12 @@
                     </td>
                     <td>Apply xslt transformation to input supplied as a url paramater.</td>                    
                 </tr>
-
+                <tr>
+                    <td>
+                        <a href="examples/pxquery4.xproc" target="_example">xslt transformation</a>
+                    </td>
+                    <td>Apply xslt transformation to input supplied as a url paramater.</td>
+                </tr>
             </tbody>
 
         </table>
