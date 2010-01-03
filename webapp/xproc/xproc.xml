@@ -128,7 +128,7 @@ demonstrate this look at the examples/pidentity.xproc
             </programlisting>
 </example>
 
-This XProc uses the p:identity step to output the 'a' input port, which we define using bindings.
+This XProc uses the p:identity step to output the 'a' input port, which we define using the url bindings param.
 
 <example>
 			<title>Running XProc from eXist</title>

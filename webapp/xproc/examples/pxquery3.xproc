@@ -3,7 +3,7 @@
    xmlns:xproc="http://xproc.net/xproc" name="aaa">
    <p:input port="source"/>
    <p:output port="result"/>
-   <p:xquery>
+   <p:xquery xproc:preserve-context="true">
        <p:input port="source"/>
        <p:input port="query">
            <p:inline>
