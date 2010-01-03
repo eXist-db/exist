@@ -46,7 +46,7 @@ xmlns:p="http://www.w3.org/ns/xproc" name="test">
                 ]]>
 			</markup>
 			</programlisting>
-			<a href="examples/extrunstep.xproc" target="_example">run extrunstep.xproc</a>
+			<a href="examples/extrunstep.xproc?stdin=/db/xproc/examples/test.xml" target="_example">run extrunstep.xproc</a>
 			</example>
     </section>
 

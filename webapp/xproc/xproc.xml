@@ -584,6 +584,8 @@ return
 			<para>Implementation specific steps</para>
             <ul>
                 <li><b><a href="extension-xproc-steps.xml#ext:xproc">ext:xproc</a>:</b>arbritrarily run xproc pipeline</li>
+                <li><b><a href="extension-xproc-steps.xml#ext:xsltforms">ext:xsltforms</a>:</b>convert xform</li>
+
             </ul>
 
 		</section>
