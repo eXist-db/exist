@@ -159,13 +159,12 @@ u:assert(exists(u:get-secondary('query',$secondary)/c:query),'p:input query is r
 			u:serialize($xquery/node(),$const:TRACE_SERIALIZE)
 		else
 			$xquery/node()
-
-    let $result := u:xquery($query,$v)
-        return
-            $result
-            (:
-            u:outputResultElement($result)
-            :)
+    let $preserve-context := u:get-option('xproc:preserve-context',$options,$v)
+    return
+        if ($preserve-context eq 'true') then
+            u:xquery-with-context($query,$v)
+        else
+            u:xquery($query,$v)
 };
 
 
