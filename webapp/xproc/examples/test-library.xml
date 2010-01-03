@@ -1,0 +1,8 @@
+<p:library xmlns:p="http://www.w3.org/ns/xproc"
+           xmlns:my="http://example.org/mine"           
+           xmlns:xproc="http://xproc.net/xproc" version="1.0">
+	<p:declare-step type="my:bar">
+		<p:input port="source"/>
+		<p:count/>
+	</p:declare-step>
+</p:library>
