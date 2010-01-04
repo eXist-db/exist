@@ -1,350 +1,745 @@
+/*=============================================================================
+
+    Copyright 2009 Nikolay Ognyanov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+=============================================================================*/
+/*=============================================================================
+            
+            XPathGrammar : An NTLR 3 XPath Grammar, Version 1.0
+            
+            Supported W3C grammars:
+            
+            1. XPath 2.1 
+               Working Draft 15 December 2009
+               http://www.w3.org/TR/2009/WD-xpath-21-20091215/
+
+=============================================================================*/
+
 grammar XPath;
 
-options {
-  language = Java;
-  k=1;  
+@header {
+package org.exist.xpath.parser;
 }
 
-tokens {
-    QName; 
-    FOR;
+@lexer::header {
+package org.exist.xpath.parser;
 }
 
-// XPath 2.0
+@members {
+    // Pass some token codes to super class at creation time.
+    boolean dummy = setTokenCodes(NCName, Colon);
+}
 
-//[1] 
-XPath	:	Expr ;
-//[2]
-Expr
-  : ExprSingle (',' ExprSingle)*
-  ;
-//[3]
-ExprSingle
-  : ForExpr
-  | QuantifiedExpr
-  | IfExpr
-  | OrExpr
-  ;
-//[4]
-ForExpr
-  : SimpleForClause RETURN ExprSingle
-  ;
-//[5]
-SimpleForClause
-  : FOR '$' VarName IN ExprSingle (',' '$' VarName IN ExprSingle)*
-  ;
-//[6]
-QuantifiedExpr
-  : (SOME | EVERY) '$' VarName IN ExprSingle (',' '$' VarName IN ExprSingle)* SATISFIES ExprSingle
-  ;
-//[7]
-IfExpr
-  : IF '(' Expr ')' THEN ExprSingle ELSE ExprSingle
-  ;
-//[8]
-OrExpr
-  : AndExpr ( OR AndExpr )*
-  ;
-//[9]
-AndExpr
-  : ComparisonExpr ( AND ComparisonExpr )*
-  ;
-//[10]
-ComparisonExpr
-  : RangeExpr ( 
-    ( ValueComp
-    | GeneralComp
-    | NodeComp
-    )
-    RangeExpr )?
-  ;
-//[11]
-RangeExpr
-  : AdditiveExpr ( TO AdditiveExpr )?
-  ;
-//[12]
-AdditiveExpr
-  : MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr )*
-  ;
-//[13]
-MultiplicativeExpr
-  : UnionExpr ( ('*' | DIV | IDIV | MOD) UnionExpr )*
-  ;
-//[14]
-UnionExpr
-  : IntersectExceptExpr ( (UNION | '|') IntersectExceptExpr )*
-  ;
-//[15]
-IntersectExceptExpr
-  : InstanceofExpr ( (INTERSECT | EXCEPT) InstanceofExpr )*
-  ;
-//[16]
-InstanceofExpr
-  : TreatExpr ( INSTANCE OF SequenceType )?
-  ;
-//[17]
-TreatExpr
-  : CastableExpr ( TREAT AS SequenceType )?
-  ;
-//[18]
-CastableExpr
-  : CastExpr ( CASTABLE AS SingleType )?
-  ;
-//[19]
-CastExpr
-  : UnaryExpr ( CAST AS SingleType )?
-  ;
-//[20]
-UnaryExpr
-  : ('-' | '+')* ValueExpr
-  ;
-//[21]
-ValueExpr
-  : PathExpr
-  ;
-//[22]
-GeneralComp
-  : SymEq | '!=' | LAngle | '<=' | RAngle | '>='
-  ;
-//[23]
-ValueComp
-  : EQ | NE | LT | LE | GT | GE
-  ;
-//[24]
-NodeComp
-  : IS | '<<' | '>>'
-  ;
-//[25]
-PathExpr
-  : ('/' RelativePathExpr?)
-  | ('//' RelativePathExpr)
-  | RelativePathExpr  /* xgs: leading-lone-slash */
-  ;
-//[26]
-RelativePathExpr
-  : StepExpr (('/' | '//') StepExpr)*
-  ;
-//[27]
-StepExpr
-  : FilterExpr
-  | AxisStep
-  ;
-//[28]
-AxisStep
-  : (ReverseStep | ForwardStep) PredicateList
-  ;
-//[29]
-ForwardStep
-  : (ForwardAxis NodeTest)
-  | AbbrevForwardStep
-  ;
-//[30]
-ForwardAxis
-  : (CHILD '::')
-  | (DESCENDANT '::')
-  | (ATTRIBUTE '::')
-  | (SELF '::')
-  | (DESCENDANT_OR_SELF '::')
-  | (FOLLOWING_SIBLING '::')
-  | (FOLLOWING '::')
-  | (NAMESPACE '::')
-  ;
-//[31]
-AbbrevForwardStep
-  : '@'? NodeTest
-  ;
-//[32]
-ReverseStep
-  : (ReverseAxis NodeTest)
-  | AbbrevReverseStep
-  ;
-//[33]
-ReverseAxis
-  : (PARENT '::')
-  | (ANCESTOR '::')
-  | (PRECEDING_SIBLING '::')
-  | (PRECEDING '::')
-  | (ANCESTOR_OR_SELF '::')
-  ;
-//[34]
-AbbrevReverseStep
-  : '..'
-  ;
-//[35]
-NodeTest
-  : KindTest 
-  | NameTest
-  ;
-//[36]
-NameTest
-  : QName
-  | Wildcard
-  ;
-//[37]
-Wildcard
-  : '*'
-  | (NCName ':' '*')
-  | ('*' ':' NCName)  /* ws: explicit */
-  ;
-//[38]
-FilterExpr
-  : PrimaryExpr PredicateList
-  ;
-//[39]
-PredicateList
-  : Predicate*
-  ;
-//[40]
-Predicate
-  : '[' Expr ']'
-  ;
-//[41]
-PrimaryExpr
-  : Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall
-  ;
-//[42]
-Literal
-  : NumericLiteral | StringLiteral
-  ;
-//[43]
-NumericLiteral
-  : IntegerLiteral | DecimalLiteral | DoubleLiteral
-  ;
-//[44]
-VarRef
-  : '$' VarName
-  ;
-//[45]
-VarName
-  : QName
-  ;
-//[46]
-ParenthesizedExpr
-  : '(' Expr? ')'
-  ;
-//[47]
-ContextItemExpr
-  : '.'
-  ;
-//[48]
-FunctionCall
-  : QName '(' (ExprSingle (',' ExprSingle)*)? ')'   /* xgs: reserved-function-names */
-  ;
-        /* gn: parens */
-//[49]
-SingleType
-  : AtomicType '?'?
-  ;
-//[50]
-SequenceType
-  : (EMPTY_SEQUENCE '(' ')')
-  | (ItemType OccurrenceIndicator?)
-  ;
-//[51]
-OccurrenceIndicator
-  : '?' | '*' | '+'   /* xgs: occurrence-indicators */
-  ;
-//[52]
-ItemType
-  : KindTest | (ITEM '(' ')') | AtomicType
-  ;
-//[53]
-AtomicType
-  : QName
-  ;
-//[54]
-KindTest
-  : DocumentTest
-  | ElementTest
-  | AttributeTest
-  | SchemaElementTest
-  | SchemaAttributeTest
-  | PITest
-  | CommentTest
-  | TextTest
-  | AnyKindTest
-  ;
-//[55]
-AnyKindTest
-  : NODE '(' ')'
-  ;
-//[56]
-DocumentTest
-  : DOCUMENT_NODE '(' (ElementTest | SchemaElementTest)? ')'
-  ;
-//[57]
-TextTest
-  : TEXT '(' ')'
-  ;
-//[58]
-CommentTest
-  : COMMENT '(' ')'
-  ;
-//[59]
-PITest
-  : PROCESSING_INSTRUCTION '(' (NCName | StringLiteral)? ')'
-  ;
-//[60]
-AttributeTest
-  : ATTRIBUTE '(' (AttribNameOrWildcard (',' TypeName)?)? ')'
-  ;
-//[61]
-AttribNameOrWildcard
-  : AttributeName | '*'
-  ;
-//[62]
-SchemaAttributeTest
-  : SCHEMA_ATTRIBUTE '(' AttributeDeclaration ')'
-  ;
-//[63]
-AttributeDeclaration
-  : AttributeName
-  ;
-//[64]
-ElementTest
-  : ELEMENT '(' (ElementNameOrWildcard (',' TypeName '?'?)?)? ')'
-  ;
-//[65]
-ElementNameOrWildcard
-  : ElementName | '*'
-  ;
-//[66]
-SchemaElementTest
-  : SCHEMA_ELEMENT '(' ElementDeclaration ')'
-  ;
-//[67]
-ElementDeclaration
-  : ElementName
-  ;
-//[68]
-AttributeName
-  : QName
-  ;
-//[69]
-ElementName
-  : QName
-  ;
-//[70]
-TypeName
-  : QName
-  ;
-  
-//***************************************
-//           Terminal Symbols
-//***************************************
-//[71]
+paramList
+    : param (',' param)*
+    ;
+param
+    : '$' qName typeDeclaration?
+    ;
+enclosedExpr
+    : LCurly expr RCurly
+    ;
+queryBody
+    : expr
+    ;
+expr
+    : exprSingle
+      (',' exprSingle )*
+    ;
+
+exprSingle
+    : flworExpr
+    | quantifiedExpr
+    | ifExpr
+    | orExpr
+    ;
+flworExpr
+    : initalClause intermediateClause* returnClause
+    ;
+initalClause
+    : forClause
+    | letClause
+    ;
+intermediateClause
+    : initalClause
+    | whereClause
+    | groupByClause
+    | orderByClause
+    | countClause
+    ;
+forClause
+    : FOR  '$' varName typeDeclaration? allowingEmpty? positionalVar? 
+      IN exprSingle 
+      (',' '$' varName typeDeclaration? allowingEmpty? positionalVar?
+      IN exprSingle)*
+    ;
+allowingEmpty
+    : ALLOWING EMPTY
+    ;
+positionalVar
+    : AT '$' varName
+    ;
+letClause
+    : LET   '$' varName typeDeclaration? ':=' exprSingle
+      (','(('$' varName typeDeclaration?)) ':=' exprSingle)*
+    ;
+countClause
+    : COUNT '$' varName
+    ;
+whereClause
+    : WHERE exprSingle
+    ;
+groupByClause
+    : GROUP BY groupingSpecList
+    ;
+groupingSpecList
+    : groupingSpec (',' groupingSpec)*
+    ;
+groupingSpec
+    : '$' varName (COLLATION uriLiteral)?
+    ;
+orderByClause
+    : ((ORDER BY) | (STABLE ORDER BY)) orderSpecList
+    ;
+orderSpecList
+    : orderSpec (',' orderSpec)*
+    ;
+orderSpec
+    : exprSingle orderModifier
+    ;
+orderModifier
+    : (ASCENDING | DESCENDING)? 
+      (EMPTY (GREATEST | LEAST))? 
+      (COLLATION uriLiteral)?
+    ;
+returnClause
+    : RETURN exprSingle
+    ;
+quantifiedExpr
+    : (SOME | EVERY) '$' varName typeDeclaration? IN exprSingle 
+                (',' '$' varName typeDeclaration? IN exprSingle)* 
+      SATISFIES exprSingle
+    ;
+ifExpr
+    : IF '(' expr ')' THEN exprSingle ELSE exprSingle
+    ;
+orExpr
+    : andExpr ( OR andExpr )*
+    ;
+andExpr
+    : comparisonExpr ( AND comparisonExpr )*
+    ;
+comparisonExpr
+    : rangeExpr ( (valueComp | generalComp | nodeComp) rangeExpr )?
+    ;
+rangeExpr
+    : additiveExpr ( TO additiveExpr )?
+    ;
+additiveExpr
+    : multiplicativeExpr ( ('+' | '-') multiplicativeExpr )*
+    ;
+multiplicativeExpr
+    : unionExpr ( 
+       (  '*' 
+        | DIV  {needSpaceBetween(IntegerLiteral);}
+               {needSpaceBetween(DecimalLiteral);}
+               {needSpaceBetween(DoubleLiteral );}
+        | IDIV {needSpaceBetween(IntegerLiteral);}
+               {needSpaceBetween(DecimalLiteral);}
+               {needSpaceBetween(DoubleLiteral );}
+        | MOD  {needSpaceBetween(IntegerLiteral);}
+               {needSpaceBetween(DecimalLiteral);}
+               {needSpaceBetween(DoubleLiteral );}
+        ) 
+        unionExpr 
+       )*
+    ;
+unionExpr
+    : intersectExceptExpr ( (UNION | '|') intersectExceptExpr )*
+    ;
+intersectExceptExpr
+    : instanceofExpr ( (INTERSECT | EXCEPT) instanceofExpr )*
+    ;
+instanceofExpr
+    : treatExpr ( INSTANCE OF sequenceType )?
+    ;
+treatExpr
+    : castableExpr ( TREAT AS sequenceType )?
+    ;
+castableExpr
+    : castExpr ( CASTABLE AS singleType )?
+    ;
+castExpr
+    : unaryExpr ( CAST AS singleType )?
+    ;
+unaryExpr
+    : ('-' | '+')* valueExpr
+    ;
+valueExpr
+    : pathExpr
+    ;
+generalComp
+    : SymEq  | '!=' | LAngle  | '<=' | RAngle  | '>='
+    ;
+valueComp
+    : EQ | NE | LT | LE | GT | GE
+    ;
+nodeComp
+    : IS | '<<' | '>>'
+    ;
+//W3C grammar :
+//pragma                                                         // ws:explicit
+//  : '(#' S? qName (S PragmaContents)? '#)'
+//  ;
+pathExpr                                              // xgs:leading-lone-slash
+    : ('/'  relativePathExpr) => '/'  relativePathExpr
+    | ('/'        '*'       ) => '/' '*'
+    | '/'
+    | '//' relativePathExpr
+    | relativePathExpr
+    ;
+relativePathExpr
+    : stepExpr (('/' | '//') stepExpr)*
+    ;
+stepExpr
+    : filterExpr
+    | axisStep
+    ;
+axisStep
+    : (reverseStep | forwardStep) predicateList
+    ;
+forwardStep
+    : (forwardAxis nodeTest)
+    | abbrevForwardStep
+    ;
+forwardAxis
+    : CHILD '::'
+    | DESCENDANT '::'
+    | ATTRIBUTE '::'
+    | SELF '::'
+    | DESCENDANT_OR_SELF '::' 
+    | FOLLOWING_SIBLING '::'
+    | FOLLOWING '::'
+    ;
+abbrevForwardStep
+    : '@'? nodeTest
+    ;
+reverseStep
+    : (reverseAxis nodeTest)
+    | abbrevReverseStep
+    ;
+reverseAxis
+    : PARENT '::'
+    | ANCESTOR '::'
+    | PRECEDING_SIBLING '::'
+    | PRECEDING '::'
+    | ANCESTOR_OR_SELF '::'
+    ;
+abbrevReverseStep
+    : '..'
+    ;
+nodeTest
+    : kindTest
+    | nameTest
+    ;
+nameTest
+    : qName
+    | wildcard
+    ;
+wildcard                                                         // ws:explicit
+    : '*'
+    | ncName Colon {noSpaceBefore();} '*'    {noSpaceBefore();}
+    | '*'    Colon {noSpaceBefore();} ncName {noSpaceBefore();}
+    ;
+filterExpr
+    : primaryExpr predicateList
+    ;
+predicateList
+    : predicate*
+    ;
+predicate
+    : '[' expr ']'
+    ;
+primaryExpr
+    : literal
+    | varRef
+    | parenthesizedExpr
+    | contextItemExpr 
+    | functionCall
+    | orderedExpr
+    | unorderedExpr
+    ;
+literal
+    : numericLiteral
+    | StringLiteral
+    ;
+numericLiteral
+    : IntegerLiteral
+    | DecimalLiteral
+    | DoubleLiteral
+    ;
+varRef
+    : '$' varName
+    ;
+varName
+    : qName
+    ;
+parenthesizedExpr
+    : '(' expr? ')'
+    ;
+contextItemExpr
+    : '.'
+    ;
+orderedExpr
+    : ORDERED LCurly expr RCurly
+    ;
+unorderedExpr
+    : UNORDERED LCurly expr RCurly
+    ;
+functionCall                        // xgs:reserved-function-names // gn:parens
+    : fqName '(' (exprSingle (',' exprSingle)*)? ')'
+    ;
+singleType
+    : atomicType '?'?
+    ;
+typeDeclaration
+    : AS sequenceType
+    ;
+sequenceType
+    : (EMPTY_SEQUENCE '(' ')')
+    | (itemType ((occurrenceIndicator) => occurrenceIndicator)?)
+    ;
+occurrenceIndicator                                 // xgs:occurance-indicators
+    : '?'
+    | '*'
+    | '+'
+    ;
+itemType
+    : kindTest
+    | (ITEM '(' ')')
+    | atomicType
+    ;
+atomicType
+    : qName
+    ;
+kindTest
+    : documentTest
+    | elementTest
+    | attributeTest
+    | schemaElementTest
+    | schemaAttributeTest
+    | piTest
+    | commentTest
+    | textTest
+    | anyKindTest
+    | namespaceNodeTest
+    ;
+anyKindTest
+    : NODE '(' ')'
+    ;
+documentTest
+    : DOCUMENT_NODE '(' (elementTest | schemaElementTest)? ')'
+    ;
+textTest
+    : TEXT '(' ')'
+    ;
+commentTest
+    : COMMENT '(' ')'
+    ;
+piTest
+    : PROCESSING_INSTRUCTION '(' (ncName | StringLiteral)? ')'
+    ;
+attributeTest
+    : ATTRIBUTE '(' (attribNameOrWildcard (',' typeName)?)? ')'
+    ;
+attribNameOrWildcard
+    : attributeName
+    | '*'
+    ;
+schemaAttributeTest
+    : SCHEMA_ATTRIBUTE '(' attributeDeclaration ')'
+    ;
+attributeDeclaration
+    : attributeName
+    ;
+elementTest
+    : ELEMENT '(' (elementNameOrWildcard (',' typeName '?'?)?)? ')'
+    ;
+elementNameOrWildcard
+    : elementName
+    | '*'
+    ;
+schemaElementTest
+    : SCHEMA_ELEMENT '(' elementDeclaration ')'
+    ;
+elementDeclaration
+    : elementName
+    ;
+attributeName
+    : qName
+    ;
+elementName
+    : qName
+    ;
+typeName
+    : qName
+    ;
+uriLiteral
+    : StringLiteral
+    ;
+// end of ext:fulltext specific rules
+prefix
+    : ncName
+    ;
+prefixExpr
+    : expr
+    ;
+uriExpr
+    : expr
+    ;
+namespaceNodeTest
+    : NAMESPACE_NODE '(' ')'
+    ;
+// end of XQuery 1.1 specific rules
+// End of W3C grammars.
+
+qName
+    : ncName (Colon {noSpaceBefore();} ncName {noSpaceBefore();})?
+    ;
+fqName
+    : ncName  Colon {noSpaceBefore();} ncName {noSpaceBefore();}
+    | fncName
+    ;
+ncName
+    : fncName
+    // reserved function names - not allowed in unprefixed form
+    | ATTRIBUTE
+    | COMMENT
+    | DOCUMENT_NODE
+    | ELEMENT
+    | EMPTY_SEQUENCE
+    | IF
+    | ITEM
+    | NODE
+    | PROCESSING_INSTRUCTION
+    | SCHEMA_ATTRIBUTE
+    | SCHEMA_ELEMENT
+    | TEXT
+    | TYPESWITCH
+    | NAMESPACE_NODE                                              // XQuery 1.1
+    ;
+fncName
+    : NCName
+    | ANCESTOR
+    | ANCESTOR_OR_SELF
+    | AND
+    | AS
+    | ASCENDING
+    | AT
+    | BASE_URI
+    | BOUNDARY_SPACE
+    | BY
+    | CASE
+    | CASTABLE
+    | CAST
+    | CHILD
+    | COLLATION
+    | CONSTRUCTION
+    | COPY
+    | COPY_NAMESPACES
+    | DECLARE
+    | DEFAULT
+    | DESCENDANT
+    | DESCENDANT_OR_SELF
+    | DESCENDING
+    | DIV
+    | DOCUMENT
+    | ELSE
+    | EMPTY
+    | ENCODING
+    | EQ
+    | EVERY
+    | EXCEPT
+    | EXTERNAL
+    | FOLLOWING
+    | FOLLOWING_SIBLING
+    | FOR
+    | FUNCTION
+    | GE
+    | GREATEST
+    | GT
+    | IDIV
+    | IMPORT                  
+    | INHERIT
+    | IN
+    | INSTANCE
+    | INTERSECT
+    | IS
+    | LAX
+    | LEAST
+    | LE
+    | LET
+    | LT
+    | MOD
+    | MODULE
+    | NAMESPACE
+    | NE
+    | NO_INHERIT
+    | NO_PRESERVE
+    | OF
+    | OPTION
+    | ORDERED
+    | ORDERING
+    | ORDER
+    | OR
+    | PARENT
+    | PRECEDING
+    | PRECEDING_SIBLING
+    | PRESERVE
+    | RETURN
+    | SATISFIES
+    | SCHEMA
+    | SELF
+    | SIMPLE
+    | SOME
+    | STABLE
+    | STRIP
+    | THEN
+    | TO
+    | TREAT
+    | UNION
+    | UNORDERED
+    | VALIDATE                
+    | VARIABLE
+    | VERSION
+    | WHERE
+    | XQUERY
+    | STRICT
+    // start of XQuery 1.1   tokens
+    | CATCH
+    | CONTEXT
+    | DETERMINISTIC
+  //| NAMESPACE_NODE
+    | NONDETERMINISTIC
+    | TRY
+    // tokens related to decimal formats
+    | DECIMAL_FORMAT
+    | DECIMAL_SEPARATOR
+    | DIGIT
+    | GROUPING_SEPARATOR
+    | INFINITY
+    | MINUS_SIGN
+    | NAN
+    | PATTERN_SEPARATOR
+    | PER_MILLE
+    | PERCENT
+    | ZERO_DIGIT
+    // tokens related to flwor enchancelents
+    | COUNT
+    | GROUP
+    | NEXT
+    | ONLY
+    | PREVIOUS
+    | SLIDING
+    | TUMBLING
+    | WHEN
+    | ALLOWING
+  //| EMPTY
+    // end of XQUery 1.1 tokens
+    ;
+LAngle                  : '<';
+RAngle                  : '>';
+LCurly                  : '{';
+RCurly                  : '}';
+SymEq                   : '=';
+Colon                   : ':';
+LClose                  : '</';
+RClose                  : '/>';
+Quot                    : '"';
+Apos                    : '\'';
+fragment
+EscapeQuot              : '""';
+fragment
+EscapeApos              : '\'\'';
+fragment
+EscapeLCurly            : '{{';
+fragment
+EscapeRCurly            : '}}';
+
+ANCESTOR                : 'ancestor';
+ANCESTOR_OR_SELF        : 'ancestor-or-self';
+AND                     : 'and';
+AS                      : 'as';
+ASCENDING               : 'ascending';
+AT                      : 'at';
+ATTRIBUTE               : 'attribute';
+BASE_URI                : 'base-uri';
+BOUNDARY_SPACE          : 'boundary-space';
+BY                      : 'by';
+CASE                    : 'case';
+CASTABLE                : 'castable';
+CAST                    : 'cast';
+CHILD                   : 'child';
+COLLATION               : 'collation';
+COMMENT                 : 'comment';
+CONSTRUCTION            : 'construction';
+COPY                    : 'copy';
+COPY_NAMESPACES         : 'copy-namespaces';
+DECLARE                 : 'declare';
+DEFAULT                 : 'default';
+DESCENDANT              : 'descendant';
+DESCENDANT_OR_SELF      : 'descendant-or-self';
+DESCENDING              : 'descending';
+DIV                     : 'div';
+DOCUMENT                : 'document';
+DOCUMENT_NODE           : 'document-node';
+ELEMENT                 : 'element';
+ELSE                    : 'else';
+EMPTY                   : 'empty';
+EMPTY_SEQUENCE          : 'empty-sequence';
+ENCODING                : 'encoding';
+EQ                      : 'eq';
+EVERY                   : 'every';
+EXCEPT                  : 'except';
+EXTERNAL                : 'external';
+FOLLOWING               : 'following';
+FOLLOWING_SIBLING       : 'following-sibling';
+FOR                     : 'for';
+FUNCTION                : 'function';
+GE                      : 'ge';
+GREATEST                : 'greatest';
+GT                      : 'gt';
+IDIV                    : 'idiv';
+IF                      : 'if';
+IMPORT                  : 'import';
+INHERIT                 : 'inherit';
+IN                      : 'in';
+INSTANCE                : 'instance';
+INTERSECT               : 'intersect';
+IS                      : 'is';
+ITEM                    : 'item';
+LAX                     : 'lax';
+LEAST                   : 'least';
+LE                      : 'le';
+LET                     : 'let';
+LT                      : 'lt';
+MOD                     : 'mod';
+MODULE                  : 'module';
+NAMESPACE               : 'namespace';
+NE                      : 'ne';
+NODE                    : 'node';
+NO_INHERIT              : 'no-inherit';
+NO_PRESERVE             : 'no-preserve';
+OF                      : 'of';
+OPTION                  : 'option';
+ORDERED                 : 'ordered';
+ORDERING                : 'ordering';
+ORDER                   : 'order';
+OR                      : 'or';
+PARENT                  : 'parent';
+PRECEDING               : 'preceding';
+PRECEDING_SIBLING       : 'preceding-sibling';
+PRESERVE                : 'preserve';
+PROCESSING_INSTRUCTION  : 'processing-instruction';
+RETURN                  : 'return';
+SATISFIES               : 'satisfies';
+SCHEMA_ATTRIBUTE        : 'schema-attribute';
+SCHEMA_ELEMENT          : 'schema-element';
+SCHEMA                  : 'schema';
+SELF                    : 'self';
+SIMPLE                  : 'simple';
+SOME                    : 'some';
+STABLE                  : 'stable';
+STRICT                  : 'strict';
+STRIP                   : 'strip';
+TEXT                    : 'text';
+THEN                    : 'then';
+TO                      : 'to';
+TREAT                   : 'treat';
+TYPESWITCH              : 'typeswitch';
+UNION                   : 'union';
+UNORDERED               : 'unordered';
+VALIDATE                : 'validate';
+VARIABLE                : 'variable';
+VERSION                 : 'version';
+WHERE                   : 'where';
+XQUERY                  : 'xquery';
+// start of XQuery 1.1   tokens
+CATCH                   : 'catch';
+CONTEXT                 : 'context';
+DETERMINISTIC           : 'deterministic';
+NAMESPACE_NODE          : 'namespace-node';
+NONDETERMINISTIC        : 'nondeterministic';
+TRY                     : 'try';
+// tokens related to decimal formats
+DECIMAL_FORMAT          : 'decimal-format';
+DECIMAL_SEPARATOR       : 'decimal-separator';
+DIGIT                   : 'digit';
+GROUPING_SEPARATOR      : 'grouping-separatpr';
+INFINITY                : 'infinity';
+MINUS_SIGN              : 'minus-sign';
+NAN                     : 'NaN';
+PER_MILLE               : 'per-mille';
+PERCENT                 : 'percent';
+PATTERN_SEPARATOR       : 'pattern-separator';
+ZERO_DIGIT              : 'zero-digit';
+// tokens related to flwor enhancements
+COUNT                   : 'count';
+GROUP                   : 'group';
+NEXT                    : 'next';
+ONLY                    : 'only';
+PREVIOUS                : 'previous';
+SLIDING                 : 'sliding';
+TUMBLING                : 'tumbling';
+WHEN                    : 'when';
+ALLOWING                : 'allowing';
+// end of XQuery 1.1 tokens
+
+Pragma
+    : '(#' VS? NCName (Colon NCName)? (VS (options {greedy=false;} : .)*)? '#)'
+    ;
+/*
+// W3C grammar :
+DirCommentContents                                               // ws:explicit  
+    : ((Char - '-') | ('-' (Char - '-')))*
+    ;
+PiTarget
+    : Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
+    ;
+Name
+    : NameStartChar (NameChar)*
+    ;
+DirPIContents                                                    // ws:explicit 
+    : (Char* - (Char* '?>' Char*))
+    ;
+CDataSectionContents                                             // ws:explicit
+    : (Char* - (Char* ']]>' Char*))
+    ;
+PragmaContents
+    : (Char - (Char* '#)' Char*))
+    ;
+*/
 IntegerLiteral
-  : Digits
-  ;
-//[72]
+    : Digits
+    ;
 DecimalLiteral
-  : ('.' Digits) | (Digits '.' '0'..'9'*)  /* ws: explicit */
-  ;
-//[73]
+    : ('.' Digits) | (Digits '.' '0'..'9'*)
+    ;
 DoubleLiteral
-  : (('.' Digits) | (Digits ('.' '0'..'9'*)?)) ('e' | 'E') ('+'|'-')? Digits   /* ws: explicit */
-  ;
-//[74]
+    : (('.' Digits) | (Digits ('.' '0'..'9'*)?)) ('e' | 'E') ('+'|'-')? Digits
+    ;
 StringLiteral
     : Quot (
           options {greedy=false;}:
@@ -357,136 +752,25 @@ StringLiteral
       )
       Apos
     ;
-
 PredefinedEntityRef
     : '&' ('lt' | 'gt' | 'apos' | 'quot' | 'amp' ) ';'
     ;
-
 CharRef
     : '&#'  Digits    ';' {checkCharRef();}
     | '&#x' HexDigits ';' {checkCharRef();}
     ;
-    
-//[75]
-EscapeQuot
-  : '""'
-  ;
-//[76]
-EscapeApos
-  : '\'\''
-  ;
-//[77]
 Comment
     : '(:' (options {greedy=false;}: Comment | . )* ':)' { $channel = HIDDEN; }
     ;
-
-//******************************************************************
-//[78] QName : [http://www.w3.org/TR/REC-xml-names/#NT-QName] Names  /* xgs: xml-version */
-//[7]
-QName
-  : PrefixedName
-  | UnprefixedName
-  ;
-//[8]
-PrefixedName
-  : Prefix ':' LocalPart
-  ; 
-//[9]
-UnprefixedName
-  : LocalPart
-  ; 
-//[10]
-Prefix
-  : NCName
-  ;
-//[11]
-LocalPart
-  : NCName
-  ;
-
-//******************************************************************
-//[79] NCName : [http://www.w3.org/TR/REC-xml-names/#NT-NCName] Names   /* xgs: xml-version */
-//[4]
 NCName
-  : Name // - (Char* ':' Char*)  /* An XML Name, minus the ":" */
-  ;
-
-//[5]
-Name
-	:	NameStartChar (NameChar)*
-	;
-
-Quot		:	'"';
-Apos		:	'\'';
-
-RETURN	:	'return';
-FOR		:	'for';
-IN		:	'in';
-IF		:	'if';
-THEN		:	'then';
-ELSE		:	'else';
-IS		:	'is';
-EQ		:	'eq';
-NE		:	'ne';
-LT		:	'lt';
-LE		:	'le';
-GT		:	'gt';
-GE		:	'ge';
-SOME		:	'some';
-EVERY	:	'every';
-SATISFIES	:	'satisfies';
-OR		:	'or';
-AND		:	'and';
-TO		:	'to';
-DIV		:	'div';
-IDIV		:	'idiv';
-MOD		:	'mod';
-
-UNION	:	'union';
-INTERSECT	:	'intersect';
-EXCEPT	:	'except';
-INSTANCE	:	'instance';
-OF		:	'of';
-TREAT	:	'treat';
-AS		:	'as';
-CASTABLE	:	'castable';
-CAST		:	'cast';
-
-NODE					:	'node';
-DOCUMENT_NODE			:	'document-node';
-TEXT					:	'text';
-COMMENT				:	'comment';
-PROCESSING_INSTRUCTION	:	'processing-instruction';
-SCHEMA_ATTRIBUTE		:	'schema-attribute';
-ELEMENT				:	'element';
-SCHEMA_ELEMENT		:	'schema-element';
-EMPTY_SEQUENCE		:	'empty-sequence';
-ITEM					:	'item';
-
-SymEq	:	'=';
-LAngle	:	'<';
-RAngle	:	'>';
-
-CHILD				:	'child';
-DESCENDANT		:	'descendant';
-ATTRIBUTE			:	'attribute';
-SELF				:	'self';
-DESCENDANT_OR_SELF	:	'descendant-or-self';
-FOLLOWING_SIBLING	:	'following-sibling';
-FOLLOWING			:	'following';
-NAMESPACE			:	'namespace';
-
-PARENT			:	'parent';
-ANCESTOR			:	'ancestor';
-PRECEDING_SIBLING	:	'preceding-sibling';
-PRECEDING			:	'preceding';
-ANCESTOR_OR_SELF	:	'ancestor-or-self';
-
-fragment 
-CommonContentChar
-    : '\u0009' | '\u000A'| '\u000D' 
-    | '\u003D'..'\u007A' | '\u007C'..'\u007C' 
-    | '\u007E'..'\uD7FF' | '\uE000'..'\uFFFD'
+    : NCNameStartChar NCNameChar*
+    ;
+S
+    : ('\u0009' | '\u000A' | '\u000D' | '\u0020')+ { $channel = HIDDEN; }
+    ;
+fragment
+VS
+    : ('\u0009' | '\u000A' | '\u000D' | '\u0020')+
     ;
 fragment
 Digits
@@ -497,23 +781,28 @@ HexDigits
     : ('0'..'9' | 'a'..'f' | 'A'..'F')+
     ;
 fragment
-NameStartChar
+Char
+    : '\u0009'           | '\u000A'           | '\u000D' 
+    | '\u0020'..'\uD7FF' | '\uE000'..'\uFFFD' // | '\u10000'..'\u10FFFF'
+    ; 
+fragment
+NCNameStartChar
     : Letter | '_'
     ;
 fragment
-NameChar  
+NCNameChar
     // NameChar - ':'  http://www.w3.org/TR/REC-xml-names/#NT-NCName
     : 'A'..'Z'           | 'a'..'z'           | '_' 
     | '\u00C0'..'\u00D6' | '\u00D8'..'\u00F6' | '\u00F8'..'\u02FF' 
     | '\u0370'..'\u037D' | '\u037F'..'\u1FFF' | '\u200C'..'\u200D' 
     | '\u2070'..'\u218F' | '\u2C00'..'\u2FEF' | '\u3001'..'\uD7FF' 
     | '\uF900'..'\uFDCF' | '\uFDF0'..'\uFFFD' 
-  //| ':'                | '\u10000..'\uEFFFF'// end of NameStartChar
+  //| ':'                | '\u10000..'\uEFFFF] // end of NameStartChar
     | '-'                | '.'                | '0'..'9' 
     | '\u00B7'           | '\u0300'..'\u036F' | '\u203F'..'\u2040'
     ;
 fragment
-Letter 
+Letter
     // http://www.w3.org/TR/REC-xml/#NT-Letter
     : '\u0041'..'\u005A' | '\u0061'..'\u007A' | '\u00C0'..'\u00D6' 
     | '\u00D8'..'\u00F6' | '\u00F8'..'\u00FF' | '\u0100'..'\u0131'
@@ -585,12 +874,3 @@ Letter
     | '\uAC00'..'\uD7A3' | '\u4E00'..'\u9FA5' | '\u3007'
     | '\u3021'..'\u3029'
 ;
-
-//******************************************************************
-//[80] Char : [http://www.w3.org/TR/REC-xml#NT-Char] XML  /* xgs: xml-version */
-//[2]     Char     ::=    #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]  /* any Unicode character, excluding the surrogate blocks, FFFE, and FFFF. */  ;
-fragment
-Char
-  : '\u0009'           | '\u000A'           | '\u000D' 
-  | '\u0020'..'\uD7FF' | '\uE000'..'\uFFFD' //| '\u10000'..'\u10FFFF'
-  ;
