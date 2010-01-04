@@ -78,9 +78,9 @@
         </section>
         <section>
             <title>What to do about it?</title>
-            <para>For 8.0 some classes are using Apache’s log4j (http://logging.apache.org/log4j/).
-                Log4j is the most powerful Java-based logging library available today and is used by
-                most of the application servers on the market.</para>
+            <para>Most classes are using Apache’s log4j (http://logging.apache.org/log4j/). Log4j is
+                the most powerful Java-based logging library available today and is used by most of
+                the application servers on the market.</para>
         </section>
         <section>
             <title>What does log4j give us?</title>
@@ -394,9 +394,8 @@ public void fatal(Object message, Throwable t); ]]></programlisting>
                 <listitem>
                     <para>Select the target JVM. </para>
                     <para>jconsole will list the Java processes running on your machine under your
-                        current user which have been configured to allow local JMX connections. This
-                        includes servlet engine, method server, and server manager processes in
-                        X-10. </para>
+                        current user which have been configured to allow local JMX connections.
+                    </para>
                 </listitem>
                 <listitem>
                     <para>Navigate to the Logging node in the MBean tree.</para>
