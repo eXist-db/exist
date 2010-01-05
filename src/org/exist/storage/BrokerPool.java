@@ -1634,7 +1634,11 @@ public class BrokerPool extends Observable {
                 // TODO: WM: check usage of killed!
                 if(instances.size() == 0 && !killed) {
                     LOG.debug("removing shutdown hook");
-                    Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                    try {
+                        Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                    } catch (IllegalStateException e) {
+						//ignore IllegalStateException("Shutdown in progress");
+					}
                 }
                 if (shutdownListener != null)
                     shutdownListener.shutdown(instanceName, instances.size());
