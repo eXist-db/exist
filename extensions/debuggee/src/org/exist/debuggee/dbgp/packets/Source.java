@@ -142,7 +142,13 @@ public class Source extends Command {
     }
 
     public byte[] responseBytes() {
-    	if (response == null) {
+    	if (exception != null) {
+    		String url = "NULL";
+    		if (fileURI != null)
+    			url = fileURI;
+			response = errorBytes("source", Errors.ERR_100, 
+					exception.getMessage() + " (URL:"+url+")");
+    	} else if (response == null) {
     		if (source != null) {
     			try {
     				String head = "<response " +
