@@ -94,8 +94,12 @@ public class ResponseImpl implements Response {
 	}
 
 	public String getAttribute(String attr) {
-		//XXX: NPE???
-		return parsedResponse.getAttributes().getNamedItem(attr).getNodeValue();
+		Node item = parsedResponse.getAttributes().getNamedItem(attr);
+		
+		if (item == null)
+			return null; //raise error?
+		
+		return item.getNodeValue();
 	}
 
 	public String getText() {

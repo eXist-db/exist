@@ -106,6 +106,9 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	 * @see org.exist.debugger.Debugger#source(java.lang.String)
 	 */
 	public DebuggingSource getSource(String fileURI) {
+		if (fileURI == null)
+			return null;
+		
 		if (sources.containsKey(fileURI))
 			return sources.get(fileURI);
 
