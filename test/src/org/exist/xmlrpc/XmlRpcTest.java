@@ -21,12 +21,15 @@
  */
 package org.exist.xmlrpc;
 
+import org.apache.xmlrpc.XmlRpcConfig;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfig;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.jetty.JettyStart;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.security.MessageDigester;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
@@ -35,6 +38,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 import javax.xml.transform.OutputKeys;
 import java.net.MalformedURLException;
@@ -404,7 +409,49 @@ public class XmlRpcTest {
 	    	Assert.fail(e.getMessage());  
 	    }	        
 	}
-	
+
+    @Test
+    public void testCompile() {
+        storeData();
+		try {
+			Vector<Object> params = new Vector<Object>();
+			String query = "<a>Invalid<a>";
+			params.addElement(query.getBytes("UTF-8"));
+			params.addElement(new Hashtable<Object, Object>());
+			XmlRpcClient xmlrpc = getClient();
+			System.out.println("Executing query: " + query);
+	        Map stats = (Map) xmlrpc.execute( "compile", params );
+	        Assert.assertNotNull(stats);
+            Assert.assertNotNull(stats.get("error"));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSetUser() {
+        try {
+            String user = "rudi";
+            String passwd = "pass";
+            String simpleMd5 = MessageDigester.md5(passwd, true);
+            String digest = MessageDigester.md5(user + ":exist:" + passwd, false);
+            List<Object> params = new ArrayList<Object>(12);
+			params.add("rudi");
+			params.add(simpleMd5);
+			params.add(digest);
+			params.add(new String[] { "guest" });
+            XmlRpcClient xmlrpc = getClient();
+			xmlrpc.execute("setUser", params);
+
+            XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) xmlrpc.getClientConfig();
+            config.setBasicUserName("admin");
+            config.setBasicPassword("");
+            xmlrpc.execute("sync", new ArrayList());
+		} catch (Exception e) {
+			Assert.fail(e.getMessage());
+		}
+    }
+
 	@Test
 	public void testExecuteQuery() {
         storeData();
