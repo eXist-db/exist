@@ -250,7 +250,9 @@ $query as xs:string?, $askPass as xs:boolean) as element() {
                             <input type="hidden" name="prev" value="{$action}"/>
                         </form>
                         <p class="f-reload"><a href="{request:get-context-path()}/admin/admin.xql?panel=fundocs">Reload documentation</a>
-                            (click here if you enabled/disabled additional modules)</p>
+                            (click here if you enabled/disabled additional modules). You can also 
+                            <a href="{request:get-context-path()}/functions/">browse the function documentation</a> through
+                            a RESTful interface.</p>
                         <p class="f-info">(<b>eXist version: {util:system-property("product-version")}, 
                         build: {util:system-property("product-build")},
                         functions: {count(//xqdoc:function)}</b>). Modules have to be enabled 
