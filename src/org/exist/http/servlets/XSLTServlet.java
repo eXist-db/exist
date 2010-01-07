@@ -323,6 +323,8 @@ public class XSLTServlet extends HttpServlet {
                 try {
                     broker = pool.get(user);
                     doc = broker.getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
+                    if (doc == null)
+                        throw new ServletException("Stylesheet not found: " + docPath);
                     if (!isCaching() || (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified)))
                         templates = getSource(broker, doc);
                     lastModified = doc.getMetadata().getLastModified();
@@ -332,7 +334,8 @@ public class XSLTServlet extends HttpServlet {
                     throw new ServletException("Error while reading stylesheet source from db: " + e.getMessage(), e);
                 } finally {
                     pool.release(broker);
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    if (doc != null)
+                        doc.getUpdateLock().release(Lock.READ_LOCK);
                 }
             } else {
                 try {
