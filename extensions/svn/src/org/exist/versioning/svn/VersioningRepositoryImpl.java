@@ -21,6 +21,8 @@
  */
 package org.exist.versioning.svn;
 
+import java.util.Collection;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
@@ -127,14 +129,18 @@ public class VersioningRepositoryImpl {
     }
     
     protected boolean update(XmldbURI path) {
-        ISVNReporterBaton reporterBaton = new ExportReporterBaton(latestRevision);
+    	return update(path, latestRevision);
+    }
+
+    protected boolean update(XmldbURI path, long toRevision) {
+        ISVNReporterBaton reporterBaton = new ExportReporterBaton(toRevision);
         
         ISVNEditor exportEditor;
 		
         try {
 			exportEditor = new ExportEditor(path);
 
-	        repository.update(latestRevision, null, true, reporterBaton, exportEditor);
+	        repository.update(toRevision, null, true, reporterBaton, exportEditor);
 		
 		} catch (EXistException e) {
 			e.printStackTrace();
@@ -147,8 +153,13 @@ public class VersioningRepositoryImpl {
 			return false;
 		}
         
-        System.out.println("Exported revision: " + latestRevision);
+        System.out.println("Exported revision: " + toRevision);
         
         return true;
+    }
+
+    
+    public Collection log(String[] targetPaths, Collection entries, long startRevision, long endRevision, boolean changedPath, boolean strictNode) throws SVNException {
+    	return repository.log( new String[] { "" } , entries , startRevision , endRevision , changedPath , strictNode );
     }
 }
