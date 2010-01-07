@@ -87,7 +87,7 @@ public class ExportEditor implements ISVNEditor {
 	Txn transaction;
 
 	private SVNProperties fileProperties;
-	private Map dirProperties;
+	private Map<String, String> dirProperties;
 
 	private File currentTmpFile;
 
