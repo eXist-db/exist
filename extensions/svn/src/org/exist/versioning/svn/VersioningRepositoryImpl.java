@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
@@ -46,26 +47,28 @@ public class VersioningRepositoryImpl {
 	
     public final static Logger LOG = Logger.getLogger(VersioningRepositoryImpl.class);
 
-    private String url = "https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/webapp/admin/";
     private String name = "anonymous";
     private String password = "anonymous";
     
     private boolean connected = false;
     private long latestRevision = -1;
     
+    XmldbURI collection = null;
     org.tmatesoft.svn.core.io.SVNRepository repository = null;
 
     protected VersioningRepositoryImpl() {
     	//FEATURE: different collections connected with different repository 
     }
 
-    public boolean connect() {
+    public boolean connect(XmldbURI collection, String url) {
 
     	if (connected)
     		return true;
     	
     	setupLibrary();
 
+    	this.collection = collection;
+    	
         try {
             repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
         } catch (SVNException svne) {
@@ -128,17 +131,17 @@ public class VersioningRepositoryImpl {
         FSRepositoryFactory.setup();
     }
     
-    protected boolean update(XmldbURI path) {
-    	return update(path, latestRevision);
+    protected boolean update() {
+    	return update(latestRevision);
     }
 
-    protected boolean update(XmldbURI path, long toRevision) {
+    protected boolean update(long toRevision) {
         ISVNReporterBaton reporterBaton = new ExportReporterBaton(toRevision);
         
         ISVNEditor exportEditor;
 		
         try {
-			exportEditor = new ExportEditor(path);
+			exportEditor = new ExportEditor(collection);
 
 	        repository.update(toRevision, null, true, reporterBaton, exportEditor);
 		
@@ -157,9 +160,9 @@ public class VersioningRepositoryImpl {
         
         return true;
     }
-
     
-    public Collection log(String[] targetPaths, Collection entries, long startRevision, long endRevision, boolean changedPath, boolean strictNode) throws SVNException {
+    @SuppressWarnings("unchecked")
+	public Collection<SVNLogEntry> log(String[] targetPaths, Collection<SVNLogEntry> entries, long startRevision, long endRevision, boolean changedPath, boolean strictNode) throws SVNException {
     	return repository.log( new String[] { "" } , entries , startRevision , endRevision , changedPath , strictNode );
     }
 }
