@@ -70,7 +70,7 @@ public class SVNExportTest {
 			10401, 10433, 10532, 10551
 	};
 	
-	
+	@Ignore
 	@Test
 	public void testExport() throws SVNException {
 		assertNotNull("Database wasn't initilised.", test);
@@ -83,6 +83,46 @@ public class SVNExportTest {
 				repository.connect(collectionURL, url));
 
 		for (Integer rev : Arrays.asList(currectRevList)) {
+			if (rev < 4758) continue;
+			
+			System.out.println("update to rev "+rev);
+			assertTrue("Updating failed to rev "+rev, repository.update(rev));
+		}
+	}
+
+	static Collection testXML = null;
+
+	// svn url
+	private String urlXML = "https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/webapp/xqts/";
+
+    // revisions array
+	private Integer[] currectRevListXML = {
+			2763, 2764, 2765, 2771, 2772, 2773, 2774, 2775, 2780, 2784, 2785, 2805,
+			2810, 2811, 3000, 3033, 3034, 3123, 3143, 3144, 3153, 3164, 3256, 3639,
+			3651, 3652, 3654, 3699, 3700, 3759, 3778, 3958, 3968, 4034, 4035, 4036,
+			4037, 4038, 4049, 4094, 4095, 4096, 4097, 4098, 4099, 4101, 4102, 4105,
+			4108, 4119, 4120, 4211, 4255, 4308, 4309, 4346, 4386, 4412, 4414, 4415,
+			4438, 4456, 4462, 4464, 4519, 4523, 4533, 4552, 4604, 4615, 4617, 4639,
+			4671, 4693, 4698, 4748, 4749, 4758, 4779, 4860, 5441, 6348, 6352, 6367,
+			6380, 6406, 6407, 6411, 6412, 6415, 6434, 6438, 6442, 6453, 6456, 6459,
+			6460, 6463, 6465, 6468, 6469, 6482, 6494, 6495, 6535, 6539, 6540, 6546,
+			6551, 6750, 6758, 6779, 6802, 6803, 6804, 6805, 6806, 6835, 6905, 6942,
+			7160, 7237, 7453, 7575, 7594, 7596, 7620, 7623, 7721, 7943, 8359, 8766,
+			9907, 10524
+	};
+
+	@Test
+	public void testExportXML() throws SVNException {
+		assertNotNull("Database wasn't initilised.", testXML);
+
+		VersioningRepositoryImpl repository = new VersioningRepositoryImpl();
+
+		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
+
+		assertTrue("Can't connect to svn repository.", 
+				repository.connect(collectionURL, urlXML));
+
+		for (Integer rev : Arrays.asList(currectRevListXML)) {
 			if (rev < 4758) continue;
 			
 			System.out.println("update to rev "+rev);
@@ -140,6 +180,13 @@ public class SVNExportTest {
 			}
 
 			test = mgmt.createCollection("test");
+
+			try {
+				mgmt.removeCollection("testXML");
+			} catch (XMLDBException e) {
+			}
+
+			testXML = mgmt.createCollection("testXML");
 
 		} catch (Exception e) {
 			e.printStackTrace();
