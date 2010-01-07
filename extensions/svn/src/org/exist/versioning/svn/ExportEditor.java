@@ -135,6 +135,8 @@ public class ExportEditor implements ISVNEditor {
 					"error: failed to initialize database.");
 			throw new SVNException(err);
 		}
+		
+		currentPath = "";
 	}
 
 	public void addDir(String path, String copyFromPath, long copyFromRevision)
@@ -411,6 +413,7 @@ public class ExportEditor implements ISVNEditor {
 	public void closeDir() throws SVNException {
 		currentDirectory = broker
 				.getCollection(currentDirectory.getParentURI());
+
 		currentPath = SVNPathUtil.removeTail(currentPath);
 	}
 
