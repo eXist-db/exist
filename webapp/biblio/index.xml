@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:jquery="http://exist-db.org/xquery/jquery"
+    xmlns:biblio="http:/exist-db.org/xquery/biblio">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>eXist - Bibliographic Demo</title>
+        <date>2010</date>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation>
+        </author>
+        <jquery:header base="scripts/jquery" cssbase="scripts/jquery/css"/>
+        <script type="text/javascript" src="query.js"/>
+        <link rel="stylesheet" type="text/css" href="biblio.css"/>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
+    <chapter>
+        <jquery:tabset id="query-tabs">
+            <jquery:tab id="simple" label="Simple Search">
+                <form class="search-form" action="index.xml" name="simple-search" method="POST">
+                    <jquery:form-repeat trigger="#add-field" form=".search-form"/>
+                    <table>
+                        <tr>
+                            <td>Search:</td>
+                            <td>
+                                <jquery:input name="input1"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="buttons" colspan="2">
+                                Sort by
+                                <jquery:select name="sort">
+                                    <jquery:option value="Author"/>
+                                    <jquery:option value="Title"/>
+                                    <jquery:option value="Date Issued"/>
+                                </jquery:select>
+                                <button name="action" id="form-submit" type="submit">Search</button>
+                                <input type="hidden" name="field1" value="All"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <input type="hidden" name="query-tabs" value="simple"/>
+                </form>
+            </jquery:tab>
+            <jquery:tab id="advanced" label="Advanced Search">
+                <form class="search-form" action="index.xml" name="advanced-search" method="POST">
+                    <table>
+                        <biblio:form-from-query/>
+                        <tr>
+                            <td colspan="3">
+                                <a href="#" id="add-field"><span>+</span> Add row</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="buttons" colspan="3">
+                                Sort by
+                                <jquery:select name="sort">
+                                    <jquery:option value="Author"/>
+                                    <jquery:option value="Title"/>
+                                    <jquery:option value="Date Issued"/>
+                                </jquery:select>
+                                <button name="action" id="form-submit" type="submit">Search</button>
+                            </td>
+                        </tr>
+                    </table>
+                    <input type="hidden" name="query-tabs" value="advanced"/>
+                </form>
+            </jquery:tab>
+        </jquery:tabset>
+        <div id="results-head">
+            <div id="messages">Found: <biblio:result-count/></div>
+            <div class="navbar"/>
+        </div>
+        <div id="result-container">
+            <div id="filters" style="display: none;">
+                <span>Filter results:</span>
+                <ul>
+                    <li>
+                        <span class="expand"><span class="expand-img"> </span> Author</span>
+                        <jquery:toggle href="filters.xql?type=author"
+                            trigger="#filters li:nth-child(1) .expand"/>
+                    </li>
+                    <li>
+                        <span class="expand"><span class="expand-img"> </span> Keyword</span>
+                        <jquery:toggle href="filters.xql?type=keyword"
+                            trigger="#filters li:nth-child(2) .expand"/>
+                    </li>
+                    <li>
+                        <span class="expand"><span class="expand-img"> </span> Date</span>
+                        <jquery:toggle href="filters.xql?type=date"
+                            trigger="#filters li:nth-child(3) .expand"/>
+                    </li>
+                </ul>
+            </div>
+            <jquery:paginate id="results" attribute="cached"
+                href="retrieve" navcontainer="#results-head .navbar"
+                on-ready="resultsLoaded"/>
+        </div>
+    </chapter>
+</book>
