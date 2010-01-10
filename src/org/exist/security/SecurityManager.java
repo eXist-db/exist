@@ -42,12 +42,14 @@ public interface SecurityManager {
 
    public final static String ACL_FILE = "users.xml";
    public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
+   
    public final static String DBA_GROUP = "dba";
    public final static String DBA_USER = "admin";
    public final static String GUEST_GROUP = "guest";
    public final static String GUEST_USER = "guest";
 
-   public final static User SYSTEM_USER = new UserImpl(DBA_USER, null, DBA_GROUP);
+   public final static User SYSTEM_USER = new UserImpl(DBA_USER, null, DBA_GROUP); //TODO: add uid = 0 ?
+   public final static User GUEST = new UserImpl(GUEST_USER, null, GUEST_GROUP); //TODO: add uid = 1 ?
    
    void attach(BrokerPool pool, DBBroker sysBroker);
 

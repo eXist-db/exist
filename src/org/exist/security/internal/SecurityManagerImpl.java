@@ -78,15 +78,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
 	public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
 
-	public final static String DBA_GROUP = "dba";
-	public final static String DBA_USER = "admin";
-	public final static String GUEST_GROUP = "guest";
-	public final static String GUEST_USER = "guest";
-	
-	public final static User SYSTEM_USER = new UserImpl(DBA_USER, null, DBA_GROUP);
-	
-	private final static Logger LOG =
-		Logger.getLogger(SecurityManager.class);
+	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
 
 	private BrokerPool pool;
 	private Int2ObjectHashMap groups = new Int2ObjectHashMap(65);
