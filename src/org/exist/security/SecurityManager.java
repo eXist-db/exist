@@ -55,11 +55,8 @@ public interface SecurityManager {
    
    ExistPDP getPDP();
 
-   void deleteUser(String name) 
-     throws PermissionDeniedException;
-
-   void deleteUser(User user) 
-     throws PermissionDeniedException;
+   void deleteUser(String name) throws PermissionDeniedException;
+   void deleteUser(User user) throws PermissionDeniedException;
 
    UserImpl getUser(String name);
 
@@ -87,4 +84,5 @@ public interface SecurityManager {
 
    int getCollectionDefaultPerms();
 	
+   public User authenticate(String username, Object credentials) throws AuthenticationException;
 }
