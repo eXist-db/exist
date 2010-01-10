@@ -219,7 +219,7 @@ public class UserImpl implements User {
 
         _cred = from_user._cred;
 
-        userRealm = from_user.userRealm;
+        _realm = from_user._realm;
         
         authenticate(credentials);
     }
@@ -571,11 +571,11 @@ public class UserImpl implements User {
 		return authenticated;
 	}
 
-    protected XMLUserRealm userRealm = null;
+    protected Realm _realm = null;
     
 	@Override
-	public XMLUserRealm getUserRealm() {
-		return userRealm;
+	public Realm getRealm() {
+		return _realm;
 	}
 
 	protected boolean authenticated = false;

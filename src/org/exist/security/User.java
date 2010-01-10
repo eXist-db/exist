@@ -89,5 +89,5 @@ public interface User extends Principal {
 
 	public boolean isAuthenticated();
 
-	public XMLUserRealm getUserRealm();
+	public Realm getRealm();
 }
