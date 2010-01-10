@@ -30,7 +30,8 @@
 
     <tstamp/>
 
-    <svninfo />
+    <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="anonymous" 	   
+	       password="anonymous"/>
 
     <echo>Updating VERSION.txt</echo>
     <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit)">
