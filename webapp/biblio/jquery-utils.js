@@ -35,7 +35,7 @@
                 td.text(current + ".");
                 tr.append(td);
                 $('> td:gt(0)', this).each(function () {
-                    tr.append($(this).addClass('pagination-data'));
+                    tr.append($(this).clone().addClass('pagination-data'));
                 });
                 table.append(tr);
 
