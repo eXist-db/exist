@@ -53,7 +53,8 @@ public class Authenticator extends org.mortbay.jetty.security.FormAuthenticator 
 	public final static String AUTHENTICATED="org.exist.jetty.Auth";
     public final static String URI="org.exist.jetty.URI";
 
-//    public final static String SECURITY_CHECK="/exist_security_check";
+    public final static String LOGOUT_REQUEST="/exist_logout";
+    
 	public final static String USERNAME="exist_username";
 	public final static String PASSWORD="exist_password";
 
@@ -66,20 +67,29 @@ public class Authenticator extends org.mortbay.jetty.security.FormAuthenticator 
         if (session==null)
             return null;
         
-        if ( pathInContext.endsWith(__J_SECURITY_CHECK) ) {
-            // Check the session object for login info.
-            EXistCredential cred=new EXistCredential();
-            cred.authenticate(realm, request.getParameter(USERNAME), request.getParameter(PASSWORD), request);
+        if ( pathInContext.endsWith(LOGOUT_REQUEST) ) {
+            session.setAttribute(AUTHENTICATED,null);
+            return null;
+        	
+        } else if ( pathInContext.endsWith(__J_SECURITY_CHECK) ) {
+        	
+        	EXistCredential cred = null;
+        	
+        	if (request.getParameter(USERNAME) != null) {
+        		// Check the session object for login info.
+        		cred=new EXistCredential();
+        		cred.authenticate(realm, request.getParameter(USERNAME), request.getParameter(PASSWORD), request);
+        	}
             
-            String nuri = request.getRequestURI();
-            nuri = nuri.substring(0, nuri.length() - __J_SECURITY_CHECK.length());
+        	String nuri = request.getRequestURI();
+        	nuri = nuri.substring(0, nuri.length() - __J_SECURITY_CHECK.length());
             
-            if (cred.user != null) {
-                // Authenticated OK
-                session.removeAttribute(URI); // Remove popped return URI.
-                request.setAuthType(getAuthMethod());
-                request.setUserPrincipal(cred.user);
-                session.setAttribute(AUTHENTICATED,cred);
+        	if (cred != null && cred.user != null) {
+        		// Authenticated OK
+        		session.removeAttribute(URI); // Remove popped return URI.
+        		request.setAuthType(getAuthMethod());
+        		request.setUserPrincipal(cred.user);
+        		session.setAttribute(AUTHENTICATED,cred);
 
                 // Sign-on to SSO mechanism
                 if (realm instanceof SSORealm)
@@ -94,8 +104,10 @@ public class Authenticator extends org.mortbay.jetty.security.FormAuthenticator 
                 if(LOG.isDebugEnabled())LOG.debug("Form authentication FAILED for "+StringUtil.printable(cred._username));
                 
 //                if (_formErrorPage==null) {
-                    if (response != null) 
+                    if (response != null) {
+                    	request.setRequestURI(nuri);
                         response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
 //                } else {
 //                    if (response != null)
 //                        response.setContentLength(0);
