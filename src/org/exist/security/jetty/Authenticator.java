@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.security.internal;
+package org.exist.security.jetty;
 
 import java.io.IOException;
 import java.io.Serializable;

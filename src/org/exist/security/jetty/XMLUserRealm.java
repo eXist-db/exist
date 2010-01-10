@@ -19,13 +19,16 @@
  *  
  *  $Id$
  */
-package org.exist.security;
+package org.exist.security.jetty;
 
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.exist.EXistException;
+import org.exist.security.AuthenticationException;
+import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.Response;
