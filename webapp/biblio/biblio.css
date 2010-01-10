@@ -1,0 +1,161 @@
+.search-form {
+}
+
+.search-form td {
+    padding: 4px 4px 0 4px;
+}
+
+.search-form input {
+    width: 260px;
+}
+
+.search-form .buttons {
+    text-align: right;
+}
+
+.search-form #add-field span {
+    font-size: 150%;
+    vertical-align: sub;
+}
+
+.search-form .buttons button {
+    font-weight: bold;
+    font-size: 112%;
+    margin-left: 1em;
+}
+
+#results-head {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border-bottom: 1px solid #BBBBBB;
+}
+
+#messages {
+    padding: 10px 8px;
+}
+
+#result-container {
+}
+
+#results {
+    margin-top: 1em;
+}
+
+#filters {
+    float: right;
+    overflow: auto;
+    width: 120px;
+    margin-left: 10px;
+    padding: 4px;
+    border: 1px solid #BBBBBB;
+}
+
+#filters ul {
+    list-style: none;
+    margin: 0;
+}
+
+#filters .expanded .expand-img {
+    background: url(minus.gif) no-repeat left bottom;
+}
+
+#filters .expand-img {
+    float: left;
+    width: 14px;
+    height: 14px;
+    background: url(plus.gif) no-repeat left bottom;
+}
+
+#filters img {
+    border: 0;
+}
+
+#filters .include-target li {
+    margin-left: 4px;
+}
+
+.even {
+    background-color: #E6E6E6;
+}
+
+.pagination {
+}
+
+.pagination-links {
+    padding: 0 8px 0 8px;
+    margin-bottom: 8px;
+}
+
+.pagination-toggle {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.pagination-n {
+    vertical-align: top;
+    width: 20px;
+}
+
+.pagination-link {
+    margin-right: 1em;
+    padding: 2px 4px;
+    border: 1px solid #0083CB;
+    cursor: pointer;
+    color: #0083CB;
+}
+
+.pagination-back {
+    cursor: pointer;
+    padding: 2px 4px;
+    border: 1px solid #0083CB;
+    color: #0083CB;
+    margin-right: 10px;
+}
+
+.pagination-next {
+    cursor: pointer;
+    padding: 2px 4px;
+    border: 1px solid #0083CB;
+    color: #0083CB;
+}
+
+.inactive {
+    border: 1px solid #CCC;
+    color: #CCC;
+}
+
+.pagination-info {
+    margin-left: 50px;
+}
+
+.pagination-list-view {
+    margin-left: 50px;
+}
+
+.authors {
+    display: none;
+}
+.biblio-full {
+    background-color: white;
+}
+
+.biblio-full .label {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 15px;
+    vertical-align: top;
+}
+
+.biblio-full .label:after {
+    content: ":"
+}
+
+.biblio-full .related td {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid black;
+}
+
+.ui-widget {
+    font-size:1em;
+}
