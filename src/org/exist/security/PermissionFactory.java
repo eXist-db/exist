@@ -1,9 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
+ *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
@@ -18,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.security;
 
