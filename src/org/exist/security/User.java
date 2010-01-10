@@ -85,4 +85,9 @@ public interface User extends Principal {
 
 	public XmldbURI getHome();
 
+	public boolean authenticate(Object credentials);
+
+	public boolean isAuthenticated();
+
+	public XMLUserRealm getUserRealm();
 }
