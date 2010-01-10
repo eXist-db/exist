@@ -202,6 +202,10 @@ public class UserImpl implements User {
 					&& group.getLocalName().equals(GROUP))
 				addGroup(group.getFirstChild().getNodeValue());
 		}
+		
+		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
+		if (uid == 0 && password == null) setPassword("");
+		
 	}
 	
     public UserImpl(UserImpl from_user, Object credentials) {

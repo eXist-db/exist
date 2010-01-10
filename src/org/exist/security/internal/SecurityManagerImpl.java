@@ -33,6 +33,7 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
@@ -133,7 +134,7 @@ public class SecurityManagerImpl implements SecurityManager {
              docElement = acl.getDocumentElement();
           if (docElement == null) {
              LOG.debug("creating system users");
-             UserImpl user = new UserImpl(DBA_USER, null);
+             UserImpl user = new UserImpl(DBA_USER, "");
              user.addGroup(DBA_GROUP);
              user.setUID(++nextUserId);
              users.put(user.getUID(), user);
@@ -459,5 +460,15 @@ public class SecurityManagerImpl implements SecurityManager {
 		String group = (config!=null) ? config.getDefCollGroup(user) : user.getPrimaryGroup();
 		home.getPermissions().setGroup(group);
 		broker.saveCollection(transaction, home);
+	}
+
+	public synchronized User authenticate(String username, Object credentials) throws AuthenticationException {
+		User user;
+		for (Iterator i = users.valueIterator(); i.hasNext();) {
+			user = (User) i.next();
+			if (user.getName().equals(username))
+				return new UserImpl((UserImpl)user, credentials);
+		}
+		throw new AuthenticationException("User " + username + " not found");
 	}
 }
