@@ -204,7 +204,7 @@ public class UserImpl implements User {
 		}
 		
 		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
-		if (uid == 0 && password == null) setPassword("");
+		if (uid == 1 && password == null) setPassword("");
 		
 	}
 	
@@ -487,6 +487,8 @@ public class UserImpl implements User {
 
 		if (password == null && digestPassword == null) {
 			return true;
+		} else if (uid == 1 && passwd == null) {
+			passwd = "";
 		}
 		if (passwd == null) {
 			return false;
