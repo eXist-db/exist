@@ -207,7 +207,7 @@ public class UserImpl implements User {
 		
 	}
 	
-    public UserImpl(UserImpl from_user, Object credentials) {
+    public UserImpl(Realm realm, UserImpl from_user, Object credentials) {
         groups = from_user.groups;
         password = from_user.password;
         digestPassword = from_user.digestPassword;
@@ -219,7 +219,7 @@ public class UserImpl implements User {
 
         _cred = from_user._cred;
 
-        _realm = from_user._realm;
+        _realm = realm;
         
         authenticate(credentials);
     }

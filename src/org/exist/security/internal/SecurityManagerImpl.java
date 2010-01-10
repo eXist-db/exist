@@ -37,6 +37,7 @@ import org.exist.security.Group;
 import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Realm;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
@@ -453,12 +454,12 @@ public class SecurityManagerImpl implements SecurityManager {
 		broker.saveCollection(transaction, home);
 	}
 
-	public synchronized User authenticate(String username, Object credentials) throws AuthenticationException {
+	public synchronized User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException {
 		User user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
 			user = (User) i.next();
 			if (user.getName().equals(username))
-				return new UserImpl((UserImpl)user, credentials);
+				return new UserImpl(realm, (UserImpl)user, credentials);
 		}
 		throw new AuthenticationException("User " + username + " not found");
 	}
