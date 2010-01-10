@@ -27,8 +27,8 @@ import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
+import org.exist.security.Realm;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.Response;
@@ -40,7 +40,7 @@ import org.mortbay.jetty.security.UserRealm;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class XMLUserRealm implements UserRealm, SSORealm {
+public class XMLUserRealm implements Realm, UserRealm, SSORealm {
 	
 	private Map<String, User> users = new HashMap<String, User>();
 
@@ -59,15 +59,13 @@ public class XMLUserRealm implements UserRealm, SSORealm {
             user = users.get(username);
             if (user==null) {
     			try {
-    				user = BrokerPool.getInstance().getSecurityManager().authenticate(username, credentials);
+    				user = BrokerPool.getInstance().getSecurityManager().authenticate(this, username, credentials);
     			} catch (EXistException e) {
     				return null;
     			} catch (AuthenticationException e) {
     				return null;
 				}
 
-    			((UserImpl)user).userRealm = this;
-    	        
     	        users.put(username, user);
             }
         }
@@ -108,7 +106,7 @@ public class XMLUserRealm implements UserRealm, SSORealm {
 	 */
 	@Override
 	public synchronized boolean isUserInRole(Principal user, String role) {
-        if (user==null || !(user instanceof User) || ((User)user).getUserRealm()!=this)
+        if (user==null || !(user instanceof User) || ((User)user).getRealm()!=this)
             return false;
         
         //role eq group ? -shabanovd

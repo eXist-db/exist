@@ -35,6 +35,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
+import org.exist.security.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -529,7 +530,7 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    @Override
-   public User authenticate(String username, Object credentials) throws AuthenticationException {
+   public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException {
 	   // TODO Auto-generated method stub
 	   return null;
    }

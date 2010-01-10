@@ -85,5 +85,5 @@ public interface SecurityManager {
 
    int getCollectionDefaultPerms();
 	
-   public User authenticate(String username, Object credentials) throws AuthenticationException;
+   public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException;
 }
