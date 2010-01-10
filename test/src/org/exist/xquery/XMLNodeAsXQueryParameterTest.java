@@ -242,7 +242,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 	 * @throws XMLDBException on database error
 	 */
 	private final XQueryService getXQueryService(Database db) throws XMLDBException {
-		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
+		Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "");
 		if (collection != null) {
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 			collection.close();
