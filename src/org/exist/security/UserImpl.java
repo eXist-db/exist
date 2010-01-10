@@ -27,6 +27,8 @@ import org.exist.security.ldap.LDAPbindSecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
+import org.mortbay.jetty.security.Credential;
+import org.mortbay.jetty.security.Password;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -161,13 +163,15 @@ public class UserImpl implements User {
 		if (majorVersion == 0) {
 			attr = node.getAttributeNode(PASS);
 			this.digestPassword = attr == null ? null : attr.getValue();
-			this.password = null;
+			setPassword(null);
+//			this.password = null;
 		} else {
 			attr = node.getAttributeNode(PASS);
-			this.password = attr == null ? null : attr.getValue();
-			if (this.password != null && this.password.length() > 0) {
-				if (this.password.startsWith("{MD5}")) {
-					this.password = this.password.substring(5);
+			String password = attr == null ? null : attr.getValue();
+			this.setPassword(password);
+			if (password != null && password.length() > 0) {
+				if (password.startsWith("{MD5}")) {
+					this.password = password.substring(5);
 				}
 				if (this.password.charAt(0) == '{') {
 					throw new DatabaseConfigurationException(
@@ -199,6 +203,23 @@ public class UserImpl implements User {
 				addGroup(group.getFirstChild().getNodeValue());
 		}
 	}
+	
+    public UserImpl(UserImpl from_user, Object credentials) {
+        groups = from_user.groups;
+        password = from_user.password;
+        digestPassword = from_user.digestPassword;
+        user = from_user.user;
+        uid = from_user.uid;
+        home = from_user.home;
+        
+        hasDbaRole = from_user.hasDbaRole;
+
+        _cred = from_user._cred;
+
+        userRealm = from_user.userRealm;
+        
+        authenticate(credentials);
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -354,6 +375,8 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#setPassword(java.lang.String)
 	 */
 	public final void setPassword(String passwd) {
+    	_cred = new Password(passwd);
+
 		if (passwd == null) {
 			this.password = null;
 			this.digestPassword = null;
@@ -533,5 +556,27 @@ public class UserImpl implements User {
 		} else {
 			return (false);
 		}
+	}
+
+    private Credential _cred;
+
+    @Override
+	public boolean authenticate(Object credentials) {
+    	authenticated = _cred!=null && _cred.check(credentials);
+		return authenticated;
+	}
+
+    protected XMLUserRealm userRealm = null;
+    
+	@Override
+	public XMLUserRealm getUserRealm() {
+		return userRealm;
+	}
+
+	protected boolean authenticated = false;
+	
+	@Override
+	public boolean isAuthenticated() {
+		return authenticated;
 	}
 }

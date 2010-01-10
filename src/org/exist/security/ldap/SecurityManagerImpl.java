@@ -27,6 +27,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
@@ -526,5 +527,10 @@ public class SecurityManagerImpl implements SecurityManager
    public void setUser(UserImpl user)
    {
    }
-   
+
+   @Override
+   public User authenticate(String username, Object credentials) throws AuthenticationException {
+	   // TODO Auto-generated method stub
+	   return null;
+   }
 }
