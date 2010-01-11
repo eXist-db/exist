@@ -46,7 +46,11 @@ declare variable $biblio:TEMPLATE_QUERY :=
             <field m="1" name="All"></field>
         </and>
     </query>;
-    
+
+(:~
+    Regenerate the HTML form to match the query, e.g. after adding more filter
+    clauses.
+:)
 declare function biblio:form-from-query($query as element()) as element()+ {
     for $field at $pos in $query//field
     return
@@ -95,6 +99,10 @@ declare function biblio:form-from-query($query as element()) as element()+ {
         </tr>
 };
 
+(:~
+    Generate an XPath query string from the given XML representation
+    of the query.
+:)
 declare function biblio:generate-query($xml as element()) as xs:string* {
     typeswitch ($xml)
         case element(query) return
@@ -120,7 +128,7 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
             ()
 };
 
-declare function biblio:process-form-parameters($params) {
+declare function biblio:process-form-parameters($params as xs:string*) as element() {
     let $param := $params[1]
     let $n := substring-after($param, 'input')
     let $value := request:get-parameter($param, "")
@@ -136,6 +144,10 @@ declare function biblio:process-form-parameters($params) {
             }
 };
 
+(:~
+    Process the received form parameters and create an XML representation of
+    the query. Filter out empty parameters and take care of boolean operators.
+:)
 declare function biblio:process-form() as element(query)? {
     let $fields :=
         (:  Get a list of all input parameters which are not empty,
@@ -157,6 +169,10 @@ declare function biblio:process-form() as element(query)? {
             ()
 };
 
+(:~
+    Helper function used to sort by name within the "order by"
+    clause of the query.
+:)
 declare function biblio:orderByName($m as element()) as xs:string?
 {
     for $name in $m/mods:name[1]
@@ -175,6 +191,9 @@ declare function biblio:orderExpr($field as xs:string) as xs:string
         "$hit/mods:originInfo/mods:dateCreated[1] descending"
 };
 
+(:~
+    Evaluate the actual XPath query and order the results
+:)
 declare function biblio:evaluate-query($query as xs:string, $sort as xs:string) {
     let $sortExpr := biblio:orderExpr($sort)
     let $orderedQuery :=
@@ -183,6 +202,10 @@ declare function biblio:evaluate-query($query as xs:string, $sort as xs:string) 
         util:eval($orderedQuery)
 };
 
+(:~
+    Evaluate the query given as XML and store its results into the HTTP session
+    for later reference.
+:)
 declare function biblio:eval-query($queryAsXML as element()?) {
     if ($queryAsXML) then
         let $query := string-join(biblio:generate-query($queryAsXML), '')
@@ -200,6 +223,10 @@ declare function biblio:eval-query($queryAsXML as element()?) {
         0
 };
 
+(:~
+    Scan the input HTML template and expand the biblio:* tags
+    found therein.
+:)
 declare function biblio:process-templates($query as element(), $hitCount as xs:integer, $node as node()) {
     typeswitch ($node)
         case element(biblio:form-from-query) return
@@ -217,6 +244,10 @@ declare function biblio:process-templates($query as element(), $hitCount as xs:i
             $node
 };
 
+(:~
+    Filter an existing result set by applying an additional
+    clause with "and".
+:)
 declare function biblio:apply-filter() {
     let $prevQuery := session:get-attribute("query")
     let $filter := request:get-parameter("filter", ())
@@ -231,10 +262,14 @@ declare function biblio:apply-filter() {
 };
 
 session:create(),
+(: We receive an HTML template as input :)
 let $input := request:get-data()
 let $filter := request:get-parameter("filter", ())
+(: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML := if ($filter) then biblio:apply-filter() else biblio:process-form()
+(: Evaluate the query :)
 let $results := biblio:eval-query($queryAsXML)
+(:  Process the HTML template received as input :)
 let $output :=
     jquery:process-templates(
         biblio:process-templates(if ($queryAsXML) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input)
