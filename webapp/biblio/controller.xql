@@ -4,6 +4,10 @@ if ($exist:path eq '/') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<redirect url="index.xml"/>
 	</dispatch>
+(:  Main page: index.xml is a template, which is passed through
+    search.xql and the db2xhtml stylesheet. search.xql will run
+    the actual search and expand the index.xml template.
+:)
 else if ($exist:resource eq 'index.xml') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <view>
@@ -27,7 +31,7 @@ else if ($exist:resource eq 'index.xml') then
     		</forward>
 		</view>
 	</dispatch>
-(: Retrieve an item from the query results stored in the HTTP session. The
+(:  Retrieve an item from the query results stored in the HTTP session. The
 	format of the URL will be /sandbox/results/X, where X is the number of the
 	item in the result set :)
 else if ($exist:resource eq 'retrieve') then

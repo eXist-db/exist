@@ -51,8 +51,8 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
 declare function jquery:tabset($config as element(jquery:tabset)) as element() {
     let $id := if ($config/@id) then $config/@id/string() else util:uuid()
     let $selected := request:get-parameter($id, ())
-    let $selectedIdx := 
-        if ($selected) then $config/jquery:tab[@id eq $selected]/position() else 1
+    let $selectedId := 
+        if ($selected) then $config/jquery:tab[@id = $selected]/@id/string() else ()
     return
         <div id="{$id}">
             <ul>
@@ -75,7 +75,13 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
             }
             <script type="text/javascript">
             $(function() {{
-                $("#{$id}").tabs({{ selected: { $selectedIdx - 1 } }});
+                var tabs = $("#{$id}").tabs();
+                { 
+                    if ($selectedId) then 
+                        concat("tabs.tabs('select', '", $selectedId, "');")
+                    else
+                        ()
+                }
             }});
             </script>
         </div>
