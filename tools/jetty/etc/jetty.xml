@@ -10,12 +10,29 @@
     </Set>
   </New>
 
+  <!-- Uncomment the following connector to enable SSL. You need to create
+       a certificate. Check http://atomic.exist-db.org/HowTo/JettySSL
+    -->
+  <!--New id="ssl-connector" class="org.mortbay.jetty.security.SslSocketConnector">
+    <Set name="Port">8443</Set>
+    <Set name="maxIdleTime">30000</Set>
+    <Set name="keystore"><SystemProperty name="jetty.home" default="." />/etc/demokeystore</Set>
+    <Set name="password">secret</Set>
+    <Set name="keyPassword">secret</Set>
+    <Set name="truststore"><SystemProperty name="jetty.home" default="." />/etc/demokeystore</Set>
+    <Set name="trustPassword">secret</Set>
+  </New-->
+
   <!-- Setup connectors  -->
   <Set name="Connectors">
     <Array type="org.mortbay.jetty.Connector">
       <Item>
         <Ref id="connector"/>
       </Item>
+      <!-- Uncomment to enable SSL -->
+      <!--Item>
+	<Ref id="ssl-connector"/>
+      </Item-->
     </Array>
   </Set>
 
