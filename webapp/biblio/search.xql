@@ -94,7 +94,13 @@ declare function biblio:form-from-query($query as element()) as element()+ {
                 </select>
             </td>
             <td>
-                <input id="input{$pos}" name="input{$pos}" value="{$field/string()}"/>
+                <jquery:input name="input{$pos}" value="{$field/string()}">
+                    <jquery:autocomplete url="autocomplete.xql"
+                        width="300" multiple="false"
+                        matchContains="false">
+                        <jquery:param name="field" function="autocompleteCallback"/>
+                    </jquery:autocomplete>
+                </jquery:input>
             </td>
         </tr>
 };
@@ -128,6 +134,35 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
             ()
 };
 
+(:~
+    Transform the XML representation of the query into a simple string
+    for display to the user in the query history.
+:)
+declare function biblio:xml-query-to-string($xml as element()) as xs:string* {
+    typeswitch ($xml)
+        case element(query) return
+            biblio:xml-query-to-string($xml/*[1])
+        case element(and) return
+            (
+                biblio:xml-query-to-string($xml/*[1]), 
+                " AND ", 
+                biblio:xml-query-to-string($xml/*[2])
+            )
+        case element(or) return
+            (
+                biblio:xml-query-to-string($xml/*[1]), 
+                " OR ", 
+                biblio:xml-query-to-string($xml/*[2])
+            )
+        case element(field) return
+            concat($xml/@name, ':', $xml/string())
+        default return
+            ()
+};
+
+(:~
+    Process single form parameter. Called from biblio:process-form().
+:)
 declare function biblio:process-form-parameters($params as xs:string*) as element() {
     let $param := $params[1]
     let $n := substring-after($param, 'input')
@@ -203,6 +238,49 @@ declare function biblio:evaluate-query($query as xs:string, $sort as xs:string) 
 };
 
 (:~
+    Add a query to the user's query history. We store the XML representation
+    of the query.
+:)
+declare function biblio:add-to-history($queryAsXML as element()) {
+    let $oldHistory := session:get-attribute('history')
+    let $newHistory :=
+        let $n := if ($oldHistory) then max(for $n in $oldHistory/query/@n return xs:int($n)) + 1 else 1
+        return
+            <history>
+                <query id="q{$n}" n="{$n}">
+                    { $queryAsXML/* }
+                </query>
+                { $oldHistory/query }
+            </history>
+    return
+        session:set-attribute('history', $newHistory)
+};
+
+(:~
+    Retrieve a query from the query history
+:)
+declare function biblio:query-from-history($id as xs:string) {
+    let $history := session:get-attribute('history')
+    return
+        $history/query[@id = $id]
+};
+
+(:~
+    Returns the query history as a HTML list. The queries are
+    transformed into a simple string representation.
+:)
+declare function biblio:query-history() {
+    <ul>
+    {
+        let $history := session:get-attribute('history')
+        for $query at $pos in $history/query
+        return
+            <li><a href="?history={$query/@id}&amp;query-tabs=advanced">{biblio:xml-query-to-string($query)}</a></li>
+    }
+    </ul>
+};
+
+(:~
     Evaluate the query given as XML and store its results into the HTTP session
     for later reference.
 :)
@@ -217,10 +295,22 @@ declare function biblio:eval-query($queryAsXML as element()?) {
         let $null := session:set-attribute('cached', $results)
         let $null := session:set-attribute('query', $queryAsXML)
         let $null := session:set-attribute('sort', $queryAsXML)
+        let $null := biblio:add-to-history($queryAsXML)
         return
             count($results)
     else
         0
+};
+
+(:~
+    Clear the last query result.
+:)
+declare function biblio:clear() {
+    let $null := session:remove-attribute('cached')
+    let $null := session:remove-attribute('query')
+    let $null := session:remove-attribute('sort')
+    return
+        ()
 };
 
 (:~
@@ -233,6 +323,8 @@ declare function biblio:process-templates($query as element(), $hitCount as xs:i
             biblio:form-from-query($query)
         case element(biblio:result-count) return
             text { $hitCount }
+        case element(biblio:query-history) return
+            biblio:query-history()
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -265,8 +357,18 @@ session:create(),
 (: We receive an HTML template as input :)
 let $input := request:get-data()
 let $filter := request:get-parameter("filter", ())
+let $history := request:get-parameter("history", ())
+let $clear := request:get-parameter("clear", ())
 (: Process request parameters and generate an XML representation of the query :)
-let $queryAsXML := if ($filter) then biblio:apply-filter() else biblio:process-form()
+let $queryAsXML :=
+    if ($history) then
+        biblio:query-from-history($history)
+    else if ($clear) then
+        biblio:clear()
+    else if ($filter) then 
+        biblio:apply-filter() 
+    else 
+        biblio:process-form()
 (: Evaluate the query :)
 let $results := biblio:eval-query($queryAsXML)
 (:  Process the HTML template received as input :)

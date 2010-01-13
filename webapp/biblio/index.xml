@@ -22,12 +22,19 @@
         <jquery:tabset id="query-tabs">
             <jquery:tab id="simple" label="Simple Search">
                 <form class="search-form" action="index.xml" name="simple-search" method="POST">
-                    <jquery:form-repeat trigger="#add-field" form=".search-form"/>
+                    <jquery:form-repeat trigger="#add-field" form=".search-form"
+                        on-ready="repeatCallback"/>
                     <table>
                         <tr>
                             <td>Search:</td>
                             <td>
-                                <jquery:input name="input1"/>
+                                <jquery:input name="input1">
+                                    <jquery:autocomplete url="autocomplete.xql"
+                                        width="300" multiple="false"
+                                        matchContains="false">
+                                        <jquery:param name="field" function="autocompleteCallback"/>
+                                    </jquery:autocomplete>
+                                </jquery:input>
                             </td>
                         </tr>
                         <tr>
@@ -63,12 +70,16 @@
                                     <jquery:option value="Title"/>
                                     <jquery:option value="Date Issued"/>
                                 </jquery:select>
+                                <button name="clear" value="clear" type="submit">Clear</button>
                                 <button name="action" id="form-submit" type="submit">Search</button>
                             </td>
                         </tr>
                     </table>
                     <input type="hidden" name="query-tabs" value="advanced"/>
                 </form>
+            </jquery:tab>
+            <jquery:tab id="query-history" label="Query History">
+                <biblio:query-history/>
             </jquery:tab>
         </jquery:tabset>
         <div id="results-head">
