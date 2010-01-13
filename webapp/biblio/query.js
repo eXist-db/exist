@@ -1,10 +1,21 @@
-$(document).ready(function() {
-    $('#input1').autocomplete("autocomplete.xql", {
+function autocompleteCallback() {
+    var name = this.attr('name');
+    var select = this.parent().parent().find('select[name ^= field]');
+    if (select) {
+        return select.val();
+    } else
+        return 'noparam';
+}
+
+function repeatCallback() {
+    var input = $('input[name ^= input]', this);
+    input.autocomplete("autocomplete.xql", {
+        extraParams: { field: function () { return autocompleteCallback.call(input);} },
         width: 300,
-		multiple: false,
-		matchContains: false
+        multiple: false,
+        matchContains: false
     });
-});
+}
 
 function resultsLoaded(options) {
     if (options.itemsPerPage > 1)

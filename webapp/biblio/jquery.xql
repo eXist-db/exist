@@ -25,7 +25,7 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     let $base := $config/@base/string()
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
     return (
-        <script type="text/javascript" src="{$base}/jquery-1.3.2.min.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-1.3.2.js"/>,
         <script type="text/javascript" src="{$base}/jquery.autocomplete.min.js"/>,
         <script type="text/javascript" src="{$base}/jquery-ui-1.7.2.custom.min.js"/>,
         <script type="text/javascript" src="jquery-utils.js"/>,
@@ -59,7 +59,10 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
             {
                 for $tab in $config/jquery:tab
                 return
-                    <li><a href="#{$tab/@id}">{$tab/@label/string()}</a></li>
+                    if ($tab/@href) then
+                        <li><a href="{$tab/@href}">{$tab/@label/string()}</a></li>
+                    else
+                        <li><a href="#{$tab/@id}">{$tab/@label/string()}</a></li>
             }
             </ul>
             {
@@ -115,6 +118,7 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
 declare function jquery:form-repeat($config as element(jquery:form-repeat)) as element() {
     let $formSelector := $config/@form/string()
     let $trigger := $config/@trigger/string()
+    let $onReady := $config/@on-ready/string()
     return
         <script type="text/javascript">
         $(document).ready(function() {{
@@ -131,6 +135,12 @@ declare function jquery:form-repeat($config as element(jquery:form-repeat)) as e
                             this.value = '';
                     }});
                 }});
+                {
+                    if ($onReady) then
+                        concat($onReady, ".call(newNode);")
+                    else
+                        ()
+                }
                 ev.preventDefault();
             }});
         }});
@@ -213,6 +223,25 @@ declare function jquery:paginate($config as element(jquery:paginate)) as element
 };
 
 (:~
+    Helper function for jquery:input-field()
+:)
+declare function jquery:extra-params($id as xs:string, $auto as element(jquery:autocomplete)) {
+    if ($auto/jquery:param) then
+        concat('extraParams: {',
+            string-join(
+                for $param in $auto/jquery:param
+                return
+                    concat($param/@name, ': function () { ', 
+                        " return ", $param/@function, '.call($("#', $id, '"));}'),
+                ', '
+            ),
+            '}, '
+        )
+    else
+        ()
+};
+
+(:~
     Create an HTML input element. Copies all attributes of the jquery:input
     element. If no value attribute is present, the function will look up the
     parameter in the HTTP request, and if the parameter is set, add it as value 
@@ -220,18 +249,37 @@ declare function jquery:paginate($config as element(jquery:paginate)) as element
     
     <pre><![CDATA[<jquery:input name="input1"/>]]></pre>
 :)
-declare function jquery:input-field($node as element(jquery:input)) as element() {
-    let $name := $node/@name/string() 
-    return
+declare function jquery:input-field($node as element(jquery:input)) as element()+ {
+    let $name := $node/@name/string()
+    let $id := if ($node/@id) then $node/@id/string() else util:uuid()
+    return (
         <input>
         { $node/@* }
-        { 
+        { if (empty($node/@id)) then attribute id { $id } else () }
+        {
             if (empty($node/@value)) then
                 attribute value { request:get-parameter($name, "") }
             else
                 ()
         }
-        </input>
+        </input>,
+        if ($node/jquery:autocomplete) then
+            let $auto := $node/jquery:autocomplete
+            let $width := if ($auto/@width) then $auto/@width/string() else 200
+            let $multiple := if ($auto/@multiple) then $auto/@multiple/string() else "false"
+            let $matchContains := if ($auto/@matchContains) then $auto/@matchContains/string() else "false"
+            return
+                <script type="text/javascript">
+                    $('#{$id}').autocomplete("{$auto/@url/string()}", {{
+                        { jquery:extra-params($id, $auto) }
+                        width: { $width },
+                        multiple: { $multiple },
+                        matchContains: { $matchContains }
+                    }});
+                </script>
+        else
+            ()
+    )
 };
 
 (:~
