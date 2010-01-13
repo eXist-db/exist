@@ -204,8 +204,8 @@ public class JettyStart {
                 if(t instanceof java.net.BindException){
                     hasBindException=true;
                     logger.info("----------------------------------------------------------");
-                    logger.info("ERROR: Could not start jetty, port "
-                            + port + " is already in use.   ");
+                    logger.info("ERROR: Could not bind to port because " +
+                        ((Exception) t).getMessage());
                     logger.info(t.toString());
                     logger.info("----------------------------------------------------------");
                 }
