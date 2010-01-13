@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.util.Observer;
 import java.util.Properties;
 
@@ -238,8 +239,8 @@ public class JettyStart implements LifeCycle.Listener {
                 if (t instanceof java.net.BindException) {
                     hasBindException = true;
                     logger.info("----------------------------------------------------------");
-                    logger.info("ERROR: Could not start jetty, port " 
-                            + port + " is already in use.   ");
+                    logger.info("ERROR: Could not bind to port because " +
+                        ((Exception) t).getMessage());
                     logger.info(t.toString());
                     logger.info("----------------------------------------------------------");
                 }
@@ -249,7 +250,12 @@ public class JettyStart implements LifeCycle.Listener {
             if (!hasBindException) {
                 e.printStackTrace();
             }
-
+        } catch (SocketException e) {
+            logger.info("----------------------------------------------------------");
+            logger.info("ERROR: Could not bind to port because " +
+                        e.getMessage());
+            logger.info(e.toString());
+            logger.info("----------------------------------------------------------");
         } catch (Exception e) {
             e.printStackTrace();
         }
