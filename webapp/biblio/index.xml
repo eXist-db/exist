@@ -19,7 +19,7 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     <chapter>
-        <jquery:tabset id="query-tabs">
+        <jquery:tabset id="query-tabs" on-select="searchTabSelected">
             <jquery:tab id="simple" label="Simple Search">
                 <form class="search-form" action="index.xml" name="simple-search" method="POST">
                     <jquery:form-repeat trigger="#add-field" form=".search-form"
@@ -80,6 +80,16 @@
             </jquery:tab>
             <jquery:tab id="query-history" label="Query History">
                 <biblio:query-history/>
+            </jquery:tab>
+            <jquery:tab id="personal-list" label="My Lists">
+                <form class="search-form" action="index.xml" name="lists" method="POST">
+                    <p>You have <span id="personal-list-size">0</span> items in your list.</p>
+                    <p>
+                        <input type="hidden" name="query-tabs" value="personal-list"/>
+                        <button name="mylist" type="submit" value="clear">Clear</button>
+                        <button name="mylist" type="submit" value="display">Display</button>
+                    </p>
+                </form>
             </jquery:tab>
         </jquery:tabset>
         <div id="results-head">

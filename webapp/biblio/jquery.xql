@@ -25,7 +25,7 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     let $base := $config/@base/string()
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
     return (
-        <script type="text/javascript" src="{$base}/jquery-1.3.2.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-1.3.2.min.js"/>,
         <script type="text/javascript" src="{$base}/jquery.autocomplete.min.js"/>,
         <script type="text/javascript" src="{$base}/jquery-ui-1.7.2.custom.min.js"/>,
         <script type="text/javascript" src="jquery-utils.js"/>,
@@ -76,17 +76,26 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
                     }
                     </div>
             }
-            <script type="text/javascript">
-            $(function() {{
-                var tabs = $("#{$id}").tabs();
-                { 
-                    if ($selectedId) then 
-                        concat("tabs.tabs('select', '", $selectedId, "');")
+            {
+                let $options :=
+                    if ($config/@on-select) then
+                        concat("var options = { select: ", $config/@on-select, " };")
                     else
-                        ()
-                }
-            }});
-            </script>
+                        "var options = null;"
+                return
+                    <script type="text/javascript">
+                    $(function() {{
+                        { $options }
+                        var tabs = $("#{$id}").tabs(options);
+                        { 
+                            if ($selectedId) then 
+                                concat("tabs.tabs('select', '", $selectedId, "');")
+                            else
+                                ()
+                        }
+                    }});
+                    </script>
+            }
         </div>
 };
 
