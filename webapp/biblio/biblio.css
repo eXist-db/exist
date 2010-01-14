@@ -56,7 +56,7 @@
 }
 
 #filters .expanded .expand-img {
-    background: url(minus.gif) no-repeat left bottom;
+    background: url(minus.gif) no-repeat left bottom; 
 }
 
 #filters .expand-img {
@@ -154,6 +154,10 @@
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid black;
+}
+
+.save img {
+    border: 0;
 }
 
 .ui-widget {

@@ -359,6 +359,8 @@ let $input := request:get-data()
 let $filter := request:get-parameter("filter", ())
 let $history := request:get-parameter("history", ())
 let $clear := request:get-parameter("clear", ())
+let $mylist := request:get-parameter("mylist", ())
+
 (: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML :=
     if ($history) then
@@ -367,10 +369,27 @@ let $queryAsXML :=
         biblio:clear()
     else if ($filter) then 
         biblio:apply-filter() 
+    else if ($mylist eq 'display') then
+        ()
     else 
         biblio:process-form()
 (: Evaluate the query :)
-let $results := biblio:eval-query($queryAsXML)
+let $results :=
+    if ($mylist) then (
+        if ($mylist eq 'clear') then
+            session:set-attribute("personal-list", ())
+        else
+            (),
+        let $list := session:get-attribute("personal-list")
+        let $items :=
+            for $item in $list/listitem
+            return
+                util:node-by-id(doc(substring-before($item/@id, '#')), substring-after($item/@id, '#'))
+        let $null := session:set-attribute('cached', $items)
+        return
+            count($items)
+    ) else
+        biblio:eval-query($queryAsXML)
 (:  Process the HTML template received as input :)
 let $output :=
     jquery:process-templates(
