@@ -438,13 +438,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
                     Value startRef = new NGramQNameKey(collectionId, qnames.get(q),
-                    		index.getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    		index.getBrokerPool().getSymbols(), start.toString().toLowerCase());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else {
                     Value startRef = new NGramQNameKey(collectionId, qnames.get(q), 
-                    	index.getBrokerPool().getSymbols(), ((StringValue)start).getStringValue().toLowerCase());
+                    	index.getBrokerPool().getSymbols(), start.toString().toLowerCase());
                     Value endRef = new NGramQNameKey(collectionId, qnames.get(q),
-                    		index.getBrokerPool().getSymbols(), ((StringValue)end).getStringValue().toLowerCase());
+                    		index.getBrokerPool().getSymbols(), end.toString().toLowerCase());
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
                 try {
