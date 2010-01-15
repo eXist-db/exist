@@ -2,6 +2,7 @@ package org.exist.storage;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 
 import java.util.Stack;
@@ -34,8 +35,11 @@ public class SystemTaskManager {
     		return;
         synchronized (waitingSystemTasks) {
             DBBroker broker = null;
+            User oldUser = null;
     	    try {
-                broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+                broker = pool.get(null);
+                oldUser = broker.getUser();
+                broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
                 while (!waitingSystemTasks.isEmpty()) {
                     pool.sync(broker, Sync.MAJOR_SYNC);
                     SystemTask task = waitingSystemTasks.pop();
@@ -44,6 +48,8 @@ public class SystemTaskManager {
             } catch(Exception e) {
                 LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
             } finally {
+                if (oldUser != null)
+                    broker.setUser(oldUser);
                 pool.release(broker);
             }
         }
