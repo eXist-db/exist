@@ -115,7 +115,7 @@ public class IndexKeys extends BasicFunction {
         	Map<String, Object> hints = new HashMap<String, Object>();
         	hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
         	if (indexWorker instanceof OrderedValuesIndex)
-        		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
+        		hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());
         	else
         		logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
         	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
@@ -136,7 +136,6 @@ public class IndexKeys extends BasicFunction {
 	            data.clear();
 	        }
         } else {
-            int idxType = nodes.getIndexType();
             Indexable indexable = (Indexable) args[1].itemAt(0);
             ValueOccurrences occur[] = null;
             // First check for indexes defined on qname
