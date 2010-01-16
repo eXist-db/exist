@@ -373,6 +373,8 @@ public class SecurityManagerImpl implements SecurityManager {
 		// store users.xml
 		broker.flush();
 		broker.sync(Sync.MAJOR_SYNC);
+		
+		User currentUser = broker.getUser();
 		try {
 			broker.setUser(getUser(DBA_USER));
 			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
@@ -394,12 +396,15 @@ public class SecurityManagerImpl implements SecurityManager {
 			throw new EXistException(e.getMessage());
 		} catch (LockException e) {
 			throw new EXistException(e.getMessage());
+		} finally {
+			broker.setUser(currentUser);
 		}
+		
 		broker.flush();
 		broker.sync(Sync.MAJOR_SYNC);
 	}
 
-	public synchronized void setUser(UserImpl user) {
+	public synchronized void setUser(User user) {
 		if (user.getUID() < 0)
 			user.setUID(++nextUserId);
 		users.put(user.getUID(), user);
@@ -445,16 +450,34 @@ public class SecurityManagerImpl implements SecurityManager {
 	throws EXistException, PermissionDeniedException, IOException {
 		if(user.getHome() == null)
 			return;
-		broker.setUser(getUser(DBA_USER));
-		Collection home = broker.getOrCreateCollection(transaction, user.getHome());
-		home.getPermissions().setOwner(user.getName());
-		CollectionConfiguration config = home.getConfiguration(broker);
-		String group = (config!=null) ? config.getDefCollGroup(user) : user.getPrimaryGroup();
-		home.getPermissions().setGroup(group);
-		broker.saveCollection(transaction, home);
+		
+		User currentUser = broker.getUser();
+		
+		try {
+			broker.setUser(getUser(DBA_USER));
+			Collection home = broker.getOrCreateCollection(transaction, user.getHome());
+			home.getPermissions().setOwner(user.getName());
+			CollectionConfiguration config = home.getConfiguration(broker);
+			String group = (config!=null) ? config.getDefCollGroup(user) : user.getPrimaryGroup();
+			home.getPermissions().setGroup(group);
+			broker.saveCollection(transaction, home);
+		} finally {
+			broker.setUser(currentUser);
+		}
 	}
 
 	public synchronized User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException {
+		User user;
+		for (Iterator i = users.valueIterator(); i.hasNext();) {
+			user = (User) i.next();
+			if (user.getName().equals(username))
+				return new UserImpl(realm, (UserImpl)user, credentials);
+		}
+		throw new AuthenticationException("User " + username + " not found");
+	}
+
+	Realm realm = new RealmImpl();
+	public synchronized User authenticate(String username, Object credentials) throws AuthenticationException {
 		User user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
 			user = (User) i.next();
