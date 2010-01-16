@@ -758,17 +758,6 @@ public class NativeBroker extends DBBroker {
             if(newUri == null) {
                 newUri = collection.getURI().lastSegment();
             }
-            //  check if another collection with the same name exists at the destination
-            //TODO : resolve URIs !!! (destination.getURI().resolve(newURI))
-            Collection old = openCollection(destination.getURI().append(newUri), Lock.WRITE_LOCK);
-            if(old != null) {
-                LOG.debug("removing old collection: " + newUri);
-                try {
-                    removeCollection(transaction, old);
-                } finally {
-                    old.release(Lock.WRITE_LOCK);
-                }
-            }
             Collection destCollection = null;
             final CollectionCache collectionsCache = pool.getCollectionsCache();
     	    synchronized(collectionsCache) {
@@ -885,16 +874,6 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Insufficient privileges on target collection " +
 						destination.getURI());
         
-        // check if another collection with the same name exists at the destination
-        Collection old = openCollection(destination.getURI().append(newName), Lock.WRITE_LOCK);
-        if(old != null) {
-            try {
-                removeCollection(transaction, old);
-            } finally {
-                old.release(Lock.WRITE_LOCK);
-            }
-        }
-
         XmldbURI uri = collection.getURI();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
