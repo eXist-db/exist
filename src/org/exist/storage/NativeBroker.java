@@ -2015,9 +2015,6 @@ public class NativeBroker extends DBBroker {
             try {
 
                 lock.acquire(Lock.WRITE_LOCK);
-                // check if the move would overwrite a collection
-                if(getCollection(destination.getURI().append(newName)) != null)
-                    throw new PermissionDeniedException("A resource can not replace an existing collection");
                 DocumentImpl oldDoc = destination.getDocument(this, newName);
                 if(oldDoc != null) {
                     if(doc.getDocId() == oldDoc.getDocId())
@@ -2129,8 +2126,6 @@ public class NativeBroker extends DBBroker {
         try {
             // check if the move would overwrite a collection
         	//TODO : resolve URIs : destination.getURI().resolve(newName)
-            if(getCollection(destination.getURI().append(newName)) != null)
-                throw new PermissionDeniedException("A resource can not replace an existing collection");
             DocumentImpl oldDoc = destination.getDocument(this, newName);
             if(oldDoc != null) {
                 if (doc.getDocId() == oldDoc.getDocId())
