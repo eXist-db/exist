@@ -76,7 +76,7 @@ public class AsUser extends Function {
         	logger.error("Authentication failed for setting the user to [" + userName + "] because user does not exist, throwing an exception!", exception);
             throw exception;
         }
-        if (user.validate(passwd)) {
+        if (passwd.equals(user.getDigestPassword()) || user.validate(passwd)) {
             User oldUser = context.getBroker().getUser();
             try {
                 logger.info("Setting the authenticated user to: [" + userName + "]");
