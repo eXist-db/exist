@@ -31,6 +31,7 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTaskManager;
@@ -232,11 +233,15 @@ public class TransactionManager {
 	}
     
     public void reindex(DBBroker broker) {
+    	User currentUser = broker.getUser();
+    	
         broker.setUser(SecurityManager.SYSTEM_USER);
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
         } catch (PermissionDeniedException e) {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
+        } finally {
+        	broker.setUser(currentUser);
         }
     }
     
