@@ -867,9 +867,6 @@ public class NativeBroker extends DBBroker {
         	throw new PermissionDeniedException("Cannot move collection to itself");          
         if(collection.getURI().equals(XmldbURI.ROOT_COLLECTION_URI))
             throw new PermissionDeniedException("Cannot move the db root collection");
-        if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
-            throw new PermissionDeniedException("Insufficient privileges to move collection " +
-						collection.getURI());
         if(!destination.getPermissions().validate(getUser(), Permission.WRITE))
             throw new PermissionDeniedException("Insufficient privileges on target collection " +
 						destination.getURI());
@@ -877,9 +874,13 @@ public class NativeBroker extends DBBroker {
         XmldbURI uri = collection.getURI();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
-            Collection parent = openCollection(collection.getParentURI(), Lock.WRITE_LOCK);
+            XmldbURI parentName = collection.getParentURI();
+        	Collection parent = openCollection(parentName, Lock.WRITE_LOCK);
             if(parent != null) {
                 try {
+                    if(!parent.getPermissions().validate(getUser(), Permission.WRITE))
+                        throw new PermissionDeniedException("Insufficient privileges to move collection " +
+            						collection.getURI());
                 	//TODO : resolve URIs
                     parent.removeCollection(uri.lastSegment());
                 } finally {
@@ -926,7 +927,9 @@ public class NativeBroker extends DBBroker {
 	}    
     
     private void canRemoveCollection(Collection collection) throws PermissionDeniedException {
-        if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
+        XmldbURI parentName = collection.getParentURI();
+    	Collection parent = parentName == null ? collection : getCollection(parentName);
+        if(!parent.getPermissions().validate(getUser(), Permission.WRITE))
             throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
         final XmldbURI uri = collection.getURI();
         for(Iterator i = collection.collectionIterator(); i.hasNext();)
@@ -958,7 +961,11 @@ public class NativeBroker extends DBBroker {
         if(readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 
-        if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
+    	XmldbURI parentName = collection.getParentURI();
+        final boolean isRoot = parentName == null;
+    	Collection parent = isRoot ? collection : getCollection(parentName);
+    	
+        if(!parent.getPermissions().validate(getUser(), Permission.WRITE))
             throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
 
         try {
@@ -974,7 +981,6 @@ public class NativeBroker extends DBBroker {
 
             final XmldbURI uri = collection.getURI();
                 final String collName = uri.getRawCollectionPath();
-                final boolean isRoot = collection.getParentURI() == null;
 
                 // Notify the collection configuration manager
                 pool.getConfigurationManager().invalidateAll(uri);
