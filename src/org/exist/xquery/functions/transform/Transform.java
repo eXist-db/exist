@@ -639,11 +639,12 @@ public class Transform extends BasicFunction {
 		 */
 		public Source resolve(String href, String base)
 			throws TransformerException {
-			Collection collection = doc.getCollection();
 			String path;
             //TODO : use dedicated function in XmldbURI
 			if (href.startsWith("/"))
 				path = href;
+			else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
+				path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
 			else if (base == null || base.length() == 0) {
 				path = basePath + "/" + href;
 			}
@@ -665,8 +666,11 @@ public class Transform extends BasicFunction {
 				throw new TransformerException(e.getMessage(), e);
 			}
 			if(xslDoc == null) {
-				LOG.debug("Document " + href + " not found in collection " + collection.getURI());
-				return null;
+				LOG.debug("Document " + path + " not found");
+				Collection collection = context.getBroker().getCollection(uri);
+				if (collection !=null) {
+					
+				}
 			}
 			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
 			    throw new TransformerException("Insufficient privileges to read resource " + path);
