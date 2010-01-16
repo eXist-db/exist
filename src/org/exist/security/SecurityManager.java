@@ -79,11 +79,15 @@ public interface SecurityManager {
 
    boolean hasUser(String name);
 
-   void setUser(UserImpl user);
+   // TODO: this should be addUser
+   void setUser(User user);
 
    int getResourceDefaultPerms();
 
    int getCollectionDefaultPerms();
 	
+   public User authenticate(String username, Object credentials) throws AuthenticationException;;
+
    public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException;
+
 }

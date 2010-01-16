@@ -33,7 +33,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                The user to be added
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void addUser(UserImpl user) throws XMLDBException {
+	public void addUser(User user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(user.getName());
@@ -460,7 +460,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void updateUser(UserImpl user) throws XMLDBException {
+	public void updateUser(User user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(user.getName());
