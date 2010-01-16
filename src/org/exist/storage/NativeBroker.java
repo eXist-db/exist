@@ -2031,10 +2031,6 @@ public class NativeBroker extends DBBroker {
                     if(!oldDoc.getPermissions().validate(getUser(), Permission.UPDATE))
                         throw new PermissionDeniedException("Resource with same name exists in target " +
                                 "collection and update is denied");
-                    if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
-                        destination.removeBinaryResource(transaction, this, oldDoc);
-                    else
-                        destination.removeXMLResource(transaction, this, oldDoc.getFileURI());
                 } else {
                     if(!destination.getPermissions().validate(getUser(), Permission.WRITE))
                         throw new PermissionDeniedException("Insufficient privileges on target collection " +
