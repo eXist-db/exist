@@ -39,7 +39,7 @@ public class LocalUserManagementService implements UserManagementService {
 		this.user = user;
 	}
 
-	public void addUser(UserImpl u) throws XMLDBException {
+	public void addUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
@@ -634,7 +634,7 @@ public class LocalUserManagementService implements UserManagementService {
 		throws XMLDBException {
 	}
 
-	public void updateUser(UserImpl u) throws XMLDBException {
+	public void updateUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!(u.getName().equals(user.getName())
 			|| manager.hasAdminPrivileges(user)))

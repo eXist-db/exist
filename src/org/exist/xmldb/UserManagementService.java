@@ -154,7 +154,7 @@ public interface UserManagementService extends Service {
      *@param  user                The feature to be added to the User attribute
      *@exception  XMLDBException  Description of the Exception
      */
-    public void addUser( UserImpl user ) throws XMLDBException;
+    public void addUser( User user ) throws XMLDBException;
 
 
     /**
@@ -163,7 +163,7 @@ public interface UserManagementService extends Service {
      *@param  user                Description of the Parameter
      *@exception  XMLDBException  Description of the Exception
      */
-    public void updateUser( UserImpl user ) throws XMLDBException;
+    public void updateUser( User user ) throws XMLDBException;
 
 
     /**

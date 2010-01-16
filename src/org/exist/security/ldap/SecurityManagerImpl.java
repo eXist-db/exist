@@ -525,12 +525,18 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // TODO: this should be addUser
-   public void setUser(UserImpl user)
+   public void setUser(User user)
    {
    }
 
    @Override
    public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException {
+	   // TODO Auto-generated method stub
+	   return null;
+   }
+
+   @Override
+   public User authenticate(String username, Object credentials) throws AuthenticationException {
 	   // TODO Auto-generated method stub
 	   return null;
    }

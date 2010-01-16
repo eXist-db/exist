@@ -90,4 +90,18 @@ public interface User extends Principal {
 	public boolean isAuthenticated();
 
 	public Realm getRealm();
+
+	@Deprecated
+	public void setUID(int uid);
+
+	/**
+	 * Get the user's password
+	 * 
+	 * @return Description of the Return Value
+	 * @deprecated
+	 */
+	public String getPassword();
+
+	@Deprecated
+	public String getDigestPassword();
 }
