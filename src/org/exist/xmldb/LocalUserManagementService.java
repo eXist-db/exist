@@ -591,7 +591,7 @@ public class LocalUserManagementService implements UserManagementService {
 		return null;
 	}
 
-	public UserImpl getUser(String name) throws XMLDBException {
+	public User getUser(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		return manager.getUser(name);
 	}
