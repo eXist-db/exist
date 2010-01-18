@@ -21,14 +21,33 @@
  */
 package org.exist.validation;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+
 import org.junit.*;
+
 import static org.junit.Assert.*;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.security.UserImpl;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.io.ExistIOException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -46,13 +65,108 @@ public class ValidationFunctions_DTD_Test {
     
     private final static Logger logger = Logger.getLogger(ValidationFunctions_DTD_Test.class);
     
+    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
+    private static BrokerPool pool = null;
+    private static Configuration config = null;
+
     private static XPathQueryService service;
     private static Collection root = null;
     private static Database database = null;
 
     @BeforeClass
-    public static void init(){
+    public static void startup() {
         BasicConfigurator.configure();
+
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn txn = null;
+        try {
+            config = new Configuration();
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
+            BrokerPool.configure(1, 5, config);
+            pool = BrokerPool.getInstance();
+
+            broker = pool.get(UserImpl.DEFAULT);
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
+
+            /** create nessecary collections if they dont exist */
+
+            org.exist.collections.Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_DTD));
+            broker.saveCollection(txn, col);
+
+            col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_XSD));
+            broker.saveCollection(txn, col);
+
+            col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_TMP));
+            broker.saveCollection(txn, col);
+
+            transact.commit(txn);
+
+            try {
+                File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
+                InputStream fis = new FileInputStream(file);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                TestTools.copyStream(fis, baos);
+                fis.close();
+                
+                String sb = new String(baos.toByteArray());
+                sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
+                    "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+                InputStream is = new ByteArrayInputStream(sb.getBytes());
+                
+                // -----
+                
+                URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
+                URLConnection connection = url.openConnection();
+                OutputStream os = connection.getOutputStream();
+                
+                TestTools.copyStream(is, os);
+                
+                is.close();
+                os.close();
+                
+            } catch (ExistIOException ex) {
+                ex.getCause().printStackTrace();
+                logger.error(ex.getCause());
+                fail(ex.getCause().getMessage());
+                
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                logger.error(ex);
+                fail(ex.getMessage());
+            }
+
+            try{
+                config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
+
+                String hamlet = eXistHome + "/samples/validation/dtd";
+
+                TestTools.insertDocumentToURL(hamlet+"/hamlet_valid.xml",
+                    "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_valid.xml");
+
+                config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");
+            } catch (ExistIOException ex) {
+
+                ex.getCause().printStackTrace();
+                logger.error(ex.getCause());
+                fail(ex.getCause().getMessage());
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                logger.error(ex);
+                fail(ex.getMessage());
+            }
+        } catch(Exception e) {
+            if(transact != null && txn != null)
+                transact.abort(txn);
+
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if(broker != null)
+                pool.release(broker);
+        }
     }
 
     @Before
