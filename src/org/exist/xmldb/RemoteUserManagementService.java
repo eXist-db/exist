@@ -366,7 +366,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@return                     The user value
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public UserImpl getUser(String name) throws XMLDBException {
+	public User getUser(String name) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(name);

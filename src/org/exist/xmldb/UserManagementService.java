@@ -2,7 +2,6 @@
 package org.exist.xmldb;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
@@ -173,7 +172,7 @@ public interface UserManagementService extends Service {
      *@return                     The user value
      *@exception  XMLDBException  Description of the Exception
      */
-    public UserImpl getUser( String name ) throws XMLDBException;
+    public User getUser( String name ) throws XMLDBException;
 
 
     /**
