@@ -27,11 +27,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.io.StringReader;
-import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -145,14 +143,12 @@ public class RESTServiceTest extends TestCase {
         badCredentials = new String(enc.getCharArray());
     }
 
-    @SuppressWarnings("unchecked")
 	protected void setUp() {
         //Don't worry about closing the server : the shutdown hook will do the job
         try {
             if (server == null) {
                 server = new JettyStart();
                 System.out.println("Starting standalone server...");
-                String[] args = {};
                 server.run();
                 while (!server.isStarted()) {
                     Thread.sleep(1000);
