@@ -236,6 +236,8 @@ public class XSLTServlet extends HttpServlet {
                 stylesheet = f.toURI().toASCIIString();
             else {
                 if (f.isAbsolute()) {
+                	if (stylesheet.startsWith("//")) stylesheet = stylesheet.replaceFirst("//", "/");
+
                 	String url = getServletContext().getRealPath(stylesheet);
                 	if (url == null) {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found (URL: "+stylesheet+")");
