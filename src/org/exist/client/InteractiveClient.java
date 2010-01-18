@@ -818,7 +818,7 @@ public class InteractiveClient {
                 try {
                     UserManagementService mgtService = (UserManagementService) current
                             .getService("UserManagementService", "1.0");
-                    UserImpl user = mgtService.getUser(args[1]);
+                    User user = mgtService.getUser(args[1]);
                     if (user == null) {
                         System.out.println("no such user.");
                         return true;

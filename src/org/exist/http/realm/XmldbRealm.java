@@ -12,7 +12,7 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -37,7 +37,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 	
 	private UserManagementService service = null;
 
-	private UserImpl defaultUser = null;
+	private User defaultUser = null;
 	
 	/**
 	 * Descriptive information about this Realm implementation.
@@ -108,7 +108,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 	 * Return the Principal associated with the given user name.
 	 */
 	protected Principal getPrincipal(String username) {
-		UserImpl user = null;
+		User user = null;
 		
 		try {
 			user = service.getUser(username);
@@ -170,7 +170,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 			/* initialize security */
 			boolean admin = true;
 			if(admin){
-				UserImpl adminUser = service.getUser(SecurityManager.DBA_USER);
+				User adminUser = service.getUser(SecurityManager.DBA_USER);
 				if(adminUser.getPassword() == null){
 					adminUser.setPassword("admin");
 					log("Update Admin User on inital start");
