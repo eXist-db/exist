@@ -25,7 +25,7 @@ package org.exist.http;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class WebAppContext extends org.mortbay.jetty.webapp.WebAppContext {
+public class WebAppContext extends org.eclipse.jetty.webapp.WebAppContext {
 	
 	public String toString() {
 		return "eXist XML Database";

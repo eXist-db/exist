@@ -325,6 +325,11 @@
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>
+  
+  <login-config>
+<!--    <auth-method>FORM</auth-method> -->
+    <realm-name>eXist-db</realm-name>
+  </login-config>
 
   <!-- ==================================================================== -->
   <!-- Default MIME mappings                                                -->
