@@ -39,17 +39,17 @@ import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
 
-import org.mortbay.component.LifeCycle;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.ContextHandler;
-import org.mortbay.jetty.handler.HandlerCollection;
-import org.mortbay.util.MultiException;
-import org.mortbay.xml.XmlConfiguration;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.util.MultiException;
+import org.eclipse.jetty.xml.XmlConfiguration;
 
 import java.util.Timer;
 import java.util.TimerTask;
