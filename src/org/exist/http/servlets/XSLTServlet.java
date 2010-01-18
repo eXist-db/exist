@@ -41,6 +41,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -107,6 +108,13 @@ public class XSLTServlet extends HttpServlet {
         if (sourceAttrib != null) {
             Object sourceObj = request.getAttribute(sourceAttrib);
             if (sourceObj != null) {
+            	if (sourceObj instanceof ValueSequence) {
+					ValueSequence seq = (ValueSequence) sourceObj;
+					
+					if (seq.size() == 1)
+						sourceObj = seq.get(0);
+				}
+            	
                 if (sourceObj instanceof Item) {
                     inputNode = (Item) sourceObj;
                     if (!Type.subTypeOf(inputNode.getType(), Type.NODE))
@@ -228,14 +236,20 @@ public class XSLTServlet extends HttpServlet {
                 stylesheet = f.toURI().toASCIIString();
             else {
                 if (f.isAbsolute()) {
-                    f = new File(getServletContext().getRealPath(stylesheet));
+                	String url = getServletContext().getRealPath(stylesheet);
+                	if (url == null) {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found (URL: "+stylesheet+")");
+                        return null;
+                	}
+                		
+                    f = new File(url);
                     stylesheet = f.toURI().toASCIIString();
                 } else {
                     f = new File(getCurrentDir(request), stylesheet);
                     stylesheet = f.toURI().toASCIIString();
                 }
                 if (!f.canRead()) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found");
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found (URL: "+stylesheet+")");
                     return null;
                 }
             }
