@@ -35,26 +35,20 @@
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
   <!-- UNCOMMENT TO ACTIVATE
   <context-param>
-    <param-name>org.mortbay.jetty.servlet.SessionDomain</param-name>
+    <param-name>org.eclipse.jetty.servlet.SessionDomain</param-name>
     <param-value>127.0.0.1</param-value>
   </context-param>
 
   <context-param>
-    <param-name>org.mortbay.jetty.servlet.SessionPath</param-name>
+    <param-name>org.eclipse.jetty.servlet.SessionPath</param-name>
     <param-value>/</param-value>
   </context-param>
 
   <context-param>
-    <param-name>org.mortbay.jetty.servlet.MaxAge</param-name>
+    <param-name>org.eclipse.jetty.servlet.MaxAge</param-name>
     <param-value>-1</param-value>
   </context-param>
   -->
-
-  <context-param>
-    <param-name>org.mortbay.jetty.webapp.NoTLDJarPattern</param-name>
-    <param-value>start.jar|ant-.*\.jar|dojo-.*\.jar|jetty-.*\.jar|jsp-api-.*\.jar|junit-.*\.jar|servlet-api-.*\.jar|dnsns\.jar|rt\.jar|jsse\.jar|tools\.jar|sunpkcs11\.jar|sunjce_provider\.jar|xerces.*\.jar</param-value>
-  </context-param>
-            
 
 
   <!-- ==================================================================== -->
@@ -68,6 +62,10 @@
   <!--                                                                      -->
   <!--   dirAllowed       If true, directory listings are returned if no    -->
   <!--                    welcome file is found. Else 403 Forbidden.        -->
+  <!--                                                                      -->
+  <!--   welcomeServlets  If true, attempt to dispatch to welcome files     -->
+  <!--                    that are servlets, if no matching static          -->
+  <!--                    resources can be found.                           -->
   <!--                                                                      -->
   <!--   redirectWelcome  If true, redirect welcome file requests           -->
   <!--                    else use request dispatcher forwards              -->
@@ -108,7 +106,7 @@
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
   <servlet>
     <servlet-name>default</servlet-name>
-    <servlet-class>org.mortbay.jetty.servlet.DefaultServlet</servlet-class>
+    <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
     <init-param>
       <param-name>acceptRanges</param-name>
       <param-value>true</param-value>
@@ -117,6 +115,10 @@
       <param-name>dirAllowed</param-name>
       <param-value>true</param-value>
     </init-param>
+    <init-param>
+      <param-name>welcomeServlets</param-name>
+ 	    <param-value>false</param-value>
+ 	  </init-param>
     <init-param>
       <param-name>redirectWelcome</param-name>
       <param-value>false</param-value>
@@ -242,6 +244,7 @@
   <!--   If you get an error reporting that jikes can't use UTF-8 encoding, -->
   <!--   try setting the init parameter "javaEncoding" to "ISO-8859-1".     -->
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!--
   <servlet id="jsp">
     <servlet-name>jsp</servlet-name>
     <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
@@ -257,12 +260,13 @@
         <param-name>xpoweredBy</param-name>
         <param-value>false</param-value>
     </init-param>
-    <!--  
+    <  
     <init-param>
         <param-name>classpath</param-name>
         <param-value>?</param-value>
     </init-param>
     -->
+    <!--
     <load-on-startup>0</load-on-startup>
   </servlet>
 
@@ -277,7 +281,7 @@
     <url-pattern>*.JSPX</url-pattern>
     <url-pattern>*.XSP</url-pattern>
   </servlet-mapping>
-  
+    -->  
   <!-- ==================================================================== -->
   <!-- Dynamic Servlet Invoker.                                             -->
   <!-- This servlet invokes anonymous servlets that have not been defined   -->
@@ -300,7 +304,7 @@
   <!-- Uncomment for dynamic invocation
   <servlet>
     <servlet-name>invoker</servlet-name>
-    <servlet-class>org.mortbay.jetty.servlet.Invoker</servlet-class>
+    <servlet-class>org.eclipse.jetty.servlet.Invoker</servlet-class>
     <init-param>
       <param-name>verbose</param-name>
       <param-value>false</param-value>
@@ -325,16 +329,11 @@
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>
-  
-  <login-config>
-<!--    <auth-method>FORM</auth-method> -->
-    <realm-name>eXist-db</realm-name>
-  </login-config>
 
   <!-- ==================================================================== -->
   <!-- Default MIME mappings                                                -->
   <!-- The default MIME mappings are provided by the mime.properties        -->
-  <!-- resource in the org.mortbay.jetty.jar file.  Additional or modified  -->
+  <!-- resource in the org.eclipse.jetty.server.jar file.  Additional or modified  -->
   <!-- mappings may be specified here                                       -->
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
   <!-- UNCOMMENT TO ACTIVATE
