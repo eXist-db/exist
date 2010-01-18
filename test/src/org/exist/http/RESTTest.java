@@ -17,7 +17,6 @@ public abstract class RESTTest {
 	private static JettyStart server = null;
 	protected static HttpClient client = new HttpClient();
 
-	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void startupServer() {
 		try {
