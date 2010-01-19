@@ -491,17 +491,24 @@
             <para>The xquery task executes an XQuery expression. This task is
             primarily intended for transformations. The output of the script is
             discarded when no destination file or output property is specified.</para>
-            <para>The XQuery may either be specified through the query attribute
-            or within the text content of the element. You can also use the
-            loadfile task to load the query from a file as in the following example:</para>
+            <para>The XQuery may either be specified through an URI, the query attribute
+            or within the text content of the element. External variables 
+	    declared in the XQuery can be set via one or more nested
+	    &lt;variable&gt; elements. You can also use the loadfile task to load
+	    the query from a file as in the following example:</para>
             <example>
-                <title>Process an XQuery</title>
+                <title>Process an XQuery in file</title>
                 <programlisting>
 <markup><![CDATA[<loadfile property="xquery" srcFile="wzb.xq"/>
 <xdb:xquery  xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" query="${xquery}"/>]]></markup></programlisting>
+    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" query="${xquery}"
+    user="guest" password="guest-passwd">
+      <variable name="alpha" value="aaa-alep" />
+</xdb:xquery>
+]]></markup></programlisting>
             </example>
-            <para>The query task accepts the following attributes:</para>
+            <para>The XQuery task accepts the following attributes in 
+	    addition to the common ones:</para>
             <variablelist>
                 <varlistentry>
                     <term>query</term>
