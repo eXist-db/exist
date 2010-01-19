@@ -79,6 +79,12 @@ import org.w3c.dom.Node;
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
+
+/* TODO according to RFC 821, SMTP commands must end with <CR><LF>,
+Java uses platform native end-of-line characters for .println(...) functions and so
+this function may have issues on non-Windows platforms
+*/
+
 public class SendEmailFunction extends BasicFunction
 {
     protected static final Logger logger = Logger.getLogger(SendEmailFunction.class);
