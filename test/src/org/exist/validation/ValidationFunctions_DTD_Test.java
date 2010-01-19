@@ -37,7 +37,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.security.UserImpl;
+import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
@@ -86,7 +86,7 @@ public class ValidationFunctions_DTD_Test {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
 
-            broker = pool.get(UserImpl.DEFAULT);
+            broker = pool.get(SecurityManager.GUEST);
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 
@@ -103,60 +103,6 @@ public class ValidationFunctions_DTD_Test {
 
             transact.commit(txn);
 
-            try {
-                File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
-                InputStream fis = new FileInputStream(file);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                TestTools.copyStream(fis, baos);
-                fis.close();
-                
-                String sb = new String(baos.toByteArray());
-                sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
-                    "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
-                InputStream is = new ByteArrayInputStream(sb.getBytes());
-                
-                // -----
-                
-                URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
-                URLConnection connection = url.openConnection();
-                OutputStream os = connection.getOutputStream();
-                
-                TestTools.copyStream(is, os);
-                
-                is.close();
-                os.close();
-                
-            } catch (ExistIOException ex) {
-                ex.getCause().printStackTrace();
-                logger.error(ex.getCause());
-                fail(ex.getCause().getMessage());
-                
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                logger.error(ex);
-                fail(ex.getMessage());
-            }
-
-            try{
-                config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-
-                String hamlet = eXistHome + "/samples/validation/dtd";
-
-                TestTools.insertDocumentToURL(hamlet+"/hamlet_valid.xml",
-                    "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_valid.xml");
-
-                config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");
-            } catch (ExistIOException ex) {
-
-                ex.getCause().printStackTrace();
-                logger.error(ex.getCause());
-                fail(ex.getCause().getMessage());
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                logger.error(ex);
-                fail(ex.getMessage());
-            }
         } catch(Exception e) {
             if(transact != null && txn != null)
                 transact.abort(txn);
@@ -180,6 +126,68 @@ public class ValidationFunctions_DTD_Test {
         DatabaseManager.registerDatabase(database);
         root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
         service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
+
+        try {
+            File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
+            InputStream fis = new FileInputStream(file);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            TestTools.copyStream(fis, baos);
+            fis.close();
+            
+            String sb = new String(baos.toByteArray());
+            sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
+                "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+            InputStream is = new ByteArrayInputStream(sb.getBytes());
+            
+            // -----
+            
+            URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
+            URLConnection connection = url.openConnection();
+            OutputStream os = connection.getOutputStream();
+            
+            TestTools.copyStream(is, os);
+            
+            is.close();
+            os.close();
+            
+        } catch (ExistIOException ex) {
+            ex.getCause().printStackTrace();
+            logger.error(ex.getCause());
+            fail(ex.getCause().getMessage());
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.error(ex);
+            fail(ex.getMessage());
+        }
+
+        try{
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
+
+            String hamlet = eXistHome + "/samples/validation/dtd";
+
+            TestTools.insertDocumentToURL(hamlet+"/hamlet.dtd",
+                "xmldb:exist://"+TestTools.VALIDATION_DTD+"/hamlet.dtd");
+            TestTools.insertDocumentToURL(hamlet+"/catalog.xml",
+                "xmldb:exist://"+TestTools.VALIDATION_DTD+"/catalog.xml");
+
+            TestTools.insertDocumentToURL(hamlet+"/hamlet_valid.xml",
+                "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_valid.xml");
+            TestTools.insertDocumentToURL(hamlet+"/hamlet_invalid.xml",
+                "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_invalid.xml");
+
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");
+        } catch (ExistIOException ex) {
+
+            ex.getCause().printStackTrace();
+            logger.error(ex.getCause());
+            fail(ex.getCause().getMessage());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            logger.error(ex);
+            fail(ex.getMessage());
+        }
     }
     
     // ===========================================================
