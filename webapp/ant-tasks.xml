@@ -6,7 +6,7 @@
         
         <productname>Open Source Native XML Database</productname>
         <title>Ant Tasks</title>
-        <date>September 2009</date>
+        <date>January 2010</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -59,7 +59,7 @@
       <para>eXist provides a library for the
         <ulink url="http://ant.apache.org">Ant</ulink> build tool to automate common
         tasks like backup/restore or importing a bunch of files. To use this library
-        you need at least Ant 1.6, which is included in the eXist distribution (if you
+        you need at least Ant 1.6. Ant 1.7 is included in the eXist distribution (if you
         installed the eXist source code).
       </para>
 
@@ -428,7 +428,7 @@
              The output of the script is discarded, except when a destination file
              or output property is specified.
            </para>
-           <para>The XQuery may either be specified through the query attribute
+           <para>The XPath may either be specified through the query attribute
              or within the text content of the element. A optional namespace may be used
              for the query.
            </para>
