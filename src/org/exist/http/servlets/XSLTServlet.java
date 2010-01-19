@@ -58,9 +58,12 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -69,6 +72,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.zip.GZIPInputStream;
 
 public class XSLTServlet extends HttpServlet {
 
@@ -198,7 +202,20 @@ public class XSLTServlet extends HttpServlet {
                         SAXToReceiver saxreceiver = new SAXToReceiver(receiver);
                         XMLReader reader = pool.getParserPool().borrowXMLReader();
                         reader.setContentHandler(saxreceiver);
-                        reader.parse(new InputSource(request.getInputStream()));
+
+                    	//Handle gziped input stream
+                    	InputStream stream;
+                        
+                    	InputStream inStream = new BufferedInputStream(request.getInputStream());;
+                    	inStream.mark(10);
+                        try {
+                        	stream = new GZIPInputStream(inStream);
+                        } catch (IOException e) {
+                        	inStream.reset();
+                        	stream = inStream;
+						}
+
+                        reader.parse(new InputSource(stream));
                     }
                 } catch (SAXException e) {
                     throw new ServletException("SAX exception while transforming node: " + e.getMessage(), e);
