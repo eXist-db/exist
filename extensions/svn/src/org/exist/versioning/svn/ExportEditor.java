@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -17,11 +17,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.versioning.svn;
-
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -118,11 +116,8 @@ public class ExportEditor implements ISVNEditor {
 
 		try {
 			pool = BrokerPool.getInstance();
-			assertNotNull(pool);
 			broker = pool.get(SecurityManager.SYSTEM_USER);
-			assertNotNull(broker);
 			transact = pool.getTransactionManager();
-			assertNotNull(transact);
 
 			myRootDirectory = broker.getCollection(rootPath);
 
