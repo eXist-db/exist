@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0"?>
-<modsCollection xmlns="http://www.loc.gov/mods/v3">
+<modsCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.loc.gov/mods/v3 ../../webapp/WEB-INF/entities/mods-3-3.xsd"
+ xmlns="http://www.loc.gov/mods/v3">
     <mods>
         <titleInfo>
             <title>XRX: XQueries in eXist</title>

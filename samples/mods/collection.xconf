@@ -5,12 +5,13 @@
     -->
     <index xmlns:mods="http://www.loc.gov/mods/v3">
         <fulltext default="none" attributes="no">
-			<create qname="mods:mods"/>
-			<create qname="mods:titleInfo"/>
-			<create qname="mods:name"/>
-			<create qname="mods:abstract"/>
-			<create qname="mods:subject"/>
-			<create qname="mods:dateIssued"/>
         </fulltext>
+        <lucene>
+            <text qname="mods:mods"/>
+            <text qname="mods:titleInfo"/>
+            <text qname="mods:name"/>
+            <text qname="mods:abstract"/>
+            <text qname="mods:subject"/>
+        </lucene>
     </index>
 </collection>
