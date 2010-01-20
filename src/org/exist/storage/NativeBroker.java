@@ -1893,7 +1893,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) {
+    public void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) throws TerminatedException {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
@@ -1909,14 +1909,12 @@ public class NativeBroker extends DBBroker {
             LOG.warn("IOException while reading document data", e);
         } catch (BTreeException e) {
             LOG.warn("Exception while reading document data", e);
-        } catch (TerminatedException e) {
-            LOG.warn("Exception while reading document data", e);
         } finally {
             lock.release(Lock.READ_LOCK);
         }
     }
 
-    public void getCollectionsFailsafe(BTreeCallback callback) {
+    public void getCollectionsFailsafe(BTreeCallback callback) throws TerminatedException {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
@@ -1928,8 +1926,6 @@ public class NativeBroker extends DBBroker {
         } catch (IOException e) {
             LOG.warn("IOException while reading document data", e);
         } catch (BTreeException e) {
-            LOG.warn("Exception while reading document data", e);
-        } catch (TerminatedException e) {
             LOG.warn("Exception while reading document data", e);
         } finally {
             lock.release(Lock.READ_LOCK);

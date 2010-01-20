@@ -34,6 +34,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.TerminatedException;
 
 public class ExportMain {
 
@@ -137,12 +138,15 @@ public class ExportMain {
                 File dir = new File(exportTarget);
                 if (!dir.exists())
                     dir.mkdirs();
-                SystemExport sysexport = new SystemExport(broker, new Callback(), direct);
+                SystemExport sysexport = new SystemExport(broker, new Callback(), null, direct);
                 sysexport.export(exportTarget, incremental, true, errors);
             }
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
             retval = 2;
+        } catch (TerminatedException e) {
+            System.err.println("WARN: Export was terminated by db.");
+            retval = 3;
         } finally {
             pool.release(broker);
             BrokerPool.stopAll(false);
