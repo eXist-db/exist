@@ -54,12 +54,13 @@ public class ProcessMonitor {
     public final static String ACTION_REINDEX_COLLECTION = "reindex collection";
     public final static String ACTION_COPY_COLLECTION = "copy collection";
     public final static String ACTION_MOVE_COLLECTION = "move collection";
+    public final static String ACTION_BACKUP = "backup";
 
 	private final static Logger LOG = Logger.getLogger(ProcessMonitor.class);
 	
 	private Set runningQueries = new HashSet();
 
-    private Map processes = new HashMap();
+    private Map<Thread, JobInfo> processes = new HashMap<Thread, JobInfo>();
 
 	public ProcessMonitor() {
 		super();
@@ -70,7 +71,12 @@ public class ProcessMonitor {
     }
 
     public void startJob(String action, Object addInfo) {
-        JobInfo info = new JobInfo(action);
+        startJob(action, addInfo, null);
+    }
+
+    //TODO: addInfo = XmldbURI ? -shabanovd
+    public void startJob(String action, Object addInfo, Monitor monitor) {
+        JobInfo info = new JobInfo(action, monitor);
         info.setAddInfo(addInfo);
         synchronized (processes) {
             processes.put(info.getThread(), info);
@@ -91,6 +97,12 @@ public class ProcessMonitor {
                 jobs[j] = (JobInfo) i.next();
             }
             return jobs;
+        }
+    }
+
+    public void stopRunningJobs() {
+        for (JobInfo job : processes.values()) {
+            job.stop();
         }
     }
 
@@ -129,17 +141,33 @@ public class ProcessMonitor {
         }
 	}
 
+    public final static class Monitor {
+
+        boolean stop = false;
+
+        public boolean proceed() {
+            return !stop;
+        }
+
+        public void stop() {
+            LOG.debug("Terminating job");
+            this.stop = true;
+        }
+    }
+
     public final static class JobInfo {
 
         private Thread thread;
 		private String action;
 		private long startTime;
         private Object addInfo = null;
+        private Monitor monitor = null;
 
-		public JobInfo(String action) {
+		public JobInfo(String action, Monitor monitor) {
             this.thread = Thread.currentThread();
 			this.action = action;
-			this.startTime = System.currentTimeMillis();
+            this.monitor = monitor;
+            this.startTime = System.currentTimeMillis();
 		}
 
         public String getAction() {
@@ -160,6 +188,12 @@ public class ProcessMonitor {
 
         public Object getAddInfo() {
             return addInfo;
+        }
+
+        public void stop() {
+            if (monitor != null) {
+                monitor.stop();
+            }
         }
 	}
 }

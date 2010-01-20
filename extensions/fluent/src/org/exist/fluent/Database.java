@@ -195,6 +195,8 @@ public class Database {
 				} finally {
 					pool.exitServiceMode(SecurityManager.SYSTEM_USER);
 				}
+            } catch (TerminatedException e) {
+                throw new DatabaseException(e);
 			} catch (PermissionDeniedException e) {
 				throw new DatabaseException(e);
 			}

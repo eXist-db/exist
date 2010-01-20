@@ -39,6 +39,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 
@@ -197,9 +198,9 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs);
 
-    public abstract void getResourcesFailsafe(BTreeCallback callback, boolean fullScan);
+    public abstract void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) throws TerminatedException;
 
-    public abstract void getCollectionsFailsafe(BTreeCallback callback);
+    public abstract void getCollectionsFailsafe(BTreeCallback callback) throws TerminatedException;
 
     /**
 	 * Returns the database collection identified by the specified path. The
