@@ -15,6 +15,9 @@ function repeatCallback() {
         multiple: false,
         matchContains: false
     });
+    $('select[name ^= operator]', this).each(function () {
+        $(this).css('display', '');
+    });
 }
 
 function resultsLoaded(options) {
