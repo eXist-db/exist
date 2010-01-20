@@ -203,8 +203,16 @@ public class IndexSpec {
      * @return The namespaces map.
      */
     private Map<String, String> getNamespaceMap(Element elem) {
+        Node parent = elem.getParentNode();
+        if (parent != null)
+            elem = (Element) parent;
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("xml", Namespaces.XML_NS);
+        getNamespaceMap(elem, map);
+        return map;
+    }
+
+    private void getNamespaceMap(Element elem, Map<String, String> map) {
         NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
@@ -212,9 +220,14 @@ public class IndexSpec {
                 map.put(attr.getLocalName(), attr.getValue());
             }
         }
-        return map;
+        Node child = elem.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE)
+                getNamespaceMap((Element) child, map);
+            child = child.getNextSibling();
+        }
     }
-    
+
     public String toString() {
 		StringBuilder result = new StringBuilder();
 		if (ftSpec != null)
