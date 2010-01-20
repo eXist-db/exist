@@ -22,6 +22,7 @@
 package org.exist.security.internal;
 
 import org.exist.security.Credential;
+import org.exist.security.MessageDigester;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -32,7 +33,16 @@ public class Password implements Credential {
 	private String pw;
 	
 	public Password(String password) {
-		this.pw = password;
+		if (password == null)
+			this.pw = null;
+		else if (password.startsWith("{MD5}"))
+			this.pw = password.substring(5);
+		else
+			this.pw = crypt(password);
+	}
+	
+	private String crypt(String str) {
+		return MessageDigester.md5(str, true);
 	}
 
     public boolean check(Object credentials) {
@@ -59,7 +69,7 @@ public class Password implements Credential {
 		}
     	
     	if (obj instanceof String) {
-			return ((String) obj).equals(pw);
+			return (crypt((String) obj)).equals(pw);
 		}
     	
     	return false;
