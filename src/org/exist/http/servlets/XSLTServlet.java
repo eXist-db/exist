@@ -292,7 +292,7 @@ public class XSLTServlet extends HttpServlet {
         String path = request.getPathTranslated();
         if (path == null) {
             path = request.getRequestURI().substring(request.getContextPath().length());
-            int p = path.lastIndexOf(';');
+            int p = path.lastIndexOf('/');
             if(p != Constants.STRING_NOT_FOUND)
                 path = path.substring(0, p);
             path = getServletContext().getRealPath(path);
