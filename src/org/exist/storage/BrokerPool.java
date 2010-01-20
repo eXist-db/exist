@@ -1506,7 +1506,7 @@ public class BrokerPool extends Observable {
         LOG.info("Database is shutting down ...");
 
         status = SHUTDOWN;
-
+        processMonitor.stopRunningJobs();
         java.util.concurrent.locks.Lock lock = transactionManager.getLock();
         try {
             // wait for currently running system tasks before we shutdown
@@ -1518,7 +1518,7 @@ public class BrokerPool extends Observable {
                 // release transaction log to allow remaining brokers to complete
                 // their job
                 lock.unlock();
-                
+
                 notificationService.debug();
 
                 //Notify all running tasks that we are shutting down

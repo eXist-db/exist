@@ -41,6 +41,7 @@ import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.management.TaskStatus;
 import org.exist.util.Configuration;
+import org.exist.xquery.TerminatedException;
 
 public class ConsistencyCheckTask implements SystemTask {
 
@@ -55,6 +56,8 @@ public class ConsistencyCheckTask implements SystemTask {
 
     private File lastExportedBackup = null;
 
+    private ProcessMonitor.Monitor monitor = new ProcessMonitor.Monitor();
+    
     public final static String OUTPUT_PROP_NAME = "output";
     public final static String BACKUP_PROP_NAME = "backup";
     public final static String INCREMENTAL_PROP_NAME = "incremental";
@@ -102,6 +105,9 @@ public class ConsistencyCheckTask implements SystemTask {
             return;
         }
         long start = System.currentTimeMillis();
+
+        brokerPool.getProcessMonitor().startJob(ProcessMonitor.ACTION_BACKUP, null, monitor);
+//        long start = System.currentTimeMillis();
         PrintWriter report = null;
         try {
             boolean doBackup = createBackup;
@@ -134,16 +140,19 @@ public class ConsistencyCheckTask implements SystemTask {
             if (doBackup) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Starting backup...");
-                SystemExport sysexport = new SystemExport(broker, null, false);
+                SystemExport sysexport = new SystemExport(broker, null, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, true, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.RUNNING_BACKUP));
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled() && lastExportedBackup != null)
                     LOG.debug("Created backup to file: " + lastExportedBackup.getAbsolutePath());
             }
+        } catch (TerminatedException e) {
+            throw new EXistException(e.getMessage(), e);
         } finally {
             if (report != null)
                 report.close();
             agentInstance.changeStatus(brokerPool, endStatus);
+            brokerPool.getProcessMonitor().endJob();
         }
     }
 
@@ -194,7 +203,9 @@ public class ConsistencyCheckTask implements SystemTask {
         public void startDocument(String path) {
         }
 
-        public void startDocument(String name, int current, int count) {
+        public void startDocument(String name, int current, int count) throws TerminatedException {
+            if (!monitor.proceed())
+                throw new TerminatedException("consistency check terminated");
             if ((current % 1000 == 0) || (current == count)) {
                 log.write("  DOCUMENT: ");
                 log.write(Integer.valueOf(current).toString());
@@ -205,7 +216,9 @@ public class ConsistencyCheckTask implements SystemTask {
             }
         }
 
-        public void startCollection(String path) {
+        public void startCollection(String path) throws TerminatedException {
+            if (!monitor.proceed())
+                throw new TerminatedException("consistency check terminated");
             if (errorFound)
                 log.write("----------------------------------------------\n");
             errorFound = false;
