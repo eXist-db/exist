@@ -89,7 +89,7 @@ public class ConsistencyCheck {
      * @return a list of {@link ErrorReport} objects or an empty list if no
      *         errors were found
      */
-    public List<ErrorReport> checkAll(ProgressCallback callback) {
+    public List<ErrorReport> checkAll(ProgressCallback callback) throws TerminatedException {
         List<ErrorReport> errors = checkCollectionTree(callback);
         checkDocuments(callback, errors);
         return errors;
@@ -104,7 +104,7 @@ public class ConsistencyCheck {
      * @return a list of {@link ErrorReport} instances describing the errors
      *         found
      */
-    public List<ErrorReport> checkCollectionTree(ProgressCallback callback) {
+    public List<ErrorReport> checkCollectionTree(ProgressCallback callback) throws TerminatedException {
         UserImpl.enablePasswordChecks(false);
         try {
             List<ErrorReport> errors = new ArrayList<ErrorReport>();
@@ -116,7 +116,7 @@ public class ConsistencyCheck {
         }
     }
 
-    private void checkCollection(Collection collection, List<ErrorReport> errors, ProgressCallback callback) {
+    private void checkCollection(Collection collection, List<ErrorReport> errors, ProgressCallback callback) throws TerminatedException {
         XmldbURI uri = collection.getURI();
         callback.startCollection(uri.toString());
 
@@ -146,7 +146,7 @@ public class ConsistencyCheck {
         }
     }
 
-    public int getDocumentCount() {
+    public int getDocumentCount() throws TerminatedException {
         if (documentCount == -1) {
             UserImpl.enablePasswordChecks(false);
             try {
@@ -169,7 +169,7 @@ public class ConsistencyCheck {
      * @return a list of {@link ErrorReport} instances describing the errors
      *         found
      */
-    public List<ErrorReport> checkDocuments(ProgressCallback progress) {
+    public List<ErrorReport> checkDocuments(ProgressCallback progress) throws TerminatedException {
         List<ErrorReport> errors = new ArrayList<ErrorReport>();
         checkDocuments(progress, errors);
         return errors;
@@ -185,7 +185,7 @@ public class ConsistencyCheck {
      *            error reports will be added to this list, using instances of
      *            class {@link ErrorReport}.
      */
-    public void checkDocuments(ProgressCallback progress, List<ErrorReport> errorList) {
+    public void checkDocuments(ProgressCallback progress, List<ErrorReport> errorList) throws TerminatedException {
         UserImpl.enablePasswordChecks(false);
         try {
             DocumentCallback cb = new DocumentCallback(errorList, progress, true);
@@ -359,6 +359,8 @@ public class ConsistencyCheck {
                         }
                     }
                 }
+            } catch (TerminatedException e) {
+                throw e;
             } catch (Exception e) {
                 e.printStackTrace();
                 org.exist.backup.ErrorReport.ResourceError error = new org.exist.backup.ErrorReport.ResourceError(
@@ -375,9 +377,9 @@ public class ConsistencyCheck {
 
     public interface ProgressCallback {
 
-        public void startDocument(String name, int current, int count);
+        public void startDocument(String name, int current, int count) throws TerminatedException;
 
-        public void startCollection(String path);
+        public void startCollection(String path) throws TerminatedException;
 
         public void error(org.exist.backup.ErrorReport error);
     }

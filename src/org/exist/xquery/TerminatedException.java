@@ -30,7 +30,11 @@ public class TerminatedException extends XPathException {
 
 	private static final long serialVersionUID = 6055587317214098592L;
 
-	public TerminatedException(int line, int column, String message) {
+    public TerminatedException(String message) {
+        super(message);
+    }
+
+    public TerminatedException(int line, int column, String message) {
         super(line, column, message);
     }
 

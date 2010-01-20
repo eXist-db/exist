@@ -31,6 +31,7 @@ import org.exist.security.UserImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.ProcessMonitor;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.CollectionStore;
@@ -113,10 +114,12 @@ public class SystemExport {
     private DBBroker broker;
     private StatusCallback callback = null;
     private boolean directAccess = false;
+    private ProcessMonitor.Monitor monitor = null;
 
-    public SystemExport(DBBroker broker, StatusCallback callback, boolean direct) {
+    public SystemExport(DBBroker broker, StatusCallback callback, ProcessMonitor.Monitor monitor, boolean direct) {
         this.broker = broker;
         this.callback = callback;
+        this.monitor = monitor;
         this.directAccess = direct;
     }
 
@@ -137,6 +140,7 @@ public class SystemExport {
      *            in {@link ConsistencyCheck}.
      */
     public File export(String targetDir, boolean incremental, int maxInc, boolean zip, List<ErrorReport> errorList) {
+        File backupFile = null;
         try {
             BackupDirectory directory = new BackupDirectory(targetDir);
             BackupDescriptor prevBackup = null;
@@ -176,7 +180,7 @@ public class SystemExport {
             } catch (XPathException e) {
             }
 
-            File backupFile = directory.createBackup(incremental && prevBackup != null, zip);
+            backupFile = directory.createBackup(incremental && prevBackup != null, zip);
             BackupWriter output;
             if (zip)
                 output = new ZipWriter(backupFile, DBBroker.ROOT_COLLECTION);
@@ -194,6 +198,10 @@ public class SystemExport {
             return backupFile;
         } catch (IOException e) {
             reportError("A write error occurred while exporting data: '" + e.getMessage() + "'. Aborting export.", e);
+            return null;
+        } catch (TerminatedException e) {
+            if (backupFile != null)
+                backupFile.delete();
             return null;
         }
     }
@@ -306,10 +314,11 @@ public class SystemExport {
      * @throws IOException
      * @throws SAXException
      */
-    private void export(Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs) throws IOException, SAXException {
+    private void export(Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs) throws IOException, SAXException, TerminatedException {
         if (callback != null)
             callback.startCollection(current.getURI().toString());
-
+        if (monitor != null && !monitor.proceed())
+            throw new TerminatedException("system export terminated by db");
         if (!current.getURI().equalsInternal(XmldbURI.ROOT_COLLECTION_URI)) {
             output.newCollection(Backup.encode(URIUtils.urlDecodeUtf8(current.getURI())));
         }
@@ -393,10 +402,11 @@ public class SystemExport {
     }
 
     private void exportDocument(BackupWriter output, Date date, BackupDescriptor prevBackup, SAXSerializer serializer,
-            int docsCount, int count, DocumentImpl doc) throws IOException, SAXException {
+            int docsCount, int count, DocumentImpl doc) throws IOException, SAXException, TerminatedException {
         if (callback != null)
             callback.startDocument(doc.getFileURI().toString(), count, docsCount);
-
+        if (monitor != null && !monitor.proceed())
+            throw new TerminatedException("system export terminated by db");
         boolean needsBackup = prevBackup == null || date.getTime() < doc.getMetadata().getLastModified();
 
         if (needsBackup) {
@@ -564,7 +574,7 @@ public class SystemExport {
         return file;
     }
 
-    public int getCollectionCount() {
+    public int getCollectionCount() throws TerminatedException {
         if (collectionCount == -1) {
             UserImpl.enablePasswordChecks(false);
             try {
@@ -580,9 +590,9 @@ public class SystemExport {
 
     public static interface StatusCallback {
 
-        public void startCollection(String path);
+        public void startCollection(String path) throws TerminatedException;
 
-        public void startDocument(String name, int current, int count);
+        public void startDocument(String name, int current, int count) throws TerminatedException;
 
         public void error(String message, Throwable exception);
     }
@@ -634,6 +644,10 @@ public class SystemExport {
                     }
                     export(collection, writer, date, bd, errors, docs);
                 }
+            } catch (TerminatedException e) {
+                reportError("Terminating system export upon request", e);
+                // rethrow
+                throw e;
             } catch (Exception e) {
                 reportError("Caught exception while scanning collections: " + uri, e);
             }

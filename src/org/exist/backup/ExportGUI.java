@@ -25,6 +25,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.xquery.TerminatedException;
 
 /**
  * 
@@ -395,7 +396,7 @@ public class ExportGUI extends javax.swing.JFrame {
             displayMessage("Starting export ...");
             selected = incrementalBtn.getSelectedObjects();
             boolean incremental = selected != null && selected[0] != null;
-            SystemExport sysexport = new SystemExport(broker, callback, directAccess);
+            SystemExport sysexport = new SystemExport(broker, callback, null, directAccess);
             File file = sysexport.export(exportTarget, incremental, true, errorList);
 
             displayMessage("Export to " + file.getAbsolutePath() + " completed successfully.");
@@ -465,6 +466,8 @@ public class ExportGUI extends javax.swing.JFrame {
             return errors;
         } catch (EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+        } catch (TerminatedException e) {
+            System.err.println("WARN: Check terminated by db.");
         } finally {
             pool.release(broker);
             progress.setValue(0);
