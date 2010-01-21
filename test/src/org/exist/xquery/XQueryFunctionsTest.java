@@ -1,5 +1,23 @@
 /*
- * Created on 17.03.2005 - $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2010 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery;
 
@@ -25,6 +43,17 @@ import org.xmldb.api.modules.XPathQueryService;
 
 /** Tests for various standard XQuery functions
  * @author jens
+ * @author perig
+ * @author wolf
+ * @author adam
+ * @author dannes
+ * @author dmitriy
+ * @author ljo
+ * @author chrisdutz
+ * @author harrah
+ * @author gvalentino
+ * @author jmvanel
+
  */
 public class XQueryFunctionsTest extends TestCase {
 
@@ -36,6 +65,7 @@ public class XQueryFunctionsTest extends TestCase {
 	private XPathQueryService service;
 	private Collection root = null;
 	private Database database = null;
+    private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
 	
 	public static void main(String[] args) throws XPathException {
 		TestRunner.run(XQueryFunctionsTest.class);
@@ -955,10 +985,12 @@ public class XQueryFunctionsTest extends TestCase {
 
     //ensure the test collection is removed and call collection-available,
     //which should return false, no exception thrown
-    public void testCollectionExists1() {
+    public void testCollectionAvailable1() {
     	//remove the test collection if it already exists
-    	String collectionName = "testCollectionExists";
+    	String collectionName = "testCollectionAvailable";
     	String collectionPath = DBBroker.ROOT_COLLECTION + "/" + collectionName;
+    	String collectionURI = ROOT_COLLECTION_URI + "/" + collectionName;
+
     	try
 		{
 			Collection testCollection = root.getChildCollection(collectionName);
@@ -975,16 +1007,17 @@ public class XQueryFunctionsTest extends TestCase {
 			fail(e.getMessage());
 		}
 
-		runCollectionExistsTest(collectionPath, false);
+		runCollectionAvailableTest(collectionPath, false);
+		runCollectionAvailableTest(collectionURI, false);
     }
     //create a collection and call collection-available, which should return true,
     //no exception thrown
-    public void testCollectionExists2() {
+    public void testCollectionAvailable2() {
     	//add the test collection
-    	String collectionName = "testCollectionExists";
+    	String collectionName = "testCollectionAvailable";
     	String collectionPath = DBBroker.ROOT_COLLECTION + "/" + collectionName;
-    	try
-		{
+    	String collectionURI = ROOT_COLLECTION_URI + "/" + collectionName;
+    	try {
     		Collection testCollection = root.getChildCollection(collectionName);
 			if(testCollection == null)
 			{
@@ -996,14 +1029,15 @@ public class XQueryFunctionsTest extends TestCase {
 			xe.printStackTrace();
 			fail(xe.getMessage());
 		}
-		runCollectionExistsTest(collectionPath, true);
+		runCollectionAvailableTest(collectionPath, true);
+		runCollectionAvailableTest(collectionURI, true);
     }
         
-    private void runCollectionExistsTest(String collectionPath, boolean expectedResult) {
+    private void runCollectionAvailableTest(String collectionPath, boolean expectedResult) {
     	//collection-available should not throw an exception and should return expectedResult
-    	String importXMLDB = "import module namespace xmldb=\"http://exist-db.org/xquery/xmldb\";";
-    	String collectionExists = "xmldb:collection-available('" + collectionPath + "')";
-    	String query = importXMLDB + collectionExists;
+    	String importXMLDB = "import module namespace xdb=\"http://exist-db.org/xquery/xmldb\";\n";
+    	String collectionAvailable = "xdb:collection-available('" + collectionPath + "')";
+    	String query = importXMLDB + collectionAvailable;
     	try {
     		ResourceSet result = service.query(query);
     		assertNotNull(result);
@@ -1013,7 +1047,7 @@ public class XQueryFunctionsTest extends TestCase {
     		assertNotNull(content);
     		assertEquals(expectedResult, Boolean.valueOf(content).booleanValue());
     	} catch(XMLDBException xe) {
-    		System.err.println("Error calling xmldb:collection-available:");
+    		System.err.println("Error calling xdb:collection-available:");
     		xe.printStackTrace();
     		fail(xe.getMessage());
     	}

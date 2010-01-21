@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2010 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -46,22 +46,14 @@ import org.xmldb.api.base.Collection;
 public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator {
 //    private static final Logger logger = Logger.getLogger(XMLDBCollectionAvailable.class);
     public final static FunctionSignature signatures[] = {
-	new FunctionSignature(
-			      new QName("collection-exists", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Returns true() if the collection " +
-			      "$collection exists and is available, otherwise false().",
-			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")},
-			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists and is available, false() otherwise"),
-			      true,
-			      "Use " + XMLDBModule.PREFIX + ":collection-available() instead."),
 	//Just to mimic doc-available()
 	new FunctionSignature(
 			      new QName("collection-available", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			      "Returns true() if the collection " +
-			      "$collection exists and is available, otherwise false().",
+			      "$collection-uri exists and is available, otherwise false(). " +
+                  XMLDBModule.COLLECTION_URI,
 			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")},
+				  new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")},
 			      new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the collection exists and is available, false() otherwise"))
     };
 		
