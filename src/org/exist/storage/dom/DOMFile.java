@@ -1356,7 +1356,7 @@ public class DOMFile extends BTree implements Lockable {
                     }
                 }
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up.");
+                    LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up. This is usually not an error.");
                 return KEY_NOT_FOUND;
             } catch (XMLStreamException e) {
                 SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
