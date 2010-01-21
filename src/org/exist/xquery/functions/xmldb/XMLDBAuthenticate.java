@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2010 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -63,6 +63,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 				"Check if the user, $user-id, can authenticate against the database collection $collection-uri. The function simply tries to " +
 				"read the collection $collection-uri, using the credentials " +
 				"$user-id and $password. " +
+                XMLDBModule.COLLECTION_URI + " " +
 				"It returns true if the authentication succeeds, false otherwise.",
 				new SequenceType[] {
 				    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
@@ -78,6 +79,7 @@ public class XMLDBAuthenticate extends BasicFunction {
             new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Login the user, $user-id, and set it as the owner " +
             "of the currently executing XQuery. " +
+            XMLDBModule.COLLECTION_URI + " " +
 			"It returns true if the authentication succeeds, false otherwise. " +
             "If called from a HTTP context the login is cached for the " +
             "lifetime of the HTTP session and may be used for any XQuery " +
@@ -95,6 +97,7 @@ public class XMLDBAuthenticate extends BasicFunction {
             new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Login the user, $user-id, and set it as the owner " +
             "of the currently executing XQuery. " +
+            XMLDBModule.COLLECTION_URI + " " +
 			"It returns true() if the authentication succeeds, " +
             "false() otherwise. " +
             "If called from a HTTP context the login is cached for the " +
