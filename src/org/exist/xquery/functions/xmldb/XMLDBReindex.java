@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2008-2009 The eXist Project
+ * Copyright (C) 2008-2010 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -23,9 +23,9 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 
-import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -38,6 +38,8 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *  Reindex a collection in the database.
@@ -46,15 +48,16 @@ import org.exist.xquery.value.Type;
  * @author ljo
  *
  */
-public class XMLDBReindex extends BasicFunction {
+public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = Logger.getLogger(XMLDBReindex.class);
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("reindex", XMLDBModule.NAMESPACE_URI,
-                      XMLDBModule.PREFIX), // yes, only a path not an uri /ljo
-            "Reindex collection $collection-path. " +
+                      XMLDBModule.PREFIX),
+            "Reindex collection $collection-uri. " +
+            XMLDBModule.COLLECTION_URI + " " +
             XMLDBModule.NEED_PRIV_USER,
             new SequenceType[]{
-                new FunctionParameterSequenceType("collection-path", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path")
+                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")
     },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise"));
 
@@ -62,43 +65,30 @@ public class XMLDBReindex extends BasicFunction {
      * @param context
      */
     public XMLDBReindex(XQueryContext context) {
-        super(context, signature);
+        super(context, signature, false);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
+    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
-        // this is "/db"
-        String ROOTCOLLECTION = XmldbURI.ROOT_COLLECTION_URI.toString();
-
         // Check for DBA user
         if (!context.getUser().hasDbaRole()) {
             logger.error("Permission denied, user '" + context.getUser().getName() + "' must be a DBA to reindex the database");
             return BooleanValue.FALSE;
         }
 
-        // Get collection path
-        String collectionArg = args[0].getStringValue();
-
-        // Collection should start with /db
-        if (!collectionArg.startsWith(ROOTCOLLECTION)) {
-            logger.error("Collection should start with " + ROOTCOLLECTION);
-            return BooleanValue.FALSE;            
-        }
-
         // Check if collection does exist
-        XmldbURI colName = XmldbURI.create(collectionArg);
-        Collection coll = context.getBroker().getCollection(colName);
-        if (coll == null) {
-            logger.error("Collection " + colName.toString() + " does not exist.");
+        
+        if (collection == null) {
+            logger.error("Collection " + args[0].getStringValue() + " does not exist.");
             return BooleanValue.FALSE;
         }
 
         // Reindex
         try {
-            context.getBroker().reindexCollection(colName);
-
-        } catch (PermissionDeniedException ex) {
-            logger.error(ex.getMessage());
+            IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
+            iqs.reindexCollection();
+        } catch (XMLDBException xe) {
+            logger.error("Unable to reindex collection", xe);
             return BooleanValue.FALSE;
         }
 
