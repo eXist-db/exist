@@ -3062,7 +3062,7 @@ public class NativeBroker extends DBBroker {
 		    Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
 		    if (val == null) {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Node " + nodeId + " not found");
+                    LOG.debug("Node " + nodeId + " not found. This is usually not an error.");
 			    return null;
 		    }
 		    StoredNode node = StoredNode.deserialize(val.getData(),	0, val.getLength(),	(DocumentImpl) doc);
