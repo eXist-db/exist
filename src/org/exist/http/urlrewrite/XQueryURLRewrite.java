@@ -620,17 +620,22 @@ public class XQueryURLRewrite implements Filter {
                     LOG.warn("XQueryURLRewrite controller could not be found");
                     return null;
                 }
-                if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !controllerDoc.getMetadata().getMimeType().equals("application/xquery")) {
-                    LOG.warn("XQuery resource: " + query + " is not an XQuery or " +
-                            "declares a wrong mime-type");
-                    return null;
+                try {
+                    if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                                !controllerDoc.getMetadata().getMimeType().equals("application/xquery")) {
+                        LOG.warn("XQuery resource: " + query + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                        return null;
+                    }
+                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true));
+                    String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
+                    sourceInfo.controllerPath =
+                        controllerPath.substring(locationUri.getCollectionPath().length());
+                    return sourceInfo;
+                } finally {
+                    if (controllerDoc != null)
+                        controllerDoc.getUpdateLock().release(Lock.READ_LOCK);
                 }
-                sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true));
-                String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
-                sourceInfo.controllerPath =
-                    controllerPath.substring(locationUri.getCollectionPath().length());
-                return sourceInfo;
             } catch (URISyntaxException e) {
                 LOG.warn("Bad URI for base path: " + e.getMessage(), e);
                 return null;
