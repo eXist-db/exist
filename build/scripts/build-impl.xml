@@ -494,8 +494,9 @@
         <delete dir="${src.webapp}/WEB-INF/data/fs"/>
         <delete dir="${src.webapp}/WEB-INF/data/fs.journal"/>
 		<delete dir="${src.webapp}/WEB-INF/data/lucene"/>
+		<delete dir="${src.webapp}/WEB-INF/data/sanity"/>
         <delete>
-            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*"
+            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters"
                 excludes=".DO_NOT_DELETE"/>
         </delete>
 
