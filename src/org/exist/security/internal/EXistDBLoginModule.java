@@ -1,0 +1,274 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist.security.internal;
+
+import java.util.Map;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
+
+//import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.security.AuthenticationException;
+import org.exist.security.User;
+import org.exist.storage.BrokerPool;
+
+/**
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * 
+ */
+public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
+
+//	private final static Logger LOG = Logger.getLogger(EXistLoginModule.class);
+
+	// initial state
+	private Subject subject;
+	private CallbackHandler callbackHandler;
+	private Map sharedState;
+	private Map options;
+
+	// configurable option
+	private boolean debug = false;
+
+	// the authentication status
+	private boolean succeeded = false;
+	private boolean commitSucceeded = false;
+	private User userPrincipal = null;
+
+	/**
+	 * Initialize this <code>LoginModule</code>.
+	 * 
+	 * <p>
+	 * 
+	 * @param subject
+	 *            the <code>Subject</code> to be authenticated.
+	 *            <p>
+	 * 
+	 * @param callbackHandler
+	 *            a <code>CallbackHandler</code> for communicating with the end
+	 *            user (prompting for user names and passwords, for example).
+	 *            <p>
+	 * 
+	 * @param sharedState
+	 *            shared <code>LoginModule</code> state.
+	 *            <p>
+	 * 
+	 * @param options
+	 *            options specified in the login <code>Configuration</code> for
+	 *            this particular <code>LoginModule</code>.
+	 */
+	public void initialize(Subject subject, CallbackHandler callbackHandler,
+			Map<String, ?> sharedState, Map<String, ?> options) {
+
+		this.subject = subject;
+		this.callbackHandler = callbackHandler;
+		this.sharedState = sharedState;
+		this.options = options;
+
+		// initialize any configured options
+		debug = "true".equalsIgnoreCase((String) options.get("debug"));
+	}
+
+	/**
+	 * Authenticate the user by prompting for a user name and password.
+	 * 
+	 * <p>
+	 * 
+	 * @return true in all cases since this <code>LoginModule</code> should not
+	 *         be ignored.
+	 * 
+	 * @exception FailedLoginException
+	 *                if the authentication fails.
+	 *                <p>
+	 * 
+	 * @exception LoginException
+	 *                if this <code>LoginModule</code> is unable to perform the
+	 *                authentication.
+	 */
+	public boolean login() throws LoginException {
+
+		// prompt for a user name and password
+		if (callbackHandler == null)
+			throw new LoginException("Error: no CallbackHandler available "
+					+ "to garner authentication information from the user");
+
+		Callback[] callbacks = new Callback[2];
+		callbacks[0] = new NameCallback("user name: ");
+		callbacks[1] = new PasswordCallback("password: ", false);
+
+		// username and password
+		String username;
+		char[] password;
+
+		try {
+			callbackHandler.handle(callbacks);
+			username = ((NameCallback) callbacks[0]).getName();
+			char[] tmpPassword = ((PasswordCallback) callbacks[1]).getPassword();
+			if (tmpPassword == null) {
+				// treat a NULL password as an empty password
+				tmpPassword = new char[0];
+			}
+			password = new char[tmpPassword.length];
+			System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
+			((PasswordCallback) callbacks[1]).clearPassword();
+
+		} catch (java.io.IOException ioe) {
+			throw new LoginException(ioe.toString());
+		} catch (UnsupportedCallbackException uce) {
+			throw new LoginException("Error: " + uce.getCallback().toString()
+					+ " not available to garner authentication information"
+					+ " from the user");
+		}
+
+		// print debugging information
+		if (debug) {
+			System.out.println("\t\t[eXistLoginModule] "
+					+ "user entered user name: " + username);
+			System.out.print("\t\t[eXistLoginModule] "
+					+ "user entered password: ");
+			for (int i = 0; i < password.length; i++)
+				System.out.print(password[i]);
+			System.out.println();
+		}
+		
+		try {
+			userPrincipal = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
+		} catch (AuthenticationException e) {
+			if (debug)
+				System.out.println("\t\t[eXistLoginModule] "
+						+ "authentication failed");
+			throw new FailedLoginException(e.getMessage());
+		} catch (EXistException e) {
+			throw new FailedLoginException(e.getMessage());
+		}
+		
+		succeeded = userPrincipal.isAuthenticated();
+		return true;
+	}
+
+	/**
+	 * <p>
+	 * This method is called if the LoginContext's overall authentication
+	 * succeeded (the relevant REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL
+	 * LoginModules succeeded).
+	 * 
+	 * <p>
+	 * If this LoginModule's own authentication attempt succeeded (checked by
+	 * retrieving the private state saved by the <code>login</code> method),
+	 * then this method associates a <code>SamplePrincipal</code> with the
+	 * <code>Subject</code> located in the <code>LoginModule</code>. If this
+	 * LoginModule's own authentication attempted failed, then this method
+	 * removes any state that was originally saved.
+	 * 
+	 * <p>
+	 * 
+	 * @exception LoginException
+	 *                if the commit fails.
+	 * 
+	 * @return true if this LoginModule's own login and commit attempts
+	 *         succeeded, or false otherwise.
+	 */
+	public boolean commit() throws LoginException {
+		if (succeeded == false) {
+			return false;
+		} else {
+			// add a Principal (authenticated identity)
+			// to the Subject
+
+			if (!subject.getPrincipals().contains(userPrincipal))
+				subject.getPrincipals().add(userPrincipal);
+
+			if (debug) {
+				System.out.println("\t\t[eXistLoginModule] "
+						+ "added User to Subject");
+			}
+
+			commitSucceeded = true;
+			return true;
+		}
+	}
+
+	/**
+	 * <p>
+	 * This method is called if the LoginContext's overall authentication
+	 * failed. (the relevant REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL
+	 * LoginModules did not succeed).
+	 * 
+	 * <p>
+	 * If this LoginModule's own authentication attempt succeeded (checked by
+	 * retrieving the private state saved by the <code>login</code> and
+	 * <code>commit</code> methods), then this method cleans up any state that
+	 * was originally saved.
+	 * 
+	 * <p>
+	 * 
+	 * @exception LoginException
+	 *                if the abort fails.
+	 * 
+	 * @return false if this LoginModule's own login and/or commit attempts
+	 *         failed, and true otherwise.
+	 */
+	public boolean abort() throws LoginException {
+		if (succeeded == false) {
+			return false;
+		} else if (succeeded == true && commitSucceeded == false) {
+			// login succeeded but overall authentication failed
+			succeeded = false;
+			userPrincipal = null;
+		} else {
+			// overall authentication succeeded and commit succeeded,
+			// but someone else's commit failed
+			logout();
+		}
+		return true;
+	}
+
+	/**
+	 * Logout the user.
+	 * 
+	 * <p>
+	 * This method removes the <code>SamplePrincipal</code> that was added by
+	 * the <code>commit</code> method.
+	 * 
+	 * <p>
+	 * 
+	 * @exception LoginException
+	 *                if the logout fails.
+	 * 
+	 * @return true in all cases since this <code>LoginModule</code> should not
+	 *         be ignored.
+	 */
+	public boolean logout() throws LoginException {
+
+		subject.getPrincipals().remove(userPrincipal);
+		succeeded = false;
+		succeeded = commitSucceeded;
+		userPrincipal = null;
+		return true;
+	}
+}
