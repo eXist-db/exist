@@ -53,6 +53,10 @@ public class Password implements Credential {
 			return equals(credentials);
 		}
     	
+    	if (credentials instanceof char[]) {
+			return equals(String.valueOf((char[]) credentials));
+		}
+    	
     	return false;
     	
     }
