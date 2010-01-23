@@ -16,7 +16,12 @@
   <property name="svn.patch.file" value="exist.patch"/>
 
   <property name="javasvn.jar" location="${svn.svnkit.jar}"/>
-  <available classname="org.tmatesoft.svn.cli.SVN" classpath="classpath.core" property="svn-present"/>
+  <available classname="org.tmatesoft.svn.cli.SVN" property="svn-present">
+     <classpath>
+        <pathelement location="${svn.svnkit.jar}"/>
+        <pathelement location="${svn.svnkitcli.jar}"/>
+      </classpath>
+  </available>
 
   <!-- 
     Try to read SVN info from entries-file (if file exist).
