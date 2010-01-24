@@ -47,6 +47,8 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.xml.XmlConfiguration;
@@ -193,6 +195,14 @@ public class JettyStart implements LifeCycle.Listener {
             if (connectors.length > 0) {
                 port = connectors[0].getPort();
             }
+            
+            //TODO: use plaggable interface
+            Class<?> openid = null;
+            try {
+            	openid = Class.forName("org.exist.security.openid.servlet.AuthenticatorOpenId");
+            } catch (ClassNotFoundException e) {
+			}
+            //*************************************************************
 
             logger.info("-----------------------------------------------------");
             logger.info("Server has started on port " + port + ". Configured contexts:");
@@ -203,7 +213,15 @@ public class JettyStart implements LifeCycle.Listener {
             	if (handler instanceof ContextHandler) {
 					ContextHandler contextHandler = (ContextHandler) handler;
 	            	logger.info("http://localhost:" + port + contextHandler.getContextPath());
-				}
+            	}
+            	
+            	//TODO: pluggable in future
+            	if (openid != null)
+            		if (handler instanceof ServletContextHandler) {
+            			ServletContextHandler contextHandler = (ServletContextHandler) handler;
+            			contextHandler.addServlet(new ServletHolder(openid),"/openid");
+            		}
+                //*************************************************************
             }
 
             logger.info("-----------------------------------------------------");
