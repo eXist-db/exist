@@ -25,11 +25,19 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.Subject;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.security.DefaultIdentityService;
+import org.eclipse.jetty.security.authentication.FormAuthenticator;
+import org.eclipse.jetty.server.Authentication;
+import org.eclipse.jetty.server.UserIdentity;
+import org.exist.security.User;
+import org.exist.security.openid.SessionAuthentication;
+import org.exist.security.openid.UserImpl;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
 import org.openid4java.consumer.*;
@@ -47,7 +55,6 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 	private static final Log LOG = LogFactory.getLog(AuthenticatorOpenId.class);
 
-	private ServletContext context;
 	public ConsumerManager manager;
 
 	public AuthenticatorOpenId() throws ConsumerException {
@@ -55,10 +62,6 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-
-		context = config.getServletContext();
-
-		LOG.debug("context: " + context);
 
 		// --- Forward proxy setup (only if needed) ---
 		ProxyProperties proxyProps = getProxyProperties(config);
@@ -107,14 +110,29 @@ public class AuthenticatorOpenId extends HttpServlet {
 		LOG.debug("identifier: " + identifier);
 		System.out.println("identifier: " + identifier);
 		
-		if (identifier == null) {
+        String returnURL = req.getParameter("exist_return");
+
+        if (identifier == null) {
 //			this.getServletContext().getRequestDispatcher("/openid/login.xql").forward(req, resp);
-			resp.sendRedirect("openid/login.xql");
+			resp.sendRedirect(returnURL);
 		} else {
-//			req.setAttribute("identifier", identifier.getIdentifier());
-//			this.getServletContext().getRequestDispatcher("/openid/return.xql")
-//					.forward(req, resp);
-			resp.sendRedirect("openid/return.xql?identifier="+identifier.getIdentifier());
+	        HttpSession session = req.getSession(true);
+
+	        User principal = new UserImpl(identifier);
+//			((XQueryURLRewrite.RequestWrapper)req).setUserPrincipal(principal);
+
+			Subject subject = new Subject();
+			
+			//TODO: hardcoded to jetty - rewrite
+			DefaultIdentityService _identityService = new DefaultIdentityService();
+			UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
+            
+			FormAuthenticator authenticator = new FormAuthenticator("","",false);
+			
+			Authentication cached=new SessionAuthentication(session,authenticator,user);
+            session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
+			
+			resp.sendRedirect(returnURL);
 		}
 	}
 
@@ -126,9 +144,11 @@ public class AuthenticatorOpenId extends HttpServlet {
 		try {
 			httpReq.getContextPath();
 
+			String returnAfterAuthentication = httpReq.getParameter("return_to");
+
 			// configure the return_to URL where your application will receive
 			// the authentication responses from the OpenID provider
-			String returnToUrl = httpReq.getRequestURL().toString() + "?is_return=true";
+			String returnToUrl = httpReq.getRequestURL().toString() + "?is_return=true&exist_return="+returnAfterAuthentication;
 
 			// perform discovery on the user-supplied identifier
 			List<?> discoveries = manager.discover(userSuppliedString);
