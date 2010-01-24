@@ -14,6 +14,9 @@
     </condition>
     
     <path id="classpath.core">
+        <fileset dir="${top.dir}/tools/jetty/lib">
+            <include name="*.jar"/>
+        </fileset>
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
         </fileset>
