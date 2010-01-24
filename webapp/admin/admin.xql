@@ -132,7 +132,7 @@ declare function admin:display-login-form() as element()
                     <td><input name="pass" type="password" size="20"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2" align="left"><input type="submit"/></td>
+                    <td colspan="2" align="left"><input type="submit" value="Login"/></td>
                 </tr>
             </table>
             {
