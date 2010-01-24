@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.security.Principal;
+import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -39,16 +41,26 @@ import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.http.Descriptor;
+import org.exist.security.AuthenticationException;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
+import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.XQueryService;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xmldb.LocalResourceSet;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
@@ -58,11 +70,7 @@ import org.exist.xquery.value.Item;
 import org.exist.debuggee.Debuggee;
 import org.exist.dom.XMLUtil;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -100,16 +108,13 @@ public class XQueryServlet extends HttpServlet {
 
 	private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
     
-    public final static String DEFAULT_USER = "guest";
-    public final static String DEFAULT_PASS = "guest";
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
     public final static String DEFAULT_ENCODING = "UTF-8";
     public final static String DEFAULT_CONTENT_TYPE = "text/html";
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-    
-    private String user = null;
-    private String password = null;
+
+    private User defaultUser = SecurityManager.GUEST;
     private XmldbURI collectionURI = null;
     
     private String containerEncoding = null;
@@ -122,38 +127,7 @@ public class XQueryServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        user = config.getInitParameter("user");
-        if(user == null)
-            user = DEFAULT_USER;
-        password = config.getInitParameter("password");
-        if(password == null)
-            password = DEFAULT_PASS;
-        String confCollectionURI = config.getInitParameter("uri");
-        if(confCollectionURI == null) {
-            collectionURI = DEFAULT_URI;
-        } else {
-            try {
-                collectionURI = XmldbURI.xmldbUriFor(confCollectionURI);
-            } catch (URISyntaxException e) {
-                throw new ServletException("Invalid XmldbURI for parameter 'uri': "+e.getMessage(),e);
-            }
-        }
-        formEncoding = config.getInitParameter("form-encoding");
-        if(formEncoding == null)
-            formEncoding = DEFAULT_ENCODING;
-        LOG.info("form-encoding = " + formEncoding);
-        containerEncoding = config.getInitParameter("container-encoding");
-        if(containerEncoding == null)
-            containerEncoding = DEFAULT_ENCODING;
-        LOG.info("container-encoding = " + containerEncoding);
-        encoding = config.getInitParameter("encoding");
-        if(encoding == null)
-            encoding = DEFAULT_ENCODING;
-        LOG.info("encoding = " + encoding);
-        contentType = config.getInitParameter("content-type");
-        if(contentType == null)
-            contentType = DEFAULT_CONTENT_TYPE;
-        
+
         try {
             Class<?> driver = Class.forName(DRIVER);
             Database database = (Database)driver.newInstance();
@@ -164,6 +138,50 @@ public class XQueryServlet extends HttpServlet {
             LOG.error(errorMessage,e);
             throw new ServletException(errorMessage+": " + e.getMessage(), e);
         }
+
+        String username = config.getInitParameter("user");
+        if(username != null) {
+        	String password = config.getInitParameter("password");
+        	User user;
+			try {
+				user = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
+	        	if (user != null && user.isAuthenticated())
+	        		defaultUser = user;
+			} catch (AuthenticationException e) {
+				LOG.error("User can not be authenticated ("+username+"), using default user.");
+			} catch (EXistException e) {
+				LOG.error(e);
+			}
+        }
+        String confCollectionURI = config.getInitParameter("uri");
+        if(confCollectionURI == null) {
+            collectionURI = DEFAULT_URI;
+        } else {
+            try {
+                collectionURI = XmldbURI.xmldbUriFor(confCollectionURI);
+            } catch (URISyntaxException e) {
+                throw new ServletException("Invalid XmldbURI for parameter 'uri': "+e.getMessage(),e);
+            }
+        }
+        
+        formEncoding = config.getInitParameter("form-encoding");
+        if(formEncoding == null)
+            formEncoding = DEFAULT_ENCODING;
+        LOG.info("form-encoding = " + formEncoding);
+        
+        containerEncoding = config.getInitParameter("container-encoding");
+        if(containerEncoding == null)
+            containerEncoding = DEFAULT_ENCODING;
+        LOG.info("container-encoding = " + containerEncoding);
+        
+        encoding = config.getInitParameter("encoding");
+        if(encoding == null)
+            encoding = DEFAULT_ENCODING;
+        LOG.info("encoding = " + encoding);
+
+        contentType = config.getInitParameter("content-type");
+        if(contentType == null)
+            contentType = DEFAULT_CONTENT_TYPE;
     }
     
     /* (non-Javadoc)
@@ -363,40 +381,69 @@ public class XQueryServlet extends HttpServlet {
         if(p != Constants.STRING_NOT_FOUND)
             requestPath = requestPath.substring(0, p);
         String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
-        String actualUser = null;
-        String actualPassword = null;
+
+        User user = defaultUser;
+        
+        Principal principal = request.getUserPrincipal();
+        if (principal instanceof User) {
+			user = (User) principal;
+		}
+
         HttpSession session = request.getSession( false );
         if(session != null && request.isRequestedSessionIdValid()) {
-            actualUser = getSessionAttribute(session, "user");
-            actualPassword = getSessionAttribute(session, "password");
+            String username = getSessionAttribute(session, "user");
+            String password = getSessionAttribute(session, "password");
+            
+			try {
+				User newUser = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
+	        	if (newUser != null && newUser.isAuthenticated())
+	        		user = newUser;
+			} catch (AuthenticationException e) {
+				LOG.error("User can not be authenticated ("+username+").");
+			} catch (EXistException e) {
+				LOG.error(e);
+			}
         }
-        if(actualUser == null) actualUser = user;
-        if(actualPassword == null) actualPassword = password;
 
         String requestAttr = (String) request.getAttribute("xquery.attribute");
 
         try {
-            Collection collection = DatabaseManager.getCollection(collectionURI.toString(), actualUser, actualPassword);
-            XQueryService service = (XQueryService)
-            collection.getService("XQueryService", "1.0");
-            service.setProperty("base-uri", collectionURI.toString());
-            service.setModuleLoadPath(moduleLoadPath);
-            //service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
-            if(!((CollectionImpl)collection).isRemoteCollection()) {
-                service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
-                service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
-                service.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
+        	DBBroker broker = BrokerPool.getInstance().get(user);
+            XQuery xquery = broker.getXQueryService();
+            CompiledXQuery query = xquery.getXQueryPool().borrowCompiledXQuery(broker, source);
+
+            XQueryContext context;
+            if (query==null) {
+               context = xquery.newContext(AccessContext.REST);
+               context.setModuleLoadPath(moduleLoadPath);
+               try {
+            	   query = xquery.compile(context, source);
+               } catch (XPathException ex) {
+                  throw new EXistException("Cannot compile xquery "+source.toString(),ex);
+               } catch (IOException ex) {
+                  throw new EXistException("I/O exception while compiling xquery "+source.toString(),ex);
+               }
+            } else {
+               context = query.getContext();
+               context.setModuleLoadPath(moduleLoadPath);
             }
 
-            //if get "start new session" request
+            Properties outputProperties = new Properties();
+            outputProperties.put("base-uri", collectionURI.toString());
+            
+            context.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
+            context.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
+            context.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
+
+            //if get "start new debug session" request
     		String xdebug = request.getParameter("XDEBUG_SESSION_START");
     		if (xdebug != null)
-    			service.declareVariable(Debuggee.PREFIX+":session",  xdebug);
+    			context.declareVariable(Debuggee.PREFIX+":session",  xdebug);
     		else {
     			//if have session
     			xdebug = request.getParameter("XDEBUG_SESSION");
     			if (xdebug != null) {
-    				service.declareVariable(Debuggee.PREFIX+":session",  xdebug);
+    				context.declareVariable(Debuggee.PREFIX+":session",  xdebug);
     			} else {
     				//looking for session in cookies (FF XDebug Helper add-ons)
         			Cookie[] cookies = request.getCookies();
@@ -404,45 +451,50 @@ public class XQueryServlet extends HttpServlet {
             			for (int i = 0; i < cookies.length; i++) {
             				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
             					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
-                				service.declareVariable(Debuggee.PREFIX+":session",  cookies[i].getValue());
+            					context.declareVariable(Debuggee.PREFIX+":session",  cookies[i].getValue());
                 				break;
             				}
             			}
         			}
     			}
     		}
-            
 
-            ResourceSet result = service.execute(source);
-            String mediaType = service.getProperty(OutputKeys.MEDIA_TYPE);
+            Sequence resultSequence = xquery.execute(query, null, outputProperties);
+
+            String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
             if (mediaType != null) {
                 if (!response.isCommitted())
                     response.setContentType(mediaType + "; charset=" + formEncoding);
             }
-            if (requestAttr != null && !((CollectionImpl)collection).isRemoteCollection()) {
-                request.setAttribute(requestAttr, ((LocalResourceSet)result).toSequence());
+            if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName())) ) {
+                request.setAttribute(requestAttr, resultSequence);
             } else {
-                for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-                    Resource res = i.nextResource();
-                    output.println(res.getContent().toString());
-                }
-            }
+            	Serializer serializer = broker.getSerializer();
+            	serializer.reset();
+            
+            	SerializerPool serializerPool = SerializerPool.getInstance();
 
-        } catch (XMLDBException e) {
-            LOG.debug(e.getMessage(), e);
-            if (reportErrors)
-                writeError(output, e);
-            else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                sendError(output, e.getMessage(), e);
+            	SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
+            	sax.setOutput(output, outputProperties);
+            	serializer.setProperties(outputProperties);
+            	serializer.setSAXHandlers(sax, sax);
+            	
+            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
+
+            	serializerPool.returnObject(sax);
             }
         } catch (Throwable e){
             LOG.error(e.getMessage(), e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            sendError(output, "Error", e.getMessage());
+            if (reportErrors)
+            	writeError(output, e);
+            else {
+            	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            	sendError(output, "Error", e.getMessage());
+            }
         }
 
         output.flush();
+        output.close();
     }
     
     private String getSessionAttribute(HttpSession session, String attribute) {
@@ -482,12 +534,12 @@ public class XQueryServlet extends HttpServlet {
         out.print("</div></body></html>");
     }
 
-    private void writeError(PrintWriter out, XMLDBException e) {
+    private void writeError(PrintWriter out, Throwable e) {
         out.print("<error>");
-        Throwable t = e.getCause();
-        if (t != null)
-            out.print(XMLUtil.encodeAttrMarkup(t.getMessage()));
-        else
+//        Throwable t = e.getCause();
+//        if (t != null)
+//            out.print(XMLUtil.encodeAttrMarkup(t.getMessage()));
+//        else
             out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));
         out.println("</error>");
     }
