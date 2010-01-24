@@ -52,6 +52,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
 import org.exist.security.*;
+import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -86,6 +87,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -129,7 +131,7 @@ public class XQueryURLRewrite implements Filter {
 
     private final Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
 
-    protected UserImpl user;
+    protected User defaultUser = SecurityManager.GUEST;
     protected BrokerPool pool;
 
     // path to the query
@@ -184,9 +186,14 @@ public class XQueryURLRewrite implements Filter {
             }
         }
 
+    	User user = defaultUser;
+        Principal principal = request.getUserPrincipal();
+        if (principal instanceof User)
+			user = (User) principal;
+
         try {
             configure();
-            checkCache();
+            checkCache(user);
 
             RequestWrapper modifiedRequest = new RequestWrapper(request);
             URLRewrite staticRewrite = rewriteConfig.lookup(modifiedRequest);
@@ -366,7 +373,7 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
-    private void checkCache() throws EXistException {
+    private void checkCache(User user) throws EXistException {
         if (checkModified) {
             // check if any of the currently used sources has been updated
             // if yes, clear the cache
@@ -474,22 +481,23 @@ public class XQueryURLRewrite implements Filter {
             throw new ServletException(errorMessage+": " + e.getMessage(), e);
         }
 
-        String username = config.getInitParameter("user");
-        if(username == null)
-            username = DEFAULT_USER;
-        String password = config.getInitParameter("password");
-        if(password == null)
-            password = DEFAULT_PASS;
-        try {
-            pool = BrokerPool.getInstance();
-            org.exist.security.SecurityManager secman = pool.getSecurityManager();
-            user = secman.getUser(username);
-            if (!user.validate(password)) {
-                throw new ServletException("Invalid password specified for XQueryURLRewrite user");
-            }
-        } catch (EXistException e) {
+		try {
+			pool = BrokerPool.getInstance();
+		} catch (EXistException e) {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
-        }
+		}
+        
+		String username = config.getInitParameter("user");
+		if(username != null) {
+			String password = config.getInitParameter("password");
+			try {
+				User user = pool.getSecurityManager().authenticate(username, password);
+	        	if (user != null && user.isAuthenticated())
+	        		defaultUser = user;
+			} catch (AuthenticationException e) {
+				LOG.error("User can not be authenticated ("+username+"), using default user.");
+			}
+		}
     }
 
     private void logResult(DBBroker broker, Sequence result) throws IOException, SAXException {

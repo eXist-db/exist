@@ -141,7 +141,7 @@ public class RewriteConfig {
             DBBroker broker = null;
             DocumentImpl doc = null;
             try {
-                broker = urlRewrite.pool.get(urlRewrite.user);
+                broker = urlRewrite.pool.get(urlRewrite.defaultUser);
 
                 doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
                 if (doc != null)
