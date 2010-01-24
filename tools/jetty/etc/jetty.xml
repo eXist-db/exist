@@ -7,6 +7,7 @@
 <!-- Documentation of this file format can be found at:              -->
 <!-- http://docs.codehaus.org/display/JETTY/jetty.xml                -->
 <!--                                                                 -->
+<!-- $Id$                                                                -->
 <!-- =============================================================== -->
 
 
@@ -159,24 +160,24 @@
       </Arg>
     </Call>
   -->
+
     <!-- =========================================================== -->
     <!-- Configure Authentication Login Service                      -->
-    <!-- Realms may be configured for the entire server here, or     -->
-    <!-- they can be configured for a specific web app in a context  -->
-    <!-- configuration (see $(jetty.home)/contexts/test.xml for an   -->
-    <!-- example).                                                   -->
     <!-- =========================================================== -->
-  <!--
+    <Call class="java.lang.System" name="setProperty">
+      <Arg>java.security.auth.login.config</Arg>
+      <Arg><SystemProperty name="jetty.home" default="." />/etc/login.conf</Arg>
+    </Call>
+
     <Call name="addBean">
       <Arg>
-        <New class="org.eclipse.jetty.security.HashLoginService">
-          <Set name="name">Test Realm</Set>
-          <Set name="config"><SystemProperty name="jetty.home" default="."/>/etc/realm.properties</Set>
-          <Set name="refreshInterval">0</Set>
+        <New class="org.eclipse.jetty.plus.jaas.JAASLoginService">
+          <Set name="name">JAASLoginService</Set>
+          <Set name="LoginModuleName">eXistDB</Set>
         </New>
       </Arg>
     </Call>
-  -->
+
     <!-- =========================================================== -->
     <!-- Configure Request Log                                       -->
     <!-- Request logs  may be configured for the entire server here, -->
