@@ -477,9 +477,11 @@
         <delete dir="${build.classes}"/>
         <delete dir="${build.examples}"/>
         <delete dir="${dist.dir}"/>
-        <delete quiet="true">
-            <fileset dir="log" includes="*"/>
+        <delete quiet="true" failonerror="false">
+            <fileset dir="log" includes="*" />
             <fileset dir="tmp" includes="*"/>
+        </delete>
+        <delete quiet="true">
             <fileset dir="${src.webapp}/WEB-INF/logs" excludes=".DO_NOT_DELETE" includes="*"/>
         </delete>
 
