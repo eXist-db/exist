@@ -626,4 +626,45 @@
         </taglib>
     </jsp-config>
     
+	<login-config>
+  		<auth-method>FORM</auth-method>
+  		<realm-name>JAASLoginService</realm-name>
+  		<form-login-config>
+    		<form-login-page>/login/login</form-login-page>
+    		<form-error-page>/login/error</form-error-page>
+  		</form-login-config>
+	</login-config>
+
+<!-- 
+    <filter>
+        <filter-name>GzipFilter</filter-name>
+        <!- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -!>
+        <filter-class>org.eclipse.jetty.servlets.IncludableGzipFilter</filter-class>
+        <!- <async-support>true</async-support> -!>
+        <init-param>
+            <param-name>bufferSize</param-name>
+            <param-value>8192</param-value>
+        </init-param>
+        <init-param>
+            <param-name>minGzipSize</param-name>
+            <param-value>2048</param-value>
+        </init-param>
+        <init-param>
+            <param-name>userAgent</param-name>
+            <param-value>(?:Mozilla[^\(]*\(compatible;\s*+([^;]*);.*)|(?:.*?([^\s]+/[^\s]+).*)</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cacheSize</param-name>
+            <param-value>1024</param-value>
+        </init-param>
+        <init-param>
+            <param-name>excludedAgents</param-name>
+            <param-value>MSIE 6.0</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>GzipFilter</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>
+ -->    
 </web-app>
