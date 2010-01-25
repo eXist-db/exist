@@ -202,10 +202,10 @@ public class AuthenticatorOpenId extends HttpServlet {
 			}
 		} catch (OpenIDException e) {
 			// present error to the user
+			LOG.debug("OpenIDException",e);
 		}
 
 		return null;
-
 	}
 
 	// authentication response
