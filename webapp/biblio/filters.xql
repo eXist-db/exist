@@ -16,10 +16,17 @@ return
             let $authors :=
                 for $author in $cached//mods:name
                 return mods:format-name($author, 1)
-            for $name in distinct-values($authors)
-            order by $name
-            return
-                <li><a href="?filter=Author&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>
+            let $distinct := distinct-values($authors)
+            return (
+                for $name in subsequence($distinct, 1, 20)
+                order by $name
+                return
+                    <li><a href="?filter=Author&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>,
+                if (count($distinct) gt 20) then
+                    <li>More ...</li>
+                else
+                    ()
+            )
         else if ($type eq 'date') then
             let $dates :=
                 for $info in $cached/mods:originInfo
