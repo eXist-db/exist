@@ -46,6 +46,7 @@ import org.exist.util.Occurrences;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.value.IntegerValue;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
@@ -487,6 +488,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         //Expects a StringValue
     	Object start = hints == null ? null : hints.get(START_VALUE);
         Object end = hints == null ? null : hints.get(END_VALUE);
+        IntegerValue max = (IntegerValue) hints.get(VALUE_COUNT);
+
         TreeMap<Term, Occurrences> map = new TreeMap<Term, Occurrences>();
         IndexReader reader = null;
         try {
@@ -540,6 +543,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             docsEnum.close();
                         }
                     }
+                    if (max != null && map.size() >= max.getValue())
+                        break;
                 } while (terms.next());
                 terms.close();
             }
@@ -549,7 +554,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             index.releaseReader(reader);
         }
         Occurrences[] occur = new Occurrences[map.size()];
-        return (Occurrences[]) map.values().toArray(occur);
+        return map.values().toArray(occur);
     }
 
     /**
