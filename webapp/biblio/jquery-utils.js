@@ -93,14 +93,27 @@
                 span.append(listLink);
                 div.append(span);
             } else {
-                var pages = Math.floor(options.totalItems / options.itemsPerPage);
-                for (var i = 0; i < pages; i++) {
-                    appendPageLink(div, (i * options.itemsPerPage + 1), (i * options.itemsPerPage + options.itemsPerPage));
+                var pages = Math.ceil(options.totalItems / options.itemsPerPage);
+                var currentPage = Math.floor(currentItem / options.itemsPerPage);
+                console.log("pages: " + pages + " currentPage: " + currentPage);
+                var startPage = currentPage > 2 ? currentPage - 3 : 0;
+                var endPage = 0;
+                if (currentPage + 3 >= pages)
+                    endPage = pages - 1;
+                else if (currentPage < 3)
+                    endPage = 6;
+                else
+                    endPage = currentPage + 3;
+                for (var i = startPage; i <= endPage; i++) {
+                    var end = (i * options.itemsPerPage + options.itemsPerPage);
+                    if (end > options.totalItems)
+                        end = options.totalItems;
+                    appendPageLink(div, (i * options.itemsPerPage + 1), end);
                 }
-                if (pages % options.itemsPerPage > 0) {
-                    appendPageLink(div, pages * options.itemsPerPage + 1,
-                            pages * options.itemsPerPage + pages % options.itemsPerPage);
-                }
+//                if (pages % options.itemsPerPage > 0) {
+//                    appendPageLink(div, pages * options.itemsPerPage + 1,
+//                            pages * options.itemsPerPage + pages % options.itemsPerPage);
+//                }
             }
             return div;
         }

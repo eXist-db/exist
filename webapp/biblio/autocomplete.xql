@@ -16,7 +16,6 @@ declare function local:nodeset() {
     let $query := $local:FIELDS/field[@name = $field]/string()
     let $found :=
         util:eval(concat($local:COLLECTION, $query))
-    let $log := util:log("DEBUG", (count($found)))
     return
         $found
 };
