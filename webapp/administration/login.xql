@@ -66,7 +66,7 @@ declare option exist:serialize "method=xhtml media-type=text/html indent=yes omi
 				
 				<h3 class="titlebar">Log in with a OpenID account</h3>
 				<!-- Simple OpenID Selector -->
-				<form action="/exist/openid" method="get" id="openid_form">
+				<form action="{request:get-context-path()}/openid" method="get" id="openid_form">
 					<input type="hidden" name="action" value="verify" />
 					
 					<!-- return url -->

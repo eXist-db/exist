@@ -38,6 +38,7 @@ import org.eclipse.jetty.server.UserIdentity;
 import org.exist.security.User;
 import org.exist.security.openid.SessionAuthentication;
 import org.exist.security.openid.UserImpl;
+import org.exist.xquery.util.HTTPUtils;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
 import org.openid4java.consumer.*;
@@ -203,6 +204,30 @@ public class AuthenticatorOpenId extends HttpServlet {
 		} catch (OpenIDException e) {
 			// present error to the user
 			LOG.debug("OpenIDException",e);
+
+			ServletOutputStream out = httpResp.getOutputStream();
+	        httpResp.setContentType("text/html; charset=\"UTF-8\"");
+	        httpResp.addHeader( "pragma", "no-cache" );
+	        httpResp.addHeader( "Cache-Control", "no-cache" );
+
+	        httpResp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+	        out.print("<html><head>");
+	        out.print("<title>OpenIDServlet Error</title>");
+	        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
+	        out.print("<body><div id=\"container\"><h1>Error found</h1>");
+            
+	        out.print("<h2>Message:");
+            out.print(e.getMessage());
+            out.print("</h2>");
+	        
+	        Throwable t = e.getCause();
+	        if(t!=null){
+	            // t can be null
+	            out.print(HTTPUtils.printStackTraceHTML(t));
+	        }
+	        
+	        out.print("</div></body></html>");
 		}
 
 		return null;
