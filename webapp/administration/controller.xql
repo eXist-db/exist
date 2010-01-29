@@ -9,9 +9,14 @@ else if (starts-with($exist:path, '/css/')) then
 		<cache-control cache="yes"/>
 	</ignore>
 else if (not (xmldb:is-authenticated())) then
-	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		<forward url="login.xql"/>
-	</dispatch>
+	if ($exist:path eq '') then
+		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<redirect url="{concat(request:get-context-path(), $exist:root,$exist:controller, '/')}"/>
+		</dispatch>
+	else
+		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+			<forward url="login.xql"/>
+		</dispatch>
 
 else if ($exist:path eq '/') then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
