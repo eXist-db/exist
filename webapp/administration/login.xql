@@ -1,5 +1,5 @@
 xquery version "1.0";
-(: $Id:$ :)
+(: $Id$ :)
 (:
     eXist & OpenId login forms.
 :)
