@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2007-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -67,7 +69,7 @@ import org.xml.sax.SAXException;
  */
 public abstract class AbstractCompressFunction extends BasicFunction
 {
-    protected final static SequenceType SOURCES_PARAM = new FunctionParameterSequenceType("sources", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The sequence of URI's and/or Entrys. If a URI points to a collection then the collection, its resources and sub-collections are zipped recursively. An Entry takes the format <entry name=\"filename.ext\" type=\"collection|uri|binary|xml|text\">data</entry>");
+    protected final static SequenceType SOURCES_PARAM = new FunctionParameterSequenceType("sources", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The sequence of URI's and/or Entrys. If a URI points to a collection then the collection, its resources and sub-collections are zipped recursively. An Entry takes the format <entry name=\"filename.ext\" type=\"collection|uri|binary|xml|text\" method=\"deflate|store\">data</entry>. The method attribute is only effective for the compression:zip function.");
     protected final static SequenceType COLLECTION_HIERARCHY_PARAM = new FunctionParameterSequenceType("use-collection-hierarchy", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.");
     protected final static SequenceType STRIP_PREFIX_PARAM = new FunctionParameterSequenceType("strip-prefix", Type.STRING, Cardinality.EXACTLY_ONE, "This prefix is stripped from the Entrys name");
 
@@ -120,7 +122,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                         }
                         else
                         {
-                            compressFromUri(os, ((AnyURIValue)item).toXmldbURI(), useHierarchy, stripOffset, null);
+                            compressFromUri(os, ((AnyURIValue)item).toXmldbURI(), useHierarchy, stripOffset, "", null);
                         }
 		}
 		try {
@@ -131,7 +133,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		return new Base64Binary(baos.toByteArray());
 	}
 
-        private void compressFromUri(OutputStream os, XmldbURI uri, boolean useHierarchy, String stripOffset, String resourceName) throws XPathException
+    private void compressFromUri(OutputStream os, XmldbURI uri, boolean useHierarchy, String stripOffset, String method, String resourceName) throws XPathException
         {
             // try for a doc
             DocumentImpl doc = null;
@@ -158,7 +160,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 else
                 {
                     // got a doc
-                    compressResource(os, doc, useHierarchy, stripOffset, resourceName);
+                    compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
                 }
             }
             catch(PermissionDeniedException pde)
@@ -212,7 +214,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 
             if("uri".equals(type))
             {
-                compressFromUri(os, XmldbURI.create(element.getFirstChild().getNodeValue()), useHierarchy, stripOffset, name);
+                compressFromUri(os, XmldbURI.create(element.getFirstChild().getNodeValue()), useHierarchy, stripOffset, element.getAttribute("method"), name);
                 return;
             }
 
@@ -232,7 +234,11 @@ public abstract class AbstractCompressFunction extends BasicFunction
 
             try
             {
+                
                 entry = newEntry(name);
+                if (entry instanceof ZipEntry &&
+                    "store".equals(element.getAttribute("method")))
+                    ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
                 putEntry(os, entry);
 
                 if(!"collection".equals(type))
@@ -309,7 +315,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 	 *            Whether to use a folder hierarchy in the archive file that
 	 *            reflects the collection hierarchy
 	 */
-	private void compressResource(OutputStream os, DocumentImpl doc, boolean useHierarchy, String stripOffset, String name) throws IOException, SAXException {
+	private void compressResource(OutputStream os, DocumentImpl doc, boolean useHierarchy, String stripOffset, String method, String name) throws IOException, SAXException {
 		// create an entry in the Tar for the document
 		Object entry = null;
                 if(name != null)
@@ -323,6 +329,10 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		} else {
 			entry = newEntry(doc.getFileURI().toString());
 		}
+        if (entry instanceof ZipEntry &&
+            "store".equals(method))
+            ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+                
 		putEntry(os, entry);
 		if (doc.getResourceType() == DocumentImpl.XML_FILE) {
 			// xml file
@@ -366,7 +376,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			DocumentImpl childDoc = (DocumentImpl) itChildDocs.next();
 			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);
 			try {
-				compressResource(os, childDoc, useHierarchy, stripOffset, null);
+				compressResource(os, childDoc, useHierarchy, stripOffset, "", null);
 			} finally {
 				childDoc.getUpdateLock().release(Lock.READ_LOCK);
 			}
