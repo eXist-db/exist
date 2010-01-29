@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -237,13 +238,15 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 
                 entry = newEntry(name);
                 if (entry instanceof ZipEntry &&
-                    "store".equals(element.getAttribute("method")))
+                    "store".equals(element.getAttribute("method"))) {
                     ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+                }
                 putEntry(os, entry);
 
                 if(!"collection".equals(type))
                 {
                     byte[] value;
+                    CRC32 chksum = new CRC32();
                     Node content = element.getFirstChild();
 
 
@@ -279,6 +282,12 @@ public abstract class AbstractCompressFunction extends BasicFunction
                         }
                     }
 
+                    if (entry instanceof ZipEntry &&
+                        "store".equals(element.getAttribute("method"))) {
+                        chksum.update(value);
+                        ((ZipEntry) entry).setCrc(chksum.getValue());
+                        ((ZipEntry) entry).setSize(value.length);
+                    }
                     os.write(value);
                 }
             }
@@ -318,6 +327,10 @@ public abstract class AbstractCompressFunction extends BasicFunction
 	private void compressResource(OutputStream os, DocumentImpl doc, boolean useHierarchy, String stripOffset, String method, String name) throws IOException, SAXException {
 		// create an entry in the Tar for the document
 		Object entry = null;
+        byte[] value = new byte[0];
+        CRC32 chksum = new CRC32();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+
                 if(name != null)
                 {
                     entry = newEntry(name);
@@ -330,9 +343,9 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			entry = newEntry(doc.getFileURI().toString());
 		}
         if (entry instanceof ZipEntry &&
-            "store".equals(method))
+            "store".equals(method)) {
             ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
-                
+        }
 		putEntry(os, entry);
 		if (doc.getResourceType() == DocumentImpl.XML_FILE) {
 			// xml file
@@ -340,7 +353,8 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			serializer.setUser(context.getUser());
 			serializer.setProperty("omit-xml-declaration", "no");
 			String strDoc = serializer.serialize(doc);
-			os.write(strDoc.getBytes());
+            value = strDoc.getBytes();            
+            os.write(value);
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
             InputStream is = context.getBroker().getBinaryResource((BinaryDocument)doc);
@@ -348,10 +362,26 @@ public abstract class AbstractCompressFunction extends BasicFunction
             int len = 0;
             while ((len=is.read(data,0,data.length))>0) {
             	os.write(data,0,len);
+            	baos.write(data,0,len);
+                
             }
             is.close();
+            //  Only do this if we need crc.
+            if (entry instanceof ZipEntry &&
+                "store".equals(method)) {
+                value = baos.toByteArray();
+            }
+
+
 		}
 		// close the entry
+        if (entry instanceof ZipEntry &&
+            "store".equals(method)) {
+            chksum.update(value);
+            ((ZipEntry) entry).setCrc(chksum.getValue());
+            ((ZipEntry) entry).setSize(value.length);
+        }
+        
 		closeEntry(os);
 	}
 	
