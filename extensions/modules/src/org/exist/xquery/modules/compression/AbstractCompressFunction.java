@@ -237,11 +237,6 @@ public abstract class AbstractCompressFunction extends BasicFunction
             {
                 
                 entry = newEntry(name);
-                if (entry instanceof ZipEntry &&
-                    "store".equals(element.getAttribute("method"))) {
-                    ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
-                }
-                putEntry(os, entry);
 
                 if(!"collection".equals(type))
                 {
@@ -284,10 +279,13 @@ public abstract class AbstractCompressFunction extends BasicFunction
 
                     if (entry instanceof ZipEntry &&
                         "store".equals(element.getAttribute("method"))) {
+                        ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
                         chksum.update(value);
                         ((ZipEntry) entry).setCrc(chksum.getValue());
                         ((ZipEntry) entry).setSize(value.length);
                     }
+                    putEntry(os, entry);
+                    
                     os.write(value);
                 }
             }
@@ -342,11 +340,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		} else {
 			entry = newEntry(doc.getFileURI().toString());
 		}
-        if (entry instanceof ZipEntry &&
-            "store".equals(method)) {
-            ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
-        }
-		putEntry(os, entry);
+
 		if (doc.getResourceType() == DocumentImpl.XML_FILE) {
 			// xml file
 			Serializer serializer = context.getBroker().getSerializer();
@@ -354,34 +348,28 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			serializer.setProperty("omit-xml-declaration", "no");
 			String strDoc = serializer.serialize(doc);
             value = strDoc.getBytes();            
-            os.write(value);
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
             InputStream is = context.getBroker().getBinaryResource((BinaryDocument)doc);
 			byte[] data = new byte[16384];
             int len = 0;
             while ((len=is.read(data,0,data.length))>0) {
-            	os.write(data,0,len);
             	baos.write(data,0,len);
-                
             }
             is.close();
-            //  Only do this if we need crc.
-            if (entry instanceof ZipEntry &&
-                "store".equals(method)) {
-                value = baos.toByteArray();
-            }
-
-
+            value = baos.toByteArray();
 		}
 		// close the entry
         if (entry instanceof ZipEntry &&
             "store".equals(method)) {
+            ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
             chksum.update(value);
             ((ZipEntry) entry).setCrc(chksum.getValue());
             ((ZipEntry) entry).setSize(value.length);
         }
-        
+
+		putEntry(os, entry);
+        os.write(value);
 		closeEntry(os);
 	}
 	
