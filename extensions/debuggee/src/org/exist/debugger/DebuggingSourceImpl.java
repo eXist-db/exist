@@ -21,14 +21,9 @@
  */
 package org.exist.debugger;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.exist.debugger.model.Breakpoint;
-import org.exist.debugger.model.BreakpointImpl;
-import org.exist.debugger.model.Location;
-import org.exist.debugger.model.Variable;
+import org.exist.debugger.model.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -40,7 +35,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	
 	private String fileURI;
 	
-	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
+//	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
 	
 	protected DebuggingSourceImpl(Debugger debugger, String fileURI) {
 		this.debugger = debugger;

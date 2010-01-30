@@ -125,6 +125,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 			Subject subject = new Subject();
 			
 			//TODO: hardcoded to jetty - rewrite
+			//*******************************************************
 			DefaultIdentityService _identityService = new DefaultIdentityService();
 			UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
             
@@ -132,7 +133,8 @@ public class AuthenticatorOpenId extends HttpServlet {
 			
 			Authentication cached=new SessionAuthentication(session,authenticator,user);
             session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
-			
+			//*******************************************************
+            
 			resp.sendRedirect(returnURL);
 		}
 	}

@@ -386,7 +386,6 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		//disconnect debuggee & compiled source
 		XQueryContext context = compiledXQuery.getContext();
-		context.setDebugMode(false);
 		context.setDebuggeeJoint(null);
 		compiledXQuery = null;
 		

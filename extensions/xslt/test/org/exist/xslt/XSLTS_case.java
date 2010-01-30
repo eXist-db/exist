@@ -35,6 +35,8 @@ import java.util.StringTokenizer;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.junit.After;
 import org.junit.Before;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -80,6 +82,15 @@ public class XSLTS_case {
 			e.printStackTrace();
 		}
 	}
+	
+	@After
+	public void shutdown() throws Exception {
+		DatabaseInstanceManager dim =
+		    (DatabaseInstanceManager) col.getService(
+		        "DatabaseInstanceManager", "1.0");
+		dim.shutdown();
+	}
+	
 
 	protected void testCase(String inputURL, String xslURL, String outputURL) throws Exception {
 		String input = loadFile("test/external/XSLTS_1_1_0/TestInputs/"+inputURL, false);
