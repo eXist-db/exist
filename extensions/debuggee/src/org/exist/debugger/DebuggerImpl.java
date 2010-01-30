@@ -66,7 +66,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	int currentTransactionId = 1;
 	
-	private String lastStatus = FIRST_RUN;
+//	private String lastStatus = FIRST_RUN;
 
 	public DebuggerImpl() {
 	}
@@ -186,8 +186,8 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 						response.getTransactionID()))
 			currentCommand.putResponse(response);
 
-		if (response.hasAttribute("status"))
-			lastStatus = response.getAttribute("status");
+//		if (response.hasAttribute("status"))
+//			lastStatus = response.getAttribute("status");
 		
 		//it should be commands map, this implementation is dangerous
 		//rethink!!!
@@ -348,7 +348,8 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		
 		command.toDebuggee();
 
-		Response response = getResponse(command.getTransactionId());
+//		Response response = 
+			getResponse(command.getTransactionId());
 		
 		//XXX: handle error
 
@@ -361,7 +362,8 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		
 		command.toDebuggee();
 
-		Response response = getResponse(command.getTransactionId());
+//		Response response = 
+			getResponse(command.getTransactionId());
 		
 		//XXX: handle error
 
