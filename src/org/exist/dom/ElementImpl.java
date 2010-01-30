@@ -738,6 +738,7 @@ public class ElementImpl extends NamedNode implements Element {
                 String ns = entry.getValue().toString();
                 QName attrName = new QName(prefix, Namespaces.XMLNS_NS, "xmlns");
                 AttrImpl attr = new AttrImpl(attrName, ns);
+                attr.setOwnerDocument(ownerDocument);
                 map.setNamedItem(attr);
             }
         }
