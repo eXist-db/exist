@@ -134,8 +134,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		else if(docName != null)
 			docName = new AnyURIValue(docName).toXmldbURI().toString();
 		
+		Item item = args[2].itemAt(0);
         String mimeType = MimeType.XML_TYPE.getName();
-		boolean binary = false;
+		boolean binary = !Type.subTypeOf(item.getType(), Type.NODE);
+		
 		if(getSignature().getArgumentCount() == 4) {
 		    mimeType = args[3].getStringValue();
 		    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
@@ -150,8 +152,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             }
         }
 		
-		Item item =
-			args[2].itemAt(0);
 		Resource resource;
 		try {
 			if(Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
@@ -175,8 +175,9 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			} else {
 				if(binary) {
 					resource = collection.createResource(docName, "BinaryResource");
-                } else
+                } else {
 					resource = collection.createResource(docName, "XMLResource");
+                }
 
 				if(Type.subTypeOf(item.getType(), Type.STRING)) {
 					resource.setContent(item.getStringValue());
