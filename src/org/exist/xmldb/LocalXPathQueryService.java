@@ -174,8 +174,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				context.setStaticallyKnownDocuments(docs);
 
 				if (variableDecls.containsKey(Debuggee.PREFIX+":session")) {
+					context.declareVariable(Debuggee.SESSION, variableDecls.get(Debuggee.PREFIX+":session"));
 					variableDecls.remove(Debuggee.PREFIX+":session");
-					context.setDebugMode(true);
 				}
 
 				setupContext(context);
