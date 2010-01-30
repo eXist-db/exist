@@ -56,6 +56,7 @@ import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.debuggee.Debuggee;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -1206,12 +1207,12 @@ public class RESTServer {
 		
 		String xdebug = request.getParameter("XDEBUG_SESSION_START");
 		if (xdebug != null)
-			compiled.getContext().setDebugMode(true);
+			compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
 		else {
 			//if have session
 			xdebug = request.getParameter("XDEBUG_SESSION");
 			if (xdebug != null) {
-				compiled.getContext().setDebugMode(true);
+				compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
 			} else {
 				//looking for session in cookies (FF XDebug Helper add-ons)
     			Cookie[] cookies = request.getCookies();
@@ -1219,7 +1220,7 @@ public class RESTServer {
         			for (int i = 0; i < cookies.length; i++) {
         				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
         					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
-        					compiled.getContext().setDebugMode(true);
+        					compiled.getContext().declareVariable(Debuggee.SESSION, cookies[i].getValue());
             				break;
         				}
         			}

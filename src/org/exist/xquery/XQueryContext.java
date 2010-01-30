@@ -34,6 +34,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
+import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
@@ -2722,6 +2723,7 @@ public class XQueryContext {
 			//*not* as standard NS
 			declareNamespace("exist", Namespaces.EXIST_NS);
 			//TODO : include "err" namespace ?
+			declareNamespace("dbgp", Debuggee.NAMESPACE_URI);
 		} catch (XPathException e) {
 			//TODO : ignored because it should never happen
 		}
@@ -2885,13 +2887,7 @@ public class XQueryContext {
 		return debuggeeJoint;
 	}
 	
-	private boolean isDebugMode = false;
-
-	public void setDebugMode(boolean isDebugMode) {
-		this.isDebugMode = isDebugMode;
-	}
-	
 	public boolean isDebugMode() {
-		return isDebugMode;
+		return (debuggeeJoint != null && isVarDeclared(Debuggee.SESSION));
 	}
 }

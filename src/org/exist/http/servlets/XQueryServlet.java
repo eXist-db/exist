@@ -437,13 +437,13 @@ public class XQueryServlet extends HttpServlet {
 
             //if get "start new debug session" request
     		String xdebug = request.getParameter("XDEBUG_SESSION_START");
-    		if (xdebug != null)
-    			context.declareVariable(Debuggee.PREFIX+":session",  xdebug);
-    		else {
+    		if (xdebug != null) {
+    			context.declareVariable(Debuggee.SESSION,  xdebug);
+    		} else {
     			//if have session
     			xdebug = request.getParameter("XDEBUG_SESSION");
     			if (xdebug != null) {
-    				context.declareVariable(Debuggee.PREFIX+":session",  xdebug);
+    				context.declareVariable(Debuggee.SESSION,  xdebug);
     			} else {
     				//looking for session in cookies (FF XDebug Helper add-ons)
         			Cookie[] cookies = request.getCookies();
@@ -451,7 +451,7 @@ public class XQueryServlet extends HttpServlet {
             			for (int i = 0; i < cookies.length; i++) {
             				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
             					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
-            					context.declareVariable(Debuggee.PREFIX+":session",  cookies[i].getValue());
+            					context.declareVariable(Debuggee.SESSION, cookies[i].getValue());
                 				break;
             				}
             			}

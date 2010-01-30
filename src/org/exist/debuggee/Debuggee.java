@@ -21,6 +21,7 @@
  */
 package org.exist.debuggee;
 
+import org.exist.dom.QName;
 import org.exist.xquery.CompiledXQuery;
 
 /**
@@ -31,6 +32,8 @@ public interface Debuggee {
 
 	public static final String NAMESPACE_URI = "http://www.xdebug.org/";
 	public static final String PREFIX = "dbgp";
+
+	public static final QName SESSION = new QName("session", NAMESPACE_URI, PREFIX);
 	
 	public void joint(CompiledXQuery compiledXQuery);
 }
