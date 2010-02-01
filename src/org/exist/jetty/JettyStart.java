@@ -81,6 +81,7 @@ public class JettyStart implements LifeCycle.Listener {
     private final static int STATUS_STOPPED = 3;
 
     private int status = STATUS_STOPPED;
+    private Thread shutdownHook = null;
     
     public JettyStart() {
         // Additional checks XML libs @@@@
@@ -172,7 +173,7 @@ public class JettyStart implements LifeCycle.Listener {
             configureCluster(config);
 
         } catch (Exception e) {
-            logger.error("configuration error: " + e.getMessage());
+            logger.error("configuration error: " + e.getMessage(), e);
             e.printStackTrace();
             return;
         }
@@ -228,12 +229,11 @@ public class JettyStart implements LifeCycle.Listener {
 
             if (registerShutdownHook) {
                 // register a shutdown hook for the server
-                Thread hook = new Thread() {
+                shutdownHook = new Thread() {
 
                     @Override
                     public void run() {
                         setName("Shutdown");
-                        Runtime.getRuntime().removeShutdownHook(this);
                         BrokerPool.stopAll(true);
                         try {
                             server.stop();
@@ -246,7 +246,7 @@ public class JettyStart implements LifeCycle.Listener {
                         }
                     }
                 };
-                Runtime.getRuntime().addShutdownHook(hook);
+                Runtime.getRuntime().addShutdownHook(shutdownHook);
             }
             
         } catch (MultiException e) {
@@ -281,6 +281,8 @@ public class JettyStart implements LifeCycle.Listener {
     }
 
     public synchronized void shutdown() {
+        if (shutdownHook != null)
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
         BrokerPool.stopAll(false);
         while (status != STATUS_STOPPED) {
             try {
