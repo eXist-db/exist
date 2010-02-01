@@ -20,7 +20,7 @@
  *  
  *  $Id: BuiltinFunctions.java 9598 2009-07-31 05:45:57Z ixitar $
  */
-package org.exist.xquery.functions.util;
+package org.exist.xquery.modules.context;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -53,7 +53,7 @@ public class ContextAttributes extends Function
 	public final static FunctionSignature signatures[] = {
 		
         new FunctionSignature(
-            new QName( "get-context-attribute", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+            new QName( "get-context-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
             "Returns the value associated with the given name, which was stored in the XQuery" +
             "context. This function is useful for storing temporary information if you don't have " +
 			"a servlet request or session, that is you're running an XQuery as a scheduled task.",
@@ -64,7 +64,7 @@ public class ContextAttributes extends Function
         ),
 		
         new FunctionSignature(
-            new QName( "set-context-attribute", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+            new QName( "set-context-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
             "Set the value of an XQuery context attribute with the specified name " +
 			"This function is useful for storing temporary information if you don't have " +
 			"a servlet request or session, that is you're running an XQuery as a scheduled task.",
