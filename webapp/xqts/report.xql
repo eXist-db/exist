@@ -37,6 +37,10 @@ declare function xqts:initialize() as element()? {
                 if (doc-available("/db/XQTS/config.xml")) then doc("/db/XQTS/config.xml")/config else ()               
 };
 
+declare function xqts:read($filePath as xs:string) {
+	system:as-user("admin", (), file:read($filePath, "UTF-8"))
+};
+
 (:~ The required stylesheets were not found in the db. Try to import them. :)
 declare function xqts:import-stylesheet() as xs:string* {
     let $home := system:get-exist-home()
@@ -77,7 +81,7 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
    let $query-name := $case//catalog:query/@name
    let $path := concat(xqts:path-to-uri($xqts:XQTS_HOME), "Queries/XQuery/", 
        $case/@FilePath, $query-name, ".xq")
-   let $xq-string := file:read($path)
+   let $xq-string := xqts:read($path)
    return $xq-string
    (: let $tokenized := tokenize($xq-string, "\n")
    for $token in $tokenized return
