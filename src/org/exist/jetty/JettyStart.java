@@ -233,6 +233,7 @@ public class JettyStart implements LifeCycle.Listener {
                     @Override
                     public void run() {
                         setName("Shutdown");
+                        Runtime.getRuntime().removeShutdownHook(this);
                         BrokerPool.stopAll(true);
                         try {
                             server.stop();
