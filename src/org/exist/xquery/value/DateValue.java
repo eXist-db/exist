@@ -78,7 +78,7 @@ public class DateValue extends AbstractDateTimeValue {
 			case Type.DATE :
 			case Type.ATOMIC :
 			case Type.ITEM :
-				return new DateValue(getStringValue());			
+                return this;
 			case Type.DATE_TIME :
 				return new DateTimeValue(calendar);
             case Type.GYEAR :
