@@ -53,7 +53,7 @@ public class ContextAttributes extends Function
 	public final static FunctionSignature signatures[] = {
 		
         new FunctionSignature(
-            new QName( "get-context-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
+            new QName( "get-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
             "Returns the value associated with the given name, which was stored in the XQuery" +
             "context. This function is useful for storing temporary information if you don't have " +
 			"a servlet request or session, that is you're running an XQuery as a scheduled task.",
@@ -64,7 +64,7 @@ public class ContextAttributes extends Function
         ),
 		
         new FunctionSignature(
-            new QName( "set-context-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
+            new QName( "set-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
             "Set the value of an XQuery context attribute with the specified name " +
 			"This function is useful for storing temporary information if you don't have " +
 			"a servlet request or session, that is you're running an XQuery as a scheduled task.",
@@ -107,7 +107,7 @@ public class ContextAttributes extends Function
 		
 		String attribName = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
 		
-        if( isCalledAs( "get-context-attribute" ) ) {
+        if( isCalledAs( "get-attribute" ) ) {
            	ret =  retrieveAttribute( context, attribName );
         } else {
 			Sequence attribValue = getArgument( 1 ).eval( contextSequence, contextItem );
