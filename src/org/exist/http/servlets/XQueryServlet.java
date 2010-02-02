@@ -334,7 +334,7 @@ public class XQueryServlet extends HttpServlet {
                 if(descriptor.allowSource(path)) {
                     //Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
-                    response.setContentType("text/plain;charset=" + formEncoding);
+                    response.setContentType("text/plain; charset=" + formEncoding);
                     output.write(source.getContent());
                     output.flush();
                     return;
@@ -361,7 +361,7 @@ public class XQueryServlet extends HttpServlet {
             contentType = this.contentType;
         } finally {
             if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
-                contentType += ";charset=" + formEncoding;
+                contentType += "; charset=" + formEncoding;
             response.setContentType(contentType );
         }
         
