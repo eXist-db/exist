@@ -220,7 +220,7 @@ public class LocationStep extends Step {
 			result = new ValueSequence();
 			if (contextSequence.isPersistentSet()) {
 				NodeSet contextSet = contextSequence.toNodeSet();
-				outerSequence = contextSet.getParents(getExpressionId());
+				outerSequence = contextSet.getParents(-1);
 				for (SequenceIterator i = outerSequence.iterate(); i.hasNext();) {
 					NodeValue node = (NodeValue) i.nextItem();
 					Sequence newContextSeq = contextSet.selectParentChild(
