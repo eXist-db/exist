@@ -121,7 +121,9 @@ public class XQueryServlet extends HttpServlet {
     private String formEncoding = null;
     private String encoding = null;
     private String contentType = null;
-    
+
+    private BrokerPool pool;
+
     /* (non-Javadoc)
      * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
      */
@@ -139,18 +141,22 @@ public class XQueryServlet extends HttpServlet {
             throw new ServletException(errorMessage+": " + e.getMessage(), e);
         }
 
+        try {
+			pool = BrokerPool.getInstance();
+		} catch (EXistException e) {
+            throw new ServletException("Could not intialize db: " + e.getMessage(), e);
+		}
+        
         String username = config.getInitParameter("user");
         if(username != null) {
         	String password = config.getInitParameter("password");
         	User user;
 			try {
-				user = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
+				user = pool.getSecurityManager().authenticate(username, password);
 	        	if (user != null && user.isAuthenticated())
 	        		defaultUser = user;
 			} catch (AuthenticationException e) {
 				LOG.error("User can not be authenticated ("+username+"), using default user.");
-			} catch (EXistException e) {
-				LOG.error(e);
 			}
         }
         String confCollectionURI = config.getInitParameter("uri");
@@ -395,20 +401,19 @@ public class XQueryServlet extends HttpServlet {
             String password = getSessionAttribute(session, "password");
             
 			try {
-				User newUser = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
+				User newUser = pool.getSecurityManager().authenticate(username, password);
 	        	if (newUser != null && newUser.isAuthenticated())
 	        		user = newUser;
 			} catch (AuthenticationException e) {
 				LOG.error("User can not be authenticated ("+username+").");
-			} catch (EXistException e) {
-				LOG.error(e);
 			}
         }
 
         String requestAttr = (String) request.getAttribute("xquery.attribute");
 
+        DBBroker broker = null;
         try {
-        	DBBroker broker = BrokerPool.getInstance().get(user);
+        	broker = pool.get(user);
             XQuery xquery = broker.getXQueryService();
             CompiledXQuery query = xquery.getXQueryPool().borrowCompiledXQuery(broker, source);
 
@@ -491,6 +496,8 @@ public class XQueryServlet extends HttpServlet {
             	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             	sendError(output, "Error", e.getMessage());
             }
+        } finally {
+            pool.release(broker);
         }
 
         output.flush();
