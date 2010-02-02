@@ -58,7 +58,8 @@ public class RegexpFilter extends BasicFunction {
 	protected static final FunctionParameterSequenceType TEXT_PARAM = new FunctionParameterSequenceType("text", Type.STRING, Cardinality.EXACTLY_ONE, "The text to filter");
 
 	// Setup function signature
-    public final static FunctionSignature signatures[] = {new FunctionSignature(
+    public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
             new QName("filter", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "Filter substrings that match the regular expression in the text.",
             new SequenceType[]{
@@ -66,8 +67,8 @@ public class RegexpFilter extends BasicFunction {
                 REGEX_PARAM
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the substrings")
-    ),
-	new FunctionSignature(
+	    ),
+		new FunctionSignature(
 			new QName("groups", TextModule.NAMESPACE_URI, TextModule.PREFIX),
 			"Tries to match the string in $text to the regular expression. " +
 			"Returns an empty sequence if the string does not match, or a sequence whose " +
@@ -85,6 +86,39 @@ public class RegexpFilter extends BasicFunction {
 			"the flags specified. Returns an empty sequence if the string does "+
 			"not match, or a sequence whose first item is the entire string, and whose " +
 			"following items are the matched groups.",
+			new SequenceType[] {
+                TEXT_PARAM,
+                REGEX_PARAM,
+				FLAGS_PARAM,
+				},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "an empty sequence if the string does "+
+			"not match, or a sequence whose first item is the entire string, and whose " +
+			"following items are the matched groups.")
+		),
+		new FunctionSignature(
+			new QName("groups-regex", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+			"Tries to match the string in $text to the regular expression. " +
+			"Returns an empty sequence if the string does not match, or a sequence whose " +
+			"first item is the entire string, and whose following items are the matched groups. " +
+			"Note:\n\n" +
+			"The groups-regex() variants of the groups() functions are identical except that they avoid the translation of the specified regular expression from XPath2 to Java syntax. " +
+			"That is, the regular expression is evaluated as is, and must be valid according to Java regular expression syntax, rather than the more restrictive XPath2 syntax.",
+			new SequenceType[] {
+                TEXT_PARAM,
+                REGEX_PARAM
+				},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "an empty sequence if the string does not match, or a sequence whose " +
+			"first item is the entire string, and whose following items are the matched groups.")
+		),
+		new FunctionSignature(
+			new QName("groups-regex", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+			"Tries to match the string in $text to the regular expression, using " +
+			"the flags specified. Returns an empty sequence if the string does "+
+			"not match, or a sequence whose first item is the entire string, and whose " +
+			"following items are the matched groups. " +
+			"Note:\n\n" +
+			"The groups-regex() variants of the groups() functions are identical except that they avoid the translation of the specified regular expression from XPath2 to Java syntax. " +
+			"That is, the regular expression is evaluated as is, and must be valid according to Java regular expression syntax, rather than the more restrictive XPath2 syntax.",
 			new SequenceType[] {
                 TEXT_PARAM,
                 REGEX_PARAM,
@@ -187,7 +221,14 @@ public class RegexpFilter extends BasicFunction {
 
     private Sequence evalGeneric(Sequence[] args, Sequence stringArg) throws XPathException {
         String string = stringArg.getStringValue();
-		String pattern = translateRegexp(args[1].getStringValue());
+		
+		String pattern;
+		
+		if( isCalledAs( "groups-regex" ) ) {
+			pattern = args[1].getStringValue();
+		} else {
+			pattern = translateRegexp(args[1].getStringValue());
+		}
         
 		int flags = 0;
         if(args.length==3)

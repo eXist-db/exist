@@ -23,6 +23,7 @@ package org.exist.xquery.functions.text;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.functions.FunMatches;
 
 
 /**
@@ -55,12 +56,17 @@ public class TextModule extends AbstractInternalModule {
         new FunctionDef(RegexpFilter.signatures[0], RegexpFilter.class),
         new FunctionDef(RegexpFilter.signatures[1], RegexpFilter.class),
         new FunctionDef(RegexpFilter.signatures[2], RegexpFilter.class),
+        new FunctionDef(RegexpFilter.signatures[3], RegexpFilter.class),
+        new FunctionDef(RegexpFilter.signatures[4], RegexpFilter.class),
         new FunctionDef(Tokenize.signature, Tokenize.class),
         new FunctionDef(MatchRegexp.signatures[0], MatchRegexp.class),
         new FunctionDef(MatchRegexp.signatures[1], MatchRegexp.class),
         new FunctionDef(MatchRegexp.signatures[2], MatchRegexp.class),
         new FunctionDef(MatchRegexp.signatures[3], MatchRegexp.class),
         new FunctionDef(FilterNested.signature, FilterNested.class),
+	
+		new FunctionDef(FunMatches.text_signatures[0], FunMatches.class),
+        new FunctionDef(FunMatches.text_signatures[1], FunMatches.class)
     };
     
     /**

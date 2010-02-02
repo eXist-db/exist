@@ -43,6 +43,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.functions.text.TextModule;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -84,6 +85,12 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 	protected static final String FUNCTION_DESCRIPTION_2_PARAM_2 =
 		"An error is raised [err:FORX0001] if the value of $flags is invalid " +
 		"according to the rules described in section 7.6.1 Regular Expression Syntax.";
+	
+	protected static final String FUNCTION_DESCRIPTION_REGEX =
+		"If $input is the empty sequence, it is interpreted as the zero-length string.\n\n" +
+		"Note:\n\n" +
+		"The text:matches-regex() variants of the fn:matches() functions are identical except that they avoid the translation of the specified regular expression from XPath2 to Java syntax. " +
+		"That is, the regular expression is evaluated as is, and must be valid according to Java regular expression syntax, rather than the more restrictive XPath2 syntax.";
 
 	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_MORE, "The input string");
 	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern");
@@ -99,6 +106,24 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 		new FunctionSignature(
 			new QName("matches", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_COMMON +
+            FUNCTION_DESCRIPTION_2_PARAM_2,
+			new SequenceType[] { INPUT_ARG, PATTERN_ARG, FLAGS_ARG },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
+		)
+	};
+		
+	// The following alternative functions are located in the text namespace! If the indexes of the signatures change then change TextModule as well!
+		
+	public final static FunctionSignature text_signatures[] = {
+		new FunctionSignature(
+			new QName("matches-regex", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_REGEX,
+			new SequenceType[] { INPUT_ARG, PATTERN_ARG },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
+		),
+		new FunctionSignature(
+			new QName("matches-regex", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+			FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_REGEX +
             FUNCTION_DESCRIPTION_2_PARAM_2,
 			new SequenceType[] { INPUT_ARG, PATTERN_ARG, FLAGS_ARG },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
@@ -185,7 +210,15 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
-        String pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue());
+		
+        String pattern;
+		
+		if( isCalledAs( "matches-regex" ) ) {
+			pattern = getArgument(1).eval(contextSequence).getStringValue();
+		} else {
+			pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue());
+		}
+		
         boolean caseSensitive = true;
         int flags = 0;
         if(getSignature().getArgumentCount() == 3) {
@@ -335,7 +368,15 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         }
         
         Sequence result = null;
-        String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+		
+        String pattern;
+		
+		if( isCalledAs( "matches-regex" ) ) {
+			pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+		} else {
+			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+		}
+		
         NodeSet nodes = input.toNodeSet();
         // get the type of a possible index
 		int indexType = nodes.getIndexType();
@@ -434,7 +475,13 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
      */
     private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
         String string = stringArg.getStringValue();
-		String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+		String pattern;
+		
+		if( isCalledAs( "matches-regex" ) ) {
+			pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+		} else {
+			pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+		}
         
 		int flags = 0;
         if(getSignature().getArgumentCount() == 3)
