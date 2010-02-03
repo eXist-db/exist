@@ -61,12 +61,14 @@ import java.util.Observable;
  */
 public abstract class DBBroker extends Observable {
 
-	public final static int MATCH_EXACT = 0;
-
-	public final static int MATCH_REGEXP = 1;
-
-	public final static int MATCH_WILDCARDS = 2;
-
+	// Matching types
+	public final static int MATCH_EXACT 		= 0;
+	public final static int MATCH_REGEXP 		= 1;
+	public final static int MATCH_WILDCARDS 	= 2;
+	public final static int MATCH_CONTAINS 		= 3;
+	public final static int MATCH_STARTSWITH 	= 4;
+	public final static int MATCH_ENDSWITH 		= 5;
+	
 	public final static String ROOT_COLLECTION_NAME = "db";
 
 	public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
