@@ -250,14 +250,20 @@ public class NativeBroker extends DBBroker {
             // Initialize DOM storage
 		    domDb = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
 		    if (domDb == null)
-		    	domDb =	new DOMFile(pool, DOM_DBX_ID, dataDir, config);	                        
-		    readOnly = readOnly || domDb.isReadOnly();    
+		    	domDb =	new DOMFile(pool, DOM_DBX_ID, dataDir, config);
+            if (domDb.isReadOnly()) {
+                LOG.warn(domDb.getFile().getName() + " is read-only!");
+                readOnly = true;
+            }
             
 		    //Initialize collections storage            
             collectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
 		    if (collectionsDb == null)
-		    	collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);	
-		    readOnly = readOnly || collectionsDb.isReadOnly();
+		    	collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
+            if (collectionsDb.isReadOnly()) {
+                LOG.warn(collectionsDb.getFile().getName() + " is read-only!");
+                readOnly = true;
+            }
 	            
 		    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
 		    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);

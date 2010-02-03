@@ -402,17 +402,22 @@ public abstract class Paged {
                     raf = new RandomAccessFile(file, "rw");
                     FileChannel channel = raf.getChannel();   
                     FileLock lock = channel.tryLock();
-                    if (lock == null)
+                    if (lock == null) {
+                        LOG.warn("Failed to acquire a file lock on " + file.getName() +
+                            ". Probably another process is holding the lock. Switching to " +
+                            "read-only mode.");
                         readOnly = true;
+                    }
                     //TODO : who will release the lock ? -pb
                 } catch (NonWritableChannelException e) {
                     //No way : switch to read-only mode
                     readOnly = true;
                     raf = new RandomAccessFile(file, "r");
                     //TODO : log this !!!
-                    LOG.warn(e);
+                    LOG.warn("Failed to open " + file.getName() + " for writing. Switching to read-only mode.", e);
                 }                    
 			} else {
+                LOG.warn("Cannot write to file " + file.getName() + ". Switching to read-only mode.");
                 readOnly = true;
                 raf = new RandomAccessFile(file, "r");
 			}

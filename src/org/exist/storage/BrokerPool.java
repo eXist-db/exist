@@ -763,7 +763,10 @@ public class BrokerPool extends Observable {
         }
 
         symbols = new SymbolTable(this, conf);
-        isReadOnly = isReadOnly || !symbols.getFile().canWrite();
+        if (!symbols.getFile().canWrite()) {
+            LOG.warn("Cannot write to " + symbols.getFile().getName() + ". Switching to read-only mode.");
+            isReadOnly = true;
+        }
         
         indexManager = new IndexManager(this, conf);
 
