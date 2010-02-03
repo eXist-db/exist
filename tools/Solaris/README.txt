@@ -81,6 +81,41 @@ NOTE - This operation must be performed in the zone where you will be running eX
 # svccfg import /var/svc/manifest/application/eXist-standalone.smf.xml
 
 
+########
+# NOTE #
+########
+Before starting eXist, you must ensure that the admin password in the svc-eXist-standalone script matches the actual eXist password. By default eXist ships with no password whatsover.
+To set the admin password of eXist to "admin" - 
+
+Using two terminals makes the process much easier -
+
+Terminal 1
+----------
+Start up an interactive instance of the eXist server -
+
+$ su root
+# su - exist
+$ /opt/eXist/bin/startup.sh
+
+Terminal 2
+----------
+Connect to eXist with the admin client and set the admin password -
+
+$ su root
+# su - exist
+$ /opt/eXist/bin/client.sh -s
+
+exist:/db>passwd admin
+password: admin
+re-enter password: admin
+exist:/db>quit
+
+You can then check that shutting down eXist with the admin password now works, if successful you should then see the server in Terminal 1 shutdown -
+
+$ /opt/eXist/bin/shutdown.sh -p admin --uri=xmldb:exist://localhost:8080/exist/xmlrpc
+########
+
+
 9) Enable and start the eXist Standalone service -
 
 # svcadm -v enable eXist
