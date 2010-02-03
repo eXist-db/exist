@@ -216,9 +216,9 @@ public class ValueIndexTest extends TestCase {
      * Bugfix
      *
      * These following two tests were put in place to demonstrate bugs in how the index matching functions work,
-     * as a precursor to a fix, which will be coming shortly. The issue is that the 2nd parameter
-	 * to the string matching functions is incorrectly interpreted as a regex, which will cause an exception
-	 * to be thrown if the string includes characters that have special meaning in a regex, eg. '*' for contains.
+     * as a precursor to a fix, which was committed 2/3/2010. The issue was that the 2nd parameter
+	 * to the string matching functions was incorrectly interpreted as a regex, which causd an exception
+	 * to be thrown if the string included characters that have special meaning in a regex, eg. '*' for contains.
 	 *
 	 * andrzej@chaeron.com
      */
@@ -231,8 +231,6 @@ public class ValueIndexTest extends TestCase {
             testCollection.storeResource( resource );
 
             XPathQueryService service = (XPathQueryService) testCollection.getService( "XPathQueryService", "1.0" );
-			
-			// The following three tests will match but shouldn't!
 			
 			queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '^*' ) ]", 0);
             queryResource(service, "mondial-test.xml", "//city[ contains( name, '^*' ) ]", 0);
@@ -254,8 +252,6 @@ public class ValueIndexTest extends TestCase {
             testCollection.storeResource( resource );
 
             XPathQueryService service = (XPathQueryService) testCollection.getService( "XPathQueryService", "1.0" );
-
-			// The following three tests throw invalid regex exceptions, but shouldn't!
 			
 			try {
             	queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '(*' ) ]", 0);

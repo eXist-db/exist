@@ -676,38 +676,64 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 		                } else {
 				        	//key with truncation, match key
-                            if (LOG.isTraceEnabled())
+                            if( LOG.isTraceEnabled() ) {
                                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
 		                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'" );
+							}
 
-                            if (LOG.isTraceEnabled())
+                            if( LOG.isTraceEnabled() ) {
 			        			LOG.trace("Using range index for key: " + key.getStringValue());
+							}
                             
 							try {
                                 NodeSet ns;
 								
-								String regex;
+								String 	matchString = key.getStringValue();
 								
-								if( collator == null ) {
-									regex = getRegexp(key.getStringValue()).toString();
-								} else {
-									// Don't change the key if we're going to do a Collator-based comparison
-									regex = key.getStringValue();
+								int		matchType;
+								
+								// Figure out what type of matching we need to do.
+								
+								switch( truncation ) {
+									case Constants.TRUNC_RIGHT:
+										matchType = DBBroker.MATCH_STARTSWITH;
+										break;
+										
+									case Constants.TRUNC_LEFT:
+										matchType = DBBroker.MATCH_ENDSWITH;
+										break;
+										
+									case Constants.TRUNC_BOTH:
+										matchType = DBBroker.MATCH_CONTAINS;
+										break;
+										
+									case Constants.TRUNC_EQUALS:
+										matchType = DBBroker.MATCH_EXACT;
+										break;
+										
+									default:
+										// We should never get here!
+										LOG.error( "Invalid truncation type: " + truncation );
+										throw( new XPathException( this, "Invalid truncation type: " + truncation ) );
 								}
 								
-                                if (indexScan)
-                                    ns = context.getBroker().getValueIndex().matchAll(docs, nodes, NodeSet.ANCESTOR, regex, DBBroker.MATCH_REGEXP, 0, true, collator, truncation);
-                                else
-                                    ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR, regex, contextQName, DBBroker.MATCH_REGEXP, collator, truncation);
+                                if( indexScan ) {
+                                    ns = context.getBroker().getValueIndex().matchAll(docs, nodes, NodeSet.ANCESTOR, matchString, matchType, 0, true, collator, truncation);
+								} else {
+                                    ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR, matchString, contextQName, matchType, collator, truncation);
+								}
+								
 								hasUsedIndex = true;
 
-								if (result == null)
+								if( result == null ) {
 									result = ns;
-								else
+								} else {
 									result = result.union(ns);
+								}
 
-							} catch (EXistException e) {
-								throw new XPathException(this, e.getMessage(), e);
+							} 
+							catch (EXistException e ) {
+								throw( new XPathException( this, e.getMessage(), e ) );
 							}
 						}
 			        } else {

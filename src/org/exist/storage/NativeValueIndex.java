@@ -803,15 +803,36 @@ public class NativeValueIndex implements ContentLoadingObserver {
     		}
         }
 
-		TermMatcher comparator;
+		TermMatcher matcher;
+		
+		// Select appropriate matcher/comparator
 		
 		if( collator == null ) {
-			comparator = new RegexMatcher(expr, type, flags);
+			switch( type ) {
+				case DBBroker.MATCH_EXACT:
+					matcher = new ExactMatcher( expr);
+					break;
+					
+				case DBBroker.MATCH_CONTAINS:
+					matcher = new ContainsMatcher( expr );
+					break;
+					
+				case DBBroker.MATCH_STARTSWITH:
+					matcher = new StartsWithMatcher( expr );
+					break;
+					
+				case DBBroker.MATCH_ENDSWITH:
+					matcher = new EndsWithMatcher( expr );
+					break;
+					
+				default:
+					matcher = new RegexMatcher( expr, type, flags );
+			}
 		} else {
-			comparator = new CollatorMatcher( expr, truncation, collator );
+			matcher = new CollatorMatcher( expr, truncation, collator );
 		}
 
-        final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
+        final MatcherCallback cb = new MatcherCallback(docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();
@@ -1060,6 +1081,77 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return this.getClass().getName() + " at "+ dbValues.getFile().getName() +
         " owned by " + broker.toString() + " (case sensitive = " + caseSensitive + ")";
     }
+
+	
+	//***************************************************************************
+	//*
+	//* 	Private Matcher Classes
+	//*
+	//***************************************************************************/	
+	
+	private class ExactMatcher implements TermMatcher 
+	{
+    	private String expr;
+	   
+	    public ExactMatcher( String expr ) throws EXistException 
+		{ 
+			this.expr = expr;        
+	    }
+
+		public boolean matches( CharSequence term ) 
+		{
+			return( term.toString() == expr );
+		}
+	}
+    
+	
+	private class ContainsMatcher implements TermMatcher 
+	{
+    	private String expr;
+	   
+	    public ContainsMatcher( String expr ) throws EXistException 
+		{ 
+			this.expr = expr;        
+	    }
+
+		public boolean matches( CharSequence term ) 
+		{
+			return( term.toString().contains( expr ) );
+		}
+	}
+	
+	
+	private class StartsWithMatcher implements TermMatcher 
+	{
+    	private String expr;
+	   
+	    public StartsWithMatcher( String expr ) throws EXistException 
+		{ 
+			this.expr = expr;        
+	    }
+
+		public boolean matches( CharSequence term ) 
+		{
+			return( term.toString().startsWith( expr ) );
+		}
+	}
+	
+	
+	private class EndsWithMatcher implements TermMatcher 
+	{
+    	private String expr;
+	   
+	    public EndsWithMatcher( String expr ) throws EXistException 
+		{ 
+			this.expr = expr;        
+	    }
+
+		public boolean matches( CharSequence term ) 
+		{
+			return( term.toString().endsWith( expr ) );
+		}
+	}
+	
 	
 	private class CollatorMatcher implements TermMatcher 
 	{
@@ -1116,6 +1208,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
 		}
 	}
     
+	
+	//***************************************************************************
+	//*
+	//* 	Private Callback Classes
+	//*
+	//***************************************************************************/	
+	
 	/** TODO document */
     class SearchCallback implements BTreeCallback {
         
@@ -1186,12 +1285,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
     
 	/** TODO document */
-    private class RegexCallback extends SearchCallback {
+    private class MatcherCallback extends SearchCallback {
     	
     	private TermMatcher matcher;
     	private XMLString key = new XMLString(128);
         
-    	public RegexCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher, boolean returnAncestor) {
+    	public MatcherCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher, boolean returnAncestor) {
     		super(docs, contextSet, result, returnAncestor);
     		this.matcher = matcher;
     	}
@@ -1305,6 +1404,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
+	
+	//***************************************************************************
+	//*
+	//* 	Other Private Classes
+	//*
+	//***************************************************************************/	
+	
     private static class QNameKey implements Comparable {
 
         private QName qname;
