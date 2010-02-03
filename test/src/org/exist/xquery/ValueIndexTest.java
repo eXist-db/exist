@@ -210,6 +210,83 @@ public class ValueIndexTest extends TestCase {
             fail(e.getMessage());
         }
     }
+	
+	
+	/*
+     * Bugfix
+     *
+     * These following two tests were put in place to demonstrate bugs in how the index matching functions work,
+     * as a precursor to a fix, which will be coming shortly. The issue is that the 2nd parameter
+	 * to the string matching functions is incorrectly interpreted as a regex, which will cause an exception
+	 * to be thrown if the string includes characters that have special meaning in a regex, eg. '*' for contains.
+	 *
+	 * andrzej@chaeron.com
+     */
+	public void testStringMatchingFunctions() throws Exception
+	{
+      	try {
+            configureCollection( CONFIG );
+            XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
+            resource.setContent( CITY );
+            testCollection.storeResource( resource );
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService( "XPathQueryService", "1.0" );
+			
+			// The following three tests will match but shouldn't!
+			
+			queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '^*' ) ]", 0);
+            queryResource(service, "mondial-test.xml", "//city[ contains( name, '^*' ) ]", 0);
+            queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '^*' ) ]", 0);
+		} 
+		catch( XMLDBException e ) {
+			e.printStackTrace();
+			fail( e.getMessage() );
+		}
+	}    
+    
+	
+	public void testStringMatchingFunctions2() throws Exception
+	{
+      	try {
+            configureCollection( CONFIG );
+            XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
+            resource.setContent( CITY );
+            testCollection.storeResource( resource );
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService( "XPathQueryService", "1.0" );
+
+			// The following three tests throw invalid regex exceptions, but shouldn't!
+			
+			try {
+            	queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '(*' ) ]", 0);
+			}
+			catch( Exception e ) {
+				e.printStackTrace();
+				fail( e.getMessage() );
+			}
+			
+			try {
+            	 queryResource(service, "mondial-test.xml", "//city[ contains( name, '*' ) ]", 0);
+			}
+			catch( Exception e ) {
+				e.printStackTrace();
+				fail( e.getMessage() );
+			}
+			
+			try {
+            	 queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '(*' ) ]", 0);
+			}
+			catch( Exception e ) {
+				e.printStackTrace();
+				fail( e.getMessage() );
+			}
+		} 
+		catch( XMLDBException e ) {
+			e.printStackTrace();
+			fail( e.getMessage() );
+		}
+	}    
+	
 
     public void testStrFunctionsQName() {
         try {
