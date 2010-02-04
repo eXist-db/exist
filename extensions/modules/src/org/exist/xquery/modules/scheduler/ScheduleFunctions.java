@@ -106,7 +106,7 @@ public class ScheduleFunctions extends BasicFunction
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
                 new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>"),
                 new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "The period in milliseconds to delay the start of a job."),
-                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution")
+                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution. A value of -1 means repeat forever.")
             },
             new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution"));
 	
@@ -156,7 +156,7 @@ public class ScheduleFunctions extends BasicFunction
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
                 new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>"),
                 new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job."),
-                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution")
+                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution. A value of -1 means repeat forever.")
             },
             new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution"));
 
