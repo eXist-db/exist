@@ -100,6 +100,7 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	        	throw new XQException("Invalid password for user '" + username + "'");
 	        }
 			
+	        //BUG: where release???
 	        //get a broker for the user
 	        DBBroker broker = pool.get(user);
 	        

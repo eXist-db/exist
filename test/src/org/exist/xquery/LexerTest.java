@@ -81,54 +81,59 @@ public class LexerTest extends TestCase {
 		TransactionManager transact = null;
 		Txn transaction = null;
 		try {
-			// parse the xml source
 			broker = pool.get(user);
-			transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            broker.saveCollection(transaction, collection);
-
-            IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), xml);
-            //TODO : unlock the collection here ?
-            collection.store(transaction, broker, info, xml, false);
-            transact.commit(transaction);
-		} catch (Exception e) {
-			transact.abort(transaction);
-            e.printStackTrace();
-            fail(e.getMessage());
-		}
-
-		try {
-            // parse the query into the internal syntax tree
-			XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
-			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
-			XQueryParser xparser = new XQueryParser(lexer);
-			XQueryTreeParser treeParser = new XQueryTreeParser(context);
-			xparser.xpath();
-			if (xparser.foundErrors()) {
-				System.err.println(xparser.getErrorMessage());
-				return;
+			try {
+				// parse the xml source
+				transact = pool.getTransactionManager();
+	            assertNotNull(transact);
+	            transaction = transact.beginTransaction();
+	            assertNotNull(transaction);
+	            Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+	            broker.saveCollection(transaction, collection);
+	
+	            IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), xml);
+	            //TODO : unlock the collection here ?
+	            collection.store(transaction, broker, info, xml, false);
+	            transact.commit(transaction);
+			} catch (Exception e) {
+				transact.abort(transaction);
+	            e.printStackTrace();
+	            fail(e.getMessage());
 			}
 
-			AST ast = xparser.getAST();
-			System.out.println("generated AST: " + ast.toStringTree());
-
-			PathExpr expr = new PathExpr(context);
-			treeParser.xpath(ast, expr);
-			if (treeParser.foundErrors()) {
-				System.err.println(treeParser.getErrorMessage());
-				return;
+			try {
+	            // parse the query into the internal syntax tree
+				XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+				XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+				XQueryParser xparser = new XQueryParser(lexer);
+				XQueryTreeParser treeParser = new XQueryTreeParser(context);
+				xparser.xpath();
+				if (xparser.foundErrors()) {
+					System.err.println(xparser.getErrorMessage());
+					return;
+				}
+	
+				AST ast = xparser.getAST();
+				System.out.println("generated AST: " + ast.toStringTree());
+	
+				PathExpr expr = new PathExpr(context);
+				treeParser.xpath(ast, expr);
+				if (treeParser.foundErrors()) {
+					System.err.println(treeParser.getErrorMessage());
+					return;
+				}
+				expr.analyze(new AnalyzeContextInfo());
+				// execute the query
+				Sequence result = expr.eval(null, null);
+	
+				// check results
+				System.out.println("----------------------------------");
+				System.out.println("found: " + result.getItemCount());
+			} catch (Exception e) {
+	            e.printStackTrace();
+	            fail(e.getMessage());
 			}
-			expr.analyze(new AnalyzeContextInfo());
-			// execute the query
-			Sequence result = expr.eval(null, null);
-
-			// check results
-			System.out.println("----------------------------------");
-			System.out.println("found: " + result.getItemCount());
-		} catch (Exception e) {
+		} catch (EXistException e) {
             e.printStackTrace();
             fail(e.getMessage());
 		} finally {
