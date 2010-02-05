@@ -78,10 +78,16 @@ public class XSL {
 	}
     
     protected static XSLStylesheet compile(ElementAtExist source) throws XPathException {
+    	BrokerPool pool = null;
+    	DBBroker broker = null;
     	try {
-			return compile(source, BrokerPool.getInstance().get(null));
+        	pool = BrokerPool.getInstance();
+    		broker = pool.get(null);
+			return compile(source, broker);
 		} catch (EXistException e) {
 			throw new XPathException(e);
+		} finally {
+			if (pool != null) pool.release(broker);
 		}
     }
 

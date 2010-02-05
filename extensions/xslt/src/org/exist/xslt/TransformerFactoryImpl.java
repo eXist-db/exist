@@ -74,6 +74,13 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 		throw new EXistException("that shouldn't happend. internal error.");
 	}
 
+	public void releaseBroker(DBBroker broker) throws EXistException {
+		if (pool != null)
+			pool.release(broker);
+		
+		throw new EXistException("that shouldn't happend. internal error.");
+	}
+
 	/* (non-Javadoc)
 	 * @see javax.xml.transform.TransformerFactory#getAssociatedStylesheet(javax.xml.transform.Source, java.lang.String, java.lang.String, java.lang.String)
 	 */
@@ -129,25 +136,41 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 		    	throw new TransformerConfigurationException("Compilation error.",e);
 			}
 		} else if (source instanceof InputStream) {
+			DBBroker broker = null;
 			try {
-				return XSL.compile((InputStream)source, getBroker());
+				broker = getBroker();
+				return XSL.compile((InputStream)source, broker);
 			} catch (XPathException e) {
 				LOG.debug(e);
 		    	throw new TransformerConfigurationException("Compilation error.",e);
 			} catch (EXistException e) {
 				LOG.debug(e);
 		    	throw new TransformerConfigurationException("Compilation error.",e);
+			} finally {
+				try {
+					releaseBroker(broker);
+				} catch (EXistException e) {
+			    	throw new TransformerConfigurationException("Compilation error.",e);
+				}
 			}
 		} else if (source instanceof StreamSource) {
+			DBBroker broker = null;
 			try {
-				return XSL.compile(((StreamSource)source).getInputStream(), getBroker());
+				broker = getBroker();
+				return XSL.compile(((StreamSource)source).getInputStream(), broker);
 			} catch (XPathException e) {
 				LOG.debug(e);
 				throw new TransformerConfigurationException("Compilation error.",e);
 			} catch (EXistException e) {
 				LOG.debug(e);
 		    	throw new TransformerConfigurationException("Compilation error.",e);
-			}
+			} finally {
+				try {
+					releaseBroker(broker);
+				} catch (EXistException e) {
+			    	throw new TransformerConfigurationException("Compilation error.",e);
+				}
+			} 
 		}
 		throw new TransformerConfigurationException("Not supported source "+source.getClass());
 	}
@@ -211,11 +234,19 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 
 	@Override
 	public TransformerHandler newTransformerHandler() throws TransformerConfigurationException {
+		DBBroker broker = null;
 		try {
-			return new TransformerHandlerImpl(new XSLContext(getBroker()), newTransformer());
+			broker = getBroker();
+			return new TransformerHandlerImpl(new XSLContext(broker), newTransformer());
 		} catch (EXistException e) {
 			LOG.debug(e);
 	    	throw new TransformerConfigurationException("Compilation error.",e);
+		} finally {
+			try {
+				releaseBroker(broker);
+			} catch (EXistException e) {
+		    	throw new TransformerConfigurationException("Compilation error.",e);
+			}
 		}
 	}
 
@@ -231,11 +262,19 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
         if (!(templates instanceof XSLStylesheet))
             throw new TransformerConfigurationException("Templates object was not created by exist xslt ("+templates.getClass()+")");
 
+        DBBroker broker = null;
         try {
-			return new TransformerHandlerImpl(new XSLContext(getBroker()), templates.newTransformer());
+        	broker = getBroker();
+			return new TransformerHandlerImpl(new XSLContext(broker), templates.newTransformer());
 		} catch (EXistException e) {
 			LOG.debug(e);
 	    	throw new TransformerConfigurationException("Compilation error.",e);
+		} finally {
+			try {
+				releaseBroker(broker);
+			} catch (EXistException e) {
+		    	throw new TransformerConfigurationException("Compilation error.",e);
+			}
 		}
 	}
 
