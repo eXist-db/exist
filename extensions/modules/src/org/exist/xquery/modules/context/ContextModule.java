@@ -43,7 +43,10 @@ public class ContextModule extends AbstractInternalModule {
         
 	private final static FunctionDef[] signatures = {
 		new FunctionDef( ContextAttributes.signatures[0], ContextAttributes.class ),
-		new FunctionDef( ContextAttributes.signatures[1], ContextAttributes.class )
+		new FunctionDef( ContextAttributes.signatures[1], ContextAttributes.class ),
+		new FunctionDef( ContextAttributes.signatures[2], ContextAttributes.class ),
+		new FunctionDef( ContextAttributes.signatures[3], ContextAttributes.class ),
+		new FunctionDef( GetID.signatures[0], GetID.class )
 	};
 
 	public ContextModule() {
