@@ -213,7 +213,7 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            pool.release(broker);
+            if (pool!=null) pool.release(broker);
         }
     }
     
