@@ -38,6 +38,7 @@ public class LowLevelText extends TestCase {
 		BrokerPool.configure(MY_TEST_INSTANCE, 1, 1, configuration);
 		BrokerPool brokerPool = BrokerPool.getInstance(MY_TEST_INSTANCE);
 
+		//BUG: need to be released!
 		broker = brokerPool.get(SecurityManagerImpl.SYSTEM_USER);
 		pool = new XQueryPool(configuration);
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
