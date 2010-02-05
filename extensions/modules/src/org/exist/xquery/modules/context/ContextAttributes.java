@@ -35,8 +35,10 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,6 +51,10 @@ public class ContextAttributes extends Function
 	public final static String ATTRIBUTES_CONTEXTVAR 			= "_eXist_xquery_context_attributes";
 		
 	protected static final Logger logger = Logger.getLogger( ContextAttributes.class );
+	
+	protected static final FunctionParameterSequenceType ATTRIBUTE_NAME_PARAM 	= new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" );
+	protected static final FunctionParameterSequenceType ATTRIBUTE_VALUE_PARAM 	= new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value to be stored in the context by attribute name" );
+	protected static final FunctionParameterSequenceType XQUERY_ID_PARAM 		= new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "The XQuery ID" );
 
 	public final static FunctionSignature signatures[] = {
 		
@@ -58,7 +64,7 @@ public class ContextAttributes extends Function
             "context. This function is useful for storing temporary information if you don't have " +
 			"a servlet request or session, that is you're running an XQuery as a scheduled task.",
             new SequenceType[] {
-                new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" )	
+                ATTRIBUTE_NAME_PARAM
             },
             new FunctionReturnSequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE, "The attribute value" )
         ),
@@ -69,11 +75,34 @@ public class ContextAttributes extends Function
 			"This function is useful for storing temporary information if you don't have " +
 			"a servlet request or session, that is you're running an XQuery as a scheduled task.",
             new SequenceType[] {
-               new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" ),
-			   new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value to be stored in the session by the attribute name" )
+               ATTRIBUTE_NAME_PARAM,
+			   ATTRIBUTE_VALUE_PARAM
             },
             new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" )
-        )
+		),
+		
+		 new FunctionSignature(
+            new QName( "get-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
+            "Returns the value associated with the given name, which was stored in the XQuery" +
+            "context for the XQuery with the provided id. (dba role only). This function can be sued for simple inter-XQuery communication.",
+            new SequenceType[] {
+                ATTRIBUTE_NAME_PARAM,
+				XQUERY_ID_PARAM
+            },
+            new FunctionReturnSequenceType( Type.ITEM, Cardinality.ZERO_OR_MORE, "The attribute value" )
+        ),
+		
+        new FunctionSignature(
+            new QName( "set-attribute", ContextModule.NAMESPACE_URI, ContextModule.PREFIX ),
+            "Set the value of an XQuery context attribute with the specified name for the XQuery with the provided id. (dba role only)" +
+			"This function can be used for simple inter-XQuery communication.",
+            new SequenceType[] {
+			  ATTRIBUTE_NAME_PARAM,
+			  ATTRIBUTE_VALUE_PARAM,
+			  XQUERY_ID_PARAM
+            },
+            new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" )
+		)
     };
 	
 	
@@ -108,17 +137,65 @@ public class ContextAttributes extends Function
 		String attribName = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
 		
         if( isCalledAs( "get-attribute" ) ) {
-           	ret =  retrieveAttribute( context, attribName );
+			if( getArgumentCount() > 1 ) {
+				long xqueryID 	= ((IntegerValue)(getArgument( 1 ).eval( contextSequence, contextItem ).itemAt( 0 ))).getLong();
+				
+				ret =  retrieveAttribute( getForeignContext( xqueryID ), attribName );
+			} else {
+           		ret =  retrieveAttribute( context, attribName );
+			}
         } else {
 			Sequence attribValue = getArgument( 1 ).eval( contextSequence, contextItem );
 			
-        	ret = storeAttribute( context, attribName, attribValue );
+			if( getArgumentCount() > 2 ) {
+				long xqueryID 	= ((IntegerValue)(getArgument( 2 ).eval( contextSequence, contextItem ).itemAt( 0 ))).getLong();
+				
+				ret = storeAttribute( getForeignContext( xqueryID ), attribName, attribValue );
+			} else {
+        		ret = storeAttribute( context, attribName, attribValue );
+			}
         }
 		
 		return( ret );
     }
 	
+	//***************************************************************************
+	//*
+	//*    Foreign Context Methods
+	//*
+	//***************************************************************************/
 	
+	private XQueryContext getForeignContext( long id ) throws XPathException 
+	{
+		XQueryContext 	foreignContext = null;
+			
+		if( !context.getUser().hasDbaRole() ) {
+			throw( new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to access foreign contexts" ) );
+		}
+		
+		if( id != 0 ) {
+            XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+			
+            for( int i = 0; i < watchdogs.length; i++ ) {
+	        	XQueryContext ctx = watchdogs[i].getContext();
+	        	
+	      		if( id == ctx.hashCode() ) {
+	      			if( !watchdogs[i].isTerminating() ) {
+	      				foreignContext = ctx;
+	      		 	}
+	      			break;
+	      		}
+	        }
+	    }
+			
+		if( foreignContext == null ) {
+			throw( new XPathException( this, "Foreign XQuery with id: " + id + " not found or is terminating" ) );
+		}
+
+		return( foreignContext );
+	}
+	
+		
 	//***************************************************************************
 	//*
 	//*    Context Attribute Methods
@@ -135,12 +212,14 @@ public class ContextAttributes extends Function
 	{
 		Sequence	attribute = Sequence.EMPTY_SEQUENCE;
 		
-		// get the existing attributes map from the context
-		
-		HashMap<String, Sequence> attributes = (HashMap)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
-		
-		if( attributes != null ) {
-			attribute = attributes.get( key );
+		synchronized( context ) {
+			// get the existing attributes map from the context
+			
+			HashMap<String, Sequence> attributes = (HashMap)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
+			
+			if( attributes != null ) {
+				attribute = attributes.get( key );
+			}
 		}
 		
 		return( (Sequence)attribute );
