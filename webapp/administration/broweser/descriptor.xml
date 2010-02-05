@@ -1,0 +1,8 @@
+<package xmlns="http://exist-db.org/application">
+    <application id="43c54e6a-14ca-4647-9619-3f83708353bf" version="0.1">
+        <title>DB Broweser</title>
+        <plug-to-application ref="aea0e743-f7eb-400c-a0f0-61d8436ca59e"/>
+        <path>broweser/</path>
+		<logo>images/logo.png</logo>
+    </application>
+</package>
