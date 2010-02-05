@@ -68,6 +68,17 @@
         <command>Class:</command>&#160;org.exist.xquery.modules.example.ExampleModule
           <command>Namespace:</command>&#160;http://exist-db.org/xquery/examples </para>
     </section>
+        
+    <section id="module_cache">
+      <title>Cache Module</title>
+      <para>Provides a global key/value cache</para>
+      <para>
+        <command>Creator:</command>&#160;<dc:creator>Evgeny Gazdovsky</dc:creator>
+        <command>Licence:</command>&#160;LGPL <command>Status:</command>&#160;production </para>
+      <para>
+        <command>Class:</command>&#160;org.exist.xquery.modules.cache.CacheModule
+          <command>Namespace:</command>&#160;http://exist-db.org/xquery/cache </para>
+    </section>
 
     <section id="module_compression">
       <title>Compression Module</title>
@@ -78,6 +89,19 @@
       <para>
         <command>Class:</command>&#160;org.exist.xquery.modules.compression.CompressionModule
           <command>Namespace:</command>&#160;http://exist-db.org/xquery/compression </para>
+    </section>
+
+    <section id="module_context">
+      <title>Context Module</title>
+      <para>Provides access to XQuery contexts, local attributes and foreign contexts for simple inter-XQuery communication. This extension is experimental at this time and
+            has side effects (eg. not purely functional in nature). Use at own risk!
+      </para>
+      <para>
+        <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina</dc:creator>
+        <command>Licence:</command>&#160;LGPL <command>Status:</command>&#160;experimental </para>
+      <para>
+        <command>Class:</command>&#160;org.exist.xquery.modules.context.ContextModule
+          <command>Namespace:</command>&#160;http://exist-db.org/xquery/context </para>
     </section>
 
     <section id="module_datetime">
