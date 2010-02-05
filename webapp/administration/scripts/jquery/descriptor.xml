@@ -1,0 +1,8 @@
+<package xmlns="http://exist-db.org/application">
+    <application id="jquery:rev6246" version="rev6246">
+        <title>JQuery</title>
+        <plug-to-application ref="2c2836ec-15c3-4675-bf0f-e02df07ec5da"/>
+        <path>jquery/</path>
+        <file>jquery.rev6246.js</file>
+    </application>
+</package>
