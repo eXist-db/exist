@@ -292,10 +292,6 @@ public class JettyStart implements LifeCycle.Listener {
             } catch (InterruptedException e) {
             }
         }
-        try {
-            wait(2000);
-        } catch (InterruptedException e) {
-        }
     }
 
     /**
