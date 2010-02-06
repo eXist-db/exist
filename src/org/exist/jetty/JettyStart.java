@@ -235,15 +235,17 @@ public class JettyStart implements LifeCycle.Listener {
                     public void run() {
                         setName("Shutdown");
                         BrokerPool.stopAll(true);
+                        if (server.isStopping() || server.isStopped())
+                            return;
                         try {
                             server.stop();
                         } catch (Exception e) {
                         }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            Thread.sleep(1000);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
                     }
                 };
                 Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -290,6 +292,10 @@ public class JettyStart implements LifeCycle.Listener {
             } catch (InterruptedException e) {
             }
         }
+        try {
+            wait(2000);
+        } catch (InterruptedException e) {
+        }
     }
 
     /**
@@ -324,7 +330,6 @@ public class JettyStart implements LifeCycle.Listener {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        System.exit(0);
                     }
                 }, 1000);
             }

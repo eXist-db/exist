@@ -100,17 +100,11 @@ public class XmlRpcTest {
 		initServer();		
 	}
 
-//    @AfterClass
-//    public static void stopServer() {
-//    	//waiting to finish 10s
-//    	try {
-//			Thread.sleep(10 * 1000);
-//		} catch (InterruptedException e1) {
-//		}
-//
-//		server.shutdown();
-//        server = null;
-//    }
+    @AfterClass
+    public static void stopServer() {
+		server.shutdown();
+        server = null;
+    }
 
     protected void tearDown() {
         XmlRpcClient xmlrpc = getClient();
