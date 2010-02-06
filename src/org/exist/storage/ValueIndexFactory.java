@@ -26,24 +26,18 @@ import java.io.UnsupportedEncodingException;
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AbstractDateTimeValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.DateValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FloatValue;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -287,23 +281,30 @@ public class ValueIndexFactory {
 		}
 		
 		/* xs:dateTime */
-		else if(Type.subTypeOf(value.getType(), Type.DATE_TIME))		{
-	    	GregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize().toGregorianCalendar();	//Get the dateTime (XMLGregorianCalendar) normalized to UTC (as a GregorianCalendar)
-			long millis = utccal.getTimeInMillis();									//Get the normalized dateTime as a long (milliseconds since the Epoch)
-			final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + 8];		//allocate an appropriately sized byte array for holding Type,long
+		else if(Type.subTypeOf(value.getType(), Type.DATE_TIME)) {
+            XMLGregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize();
+			final byte[] data = new byte[offset + 12];		//allocate an appropriately sized byte array for holding Type,long
 			data[offset] = (byte) Type.DATE_TIME;				//put the Type in the byte array
-			ByteConversion.longToByte(millis, data, offset+1);	//put the long into the byte array
+            ByteConversion.intToByteH(utccal.getYear(), data, offset + 1);
+            data[offset + 5] = (byte) utccal.getMonth();
+            data[offset + 6] = (byte) utccal.getDay();
+            data[offset + 7] = (byte) utccal.getHour();
+            data[offset + 8] = (byte) utccal.getMinute();
+            data[offset + 9] = (byte) utccal.getSecond();
+            int ms = utccal.getMillisecond();
+            ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms), data, offset + 10);
 			return(data);										//return the byte array
 		}
 		
     /* xs:date */
     else if(Type.subTypeOf(value.getType(), Type.DATE))    {
-        GregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize().toGregorianCalendar(); //Get the dateTime (XMLGregorianCalendar) normalized to UTC (as a GregorianCalendar)
-      long millis = utccal.getTimeInMillis();                 //Get the normalized dateTime as a long (milliseconds since the Epoch)
-      final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + 8];   //allocate an appropriately sized byte array for holding Type,long
-      data[offset] = (byte) Type.DATE;       //put the Type in the byte array
-      ByteConversion.longToByte(millis, data, offset+1);  //put the long into the byte array
-      return(data);                   //return the byte array
+        XMLGregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize();
+        final byte[] data = new byte[offset + 7];		//allocate an appropriately sized byte array for holding Type,long
+        data[offset] = (byte) Type.DATE_TIME;				//put the Type in the byte array
+        ByteConversion.intToByteH(utccal.getYear(), data, offset + 1);
+        data[offset + 5] = (byte) utccal.getMonth();
+        data[offset + 6] = (byte) utccal.getDay();
+            return data;
     }
     
 		/* xs:integer */
@@ -332,7 +333,7 @@ public class ValueIndexFactory {
 			final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + 4];
 			data[offset] = (byte) Type.FLOAT;
 	        final int bits = (int)(Float.floatToIntBits(((FloatValue)value).getValue()) ^ 0x80000000);
-	        ByteConversion.intToByte(bits, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
+	        ByteConversion.intToByteH(bits, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
 	        return data;
 		}		
 	
@@ -352,4 +353,35 @@ public class ValueIndexFactory {
 		}	
 	}
 
+    public static void main(String[] args) {
+        try {
+            DateTimeValue dtv = new DateTimeValue("0753-04-21T00:00:00+01:00");
+            byte [] b1 = ValueIndexFactory.serialize(dtv, 0);
+            print(dtv, b1);
+            DateTimeValue dtv2 = new DateTimeValue("1960-03-19T19:03:59.782+01:00");
+            byte[] b2 = ValueIndexFactory.serialize(dtv2, 0);
+            print(dtv2, b2);
+            System.out.println(new Value(b1).compareTo(new Value(b2)));
+
+            IntegerValue iv = new IntegerValue(753);
+            byte [] i1 = ValueIndexFactory.serialize(iv, 0);
+            print(iv, i1);
+            IntegerValue iv2 = new IntegerValue(1960);
+            byte [] i2 = ValueIndexFactory.serialize(iv2, 0);
+            print(iv2, i2);
+            System.out.println(new Value(i1).compareTo(new Value(i2)));
+        } catch (XPathException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (EXistException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    private static void print(AtomicValue dtv, byte[] data) throws XPathException {
+        System.out.print(dtv.getStringValue() + " = ");
+        for (int i = 0; i < data.length; i++) {
+            System.out.print(" " + Integer.toHexString(data[i] & 0xff));
+        }
+        System.out.println();
+    }
 }
