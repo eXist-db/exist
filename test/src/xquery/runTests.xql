@@ -35,7 +35,7 @@ declare function t:setup($setup as element(setup)) {
         t:setup-action($action)
 };
 
-declare function t:tearDown($tearDown as element(tearDown)) {
+declare function t:tearDown($tearDown as element(tearDown)?) {
     for $action in $tearDown/*
     return
         t:setup-action($action)
