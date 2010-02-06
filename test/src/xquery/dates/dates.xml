@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Date tests</testName>
+    <description>
+        <p>Test xs:date and xs:dateTime indexes</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system/config" name="db"/>
+        <store collection="/db/system/config/db" name="collection.xconf"><![CDATA[
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+              <index>
+                <fulltext default="none" attributes="false">
+                </fulltext>
+            	<create qname="date" type="xs:dateTime"/>
+              </index>
+            </collection>
+        ]]></store>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="test.xml"><![CDATA[
+            <dates>
+                <date>0753-04-21T00:00:00+01:00</date>
+                <date>1969-11-03T19:03:59.782+01:00</date>
+                <date>1960-03-19T19:03:59.782+01:00</date>
+                <date>1970-10-07T08:00:00-01:00</date>
+                <date>1970-10-07T08:00:00Z</date>
+                <date>1970-10-07T08:00:00+02:00</date>
+            </dates>
+        ]]></store>
+    </setup>
+    <tearDown>
+        <!--remove-collection collection="/db/test"/-->
+    </tearDown>
+    <test output="text">
+        <task>Equality lookup</task>
+        <code>count(//date[. = xs:dateTime('1970-10-07T08:00:00Z')])</code>
+        <expected>1</expected>
+    </test>
+    <test output="text">
+        <task>Equality lookup 2</task>
+        <code>count(//date[. = xs:dateTime('1960-03-19T19:03:59.782+01:00')])</code>
+        <expected>1</expected>
+    </test>
+    <test output="text">
+        <task>GT</task>
+        <code>count(//date[. gt xs:dateTime('1960-03-19T19:03:59.782+01:00')])</code>
+        <expected>4</expected>
+    </test>
+    <test output="text">
+        <task>GT 2</task>
+        <code>count(//date[. gt xs:dateTime('1970-10-07T08:00:00Z')])</code>
+        <expected>1</expected>
+    </test>
+    <test output="text">
+        <task>GT 3</task>
+        <code>count(//date[. gt xs:dateTime('0753-04-21T00:00:00+01:00')])</code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
+        <task>GE</task>
+        <code>count(//date[. ge xs:dateTime('1960-03-19T19:03:59.782+01:00')])</code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
+        <task>GE 2</task>
+        <code>count(//date[. ge xs:dateTime('1970-10-07T08:00:00Z')])</code>
+        <expected>2</expected>
+    </test>
+    <test output="text">
+        <task>LT</task>
+        <code>count(//date[. lt xs:dateTime('1960-03-19T19:03:59.782+01:00')])</code>
+        <expected>1</expected>
+    </test>
+    <test output="text">
+        <task>LT 2</task>
+        <code>count(//date[. lt xs:dateTime('0753-04-21T00:00:00+01:00')])</code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>LE</task>
+        <code>count(//date[. le xs:dateTime('0753-04-21T00:00:00+01:00')])</code>
+        <expected>1</expected>
+    </test>
+    <test output="text">
+        <task>GT 3</task>
+        <code>count(//date[. gt xs:dateTime('1970-10-07T08:00:00Z')])</code>
+        <expected>1</expected>
+    </test>
+    <test output="text">
+        <task>GT 4</task>
+        <code>count(//date[. gt xs:dateTime('1970-10-07T08:00:00+01:00')])</code>
+        <expected>2</expected>
+    </test>
+    <test output="text">
+        <task>GT 5</task>
+        <code>count(//date[. gt xs:dateTime('1970-10-07T08:00:00-01:00')])</code>
+        <expected>0</expected>
+    </test>
+</TestSet>
