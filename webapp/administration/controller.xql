@@ -1,8 +1,8 @@
 xquery version "1.0";
 
-import module namespace app = "http://exist-db.org/application" at "application.xqm";
+import module namespace app = "http://exist-db.org/application" at "/administration/application.xqm";
 
-let $baseURL : = concat(request:get-context-path(), $exist:root,$exist:controller, '/')
+let $baseURL : = concat($exist:prefix, $exist:root, $exist:controller, '/')
 return 
 if ($exist:path eq 'login.xql') then
 	<ignore xmlns="http://exist.sourceforge.net/NS/exist">
@@ -31,9 +31,7 @@ else
 	return
 	if (not($app eq "")) then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<redirect url="{concat(
-				request:get-context-path(), $exist:root, 
-				$exist:controller, "/", app:path($app))}"/>
+			<redirect url="{concat($baseURL, app:path($app))}"/>
 		</dispatch>
 	else
 		(: everything else is passed through :)

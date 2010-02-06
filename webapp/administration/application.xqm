@@ -11,7 +11,7 @@ declare function app:node($id as xs:string) as element() {
 	return
 		if (count($app) = 1) then
 			$app
-		else if (count($app) = 0)
+		else if (count($app) = 0) then
 			<error>
 				<title>Not found (id = {$id})</title>
 			</error>
