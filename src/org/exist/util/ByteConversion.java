@@ -31,12 +31,27 @@ public class ByteConversion {
 
     /**
      *  Read an integer value from the specified byte array, starting at start.
+     *
+     * @deprecated reads the lowest byte first. will be replaced with
+     * {@link #byteToIntH(byte[], int)} for consistency.
      */
     public final static int byteToInt( final byte data[], final int start ) {
         return ( data[start] & 0xff ) |
             ( ( data[start + 1] & 0xff ) << 8 ) |
             ( ( data[start + 2] & 0xff ) << 16 ) |
             ( ( data[start + 3] & 0xff ) << 24 );
+    }
+
+    /**
+     * Read an integer value from the specified byte array, starting at start.
+     *
+     * This version of the method reads the highest byte first.
+     */
+    public final static int byteToIntH( final byte data[], final int start ) {
+        return ( data[start + 3] & 0xff ) |
+            ( ( data[start + 2] & 0xff ) << 8 ) |
+            ( ( data[start + 1] & 0xff ) << 16 ) |
+            ( ( data[start] & 0xff ) << 24 );
     }
 
     /**
@@ -54,7 +69,10 @@ public class ByteConversion {
     }
 
     /**
-     *  Read a short value from the specified byte array, starting at start.
+     * Read a short value from the specified byte array, starting at start.
+     *
+     * @deprecated reads the lowest byte first. will be replaced with
+     * {@link #byteToShortH(byte[], int)} for consistency.
      */
     public final static short byteToShort( final byte[] data, final int start ) {
         return (short) ( ( ( data[start + 1] & 0xff ) << 8 ) |
@@ -62,19 +80,50 @@ public class ByteConversion {
     }
 
     /**
+     * Read a short value from the specified byte array, starting at start.
+     *
+     * This version of the method reads the highest byte first.
+     */
+    public final static short byteToShortH( final byte[] data, final int start ) {
+        return (short) ( ( ( data[start] & 0xff ) << 8 ) |
+            ( data[start + 1] & 0xff ) );
+    }
+
+    /**
      * Write an int value to the specified byte array. The first byte is written
      * into the location specified by start.
      *
-     *@param  v the value
-     *@param  data  the byte array to write into
-     *@param  start  the offset
-     *@return   the byte array
+     * @deprecated this version of the method writes the lowest byte first. It will
+     * be replaced by {@link #intToByteH(int, byte[], int)} for consistency.
+     * @param  v the value
+     * @param  data  the byte array to write into
+     * @param  start  the offset
+     * @return   the byte array
      */
     public final static byte[] intToByte( final int v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );
         data[start + 2] = (byte) ( ( v >>> 16 ) & 0xff );
         data[start + 3] = (byte) ( ( v >>> 24 ) & 0xff );
+        return data;
+    }
+
+    /**
+     * Write an int value to the specified byte array. The first byte is written
+     * into the location specified by start.
+     *
+     * This version of the method writes the highest byte first.
+     *
+     *@param  v the value
+     *@param  data  the byte array to write into
+     *@param  start  the offset
+     *@return   the byte array
+     */
+    public final static byte[] intToByteH( final int v, final byte[] data, final int start ) {
+        data[start + 3] = (byte) ( ( v >>> 0 ) & 0xff );
+        data[start + 2] = (byte) ( ( v >>> 8 ) & 0xff );
+        data[start + 1] = (byte) ( ( v >>> 16 ) & 0xff );
+        data[start] = (byte) ( ( v >>> 24 ) & 0xff );
         return data;
     }
 
@@ -124,10 +173,13 @@ public class ByteConversion {
      * Write a short value to the specified byte array. The first byte is written
      * into the location specified by start.
      *
-     *@param  v the value
-     *@param  data  the byte array to write into
-     *@param  start  the offset
-     *@return   the byte array
+     * @deprecated this version of the method writes the lowest byte first. It will be replaced
+     * by {@link #shortToByteH(short, byte[], int)} for consistency.
+     *
+     * @param  v the value
+     * @param  data  the byte array to write into
+     * @param  start  the offset
+     * @return   the byte array
      */
     public final static byte[] shortToByte( final short v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
@@ -135,18 +187,28 @@ public class ByteConversion {
         return data;
     }
 
-
     /**
-     * Write a short value to a newly allocated byte array.
+     * Write a short value to the specified byte array. The first byte is written
+     * into the location specified by start.
      *
-     *@param  v the value
-     *@return   the byte array
+     * This version writes the highest byte first.
+     *
+     * @param  v the value
+     * @param  data  the byte array to write into
+     * @param  start  the offset
+     * @return   the byte array
      */
-    public final static byte[] shortToByte( final short v ) {
-        byte[] data = new byte[2];
-        data[0] = (byte) ( ( v >>> 0 ) & 0xff );
-        data[1] = (byte) ( ( v >>> 8 ) & 0xff );
+    public final static byte[] shortToByteH( final short v, final byte[] data, final int start ) {
+        data[start + 1] = (byte) ( ( v >>> 0 ) & 0xff );
+        data[start] = (byte) ( ( v >>> 8 ) & 0xff );
         return data;
+    }
+
+    public static void main(String[] args) {
+        short i = 783;
+        byte[] data = new byte[2];
+        ByteConversion.shortToByte(i, data, 0);
+        System.out.println("i = " + ByteConversion.byteToShort(data, 0));
     }
 }
 
