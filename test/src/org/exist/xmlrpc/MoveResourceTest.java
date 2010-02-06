@@ -218,7 +218,6 @@ public class MoveResourceTest extends TestCase {
         }
     }
 
-    @SuppressWarnings("unchecked")
 	private void initServer() {
 		try {
 			if (server == null) {

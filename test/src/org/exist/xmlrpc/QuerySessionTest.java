@@ -169,7 +169,5 @@ public class QuerySessionTest {
         } catch (XMLDBException e) {
             e.printStackTrace();
         }
-        server.shutdown();
-        server = null;
     }
 }

@@ -21,10 +21,8 @@
  */
 package org.exist.xmlrpc;
 
-import org.apache.xmlrpc.XmlRpcConfig;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
-import org.apache.xmlrpc.client.XmlRpcClientConfig;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.exist.jetty.JettyStart;
@@ -38,8 +36,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 import javax.xml.transform.OutputKeys;
 import java.net.MalformedURLException;
@@ -104,17 +100,17 @@ public class XmlRpcTest {
 		initServer();		
 	}
 
-    @AfterClass
-    public static void stopServer() {
-    	//waiting to finish 10s
-    	try {
-			Thread.sleep(10 * 1000);
-		} catch (InterruptedException e1) {
-		}
-
-		server.shutdown();
-        server = null;
-    }
+//    @AfterClass
+//    public static void stopServer() {
+//    	//waiting to finish 10s
+//    	try {
+//			Thread.sleep(10 * 1000);
+//		} catch (InterruptedException e1) {
+//		}
+//
+//		server.shutdown();
+//        server = null;
+//    }
 
     protected void tearDown() {
         XmlRpcClient xmlrpc = getClient();
@@ -129,7 +125,6 @@ public class XmlRpcTest {
         }
     }
 
-	@SuppressWarnings("unchecked")
 	private static void initServer() {
 		try {
 			if (server == null) {
