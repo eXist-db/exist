@@ -218,7 +218,11 @@ public class ContextAttributes extends Function
 			HashMap<String, Sequence> attributes = (HashMap)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
 			
 			if( attributes != null ) {
-				attribute = attributes.get( key );
+				Sequence value = attributes.get( key );
+				
+				if( value != null ) {
+					attribute = value;
+				}
 			}
 		}
 		
