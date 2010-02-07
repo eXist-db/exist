@@ -660,7 +660,7 @@ public class RESTServiceTest extends TestCase {
             if (semicolon > 0) {
                 contentType = contentType.substring(0, semicolon).trim();
             }
-            assertEquals("Server returned content type " + contentType, "text/xml", contentType);
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
 
             System.out.println(readResponse(connect.getInputStream()));
         } catch (Exception e) {

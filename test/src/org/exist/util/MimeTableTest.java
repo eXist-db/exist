@@ -3,7 +3,8 @@ package org.exist.util;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  * Test case for mime-type mapping.
@@ -12,21 +13,10 @@ import junit.framework.TestCase;
  * 
  * @author Peter Ciuffetti
  */
-public class MimeTableTest extends TestCase {
+public class MimeTableTest  {
 
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(MimeTableTest.class);
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-
+	@After
+	public void tearDown() throws Exception {
 		// MimeTable is a singleton
 		// We use reflection here to null-out the 'instance' field
 		// so subsequent tests that call getInstance() will re-load 
@@ -42,6 +32,7 @@ public class MimeTableTest extends TestCase {
 	 * The distribution version of mime-types.xml does not use the
 	 * default mime type capability.
 	 */
+    @Test
 	public void testDistributionVersionOfMimeTypesXml() {
 		File existDir;
 		String existHome = System.getProperty("exist.home");
@@ -56,7 +47,7 @@ public class MimeTableTest extends TestCase {
 
 		mt = mimeTable.getContentTypeFor("test.xml");
 		assertNotNull("Mime type not found for test.xml", mt);
-		assertEquals("Incorrect mime type", "text/xml", mt.getName());
+		assertEquals("Incorrect mime type", "application/xml", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
 
 		mt = mimeTable.getContentTypeFor("test.html");
@@ -80,6 +71,7 @@ public class MimeTableTest extends TestCase {
 	 * This test checks the behavior of the mime-types@default-resource-type attribute
 	 * The test config assigns all resources to text/xml
 	 */
+    @Test
 	public void testWithDefaultResourceTypeFeature() {
 		File existDir;
 		String existHome = System.getProperty("exist.home");
@@ -120,6 +112,7 @@ public class MimeTableTest extends TestCase {
 	 * This test checks the behavior of the mime-types@default-mime-type attribute
 	 * The test config assigns all resources to foo/bar (BINARY)
 	 */
+    @Test
 	public void testWithDefaultMimeTypeFeature() {
 		File existDir;
 		String existHome = System.getProperty("exist.home");
