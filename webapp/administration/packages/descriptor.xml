@@ -3,5 +3,6 @@
         <title>Packages Management</title>
         <plug-to-application ref="aea0e743-f7eb-400c-a0f0-61d8436ca59e"/>
         <path>packages/</path>
+        <logo>images/logo.png</logo>
     </application>
 </package>
