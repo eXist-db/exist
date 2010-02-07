@@ -1,5 +1,5 @@
 <package xmlns="http://exist-db.org/application">
-    <application id="jquery.dynatree.js:1.6.1" version="1.6.1">
+    <application id="jquery.dataTables:1.6.1" version="1.6.1">
         <title>DataTables</title>
         <plug-to-application ref="2c2836ec-15c3-4675-bf0f-e02df07ec5da"/>
         <path>dataTables/</path>
