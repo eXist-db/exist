@@ -2267,11 +2267,21 @@ public class NativeBroker extends DBBroker {
         LOG.info("removing binary resource " + blob.getDocId() + "...");
         File binFile = getCollectionFile(fsDir,blob.getURI(),false);
         if (binFile.exists()) {
-           File binBackupFile = getCollectionFile(fsBackupDir,transaction,blob.getURI(),true);
-           Loggable loggable = new RenameBinaryLoggable(this,transaction,binFile,binBackupFile);
-           if (!binFile.renameTo(binBackupFile)) {
-              throw new IOException("Cannot move file "+binFile+" for delete journal to "+binBackupFile);
-           }
+            File binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
+            Loggable loggable = new RenameBinaryLoggable(this, transaction, binFile, binBackupFile);
+            if (!binFile.renameTo(binBackupFile)) {
+                // Workaround for Java bug 6213298 - renameTo() sometimes doesn't work
+                // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6213298
+                System.gc();
+                try {
+                    Thread.sleep(50);
+                } catch (Exception ignored) {
+                }
+                if (!binFile.renameTo(binBackupFile)) {
+                    throw new IOException("Cannot move file " + binFile
+                            + " for delete journal to " + binBackupFile);
+                }
+            }
            try {
               logManager.writeToLog(loggable);
            } catch (TransactionException e) {
