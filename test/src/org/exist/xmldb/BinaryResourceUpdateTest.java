@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  \$Id\$
+ *  $Id$
  */
 package org.exist.xmldb;
 
@@ -29,8 +29,11 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
+
 import org.exist.storage.DBBroker;
+
 import org.apache.log4j.BasicConfigurator;
+
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
