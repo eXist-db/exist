@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ============================================================
+    test version of mime-types.xml testing the 'default' feature
+    ============================================================
+-->
+
+<mime-types default-mime-type="foo/bar" default-resource-type="binary" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/mime-types.xsd">    
+</mime-types>

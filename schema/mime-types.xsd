@@ -38,6 +38,21 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
+			<xs:attribute name="default-mime-type">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[a-z0-9]+\/[a-z0-9\.\-]+([\+][a-z0-9]+)?"/>
+                    </xs:restriction>
+                </xs:simpleType>
+			</xs:attribute>
+            <xs:attribute name="default-resource-type">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="binary"/>
+                        <xs:enumeration value="xml"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>
