@@ -95,7 +95,8 @@ public class MimeTable {
             instance = new MimeTable(stream,src);
         return instance;
     }
-    
+
+    private MimeType defaultMime = null;
     private Map<String, MimeType> mimeTypes = new TreeMap<String, MimeType>();
     private Map<String, MimeType> extensions = new TreeMap<String, MimeType>();
     private Map<String, String> preferredExtension = new TreeMap<String, String>();
@@ -122,7 +123,8 @@ public class MimeTable {
     //TODO: deprecate?
     public MimeType getContentTypeFor(String fileName) {
         String ext = getExtension(fileName);
-        return ext == null ? null : extensions.get(ext);
+        MimeType mt = (ext == null) ? defaultMime : extensions.get(ext);
+        return (mt == null) ? defaultMime : mt;
     }
     
     public MimeType getContentTypeFor(XmldbURI fileName) {
@@ -283,6 +285,7 @@ public class MimeTable {
         private static final String EXTENSIONS = "extensions";
         private static final String DESCRIPTION = "description";
         private static final String MIME_TYPE = "mime-type";
+        private static final String MIME_TYPES = "mime-types";
         
         private MimeType mime = null;
         private FastStringBuffer charBuf = new FastStringBuffer(64);
@@ -292,6 +295,43 @@ public class MimeTable {
          */
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
+
+
+            if (MIME_TYPES.equals(qName)) {
+                // Check for a default mime type settings
+                String defaultMimeAttr = attributes.getValue("default-mime-type");
+                String defaultTypeAttr = attributes.getValue("default-resource-type");
+
+                // Resource type default is XML
+                int type = MimeType.XML;
+                if (defaultTypeAttr != null) {
+                    if ("binary".equals(defaultTypeAttr)) {
+                        type = MimeType.BINARY;
+                    }
+                }
+
+                // If a default-mime-type is specified, create a new default mime type
+                if (defaultMimeAttr != null
+                        && defaultMimeAttr.length() > 0) {
+                    defaultMime = new MimeType(defaultMimeAttr, type);
+
+                    // If the default-resource-type is specified, and the default-mime-type is unspecified, use a predefined type
+                } else if (defaultTypeAttr != null) {
+                    if (type == MimeType.XML) {
+                        defaultMime = MimeType.XML_TYPE;
+                    } else if (type == MimeType.BINARY) {
+                        defaultMime = MimeType.BINARY_TYPE;
+                    }
+                } else {
+                    // the defaultMime is left to null, for backward compatibility with 1.2
+                }
+
+                // Put the default mime into the mime map
+                if (defaultMime != null) {
+                    mimeTypes.put(defaultMime.getName(), defaultMime);
+                }
+            }
+
             if (MIME_TYPE.equals(qName)) {
                 String name = attributes.getValue("name");
                 if (name == null || name.length() == 0) {
