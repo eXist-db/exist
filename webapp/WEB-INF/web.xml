@@ -591,22 +591,22 @@
 
     <mime-mapping>
         <extension>xml</extension>
-        <mime-type>text/xml</mime-type>
+        <mime-type>application/xml</mime-type>
     </mime-mapping>
 
     <mime-mapping>
         <extension>xsl</extension>
-        <mime-type>text/xml</mime-type>
+        <mime-type>application/xml+xslt</mime-type>
     </mime-mapping>
 
     <mime-mapping>
         <extension>xconf</extension>
-        <mime-type>text/xml</mime-type>
+        <mime-type>application/xml</mime-type>
     </mime-mapping>
 
     <mime-mapping>
         <extension>xmap</extension>
-        <mime-type>text/xml</mime-type>
+        <mime-type>application/xml</mime-type>
     </mime-mapping>
 
     <mime-mapping>
