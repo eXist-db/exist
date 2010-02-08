@@ -29,7 +29,11 @@ else if ($exist:path eq '/') then
 else
 	let $app := $exist:resource
 	return
-	if (not($app eq "")) then
+	if (ends-with($app, ".xql")) then
+		<ignore xmlns="http://exist.sourceforge.net/NS/exist">
+			<cache-control cache="yes"/>
+		</ignore>
+	else if (not($app eq "")) then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="{concat($baseURL, app:path($app))}"/>
 		</dispatch>

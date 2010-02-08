@@ -7,17 +7,19 @@ xquery version "1.0";
 module namespace app="http://exist-db.org/application";
 
 declare function app:node($id as xs:string) as element() {
-	let $app := //app:package/app:application[@id=$id]
+	let $app := collection("/db")//app:package/app:application[@id=$id]
 	return
-		if (count($app) = 1) then
+		if (count($app) eq 1) then
 			$app
 		else if (count($app) = 0) then
-			<error>
+			<error xmlns="http://exist-db.org/application">
 				<title>Not found (id = {$id})</title>
+				<path/>
 			</error>
 		else
-			<error>
+			<error xmlns="http://exist-db.org/application">
 				<title>Multi on id = {$id}</title>
+				<path/>
 			</error>
 };
 
@@ -34,7 +36,7 @@ declare function app:path($application as xs:string) as xs:string {
 };
 
 declare function local:menuSubapplications($application as xs:string, $path as xs:string) as element()* {
-	let $apps := //app:package/app:application/app:plug-to-application[@ref=$application]/..
+	let $apps := collection("/db")//app:package/app:application/app:plug-to-application[@ref=$application]/..
 	let $menu := for $application in $apps
 				return
 				<li>
@@ -58,7 +60,7 @@ declare function app:menuSubapplications($application as xs:string) as element()
 };
 
 declare function app:tableSubapplications($application as xs:string) as element()* {
-	let $apps := //app:package/app:application/app:plug-to-application[@ref=$application]/..
+	let $apps := collection("/db")//app:package/app:application/app:plug-to-application[@ref=$application]/..
 	return
 		<table>
 			<tr>
