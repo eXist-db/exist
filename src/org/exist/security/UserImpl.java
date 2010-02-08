@@ -34,6 +34,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -583,5 +585,17 @@ public class UserImpl implements User {
 	@Override
 	public boolean isAuthenticated() {
 		return authenticated;
+	}
+
+	private Map<String, Object> attributes = new HashMap<String, Object>();
+	
+	@Override
+	public void setAttribute(String name, Object value) {
+		attributes.put(name, value);
+	}
+
+	@Override
+	public Object getAttribute(String name) {
+		return attributes.get(name);
 	}
 }
