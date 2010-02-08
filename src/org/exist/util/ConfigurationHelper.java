@@ -13,7 +13,7 @@ public class ConfigurationHelper {
     /**
      * Returns a file handle for eXist's home directory.
      * Order of tests is designed with the idea, the more precise it is,
-     * the more the developper know what he is doing
+     * the more the developer know what he is doing
      * <ol>
      *   <li>Brokerpool      : if eXist was already configured.
      *   <li>exist.home      : if exists
@@ -45,7 +45,7 @@ public class ConfigurationHelper {
     public static File getExistHome(String config) {
     	File existHome = null;
     	
-    	// If eXist was allready configured, then return 
+    	// If eXist was already configured, then return 
     	// the existHome of this instance.
     	try {
     		BrokerPool broker = BrokerPool.getInstance();
@@ -58,7 +58,7 @@ public class ConfigurationHelper {
     		}
     	} catch(Throwable e) {
             // Catch all potential problems
-            LOG.debug("Could not retieve instance of brokerpool: " + e.getMessage());
+            LOG.debug("Could not retrieve instance of brokerpool: " + e.getMessage());
     	}
     	
         // try exist.home
