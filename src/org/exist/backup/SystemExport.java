@@ -473,7 +473,7 @@ public class SystemExport {
 
         attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", Backup.encode(URIUtils.urlDecodeUtf8(doc
                 .getFileURI())));
-        String mimeType = "text/xml";
+        String mimeType = "application/xml";
         if (metadata != null && metadata.getMimeType() != null)
             mimeType = Backup.encode(metadata.getMimeType());
         attr.addAttribute(Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", mimeType);

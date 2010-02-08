@@ -47,7 +47,7 @@ public class StoreFromFile extends AbstractAction {
     private String collectionPath;
     private String dir;
     private String includes;
-    private String mimeType = "text/xml";
+    private String mimeType = "application/xml";
     private boolean overwrite = true;
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {

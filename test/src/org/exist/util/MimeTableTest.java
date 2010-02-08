@@ -69,7 +69,7 @@ public class MimeTableTest  {
 
 	/**
 	 * This test checks the behavior of the mime-types@default-resource-type attribute
-	 * The test config assigns all resources to text/xml
+	 * The test config assigns all resources to application/xml
 	 */
     @Test
 	public void testWithDefaultResourceTypeFeature() {
@@ -84,27 +84,27 @@ public class MimeTableTest  {
 
 		mt = mimeTable.getContentTypeFor("test.xml");
 		assertNotNull("Mime type not found for test.xml", mt);
-		assertEquals("Incorrect mime type", "text/xml", mt.getName());
+		assertEquals("Incorrect mime type", "application/xml", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
 
 		mt = mimeTable.getContentTypeFor("test.html");
 		assertNotNull("Mime type not found for test.html", mt);
-		assertEquals("Incorrect mime type", "text/xml", mt.getName());
+		assertEquals("Incorrect mime type", "application/xml", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
 
 		mt = mimeTable.getContentTypeFor("test.jpg");
 		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "text/xml", mt.getName());
+		assertEquals("Incorrect mime type", "application/xml", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
 
 		mt = mimeTable.getContentTypeFor("foo");
 		assertNotNull("Mime type not found for foo", mt);
-		assertEquals("Incorrect mime type", "text/xml", mt.getName());
+		assertEquals("Incorrect mime type", "application/xml", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
 
 		mt = mimeTable.getContentTypeFor("foo.bar");
 		assertNotNull("Mime type not found for test.jpg", mt);
-		assertEquals("Incorrect mime type", "text/xml", mt.getName());
+		assertEquals("Incorrect mime type", "application/xml", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.XML, mt.getType());
 	}
 

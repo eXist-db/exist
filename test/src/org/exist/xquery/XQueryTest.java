@@ -1018,7 +1018,7 @@ public class XQueryTest extends XMLTestCase {
 
             doc = testCollection.createResource(NAMESPACED_NAME, "XMLResource");
             doc.setContent(namespacedDocument);
-            ((EXistResource) doc).setMimeType("text/xml");
+            ((EXistResource) doc).setMimeType("application/xml");
             testCollection.storeResource(doc);
 
             XPathQueryService service =
