@@ -111,7 +111,7 @@ public class PUTFunction extends BaseHTTPClientFunction
         
         //setup PUT request
         PutMethod put           = new PutMethod( url );
-        RequestEntity entity    = new ByteArrayRequestEntity( baos.toByteArray(), "text/xml; charset=utf-8" );
+        RequestEntity entity    = new ByteArrayRequestEntity( baos.toByteArray(), "application/xml; charset=utf-8" );
         
         put.setRequestEntity( entity );
         

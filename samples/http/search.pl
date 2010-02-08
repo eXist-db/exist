@@ -19,7 +19,7 @@ END
 
 $ua = LWP::UserAgent->new();
 $req = HTTP::Request->new(POST => $URL);
-$req->content_type('text/xml');
+$req->content_type('application/xml');
 $req->content($QUERY);
 
 $res = $ua->request($req);

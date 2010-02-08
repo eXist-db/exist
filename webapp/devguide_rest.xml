@@ -109,7 +109,7 @@
                     collection or document specified in the URI database path, and return a
                     representation of this resource the client. Note that when the located resource
                     is XML, the returned <emphasis>content-type</emphasis> attribute value will be
-                        <option>text/xml</option>, and for binary resources
+                        <option>application/xml</option>, and for binary resources
                         <option>application/octet-stream</option>.</para>
 
                 <para>If the path resolves to a database collection, the retrieved results are
@@ -139,7 +139,7 @@
                     collection <filename>/db/shakespeare/plays</filename> contains the XSLT
                     processing instruction:</para>
 
-                <synopsis>&lt;?xml-stylesheet type="text/xml" href="shakes.xsl"?&gt;</synopsis>
+                <synopsis>&lt;?xml-stylesheet type="application/xml" href="shakes.xsl"?&gt;</synopsis>
 
                 <para>then the database will try to load the stylesheet from
                         <filename>/db/shakespeare/plays/shakes.xsl</filename> and apply it to the
@@ -266,7 +266,7 @@
                     is specified on the command-line) in the database collection
                     <filename>/db/test</filename>, which will be created if this collection does not
                     exist. Note that the HTTP header field <option>content-type</option> is
-                    specified as <option>text/xml</option>, since otherwise the document is stored
+                    specified as <option>application/xml</option>, since otherwise the document is stored
                     as a binary resource.</para>
 
                 <example>
@@ -293,7 +293,7 @@ print doc
 print "storing document to collection %s ..." % collection
 con = httplib.HTTP('localhost:8080')
 con.putrequest('PUT', '/exist/rest/%s/%s' % (collection, doc))
-con.putheader('Content-Type', 'text/xml')
+con.putheader('Content-Type', 'application/xml')
 clen = len(xml)
 con.putheader('Content-Length', `clen`)
 con.endheaders()
@@ -374,7 +374,7 @@ END
 
 $ua = LWP::UserAgent->new();
 $req = HTTP::Request->new(POST => $URL);
-$req->content_type('text/xml');
+$req->content_type('application/xml');
 $req->content($QUERY);
 
 $res = $ua->request($req);
@@ -455,7 +455,7 @@ Server: Jetty/5.1.12 (Linux/2.6.22-14-generic i386 java/1.6.0_03
 Expires: Thu, 01 Jan 1970 00:00:00 GMT
 Last-Modified: Tue, 29 Apr 2008 20:34:33 GMT
 X-Session-Id: 2
-Content-Type: text/xml; charset=UTF-8
+Content-Type: application/xml; charset=UTF-8
 Content-Length: 4699
 
 <exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" 

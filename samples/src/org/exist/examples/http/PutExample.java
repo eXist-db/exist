@@ -65,7 +65,7 @@ public class PutExample {
             HttpURLConnection connect = (HttpURLConnection) url.openConnection();
             connect.setRequestMethod("PUT");
             connect.setDoOutput(true);
-            connect.setRequestProperty("ContentType", "text/xml");
+            connect.setRequestProperty("ContentType", "application/xml");
 
             OutputStream os = connect.getOutputStream();
             InputStream is = new FileInputStream(file);

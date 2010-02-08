@@ -229,7 +229,7 @@
           </unorderedlist> This is also used by the eXist servers . For example to specify that
           .xmap extension is used for XML files you can specify it like this in mime-types.xml : <programlisting>  
 			  <![CDATA[  
-<mime-type name="text/xml" type="xml">
+<mime-type name="application/xml" type="xml">
  <description>XML document</description>  
  <extensions>.xml,.xsl,.xsd,.mods,.xmi,.xconf,.xslt,.wsdl,.x3d,.rdf,.owl,.xmap</extensions>  
 </mime-type>  

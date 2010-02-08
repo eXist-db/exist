@@ -796,7 +796,7 @@ public class SOAPServer
     //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
     private void writeResponse(HttpServletResponse response, String data, String contentType, String encoding) throws IOException
     {        
-        // possible format contentType: text/xml; charset=UTF-8
+        // possible format contentType: application/xml; charset=UTF-8
         if ( contentType != null && !response.isCommitted() ) {
             
             int semicolon = contentType.indexOf(';');

@@ -150,7 +150,7 @@ public class POSTFunction extends BaseHTTPClientFunction
     	        } 
     			
     			byte reqPayload[] = baos.toByteArray();
-    			entity = new ByteArrayRequestEntity(reqPayload, "text/xml; charset=utf-8");
+    			entity = new ByteArrayRequestEntity(reqPayload, "application/xml; charset=utf-8");
     		}
     		else
     		{
