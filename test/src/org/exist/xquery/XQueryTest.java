@@ -3144,6 +3144,22 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    // https://sourceforge.net/tracker/?func=detail&aid=2846187&group_id=17691&atid=317691
+    public void testDynamicallySizedNamePool() {
+        try {
+            String query = "<root> { for $i in 1 to 2000  "
+                    + "return element {concat(\"elt-\", $i)} {} } </root>";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
 
     // ======================================
     /**
