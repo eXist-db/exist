@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace app = "http://exist-db.org/application" at "/administration/application.xqm";
+import module namespace app = "http://exist-db.org/application" at "application.xqm";
 
 let $baseURL : = concat($exist:prefix, $exist:root, $exist:controller, '/')
 return 
