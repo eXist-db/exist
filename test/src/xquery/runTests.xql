@@ -19,7 +19,7 @@ declare function t:setup-action($action) {
 };
 
 declare function t:store($action as element(store)) {
-    let $type := if ($action/@type) then $action/@type/string() else "text/xml"
+    let $type := if ($action/@type) then $action/@type/string() else "application/xml"
     let $data :=
 		if ($action/*) then
 			$action/*[1]
