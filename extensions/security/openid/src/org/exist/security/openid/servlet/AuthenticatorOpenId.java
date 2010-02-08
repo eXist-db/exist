@@ -22,6 +22,7 @@
 package org.exist.security.openid.servlet;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,11 @@ import org.openid4java.association.AssociationSessionType;
 import org.openid4java.consumer.*;
 import org.openid4java.discovery.*;
 import org.openid4java.message.*;
+import org.openid4java.message.ax.AxMessage;
+import org.openid4java.message.ax.FetchRequest;
+import org.openid4java.message.ax.FetchResponse;
+import org.openid4java.message.sreg.SRegMessage;
+import org.openid4java.message.sreg.SRegResponse;
 import org.openid4java.util.*;
 
 /**
@@ -52,11 +58,11 @@ import org.openid4java.util.*;
  */
 public class AuthenticatorOpenId extends HttpServlet {
 
-	private static final long serialVersionUID = -2924397314671034627L;
+	private static final long serialVersionUID = 1L;
 
 	private static final Log LOG = LogFactory.getLog(AuthenticatorOpenId.class);
 
-	public ConsumerManager manager;
+    public ConsumerManager manager;
 
 	public AuthenticatorOpenId() throws ConsumerException {
 	}
@@ -106,20 +112,16 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 	private void processReturn(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		Identifier identifier = this.verifyResponse(req);
-		
-		LOG.debug("identifier: " + identifier);
-		System.out.println("identifier: " + identifier);
+		User principal = this.verifyResponse(req);
 		
         String returnURL = req.getParameter("exist_return");
 
-        if (identifier == null) {
+        if (principal == null) {
 //			this.getServletContext().getRequestDispatcher("/openid/login.xql").forward(req, resp);
 			resp.sendRedirect(returnURL);
 		} else {
 	        HttpSession session = req.getSession(true);
 
-	        User principal = new UserImpl(identifier);
 //			((XQueryURLRewrite.RequestWrapper)req).setUserPrincipal(principal);
 
 			Subject subject = new Subject();
@@ -165,7 +167,19 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 			// obtain a AuthRequest message to be sent to the OpenID provider
 			AuthRequest authReq = manager.authenticate(discovered, returnToUrl);
+			
+			FetchRequest fetch = FetchRequest.createFetchRequest();
 
+			fetch.addAttribute("firstname", "http://axschema.org/namePerson/first", true);
+			fetch.addAttribute("lastname", "http://axschema.org/namePerson/last", true);
+			fetch.addAttribute("email", "http://axschema.org/contact/email", true);
+			fetch.addAttribute("country", "http://axschema.org/contact/country/home", true);
+
+			// wants up to three email addresses
+			fetch.setCount("email", 3);
+
+			authReq.addExtension(fetch);
+			
 			if (!discovered.isVersion2()) {
 				// Option 1: GET HTTP-redirect to the OpenID Provider endpoint
 				// The only method supported in OpenID 1.x
@@ -236,7 +250,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 	}
 
 	// authentication response
-	public Identifier verifyResponse(HttpServletRequest httpReq)
+	public User verifyResponse(HttpServletRequest httpReq)
 			throws ServletException {
 
 		try {
@@ -264,8 +278,37 @@ public class AuthenticatorOpenId extends HttpServlet {
 			// identifier
 			Identifier verified = verification.getVerifiedId();
 			if (verified != null) {
+				// success
+				User principal = new UserImpl(verified);
+				
+				AuthSuccess authSuccess = (AuthSuccess) verification.getAuthResponse();
+				authSuccess.getExtensions();
 
-				return verified; // success
+				if (authSuccess.hasExtension(SRegMessage.OPENID_NS_SREG)) {
+					MessageExtension ext = authSuccess.getExtension(SRegMessage.OPENID_NS_SREG);
+					if (ext instanceof SRegResponse) {
+						SRegResponse sregResp = (SRegResponse) ext;
+						for (Iterator iter = sregResp.getAttributeNames().iterator(); iter.hasNext();) {
+							String name = (String) iter.next();
+							String value = sregResp.getParameterValue(name);
+							httpReq.setAttribute(name, value);
+						}
+					}
+				}
+				if (authSuccess.hasExtension(AxMessage.OPENID_NS_AX)) {
+					FetchResponse fetchResp = (FetchResponse) authSuccess.getExtension(AxMessage.OPENID_NS_AX);
+
+					List aliases = fetchResp.getAttributeAliases();
+					for (Iterator iter = aliases.iterator(); iter.hasNext();) {
+						String alias = (String) iter.next();
+						List values = fetchResp.getAttributeValues(alias);
+						if (values.size() > 0) {
+							LOG.debug(alias + " : " + values.get(0));
+							principal.setAttribute(alias, values.get(0));
+						}
+					}
+				}
+				return principal; 
 			}
 		} catch (OpenIDException e) {
 			// present error to the user

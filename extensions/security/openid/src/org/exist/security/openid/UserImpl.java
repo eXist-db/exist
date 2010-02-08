@@ -21,6 +21,9 @@
  */
 package org.exist.security.openid;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.exist.security.Realm;
 import org.exist.security.User;
 import org.exist.xmldb.XmldbURI;
@@ -137,4 +140,15 @@ public class UserImpl implements User {
 		return _identifier.getIdentifier();
 	}
 
+	private Map<String, Object> attributes = new HashMap<String, Object>();
+	
+	@Override
+	public void setAttribute(String name, Object value) {
+		attributes.put(name, value);
+	}
+
+	@Override
+	public Object getAttribute(String name) {
+		return attributes.get(name);
+	}
 }

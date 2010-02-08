@@ -104,4 +104,7 @@ public interface User extends Principal {
 
 	@Deprecated
 	public String getDigestPassword();
+
+	public void setAttribute(String name, Object value);
+	public Object getAttribute(String name);
 }
