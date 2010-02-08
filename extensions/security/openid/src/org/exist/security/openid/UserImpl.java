@@ -137,7 +137,17 @@ public class UserImpl implements User {
 
 	@Override
 	public String getName() {
-		return _identifier.getIdentifier();
+		String name = "";
+		if (attributes.containsKey("firstname")) 
+			name += attributes.get("firstname"); 
+		if (attributes.containsKey("lastname"))
+			if (name != "") name += " ";
+			name += attributes.get("lastname");
+		
+		if (name == "") 
+			return _identifier.getIdentifier();
+		
+		return name;
 	}
 
 	private Map<String, Object> attributes = new HashMap<String, Object>();
