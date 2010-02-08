@@ -1717,7 +1717,7 @@ public class RESTServer {
 					mimeType = mimeType.substring(0, semicolon);
 				}
                 if (wrap) {
-                    mimeType = "text/xml";
+                    mimeType = "application/xml";
                 }
 				response.setContentType(mimeType + "; charset=" + encoding);
 			}

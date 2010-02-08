@@ -306,7 +306,7 @@ public class RESTServiceTest extends TestCase {
     	    sconnect.setRequestProperty("Authorization", "Basic " + credentials);
     	    sconnect.setRequestMethod("PUT");
     	    sconnect.setDoOutput(true);
-    	    sconnect.setRequestProperty("ContentType", "text/xml");
+    	    sconnect.setRequestProperty("ContentType", "application/xml");
     	    Writer writer = new OutputStreamWriter(sconnect.getOutputStream(), "UTF-8");
     	    writer.write(XML_DATA);
     	    writer.close();
@@ -345,7 +345,7 @@ public class RESTServiceTest extends TestCase {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("PUT");
             connect.setDoOutput(true);
-            connect.setRequestProperty("ContentType", "text/xml");
+            connect.setRequestProperty("ContentType", "application/xml");
             Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
             writer.write(XML_DATA);
             writer.close();
@@ -365,7 +365,7 @@ public class RESTServiceTest extends TestCase {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("PUT");
             connect.setDoOutput(true);
-            connect.setRequestProperty("ContentType", "text/xml");
+            connect.setRequestProperty("ContentType", "application/xml");
             Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
             writer.write(XML_DATA);
             writer.close();
@@ -385,7 +385,7 @@ public class RESTServiceTest extends TestCase {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("PUT");
             connect.setDoOutput(true);
-            connect.setRequestProperty("ContentType", "text/xml; charset=UTF-8");
+            connect.setRequestProperty("ContentType", "application/xml; charset=UTF-8");
 
             Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
             writer.write(XML_DATA);
@@ -543,7 +543,7 @@ public class RESTServiceTest extends TestCase {
 	            if (semicolon > 0) {
 	                contentType = contentType.substring(0, semicolon).trim();
 	            }
-	            assertEquals("Server returned content type " + contentType, "text/xml", contentType);
+	            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
 	
 	            //get the response of the query
 	            String response = readResponse(connect.getInputStream());
@@ -626,7 +626,7 @@ public class RESTServiceTest extends TestCase {
                 contentType = contentType.substring(0, semicolon).trim();
             }
             if (wrap) {
-                assertEquals("Server returned content type " + contentType, "text/xml", contentType);
+                assertEquals("Server returned content type " + contentType, "application/xml", contentType);
             } else {
                 assertEquals("Server returned content type " + contentType, "text/text", contentType);
             }
@@ -674,7 +674,7 @@ public class RESTServiceTest extends TestCase {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("POST");
             connect.setDoOutput(true);
-            connect.setRequestProperty("Content-Type", "text/xml");
+            connect.setRequestProperty("Content-Type", "application/xml");
 
             Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
             writer.write(content);

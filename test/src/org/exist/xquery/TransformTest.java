@@ -67,7 +67,7 @@ public class TransformTest extends TestCase {
     private void addXMLDocument(Collection c, String doc, String id) throws XMLDBException {
     	Resource r = c.createResource(id, XMLResource.RESOURCE_TYPE);
     	r.setContent(doc);
-    	((EXistResource) r).setMimeType("text/xml");
+    	((EXistResource) r).setMimeType("application/xml");
     	c.storeResource(r);
     }
     
