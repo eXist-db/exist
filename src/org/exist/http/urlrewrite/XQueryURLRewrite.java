@@ -545,7 +545,7 @@ public class XQueryURLRewrite implements Filter {
 			queryContext = compiled.getContext();
 		}
         // Find correct module load path
-		queryContext.setModuleLoadPath(moduleLoadPath);
+		queryContext.setModuleLoadPath(sourceInfo.moduleLoadPath);
         declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
         if (compiled == null) {
 			try {
@@ -635,8 +635,9 @@ public class XQueryURLRewrite implements Filter {
                                 "declares a wrong mime-type");
                         return null;
                     }
-                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true));
                     String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
+                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true),
+                        "xmldb:exist://" + controllerPath);
                     sourceInfo.controllerPath =
                         controllerPath.substring(locationUri.getCollectionPath().length());
                     return sourceInfo;
@@ -680,8 +681,8 @@ public class XQueryURLRewrite implements Filter {
             }
             if (LOG.isTraceEnabled())
                 LOG.trace("Found controller file: " + controllerFile.getAbsolutePath());
-            sourceInfo = new SourceInfo(new FileSource(controllerFile, "UTF-8", true));
             String parentPath = controllerFile.getParentFile().getAbsolutePath();
+            sourceInfo = new SourceInfo(new FileSource(controllerFile, "UTF-8", true), parentPath);
             sourceInfo.controllerPath =
                 parentPath.substring(baseDir.getAbsolutePath().length());
             // replace windows path separators
@@ -705,7 +706,8 @@ public class XQueryURLRewrite implements Filter {
                             !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
                         throw new ServletException("XQuery resource: " + query + " is not an XQuery or " +
                                 "declares a wrong mime-type");
-                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) sourceDoc, true));
+                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) sourceDoc, true),
+                        locationUri.toString());
                 } catch (PermissionDeniedException e) {
                     throw new ServletException("permission denied to read module source from " + query);
                 } finally {
@@ -717,7 +719,8 @@ public class XQueryURLRewrite implements Filter {
             }
         } else {
             try {
-                sourceInfo = new SourceInfo(SourceFactory.getSource(broker, moduleLoadPath, query, true));
+                sourceInfo = new SourceInfo(SourceFactory.getSource(broker, moduleLoadPath, query, true),
+                    moduleLoadPath);
             } catch (IOException e) {
                 throw new ServletException("IO error while reading XQuery source: " + query);
             } catch (PermissionDeniedException e) {
@@ -803,9 +806,11 @@ public class XQueryURLRewrite implements Filter {
 
         Source source;
         String controllerPath = "";
+        String moduleLoadPath;
 
-        private SourceInfo(Source source) {
+        private SourceInfo(Source source, String moduleLoadPath) {
             this.source = source;
+            this.moduleLoadPath = moduleLoadPath;
         }
     }
 
