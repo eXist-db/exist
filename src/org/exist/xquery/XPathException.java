@@ -95,7 +95,7 @@ public class XPathException extends Exception {
     public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if (callStack == null)
             callStack = new ArrayList<FunctionStackElement>();
-        callStack.add(new FunctionStackElement(def, call.getLine(), call.getColumn()));
+        callStack.add(new FunctionStackElement(def, call.getSource().toString(), call.getLine(), call.getColumn()));
     }
 	
     public void prependMessage(String msg) {
@@ -120,7 +120,8 @@ public class XPathException extends Exception {
         if (callStack != null) {
             buf.append("\nIn call to function:\n");
             for (Iterator<FunctionStackElement> i = callStack.iterator(); i.hasNext(); ) {
-                buf.append('\t').append(i.next());
+            	FunctionStackElement stack = i.next();
+                buf.append('\t').append(stack).append(" @").append(stack.column);
                 if (i.hasNext())
                     buf.append('\n');
             }
@@ -168,18 +169,21 @@ public class XPathException extends Exception {
     
     private static class FunctionStackElement {
         String function;
+        String file;
         int line;
         int column;
 
-        FunctionStackElement(UserDefinedFunction func, int line, int column) {
+        FunctionStackElement(UserDefinedFunction func, String file, int line, int column) {
             this.function = func.toString();
+            this.file = file;
             this.line = line;
             this.column = column;
         }
         
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append(function).append(" [");
+            buf.append(function).append(" ");
+            buf.append(file).append(" [");
             buf.append(line).append(":");
             buf.append(column).append(']');
             return buf.toString();

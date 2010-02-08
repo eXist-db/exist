@@ -108,4 +108,7 @@ public class XACMLSource
 	{
 		return type.equals(XACMLConstants.STRING_SOURCE_TYPE) ? "[constructed]" : (type + ": '" + key + "'");
 	}
+	public String toString() {
+		return type+": "+key;
+	}
 }
