@@ -119,7 +119,11 @@ public class UserImpl implements User {
 	public UserImpl(String user, String password) {
 		this.user = user;
 		setPassword(password);
+	}
 
+	public UserImpl(int uid, String user, String password) {
+		this(user, password);
+		this.uid = uid;
 	}
 
 	/**

@@ -1712,6 +1712,7 @@ public class RpcConnection implements RpcAPI {
         Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
         for (int i = 0; i < users.length; i++) {
             final HashMap<String, Object> tab = new HashMap<String, Object>();
+            tab.put("uid", users[i].getUID());
             tab.put("name", users[i].getName());
             Vector<String> groups = new Vector<String>();
             String[] gl = users[i].getGroups();

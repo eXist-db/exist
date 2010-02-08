@@ -396,7 +396,14 @@ public class RemoteUserManagementService implements UserManagementService {
 			User[] u = new User[users.length];
 			for (int i = 0; i < u.length; i++) {
 				final HashMap<?,?> tab = (HashMap<?,?>) users[i];
-				u[i] = new UserImpl((String) tab.get("name"), null);
+				
+				int uid = -1;
+				try {
+					uid = (Integer)tab.get("uid");
+				} catch (java.lang.NumberFormatException e) {
+				}
+					
+				u[i] = new UserImpl(uid, (String) tab.get("name"), null);
 				Object[] groups = (Object[]) tab.get("groups");
                 for (int j = 0; j < groups.length; j++)
 					u[i].addGroup((String) groups[j]);
