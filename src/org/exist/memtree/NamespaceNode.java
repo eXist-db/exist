@@ -81,7 +81,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
 	}
 
 	public QName getQName() {
-		return (QName)document.namePool.get(document.namespaceCode[nodeNumber]);
+		return document.namespaceCode[nodeNumber];
 	}
 	
 	/* (non-Javadoc)

@@ -55,7 +55,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
     }
 
     public QName getQName() {
-		return (QName)document.namePool.get(document.attrName[nodeNumber]);
+		return document.attrName[nodeNumber];
 	}
 	
 	/* (non-Javadoc)

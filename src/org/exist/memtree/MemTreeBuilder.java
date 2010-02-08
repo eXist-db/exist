@@ -340,7 +340,7 @@ public class MemTreeBuilder {
 	
 	public int namespaceNode(QName qn) {
 		int lastNode = doc.getLastNode();
-        QName elemQN = (QName) doc.namePool.get(doc.nodeName[lastNode]);
+        QName elemQN = doc.nodeName[lastNode];
         String elemPrefix = elemQN.getPrefix() == null ? "" : elemQN.getPrefix();
         if (elemPrefix.equals(qn.getLocalName()) && elemQN.getNamespaceURI() != null &&
             !elemQN.getNamespaceURI().equals(qn.getNamespaceURI()))

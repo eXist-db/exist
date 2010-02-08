@@ -111,14 +111,13 @@ public class NodeImpl implements NodeAtExist, NodeValue {
 				return "#document";
 			case Type.ELEMENT :
 			case Type.PROCESSING_INSTRUCTION :
-				QName qn = (QName)
-					document.namePool.get(document.nodeName[nodeNumber]);
+				QName qn = document.nodeName[nodeNumber];
 				//TODO : check !
 				return qn.getStringValue();
 			case Type.ATTRIBUTE:
-				return ((QName)document.namePool.get(document.attrName[nodeNumber])).getStringValue();
+				return (document.attrName[nodeNumber]).getStringValue();
 			case Type.NAMESPACE:
-				return ((QName)document.namePool.get(document.namespaceCode[nodeNumber])).getStringValue();
+				return (document.namespaceCode[nodeNumber]).getStringValue();
 			case Type.TEXT :
 				return "#text";
 			case Type.COMMENT :
@@ -136,8 +135,7 @@ public class NodeImpl implements NodeAtExist, NodeValue {
 			case Node.ATTRIBUTE_NODE :
 			case Node.ELEMENT_NODE :
 			case Node.PROCESSING_INSTRUCTION_NODE :
-				QName qn = (QName)
-					document.namePool.get(document.nodeName[nodeNumber]);
+				QName qn = document.nodeName[nodeNumber];
 				return qn;
 			case Node.DOCUMENT_NODE :
 				return QName.EMPTY_QNAME;		
