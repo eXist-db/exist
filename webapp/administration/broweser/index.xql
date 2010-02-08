@@ -7,12 +7,13 @@ return
 <html>
 	<head>
 		<title>DB Browser</title>
-		<script src='scripts/jquery.js' type='text/javascript'/>
-		<script src='scripts/ui.core.js' type='text/javascript'/>
-		<script src='scripts/jquery.cookie.js' type='text/javascript'/>
-		<script src='scripts/jquery.dynatree.js' type='text/javascript'/>
+		<script src='jquery' type='text/javascript'/>
+		<script src='ui.core' type='text/javascript'/>
+		<script src='jquery.cookie' type='text/javascript'/>
+		<script src='jquery.dynatree' type='text/javascript'/>
+		<script src='jquery.dataTables' type='text/javascript'/>
+
 		<script src='scripts/main.js' type='text/javascript'/>
-		<script src='scripts/jquery.dataTables.min.js' type='text/javascript'/>
 
 		<link href='styles/ui.dynatree.css' rel='stylesheet' type='text/css'/>
 		<link href='styles/scroll.css' rel='stylesheet' type='text/css'/>
