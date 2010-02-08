@@ -95,7 +95,6 @@
             } else {
                 var pages = Math.ceil(options.totalItems / options.itemsPerPage);
                 var currentPage = Math.floor(currentItem / options.itemsPerPage);
-                console.log("pages: " + pages + " currentPage: " + currentPage);
                 var startPage = currentPage > 2 ? currentPage - 3 : 0;
                 var endPage = 0;
                 if (currentPage + 3 >= pages)
@@ -110,10 +109,6 @@
                         end = options.totalItems;
                     appendPageLink(div, (i * options.itemsPerPage + 1), end);
                 }
-//                if (pages % options.itemsPerPage > 0) {
-//                    appendPageLink(div, pages * options.itemsPerPage + 1,
-//                            pages * options.itemsPerPage + pages % options.itemsPerPage);
-//                }
             }
             return div;
         }
