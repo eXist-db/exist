@@ -40,7 +40,7 @@ public class XQDocTask extends AbstractXMLDBTask {
         "let $moduleURI := $xml//xqdoc:module/xqdoc:uri\n" +
         "let $docName := concat(util:hash($moduleURI, 'MD5'), '.xml')\n" +
         "return\n" +
-        "   xdb:store($collection, $docName, $xml, 'text/xml')";
+        "   xdb:store($collection, $docName, $xml, 'application/xml')";
 
     private String moduleURI = null;
     private boolean createCollection = false;

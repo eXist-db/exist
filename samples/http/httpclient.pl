@@ -50,7 +50,7 @@ sub store {
         if($BINARY) {
             $req->content_type('application/octet-stream');
         } else {
-            $req->content_type('text/xml');
+            $req->content_type('application/xml');
         }
         $req->content($data);
 
@@ -101,7 +101,7 @@ sub query {
 END
     print "Executing query: $query\n";
     my $req = HTTP::Request->new(POST => $URL);
-    $req->content_type('text/xml');
+    $req->content_type('application/xml');
     $req->content($xq);
 
     my $res = $ua->request($req);
@@ -119,7 +119,7 @@ sub xupdate {
     }
     print "Executing XUpdate request: $xupdate\n";
     my $req = HTTP::Request->new(POST => $URL);
-    $req->content_type('text/xml');
+    $req->content_type('application/xml');
     $req->content($xupdate);
 
     my $res = $ua->request($req);

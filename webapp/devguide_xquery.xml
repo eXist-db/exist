@@ -401,7 +401,7 @@ $rand as xs:integer) as element()
                     browser, you will get the raw XML (or rather HTML) of the page. Obviously, the
                     browser does not recognize it as HTML yet. This happens because, by default, the
                     REST server sets the <parameter>Content-Type</parameter> header in the HTTP
-                    response to "text/xml". We thus need to change this to "text/html" to tell the
+                    response to "application/xml". We thus need to change this to "text/html" to tell the
                     web browser that the received content can be displayed as HTML.</para>
                 <para>The REST server copies the value for the content type header from the XQuery
                     serialization parameter <option>media-type</option>. You can set this parameter

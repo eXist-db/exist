@@ -105,7 +105,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     * Parses header parameters and sets them on the Request
     * 
     * @param method The Http Method to set the request headers on
-    * @param headers The headers node e.g. <headers><header name="Content-Type" value="text/xml"/></headers>
+    * @param headers The headers node e.g. <headers><header name="Content-Type" value="application/xml"/></headers>
     */
     protected void setHeaders( HttpMethod method, Node headers ) throws XPathException
     {

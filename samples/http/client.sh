@@ -54,7 +54,7 @@ END
 action=none
 collection=/db
 indent=no
-contentType=text/xml
+contentType=application/xml
 binmode=no
 offset=1
 max=20
@@ -202,7 +202,7 @@ case $action in
 </query>
 END
 `
-        echo $request | curl -H 'content-type:text/xml' -i --data-binary @- "$url$collection"
+        echo $request | curl -H 'content-type:application/xml' -i --data-binary @- "$url$collection"
         ;;
     xupdate)
         if [ ! -f $xupdate ]

@@ -21,7 +21,7 @@ print doc
 print "storing document to collection %s ..." % collection
 con = httplib.HTTP('localhost:8080')
 con.putrequest('PUT', '/exist/rest/%s/%s' % (collection, doc))
-con.putheader('Content-Type', 'text/xml')
+con.putheader('Content-Type', 'application/xml')
 clen = len(xml)
 con.putheader('Content-Length', `clen`)
 con.endheaders()
