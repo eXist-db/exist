@@ -57,8 +57,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	}
 
 	public QName getQName() {
-		return (QName)
-			document.namePool.get(document.nodeName[nodeNumber]);
+		return document.nodeName[nodeNumber];
 	}
 	
 	/* (non-Javadoc)
@@ -135,7 +134,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		if (-1 < attr) {
 			while (attr < document.nextAttr
 				&& document.attrParent[attr] == nodeNumber) {
-				QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
+				QName attrQName = document.attrName[attr];
 				if (attrQName.getStringValue().equals(name))
 					return document.attrValue[attr];
 				++attr;
@@ -147,7 +146,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			if (-1 < ns) {
 				while (ns < document.nextNamespace
 						&& document.namespaceParent[ns] == nodeNumber) {
-					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					QName nsQName = document.namespaceCode[ns];
 					if (nsQName.getStringValue().equals(name))
 						return nsQName.getNamespaceURI();
 					++ns;
@@ -211,7 +210,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		if (-1 < attr) {
 			while (attr < document.nextAttr
 				&& document.attrParent[attr] == nodeNumber) {
-				QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
+				QName attrQName = document.attrName[attr];
 				if (attrQName.getStringValue().equals(name))
 					return new AttributeImpl(document, attr);
 				++attr;
@@ -223,7 +222,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			if (-1 < ns) {
 				while (ns < document.nextNamespace
 						&& document.namespaceParent[ns] == nodeNumber) {
-					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					QName nsQName=document.namespaceCode[ns];
 					if (nsQName.getStringValue().equals(name))
 						return new NamespaceNode(document, ns);
 					++ns;
@@ -307,7 +306,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		int nextNode = nodeNumber;
 		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
-    			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
+    			QName qn = document.nodeName[nextNode];
     			if(qn.getStringValue().equals(name))
     				nl.add(document.getNode(nextNode));
     		}
@@ -325,7 +324,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			QName name;
 			while (attr < document.nextAttr
 				&& document.attrParent[attr] == nodeNumber) {
-				name = (QName)document.namePool.get(document.attrName[attr]);
+				name = document.attrName[attr];
 				if (name.getLocalName().equals(localName)
 					&& name.getNamespaceURI().equals(namespaceURI))
 					return document.attrValue[attr];
@@ -338,7 +337,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			if (-1 < ns) {
 				while (ns < document.nextNamespace
 						&& document.namespaceParent[ns] == nodeNumber) {
-					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					QName nsQName=document.namespaceCode[ns];
 					if (nsQName.getLocalName().equals(localName))
 						return nsQName.getNamespaceURI();
 					++ns;
@@ -375,7 +374,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			QName name;
 			while (attr < document.nextAttr
 				&& document.attrParent[attr] == nodeNumber) {
-				name = (QName)document.namePool.get(document.attrName[attr]);
+				name = document.attrName[attr];
 				if (name.getLocalName().equals(localName)
 					&& name.getNamespaceURI().equals(namespaceURI))
 					return new AttributeImpl(document, attr);
@@ -388,7 +387,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			if (-1 < ns) {
 				while (ns < document.nextNamespace
 						&& document.namespaceParent[ns] == nodeNumber) {
-					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					QName nsQName=document.namespaceCode[ns];
 					if (nsQName.getLocalName().equals(localName))
 						return new NamespaceNode(document, ns);
 					++ns;
@@ -415,7 +414,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		int nextNode = nodeNumber;
 		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
-    			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
+    			QName qn = document.nodeName[nextNode];
     			if(qname.compareTo(qn) == 0)
     				nl.add(document.getNode(nextNode));
     		}
@@ -449,7 +448,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
         if (-1 < ns) {
             while (ns < document.nextNamespace
                    && document.namespaceParent[ns] == nodeNumber) {
-                QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+                QName nsQName=document.namespaceCode[ns];
                 if (nsQName.getStringValue().equals("xmlns:" + name))
                     return nsQName.getNamespaceURI();
                 ++ns;
@@ -469,7 +468,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
         if (-1 < ns) {
             while (ns < document.nextNamespace
                    && document.namespaceParent[ns] == nodeNumber) {
-                QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+                QName nsQName=document.namespaceCode[ns];
                 set.add(nsQName.getStringValue());
                 ++ns;
             }
@@ -497,7 +496,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
         if (-1 < ns) {
             while (ns < document.nextNamespace
                    && document.namespaceParent[ns] == nodeNumber) {
-                QName nsQName = (QName) document.namePool.get(document.namespaceCode[ns]);
+                QName nsQName = document.namespaceCode[ns];
                 map.put(nsQName.getLocalName(), nsQName.getNamespaceURI());
                 ++ns;
             }

@@ -214,7 +214,7 @@ public class DOMIndexer {
             }
             break;
     	case Node.PROCESSING_INSTRUCTION_NODE :
-            QName qn = (QName)doc.namePool.get(doc.nodeName[nodeNr]);
+            QName qn = doc.nodeName[nodeNr];
             pi.setTarget(qn.getLocalName());
             pi.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             pi.setOwnerDocument(targetDoc);
@@ -243,7 +243,7 @@ public class DOMIndexer {
         elem.setOwnerDocument(targetDoc);
         elem.setAttributes(attribs);
         elem.setChildCount(doc.getChildCountFor(nodeNr) + attribs);
-        elem.setNodeName((QName) doc.namePool.get(doc.nodeName[nodeNr]));
+        elem.setNodeName(doc.nodeName[nodeNr]);
         Map ns = getNamespaces(nodeNr);
         if (ns != null)
             elem.setNamespaceMappings(ns);
@@ -255,7 +255,7 @@ public class DOMIndexer {
             return null;
         Map map = new HashMap();
         while (ns < doc.nextNamespace && doc.namespaceParent[ns] == nodeNr) {
-            QName qn = (QName)doc.namePool.get(doc.namespaceCode[ns]);
+            QName qn = doc.namespaceCode[ns];
             if ("xmlns".equals(qn.getLocalName()))
                 map.put("", qn.getNamespaceURI());
             else
@@ -274,7 +274,7 @@ public class DOMIndexer {
         int attr = doc.alpha[nodeNr];
         if(-1 < attr) {
             while (attr < doc.nextAttr && doc.attrParent[attr] == nodeNr) {
-                QName qn = (QName)doc.namePool.get(doc.attrName[attr]);
+                QName qn = doc.attrName[attr];
                 AttrImpl attrib = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 attrib.setNodeName(qn);
                 attrib.setValue(doc.attrValue[attr]);
