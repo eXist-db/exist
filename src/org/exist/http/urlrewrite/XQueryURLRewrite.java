@@ -417,7 +417,7 @@ public class XQueryURLRewrite implements Filter {
                              FilterChain filterChain) throws IOException, ServletException {
         if (action.getTarget() != null && !(action instanceof Redirect)) {
             String uri = action.resolve(request);
-            URLRewrite staticRewrite = rewriteConfig.lookup(uri, true);
+            URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true);
             if (staticRewrite != null) {
                 staticRewrite.copyFrom(action);
                 action = staticRewrite;

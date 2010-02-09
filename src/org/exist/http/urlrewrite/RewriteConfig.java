@@ -43,6 +43,21 @@ public class RewriteConfig {
     public final static String CONFIG_FILE = "controller-config.xml";
 
     public final static String MAP_ELEMENT = "map";
+    /**
+     * Adding server-name="www.example.com" to a root tag in the controller-config.xml file.<br/>
+     * <br/>
+     *  i.e.<br/> 
+     *  <br/>
+     *  &lt;root server-name="example1.com" pattern="/*" path="xmldb:exist:///db/org/example1/"/&gt;<br/>
+     *  &lt;root server-name="example2.com" pattern="/*" path="xmldb:exist:///db/org/example2/"/&gt;<br/>
+     *  <br/>
+     *  Will redirect http://example1.com to /db/org/example1/<br/>
+     *  and http://example2.com to /db/org/example2/<br/>
+     *  <br/>
+     *  If there is no server-name attribute on the root tag, then the server name is ignored while performing the URL rewriting.
+     *  
+     */
+    public final static String SERVER_NAME_ATTRIBUTE = "server-name";
     public final static String PATTERN_ATTRIBUTE = "pattern";
 
     /**
@@ -103,7 +118,8 @@ public class RewriteConfig {
      */
     public synchronized URLRewrite lookup(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        return lookup(path, false);
+        
+        return lookup(path, request.getServerName(), false);
     }
 
     /**
@@ -115,7 +131,7 @@ public class RewriteConfig {
      * @return the URLRewrite instance for the mapping or null if none was found
      * @throws ServletException
      */
-    public synchronized URLRewrite lookup(String path, boolean staticMapping) throws ServletException {
+    public synchronized URLRewrite lookup(String path, String serverName, boolean staticMapping) throws ServletException {
         int p = path.lastIndexOf(';');
         if(p != Constants.STRING_NOT_FOUND)
             path = path.substring(0, p);
@@ -124,6 +140,23 @@ public class RewriteConfig {
             String matchedString = m.match(path);
             if (matchedString != null) {
                 URLRewrite action = m.action;
+                
+                /*
+                 * If the URLRewrite is a ControllerForward, then test to see if there is a condition
+                 * on the server name.  If there is a condition on the server name and the names do not
+                 * match, then ignore this ControllerForward.
+                 */
+                if (action instanceof ControllerForward) {
+                	if (serverName != null) {
+                		String controllerServerName = ((ControllerForward)action).getServerName();
+                		if (controllerServerName != null) {
+                			if (!serverName.equalsIgnoreCase(controllerServerName)) {
+                				continue;
+                			}
+                		}
+                	}
+                	
+                }
                 // if the mapping matches a part of the URI only, set the prefix to the
                 // matched string. This will later be stripped from the URI.
                 if (matchedString.length() != path.length() && !matchedString.equals("/"))
@@ -201,7 +234,17 @@ public class RewriteConfig {
         } else if ("redirect".equals(action.getLocalName())) {
             rewrite = new Redirect(action, pattern);
         } else if ("root".equals(action.getLocalName())) {
-            rewrite = new ControllerForward(action, pattern);
+        	ControllerForward cf = new ControllerForward(action, pattern);
+        	
+        	/*
+        	 * If there is a server-name attribute on the root tag, then add that
+        	 * as an attribute on the ControllerForward object.
+        	 */
+        	String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
+        	if (serverName != null && serverName.length() > 0) {
+        		cf.setServerName(serverName);
+        	}
+            rewrite = cf;
         }
         return rewrite;
     }

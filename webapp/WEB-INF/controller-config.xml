@@ -25,8 +25,23 @@
         ++ webapp directory. 
     -->
     <root pattern="/tools" path="xmldb:exist:///db/www"/>
+    <!--
+        ++ To redirect requests based on the server name (i.e. www.example.com)
+        ++ to a specific collection within the database, comment out the following
+        ++ root line and uncomment the block below with the server-name
+        ++ attribute.
+    -->
     <root pattern=".*" path="/"/>
-    
+
+
+    <!--
+    <root server-name="site1.example.com" pattern="/*" path="xmldb:exist:///db/org/site1/"/>
+    <root server-name="site2.example.com" pattern="/*" path="xmldb:exist:///db/org/site2/"/>
+    <root server-name="site3.example.com" pattern="/*" path="xmldb:exist:///db/org/site3/"/>
+    <root server-name="localhost" pattern=".*" path="/"/>
+    <root server-name="site4.example.com" pattern=".*" path="/"/>
+    -->
+
     <!-- 
       ++ The following configuration assumes that the main webapp
       ++ is stored in the database. However, the contents of the /webapp directory
