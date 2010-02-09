@@ -32,6 +32,22 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 public class ControllerForward extends URLRewrite {
+	
+    /**
+     * Adding server-name="www.example.com" to a root tag in the controller-config.xml file.<br/>
+     * <br/>
+     *  i.e.<br/> 
+     *  <br/>
+     *  &lt;root server-name="example1.com" pattern="/*" path="xmldb:exist:///db/org/example1/"/&gt;<br/>
+     *  &lt;root server-name="example2.com" pattern="/*" path="xmldb:exist:///db/org/example2/"/&gt;<br/>
+     *  <br/>
+     *  Will redirect http://example1.com to /db/org/example1/<br/>
+     *  and http://example2.com to /db/org/example2/<br/>
+     *  <br/>
+     *  If there is no server-name attribute on the root tag, then the server name is ignored while performing the URL rewriting.
+     *  
+     */
+	private String serverName = null;
 
     public ControllerForward(Element config, String uri) {
         super(config, uri);
@@ -66,4 +82,12 @@ public class ControllerForward extends URLRewrite {
             request.setBasePath("/rest" + colPath);
         }
     }
+
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
+	}
+
+	public String getServerName() {
+		return serverName;
+	}
 }
