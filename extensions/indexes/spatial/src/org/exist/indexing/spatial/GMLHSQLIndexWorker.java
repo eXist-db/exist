@@ -233,8 +233,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
         		refine_query_on_doc = true;
         		DocumentImpl doc;
-        		Iterator it = contextSet.getDocumentSet().getDocumentIterator();
-        		doc  = (DocumentImpl)it.next();
+        		Iterator<DocumentImpl> it = contextSet.getDocumentSet().getDocumentIterator();
+        		doc  = it.next();
         		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		while(it.hasNext()) {
         			doc  = (DocumentImpl)it.next();
@@ -458,8 +458,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	if (contextSet != null) {
         	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
         		DocumentImpl doc;
-        		Iterator it = contextSet.getDocumentSet().getDocumentIterator();
-        		doc  = (DocumentImpl)it.next();
+        		Iterator<DocumentImpl> it = contextSet.getDocumentSet().getDocumentIterator();
+        		doc  = it.next();
         		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		while(it.hasNext()) {
         			doc  = (DocumentImpl)it.next();
@@ -566,8 +566,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	if (contextSet != null) {
         	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
         		DocumentImpl doc;
-        		Iterator it = contextSet.getDocumentSet().getDocumentIterator();
-        		doc  = (DocumentImpl)it.next();
+        		Iterator<DocumentImpl> it = contextSet.getDocumentSet().getDocumentIterator();
+        		doc  = it.next();
         		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		while(it.hasNext()) {
         			doc  = (DocumentImpl)it.next();
