@@ -628,6 +628,14 @@ public class XQueryURLRewrite implements Filter {
                     LOG.warn("XQueryURLRewrite controller could not be found");
                     return null;
                 }
+<<<<<<< .mine
+<<<<<<< .working
+                if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                            !controllerDoc.getMetadata().getMimeType().equals("application/xquery")) {
+                    LOG.warn("XQuery resource: " + query + " is not an XQuery or " +
+                            "declares a wrong mime-type");
+                    return null;
+=======
                 try {
                     if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
                                 !controllerDoc.getMetadata().getMimeType().equals("application/xquery")) {
@@ -644,6 +652,25 @@ public class XQueryURLRewrite implements Filter {
                 } finally {
                     if (controllerDoc != null)
                         controllerDoc.getUpdateLock().release(Lock.READ_LOCK);
+>>>>>>> .r11171
+=======
+                try {
+                    if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                                !controllerDoc.getMetadata().getMimeType().equals("application/xquery")) {
+                        LOG.warn("XQuery resource: " + query + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                        return null;
+                    }
+                    String controllerPath = controllerDoc.getCollection().getURI().getRawCollectionPath();
+                    sourceInfo = new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true),
+                        "xmldb:exist://" + controllerPath);
+                    sourceInfo.controllerPath =
+                        controllerPath.substring(locationUri.getCollectionPath().length());
+                    return sourceInfo;
+                } finally {
+                    if (controllerDoc != null)
+                        controllerDoc.getUpdateLock().release(Lock.READ_LOCK);
+>>>>>>> .merge-right.r11170
                 }
             } catch (URISyntaxException e) {
                 LOG.warn("Bad URI for base path: " + e.getMessage(), e);
