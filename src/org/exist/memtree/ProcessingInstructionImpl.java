@@ -46,7 +46,7 @@ public class ProcessingInstructionImpl
 	 * @see org.w3c.dom.ProcessingInstruction#getTarget()
 	 */
 	public String getTarget() {
-		QName qn = (QName)document.namePool.get(document.nodeName[nodeNumber]);
+		QName qn = document.nodeName[nodeNumber];
 		return qn != null ? qn.getLocalName() : null;
 	}
 	

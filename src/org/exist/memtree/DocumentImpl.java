@@ -88,7 +88,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected int[] next;
 
     // pointer into the namePool
-    protected int[] nodeName;
+    protected QName[] nodeName;
 
     protected NodeId[] nodeId;
     
@@ -101,7 +101,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected int nextChar = 0;
 
     // attributes
-    protected int[] attrName;
+    protected QName[] attrName;
 
     protected int[] attrType;
 
@@ -116,7 +116,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     // namespaces
     protected int[] namespaceParent = null;
     
-    protected int[] namespaceCode = null;
+    protected QName[] namespaceCode = null;
     
     protected int nextNamespace = 0;
     
@@ -157,13 +157,13 @@ public class DocumentImpl extends NodeImpl implements Document {
         treeLevel = new short[NODE_SIZE];
         next = new int[NODE_SIZE];
         Arrays.fill(next, -1);
-        nodeName = new int[NODE_SIZE];
+        nodeName = new QName[NODE_SIZE];
         nodeId = new NodeId[NODE_SIZE];
         alpha = new int[NODE_SIZE];
         alphaLen = new int[NODE_SIZE];
         Arrays.fill(alphaLen, -1);
 
-        attrName = new int[ATTR_SIZE];
+        attrName = new QName[ATTR_SIZE];
         attrParent = new int[ATTR_SIZE];
         attrValue = new String[ATTR_SIZE];
         attrType = new int[ATTR_SIZE];
@@ -191,7 +191,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         if (size == nodeKind.length) grow();
         nodeKind[size] = kind;
         treeLevel[size] = level;
-        nodeName[size] = (qname != null ? namePool.add(qname) : -1);
+        nodeName[size] = (qname != null ? namePool.getSharedName(qname) : null);
         alpha[size] = -1; // undefined
         next[size] = -1;
         return size++;
@@ -291,7 +291,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         int prevAttr = nextAttr - 1;
         // check if an attribute with the same qname exists in the parent element
         while (nodeNr > 0 && prevAttr > -1 && attrParent[prevAttr] == nodeNr) {
-            QName prevQn = (QName) namePool.get(attrName[prevAttr--]);
+            QName prevQn = attrName[prevAttr--];
             if (prevQn.equalsSimple(qname))
                 throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
                         "Error XQDY0025: element has more than one attribute '" + qname + "'");
@@ -299,7 +299,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         if (nextAttr == attrName.length) growAttributes();
         qname.setNameType(ElementValue.ATTRIBUTE);
         attrParent[nextAttr] = nodeNr;
-        attrName[nextAttr] = namePool.add(qname);
+        attrName[nextAttr] = namePool.getSharedName(qname);
         attrValue[nextAttr] = value;
         attrType[nextAttr] = type;
         if (alpha[nodeNr] < 0) alpha[nodeNr] = nextAttr;
@@ -309,7 +309,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     public int addNamespace(int nodeNr, QName qname) {
     	if(nodeKind == null) init();
     	if(namespaceCode == null || nextNamespace == namespaceCode.length) growNamespaces();
-    	namespaceCode[nextNamespace] = namePool.add(qname);
+    	namespaceCode[nextNamespace] = namePool.getSharedName(qname);
     	namespaceParent[nextNamespace] = nodeNr;
     	if(alphaLen[nodeNr] < 0) { 
     		alphaLen[nodeNr] = nextNamespace;
@@ -351,7 +351,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         System.arraycopy(next, 0, newNext, 0, size);
         next = newNext;
 
-        int[] newNodeName = new int[newSize];
+        QName[] newNodeName = new QName[newSize];
         System.arraycopy(nodeName, 0, newNodeName, 0, size);
         nodeName = newNodeName;
 
@@ -373,7 +373,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         int size = attrName.length;
         int newSize = (size * 3) / 2;
 
-        int[] newAttrName = new int[newSize];
+        QName[] newAttrName = new QName[newSize];
         System.arraycopy(attrName, 0, newAttrName, 0, size);
         attrName = newAttrName;
 
@@ -409,13 +409,13 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     private void growNamespaces() {
         if (namespaceCode == null) {
-            namespaceCode = new int[5];
+            namespaceCode = new QName[5];
             namespaceParent = new int[5];
         } else {
             int size = namespaceCode.length;
             int newSize = (size * 3) / 2;
 
-            int[] newCodes = new int[newSize];
+            QName[] newCodes = new QName[newSize];
             System.arraycopy(namespaceCode, 0, newCodes, 0, size);
             namespaceCode = newCodes;
 
@@ -791,7 +791,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     	//int nodeNr = 1;
     	for(int i = 1; i < size; i++) {
     		if (nodeKind[i] == Node.ELEMENT_NODE) {
-    			QName qn = (QName) namePool.get(nodeName[i]);
+    			QName qn = nodeName[i];
     			if(qn.getStringValue().equals(name))
     				nl.add(getNode(i));
     		}
@@ -909,12 +909,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         int nr = node.nodeNumber;
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
-                QName nodeName = (QName) document.namePool.get(document.nodeName[nr]);
+                QName nodeName = document.nodeName[nr];
                 receiver.startElement(nodeName, null);
                 int attr = document.alpha[nr];
                 if (-1 < attr) {
                     while (attr < document.nextAttr && document.attrParent[attr] == nr) {
-                        QName attrQName = (QName) document.namePool.get(document.attrName[attr]);
+                        QName attrQName = document.attrName[attr];
                         receiver.attribute(attrQName, attrValue[attr]);
                         ++attr;
                     }
@@ -922,7 +922,7 @@ public class DocumentImpl extends NodeImpl implements Document {
                 int ns = document.alphaLen[nr];
                 if (-1 < ns) {
                 	while (ns < document.nextNamespace	&& document.namespaceParent[ns] == nr) {
-                		QName nsQName = (QName) document.namePool.get(document.namespaceCode[ns]);
+                		QName nsQName = document.namespaceCode[ns];
                 		receiver.addNamespaceNode(nsQName);
                 		++ns;
                 	}
@@ -937,7 +937,7 @@ public class DocumentImpl extends NodeImpl implements Document {
                         document.alphaLen[nr]);
             	break;
             case Node.ATTRIBUTE_NODE:
-                QName attrQName = (QName) document.namePool.get(document.attrName[nr]);
+                QName attrQName = document.attrName[nr];
                 receiver.attribute(attrQName, attrValue[nr]);
                 break;
             case Node.COMMENT_NODE:
@@ -945,7 +945,7 @@ public class DocumentImpl extends NodeImpl implements Document {
                         document.alphaLen[nr]);
                 break;
             case Node.PROCESSING_INSTRUCTION_NODE:
-                QName qn = (QName) document.namePool.get(document.nodeName[nr]);
+                QName qn = document.nodeName[nr];
                 String data = new String(document.characters,
                         document.alpha[nr], document.alphaLen[nr]);
                 receiver.processingInstruction(qn.getLocalName(), data);
@@ -1123,15 +1123,14 @@ public class DocumentImpl extends NodeImpl implements Document {
     	int nr = node.nodeNumber;
     	switch (node.getNodeType()) {
     	case Node.ELEMENT_NODE:
-    		QName nodeName = (QName) document.namePool.get(document.nodeName[nr]);
+    		QName nodeName = document.nodeName[nr];
     	
     		// output required namespace declarations
 	    	int ns = document.alphaLen[nr];
 	        if (-1 < ns) {
 	        	while (ns < document.nextNamespace
 	        			&& document.namespaceParent[ns] == nr) {
-	        		QName nsQName = (QName) document.namePool
-	                	.get(document.namespaceCode[ns]);
+	        		QName nsQName = document.namespaceCode[ns];
                     if ("xmlns".equals(nsQName.getLocalName()))
                         receiver.startPrefixMapping("", nsQName.getNamespaceURI());
                     else
@@ -1146,7 +1145,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 	    		attribs = new AttrList();
 	    		while (attr < document.nextAttr
 	    				&& document.attrParent[attr] == nr) {
-	    			QName attrQName = (QName) document.namePool.get(document.attrName[attr]);
+	    			QName attrQName = document.attrName[attr];
 	    			attribs.addAttribute(attrQName, attrValue[attr]);
 	    			++attr;
 	    		}
@@ -1158,7 +1157,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     				document.alphaLen[nr]));
     	break;
     	case Node.ATTRIBUTE_NODE:
-    		QName attrQName = (QName) document.namePool.get(document.attrName[nr]);
+    		QName attrQName = document.attrName[nr];
     	receiver.attribute(attrQName, attrValue[nr]);
     	break;
     	case Node.COMMENT_NODE:
@@ -1166,7 +1165,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     				document.alphaLen[nr]);
     		break;
     	case Node.PROCESSING_INSTRUCTION_NODE:
-    		QName qn = (QName) document.namePool.get(document.nodeName[nr]);
+    		QName qn = document.nodeName[nr];
         	String data = new String(document.characters,
         			document.alpha[nr], document.alphaLen[nr]);
         	receiver.processingInstruction(qn.getLocalName(), data);
@@ -1190,8 +1189,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 	        if (-1 < ns) {
 	        	while (ns < document.nextNamespace
 	        			&& document.namespaceParent[ns] == nr) {
-	        		QName nsQName = (QName) document.namePool
-	                	.get(document.namespaceCode[ns]);
+	        		QName nsQName = document.namespaceCode[ns];
                     if ("xmlns".equals(nsQName.getLocalName()))
                         receiver.endPrefixMapping("");
                     else

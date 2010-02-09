@@ -154,7 +154,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
             return null;
         int attrStart = doc.alpha[currentNode];
         for (int i = 0; i < attrCount; i++) {
-            org.exist.dom.QName qname = (org.exist.dom.QName) doc.namePool.get(doc.attrName[attrStart + i]);
+            org.exist.dom.QName qname = doc.attrName[attrStart + i];
             if (namespaceURI.equals(qname.getNamespaceURI()) && localName.equals(qname.getLocalName()))
                 return doc.attrValue[attrStart + i];
         }
@@ -173,7 +173,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         if (index > getAttributeCount())
             throw new ArrayIndexOutOfBoundsException("bad attribute index");
         int attr = doc.alpha[currentNode];
-        return (org.exist.dom.QName)doc.namePool.get(doc.attrName[attr + index]);
+        return doc.attrName[attr + index];
     }
 
     public QName getAttributeName(int index) {
@@ -252,7 +252,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         if (index > getNamespaceCount())
             throw new ArrayIndexOutOfBoundsException("bad namespace index");
         int ns = doc.alphaLen[currentNode];
-        org.exist.dom.QName nsQName = (org.exist.dom.QName) doc.namePool.get(doc.namespaceCode[ns + index]);
+        org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
         return nsQName.getLocalName();
     }
 
@@ -260,7 +260,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         if (index > getNamespaceCount())
             throw new ArrayIndexOutOfBoundsException("bad namespace index");
         int ns = doc.alphaLen[currentNode];
-        org.exist.dom.QName nsQName = (org.exist.dom.QName) doc.namePool.get(doc.namespaceCode[ns + index]);
+        org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
         return nsQName.getNamespaceURI();
     }
 
@@ -311,7 +311,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     public org.exist.dom.QName getQName() {
         if (state == START_ELEMENT || state == END_ELEMENT) {
-            return (org.exist.dom.QName) doc.namePool.get(doc.nodeName[currentNode]);
+            return doc.nodeName[currentNode];
         }
         throw new IllegalStateException("Cursor is not at an element");
     }
@@ -353,7 +353,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     }
 
     public String getPITarget() {
-        org.exist.dom.QName qn = (org.exist.dom.QName)doc.namePool.get(doc.nodeName[currentNode]);
+        org.exist.dom.QName qn = doc.nodeName[currentNode];
         return qn != null ? qn.getLocalName() : null;
     }
 
