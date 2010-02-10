@@ -8,7 +8,7 @@ declare option exist:serialize "method=xhtml media-type=text/html indent=yes omi
 
 <html>
 	<head>
-		<link rel="stylesheet" href="css/eXist.css" />
+		<link rel="stylesheet" type="text/css" href="css/eXist.css" />
 		
 		<link rel="stylesheet" type="text/css" href="../scripts/yui/grids/grids-min.css" />
 		

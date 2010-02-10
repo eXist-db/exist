@@ -7,17 +7,17 @@ return
 <html>
 	<head>
 		<title>DB Browser</title>
-		<script src='jquery' type='text/javascript'/>
-		<script src='ui.core' type='text/javascript'/>
-		<script src='jquery.cookie' type='text/javascript'/>
-		<script src='jquery.dynatree' type='text/javascript'/>
-		<script src='jquery.dataTables' type='text/javascript'/>
+		<script type='text/javascript' src='jquery' />
+		<script type='text/javascript' src='jquery.ui.full' />
+		<script type='text/javascript' src='jquery.cookie' />
+		<script type='text/javascript' src='jquery.dynatree' />
+		<script type='text/javascript' src='jquery.dataTables' />
 
-		<script src='scripts/main.js' type='text/javascript'/>
+		<script type='text/javascript' src='scripts/main.js' />
 
-		<link href='styles/ui.dynatree.css' rel='stylesheet' type='text/css'/>
-		<link href='styles/scroll.css' rel='stylesheet' type='text/css'/>
-		<link href='styles/demo_table.css' rel='stylesheet' type='text/css'/>
+		<link rel='stylesheet' type='text/css' href='styles/ui.dynatree.css' />
+		<link rel='stylesheet' type='text/css' href='styles/scroll.css' />
+		<link rel='stylesheet' type='text/css' href='styles/demo_table.css' />
 	</head>
 		
 	<body onload="load()">

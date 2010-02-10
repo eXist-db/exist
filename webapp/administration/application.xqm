@@ -23,20 +23,39 @@ declare function app:node($id as xs:string) as element() {
 			</error>
 };
 
-declare function app:title($application as xs:string) as xs:string {
-	let $app := app:node($application)
+declare function app:title($id as xs:string) as xs:string {
+	let $app := app:node($id)
 	return
 		xs:string($app/app:title)
 };
 
-declare function app:path($application as xs:string) as xs:string {
-	let $app := app:node($application)
+declare function app:path($id as xs:string) as xs:string {
+	let $app := app:node($id)
 	return
-		xs:string($app/app:title)
+		xs:string($app/app:path)
 };
 
-declare function local:menuSubapplications($application as xs:string, $path as xs:string) as element()* {
-	let $apps := collection("/db")//app:package/app:application/app:plug-to-application[@ref=$application]/..
+declare function app:pathUp($id as xs:string, $masterId as xs:string) as xs:string {
+	if ($masterId eq $id) then ""
+	else
+		let $app := app:node($id)
+		return
+		if (name($app) eq "error") then "" (: TODO: how process errors? :) 
+		else
+			let $parent := if ($app/app:plug-to-application) then app:pathUp($app/app:plug-to-application/@ref, $masterId) else ""
+			return
+				concat($parent, $app/app:path)
+};
+
+declare function app:primaryFile($id as xs:string, $onId as xs:string) as xs:string {
+	let $app := app:node($id)
+	let $parent := app:pathUp($id, $onId)
+	return
+		concat($parent, $app/app:primaryFile/text())
+};
+
+declare function local:menuSubapplications($id as xs:string, $path as xs:string) as element()* {
+	let $apps := collection("/db")//app:package/app:application/app:plug-to-application[@ref=$id]/..
 	let $menu := for $application in $apps
 				return
 				<li>
@@ -59,17 +78,17 @@ declare function app:menuSubapplications($application as xs:string) as element()
    	local:menuSubapplications($application, "")
 };
 
-declare function app:tableSubapplications($application as xs:string) as element()* {
-	let $apps := collection("/db")//app:package/app:application/app:plug-to-application[@ref=$application]/..
+declare function app:tableSubapplications($id as xs:string) as element()* {
+	let $apps := collection("/db")//app:package/app:application/app:plug-to-application[@ref=$id]/..
 	return
 		<table>
 			<tr>
 			{
-			for $application in $apps
+			for $app in $apps
 				return
 				<td>
-					<a href="{xs:string($application/app:path)}">
-					<img src="{concat($application/app:path,$application/app:logo/text())}"/>
+					<a href="{xs:string($app/app:path)}">
+					<img src="{concat($app/app:path,$app/app:logo/text())}"/>
 					</a>
 				</td>
 			}
