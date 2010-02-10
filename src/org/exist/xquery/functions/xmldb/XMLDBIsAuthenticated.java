@@ -47,7 +47,7 @@ public class XMLDBIsAuthenticated extends BasicFunction
 			new QName("is-authenticated", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the true() if current user from the xquery context is authenticated, false() otherwise.",
 			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
 		);
 	
 	public XMLDBIsAuthenticated(XQueryContext context, FunctionSignature signature)
