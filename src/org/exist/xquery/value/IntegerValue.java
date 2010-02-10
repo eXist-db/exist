@@ -52,6 +52,7 @@ public class IntegerValue extends NumericValue {
 	private BigInteger value;
 	// 	private long value;
 
+	//should default type be NUMBER or LONG ? -shabanovd
 	private int type = Type.INTEGER;
 
 	public IntegerValue(long value) {
@@ -244,10 +245,10 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
+		if (this.type == requiredType)
+			return this;
+		
 		switch (requiredType) {
-			case Type.NUMBER :
-			case Type.INTEGER :
-			case Type.LONG :
 			case Type.ATOMIC :
 			case Type.ITEM :
 				return this;
@@ -255,6 +256,9 @@ public class IntegerValue extends NumericValue {
 				return new DecimalValue(new BigDecimal(value));
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());				
+			case Type.NUMBER :
+			case Type.LONG :
+			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
 			case Type.INT :
