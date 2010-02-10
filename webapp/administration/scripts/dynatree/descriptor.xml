@@ -1,8 +1,42 @@
 <package xmlns="http://exist-db.org/application">
-    <application id="jquery.dynatree:0.5.2" version="0.5.2">
+    <application id="jquery.dynatree" version="0.5.2">
         <title>jquery.dynatree.js</title>
         <plug-to-application ref="2c2836ec-15c3-4675-bf0f-e02df07ec5da"/>
         <path>dynatree/</path>
-        <file>jquery.dynatree-0.5.2.min.js</file>
+        <primaryFile>jquery.dynatree-0.5.2.min.js</primaryFile>
+        
+        <file name="jquery.dynatree-0.5.2.js"/>
+        <file name="jquery.dynatree-0.5.2.min.js"/>
+        <folder name="styles">
+        	<file name="cbChecked_hover.gif"/>
+        	<file name="cbChecked.gif"/>
+        	<file name="cbIntermediate_hover.gif"/>
+        	<file name="cbIntermediate.gif"/>
+        	<file name="cbUnchecked_hover.gif"/>
+        	<file name="cbUnchecked.gif"/>
+        	<file name="ltD_ne.gif"/>
+        	<file name="ltD_nes.gif"/>
+        	<file name="ltDoc.gif"/>
+        	<file name="ltError.gif"/>
+        	<file name="ltFld_o.gif"/>
+        	<file name="ltFld.gif"/>
+        	<file name="ltL_.gif"/>
+        	<file name="ltL_ne.gif"/>
+        	<file name="ltL_nes.gif"/>
+        	<file name="ltL_ns.gif"/>
+        	<file name="ltM_ne.gif"/>
+        	<file name="ltM_nes.gif"/>
+        	<file name="ltP_ne.gif"/>
+        	<file name="ltP_nes.gif"/>
+        	<file name="ltWait.gif"/>
+        	<file name="rbChecked_hover.gif"/>
+        	<file name="rbChecked.gif"/>
+        	<file name="rbIntermediate_hover.gif"/>
+        	<file name="rbIntermediate.gif"/>
+        	<file name="rbUnchecked_hover.gif"/>
+        	<file name="rbUnchecked.gif"/>
+        	<file name="ui.dynatree.css"/>
+        </folder>
+        <file name="MIT-License.txt"/>
     </application>
 </package>
