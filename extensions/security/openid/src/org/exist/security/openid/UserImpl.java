@@ -159,6 +159,9 @@ public class UserImpl implements User {
 
 	@Override
 	public Object getAttribute(String name) {
+		if (name.equalsIgnoreCase("id")) {
+			return _identifier.getIdentifier();
+		}
 		return attributes.get(name);
 	}
 }
