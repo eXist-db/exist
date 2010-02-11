@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ *  $Id$
  */
 package org.exist.backup;
 
@@ -77,7 +77,8 @@ public class ExportMain {
         return null;
     }
 
-    public static void main(String[] args) {
+    @SuppressWarnings("unchecked")
+	public static void main(String[] args) {
         CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
         if (optParser.getErrorString() != null) {
             System.err.println("ERROR: " + optParser.getErrorString());
@@ -89,11 +90,8 @@ public class ExportMain {
         String exportTarget = "export/";
         String dbConfig = null;
 
-        List opt = optParser.getArguments();
-        int size = opt.size();
-        CLOption option;
-        for (int i = 0; i < size; i++) {
-            option = (CLOption) opt.get(i);
+        List<CLOption> opts = optParser.getArguments();
+        for (CLOption option : opts) {
             switch (option.getId()) {
             case HELP_OPT:
                 System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
