@@ -18,7 +18,7 @@ import org.exist.util.MimeTable;
 public class MimeTypeFileFilter extends FileFilter
 {
 	private String description = null;	
-	private Vector extensions = null;
+	private Vector<String> extensions = null;
 	
 	public MimeTypeFileFilter(String mimeType)
 	{
@@ -38,10 +38,8 @@ public class MimeTypeFileFilter extends FileFilter
 		//check the extension is that of a file as defined in mime-types.xml
 		String fileExtension = file.getName().substring(extensionOffset).toLowerCase();
 		
-		for(Iterator itExtensions = extensions.iterator(); itExtensions.hasNext();)
+		for(String extension : extensions)
 		{
-			String extension = (String)itExtensions.next();
-			
 			if(fileExtension.equals(extension))
 			{
 				return true;
@@ -55,9 +53,9 @@ public class MimeTypeFileFilter extends FileFilter
 	{
 		String description = this.description + " ("; 
 		
-		for(Iterator itExtensions = extensions.iterator(); itExtensions.hasNext();)
+		for(Iterator<String> itExtensions = extensions.iterator(); itExtensions.hasNext();)
 		{
-			description += (String)itExtensions.next();
+			description += itExtensions.next();
 			if(itExtensions.hasNext())
 				description += ' ';
 		}

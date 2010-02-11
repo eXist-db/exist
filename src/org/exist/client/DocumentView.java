@@ -77,6 +77,8 @@ import org.xmldb.api.modules.XMLResource;
 
 class DocumentView extends JFrame {
 	
+	private static final long serialVersionUID = 1L;
+
 	protected InteractiveClient client;
 	private	 XmldbURI resourceName;
 	protected Resource resource;

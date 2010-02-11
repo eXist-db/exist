@@ -65,6 +65,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 class TriggersDialog extends JFrame {
 	
+	private static final long serialVersionUID = 1L;
+
 	private CollectionXConf cx = null;
 	
 	private JComboBox cmbCollections;
@@ -327,7 +329,9 @@ class TriggersDialog extends JFrame {
 	
 	public class CheckBoxCellRenderer extends JCheckBox implements TableCellRenderer
 	{
-        public CheckBoxCellRenderer()
+		private static final long serialVersionUID = 1L;
+
+		public CheckBoxCellRenderer()
         {
             setHorizontalAlignment(JLabel.CENTER);
         }
@@ -355,7 +359,9 @@ class TriggersDialog extends JFrame {
 	
     public class CheckBoxCellEditor extends DefaultCellEditor
     {
-        public CheckBoxCellEditor()
+		private static final long serialVersionUID = 1L;
+
+		public CheckBoxCellEditor()
         {
             super(new JCheckBox());
         }
@@ -363,6 +369,8 @@ class TriggersDialog extends JFrame {
 	
     class TriggersTableModel extends AbstractTableModel
 	{	
+		private static final long serialVersionUID = 1L;
+
 		private final String[] columnNames = new String[] { "class", "Store Document", "Update Document", "Remove Document", "Create Collection", "Rename Collection", "Delete Collection" };
 
 		public TriggersTableModel()

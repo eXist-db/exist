@@ -715,7 +715,7 @@ public class ClientFrame extends JFrame
         }
     }
     
-    protected void setResources(List rows) {
+    protected void setResources(List<ResourceDescriptor> rows) {
         resources.setData(rows);
     }
     
@@ -1514,11 +1514,8 @@ public class ClientFrame extends JFrame
      * always are before documents.
      * @author gpothier
      */
-    private static class ResourceComparator implements Comparator {
-        public int compare(Object aO1, Object aO2) {
-            ResourceDescriptor desc1 = (ResourceDescriptor) aO1;
-            ResourceDescriptor desc2 = (ResourceDescriptor) aO2;
-            
+    private static class ResourceComparator implements Comparator<ResourceDescriptor> {
+        public int compare(ResourceDescriptor desc1, ResourceDescriptor desc2) {
             if (desc1.isCollection() != desc2.isCollection()) {
                 return desc1.isCollection() ? Constants.INFERIOR : Constants.SUPERIOR;
             } else return desc1.getName().compareTo(desc2.getName());
@@ -1595,16 +1592,16 @@ public class ClientFrame extends JFrame
                 , Messages.getString("ClientFrame.211") //$NON-NLS-1$
                 };
                 
-                private List rows = null;
+                private List<ResourceDescriptor> rows = null;
                 
-                public void setData(List rows) {
+                public void setData(List<ResourceDescriptor> rows) {
                     Collections.sort(rows, new ResourceComparator());
                     this.rows = rows;
                     fireTableDataChanged();
                 }
                 
                 public ResourceDescriptor getRow(int index) {
-                    return (ResourceDescriptor) rows.get(index);
+                    return rows.get(index);
                 }
                 
         /*
@@ -1723,7 +1720,7 @@ public class ClientFrame extends JFrame
         
         optionPane.setMessage(new Object[]{msgArea, scroll});
         optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
-        optionPane.setOptionType(optionPane.OK_CANCEL_OPTION);
+        optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
         JDialog dialog = optionPane.createDialog(null, Messages.getString("ClientFrame.219")); //$NON-NLS-1$
         dialog.setResizable(true);
         dialog.pack();

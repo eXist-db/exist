@@ -169,6 +169,6 @@ public class CommandlineOptions {
     String optionResource = null;
     String optionOutputFile = null;
     
-    List optionalArgs = new ArrayList();
+    List<String> optionalArgs = new ArrayList<String>();
     
 }

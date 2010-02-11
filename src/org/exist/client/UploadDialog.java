@@ -23,6 +23,8 @@ import org.exist.util.ProgressIndicator;
 
 class UploadDialog extends JFrame {
 
+	private static final long serialVersionUID = 1L;
+
 	JTextField currentFile;
 	JTextField currentDir;
 	JLabel currentSize;
