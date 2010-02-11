@@ -22,7 +22,11 @@ return
 	</head>
     <body>
     	<div>{app:title($id)}</div>
-    	<div>{xdb:get-current-user()}</div>
+    	<div>Name: {xdb:get-current-user()}</div>
+    	<div>ID: {xdb:get-current-user-attribute('id')}</div>
+    	<div>Email: {xdb:get-current-user-attribute('email')}</div>
+    	<div>Country: {xdb:get-current-user-attribute('country')}</div>
+    	<div>Language: {xdb:get-current-user-attribute('language')}</div>
     	<br/>
     	{app:menuSubapplications($id)}
     	<br/>
