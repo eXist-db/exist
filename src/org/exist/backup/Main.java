@@ -98,6 +98,7 @@ public class Main {
 	/**
 	 * Constructor for Main.
 	 */
+	@SuppressWarnings("unchecked")
 	public static void process(String args[]) {
 		// read properties
 		Properties properties = new Properties();
@@ -124,9 +125,7 @@ public class Main {
 			System.err.println("ERROR: " + optParser.getErrorString());
 			return;
 		}
-		final List opt = optParser.getArguments();
-		final int size = opt.size();
-		CLOption option;
+		final List<CLOption> opts = optParser.getArguments();
 		String optionBackup = null;
 		String optionRestore = null;
 		String optionPass = null;
@@ -134,8 +133,7 @@ public class Main {
 		boolean doBackup = false;
 		boolean doRestore = false;
 		boolean guiMode = false;
-		for (int i = 0; i < size; i++) {
-			option = (CLOption) opt.get(i);
+		for (CLOption option : opts) {
 			switch (option.getId()) {
 				case HELP_OPT :
 					printUsage();

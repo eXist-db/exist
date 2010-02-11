@@ -120,8 +120,8 @@ public class ConsistencyCheck {
         XmldbURI uri = collection.getURI();
         callback.startCollection(uri.toString());
 
-        for (Iterator i = collection.collectionIteratorNoLock(); i.hasNext(); ) {
-            XmldbURI childUri = (XmldbURI) i.next();
+        for (Iterator<XmldbURI> i = collection.collectionIteratorNoLock(); i.hasNext(); ) {
+            XmldbURI childUri = i.next();
             try {
                 Collection child = broker.getCollection(uri.append(childUri));
                 if (child == null) {
@@ -327,7 +327,8 @@ public class ConsistencyCheck {
 
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             CollectionStore store = (CollectionStore) ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
-            int collectionId = CollectionStore.DocumentKey.getCollectionId(key);
+            @SuppressWarnings("unused")
+			int collectionId = CollectionStore.DocumentKey.getCollectionId(key);
             int docId = CollectionStore.DocumentKey.getDocumentId(key);
             try {
                 byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];

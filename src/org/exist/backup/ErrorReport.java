@@ -32,6 +32,7 @@ public class ErrorReport {
     public final static int CHILD_COLLECTION = 4;
     public final static int RESOURCE_ACCESS_FAILED = 5;
     public final static int DOM_INDEX = 6;
+    public final static int CONFIGURATION_FAILD = 7;
 
     public final static String[] ERRCODES = {
         "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS",
