@@ -25,7 +25,6 @@ package org.exist.client;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -34,8 +33,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.text.PlainDocument;
 
-import org.jedit.syntax.DefaultInputHandler;
-import org.jedit.syntax.InputHandler;
 import org.jedit.syntax.JEditTextArea;
 import org.jedit.syntax.SyntaxDocument;
 import org.jedit.syntax.SyntaxStyle;
@@ -45,6 +42,8 @@ import org.jedit.syntax.XMLTokenMarker;
 
 public class ClientTextArea extends JEditTextArea implements ActionListener {
 	
+	private static final long serialVersionUID = 1L;
+
 	public final static String CUT = "Cut";
 	public final static String COPY = "Copy";
 	public final static String PASTE = "Paste";
@@ -72,9 +71,9 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		setInputHandler(inputHandler);
 		
 		popup = new JPopupMenu("Edit Menu");
-		popup.add(new JMenuItem(CUT)).addActionListener(inputHandler.CLIP_CUT);
-		popup.add(new JMenuItem(COPY)).addActionListener(inputHandler.CLIP_COPY);
-		popup.add(new JMenuItem(PASTE)).addActionListener(inputHandler.CLIP_PASTE);
+		popup.add(new JMenuItem(CUT)).addActionListener(ClientInputHandler.CLIP_CUT);
+		popup.add(new JMenuItem(COPY)).addActionListener(ClientInputHandler.CLIP_COPY);
+		popup.add(new JMenuItem(PASTE)).addActionListener(ClientInputHandler.CLIP_PASTE);
 		
 		if(mode.equals("XML"))
 			setTokenMarker(new XMLTokenMarker());

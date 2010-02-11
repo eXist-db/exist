@@ -39,11 +39,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
@@ -66,7 +65,7 @@ public class CollectionXConf
 	Collection collection = null;				//the configuration collection
 	Resource resConfig = null;					//the collection.xconf resource
 	
-	private LinkedHashMap customNamespaces = null;		//custom namespaces
+	private LinkedHashMap<String, String> customNamespaces = null;		//custom namespaces
 	private FullTextIndex fulltextIndex = null;		//fulltext index model
 	private RangeIndex[] rangeIndexes = null;			//range indexes model
 	private Trigger[] triggers = null;					//triggers model
@@ -568,14 +567,14 @@ public class CollectionXConf
 	}
 	
 	//given the root element of collection.xconf it will return the fulltext index
-	private LinkedHashMap getCustomNamespaces(Element xconf)
+	private LinkedHashMap<String, String> getCustomNamespaces(Element xconf)
 	{
 		NamedNodeMap attrs = xconf.getAttributes();
 		
 		//there will always be one attribute - the default namespace
 		if(attrs.getLength() > 1)
 		{
-			LinkedHashMap namespaces = new LinkedHashMap();
+			LinkedHashMap<String, String> namespaces = new LinkedHashMap<String, String>();
 			
 			for(int i = 0; i < attrs.getLength(); i++)
 			{
@@ -654,7 +653,7 @@ public class CollectionXConf
 		NodeList nlRangeIndexes = xconf.getElementsByTagName("create");
         if(nlRangeIndexes.getLength() > 0)
 		{
-            List rl = new ArrayList();
+            List<RangeIndex> rl = new ArrayList<RangeIndex>();
             for(int i = 0; i < nlRangeIndexes.getLength(); i++)
 			{	
 				Element rangeIndex = (Element)nlRangeIndexes.item(i);
@@ -666,7 +665,7 @@ public class CollectionXConf
                 }
             }
             RangeIndex[] rangeIndexes = new RangeIndex[rl.size()];
-            rangeIndexes = (RangeIndex[]) rl.toArray(rangeIndexes);
+            rangeIndexes = rl.toArray(rangeIndexes);
             return rangeIndexes;
 		}
 		return null;
@@ -723,13 +722,11 @@ public class CollectionXConf
 		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\"");
 		if(customNamespaces != null)
 		{
-			Set namespaceKeys = customNamespaces.keySet();
-			Iterator itKeys = namespaceKeys.iterator();
-			while(itKeys.hasNext())
+			for (Map.Entry<String, String> entry : customNamespaces.entrySet())
 			{
 				xconf.append(" ");
-				String namespaceLocalName = (String)itKeys.next();
-				String namespaceURL = (String)customNamespaces.get(namespaceLocalName);
+				String namespaceLocalName = entry.getKey();
+				String namespaceURL = entry.getValue();
 				xconf.append("xmlns:" + namespaceLocalName + "=\"" + namespaceURL + "\"");
 			}
 		}

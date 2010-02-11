@@ -28,7 +28,6 @@ import java.awt.event.KeyEvent;
 import org.jedit.syntax.JEditTextArea;
 
 import org.jedit.syntax.DefaultInputHandler;
-import org.jedit.syntax.InputHandler;
 
 /**
  * A class to extend {@link org.jedit.syntax.DefaultInputHandler} to be a little

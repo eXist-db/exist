@@ -37,7 +37,9 @@ import org.xmldb.api.base.XMLDBException;
 
 public class ResourcePropertyDialog extends JDialog {
 
-    public final static int NO_OPTION = -1;
+	private static final long serialVersionUID = 1L;
+
+	public final static int NO_OPTION = -1;
     public final static int APPLY_OPTION = 0;
 	public final static int CANCEL_OPTION = 1;
 
@@ -188,7 +190,7 @@ public class ResourcePropertyDialog extends JDialog {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		Vector ol = new Vector();
+		Vector<String> ol = new Vector<String>();
 		User users[] = service.getUsers();
 		for (int i = 0; i < users.length; i++) {
 			ol.addElement(users[i].getName());
@@ -212,7 +214,7 @@ public class ResourcePropertyDialog extends JDialog {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		Vector gl = new Vector();
+		Vector<String> gl = new Vector<String>();
 		String allGroups[] = service.getGroups();
 		for (int i = 0; i < allGroups.length; i++)
 			gl.addElement(allGroups[i]);

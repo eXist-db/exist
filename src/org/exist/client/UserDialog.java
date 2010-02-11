@@ -44,6 +44,8 @@ import org.xmldb.api.base.XMLDBException;
 
 class UserDialog extends JFrame {
 
+	private static final long serialVersionUID = 1L;
+
 	UserManagementService service;
 	JTextField username;
 	JPasswordField password1;
@@ -449,6 +451,8 @@ class UserDialog extends JFrame {
 	}
 
 	class UserTableModel extends AbstractTableModel {
+
+		private static final long serialVersionUID = 1L;
 
 		private final String[] columnNames = new String[] { "UID", "User", "Groups", "Home" };
 

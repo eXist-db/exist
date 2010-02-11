@@ -35,7 +35,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -47,7 +46,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -63,7 +61,6 @@ import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.storage.DBBroker;
-import org.exist.util.MimeTable;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -74,7 +71,9 @@ import org.xmldb.api.modules.XMLResource;
 
 public class QueryDialog extends JFrame {
 
-    private InteractiveClient client;
+	private static final long serialVersionUID = 1L;
+
+	private InteractiveClient client;
 	private Collection collection;
 	private Properties properties;
 	private ClientTextArea query;
@@ -250,8 +249,8 @@ public class QueryDialog extends JFrame {
 		JLabel label= new JLabel("History: ");
 		historyBox.add(label);
 		final JComboBox historyList= new JComboBox(history);
-		for(Iterator i = client.queryHistory.iterator(); i.hasNext(); ) {
-			addQuery((String) i.next());
+		for(String query : client.queryHistory) {
+			addQuery(query);
 		}
 		historyList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -273,7 +272,7 @@ public class QueryDialog extends JFrame {
         label = new JLabel("Context:");
         optionsPanel.add(label);
         
-		final Vector data= new Vector();
+		final Vector<String> data= new Vector<String>();
 		try {
 			Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
 			data.addElement(collection.getName());
@@ -286,7 +285,7 @@ public class QueryDialog extends JFrame {
 		collections.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int p = collections.getSelectedIndex();
-				String context = (String)data.elementAt(p);
+				String context = data.elementAt(p);
 				try {
 					collection = client.getCollection(context);
 				} catch (XMLDBException e1) {
@@ -307,7 +306,7 @@ public class QueryDialog extends JFrame {
 		return tabs;
 	}
 
-	private Vector getCollections(Collection root, Collection collection, Vector collectionsList)
+	private Vector<String> getCollections(Collection root, Collection collection, Vector<String> collectionsList)
 			throws XMLDBException {
 		if(!collection.getName().equals(root.getName()))
 			collectionsList.add(root.getName());

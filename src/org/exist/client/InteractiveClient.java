@@ -173,8 +173,8 @@ public class InteractiveClient {
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
     protected static String configuration = null;
     
-    protected TreeSet completitions = new TreeSet();
-    protected LinkedList queryHistory = new LinkedList();
+    protected TreeSet<String> completitions = new TreeSet<String>();
+    protected LinkedList<String> queryHistory = new LinkedList<String>();
     protected File queryHistoryFile;
     protected File historyFile;
     
@@ -188,7 +188,7 @@ public class InteractiveClient {
     
     protected String[] resources = null;
     protected ResourceSet result = null;
-    protected HashMap namespaceMappings = new HashMap();
+    protected HashMap<String, String> namespaceMappings = new HashMap<String, String>();
     /** number of files of a recursive store  */
     protected int filesCount = 0;
     /** total length of a recursive store   */
@@ -273,7 +273,7 @@ public class InteractiveClient {
     protected void connect() throws Exception {
         if (startGUI && frame != null)
             frame.setStatus("connecting to " + properties.getProperty("uri"));
-        Class cl = Class.forName(properties.getProperty(DRIVER));
+        Class<?> cl = Class.forName(properties.getProperty(DRIVER));
         Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         // secure empty configuration
@@ -331,7 +331,7 @@ public class InteractiveClient {
         Collection child;
         Permission perm;
         
-        List tableData = new ArrayList(resources.length); // A list of ResourceDescriptor for the GUI
+        List<ResourceDescriptor> tableData = new ArrayList<ResourceDescriptor>(resources.length); // A list of ResourceDescriptor for the GUI
         
         String cols[] = new String[4];
         for (; i < childCollections.length; i++) {
@@ -435,7 +435,7 @@ public class InteractiveClient {
             tok.quoteChar('"');
             tok.whitespaceChars(0x20, 0x20);
             
-            List argList = new ArrayList(3);
+            List<String> argList = new ArrayList<String>(3);
             // int i = 0;
             int token;
             try {
@@ -1116,9 +1116,8 @@ public class InteractiveClient {
                 .getProperty("indent"));
         service.setProperty(OutputKeys.ENCODING, properties
                 .getProperty("encoding"));
-        Map.Entry mapping;
-        for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
-            mapping = (Map.Entry) i.next();
+
+        for (Map.Entry<String, String> mapping : namespaceMappings.entrySet()) {
             service.setNamespace((String) mapping.getKey(), (String) mapping
                     .getValue());
         }
@@ -1137,7 +1136,7 @@ public class InteractiveClient {
             }
             BufferedReader reader = new BufferedReader(new FileReader(f));
             String line;
-            ArrayList queries = new ArrayList(10);
+            ArrayList<String> queries = new ArrayList<String>(10);
             QueryThread thread = null;
             while ((line = reader.readLine()) != null)
                 queries.add(line);
@@ -1159,9 +1158,9 @@ public class InteractiveClient {
     
     private class QueryThread extends Thread {
         
-        ArrayList queries;
+        ArrayList<String> queries;
         
-        public QueryThread(ArrayList queries) {
+        public QueryThread(ArrayList<String> queries) {
             this.queries = queries;
         }
         
@@ -1180,7 +1179,7 @@ public class InteractiveClient {
                 Random r = new Random(System.currentTimeMillis());
                 String query;
                 for (int i = 0; i < 10; i++) {
-                    query = (String) queries.get(r.nextInt(queries.size()));
+                    query = queries.get(r.nextInt(queries.size()));
                     System.out.println(getName() + " query: " + query);
                     ResourceSet result = service.query(query);
                     System.out.println(getName() + " found: "
@@ -1582,14 +1581,14 @@ public class InteractiveClient {
 	        long start0 = System.currentTimeMillis();
 	        long bytes = 0;
 	        MimeType mimeType;
-	    	Enumeration e = zfile.entries();
+	    	Enumeration<? extends ZipEntry> e = zfile.entries();
 	    	int number=0;
 	    	
             Collection base=current;
             String baseStr="";
 	    	while(e.hasMoreElements()) {
 	    		number++;
-	    		ZipEntry ze=(ZipEntry)e.nextElement();
+	    		ZipEntry ze=e.nextElement();
 	    		String zeName=ze.getName().replace('\\','/');
 	    		String[] pathSteps=zeName.split("/");
 	    		String currStr=pathSteps[0];
@@ -1685,7 +1684,7 @@ public class InteractiveClient {
      * This is for a future GUI implementation of ZIP archive loads
      */
     private long calculateFileSizes(ZipFile file) throws XMLDBException {
-    	Enumeration e = file.entries();
+    	Enumeration<? extends ZipEntry> e = file.entries();
         long size = 0;
     	while(e.hasMoreElements()) {
     		ZipEntry ze=(ZipEntry)e.nextElement();
@@ -1917,15 +1916,11 @@ public class InteractiveClient {
             return null;
         }
         
-        List opt = optParser.getArguments();
-        int size = opt.size();
-        
-        CLOption option;
+        List<CLOption> opt = optParser.getArguments();
         
         CommandlineOptions cOpt = new CommandlineOptions();
         
-        for (int i = 0; i < size; i++) {
-            option = (CLOption) opt.get(i);
+        for (CLOption option : opt) {
             switch (option.getId()) {
                 case CommandlineOptions.HELP_OPT :
                     printUsage();
@@ -2175,9 +2170,9 @@ public class InteractiveClient {
                 System.err
                         .println("Please specify target collection with --collection");
             } else {
-                for (Iterator i = cOpt.optionalArgs.iterator(); i.hasNext(); )
+                for (String arg : cOpt.optionalArgs)
                     try {
-                        parse((String) i.next());
+                        parse(arg);
                     } catch (XMLDBException e) {
                         System.out.println("XMLDBException during parse: "
                                 + getExceptionMessage(e));
@@ -2317,7 +2312,7 @@ public class InteractiveClient {
         properties = new Properties(defaultProps);
         
         // get default configuration filename from the driver class and set it in properties
-        Class cl = Class.forName(properties.getProperty(DRIVER));
+        Class<?> cl = Class.forName(properties.getProperty(DRIVER));
         Field CONF_XML = cl.getDeclaredField("CONF_XML");
         if (CONF_XML != null && home != null) {
         	   File configuration = ConfigurationHelper.lookup((String)CONF_XML.get(new String()));
@@ -2532,9 +2527,9 @@ public class InteractiveClient {
             AttributesImpl attrs = new AttributesImpl();
             serializer.startDocument();
             serializer.startElement("", "history", "history", attrs);
-            for (ListIterator i = queryHistory.listIterator(p); i.hasNext(); ) {
+            for (ListIterator<String> i = queryHistory.listIterator(p); i.hasNext(); ) {
                 serializer.startElement("", "query", "query", attrs);
-                String next = (String) i.next();
+                String next = i.next();
                 serializer.characters(next.toCharArray(), 0, next.length());
                 serializer.endElement("", "query", "query");
             }
@@ -2670,10 +2665,9 @@ public class InteractiveClient {
                 p = 0;
             }
 //            System.out.println("\nbuffer: '" + toComplete + "'; cursor: " + cursor);
-            Set set = completitions.tailSet(toComplete);
+            Set<String> set = completitions.tailSet(toComplete);
             if (set != null && set.size() > 0) {
-                for (Iterator i = completitions.tailSet(toComplete).iterator(); i.hasNext(); ) {
-                    String next = i.next().toString();
+                for (String next : completitions.tailSet(toComplete)) {
                     if (next.startsWith(toComplete))
                         candidates.add(next);
                 }

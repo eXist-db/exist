@@ -50,7 +50,9 @@ import java.util.ArrayList;
  */
 class IndexDialog extends JFrame {
 
-    private static final String[] CONFIG_TYPE = {
+	private static final long serialVersionUID = 1L;
+
+	private static final String[] CONFIG_TYPE = {
         "qname",
         "path"
     };
@@ -532,7 +534,9 @@ class IndexDialog extends JFrame {
 	
 	public class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
 	{
-        public ComboBoxCellRenderer(String[] items)
+		private static final long serialVersionUID = 1L;
+
+		public ComboBoxCellRenderer(String[] items)
         {
             super(items);
         }
@@ -559,7 +563,9 @@ class IndexDialog extends JFrame {
 	
     public class ComboBoxCellEditor extends DefaultCellEditor
     {
-        public ComboBoxCellEditor(String[] items)
+		private static final long serialVersionUID = 1L;
+
+		public ComboBoxCellEditor(String[] items)
         {
             super(new JComboBox(items));
         }
@@ -567,6 +573,8 @@ class IndexDialog extends JFrame {
 	
     class FullTextIndexTableModel extends AbstractTableModel
 	{	
+		private static final long serialVersionUID = 1L;
+
 		private final String[] columnNames = new String[] { "Type", "QName/Path", "Action" };
 
 		public FullTextIndexTableModel()
@@ -664,6 +672,8 @@ class IndexDialog extends JFrame {
     
 	class RangeIndexTableModel extends AbstractTableModel
 	{	
+		private static final long serialVersionUID = 1L;
+
 		private final String[] columnNames = new String[] { "Type", "XPath", "xsType" };
 
 		public RangeIndexTableModel()

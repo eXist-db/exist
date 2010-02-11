@@ -65,7 +65,9 @@ import org.exist.xmldb.XmldbURI;
  */
 public class LoginPanel extends JPanel {
     
-    public static final int TYPE_REMOTE = 0;
+	private static final long serialVersionUID = 1L;
+
+	public static final int TYPE_REMOTE = 0;
     public static final int TYPE_EMBEDDED = 1;
     
     /** Uri for local connections */
@@ -696,7 +698,7 @@ public class LoginPanel extends JPanel {
      *
      * @author Tobias Wunden
      */
-    static class Favourite implements Comparable {
+    static class Favourite implements Comparable<Object> {
         
         public static final String NAME=Messages.getString("LoginPanel.42"); //$NON-NLS-1$
         public static final String USERNAME=Messages.getString("LoginPanel.43"); //$NON-NLS-1$
