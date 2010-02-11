@@ -49,7 +49,7 @@ public class NodeTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 StoredNode node = (StoredNode) children.item(i);
@@ -72,7 +72,7 @@ public class NodeTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             
             System.out.println("Testing getChildNodes() ...");
@@ -121,7 +121,7 @@ public class NodeTest extends XMLTestCase {
             
             System.out.println("testSiblingAxis() ...");
             
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element child = (Element) rootNode.getFirstChild();
             assertNotNull(child);
@@ -167,7 +167,7 @@ public class NodeTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element first = (Element) rootNode.getFirstChild();
             assertEquals(first.getNodeName(), "a");

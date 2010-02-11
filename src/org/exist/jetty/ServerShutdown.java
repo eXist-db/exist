@@ -60,7 +60,8 @@ public class ServerShutdown {
                     URI_OPT,
                     "the XML:DB URI of the database instance to be shut down.") };
 
-    public static void main(String[] args) {
+    @SuppressWarnings("unchecked")
+	public static void main(String[] args) {
         CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
         if (optParser.getErrorString() != null) {
             System.err.println("ERROR: " + optParser.getErrorString());
@@ -70,11 +71,8 @@ public class ServerShutdown {
         String user = "admin";
         String passwd = null;
         String uri = properties.getProperty("uri", "xmldb:exist://localhost:8080/exist/xmlrpc");
-        List opt = optParser.getArguments();
-        int size = opt.size();
-        CLOption option;
-        for (int i = 0; i < size; i++) {
-            option = (CLOption) opt.get(i);
+        List<CLOption> opts = optParser.getArguments();
+        for (CLOption option : opts) {
             switch (option.getId()) {
                 case HELP_OPT:
                     System.out.println("Usage: java "
