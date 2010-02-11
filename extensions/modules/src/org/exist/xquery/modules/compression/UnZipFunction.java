@@ -36,6 +36,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Extracts files and folders from a Zip file
@@ -43,8 +44,8 @@ import org.exist.xquery.value.ValueSequence;
  * @author Adam Retter <adam@exist-db.org>
  * @version 1.0
  */
-public class UnZipFunction extends AbstractExtractFunction
-{
+public class UnZipFunction extends AbstractExtractFunction {
+	
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("unzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
@@ -52,10 +53,20 @@ public class UnZipFunction extends AbstractExtractFunction
             "to determine what and how to store the resources/folders",
             new SequenceType[] {
                 new FunctionParameterSequenceType("zip-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The zip file data"),
-                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for filtering resources from the zip file. The function takes 3 parameters e.g. user:unzip-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. $data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, for example a list of extracted files. If the return type is true() it indicates the entry should be processed and passed to the entry-data function, else the resource is skipped."),
-                new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with additional parameters for filtering function."),
-                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A user defined function for storing an extracted resource from the zip file. The function takes 4 parameters e.g. user:unzip-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). $type may be 'resource' or 'folder'. $param is a sequence with additional parameters."),
-                new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with additional parameters for storing function."),
+                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+                		"A user defined function for filtering resources from the zip file. The function takes 3 parameters e.g. " +
+                		"user:unzip-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. " +
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, " +
+                		"for example a list of extracted files. If the return type is true() it indicates the entry " +
+                		"should be processed and passed to the entry-data function, else the resource is skipped."),
+                new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+                		"A user defined function for storing an extracted resource from the zip file. The function takes 4 parameters e.g. " +
+                		"user:unzip-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
+                		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
+                		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters."),
+                new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
         )
@@ -67,7 +78,7 @@ public class UnZipFunction extends AbstractExtractFunction
     }
 
     @Override
-    protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException
+    protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException, XMLDBException
     {
         ZipInputStream zis = null;
         try
@@ -84,9 +95,6 @@ public class UnZipFunction extends AbstractExtractFunction
                 }
 
                 processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), zis, filterParam, storeParam);
-
-
-
 
                 results.addAll(processCompressedEntryResults);
 

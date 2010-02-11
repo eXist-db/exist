@@ -22,24 +22,36 @@
 package org.exist.xquery.modules.compression;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.xmldb.XMLDBAbstractCollectionManipulator;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -52,8 +64,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
     private FunctionCall entryDataFunction = null;
     protected Sequence storeParam = null;
     private Sequence contextSequence;
-
-
+    
     public AbstractExtractFunction(XQueryContext context, FunctionSignature signature)
     {
         super(context, signature);
@@ -75,13 +86,6 @@ public abstract class AbstractExtractFunction extends BasicFunction
         FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
         if(entryFilterFunctionSig.getArgumentCount() < 3)
             throw new XPathException("entry-filter function must take at least 3 arguments.");
-//        SequenceType[] argTypes = entryFilterFunctionSig.getArgumentTypes();
-//        if(
-//            argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
-//            argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
-//            argTypes[2].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[2].getPrimaryType()) ||
-//            !Type.subTypeOf(Type.BOOLEAN, entryFilterFunctionSig.getReturnType().getPrimaryType())
-//        ) throw new XPathException("entry-filter function does not match the expected function signature.");
 
         filterParam = args[2];
         
@@ -91,21 +95,18 @@ public abstract class AbstractExtractFunction extends BasicFunction
         FunctionReference entryDataFunctionRef = (FunctionReference)args[3].itemAt(0);
         entryDataFunction = entryDataFunctionRef.getFunctionCall();
         FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
-        if(entryDataFunctionSig.getArgumentCount() < 4)
-            throw new XPathException("entry-data function must take at least 4 arguments");
-//        argTypes = entryDataFunctionSig.getArgumentTypes();
-//        if(
-//                argTypes[0].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.ANY_URI, argTypes[0].getPrimaryType()) ||
-//                argTypes[1].getCardinality() != Cardinality.EXACTLY_ONE || !Type.subTypeOf(Type.STRING, argTypes[1].getPrimaryType()) ||
-//                argTypes[2].getCardinality() != Cardinality.ZERO_OR_ONE || !Type.subTypeOf(Type.ITEM, argTypes[2].getPrimaryType()) ||
-//                argTypes[3].getCardinality() != Cardinality.ZERO_OR_MORE || !Type.subTypeOf(Type.ANY_TYPE, argTypes[3].getPrimaryType())
-//        ) throw new XPathException("entry-data function does not match the expected function signature.");
+        if(entryDataFunctionSig.getArgumentCount() < 3)
+            throw new XPathException("entry-data function must take at least 3 arguments");
 
         storeParam = args[4];
         
         Base64Binary compressedData = ((Base64Binary)args[0].itemAt(0));
         
-        return processCompressedData(compressedData);
+        try {
+			return processCompressedData(compressedData);
+		} catch (XMLDBException e) {
+			throw new XPathException(e);
+		}
     }
 
     /**
@@ -114,7 +115,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * @param compressedData the compressed data to extract
      * @return Sequence of results
      */
-    protected abstract Sequence processCompressedData(Base64Binary compressedData) throws XPathException;
+    protected abstract Sequence processCompressedData(Base64Binary compressedData) throws XPathException, XMLDBException;
 
     /**
      * Processes a compressed entry from an archive
@@ -124,8 +125,9 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * @param is an InputStream for reading the uncompressed data of the entry
      * @param filterParam is an additional param for entry filtering function  
      * @param storeParam is an additional param for entry storing function
+     * @throws XMLDBException 
      */
-    protected Sequence processCompressedEntry(String name, boolean isDirectory, InputStream is, Sequence filterParam, Sequence storeParam) throws IOException, XPathException
+    protected Sequence processCompressedEntry(String name, boolean isDirectory, InputStream is, Sequence filterParam, Sequence storeParam) throws IOException, XPathException, XMLDBException
     {
         String dataType = isDirectory ? "folder" : "resource";
 
@@ -142,8 +144,9 @@ public abstract class AbstractExtractFunction extends BasicFunction
         }
         else
         {
+            Sequence entryDataFunctionResult;
             Sequence uncompressedData = Sequence.EMPTY_SEQUENCE;
-
+            
             //copy the input data
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte buf[] = new byte[1024];
@@ -154,26 +157,78 @@ public abstract class AbstractExtractFunction extends BasicFunction
             }
             byte[] entryData = baos.toByteArray();
 
+            if (entryDataFunction.getSignature().getArgumentCount() == 3){
+            	
+                Sequence dataParams[] = new Sequence[3];
+                System.arraycopy(filterParams, 0, dataParams, 0, 2);
+                dataParams[2] = storeParam;
+                entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
+                
+                String path = entryDataFunctionResult.itemAt(0).getStringValue();
+                
+                Collection root = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), new AnyURIValue("/db").toXmldbURI(), context.getAccessContext());
 
-            //try and parse as xml, fall back to binary
-            try
-            {
-                uncompressedData = ModuleUtils.streamToXML(context, new ByteArrayInputStream(entryData));
-            }
-            catch(SAXException saxe)
-            {
-                if(entryData.length > 0)
-                    uncompressedData = new Base64Binary(entryData);
-            }
+    			if (isDirectory){
+                	
+                	XMLDBAbstractCollectionManipulator.createCollection(root, path);
+                	
+                } else {
 
-            //call the entry-data function
-            Sequence dataParams[] = new Sequence[4];
-            System.arraycopy(filterParams, 0, dataParams, 0, 2);
-            dataParams[2] = uncompressedData;
-            dataParams[3] = storeParam;
-            Sequence entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
+                    Resource resource;
+                    
+            		File file = new File(path);
+            		name = file.getName();
+            		path = file.getParent();
+            		
+            		Collection target = (path==null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
+            		
+            	    MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
+            	    
+            		try{
+            			NodeValue content = ModuleUtils.streamToXML(context, new ByteArrayInputStream(baos.toByteArray()));
+            			resource = target.createResource(name, "XMLResource");
+            			ContentHandler handler = ((XMLResource)resource).setContentAsSAX();
+            			handler.startDocument();
+            			content.toSAX(context.getBroker(), handler, null);
+            			handler.endDocument();
+            		} catch(SAXException e){
+            			resource = target.createResource(name, "BinaryResource");
+            			resource.setContent(baos.toByteArray());
+                    }
+            		
+            		if (resource != null){
+            			if (mime != null){
+            				((EXistResource)resource).setMimeType(mime.getName());
+            			}
+            			target.storeResource(resource);
+            		}
+                	
+                }
+                
+            } else {
+            	
+                //try and parse as xml, fall back to binary
+                try
+                {
+                    uncompressedData = ModuleUtils.streamToXML(context, new ByteArrayInputStream(entryData));
+                }
+                catch(SAXException saxe)
+                {
+                    if(entryData.length > 0)
+                        uncompressedData = new Base64Binary(entryData);
+                }
+
+                //call the entry-data function
+                Sequence dataParams[] = new Sequence[4];
+                System.arraycopy(filterParams, 0, dataParams, 0, 2);
+                dataParams[2] = uncompressedData;
+                dataParams[3] = storeParam;
+                entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
+                
+            }
             
             return entryDataFunctionResult;
         }
     }
+    
 }
