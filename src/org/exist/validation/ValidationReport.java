@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -130,7 +130,7 @@ public class ValidationReport implements ErrorHandler {
         return( (validationReport.size()==0) && (throwed==null) );
     }
     
-    public List getValidationReportItemList(){
+    public List<ValidationReportItem> getValidationReportItemList(){
         return validationReport;
     }
     

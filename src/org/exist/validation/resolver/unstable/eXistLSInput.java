@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ *  $Id$
  */
 package org.exist.validation.resolver.unstable;
 
@@ -36,7 +36,8 @@ import org.w3c.dom.ls.LSInput;
  */
 public class eXistLSInput implements LSInput {
 
-    private final static Logger LOG = Logger.getLogger(eXistLSInput.class);
+    @SuppressWarnings("unused")
+	private final static Logger LOG = Logger.getLogger(eXistLSInput.class);
 
     private Reader characterStream;
 
@@ -47,7 +48,6 @@ public class eXistLSInput implements LSInput {
     public void setCharacterStream(Reader characterStream) {
         this.characterStream=characterStream;
     }
-
 
     private InputStream byteStream;
 

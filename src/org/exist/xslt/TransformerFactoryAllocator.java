@@ -103,11 +103,11 @@ public class TransformerFactoryAllocator
 					LOG.debug( "Set transformer factory: " + transformerFactoryClassName );
 				}
 				
-				Hashtable attributes = (Hashtable)pool.getConfiguration().getProperty( PROPERTY_TRANSFORMER_ATTRIBUTES );
-				Enumeration attrNames = attributes.keys();
+				Hashtable<String,Object> attributes = (Hashtable)pool.getConfiguration().getProperty( PROPERTY_TRANSFORMER_ATTRIBUTES );
+				Enumeration<String> attrNames = attributes.keys();
 				
 				while( attrNames.hasMoreElements() ) {
-					String name = (String)attrNames.nextElement();
+					String name = attrNames.nextElement();
 					Object value = attributes.get( name );
 					
 					try {

@@ -21,6 +21,7 @@
  */
 package org.exist.management.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -138,7 +139,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             pool.triggerSystemTask(task);
         } catch (EXistException existException) {
             taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
-            taskstatus.setReason(existException.toString());
+
+            List<ErrorReport> errors = new ArrayList<ErrorReport>();
+            errors.add(
+            		new ErrorReport(
+            				ErrorReport.CONFIGURATION_FAILD, 
+            				existException.getMessage(), existException));
+
+            taskstatus.setReason(errors);
             changeStatus(taskstatus);
             taskstatus.setStatusChangeTime();
             taskstatus.setReason(existException.toString());
