@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,7 +25,6 @@ package org.exist.validation.resolver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -69,13 +68,12 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      *
      *  TODO: check for non-String and NULL values.
      */
-    public void setCatalogs(List catalogs){
+    public void setCatalogs(List<String> catalogs){
 
         if(catalogs!=null && catalogs.size()>0){
             String[] allCatalogs = new String[catalogs.size()];
             int counter=0;
-            for (Iterator it=catalogs.iterator(); it.hasNext(); ) {
-                String element = (String) it.next();
+            for (String element : catalogs) {
                 allCatalogs[counter]=element;
                 counter++;
             }

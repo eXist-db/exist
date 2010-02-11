@@ -36,6 +36,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class CollectionTag extends TagSupport {
 	
+	private static final long serialVersionUID = 1L;
+
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 	
 	private String varName;
@@ -50,7 +52,7 @@ public class CollectionTag extends TagSupport {
 	 */
 	public int doStartTag() throws JspException {
 		try {
-			Class clazz = Class.forName(DRIVER);
+			Class<?> clazz = Class.forName(DRIVER);
 			Database database = (Database)clazz.newInstance();
 			DatabaseManager.registerDatabase(database);
 			

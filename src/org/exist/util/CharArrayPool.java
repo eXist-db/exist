@@ -13,7 +13,7 @@ public class CharArrayPool {
 
 	public static final int POOL_SIZE = 128;
 	public static final int MAX = 128;
-	public static final ThreadLocal pools_ = new PoolThreadLocal();
+	public static final ThreadLocal<char[][]> pools_ = new PoolThreadLocal();
 	private static int slot_ = 0;
 	
 	public CharArrayPool() {
@@ -21,7 +21,7 @@ public class CharArrayPool {
 
 	public static char[] getCharArray(int size) {
 		if(MAX > size) {
-			final char[][] pool = (char[][])pools_.get();
+			final char[][] pool = pools_.get();
 			for(int i = 0; i < pool.length; i++) {
 				if(pool[i] != null && pool[i].length == size) {
 						char[] b = pool[i];
@@ -37,7 +37,7 @@ public class CharArrayPool {
 	public static void releaseCharArray(final char[] b) {
 		if(b == null || b.length > MAX)
 			return;
-		final char[][] pool = (char[][]) pools_.get();
+		final char[][] pool = pools_.get();
 		for(int i = 0; i < pool.length; i++) {
 			if(pool[i] == null) {
 				pool[i] = b;
@@ -51,9 +51,9 @@ public class CharArrayPool {
 		pool[s % pool.length] = b;
 	}
 	
-	private static final class PoolThreadLocal extends ThreadLocal {
+	private static final class PoolThreadLocal extends ThreadLocal<char[][]> {
 		
-		protected Object initialValue() {
+		protected char[][] initialValue() {
 			return new char[POOL_SIZE][];
 		}
 	}

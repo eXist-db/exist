@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,9 +30,7 @@ import javax.xml.transform.OutputKeys;
 import org.apache.log4j.Logger;
 import org.exist.storage.io.BlockingOutputStream;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.SequenceIterator;
 
 /**
  * @author Dannes Wessels (dizzzz@exist-db.org)

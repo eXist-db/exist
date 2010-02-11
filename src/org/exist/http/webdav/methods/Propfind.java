@@ -335,8 +335,8 @@ public class Propfind extends AbstractWebDAVMethod {
         
         if(currentDepth++ < maxDepth) {
             if(collection.getDocumentCount() > 0) {
-                for(Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                    DocumentImpl doc = (DocumentImpl)i.next();
+                for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                    DocumentImpl doc = i.next();
                     try {
                         doc.getUpdateLock().acquire(Lock.READ_LOCK);
                         writeResourceProperties(user, searchedProperties, type, collection, doc, serializer, servletPath);
@@ -348,8 +348,8 @@ public class Propfind extends AbstractWebDAVMethod {
                 }
             }
             if(collection.getChildCollectionCount() > 0) {
-                for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-                    XmldbURI child = (XmldbURI)i.next();
+                for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+                    XmldbURI child = i.next();
                     Collection childCollection = null;
                     try {
                         childCollection = broker.openCollection(collection.getURI().append(child), Lock.READ_LOCK);
