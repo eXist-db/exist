@@ -14,7 +14,7 @@ if ($exist:path eq 'login.xql') then
 else if (not (xmldb:is-authenticated())) then
 	if ($exist:path eq '') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<redirect url="{baseURL}"/>
+			<redirect url="{$baseURL}"/>
 		</dispatch>
 	else
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
