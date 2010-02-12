@@ -1,0 +1,24 @@
+.guide {
+    position: absolute;
+    width: 25%;
+    display: block;
+    overflow: auto;
+    padding: 10px 5px 5px 5px;
+    border-right: 1px solid #999999;
+    vertical-align: top;
+	height:95%;
+}
+
+.scroll {
+    position: absolute;
+    left: 27%;
+    width: 70%;
+    margin-left: 15px;
+    padding-top: 10px;
+    display: block;
+    background-color: white;
+    vertical-align: top;
+	border:#000 1px solid;
+	overflow:auto;
+	height:95%;
+}
