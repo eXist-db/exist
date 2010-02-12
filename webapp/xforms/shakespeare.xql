@@ -32,7 +32,7 @@ declare function q:createQuery($input as element()) {
             else
                 <near>{$input/query/@slop, $queryStr}</near>
         }
-        </query>       
+        </query>
 };
 
 declare function q:query($input as element()) {
@@ -42,14 +42,17 @@ declare function q:query($input as element()) {
         order by ft:score($hit) descending
         return $hit
     let $callback := util:function(xs:QName("q:filter"), 2)
+    let $summarized-items := 
+      for $hit in subsequence($hits, 1, 20)
+        return
+	  kwic:summarize($hit, <config width="40"/>, $callback)
+
     return
         <search xmlns="">
             {$input/query}
-            <hits>{count($hits)}</hits>
+            <hits>{count($summarized-items)}</hits>
             {
-                for $hit in subsequence($hits, 1, 20)
-                return
-                    kwic:summarize($hit, <config width="40"/>, $callback)
+                $summarized-items
             }
         </search>
 };
