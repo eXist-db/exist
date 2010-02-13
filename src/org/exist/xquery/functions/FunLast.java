@@ -79,6 +79,8 @@ public class FunLast extends Function {
         }
         
         Sequence inSequence = context.getContextSequence();
+        if (inSequence == null)
+        	inSequence = contextSequence;
         
         Sequence result;
 		if (inSequence == null)
