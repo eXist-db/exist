@@ -70,6 +70,11 @@ public class StorageAddress {
 	public final static long setIndexType(long pointer, short type) {
 	    return pointer | ((long)(type << 16) & 0xFFFF0000L);
 	}
+
+    public final static boolean hasAddress(long pointer) {
+        return (pointer & 0xFFFFFFFF0000FFFFL) > 0;
+    }
+
 	/**
 	 * Returns true if the page number and tid of the two storage
 	 * addresses is equal. The type indicator is ignored.

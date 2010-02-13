@@ -32,8 +32,10 @@ public class TreeMetrics {
     private int leafPages = 0;
     private int innerPages = 0;
     private int dataPages = 0;
+    private String btreeName;
 
-    public TreeMetrics() {
+    public TreeMetrics(String name) {
+        this.btreeName = name;
     }
 
     public void addPage(int status) {
@@ -56,7 +58,7 @@ public class TreeMetrics {
     }
 
     public void print(PrintWriter writer) {
-        writer.println("BTree tree metrics:");
+        writer.println("BTree tree metrics for " + btreeName);
         writer.println("# inner pages: " + innerPages);
         writer.println("# leaf pages: " + leafPages);
         writer.println("# data pages: " + dataPages);

@@ -173,6 +173,8 @@ public class BTree extends Paged {
     
     protected BrokerPool pool;
     
+    private double splitFactor = -1;
+
     protected BTree(BrokerPool pool, byte fileId, boolean transactional, DefaultCacheManager cacheManager, double growthThreshold)
 	throws DBException {
 		super(pool);
@@ -240,7 +242,13 @@ public class BTree extends Paged {
 		super.closeAndRemove();
 		cacheManager.deregisterCache(cache);
 	}
-	
+
+    protected void setSplitFactor(double factor) {
+        if (factor > 1.0)
+            throw new IllegalArgumentException("splitFactor should be <= 1 > 0");
+        this.splitFactor = factor;
+    }
+
 	/**
 	 *  addValue adds a Value to the BTree and associates a pointer with it. The
 	 *  pointer can be used for referencing any type of data, it just so happens
@@ -518,7 +526,7 @@ public class BTree extends Paged {
     }
 
     public TreeMetrics treeStatistics() throws IOException {
-        TreeMetrics metrics = new TreeMetrics();
+        TreeMetrics metrics = new TreeMetrics(getFile().getName());
         BTreeNode root = getRootNode();
         root.treeStatistics(metrics);
         return metrics;
@@ -529,7 +537,13 @@ public class BTree extends Paged {
 	 * @return <code>true</code> if something had to be cleaned
 	 */
 	public boolean flush() throws DBException {
-		boolean flushed = cache.flush();
+//        try {
+//            TreeMetrics metrics = treeStatistics();
+//            metrics.toLogger();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        boolean flushed = cache.flush();
 		flushed = flushed | super.flush();
 		return flushed;
 	}
@@ -548,8 +562,8 @@ public class BTree extends Paged {
         byte[] data = value.getData();
         writer.write('[');
         for (int i = 0; i < data.length; i++) {
-        	writer.write(Integer.toString(data[i]));
-        	writer.write(' ');
+        	writer.write(Integer.toHexString(data[i]));
+//        	writer.write(' ');
         }
         writer.write(']');
     }
@@ -924,7 +938,7 @@ public class BTree extends Paged {
 		 * @return the data length
 		 */
 		private int recalculateDataLen() {
-			currentDataLen = ptrs == null ? 0 : nPtrs << 3;
+			currentDataLen = ptrs == null ? 0 : nPtrs * 8;
 			if(fileHeader.getFixedKeyLen() < 0)
 				currentDataLen += 2 * nKeys;
             if (ph.getStatus() == BRANCH)
@@ -1055,6 +1069,8 @@ public class BTree extends Paged {
 				ptrs[i] = ByteConversion.byteToLong(data, p);
 				p += 8;
 			}
+//            if (getFile().getName().equals("structure.dbx"))
+//                System.out.println("nKeys: " + nKeys + "; size: " + p);
 		}
 
         /**
@@ -1109,6 +1125,9 @@ public class BTree extends Paged {
 				ByteConversion.longToByte(ptrs[i], temp, p);
 				p += 8;
 			}
+//            System.out.println(getFile().getName() + " - " + ph.getStatus() + ": " + page.getPageNum() +
+//                ": written = " + p +
+//                "; keys = " + nKeys);
 			writeValue(page, new Value(temp));
 			saved = true;
 		}
@@ -1202,7 +1221,15 @@ public class BTree extends Paged {
 						adjustDataLen(idx);
 						//recalculateDataLen();
 						if (mustSplit()) {
-						    split(transaction);
+                            // we normally split a node at its median value.
+                            // however, if the inserted key is in the upper or lower
+                            // section of the node, we split directly at the key. this
+                            // has advantages if keys are inserted in ascending order
+                            if (splitFactor > 0 && idx > (nKeys * splitFactor))
+						        split(transaction, idx == 0 ? 1 : idx);
+                            else {
+                                split(transaction);
+                            }
                         }
 					}
 					return -1;
@@ -1248,12 +1275,16 @@ public class BTree extends Paged {
 				split(transaction);
 		}
 
+        private void split(Txn transaction) throws IOException, BTreeException {
+            split(transaction, -1);
+        }
+
         /**
          * Split the node.
          *
          * @param transaction the current transaction
          */
-        private void split(Txn transaction) throws IOException, BTreeException {
+        private void split(Txn transaction, int pivot) throws IOException, BTreeException {
             Value[] leftVals;
             Value[] rightVals;
             long[] leftPtrs;
@@ -1261,7 +1292,8 @@ public class BTree extends Paged {
             Value separator;
 
             final short vc = ph.getValueCount();
-            final int pivot = vc / 2;
+            if (pivot == -1)
+                pivot = vc / 2;
             // Split the node into two nodes
             switch (ph.getStatus()) {
                 case BRANCH :
@@ -1557,6 +1589,7 @@ public class BTree extends Paged {
 							case IndexQuery.IN :
 							case IndexQuery.NIN :
 							case IndexQuery.TRUNC_RIGHT :
+                            case IndexQuery.RANGE :
 								for (int i = 0; i < nPtrs; i++)
 									if ((i >= leftIdx && i <= rightIdx) == pos) {
 										getChildNode(i).query(query, callback);
@@ -1608,6 +1641,7 @@ public class BTree extends Paged {
 							case IndexQuery.NBWX :
 							case IndexQuery.BW :
 							case IndexQuery.NBW :
+                            case IndexQuery.RANGE :
 								if (leftIdx < 0)
 									leftIdx = - (leftIdx + 1);
 								if (rightIdx < 0)
@@ -1869,6 +1903,7 @@ public class BTree extends Paged {
 							case IndexQuery.IN :
 							case IndexQuery.NIN :
 							case IndexQuery.TRUNC_RIGHT :
+                            case IndexQuery.RANGE :
                                 for (int i = 0; i < nPtrs; i++) {
 									if ((i >= leftIdx && i <= rightIdx) == pos) {
 										getChildNode(i).remove(transaction, query, callback);
@@ -1942,6 +1977,7 @@ public class BTree extends Paged {
 							case IndexQuery.NBWX :
 							case IndexQuery.BW :
 							case IndexQuery.NBW :
+                            case IndexQuery.RANGE :
 								if (leftIdx < 0)
 									leftIdx = - (leftIdx + 1);
 								if (rightIdx < 0)

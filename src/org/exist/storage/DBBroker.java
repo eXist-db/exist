@@ -29,6 +29,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -163,6 +164,8 @@ public abstract class DBBroker extends Observable {
 
     public abstract ElementIndex getElementIndex();
 
+    public abstract StructuralIndex getStructuralIndex();
+    
 	/** Flush all data that has not been written before. */
 	public void flush() {
 		/*

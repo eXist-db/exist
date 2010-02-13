@@ -21,32 +21,24 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtNodeSet;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeVisitor;
-import org.exist.dom.StoredNode;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.*;
+import org.exist.indexing.StructuralIndex;
+import org.exist.memtree.InMemoryNodeSet;
+import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
-import org.exist.storage.ElementIndex;
+import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.StaXUtil;
 import org.exist.storage.ElementValue;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.*;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.InMemoryNodeSet;
-import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.stax.StaXUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.stream.StreamFilter;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
-import java.util.Iterator;
+import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -158,13 +150,13 @@ public class LocationStep extends Step {
 					"Preloaded NodeSets");
 			return true;
 		}
-		if (inUpdate)
-			return false;
-		if ((parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS) {
-			context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null,
-					"Preloaded NodeSets");
-			return true;
-		}
+//		if (inUpdate)
+//			return false;
+//		if ((parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS) {
+//			context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null,
+//					"Preloaded NodeSets");
+//			return true;
+//		}
 		return false;
 	}
 
@@ -273,9 +265,9 @@ public class LocationStep extends Step {
 		parentDeps = parent.getDependencies();
 		if ((contextInfo.getFlags() & IN_UPDATE) > 0)
 			inUpdate = true;
-		if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
-			preloadedData = true;
-		}
+//		if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
+//			preloadedData = true;
+//		}
 		if ((contextInfo.getFlags() & NEED_INDEX_INFO) > 0) {
 			useDirectAttrSelect = false;
 		}
@@ -502,7 +494,7 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
@@ -569,7 +561,7 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -597,15 +589,14 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
-			if (contextSet instanceof ExtNodeSet
-					&& !contextSet.getProcessInReverseOrder()) {
+			if (!contextSet.getProcessInReverseOrder()) {
 				return index.findDescendantsByTagName(ElementValue.ATTRIBUTE,
-						test.getName(), axis, docs, (ExtNodeSet) contextSet,
+						test.getName(), axis, docs, contextSet,
 						contextId);
 			} else {
 				NodeSelector selector;
@@ -675,7 +666,7 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -693,15 +684,14 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
-			if (contextSet instanceof ExtNodeSet
-					&& !contextSet.getProcessInReverseOrder()) {
+			if (!contextSet.getProcessInReverseOrder()) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
-						test.getName(), axis, docs, (ExtNodeSet) contextSet,
+						test.getName(), axis, docs, contextSet,
 						contextId);
 			} else {
 				// if (contextSet instanceof VirtualNodeSet)
@@ -749,7 +739,7 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -778,15 +768,15 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled()) {
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
 			}
-			if (contextSet instanceof ExtNodeSet) {
+			if (!contextSet.getProcessInReverseOrder()) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
-						test.getName(), axis, docs, (ExtNodeSet) contextSet,
+						test.getName(), axis, docs, contextSet,
 						contextId);
 			} else {
 				NodeSelector selector;
@@ -865,7 +855,7 @@ public class LocationStep extends Step {
 			synchronized (context) {
 				if (currentSet == null || currentDocs == null
 						|| !(docs.equalDocs(currentDocs))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1000,7 +990,7 @@ public class LocationStep extends Step {
 			synchronized (context) {
 				if (currentSet == null || currentDocs == null
 						|| !(docs.equalDocs(currentDocs))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1096,7 +1086,7 @@ public class LocationStep extends Step {
 			synchronized (context) {
 				if (currentSet == null || currentDocs == null
 						|| !(docs.equalDocs(currentDocs))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1199,7 +1189,7 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1226,7 +1216,7 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
@@ -1284,7 +1274,7 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1302,7 +1292,7 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
@@ -1765,7 +1755,7 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
@@ -1817,7 +1807,7 @@ public class LocationStep extends Step {
 //						|| currentDocs == null
 //						|| (!optimized && !(docs == currentDocs || docs
 //								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1835,7 +1825,7 @@ public class LocationStep extends Step {
 //			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
@@ -1902,7 +1892,7 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					ElementIndex index = context.getBroker().getElementIndex();
+					StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(
 								this,
@@ -1930,7 +1920,7 @@ public class LocationStep extends Step {
 			}
 		} else {
 			DocumentSet docs = getDocumentSet(contextSet);
-			ElementIndex index = context.getBroker().getElementIndex();
+			StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",

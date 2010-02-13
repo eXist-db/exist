@@ -25,7 +25,6 @@ import java.util.Iterator;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.NativeElementIndex;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.dom.DOMFile;
@@ -100,8 +99,6 @@ public class XMLStatistics {
 		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ db.getFile().getName() + ")");
 		DOMFile dom = (DOMFile) conf.getProperty(DOMFile.FILE_KEY_IN_CONFIG);
 		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ dom.getFile().getName() + ")");
-		db = (BFile) conf.getProperty(NativeElementIndex.FILE_KEY_IN_CONFIG);
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
 		if (db != null)
 			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");

@@ -123,7 +123,7 @@ public class BasicNodeSetTest extends TestCase {
             System.out.println("Testing ChildSelector ...");
             NameTest test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
             NodeSelector selector = new ChildSelector(seq.toNodeSet(), -1);
-            NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            NodeSet set = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(),
             		test.getName(), selector);
             assertEquals(9492, set.getLength());
             System.out.println("ChildSelector: PASS");
@@ -131,7 +131,7 @@ public class BasicNodeSetTest extends TestCase {
             System.out.println("Testing DescendantOrSelfSelector ...");
             selector = new DescendantOrSelfSelector(seq.toNodeSet(), -1);
             test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            set = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(),
             		test.getName(), selector);
             assertEquals(2628, set.getLength());
             System.out.println("DescendantOrSelfSelector: PASS");
@@ -139,7 +139,7 @@ public class BasicNodeSetTest extends TestCase {
             System.out.println("Testing AncestorSelector ...");
             test = new NameTest(Type.ELEMENT, new QName("ACT", ""));
             selector = new AncestorSelector(seq.toNodeSet(), -1, false, true);
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            set = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(),
             		test.getName(), selector);
             assertEquals(15, set.getLength());
             System.out.println("AncestorSelector: PASS");
@@ -149,7 +149,7 @@ public class BasicNodeSetTest extends TestCase {
             NodeSet ns = seq.toNodeSet();
             System.out.println("ns = " + ns.getLength());
             selector = new AncestorSelector(ns, -1, true, true);
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            set = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(),
             		test.getName(), selector);
             assertEquals(2628, set.getLength());
             System.out.println("AncestorSelector: PASS");
@@ -158,7 +158,7 @@ public class BasicNodeSetTest extends TestCase {
             seq = executeQuery(broker, "//SCENE", 72, null);
             test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
             selector = new DescendantSelector(seq.toNodeSet(), -1);
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
+            set = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(),
             		test.getName(), selector);
             assertEquals(2639, set.getLength());
             System.out.println("DescendantSelector: PASS");
@@ -186,7 +186,7 @@ public class BasicNodeSetTest extends TestCase {
             Sequence outerSet = executeQuery(broker, "//SCENE[TITLE &= 'closet']", 1, null);
             
             NameTest test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
-            NodeSet speakers = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+            NodeSet speakers = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             
             System.out.println("Testing NodeSetHelper.selectParentChild ...");
@@ -217,7 +217,7 @@ public class BasicNodeSetTest extends TestCase {
             System.out.println("AbstractNodeSet.getParents: PASS");
             
             test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
-            NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+            NodeSet scenes = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             scenes.getLength();
             System.out.println("Testing AbstractNodeSet.selectAncestors ...");
@@ -236,7 +236,7 @@ public class BasicNodeSetTest extends TestCase {
             
             largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/SPEAKER", 160, null);
             test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
-            NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+            NodeSet lines = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             System.out.println("LINE: " + lines.getLength());
             System.out.println("SPEAKER: " + largeSet.getItemCount());
@@ -250,7 +250,7 @@ public class BasicNodeSetTest extends TestCase {
             System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
             Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
             test = new NameTest(Type.ELEMENT, new QName("para", ""));
-            NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+            NodeSet children = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
             assertEquals(3, result.getLength());
@@ -265,7 +265,7 @@ public class BasicNodeSetTest extends TestCase {
             
             nestedSet = executeQuery(broker, "//para[@n = ('1.1.2.1')]", 1, null);
             test = new NameTest(Type.ELEMENT, new QName("section", ""));
-            NodeSet sections = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+            NodeSet sections = broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             result = ((NodeSet) nestedSet).selectParentChild(sections.toNodeSet(), NodeSet.DESCENDANT);
             assertEquals(1, result.getLength());
@@ -292,14 +292,14 @@ public class BasicNodeSetTest extends TestCase {
             // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
             ExtNodeSet nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
             NodeSet children = 
-            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+            	broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
             			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
             assertEquals(3, children.getLength());
             
             // parent set: 1.1; child set: 1.1.1, 1.1.2
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
             children = 
-            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+            	broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
             			new QName("section", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
             assertEquals(2, children.getLength());
             
@@ -307,7 +307,7 @@ public class BasicNodeSetTest extends TestCase {
             // problem: ancestor set contains nested nodes
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.1.2')]", 3, null);
             children = 
-            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+            	broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
         			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
             assertEquals(4, children.getLength());
             
@@ -315,37 +315,37 @@ public class BasicNodeSetTest extends TestCase {
             // problem: ancestor set contains nested nodes
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
             children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
                 		Constants.CHILD_AXIS, docs, nestedSet, -1);
             assertEquals(2, children.getLength());
             
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
             children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
                 		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
             assertEquals(4, children.getLength());
             
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1']", 1, null);
             children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
                 		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
             assertEquals(5, children.getLength());
             
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
             children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("section", ""), 
+                broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("section", ""), 
                 		Constants.DESCENDANT_SELF_AXIS, docs, nestedSet, -1);
             assertEquals(1, children.getLength());
             
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
             children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
+                broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
                 		Constants.ATTRIBUTE_AXIS, docs, nestedSet, -1);
             assertEquals(1, children.getLength());
             
             nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
             children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
+                broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
                 		Constants.DESCENDANT_ATTRIBUTE_AXIS, docs, nestedSet, -1);
             assertEquals(7, children.getLength());
             
@@ -502,7 +502,7 @@ public class BasicNodeSetTest extends TestCase {
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
-//            broker.removeCollection(transaction, root);
+            broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
         } catch (Exception e) {

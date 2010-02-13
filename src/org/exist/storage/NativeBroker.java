@@ -32,6 +32,7 @@ import org.exist.dom.*;
 import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.StructuralIndex;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
 import org.exist.security.*;
@@ -128,7 +129,6 @@ public class NativeBroker extends DBBroker {
     public static final byte PREPEND_DB_AS_NEEDED = 2;
     
     public static final byte COLLECTIONS_DBX_ID = 0;
-    public static final byte ELEMENTS_DBX_ID = 1;
     public static final byte VALUES_DBX_ID = 2;
     public static final byte DOM_DBX_ID = 3;
     //Note : no ID for symbols ? Too bad...
@@ -138,7 +138,7 @@ public class NativeBroker extends DBBroker {
 
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
     private static final byte[] ALL_STORAGE_FILES = {
-    	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
+    	COLLECTIONS_DBX_ID, VALUES_DBX_ID, DOM_DBX_ID
     };
     
     //private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
@@ -162,8 +162,7 @@ public class NativeBroker extends DBBroker {
     protected CollectionStore collectionsDb;
     protected DOMFile domDb;
 
-    /** the index processors */	
-    protected NativeElementIndex elementIndex;
+    /** the index processors */
     protected NativeValueIndex valueIndex;
     
     protected IndexSpec indexConfiguration;
@@ -258,8 +257,7 @@ public class NativeBroker extends DBBroker {
 		    if (collectionsDb == null)
 		    	collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);	
 		    readOnly = readOnly || collectionsDb.isReadOnly();
-	            
-		    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
+
 		    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
 		    if (readOnly)
 		    	LOG.info("Database runs in read-only mode");
@@ -269,18 +267,22 @@ public class NativeBroker extends DBBroker {
 		    throw new EXistException(e);
 		}
     }
-        
+
+    public ElementIndex getElementIndex() {
+        return null;
+    }
+
     public void addObserver(Observer o) {
         super.addObserver(o);
 //        textEngine.addObserver(o);
-        elementIndex.addObserver(o);
+//        elementIndex.addObserver(o);
         //TODO : what about other indexes observers ?
     }
     
     public void deleteObservers() {
         super.deleteObservers();
-        if (elementIndex != null)
-            elementIndex.deleteObservers();
+//        if (elementIndex != null)
+//            elementIndex.deleteObservers();
         //TODO : what about other indexes observers ?
 //        if (textEngine != null)
 //            textEngine.deleteObservers();
@@ -455,8 +457,6 @@ public class NativeBroker extends DBBroker {
 	    return domDb;
 	case COLLECTIONS_DBX_ID :
 	    return collectionsDb;
-	case ELEMENTS_DBX_ID :
-	    return elementIndex.dbNodes;
 	case VALUES_DBX_ID :
 	    return valueIndex.dbValues;
 	default:
@@ -492,10 +492,10 @@ public class NativeBroker extends DBBroker {
     public IndexSpec getIndexConfiguration() {
 	return indexConfiguration;
     }
-    
-    public ElementIndex getElementIndex() {
-        return elementIndex;
-    }    
+
+    public StructuralIndex getStructuralIndex() {
+        return (StructuralIndex) getIndexController().getWorkerByIndexName(StructuralIndex.STRUCTURAL_INDEX_ID);
+    }
 
     public NativeValueIndex getValueIndex() {
         return valueIndex;
@@ -2669,7 +2669,7 @@ public class NativeBroker extends DBBroker {
             final byte[] data = node.serialize();
             new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                 public Object start() throws ReadOnlyException {
-                    if (internalAddress != BFile.UNKNOWN_ADDRESS)
+                    if (StorageAddress.hasAddress(internalAddress))
                         domDb.update(transaction, internalAddress, data);
                     else {
                         domDb.update(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
@@ -2770,13 +2770,13 @@ public class NativeBroker extends DBBroker {
             int count = node.getChildCount();
             NodeId nodeId = node.getNodeId();
             for (int i = 0; i < count; i++) {
-            	StoredNode child = (StoredNode) iterator.next();
+                StoredNode child = (StoredNode) iterator.next();
                 oldNodeId = child.getNodeId();
                 if (defrag) {
-		    if (i == 0)
-			nodeId = nodeId.newChild();
-		    else
-			nodeId = nodeId.nextSibling();
+                    if (i == 0)
+                        nodeId = nodeId.newChild();
+                    else
+                        nodeId = nodeId.nextSibling();
                     child.setNodeId(nodeId);
                 }
                 copyNodes(transaction, iterator, child, currentPath, newDoc, defrag, index, listener, oldNodeId);
@@ -2801,7 +2801,7 @@ public class NativeBroker extends DBBroker {
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() {
                 final long address = node.getInternalAddress();
-                if (address != BFile.UNKNOWN_ADDRESS)
+                if (StorageAddress.hasAddress(address))
                     domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), address);
                 else
                     domDb.remove(transaction, new NodeRef(doc.getDocId(), node.getNodeId()));
@@ -2820,8 +2820,8 @@ public class NativeBroker extends DBBroker {
 	    // save element by calling ElementIndex
 	    qname = node.getQName();
 	    qname.setNameType(ElementValue.ELEMENT);
-	    elementIndex.setDocument(doc);
-	    elementIndex.addNode(qname, p);
+//	    elementIndex.setDocument(doc);
+//	    elementIndex.addNode(qname, p);
                 
 
 	    GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
@@ -2842,8 +2842,8 @@ public class NativeBroker extends DBBroker {
 	    qname.setNameType(ElementValue.ATTRIBUTE);
 	    currentPath.addComponent(qname);
                 
-	    elementIndex.setDocument(doc);
-	    elementIndex.addNode(qname, p);
+//	    elementIndex.setDocument(doc);
+//	    elementIndex.addNode(qname, p);
                 
 	    //Strange : does it mean that the node is added 2 times under 2 different identities ?
 
@@ -2963,7 +2963,7 @@ public class NativeBroker extends DBBroker {
     }
     
     public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, int repairMode) {
-        elementIndex.setInUpdateMode(true);
+//        elementIndex.setInUpdateMode(true);
         nodeProcessor.reset(transaction, node, currentPath, null, true);
         nodeProcessor.setMode(repairMode);
         nodeProcessor.index();
@@ -3090,7 +3090,7 @@ public class NativeBroker extends DBBroker {
     }
 
     public StoredNode objectWith(final NodeProxy p) {
-        if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+        if (!StorageAddress.hasAddress(p.getInternalAddress()))
             return objectWith(p.getDocument(), p.getNodeId());
         return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
             public Object start() {
@@ -3143,7 +3143,6 @@ public class NativeBroker extends DBBroker {
 
         LOG.info("Recreating index files ...");
         try {
-	    elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);        	
 	    valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
@@ -3376,12 +3375,12 @@ public class NativeBroker extends DBBroker {
                     ((ElementImpl) node).setIndexType(indexType);
                     //	                    notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
 
-                    if (mode != MODE_REMOVE) {
-                        NodeProxy p = new NodeProxy(node);
-                        p.setIndexType(indexType);
-                        elementIndex.setDocument(doc);
-                        elementIndex.addNode(node.getQName(), p);
-                    }
+//                    if (mode != MODE_REMOVE) {
+//                        NodeProxy p = new NodeProxy(node);
+//                        p.setIndexType(indexType);
+//                        elementIndex.setDocument(doc);
+//                        elementIndex.addNode(node.getQName(), p);
+//                    }
                     break;
                 }
                 case Node.ATTRIBUTE_NODE :
@@ -3425,15 +3424,16 @@ public class NativeBroker extends DBBroker {
 
                     //notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
 
-                    elementIndex.setDocument(doc);
+//                    elementIndex.setDocument(doc);
                     final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
                     tempProxy.setIndexType(indexType);
 
                     qname.setNameType(ElementValue.ATTRIBUTE);
-                    if (mode != MODE_REMOVE)
-                        elementIndex.addNode(qname, tempProxy);
+//                    if (mode != MODE_REMOVE)
+//                        elementIndex.addNode(qname, tempProxy);
 
                     AttrImpl attr = (AttrImpl) node;
+                    attr.setIndexType(indexType);
 						 switch(attr.getType()) {
 							 case AttrImpl.ID:
 								 valueIndex.setDocument(doc);

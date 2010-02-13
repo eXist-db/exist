@@ -43,16 +43,20 @@ public abstract class AbstractIndex implements Index {
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
     	this.pool = pool;
     	this.dataDir = dataDir; 
-        if (config.hasAttribute("id"))
+        if (config != null && config.hasAttribute("id"))
             name = config.getAttribute("id");
     }
-    
+
     public String getIndexId() {
     	return ID;
     }
     
     public String getIndexName() {
     	return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
     
     public BrokerPool getBrokerPool() {

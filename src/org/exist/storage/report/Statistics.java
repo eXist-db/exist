@@ -4,16 +4,15 @@ $Id$
  */
 package org.exist.storage.report;
 
-import java.util.Map;
-
 import org.exist.storage.IndexStats;
-import org.exist.storage.NativeElementIndex;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.util.Configuration;
+
+import java.util.Map;
 
 /**
  * @author jmv
@@ -30,10 +29,7 @@ public class Statistics {
 			indexStats.put(DOMFile.FILE_NAME, new IndexStats(dom));
 		BFile db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
 		if(db != null)
-			indexStats.put(CollectionStore.FILE_NAME, new IndexStats(db));
-		db = (BFile) conf.getProperty(NativeElementIndex.FILE_KEY_IN_CONFIG);
-		if(db != null) 
-			indexStats.put(NativeElementIndex.FILE_NAME, new IndexStats(db));	
+			indexStats.put(CollectionStore.FILE_NAME, new IndexStats(db));	
 		db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
 		if(db != null) 
 			indexStats.put(NativeValueIndex.FILE_NAME, new IndexStats(db));			

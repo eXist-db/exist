@@ -81,7 +81,7 @@ public class RawNodeIterator {
         try {
             lock.acquire(Lock.READ_LOCK);
             RecordPos rec = null;
-            if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+            if (StorageAddress.hasAddress(node.getInternalAddress()))
                 rec = db.findRecord(node.getInternalAddress());
             if (rec == null) {
                 try {

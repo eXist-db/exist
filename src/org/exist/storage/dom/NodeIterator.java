@@ -216,7 +216,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
 		//	position the iterator at the start of the first value
 		if (node != null) {
             RecordPos rec = null;
-            if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+            if (StorageAddress.hasAddress(node.getInternalAddress()))
                 rec = db.findRecord(node.getInternalAddress());
             if (rec == null) {
     			long addr = db.findValue(broker, new NodeProxy(node));
@@ -230,7 +230,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
 			offset = rec.offset - DOMFile.LENGTH_TID;
 			node = null;
 			return true;
-		} else if (startAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
+		} else if (StorageAddress.hasAddress(startAddress)) {
 			final RecordPos rec = db.findRecord(startAddress);
 			if(rec == null)
 				throw new IOException("Node not found at specified address.");
@@ -266,7 +266,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
 	 *@param  node  The new to value
 	 */
 	public void setTo(StoredNode node) {
-		if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
+		if (StorageAddress.hasAddress(node.getInternalAddress())) {
 			startAddress = node.getInternalAddress();
 		} else {
 			this.node = node;

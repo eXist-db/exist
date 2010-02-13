@@ -2061,7 +2061,7 @@ public class DOMFile extends BTree implements Lockable {
             long address = node.getInternalAddress();
             RecordPos rec = null;
             // try to directly locate the root node through its storage address
-            if (address != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+            if (StorageAddress.hasAddress(address))
                 rec = findRecord(address);
             if (rec == null) {
                 // fallback to a btree lookup if the node could not be found

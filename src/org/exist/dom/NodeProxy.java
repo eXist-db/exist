@@ -1221,6 +1221,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             parent.addContextNode(contextId, this);
         else
             parent.copyContext(this);
+        parent.addMatches(this);
         return parent;
     }
 
@@ -1242,6 +1243,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 parent.addContextNode(contextId, this);
             else
                 parent.copyContext(this);
+            parent.addMatches(this);
             ancestors.add(parent);
             pid = pid.getParentId();
         }
