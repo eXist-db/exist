@@ -243,11 +243,10 @@
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
             <store collection="/db/system/config/db" name="collection.xconf"
-                    overwrite="yes">
+                    overwrite="no">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="none" attributes="false">
-                            <create qname="title"/>
                         </fulltext>
 
                         <create qname="title" type="xs:string"/>
@@ -269,12 +268,6 @@
             <create-collection parent="/db" name="library"/>
             <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
                 description="storing DBLP library data" overwrite="no"/>
-            <sequence repeat="15" description="Fulltext queries" optimize="yes">
-                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml']"/>
-                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml xquery']"/>
-                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt']"/>
-                <xquery collection="/db/library" query="//*[title &amp;= 'xslt']"/>
-            </sequence>
             <sequence repeat="15" description="General comparisons/regular expressions" optimize="yes">
                 <xquery collection="/db/library" query="//inproceedings[author = 'Bjarne Stroustrup'] "/>
                 <xquery collection="/db/library" query="//article[author = 'Linus Torvalds']"/>
@@ -290,11 +283,6 @@
                 <xquery collection="/db/library" query="//inproceedings[year = 2002] "/>
                 <xquery collection="/db/library" query="//inproceedings[year > 2005] "/>
                 <xquery collection="/db/library" query="//inproceedings[year &lt; 2000] "/>
-
-				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt'][year = 2006]"/>
-				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml'][year = 2005]"/>
-				<xquery collection="/db/library" query="//*[title &amp;= 'xml'][year = 2005]"/>
-				<xquery collection="/db/library" query="//*[author &amp;= 'brian kernighan'][title &amp;= 'C']"/>
             </sequence>
             <sequence repeat="15" description="NGram index" optimize="yes">
                 <xquery collection="/db/library" query="//*[ngram:contains(author, 'Bjarne')]"/>
