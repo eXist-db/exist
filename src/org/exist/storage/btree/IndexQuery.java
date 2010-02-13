@@ -76,7 +76,7 @@ public class IndexQuery {
     public static final int NBW = -4;  // Not Between (Inclusive)
     public static final int BWX = 5;   // Between (Exclusive)
     public static final int NBWX = -5; // Not Between (Exclusive)
-    
+
     // Set Operators
     public static final int IN = 6;    // In The Set
     public static final int NIN = -6;  // Not In The Set
@@ -86,6 +86,8 @@ public class IndexQuery {
     public static final int TRUNC_LEFT = 8;
     
     public static final int REGEXP = 9;
+
+    public static final int RANGE = 10;
 
     protected int op;
     protected Value[] vals;
@@ -213,6 +215,8 @@ public class IndexQuery {
             return value.compareTo(vals[0]) > 0 && value.compareTo(vals[1]) < 0;
 	case NBWX:
             return value.compareTo(vals[0]) < 0 || value.compareTo(vals[1]) > 0;
+    case RANGE:
+            return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) < 0;
             
 	    // Set Comparisons
 	case IN:

@@ -21,15 +21,15 @@
  */
 package org.exist.xquery.pragmas;
 
-import org.exist.xquery.*;
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.storage.ElementIndex;
+import org.exist.indexing.StructuralIndex;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -124,18 +124,23 @@ public class Optimize extends Pragma {
                     ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
                         true, contextId, false);
                 } else {
-                    NodeSelector selector;
+//                    NodeSelector selector;
                     long start = System.currentTimeMillis();
-                    selector = new AncestorSelector(selection, contextId, true, false);
-                    ElementIndex index = context.getBroker().getElementIndex();
+//                    selector = new AncestorSelector(selection, contextId, true, false);
+                    StructuralIndex index = context.getBroker().getStructuralIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
-                        selector = new SelfSelector(selection, contextId);
-                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
-                                ancestorQN, selector);
-                    } else
-                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
-                                ancestorQN, selector);
+//                        selector = new SelfSelector(selection, contextId);
+//                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
+//                                ancestorQN, selector);
+                        ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN, Constants.SELF_AXIS,
+                            selection.getDocumentSet(), selection, contextId);
+                    } else {
+//                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
+//                                ancestorQN, selector);
+                        ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN,
+                            Constants.ANCESTOR_SELF_AXIS, selection.getDocumentSet(), selection, contextId);
+                    }
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));
                         LOG.trace("Found: " + ancestors.getLength());

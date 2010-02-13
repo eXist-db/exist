@@ -36,7 +36,9 @@ public class Txn {
     private long id;
     
     private List<LockInfo> locksHeld = new ArrayList<LockInfo>();
-    
+
+    private List<TxnListener> listeners = new ArrayList<TxnListener>();
+
     public Txn(long transactionId) {
         this.id = transactionId;
     }
@@ -61,7 +63,23 @@ public class Txn {
         }
         locksHeld.clear();
     }
-    
+
+    public void registerListener(TxnListener listener) {
+        listeners.add(listener);
+    }
+
+    public void signalAbort() {
+        for (int i = 0; i < listeners.size(); i++) {
+            listeners.get(i).abort();
+        }
+    }
+
+    public void signalCommit() {
+        for (int i = 0; i < listeners.size(); i++) {
+            listeners.get(i).commit();
+        }
+    }
+
     private class LockInfo {
         Lock lock;
         int lockMode;

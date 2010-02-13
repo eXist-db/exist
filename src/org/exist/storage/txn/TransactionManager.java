@@ -178,6 +178,7 @@ public class TransactionManager {
                 if (!groupCommit)
                     journal.flushToLog(true);
             }
+            txn.signalCommit();
             txn.releaseAll();
             processSystemTasks();
         } finally {
@@ -199,6 +200,7 @@ public class TransactionManager {
             }
             if (!groupCommit)
                 journal.flushToLog(true);
+            txn.signalAbort();
             txn.releaseAll();
             processSystemTasks();
         } finally {

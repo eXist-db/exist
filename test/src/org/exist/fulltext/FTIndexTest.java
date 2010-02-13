@@ -275,7 +275,10 @@ public class FTIndexTest {
             Sequence seq = xquery.execute("//item[description &= 'chair']", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
-
+            seq = xquery.execute("//item[@id='2']", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             proc.setBroker(broker);

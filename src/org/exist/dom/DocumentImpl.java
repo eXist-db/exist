@@ -23,6 +23,7 @@ package org.exist.dom;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -752,7 +753,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
             docs.add(this);
             NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
             NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
-            return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
+            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
         } catch (Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
         } finally {
@@ -971,7 +972,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
             MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
             QName qname = new QName(localName, namespaceURI, null);
-            return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
+            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
         } catch (Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
         } finally {

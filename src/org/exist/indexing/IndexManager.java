@@ -28,6 +28,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -75,29 +76,41 @@ public class IndexManager {
         if (modConf != null) {
             for (int i = 0; i < modConf.length; i++) {
                 String className = modConf[i].getClassName();
-                try {
-                    Class<?> clazz = Class.forName(className);
-                    if (!AbstractIndex.class.isAssignableFrom(clazz)) {
-                        throw new DatabaseConfigurationException("Class " + className + " does not implement " +
-                        		AbstractIndex.class.getName());
-                    }
-                    AbstractIndex index = (AbstractIndex)clazz.newInstance();
-                    index.configure(pool, dataDir, modConf[i].getConfig());
-                    index.open();
-                    indexers.put(modConf[i].getId(), index);
-                    if (LOG.isInfoEnabled())
-                        LOG.info("Registered index " + className + " as " + modConf[i].getId());
-                } catch (ClassNotFoundException e) {
-                    LOG.warn("Class " + className + " not found. Cannot configure index.");
-                } catch (IllegalAccessException e) {
-                    LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
-                } catch (InstantiationException e) {
-                    LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
-                }
+                initIndex(pool, modConf[i].getId(), modConf[i].getConfig(), dataDir, className);
             }
         }
+        // check if a structural index was configured. If not, create one based on default settings.
+        AbstractIndex structural = (AbstractIndex) indexers.get(StructuralIndex.STRUCTURAL_INDEX_ID);
+        if (structural == null) {
+            structural = initIndex(pool, StructuralIndex.STRUCTURAL_INDEX_ID, null, dataDir, StructuralIndex.DEFAULT_CLASS);
+            structural.setName(StructuralIndex.STRUCTURAL_INDEX_ID);
+        }
     }
-    
+
+    private AbstractIndex initIndex(BrokerPool pool, String id, Element config, String dataDir, String className) throws DatabaseConfigurationException {
+        try {
+            Class<?> clazz = Class.forName(className);
+            if (!AbstractIndex.class.isAssignableFrom(clazz)) {
+                throw new DatabaseConfigurationException("Class " + className + " does not implement " +
+                        AbstractIndex.class.getName());
+            }
+            AbstractIndex index = (AbstractIndex)clazz.newInstance();
+            index.configure(pool, dataDir, config);
+            index.open();
+            indexers.put(id, index);
+            if (LOG.isInfoEnabled())
+                LOG.info("Registered index " + className + " as " + id);
+            return index;
+        } catch (ClassNotFoundException e) {
+            LOG.warn("Class " + className + " not found. Cannot configure index.");
+        } catch (IllegalAccessException e) {
+            LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
+        } catch (InstantiationException e) {
+            LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
+        }
+        return null;
+    }
+
     /**
      * Returns the {@link org.exist.storage.BrokerPool} on with this IndexManager operates.
      * 
