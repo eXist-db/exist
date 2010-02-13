@@ -78,13 +78,15 @@ public class FunLast extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        Sequence inSequence = context.getContextSequence();
+        
         Sequence result;
-		if (contextSequence == null)
+		if (inSequence == null)
 			throw new XPathException(this, "FONC0001: undefined context item");
-        else if (contextSequence.isEmpty())
+        else if (inSequence.isEmpty())
         	result = Sequence.EMPTY_SEQUENCE;
         else
-        	result = new IntegerValue(contextSequence.getItemCount());
+        	result = new IntegerValue(inSequence.getItemCount());
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

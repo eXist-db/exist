@@ -87,7 +87,7 @@ public class LetExpr extends BindingExpression {
 			}
 			
 			//Reset the context position
-			context.setContextPosition(0);
+			context.setContextSequencePosition(0, null);
 			
 			if(returnExpr instanceof BindingExpression) {
 				((BindingExpression)returnExpr).analyze(contextInfo, orderBy,groupBy); 

@@ -216,7 +216,7 @@ public abstract class BindingExpression extends AbstractExpression {
 			int p = 0;			
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 				Item item = i.nextItem();
-				context.setContextPosition(p);
+				context.setContextSequencePosition(p, contextSequence);
                 Sequence innerSeq = whereExpr.eval(contextSequence, item);                
 				if (innerSeq.effectiveBooleanValue())
 					result.add(item);                    

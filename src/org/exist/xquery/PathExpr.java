@@ -224,9 +224,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     
                     //Restore a position which may have been modified by inner expressions 
                     int p = context.getContextPosition();
+                    Sequence seq = context.getContextSequence();
                     
                     for (SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
-                        context.setContextPosition(p);
+                        context.setContextSequencePosition(p, seq);
                         Item current = iterInner.nextItem();   
                         //0 or 1 item
                         if (!currentContext.hasMany())

@@ -409,7 +409,7 @@ public class Predicate extends PathExpr {
 			p = contextSequence.getItemCount();
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p--) {
 				// 0-based
-				context.setContextPosition(p - 1);
+				context.setContextSequencePosition(p - 1, contextSequence);
 				Item item = i.nextItem();
 				Sequence innerSeq = inner.eval(contextSequence, item);
 				if (innerSeq.effectiveBooleanValue())
@@ -426,7 +426,7 @@ public class Predicate extends PathExpr {
 				Set<NumericValue> positions = new TreeSet<NumericValue>();
 				for (SequenceIterator i = contextSequence.iterate(); i
 						.hasNext(); p++) {
-					context.setContextPosition(p);
+					context.setContextSequencePosition(p, contextSequence);
 					Item item = i.nextItem();
 					Sequence innerSeq = inner.eval(contextSequence, item);
 					// TODO : introduce a check in innerSeq.hasOne() ?
@@ -445,7 +445,7 @@ public class Predicate extends PathExpr {
 				Set<NumericValue> positions = new TreeSet<NumericValue>();
 				for (SequenceIterator i = contextSequence.iterate(); i
 						.hasNext(); p++) {
-					context.setContextPosition(p);
+					context.setContextSequencePosition(p, contextSequence);
 					Item item = i.nextItem();
 					Sequence innerSeq = inner.eval(contextSequence, item);
 					if (innerSeq.hasOne()
