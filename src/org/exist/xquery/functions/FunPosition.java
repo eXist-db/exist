@@ -72,6 +72,8 @@ public class FunPosition extends Function {
         }
         
         Sequence inSequence = context.getContextSequence();
+        if (inSequence == null)
+        	inSequence = contextSequence;
 
 		if (inSequence == null)
 			throw new XPathException(this, "XPDY0002: Undefined context item");
