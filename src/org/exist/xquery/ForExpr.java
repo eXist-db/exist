@@ -277,7 +277,7 @@ public class ForExpr extends BindingExpression {
 			for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 				context.proceed(this);
 				contextItem = i.nextItem();
-				context.setContextPosition(p);
+				context.setContextSequencePosition(p, in);
 				
 //				atVal.setValue(p); // seb: this does not create a new Value. the old Value is referenced from results
 				if(positionalVariable != null)
@@ -305,7 +305,7 @@ public class ForExpr extends BindingExpression {
 					val = contextItem.toSequence();
 				
 				//Reset the context position
-				context.setContextPosition(0);
+				context.setContextSequencePosition(0, null);
 				
 				if(groupedSequence==null){                 
 					if(returnExpr instanceof BindingExpression) 
@@ -357,7 +357,7 @@ public class ForExpr extends BindingExpression {
 				resultSequence.addAll(val);
 			}
 			//Reset the context position
-			context.setContextPosition(0);
+			context.setContextSequencePosition(0, null);
 		}
 		
 		if(orderSpecs != null && !fastOrderBy)

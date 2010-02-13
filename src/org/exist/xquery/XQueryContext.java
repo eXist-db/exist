@@ -302,6 +302,7 @@ public class XQueryContext {
 	 * before calling the fn:position() function. 
 	 */
 	private int contextPosition = 0;
+	private Sequence contextSequence = null;
 
 	/**
 	 * The builder used for creating in-memory document 
@@ -515,7 +516,7 @@ public class XQueryContext {
             broker.setUser(user);
         }
 		//Reset current context position
-		setContextPosition(0);	
+		setContextSequencePosition(0, null);	
 		//Note that, for some reasons, an XQueryContext might be used without calling this method
 	}
 	
@@ -1969,8 +1970,9 @@ public class XQueryContext {
 	 * 
 	 * @param pos
 	 */
-	public void setContextPosition(int pos) {
+	public void setContextSequencePosition(int pos, Sequence sequence) {
 		contextPosition = pos;
+		contextSequence = sequence;
 	}
 
 	/**
@@ -1983,7 +1985,11 @@ public class XQueryContext {
 		return contextPosition;
 	}
 
-    public void pushInScopeNamespaces() {
+	public Sequence getContextSequence() {
+		return contextSequence;
+	}
+
+	public void pushInScopeNamespaces() {
         pushInScopeNamespaces(true);
     }
 
