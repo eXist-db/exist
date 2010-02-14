@@ -113,7 +113,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             DocumentImpl doc = descendant.getDocument();
             byte[] key;
             while (parentId != NodeId.DOCUMENT_NODE) {
-                key = computeKeyWithLen(type, doc.getDocId(), qname, parentId);
+                key = computeKey(type, doc.getDocId(), qname, parentId);
                 try {
                     lock.acquire(Lock.READ_LOCK);
                     if (index.btree.findValue(new Value(key)) > -1) {
@@ -288,7 +288,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     List<NodeProxy> nodes = entry.getValue();
                     for (NodeProxy proxy : nodes) {
                         NodeId nodeId = proxy.getNodeId();
-                        byte[] key = computeKeyWithLen(qname.getNameType(), document.getDocId(), qname, nodeId);
+                        byte[] key = computeKey(qname.getNameType(), document.getDocId(), qname, nodeId);
                         index.btree.removeValue(new Value(key));
                     }
                 } catch (LockException e) {
@@ -368,8 +368,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     List<NodeProxy> nodes = entry.getValue();
                     for (NodeProxy proxy : nodes) {
                         NodeId nodeId = proxy.getNodeId();
-                        byte[] key = computeKeyWithLen(qname.getNameType(), document.getDocId(), qname, nodeId);
-                        index.btree.addValue(new Value(key), proxy.getInternalAddress());
+                        byte[] key = computeKey(qname.getNameType(), document.getDocId(), qname, nodeId);
+                        index.btree.addValue(new Value(key), computeValue(proxy));
                     }
                 } catch (LockException e) {
                     NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
@@ -399,21 +399,6 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return data;
     }
 
-    private byte[] computeKeyWithLen(byte type, int documentId, QName qname, NodeId nodeId) {
-        final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        short sym = symbols.getSymbol(qname.getLocalName());
-        short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-        int nodeIdLen = nodeId.size();
-        byte[] data = new byte[11 + nodeIdLen];
-        ByteConversion.intToByteH(documentId, data, 0);
-        data[4] = type;
-        ByteConversion.shortToByteH(sym, data, 5);
-        ByteConversion.shortToByteH(nsSym, data, 7);
-        nodeId.serialize(data, 9);
-        ByteConversion.shortToByteH((short) nodeId.units(), data, data.length - 2);
-        return data;
-    }
-
     private byte[] computeKey(byte type, int documentId, QName qname) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
         short sym = symbols.getSymbol(qname.getLocalName());
@@ -432,8 +417,22 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return data;
     }
 
+    private long computeValue(NodeProxy proxy) {
+        // dirty hack: encode the extra number of bits needed for the node id into the
+        // storage address. this way, everything fits into the long address and
+        // we don't need to change the btree.
+        long address = proxy.getInternalAddress();
+        short nodeIdLen = (short)(proxy.getNodeId().units() % 8);
+        return address | ((long)(nodeIdLen << 24) & 0xFF000000L);
+    }
+
     private NodeId readNodeId(byte[] key, long value) {
-        int units = ByteConversion.byteToShortH(key, key.length - 2);
+        // extra number of bits of the node id is encoded in the long address
+        short bits = (short)((value >>> 24) & 0xFFL);
+        if (bits == 0)
+            bits = 8;
+        // compute total number of bits for node id
+        int units = (key.length - 10) * 8 + bits;
         return index.getBrokerPool().getNodeFactory().createFromData(units, key, 9);
     }
 

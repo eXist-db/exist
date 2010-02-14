@@ -1106,15 +1106,11 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     public int getIndexType() {
         //Is the index type initialized ?
         if (indexType == Type.ANY_TYPE) {
-            hasTextIndex = true;
-            hasMixedContent = true;
             for (int i = 0; i < size; i++) {
                 NodeProxy node = nodes[i];
                 if (node.getDocument().getCollection().isTempCollection()) {
                     //Temporary nodes return default values
                     indexType = Type.ITEM;
-                    hasTextIndex = false;
-                    hasMixedContent = false;
                     break;
                 }
                 int nodeIndexType = node.getIndexType();
@@ -1127,12 +1123,6 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                     //TODO : use common supertype
                     if (indexType != nodeIndexType)
                         indexType = Type.ITEM;
-                }
-                if(!node.hasTextIndex()) {
-                    hasTextIndex = false;
-                }
-                if(!node.hasMixedContent()) {
-                    hasMixedContent = false;
                 }
             }
         }

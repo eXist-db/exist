@@ -3357,13 +3357,6 @@ public class NativeBroker extends DBBroker {
                     if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
                         indexType |= idxSpec.getIndexByPath(currentPath).getIndexType();
                     }
-                    if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
-                        indexType |= RangeIndexSpec.TEXT;
-                    if (ftIdx != null && currentPath != null && ftIdx.matchMixedElement(currentPath))
-                        indexType |= RangeIndexSpec.TEXT_MIXED_CONTENT;
-                    if(node.getChildCount() - node.getAttributesCount() > 1) {
-                        indexType |= RangeIndexSpec.MIXED_CONTENT;
-                    }
                     if (idxSpec != null) {
                         QNameRangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
                         if (qnIdx != null) {
@@ -3389,16 +3382,10 @@ public class NativeBroker extends DBBroker {
                     if (currentPath != null)
                         currentPath.addComponent(qname);
 
-                    boolean fullTextIndexing = false;
-
                     //Compute index type
                     //TODO : let indexers OR it themselves
                     //we'd need to notify the ElementIndexer at the very end then...
                     int indexType = RangeIndexSpec.NO_INDEX;
-                    if(fullTextIndex && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
-                        indexType |= RangeIndexSpec.TEXT;
-                        fullTextIndexing = true;
-                    }
                     if (idxSpec != null) {
                         RangeIndexSpec rangeSpec = idxSpec.getIndexByPath(currentPath);
                         if (rangeSpec != null) {

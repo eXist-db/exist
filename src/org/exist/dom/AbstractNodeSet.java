@@ -54,9 +54,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     // been defined on the nodes in this set.
     protected int indexType = Type.ANY_TYPE;
 
-    protected boolean hasTextIndex = false;
-    protected boolean hasMixedContent = false;
-
     private boolean isCached = false;
 
     private boolean processInReverseOrder = false;
@@ -630,15 +627,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public int getIndexType() {
         //Is the index type initialized ?
         if (indexType == Type.ANY_TYPE) {
-            hasTextIndex = true;
-            hasMixedContent = true;
             for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
                 NodeProxy node = i.next();
                 if (node.getDocument().getCollection().isTempCollection()) {
                     //Temporary nodes return default values
                     indexType = Type.ITEM;
-                    hasTextIndex = false;
-                    hasMixedContent = false;
                     break;
                 }
                 int nodeIndexType = node.getIndexType();
@@ -652,37 +645,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                     if (indexType != nodeIndexType)
                         indexType = Type.ITEM;
                 }
-                if(!node.hasTextIndex()) {
-                    hasTextIndex = false;
-                }
-                if(!node.hasMixedContent()) {
-                    hasMixedContent = false;
-                }
             }
         }
         return indexType;
-    }
-
-    public boolean hasTextIndex() {
-        if(indexType == Type.ANY_TYPE) {
-            getIndexType();
-            //		    int type;
-            //		    NodeProxy p;
-            //			for (Iterator i = iterator(); i.hasNext();) {
-            //			    p = (NodeProxy) i.next();
-            //			    hasTextIndex = p.hasTextIndex();
-            //			    if(!hasTextIndex)
-            //			        break;
-            //			}
-        }
-        return hasTextIndex;
-    }
-
-    public boolean hasMixedContent() {
-        if(indexType == Type.ANY_TYPE) {
-            getIndexType();
-        }
-        return hasMixedContent;
     }
 
     public void clearContext(int contextId) throws XPathException {
