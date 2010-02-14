@@ -44,9 +44,17 @@ public class AttributeSet extends Declaration {
 
     private String name = null;
     private String use_attribute_sets = null;
+    
+    private String delay_use_attribute_sets = null;
 
     public AttributeSet(XSLContext context) {
 		super(context);
+	}
+
+	public AttributeSet(XSLContext context, String name) {
+		super(context);
+		
+		delay_use_attribute_sets = name;
 	}
 
 	public void setToDefaults() {
@@ -69,6 +77,12 @@ public class AttributeSet extends Declaration {
 	}    
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		if (use_attribute_sets != null) {
+			return getXSLContext().getXSLStylesheet().attributeSet(use_attribute_sets, contextSequence, contextItem);
+		} else if (delay_use_attribute_sets != null) {
+			return getXSLContext().getXSLStylesheet().attributeSet(delay_use_attribute_sets, contextSequence, contextItem);
+		}
+			
 		return super.eval(contextSequence, contextItem);
 	}
 

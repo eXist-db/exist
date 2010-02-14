@@ -273,10 +273,10 @@ public class XSLStylesheet extends Declaration
 				item = (Item) document.getDocumentElement();
 			}
 			
-			context.setContextPosition(pos);
+			context.setContextSequencePosition(pos, currentSequence);
 			
 			if ((contextItem == null) && (rootTemplate != null)) {
-				context.setContextPosition(0);
+				context.setContextSequencePosition(0, currentSequence);
 				Sequence res = rootTemplate.eval(contextSequence, item);
 				result.addAll(res);
 				matched = true;
@@ -349,7 +349,7 @@ public class XSLStylesheet extends Declaration
 				item = (Item) document.getDocumentElement();
 			}
 			
-			context.setContextPosition(pos);
+			context.setContextSequencePosition(pos, currentSequence);
 
 			Sequence res = template.eval(contextSequence, item);
 			result.addAll(res);
