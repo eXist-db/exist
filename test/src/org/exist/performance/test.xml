@@ -76,7 +76,8 @@
     <group name="ft-tests">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
-            <store collection="/db/system/config/db" name="collection.xconf"
+            <create-collection parent="/db/system/config/db" name="jgoethe"/>
+            <store collection="/db/system/config/db/jgoethe" name="collection.xconf"
                     overwrite="yes">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
@@ -242,11 +243,13 @@
     <group name="large-documents">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
-            <store collection="/db/system/config/db" name="collection.xconf"
-                    overwrite="no">
+            <create-collection parent="/db/system/config/db" name="library"/>
+            <store collection="/db/system/config/db/library" name="collection.xconf"
+                    overwrite="yes">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="none" attributes="false">
+                            <create qname="title"/>
                         </fulltext>
 
                         <create qname="title" type="xs:string"/>
@@ -268,6 +271,12 @@
             <create-collection parent="/db" name="library"/>
             <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
                 description="storing DBLP library data" overwrite="no"/>
+            <sequence repeat="15" description="Fulltext queries" optimize="yes">
+                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml']"/>
+                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml xquery']"/>
+                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt']"/>
+                <xquery collection="/db/library" query="//*[title &amp;= 'xslt']"/>
+            </sequence>
             <sequence repeat="15" description="General comparisons/regular expressions" optimize="yes">
                 <xquery collection="/db/library" query="//inproceedings[author = 'Bjarne Stroustrup'] "/>
                 <xquery collection="/db/library" query="//article[author = 'Linus Torvalds']"/>
@@ -283,6 +292,11 @@
                 <xquery collection="/db/library" query="//inproceedings[year = 2002] "/>
                 <xquery collection="/db/library" query="//inproceedings[year > 2005] "/>
                 <xquery collection="/db/library" query="//inproceedings[year &lt; 2000] "/>
+
+				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt'][year = 2006]"/>
+				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml'][year = 2005]"/>
+				<xquery collection="/db/library" query="//*[title &amp;= 'xml'][year = 2005]"/>
+				<xquery collection="/db/library" query="//*[ft:query(author, 'brian kernighan')][ft:query(title, 'C')]"/>
             </sequence>
             <sequence repeat="15" description="NGram index" optimize="yes">
                 <xquery collection="/db/library" query="//*[ngram:contains(author, 'Bjarne')]"/>
@@ -298,11 +312,11 @@
                 <xquery collection="/db/library" query="//inproceedings[ngram:contains(title, 'xquery')]"/>
                 <xquery collection="/db/library" query="//*[ngram:contains(title, 'xquery')]"/>
                 <xquery collection="/db/library" query="//*[ngram:contains(title, 'xml')][year = 2005]"/>
+                <xquery collection="/db/library" query="//inproceedings[ngram:starts-with(author, 'bjarne')]"/>
             </sequence>
             <sequence repeat="15" description="Lucene index" optimize="yes">
                 <xquery collection="/db/library" query="//*[ft:query(author, 'Bjarne')]"/>
                 <xquery collection="/db/library" query="//inproceedings[ft:query(author, 'bjarne')]"/>
-                <xquery collection="/db/library" query="//inproceedings[ngram:starts-with(author, 'bjarne')]"/>
                 <xquery collection="/db/library" query="//*[ft:query(author, 'erich')]"/>
                 <xquery collection="/db/library" query="//book[ft:query(author, 'erich')]"/>
                 <xquery collection="/db/library" query="//book[ft:query(author, 'kernighan')]"/>
@@ -320,7 +334,7 @@
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
             <create-collection parent="/db/system/config/db" name="updates"/>
-            <store collection="/db/system/config/db" name="collection.xconf">
+            <store collection="/db/system/config/db/updates" name="collection.xconf">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="all" attributes="false">
@@ -403,9 +417,8 @@
     </group>
     <group name="imdi-tests">
         <setup connection="con">
-            <create-collection parent="/db" name="imdi"/>
-            <store-files dir="test/benchmark/data/imdi" includes="*.imdi" collection="/db/imdi"/>
             <create-collection parent="/db/system/config" name="db"/>
+            <create-collection parent="/db/system/config/db" name="imdi"/>
             <store collection="/db/system/config/db" name="collection.xconf">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
@@ -424,6 +437,8 @@
                     </index>
                 </collection>
             </store>
+            <create-collection parent="/db" name="imdi"/>
+            <store-files dir="test/benchmark/data/imdi" includes="*.imdi" collection="/db/imdi"/>
         </setup>
         <thread name="thread1" connection="con">
             <sequence repeat="20" description="query imdi resources (no index)">
