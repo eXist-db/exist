@@ -119,7 +119,7 @@ public class ApplyTemplates extends SimpleConstructor {
         for (SequenceIterator iterInner = selected.iterate(); iterInner.hasNext();) {
             Item item = iterInner.nextItem();   
     		
-        	context.setContextPosition(pos);
+        	context.setContextSequencePosition(pos, selected);
     		Sequence res = xslt.templates(selected, item);
     		if (res == null) {
             	if (item instanceof Text) {
