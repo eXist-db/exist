@@ -91,7 +91,8 @@
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" 
+            maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>

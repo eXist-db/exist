@@ -17,7 +17,7 @@ set ANT_HOME=%EXIST_HOME%\tools\ant
 set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\test\junit-4.6.jar;%JAVA_HOME%\lib\tools.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
-set JAVA_OPTS=-Xms128m -Xmx512m -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%"
+set JAVA_OPTS=-Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%"
 
 echo eXist Build
 echo -------------------
@@ -28,4 +28,4 @@ echo _LIBJARS=%_LIBJARS%
 echo Starting Ant...
 echo
 
-"%JAVA_HOME%\bin\java" %JAVA_OPTS% -classpath "%_LIBJARS%" org.apache.tools.ant.launch.Launcher %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%JAVA_HOME%\bin\java" -Xms512m -Xmx512m %JAVA_OPTS% -classpath "%_LIBJARS%" org.apache.tools.ant.launch.Launcher %1 %2 %3 %4 %5 %6 %7 %8 %9
