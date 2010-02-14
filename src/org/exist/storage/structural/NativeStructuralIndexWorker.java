@@ -101,21 +101,22 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return result;
     }
 
-    public NodeSet findAncestorsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId) {
+    public NodeSet findAncestorsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet,
+                                          int contextId) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        for (NodeProxy descendant : contextSet) {
-            NodeId parentId;
-            if (axis == Constants.ANCESTOR_SELF_AXIS || axis == Constants.SELF_AXIS)
-                parentId = descendant.getNodeId();
-            else
-                parentId = descendant.getNodeId().getParentId();
-            DocumentImpl doc = descendant.getDocument();
-            byte[] key;
-            while (parentId != NodeId.DOCUMENT_NODE) {
-                key = computeKey(type, doc.getDocId(), qname, parentId);
-                try {
-                    lock.acquire(Lock.READ_LOCK);
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            for (NodeProxy descendant : contextSet) {
+                NodeId parentId;
+                if (axis == Constants.ANCESTOR_SELF_AXIS || axis == Constants.SELF_AXIS)
+                    parentId = descendant.getNodeId();
+                else
+                    parentId = descendant.getNodeId().getParentId();
+                DocumentImpl doc = descendant.getDocument();
+                byte[] key;
+                while (parentId != NodeId.DOCUMENT_NODE) {
+                    key = computeKey(type, doc.getDocId(), qname, parentId);
                     if (index.btree.findValue(new Value(key)) > -1) {
                         NodeProxy storedNode = new NodeProxy(doc, parentId,
                             type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, -1);
@@ -126,19 +127,19 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                             storedNode.copyContext(descendant);
                         storedNode.addMatches(descendant);
                     }
-                } catch (LockException e) {
-                    NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
-                } catch (Exception e) {
-                    NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
-                } finally {
-                    lock.release(Lock.READ_LOCK);
+                    // stop after first iteration if we are on the self axis
+                    if (axis == Constants.SELF_AXIS || axis == Constants.PARENT_AXIS)
+                        break;
+                    // continue with the parent of the parent
+                    parentId = parentId.getParentId();
                 }
-                // stop after first iteration if we are on the self axis
-                if (axis == Constants.SELF_AXIS)
-                    break;
-                // continue with the parent of the parent
-                parentId = parentId.getParentId();
             }
+        } catch (LockException e) {
+            NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
+        } catch (Exception e) {
+            NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
+        } finally {
+            lock.release(Lock.READ_LOCK);
         }
         return result;
     }

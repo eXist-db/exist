@@ -198,6 +198,10 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         return false;
     }
 
+    public boolean optimizeOnChild() {
+        return false;
+    }
+
     public int getOptimizeAxis() {
         return axis;
     }

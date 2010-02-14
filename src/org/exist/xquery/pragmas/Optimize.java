@@ -130,16 +130,12 @@ public class Optimize extends Pragma {
                     StructuralIndex index = context.getBroker().getStructuralIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
-//                        selector = new SelfSelector(selection, contextId);
-//                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
-//                                ancestorQN, selector);
                         ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN, Constants.SELF_AXIS,
                             selection.getDocumentSet(), selection, contextId);
                     } else {
-//                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
-//                                ancestorQN, selector);
                         ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN,
-                            Constants.ANCESTOR_SELF_AXIS, selection.getDocumentSet(), selection, contextId);
+                            optimizables[current].optimizeOnChild() ? Constants.PARENT_AXIS : Constants.ANCESTOR_SELF_AXIS,
+                            selection.getDocumentSet(), selection, contextId);
                     }
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));

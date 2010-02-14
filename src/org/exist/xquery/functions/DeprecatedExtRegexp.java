@@ -155,6 +155,10 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
         return optimizeSelf;
     }
 
+    public boolean optimizeOnChild() {
+        return false;
+    }
+
     public int getOptimizeAxis() {
         return axis;
     }
