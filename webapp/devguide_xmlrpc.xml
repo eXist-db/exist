@@ -516,9 +516,9 @@ sub process {
                 <title>Querying</title>
                 <itemizedlist>
                     <listitem>
-                        <synopsis format="linespecific">int executeQuery(String xquery)</synopsis>
-                        <synopsis format="linespecific">int executeQuery(byte[] xquery)</synopsis>
-                        <synopsis format="linespecific">int executeQuery(byte[] xquery, String encoding)</synopsis>
+                        <synopsis format="linespecific">int executeQuery(String xquery, HashMap parameters)</synopsis>
+                        <synopsis format="linespecific">int executeQuery(byte[] xquery, HashMap parameters)</synopsis>
+                        <synopsis format="linespecific">int executeQuery(byte[] xquery, String encoding, HashMap parameters)</synopsis>
                         <para>Executes an XQuery and returns a reference identifier to the generated
                             result set. This reference can be used later to retrieve results.</para>
                         <variablelist>
@@ -527,6 +527,18 @@ sub process {
                                 <term>xquery</term>
                                 <listitem>
                                     <para>A valid XQuery expression.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>parameters</term>
+                                <listitem>
+                                    <para>The parameters a HashMap values.</para>
+                                    <para>sort-expr : </para>
+                                    <para>namespaces : </para>
+                                    <para>variables : </para>
+                                    <para>base-uri : </para>
+                                    <para>static-documents : </para>
+                                    <para>protected : </para>
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
