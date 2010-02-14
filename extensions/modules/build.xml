@@ -22,8 +22,8 @@
         Get values from properies files. Note that the values in "local.build.properties" 
         are leading to "build.properties".
     -->
-    <property file="../build.properties"/>
     <property file="../local.build.properties"/>
+    <property file="../build.properties"/>
     
     <condition property="include.module.simpleql.config">
         <istrue value="${include.module.simpleql}"/>
