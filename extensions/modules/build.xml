@@ -22,8 +22,8 @@
         Get values from properies files. Note that the values in "local.build.properties" 
         are leading to "build.properties".
     -->
-    <property file="../local.build.properties"/>
     <property file="../build.properties"/>
+    <property file="../local.build.properties"/>
     
     <condition property="include.module.simpleql.config">
         <istrue value="${include.module.simpleql}"/>
@@ -63,6 +63,10 @@
 
     <condition property="include.module.jfreechart.config">
         <istrue value="${include.module.jfreechart}"/>
+    </condition>
+
+    <condition property="include.module.compression.config">
+        <istrue value="${include.module.compression}"/>
     </condition>
     
     <path id="classpath.core">
@@ -232,6 +236,7 @@
             <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
             <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
+            <exclude name="org/exist/xquery/modules/compression/**" unless="include.module.compression.config"/>
         </javac>
     </target>
 
