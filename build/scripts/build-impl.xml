@@ -176,7 +176,8 @@
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
             encoding="UTF-8" optimize="${build.optimize}" srcdir="${src}"
-            source="${build.compiler.source}" target="${build.compiler.target}">
+            source="${build.compiler.source}" target="${build.compiler.target}"
+            fork="true" memoryinitialsize="512m" memorymaximumsize="2014m">
 
             <include name="org/**"/>
             <include name="org/exist/schema/**"/>
@@ -410,7 +411,7 @@
         <echo message="Generating Javadocs ..."/>
         <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapp/api"
-            doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="512M"
+            doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
                 <include name="org/**"/>
