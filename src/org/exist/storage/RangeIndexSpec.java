@@ -43,34 +43,20 @@ public abstract class RangeIndexSpec {
 	public static final int FLOAT = 4;
 	public static final int BOOLEAN = 5;
 	public static final int DATE_TIME = 6;
-  public static final int DATE = 7;
+    public static final int DATE = 7;
 
     /**
 	 * Indicates that the node has a qname-value index defined
 	 * on it.
 	 */
-	public static final int QNAME_INDEX = 0x10;
-
-    public static final int TEXT_MIXED_CONTENT = 0x20;
-
-    /**
-	 * Bit is set if the node has mixed content.
-	 */
-	public static final int MIXED_CONTENT = 0x40;
-	
-	/**
-	 * Bit is set if the node is fulltext indexed.
-	 */
-	public static final int TEXT = 0x80;
+	public static final int QNAME_INDEX = 8;
 	
 	/**
 	 * Bit mask to extract the type of the range index.
 	 */
-	public static final int RANGE_INDEX_MASK = 0x0F;
-	
-	public static final int HAS_VALUE_INDEX_MASK = 0x1F;
+	public static final int RANGE_INDEX_MASK = 0x07;
 
-    public static final int HAS_VALUE_OR_MIXED_INDEX_MASK = 0x3F;
+    public static final int HAS_VALUE_OR_MIXED_INDEX_MASK = 0x0F;
 
     private static final int[] xpathTypes = {
             Type.ITEM,
@@ -107,29 +93,6 @@ public abstract class RangeIndexSpec {
 	}
 
 	/**
-	 * Returns true if the index type specifier has the fulltext index flag
-	 * set.
-	 * 
-	 * @param type a bit set indicating the type
-	 * @return true if the index type specifier has the fulltext index flag set.
-	 */
-	public static final boolean hasFulltextIndex(int type) {
-	    return (type & TEXT) != 0;
-	}
-
-	/**
-	 * Returns true if the index type specifier has the mixed content
-	 * flag set.
-	 * 
-	 * @param type a bit set indicating the type
-	 * @return true if the index type specifier has the mixed content
-	 * flag set.
-	 */
-	public static final boolean hasMixedContent(int type) {
-	    return (type & MIXED_CONTENT) != 0;
-	}
-
-	/**
 	 * Returns the index type bit mask corresponding to a given
 	 * XPath type (as defined in {@link org.exist.xquery.value.Type}).
 	 * 
@@ -158,10 +121,6 @@ public abstract class RangeIndexSpec {
 	public static final boolean hasQNameOrValueIndex(int type) {
 		return (type & HAS_VALUE_OR_MIXED_INDEX_MASK) > 0;
 	}
-
-    public static final boolean hasMixedTextIndex(int type) {
-        return (type & TEXT_MIXED_CONTENT) > 0;
-    }
     
     protected int type;
 

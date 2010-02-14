@@ -680,8 +680,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     public int getIndexType() {
     	//Is the index type initialized ?
     	if (indexType == Type.ANY_TYPE) {
-		    hasTextIndex = false;
-		    hasMixedContent = false;
 		    for (int i = 0; i < partCount; i++) {
 		    	parts[i].determineIndexType();
 		    }
@@ -1420,16 +1418,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          */
         void determineIndexType() {
             //Is the index type initialized ?        	
-            if (indexType == Type.ANY_TYPE) {		        	
-                hasTextIndex = true;
-                hasMixedContent = true;        	
+            if (indexType == Type.ANY_TYPE) {
                 for (int i = 0; i < length; i++) {
                     NodeProxy node = array[i];
                     if (node.getDocument().getCollection().isTempCollection()) {
                         //Temporary nodes return default values
                         indexType = Type.ITEM;
-                        hasTextIndex = false;
-                        hasMixedContent = false;
                         break;
                     }
                     int nodeIndexType = node.getIndexType();
@@ -1442,12 +1436,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                         //TODO : use common supertype
                         if (indexType != nodeIndexType)             
                             indexType = Type.ITEM;
-                    }						
-                    if(!node.hasTextIndex()) {
-                        hasTextIndex = false;
-                    }
-                    if(!node.hasMixedContent()) {
-                        hasMixedContent = false;
                     }
                 }
             }

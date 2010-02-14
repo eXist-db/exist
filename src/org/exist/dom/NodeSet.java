@@ -280,10 +280,6 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 	 */
 	public int getIndexType();
 	
-	public boolean hasTextIndex();
-	
-	public boolean hasMixedContent();
-	
 	/**
 	 * Get a hint about how many nodes in this node set belong to the 
 	 * specified document. This is just used for allocating new node sets.

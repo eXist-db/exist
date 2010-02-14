@@ -390,18 +390,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 	    return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
-    public boolean hasTextIndex() {
-        if (internalAddress == -1)
-            return false;
-	    return RangeIndexSpec.hasFulltextIndex(StorageAddress.indexTypeFromPointer(internalAddress));
-    }
-
-    public boolean hasMixedContent() {
-        if (internalAddress == -1)
-            return false;
-	    return RangeIndexSpec.hasMixedContent(StorageAddress.indexTypeFromPointer(internalAddress));
-    }
-
     public Match getMatches() {
 	    return match;
     }
