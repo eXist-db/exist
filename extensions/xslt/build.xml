@@ -6,7 +6,8 @@
     <property name="top.dir" value="../.."/>
     
     <property file="${top.dir}/build.properties"/>
-    
+
+    <property file="../local.build.properties"/>
     <property file="../build.properties"/>
     
     <condition property="include.feature.xslt.config">
