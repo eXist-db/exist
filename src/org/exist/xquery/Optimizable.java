@@ -32,6 +32,8 @@ public interface Optimizable extends Expression {
     boolean canOptimize(Sequence contextSequence);
 
     boolean optimizeOnSelf();
+
+    boolean optimizeOnChild();
     
     NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException;
 

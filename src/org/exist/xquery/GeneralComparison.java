@@ -102,6 +102,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     private LocationStep contextStep = null;
     private QName contextQName = null;
     protected boolean optimizeSelf = false;
+    protected boolean optimizeChild = false;
     
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
@@ -209,6 +210,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     axis = firstStep.getAxis();
                     if (axis == Constants.SELF_AXIS && steps.size() > 1)
                         axis = steps.get(1).getAxis();
+                    optimizeChild = steps.size() == 1 &&
+                        (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
                 }
             }
         }
@@ -222,6 +225,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     public boolean optimizeOnSelf() {
         return optimizeSelf;
+    }
+
+    public boolean optimizeOnChild() {
+        return optimizeChild;
     }
 
     public int getOptimizeAxis() {

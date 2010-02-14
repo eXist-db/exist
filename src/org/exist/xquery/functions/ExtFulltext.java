@@ -75,6 +75,7 @@ public class ExtFulltext extends Function implements Optimizable {
     protected QName contextQName = null;
     protected int axis = Constants.UNKNOWN_AXIS;
     protected boolean optimizeSelf = false;
+    protected boolean optimizeChild = false;
     protected NodeSet preselectResult = null;
 
     public ExtFulltext(XQueryContext context, int type) {
@@ -127,6 +128,8 @@ public class ExtFulltext extends Function implements Optimizable {
                     axis = firstStep.getAxis();
                     if (axis == Constants.SELF_AXIS && steps.size() > 1)
                         axis = steps.get(1).getAxis();
+                    optimizeChild = steps.size() == 1 &&
+                        (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
                 }
             }
         }
@@ -140,6 +143,10 @@ public class ExtFulltext extends Function implements Optimizable {
 
     public boolean optimizeOnSelf() {
         return optimizeSelf;
+    }
+
+    public boolean optimizeOnChild() {
+        return optimizeChild;
     }
 
     public int getOptimizeAxis() {
