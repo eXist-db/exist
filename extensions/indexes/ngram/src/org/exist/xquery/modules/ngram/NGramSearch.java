@@ -91,6 +91,7 @@ public class NGramSearch extends Function implements Optimizable {
     protected int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
     protected boolean optimizeSelf = false;
+    protected boolean optimizeChild = false;
     
     public NGramSearch(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -138,6 +139,8 @@ public class NGramSearch extends Function implements Optimizable {
                     if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                         contextQName.setNameType(ElementValue.ATTRIBUTE);
                     axis = firstStep.getAxis();
+                    optimizeChild = steps.size() == 1 &&
+                        (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
                     contextStep = lastStep;
                 }
             }
@@ -150,6 +153,10 @@ public class NGramSearch extends Function implements Optimizable {
 
     public boolean optimizeOnSelf() {
         return optimizeSelf;
+    }
+
+    public boolean optimizeOnChild() {
+        return optimizeChild;
     }
 
     public int getOptimizeAxis() {
