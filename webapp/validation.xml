@@ -443,7 +443,7 @@
                             lib/endorsed directory into the server '<a
                                 href="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html">endorsed</a>'
                             directory.</para>
-                        <para>Required endorsed files: resolver-*.jar xalan-*.jar xml-apis-*.jar serializer-*.jar
+                        <para>Required endorsed files: resolver-*.jar xalan-*.jar serializer-*.jar
                             xercesImpl-*.jar</para>
                     </listitem>
                     <listitem>
