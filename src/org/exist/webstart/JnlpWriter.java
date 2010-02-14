@@ -25,11 +25,12 @@ package org.exist.webstart;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.log4j.Logger;
 
@@ -58,89 +59,158 @@ public class JnlpWriter {
             HttpServletResponse response) throws IOException {
         
         logger.debug("Writing JNLP file");
-        
+
         // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
         String currentUrl = request.getRequestURL().toString();
-        
+
         // Find BaseUrl http://host:8080/CONTEXT
         int webstartPos = currentUrl.indexOf("/webstart");
         String existBaseUrl = currentUrl.substring(0, webstartPos);
-        
+
         // Find codeBase for jarfiles http://host:8080/CONTEXT/webstart/
-        String codeBase = existBaseUrl+"/webstart/";
-        
+        String codeBase = existBaseUrl + "/webstart/";
+
         // Perfom sanity checks
-        File mainJar=jnlpFiles.getMainJar();
-        if(mainJar==null || !mainJar.exists()){
+        File mainJar = jnlpFiles.getMainJar();
+        if (mainJar == null || !mainJar.exists()) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Missing exist.jar !");
             return;
         }
-        
+
         File coreJars[] = jnlpFiles.getCoreJars();
-        for(int i=0 ; i<coreJars.length ; i++) {
-            if(coreJars[i]==null || !coreJars[i].exists()){
+        int counter = 0;
+        for (File jar : coreJars) {
+            counter++; // debugging
+            if (jar == null || !jar.exists()) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Missing Jar file! ("+i+")");
+                        "Missing Jar file! (" + counter + ")");
                 return;
             }
         }
-        
-        
-        
+
+
+
         // Find URL to connect to with client
-        String startUrl = existBaseUrl
-                .replaceFirst("http:", "xmldb:exist:")
-                .replaceAll("-", "%2D") + "/xmlrpc";
-        
+        String startUrl = existBaseUrl.replaceFirst("http:", "xmldb:exist:").replaceAll("-", "%2D") + "/xmlrpc";
+
         response.setDateHeader("Last-Modified", mainJar.lastModified());
         response.setContentType("application/x-java-jnlp-file");
-        PrintWriter out = response.getWriter();
-        
-        out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        out.println("<jnlp spec=\"1.0+\" codebase=\"" + codeBase + "\" href=\"exist.jnlp\">" );
-        out.println("<information>");
-        out.println("  <title>eXist XML-DB client</title>");
-        out.println("  <vendor>exist-db.org</vendor>");
-        out.println("  <homepage href=\"http://exist-db.org/\"/>");
-        out.println("  <description>Integrated command-line and gui client, "+
-                "entirely based on the XML:DB API and provides commands "+
-                "for most database related tasks, like creating and "+
-                "removing collections, user management, batch-loading "+
-                "XML data or querying.</description>");
-        out.println("  <description kind=\"short\">eXist XML-DB client</description>");
-        out.println("  <description kind=\"tooltip\">eXist XML-DB client</description>");
-        
-        out.println("  <icon href=\"jnlp_logo.jpg\" kind=\"splash\"/>");
-        out.println("  <icon href=\"jnlp_logo.jpg\" />");
-        out.println("  <icon href=\"jnlp_icon_64x64.gif\" width=\"64\" height=\"64\" />");
-        out.println("  <icon href=\"jnlp_icon_32x32.gif\" width=\"32\" height=\"32\" />");
-        
-        out.println("</information>");
-        out.println("<security>");
-        out.println("  <all-permissions />");
-        out.println("</security>");
-        
-        out.println("<resources>");
-        out.println("<j2se version=\"1.6+\"/>");
-        
-        out.println("  <jar href=\"" + jnlpFiles.getMainJar().getName()
-        +"\" size=\""+ jnlpFiles.getMainJar().length()
-        + "\"  main=\"true\" />");
-        
-        for(int i=0 ; i<coreJars.length ; i++) {
-            out.println("  <jar href=\"" + coreJars[i].getName()
-            + "\" size=\""+ coreJars[i].length() +"\" />");
+        try {
+            XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(response.getOutputStream());
+
+
+            writer.writeStartDocument();
+            writer.writeStartElement("jnlp");
+            writer.writeAttribute("spec", "1.0+");
+            writer.writeAttribute("codebase", codeBase);
+            writer.writeAttribute("href", "exist.jnlp");
+
+            writer.writeStartElement("information");
+
+            writer.writeStartElement("title");
+            writer.writeCharacters("eXist XML-DB client");
+            writer.writeEndElement();
+
+            writer.writeStartElement("vendor");
+            writer.writeCharacters("exist-db.org");
+            writer.writeEndElement();
+
+            writer.writeStartElement("homepage");
+            writer.writeAttribute("href", "http://exist-db.org");
+            writer.writeEndElement();
+
+            writer.writeStartElement("description");
+            writer.writeCharacters("Integrated command-line and gui client, "
+                    + "entirely based on the XML:DB API and provides commands "
+                    + "for most database related tasks, like creating and "
+                    + "removing collections, user management, batch-loading "
+                    + "XML data or querying.");
+            writer.writeEndElement();
+
+            writer.writeStartElement("description");
+            writer.writeAttribute("kind", "short");
+            writer.writeCharacters("eXist XML-DB client");
+            writer.writeEndElement();
+
+            writer.writeStartElement("description");
+            writer.writeAttribute("kind", "tooltip");
+            writer.writeCharacters("eXist XML-DB client");
+            writer.writeEndElement();
+
+            writer.writeStartElement("icon");
+            writer.writeAttribute("href", "jnlp_logo.jpg");
+            writer.writeEndElement();
+
+            writer.writeStartElement("icon");
+            writer.writeAttribute("href", "jnlp_icon_64x64.gif");
+            writer.writeAttribute("width", "64");
+            writer.writeAttribute("height", "64");
+            writer.writeEndElement();
+
+            writer.writeStartElement("icon");
+            writer.writeAttribute("href", "jnlp_icon_32x32.gif");
+            writer.writeAttribute("width", "32");
+            writer.writeAttribute("height", "32");
+            writer.writeEndElement();
+
+            writer.writeEndElement(); // information
+
+            writer.writeStartElement("security");
+            writer.writeEmptyElement("all-permissions");
+            writer.writeEndElement();
+
+            // ----------
+
+            writer.writeStartElement("resources");
+
+            writer.writeStartElement("property");
+            writer.writeAttribute("name", "jnlp.packEnabled");
+            writer.writeAttribute("value", "true");
+            writer.writeEndElement();
+
+            writer.writeStartElement("j2se");
+            writer.writeAttribute("version", "1.6+");
+            writer.writeEndElement();
+
+            writer.writeStartElement("jar");
+            writer.writeAttribute("href", jnlpFiles.getMainJar().getName());
+            writer.writeAttribute("size", "" + jnlpFiles.getMainJar().length());
+            writer.writeAttribute("main", "true");
+            writer.writeEndElement();
+
+            for (File jar : coreJars) {
+                writer.writeStartElement("jar");
+                writer.writeAttribute("href", jar.getName());
+                writer.writeAttribute("size", "" + jar.length());
+                writer.writeEndElement();
+            }
+
+            writer.writeEndElement(); // resources
+
+
+            writer.writeStartElement("application-desc");
+            writer.writeAttribute("main-class", "org.exist.client.InteractiveClient");
+
+            writer.writeStartElement("argument");
+            writer.writeCharacters("-ouri=" + startUrl);
+            writer.writeEndElement();
+
+            writer.writeStartElement("argument");
+            writer.writeCharacters("--no-embedded-mode");
+            writer.writeEndElement();
+
+            writer.writeEndElement(); // application-desc
+
+            writer.writeEndElement(); // jnlp
+
+            writer.writeEndDocument();
+
+
+        } catch (Throwable ex) {
+            logger.error(ex);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
         }
-        
-        out.println("</resources>");
-        out.println("<application-desc main-class=\"org.exist.client.InteractiveClient\">");
-        out.println("  <argument>-ouri=" + startUrl + "</argument>");
-        out.println("  <argument>--no-embedded-mode</argument>");
-        out.println("</application-desc>");
-        out.println("</jnlp>");
-        out.flush();
-        out.close();
         
     }
     
