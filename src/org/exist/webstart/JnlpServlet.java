@@ -93,6 +93,10 @@ public class JnlpServlet extends HttpServlet {
                 String filename = stripFilename( request.getPathInfo() );
                 jw.sendJar(jf, filename, request, response);
 
+            } else if (URI.endsWith(".pack.gz")){
+                logger.debug("pack.gz to be implemented.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
+
             } else if ( URI.endsWith(".gif") || URI.endsWith(".jpg") ){
                 String filename =  stripFilename( request.getPathInfo() );
                 jw.sendImage(jh, jf, filename, response);
