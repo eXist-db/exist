@@ -288,13 +288,21 @@ public class Optimize extends Pragma {
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
-            if (config == null)
+            if (config == null) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
+                        "on " + qname);
                 return Type.ITEM;   // found a collection without index
+            }
             int type = config.getType();
             if (indexType == Type.ITEM)
                 indexType = type;
-            else if (indexType != type)
+            else if (indexType != type) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
+                        "with the required type " + Type.getTypeName(type) + " on " + qname);
                 return Type.ITEM;   // found a collection with a different type
+            }
         }
         return indexType;
     }
