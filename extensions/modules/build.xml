@@ -32,7 +32,6 @@
     <condition property="include.module.compression.config">
         <istrue value="${include.module.compression}"/>
     </condition>
-
     <condition property="include.module.context.config">
         <istrue value="${include.module.context}"/>
     </condition>
@@ -54,7 +53,6 @@
     <condition property="include.module.image.config">
         <istrue value="${include.module.image}"/>
     </condition>
-
     <condition property="include.module.jfreechart.config">
         <istrue value="${include.module.jfreechart}"/>
     </condition>
@@ -88,7 +86,6 @@
     <condition property="include.module.xslfo.config">
         <istrue value="${include.module.xslfo}"/>
     </condition>
-
     
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
@@ -247,17 +244,26 @@
                 <path refid="classpath.core"/>
             </classpath>
 
-            <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
-            <exclude name="org/exist/xquery/modules/simpleql/**" unless="include.module.simpleql.config"/>
-            <exclude name="org/exist/xquery/modules/httpclient/**" unless="include.module.httpclient.config"/>
-            <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
-            <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
-            <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
-            <exclude name="org/exist/xquery/modules/file/**" unless="include.module.file.config"/>
-            <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
-            <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
-            <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
+	    <exclude name="org/exist/xquery/modules/cache/**" unless="include.module.cache.config"/>
             <exclude name="org/exist/xquery/modules/compression/**" unless="include.module.compression.config"/>
+            <exclude name="org/exist/xquery/modules/context/**" unless="include.module.context.config"/>
+            <exclude name="org/exist/xquery/modules/counter/**" unless="include.module.counter.config"/>
+            <exclude name="org/exist/xquery/modules/datetime/**" unless="include.module.datetime.config"/>
+            <exclude name="org/exist/xquery/modules/example/**" unless="include.module.example.config"/>
+            <exclude name="org/exist/xquery/modules/file/**" unless="include.module.file.config"/>
+            <exclude name="org/exist/xquery/modules/httpclient/**" unless="include.module.httpclient.config"/>
+            <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
+            <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
+            <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
+            <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
+            <exclude name="org/exist/xquery/modules/math/**" unless="include.module.math.config"/>
+            <exclude name="org/exist/xquery/modules/scheduler/**" unless="include.module.scheduler.config"/>
+            <exclude name="org/exist/xquery/modules/simpleql/**" unless="include.module.simpleql.config"/>
+            <exclude name="org/exist/xquery/modules/sql/**" unless="include.module.sql.config"/>
+            <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
+            <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
+            <exclude name="org/exist/xquery/modules/xmpp/**" unless="include.module.xmpp.config"/>
+            <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
         </javac>
     </target>
 
