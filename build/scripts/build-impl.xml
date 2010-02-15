@@ -177,7 +177,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
             encoding="UTF-8" optimize="${build.optimize}" srcdir="${src}"
             source="${build.compiler.source}" target="${build.compiler.target}"
-            fork="true" memoryinitialsize="512m" memorymaximumsize="2014m">
+            fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
             <include name="org/**"/>
             <include name="org/exist/schema/**"/>
