@@ -24,50 +24,71 @@
     -->
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
-    
-    <condition property="include.module.simpleql.config">
-        <istrue value="${include.module.simpleql}"/>
+
+    <!-- Modules (in alphabetical order) -->
+    <condition property="include.module.cache.config">
+        <istrue value="${include.module.cache}"/>
+    </condition>
+    <condition property="include.module.compression.config">
+        <istrue value="${include.module.compression}"/>
     </condition>
 
-    <condition property="include.module.xmldiff.config">
-        <istrue value="${include.module.xmldiff}"/>
+    <condition property="include.module.context.config">
+        <istrue value="${include.module.context}"/>
     </condition>
-
-    <condition property="include.module.image.config">
-        <istrue value="${include.module.image}"/>
+    <condition property="include.module.counter.config">
+        <istrue value="${include.module.counter}"/>
     </condition>
-
-    <condition property="include.module.mail.config">
-        <istrue value="${include.module.mail}"/>
+    <condition property="include.module.datetime.config">
+        <istrue value="${include.module.datetime}"/>
     </condition>
-
+    <condition property="include.module.example.config">
+        <istrue value="${include.module.example}"/>
+    </condition>
     <condition property="include.module.file.config">
         <istrue value="${include.module.file}"/>
     </condition>
-
     <condition property="include.module.httpclient.config">
         <istrue value="${include.module.httpclient}"/>
     </condition>
-
-    <condition property="include.module.xslfo.config">
-        <istrue value="${include.module.xslfo}"/>
-    </condition>
-
-    <condition property="include.module.svn.config">
-        <istrue value="${include.module.svn}"/>
-    </condition>
-
-    <condition property="include.module.jndi.config">
-        <istrue value="${include.module.jndi}"/>
+    <condition property="include.module.image.config">
+        <istrue value="${include.module.image}"/>
     </condition>
 
     <condition property="include.module.jfreechart.config">
         <istrue value="${include.module.jfreechart}"/>
     </condition>
-
-    <condition property="include.module.compression.config">
-        <istrue value="${include.module.compression}"/>
+    <condition property="include.module.jndi.config">
+        <istrue value="${include.module.jndi}"/>
     </condition>
+    <condition property="include.module.mail.config">
+        <istrue value="${include.module.mail}"/>
+    </condition>
+    <condition property="include.module.math.config">
+        <istrue value="${include.module.math}"/>
+    </condition>
+    <condition property="include.module.scheduler.config">
+        <istrue value="${include.module.scheduler}"/>
+    </condition>
+    <condition property="include.module.simpleql.config">
+        <istrue value="${include.module.simpleql}"/>
+    </condition>
+    <condition property="include.module.sql.config">
+        <istrue value="${include.module.sql}"/>
+    </condition>
+    <condition property="include.module.svn.config">
+        <istrue value="${include.module.svn}"/>
+    </condition>
+    <condition property="include.module.xmldiff.config">
+        <istrue value="${include.module.xmldiff}"/>
+    </condition>
+    <condition property="include.module.xmpp.config">
+        <istrue value="${include.module.xmpp}"/>
+    </condition>
+    <condition property="include.module.xslfo.config">
+        <istrue value="${include.module.xslfo}"/>
+    </condition>
+
     
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
