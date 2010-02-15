@@ -174,6 +174,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 			fetch.addAttribute("lastname", "http://axschema.org/namePerson/last", true);
 			fetch.addAttribute("email", "http://axschema.org/contact/email", true);
 			fetch.addAttribute("country", "http://axschema.org/contact/country/home", true);
+			fetch.addAttribute("language", "http://axschema.org/pref/language", true);
 
 			// wants up to three email addresses
 			fetch.setCount("email", 3);
