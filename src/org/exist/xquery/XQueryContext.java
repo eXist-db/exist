@@ -1173,6 +1173,8 @@ public class XQueryContext {
         implicitTimeZone = null;
         builder = new MemTreeBuilder(this);
         builder.startDocument();
+        
+        contextSequence = null;
 
         if (!keepGlobals) {
             // do not reset the statically known documents
