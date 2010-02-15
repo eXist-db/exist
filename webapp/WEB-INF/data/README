@@ -1,2 +1,18 @@
+README
+======
 Using the default configuration, eXist keeps all data files 
-in this directory. Do not delete!
+in this directory so do not delete it!
+
+
+RECOVERY
+========
+If the index got corrupted, this is how to recover:
+
+- stop database
+- remove all ".log" transaction log files
+- remove all ".lck" lock files
+- remove all ".dbx" files EXCEPT dom.dbx, collections.dbx and symbols.dbx
+- start database
+
+
+$Id$
