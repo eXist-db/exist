@@ -3,11 +3,18 @@ xquery version "1.0";
 import module namespace app = "http://exist-db.org/application" at "application.xqm";
 import module namespace pckg = "http://exist-db.org/packages" at "packages/module.xqm";
 
+let $action := request:get-parameter("action",())
 let $firstRun := pckg:firstRunImport()
 let $baseURL : = concat($exist:context, $exist:root, $exist:controller, '/')
 let $URL : = concat($exist:root, $exist:controller, '/')
 return 
-if ($exist:path eq 'login.xql') then
+if ($action eq 'logout') then
+	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+		{session:invalidate()}
+		<redirect url="{$baseURL}"/>
+	</dispatch>
+
+else if ($exist:path eq 'login.xql') then
 	<ignore xmlns="http://exist.sourceforge.net/NS/exist">
 		<cache-control cache="yes"/>
 	</ignore>

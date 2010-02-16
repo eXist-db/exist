@@ -27,6 +27,11 @@ return
     	<div>Email: {xdb:get-current-user-attribute('email')}</div>
     	<div>Country: {xdb:get-current-user-attribute('country')}</div>
     	<div>Language: {xdb:get-current-user-attribute('language')}</div>
+    	<div>
+    		<form action="" method="get" name="logoutform">
+            	<button type="submit" name="action" value="logout">logout</button>
+            </form>
+        </div>
     	<br/>
     	{app:menuSubapplications($id)}
     	<br/>
