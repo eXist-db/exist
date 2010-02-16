@@ -36,6 +36,7 @@ import org.eclipse.jetty.security.DefaultIdentityService;
 import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.exist.security.UserAttributes;
 import org.exist.security.User;
 import org.exist.security.openid.SessionAuthentication;
 import org.exist.security.openid.UserImpl;
@@ -49,6 +50,7 @@ import org.openid4java.message.ax.AxMessage;
 import org.openid4java.message.ax.FetchRequest;
 import org.openid4java.message.ax.FetchResponse;
 import org.openid4java.message.sreg.SRegMessage;
+import org.openid4java.message.sreg.SRegRequest;
 import org.openid4java.message.sreg.SRegResponse;
 import org.openid4java.util.*;
 
@@ -62,6 +64,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 	private static final Log LOG = LogFactory.getLog(AuthenticatorOpenId.class);
 
+    
     public ConsumerManager manager;
 
 	public AuthenticatorOpenId() throws ConsumerException {
@@ -114,7 +117,9 @@ public class AuthenticatorOpenId extends HttpServlet {
 			throws ServletException, IOException {
 		User principal = this.verifyResponse(req);
 		
-        String returnURL = req.getParameter("exist_return");
+		System.out.println(principal);
+        
+		String returnURL = req.getParameter("exist_return");
 
         if (principal == null) {
 //			this.getServletContext().getRequestDispatcher("/openid/login.xql").forward(req, resp);
@@ -147,8 +152,6 @@ public class AuthenticatorOpenId extends HttpServlet {
 			throws IOException, ServletException {
 
 		try {
-			httpReq.getContextPath();
-
 			String returnAfterAuthentication = httpReq.getParameter("return_to");
 
 			// configure the return_to URL where your application will receive
@@ -168,18 +171,30 @@ public class AuthenticatorOpenId extends HttpServlet {
 			// obtain a AuthRequest message to be sent to the OpenID provider
 			AuthRequest authReq = manager.authenticate(discovered, returnToUrl);
 			
-			FetchRequest fetch = FetchRequest.createFetchRequest();
+			if (authReq.getOPEndpoint().indexOf("myopenid.com")>0) {
+				SRegRequest sregReq = SRegRequest.createFetchRequest();
 
-			fetch.addAttribute("firstname", "http://axschema.org/namePerson/first", true);
-			fetch.addAttribute("lastname", "http://axschema.org/namePerson/last", true);
-			fetch.addAttribute("email", "http://axschema.org/contact/email", true);
-			fetch.addAttribute("country", "http://axschema.org/contact/country/home", true);
-			fetch.addAttribute("language", "http://axschema.org/pref/language", true);
+				sregReq.addAttribute(UserAttributes._FULLNAME.toLowerCase(), true);
+				sregReq.addAttribute(UserAttributes._EMAIL.toLowerCase(), true);
+				sregReq.addAttribute(UserAttributes._COUNTRY.toLowerCase(), true);
+				sregReq.addAttribute(UserAttributes._LANGUAGE.toLowerCase(), true);
 
-			// wants up to three email addresses
-			fetch.setCount("email", 3);
+				authReq.addExtension(sregReq);
+			} else {
 
-			authReq.addExtension(fetch);
+				FetchRequest fetch = FetchRequest.createFetchRequest();
+
+				fetch.addAttribute(UserAttributes._FIRTSNAME, UserAttributes.FIRTSNAME, true);
+				fetch.addAttribute(UserAttributes._LASTNAME, UserAttributes.LASTNAME, true);
+				fetch.addAttribute(UserAttributes._EMAIL, UserAttributes.EMAIL, true);
+				fetch.addAttribute(UserAttributes._COUNTRY, UserAttributes.COUNTRY, true);
+				fetch.addAttribute(UserAttributes._LANGUAGE, UserAttributes.LANGUAGE, true);
+
+				// wants up to three email addresses
+				fetch.setCount(UserAttributes._EMAIL, 3);
+
+				authReq.addExtension(fetch);
+			}
 			
 			if (!discovered.isVersion2()) {
 				// Option 1: GET HTTP-redirect to the OpenID Provider endpoint
@@ -272,8 +287,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 			// verify the response; ConsumerManager needs to be the same
 			// (static) instance used to place the authentication request
-			VerificationResult verification = manager.verify(receivingURL
-					.toString(), response, discovered);
+			VerificationResult verification = manager.verify(receivingURL.toString(), response, discovered);
 
 			// examine the verification result and extract the verified
 			// identifier
@@ -291,8 +305,9 @@ public class AuthenticatorOpenId extends HttpServlet {
 						SRegResponse sregResp = (SRegResponse) ext;
 						for (Iterator iter = sregResp.getAttributeNames().iterator(); iter.hasNext();) {
 							String name = (String) iter.next();
-							String value = sregResp.getParameterValue(name);
-							httpReq.setAttribute(name, value);
+							if (LOG.isDebugEnabled())
+								LOG.debug(name + " : " + sregResp.getParameterValue(name));
+							principal.setAttribute(name, sregResp.getParameterValue(name));
 						}
 					}
 				}
@@ -304,7 +319,8 @@ public class AuthenticatorOpenId extends HttpServlet {
 						String alias = (String) iter.next();
 						List values = fetchResp.getAttributeValues(alias);
 						if (values.size() > 0) {
-							LOG.debug(alias + " : " + values.get(0));
+							if (LOG.isDebugEnabled())
+								LOG.debug(alias + " : " + values.get(0));
 							principal.setAttribute(alias, values.get(0));
 						}
 					}

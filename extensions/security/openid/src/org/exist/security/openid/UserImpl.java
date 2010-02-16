@@ -24,6 +24,7 @@ package org.exist.security.openid;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.exist.security.UserAttributes;
 import org.exist.security.Realm;
 import org.exist.security.User;
 import org.exist.xmldb.XmldbURI;
@@ -138,15 +139,20 @@ public class UserImpl implements User {
 	@Override
 	public String getName() {
 		String name = "";
-		if (attributes.containsKey("firstname")) 
-			name += attributes.get("firstname"); 
-		if (attributes.containsKey("lastname"))
+		if (attributes.containsKey(UserAttributes.FIRTSNAME)) 
+			name += attributes.get(UserAttributes.FIRTSNAME); 
+		
+		if (attributes.containsKey(UserAttributes.LASTNAME)) {
 			if (name != "") name += " ";
-			name += attributes.get("lastname");
+			name += attributes.get(UserAttributes.LASTNAME);
+		}
 		
-		if (name == "") 
+		if (name.equals("")) 
+			name += attributes.get(UserAttributes.FULLNAME);
+		
+		if (name.equals("")) 
 			return _identifier.getIdentifier();
-		
+
 		return name;
 	}
 
@@ -154,14 +160,22 @@ public class UserImpl implements User {
 	
 	@Override
 	public void setAttribute(String name, Object value) {
-		attributes.put(name, value);
+		String id = UserAttributes.alias.get(name);
+		if (id == null)
+			attributes.put(name, value);
+		else
+			attributes.put(id, value);
 	}
 
 	@Override
 	public Object getAttribute(String name) {
-		if (name.equalsIgnoreCase("id")) {
+		String id = UserAttributes.alias.get(name);
+		if (id != null)
+			return attributes.get(id);
+
+		if (name.equalsIgnoreCase("id"))
 			return _identifier.getIdentifier();
-		}
+		
 		return attributes.get(name);
 	}
 }
