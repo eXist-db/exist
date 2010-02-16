@@ -114,12 +114,12 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 else
                     parentId = descendant.getNodeId().getParentId();
                 DocumentImpl doc = descendant.getDocument();
-                byte[] key;
                 while (parentId != NodeId.DOCUMENT_NODE) {
-                    key = computeKey(type, doc.getDocId(), qname, parentId);
-                    if (index.btree.findValue(new Value(key)) > -1) {
+                    byte[] key = computeKey(type, doc.getDocId(), qname, parentId);
+                    long address = index.btree.findValue(new Value(key));
+                    if (address != -1) {
                         NodeProxy storedNode = new NodeProxy(doc, parentId,
-                            type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, -1);
+                            type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, address);
                         result.add(storedNode);
                         if (Expression.NO_CONTEXT_ID != contextId) {
                             storedNode.deepCopyContext(descendant, contextId);
@@ -166,6 +166,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 NodeProxy storedNode = selector.match(doc, nodeId);
                 if (storedNode != null) {
                     storedNode.setNodeType(type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                    storedNode.setInternalAddress(pointer);
                     result.add(storedNode);
                 }
             }
