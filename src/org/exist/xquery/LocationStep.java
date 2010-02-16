@@ -1221,21 +1221,7 @@ public class LocationStep extends Step {
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
-			NodeSelector selector;
-			switch (axis) {
-			case Constants.ANCESTOR_SELF_AXIS:
-				selector = new AncestorSelector(contextSet, contextId, true,
-						true);
-				break;
-			case Constants.ANCESTOR_AXIS:
-				selector = new AncestorSelector(contextSet, contextId, false,
-						true);
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported axis specified");
-			}
-			return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-					.getName(), selector);
+            return index.findAncestorsByTagName(ElementValue.ELEMENT, test.getName(), axis, docs, contextSet, contextId);
 		}
 	}
 
@@ -1297,9 +1283,7 @@ public class LocationStep extends Step {
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
-			NodeSelector selector = new ParentSelector(contextSet, contextId);
-			return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-					.getName(), selector);
+            return index.findAncestorsByTagName(ElementValue.ELEMENT, test.getName(), Constants.PARENT_AXIS, docs, contextSet, contextId);
 		}
 	}
 

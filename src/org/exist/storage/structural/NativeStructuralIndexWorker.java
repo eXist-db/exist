@@ -141,6 +141,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         } finally {
             lock.release(Lock.READ_LOCK);
         }
+        result.sort(true);
         return result;
     }
 
