@@ -75,7 +75,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry")
+			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry")
         ),        
     	new FunctionSignature(
     		new QName("getMinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -83,7 +83,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry")
         ),
     	new FunctionSignature(
     		new QName("getMaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -91,7 +91,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maxmal X of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maxmal X of geometry $geometry")
         ),
     	new FunctionSignature(
     		new QName("getMinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -99,7 +99,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry")
         ),
     	new FunctionSignature(
     		new QName("getMaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -107,7 +107,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry")
         ),
     	new FunctionSignature(
     		new QName("getCentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -115,7 +115,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry")
         ),
     	new FunctionSignature(
     		new QName("getCentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -123,7 +123,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry")
         ),
     	new FunctionSignature(
     		new QName("getArea", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -131,23 +131,23 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry")
         ),
     	new FunctionSignature(
-                new QName("getEPSG4326WKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the WKT representation of geometry $geometry in the EPSG:4326 SRS",
-                new SequenceType[]{
-                    FunSpatialSearch.GEOMETRY_PARAMETER
-                },
-                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the WKT representation of geometry $geometry in the EPSG:4326 SRS")
-            ),         
+			new QName("getEPSG4326WKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+			"Returns the WKT representation of geometry $geometry in the EPSG:4326 SRS",
+			new SequenceType[]{
+				FunSpatialSearch.GEOMETRY_PARAMETER
+			},
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the WKT representation of geometry $geometry in the EPSG:4326 SRS")
+		),
     	new FunctionSignature(
     		new QName("getEPSG4326WKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the WKB representation of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry in the EPSG:4326 SRS")
         ),         
     	new FunctionSignature(
     		new QName("getEPSG4326MinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -155,7 +155,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry in the EPSG:4326 SRS")
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326MaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -163,7 +163,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal X of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal X of geometry $geometry in the EPSG:4326 SRS")
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326MinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -171,7 +171,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry in the EPSG:4326 SRS")
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326MaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -179,7 +179,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry in the EPSG:4326 SRS")
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326CentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -187,7 +187,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry in the EPSG:4326 SRS")
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326CentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -195,7 +195,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry in the EPSG:4326 SRS")
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326Area", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -203,7 +203,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-		new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry in the EPSG:4326 SRS")
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry in the EPSG:4326 SRS")
         ),            
         new FunctionSignature(
             new QName("getSRS", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
