@@ -62,6 +62,9 @@ public class UserDefinedFunction extends Function {
     
     public void addVariable(String varName) throws XPathException {
 		QName qname = QName.parse(context, varName, null);
+		if (parameters.contains(qname))
+			throw new XPathException("XQST0039: function " + getName() + " is already have parameter with the name "+varName);
+
 		parameters.add(qname);
 	}
 	
