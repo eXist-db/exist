@@ -43,7 +43,7 @@ declare function script:showSubResources() as element() {
 					if ($size le 1024) then
 						<td>{round($size div 1024)} KB</td>
 					else
-						<td>{$size} B</td>
+						<td>{$size} B</td>}
 			</tr>
 			}
 		</tbody>

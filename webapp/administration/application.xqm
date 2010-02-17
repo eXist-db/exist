@@ -47,11 +47,45 @@ declare function app:pathUp($id as xs:string, $masterId as xs:string) as xs:stri
 				concat($parent, $app/app:path)
 };
 
-declare function app:primaryFile($id as xs:string, $onId as xs:string) as xs:string {
-	let $app := app:node($id)
-	let $parent := app:pathUp($id, $onId)
+declare function app:pathUpLocal($file as node()) as xs:string {
+	let $folder := $file/parent::app:folder
 	return
-		concat($parent, $app/app:primaryFile/text())
+	if (count($folder) eq 1) then
+		concat(app:pathUpLocal($folder), "/", xs:string($file/@name))
+	else
+		xs:string($file/@name)
+};
+
+declare function app:primaryFile($parent as xs:string, $resource as xs:string, $onId as xs:string) as xs:string {
+	let $app := app:node($parent)
+	return
+	if (name($app) eq "error") then
+		let $app := app:node($resource)
+		return
+		if (name($app) eq "error") then
+			concat("error/notFound?application=",$parent)
+		else if ($app/app:primaryFile) then
+			concat(app:pathUp($resource, $onId), $app/app:primaryFile/text())
+		else
+			concat("error/notPrimaryFile?application=",$parent)
+	
+	else if (($app/app:primaryFile) and ($resource eq "")) then
+		concat(app:pathUp($parent, $onId), $app/app:primaryFile/text())
+	
+	else if ($resource) then
+		let $file := $app//app:file[@name eq $resource]
+		let $alias := $app//app:file[@alias eq $resource]
+		return
+		if (count($file) eq 1) then 
+			concat(app:pathUp($parent, $onId), app:pathUpLocal($file))
+		else if (count($alias) eq 1) then
+			concat(app:pathUp($parent, $onId), app:pathUpLocal($alias))
+		else if ((count($file) eq 0) and (count($alias) eq 0)) then 
+			concat("error/notFound?application=",$parent,"&amp;res=",$resource)
+		else
+			concat("error/multiFiles?application=",$parent,"&amp;res=",$resource)
+	else
+		concat("error/resourseNotFound?application=",$parent,"&amp;res=",$resource)
 };
 
 declare function local:menuSubapplications($id as xs:string, $path as xs:string) as element()* {
