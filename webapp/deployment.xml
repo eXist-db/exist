@@ -5,13 +5,21 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Database Deployment</title>
-        <date>September 2009</date>
+        <date>February 2010</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
-            </affiliation></author>
+            </affiliation>
+	</author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation>
+	</author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
@@ -194,72 +202,37 @@
                 <synopsis format="linespecific">xmldb:exist://localhost:8088/xmlrpc</synopsis>
             </section>
             <section>
-                <title>StandaloneServer Configuration with server.xml</title>
-                <para>The <filename>server.xml</filename> configuration file is only used when the
+                <title>StandaloneServer Configuration with tools/jetty/etc/standalone/WEB-INF/web.xml</title>
+                <para>The <filename>tools/jetty/etc/standalone/WEB-INF/web.xml</filename> configuration file is used when the
                     server operates in standalone mode, in which case, an instance of the Jetty web
                     server is configured using its settings. As for the services offered with eXist,
-                    each has its own configuration element in this file. Currently, the servlet API
-                    options are "<option>webdav</option>, "<option>xmlrpc</option>", and
+                    each has its own configuration servlet element in this file. Currently, the servlet API
+                    alternatives are "<option>webdav</option>, "<option>xmlrpc</option>", and
                         "<option>rest</option>". Any of these servlets can be disabled by setting
-                    the <option>enabled</option> attribute to "<option>no</option>".</para>
+                    a init-param <option>enabled</option> attribute to "<option>no</option>".</para>
+		    <!--
                 <note>
                     <para>Note that you can control the location of this document by setting the
                             <code>server.xml</code> Java system property when you start the server,
                         e.g.:</para>
                     <synopsis>java -Dserver.xml=server2.xml -jar start.jar standalone</synopsis>
-                </note>
-                <para>The server.xml document has the following basic structure:</para>
+                </note> -->
+                <para>The standalone.xml/web.xml document has the following basic structure:</para>
                 <example>
-                    <title>Sample Configuration File: server.xml</title>
-                    <programlisting><markup>&lt;!--
-    Configures the stand-alone server: the stand-alone server is a minimal
-    webserver with just three services enabled by default:
-    webdav, xmlrpc, rest.
---&gt;
-&lt;server port="8088"&gt;
-    &lt;!--
-        Enable the WebDAV, XML-RPC and REST services.
-        The context attribute specifies to which context path
-        the service will be mapped. Specify an url-pattern as
-        for a servlet-mapping. Example: /xmlrpc/* forwards all
-        paths beginning with /xmlrpc to the xmlrpc service.
-    --&gt;
-    &lt;webdav enabled="yes" context="/webdav/*"/&gt;
-    &lt;xmlrpc enabled="yes" context="/xmlrpc/*"/&gt;
-    &lt;rest enabled="yes" context="/*"&gt;
-        &lt;!--
-            Special params: set form-encoding and container-encoding. If they
-            are set to different encodings, eXist may need to recode form parameters.
-        --&gt;
-        &lt;param name="form-encoding" value="UTF-8"/&gt;
-        &lt;param name="container-encoding" value="UTF-8"/&gt;
-    &lt;/rest&gt;
-    &lt;servlet enabled="yes"
-             context="/atom/*"
-             class="org.exist.atom.http.AtomServlet"/&gt;
-    &lt;!--
-        Define URL forwardings
-    --&gt;
-    &lt;forwarding&gt;
-        &lt;!--
-            Other forwardings: all requests to the specified path
-            will be forwarded to the destination.
-        --&gt;
-        &lt;forward path="/admin" destination="/db/admin/admin.xql"/&gt;
-    &lt;/forwarding&gt;
-&lt;/server&gt;</markup>
+                    <title>Sample Configuration File: web.xml</title>
+                    <programlisting><markup>fixme!/ljo
+</markup>
 					</programlisting>
                 </example>
                 <section>
                     <title>Controlling the Binding Address (&lt;indexer&gt;)</title>
-                    <para>You can control the binding address by using the following attributes for
-                        the <sgmltag>server</sgmltag> element:</para>
+                    <para>You can control the binding address by changing the addConnector <sgmltag>Call</sgmltag> element in tools/jetty/etc/standalone.xml:</para>
                     <variablelist>
                         <varlistentry>
                             <term>port</term>
                             <listitem>
                                 <para>The port on which the server will listen. The Jetty web server
-                                    will bind to the any address on port <filename>8088</filename>
+                                    will bind to the port <filename>8088</filename>
                                     by default.</para>
                             </listitem>
                         </varlistentry>
@@ -302,19 +275,23 @@
                 </section>
                 <section>
                     <title>REST Servlet</title>
+		    <para>NB! Updated for Jetty 7 in trunk from December 2009</para>
                     <para>The REST servlet provides HTTP/REST-style interactions with the database.
-                        It is configured by the <sgmltag>rest</sgmltag> element in the <filename
-                            >server.xml</filename> configuration file. For this element, the
-                            "<option>context</option>" attribute controls the web server context at
-                        which the REST services are provided. If the "<option>context</option>"
-                        attribute is not specified, it defaults to <filename>/</filename>.</para>
-                    <para>The <sgmltag>rest</sgmltag> has a number of other parameters that can be
-                        set by children <option>param</option> elements:</para>
+                        It is configured by a <sgmltag>servlet</sgmltag> element with  <sgmltag>servlet-class</sgmltag>org.exist.http.servlets.EXistServlet in the <filename
+                            >tools/jetty/etc/standalone/WEB-INF/web.xml</filename> configuration file. It depends on the XQueryURLRewrite filter for the context, defaults is <filename>/</filename>.</para>
+                    <para>The RestServlet has a number of other parameters that can be
+                        set by child elements:</para>
                     <example>
-                        <title>&lt;rest&gt;-&lt;param&gt; Structure</title>
-                        <programlisting><markup>&lt;rest enabled="yes" context="/*"&gt;
-      &lt;param name="name" value="string-value"  /&gt;
- &lt;/rest&gt;</markup>
+                        <title>RestServlet Structure</title>
+                        <programlisting><markup>&lt;servlet&gt;
+        &lt;servlet-name&gt;EXistServlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.exist.http.servlets.EXistServlet&lt;/servlet-class&gt;
+      &lt;init-param&gt;
+            &lt;param-name>use-default-user&lt;/param-name&gt;
+            &lt;param-value&gt;true&lt;/param-value&gt;
+        &lt;/init-param&gt;
+...
+ &lt;/servlet&gt;</markup>
 						</programlisting>
                     </example>
                     <variablelist>
@@ -335,18 +312,22 @@
                             <term>use-default-user</term>
                             <listitem>
                                 <para>A boolean value (<option>true</option>/<option>false</option>)
-                                    that indicates whether the <option>guest</option> user should be
-                                    used for non-authenticated interactions.</para>
+                                    that indicates whether a user you supply the credentials 
+				    <option>user</option> and <option>password</option> for 
+				    or if the <option>guest</option> user with default password should be
+                                    used for non-authenticated interactions. 
+				    If any of these fails a simple AUTH interaction is undertaken.
+				</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
-                            <term>default-user-username</term>
+                            <term>user</term>
                             <listitem>
                                 <para>The username of the default user.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
-                            <term>default-user-password</term>
+                            <term>user</term>
                             <listitem>
                                 <para>The password of the default user (required when every users
                                     has a password).</para>
