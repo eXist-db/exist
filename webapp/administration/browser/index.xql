@@ -15,7 +15,7 @@ return
 
 		<script type='text/javascript' src='scripts/main.js' />
 
-		<link rel='stylesheet' type='text/css' href='styles/ui.dynatree.css' />
+		<link rel='stylesheet' type='text/css' href='jquery.dynatree/css' />
 		<link rel='stylesheet' type='text/css' href='styles/scroll.css' />
 		<link rel='stylesheet' type='text/css' href='styles/demo_table.css' />
 	</head>

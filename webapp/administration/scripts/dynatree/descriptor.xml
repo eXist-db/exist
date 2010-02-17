@@ -35,7 +35,7 @@
         	<file name="rbIntermediate.gif"/>
         	<file name="rbUnchecked_hover.gif"/>
         	<file name="rbUnchecked.gif"/>
-        	<file name="ui.dynatree.css"/>
+        	<file name="ui.dynatree.css" alias="css"/>
         </folder>
         <file name="MIT-License.txt"/>
     </application>
