@@ -50,7 +50,8 @@
     </servlet>
 
     <!-- 
-        DatabaseAdminServlet: this servlet can be used to ensure that
+        EXistServlet provides Rest access to eXist
+	DatabaseAdminServlet: this servlet can be used to ensure that
         eXist is running in the background. Just set the start-parameter 
         to true and load-on-startup to 1 
     -->
@@ -82,10 +83,37 @@
         </init-param>
 
         <load-on-startup>2</load-on-startup>
+
+        <!-- Default user -->
+	<!-- If none is specified the guest user 
+	     with *default password* is chosen.   -->
+        <!-- Names changed for 1.5 trunk Jetty 7, December 2009 
+	     this was for previous Jetty version configured in
+	     EXIST_HOME/server.xml:                         
+	     <param name="use-default-user" value="true"/>
+	     <param name="default-user-username" value="default-user-username"/>
+	     <param name="default-user-password" value="default-user-password"/>
+        -->
+	<!--
+	<init-param>
+            <param-name>use-default-user</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>user</param-name>
+            <param-value>default-user-username</param-value>
+        </init-param>
+        <init-param>
+            <param-name>password</param-name>
+            <param-value>default-user-password</param-value>
+        </init-param>
+	-->
+
+
     </servlet>
 
     <!-- 
-        Servlet that enables webDAV 
+        Servlet that enables webDAV access to eXist 
     -->
     <servlet>
         <servlet-name>WebDAVServlet</servlet-name>
@@ -119,6 +147,24 @@
         <servlet-name>AtomServlet</servlet-name>
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
     </servlet>
+
+    <!-- Dynamic GZip filter, for Jetty 7
+         make sure you have the classes available before enabling -->
+    <!--
+    <filter>
+      <filter-name>GzipFilter</filter-name>
+      <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
+      <init-param>
+        <param-name>mimeTypes</param-name>
+        <param-value>text/html,text/plain,text/xml,application/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml</param-value>
+      </init-param>
+    </filter>
+    <filter-mapping>
+      <filter-name>GzipFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    -->
+
     
     <!-- ====================== URL space mappings ======================= -->
     
