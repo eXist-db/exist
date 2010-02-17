@@ -41,9 +41,15 @@ declare function script:showSubResources() as element() {
 				{let $size := xmldb:size($parentCollection, $resource)
 				return
 					if ($size le 1024) then
-						<td>{round($size div 1024)} KB</td>
-					else
-						<td>{$size} B</td>}
+						<td>{$size} B</td>
+					else 
+						let $size := round($size div 1024)
+						return
+						if ($size le 1024) then
+							<td>{$size} KB</td>
+						else
+							<td>{round($size div 1024)} MB</td>
+				}
 			</tr>
 			}
 		</tbody>
