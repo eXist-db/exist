@@ -76,7 +76,7 @@
         <delete file="${cocoon.home}/lib/optional/xmldb-api-20030701.jar"/>
         <delete file="${cocoon.home}/lib/optional/xmldb-common-20030701.jar"/>
         <delete file="${cocoon.home}/lib/optional/xmldb-xupdate-20040205.jar"/>
-        <delete file="${cocoon.home}/lib/optional/xmlrpc-1.1.jar"/>
+        <delete file="${cocoon.home}/lib/optional/xmlrpc-*.jar"/>
         <delete file="${cocoon.home}/lib/core/log4j-1.2.14.jar"/>
         <delete file="${cocoon.home}/lib/optional/antlr-2.7.6.jar"/>
         <delete file="${cocoon.home}/lib/optional/commons-pool-1.2.jar"/>
