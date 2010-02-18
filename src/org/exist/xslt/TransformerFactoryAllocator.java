@@ -124,7 +124,7 @@ public class TransformerFactoryAllocator
 				
 				try {
 					factory.setAttribute(PROPERTY_BROKER_POOL, pool);
-				} finally {
+				} catch(Exception e) {
 					//some transformers do not support "setAttribute"
 				}
 				
