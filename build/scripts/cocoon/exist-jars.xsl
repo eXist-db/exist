@@ -125,7 +125,7 @@
                     <description>Java implementation of XML-RPC, a popular protocol that uses XML over
                         HTTP to implement remote procedure calls.</description>
                     <used-by>exist</used-by>
-                    <lib>optional/xmlrpc-common-3.1.2.jar</lib>
+                    <lib>optional/xmlrpc-common-3.1.3.jar</lib>
                     <homepage>http://ws.apache.org/xmlrpc/</homepage>
                 </file>
                 <file>
@@ -133,7 +133,7 @@
                     <description>Java implementation of XML-RPC, a popular protocol that uses XML over
                         HTTP to implement remote procedure calls.</description>
                     <used-by>exist</used-by>
-                    <lib>optional/xmlrpc-server-3.1.2.jar</lib>
+                    <lib>optional/xmlrpc-server-3.1.3.jar</lib>
                     <homepage>http://ws.apache.org/xmlrpc/</homepage>
                 </file>
                 <file>
@@ -141,7 +141,7 @@
                     <description>Java implementation of XML-RPC, a popular protocol that uses XML over
                         HTTP to implement remote procedure calls.</description>
                     <used-by>exist</used-by>
-                    <lib>optional/xmlrpc-client-3.1.2.jar</lib>
+                    <lib>optional/xmlrpc-client-3.1.3.jar</lib>
                     <homepage>http://ws.apache.org/xmlrpc/</homepage>
                 </file>
                 <file>
