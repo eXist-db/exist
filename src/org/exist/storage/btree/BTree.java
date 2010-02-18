@@ -1593,7 +1593,8 @@ public class BTree extends Paged {
 								for (int i = 0; i < nPtrs; i++)
 									if ((i >= leftIdx && i <= rightIdx) == pos) {
 										getChildNode(i).query(query, callback);
-                                        if (query.getOperator() == IndexQuery.TRUNC_RIGHT)
+                                        if (query.getOperator() == IndexQuery.TRUNC_RIGHT ||
+                                            query.getOperator() == IndexQuery.RANGE)
                                             break;
                                     }
                                 break;
@@ -1641,7 +1642,6 @@ public class BTree extends Paged {
 							case IndexQuery.NBWX :
 							case IndexQuery.BW :
 							case IndexQuery.NBW :
-                            case IndexQuery.RANGE :
 								if (leftIdx < 0)
 									leftIdx = - (leftIdx + 1);
 								if (rightIdx < 0)
@@ -1653,6 +1653,7 @@ public class BTree extends Paged {
 											callback.indexInfo(keys[i], ptrs[i]);
 									}
 								break;
+                            case IndexQuery.RANGE :
 							case IndexQuery.TRUNC_RIGHT :
                                 if (leftIdx < 0)
 									leftIdx = - (leftIdx + 1);

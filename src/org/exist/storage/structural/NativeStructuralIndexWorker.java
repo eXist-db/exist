@@ -197,12 +197,13 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             NodeId nodeId = readNodeId(value.getData(), pointer);
-            int relation = nodeId.computeRelation(ancestor.getNodeId());
-            boolean match = (((axis == Constants.CHILD_AXIS) || (axis == Constants.ATTRIBUTE_AXIS)) && (relation == NodeId.IS_CHILD)) ||
-                ((axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) &&
-                    ((relation == NodeId.IS_DESCENDANT) || (relation == NodeId.IS_CHILD))) ||
-                ((axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) &&
-                    (relation == NodeId.IS_SELF));
+
+            boolean match = axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS;
+            if (!match) {
+                int relation = nodeId.computeRelation(ancestor.getNodeId());
+                match = (((axis == Constants.CHILD_AXIS) || (axis == Constants.ATTRIBUTE_AXIS)) && (relation == NodeId.IS_CHILD)) ||
+                    ((axis == Constants.DESCENDANT_AXIS) && ((relation == NodeId.IS_DESCENDANT) || (relation == NodeId.IS_CHILD)));
+            }
             if (match) {
                 NodeProxy storedNode =
                     new NodeProxy(doc, nodeId, type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
