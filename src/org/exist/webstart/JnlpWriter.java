@@ -19,12 +19,12 @@
  *
  * $Id$
  */
-
 package org.exist.webstart;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -40,16 +40,15 @@ import org.apache.log4j.Logger;
  * @author Dannes Wessels
  */
 public class JnlpWriter {
-    
-    private static final String JAR_MIME_TYPE           = "application/x-java-archive";
-    public static final String ACCEPT_ENCODING          = "accept-encoding";
-    public static final String CONTENT_TYPE             = "content-type";
-    public static final String CONTENT_ENCODING         = "content-encoding";
-    public static final String PACK200_GZIP_ENCODING    = "pack200-gzip";
-    
+
+    public static final String JAR_MIME_TYPE = "application/x-java-archive";
+    public static final String PACK_MIME_TYPE = "application/x-java-pack200";
+    public static final String ACCEPT_ENCODING = "accept-encoding";
+    public static final String CONTENT_TYPE = "content-type";
+    public static final String CONTENT_ENCODING = "content-encoding";
+    public static final String PACK200_GZIP_ENCODING = "pack200-gzip";
     private static Logger logger = Logger.getLogger(JnlpWriter.class);
-    
-    
+
     /**
      *  Write JNLP files (jnlp, jar, gif/jpg) to browser.
      * @param response  Object for writing to end user.
@@ -57,7 +56,7 @@ public class JnlpWriter {
      */
     void writeJnlpXML(JnlpJarFiles jnlpFiles, HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        
+
         logger.debug("Writing JNLP file");
 
         // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
@@ -78,9 +77,9 @@ public class JnlpWriter {
             return;
         }
 
-        File coreJars[] = jnlpFiles.getCoreJars();
+
         int counter = 0;
-        for (File jar : coreJars) {
+        for (File jar : jnlpFiles.getCoreJarFiles()) {
             counter++; // debugging
             if (jar == null || !jar.exists()) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -179,7 +178,7 @@ public class JnlpWriter {
             writer.writeAttribute("main", "true");
             writer.writeEndElement();
 
-            for (File jar : coreJars) {
+            for (File jar : jnlpFiles.getCoreJarFiles()) {
                 writer.writeStartElement("jar");
                 writer.writeAttribute("href", jar.getName());
                 writer.writeAttribute("size", "" + jar.length());
@@ -211,56 +210,46 @@ public class JnlpWriter {
             logger.error(ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
         }
-        
+
     }
-    
+
     /**
-     *  Send JAR file to end user.
+     *  Send JAR or JAR.PACK.GZ file to end user.
+     *
      * @param filename  Name of JAR file
      * @param response  Object for writing to end user.
      * @throws java.io.IOException
      */
     void sendJar(JnlpJarFiles jnlpFiles, String filename,
-            HttpServletRequest request, HttpServletResponse response ) throws IOException {
-        
-        logger.debug("Send jar file "+ filename);
-        
-        File localJarFile = jnlpFiles.getFile(filename);
-        if(localJarFile==null || !localJarFile.exists()){
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "Jar file '"+filename+"' not found.");
+            HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        logger.debug("Send jar file " + filename);
+
+        File localFile = jnlpFiles.getFile(filename);
+        if (localFile == null || !localFile.exists()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Jar file '" + filename + "' not found.");
             return;
         }
-        String localJarPath = localJarFile.getAbsolutePath();
-        
-        
-        // Retrieve info from client
-        String acceptedEncoding = request.getHeader(ACCEPT_ENCODING);
-        if(acceptedEncoding==null){
-            acceptedEncoding="";
-        }
-        
-        String contentType=JAR_MIME_TYPE;
-        File downloadTarget=null;
-        File localPackedFile=new File(localJarPath + ".pack.gz");
-        
-        if(acceptedEncoding.indexOf(PACK200_GZIP_ENCODING)!=-1 &&
-                localPackedFile.exists() && localPackedFile.canRead() ){
-            downloadTarget = localPackedFile;
+
+
+        logger.debug("Actual file " + localFile.getAbsolutePath());
+
+        if (localFile.getName().endsWith(".jar")) {
+            //response.setHeader(CONTENT_ENCODING, JAR_MIME_TYPE);
+            response.setContentType(JAR_MIME_TYPE);
+
+        } else if (localFile.getName().endsWith(".jar.pack.gz")) {
             response.setHeader(CONTENT_ENCODING, PACK200_GZIP_ENCODING);
-        } else {
-            downloadTarget=localJarFile;
+            response.setContentType(PACK_MIME_TYPE);
         }
-        
-        logger.debug("Actual file "+downloadTarget.getAbsolutePath());
-        
-        response.setContentType(contentType);
-        response.setContentLength( Integer.parseInt(Long.toString(downloadTarget.length())) );
-        response.setDateHeader("Last-Modified",downloadTarget.lastModified());
-        
-        FileInputStream fis = new FileInputStream( downloadTarget );
+
+
+        response.setContentLength(Integer.parseInt(Long.toString(localFile.length())));
+        response.setDateHeader("Last-Modified", localFile.lastModified());
+
+        FileInputStream fis = new FileInputStream(localFile);
         ServletOutputStream os = response.getOutputStream();
-        
+
         try {
             // Transfer bytes from in to out
             byte[] buf = new byte[4096];
@@ -269,45 +258,45 @@ public class JnlpWriter {
                 os.write(buf, 0, len);
             }
 
-        } catch (IllegalStateException ex){
+        } catch (IllegalStateException ex) {
             logger.debug(ex.getMessage());
 
-        } catch (IOException ex){
+        } catch (IOException ex) {
             logger.debug("Ignore IOException for '" + filename + "'");
         }
-        
+
         os.flush();
         os.close();
         fis.close();
     }
-    
+
     void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
-        logger.debug("Send image "+ filename);
-        
-        File imagesFolder = new File(jh.getWebappFolder() , "resources");
-        
-        String type=null;
-        if(filename.endsWith(".gif")){
-            type="image/gif";
+        logger.debug("Send image " + filename);
+
+        File imagesFolder = new File(jh.getWebappFolder(), "resources");
+
+        String type = null;
+        if (filename.endsWith(".gif")) {
+            type = "image/gif";
         } else {
-            type="image/jpeg";
+            type = "image/jpeg";
         }
-        
+
         response.setContentType(type);
-        
+
         File imageFile = new File(imagesFolder, filename);
-        if(imageFile==null || !imageFile.exists()){
+        if (imageFile == null || !imageFile.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "Image file '"+filename+"' not found.");
+                    "Image file '" + filename + "' not found.");
             return;
         }
-        
-        response.setContentLength( Integer.parseInt(Long.toString(imageFile.length())) );
-        response.setDateHeader("Last-Modified",imageFile.lastModified());
-        
-        FileInputStream fis = new FileInputStream( imageFile );
+
+        response.setContentLength(Integer.parseInt(Long.toString(imageFile.length())));
+        response.setDateHeader("Last-Modified", imageFile.lastModified());
+
+        FileInputStream fis = new FileInputStream(imageFile);
         ServletOutputStream os = response.getOutputStream();
-        
+
         try {
             // Transfer bytes from in to out
             byte[] buf = new byte[8096];
@@ -315,16 +304,17 @@ public class JnlpWriter {
             while ((len = fis.read(buf)) > 0) {
                 os.write(buf, 0, len);
             }
-            
-        } catch (IllegalStateException ex){
+
+        } catch (IllegalStateException ex) {
             logger.debug(ex.getMessage());
 
-        } catch (IOException ex){
+        } catch (IOException ex) {
             logger.debug("Ignore IOException for '" + filename + "'");
         }
-        
+
         os.flush();
         os.close();
         fis.close();
     }
+
 }

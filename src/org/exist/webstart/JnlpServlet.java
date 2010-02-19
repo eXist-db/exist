@@ -83,39 +83,34 @@ public class JnlpServlet extends HttpServlet {
         try {
             JnlpWriter jw=new JnlpWriter();
 
-            String URI = request.getRequestURI();
-            logger.debug("Requested URI="+URI);
+            String requestURI = request.getRequestURI();
+            String filename = stripFilename( request.getPathInfo() );
+            logger.debug("Requested URI="+requestURI);
 
-            if(URI.endsWith(".jnlp")){
+            if(requestURI.endsWith(".jnlp")){
                 jw.writeJnlpXML(jf, request, response);
 
-            } else if (URI.endsWith(".jar")){
-                String filename = stripFilename( request.getPathInfo() );
+            } else if (requestURI.endsWith(".jar") || requestURI.endsWith(".jar.pack.gz") ){
                 jw.sendJar(jf, filename, request, response);
 
-            } else if (URI.endsWith(".pack.gz")){
-                logger.debug("pack.gz to be implemented.");
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
-
-            } else if ( URI.endsWith(".gif") || URI.endsWith(".jpg") ){
-                String filename =  stripFilename( request.getPathInfo() );
+            } else if ( requestURI.endsWith(".gif") || requestURI.endsWith(".jpg") ){
                 jw.sendImage(jh, jf, filename, response);
 
             } else {
                 logger.error("Invalid filename extension.");
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid filename extension.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, filename + " not found.");
                 return;
             }
 
         } catch(EOFException ex) {
-            logger.debug(ex.getMessage(), ex);
+            logger.debug(ex.getMessage());
 
         } catch(SocketException ex) {
-            logger.debug(ex.getMessage(), ex);
+            logger.debug(ex.getMessage());
 
         } catch (Throwable e){
             logger.error(e);
-            throw new ServletException("An error occurred: " + e.getMessage(), e);
+            throw new ServletException("An error occurred: " + e.getMessage());
         }
         
     }

@@ -23,6 +23,10 @@
 package org.exist.webstart;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.start.LatestFileResolver;
@@ -36,9 +40,10 @@ public class JnlpJarFiles {
     
     private static Logger logger = Logger.getLogger(JnlpJarFiles.class);
     
-    // Holders for jar files
-    private File[] _coreJars;
-    private File _mainJar;
+//    // Holders for jar files
+//    private File[] _coreJars;
+//    private File _mainJar;
+    private Map<String, File> allFiles = new HashMap<String, File>();
     
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
@@ -65,7 +70,7 @@ public class JnlpJarFiles {
      * necessary sans .jar file extension.
      * @return File object of jar file, null if not found.
      */
-    public File getJar(File folder, String jarFileBaseName){
+    private File getJar(File folder, String jarFileBaseName){
         String fileToFind = folder.getAbsolutePath() + File.separatorChar
                 + jarFileBaseName + ".jar";
         String resolvedFile = jarFileResolver.getResolvedFileName(
@@ -83,6 +88,28 @@ public class JnlpJarFiles {
             return null;
         }
     }
+
+    private File getJarPackGz(File jarName){
+        String path = jarName.getAbsolutePath()+".pack.gz";
+        File pkgz = new File(path);
+
+        if(pkgz.exists()){
+            return pkgz;
+        }
+
+        return null;
+    }
+
+    private void fillJarSet(File jar) {
+        if (jar != null) {
+            allFiles.put(jar.getName(), jar);
+
+            File pkgz = getJarPackGz(jar);
+            if (pkgz != null) {
+                allFiles.put(pkgz.getName(), pkgz);
+            }
+        }
+    }
     
     /**
      * Creates a new instance of JnlpJarFiles
@@ -91,63 +118,49 @@ public class JnlpJarFiles {
      */
     public JnlpJarFiles(JnlpHelper jnlpHelper) {
         logger.info("Initializing jar files Webstart");
-        
-        // Setup array CORE jars
-        int nrCoreJars=jars.length;
-        _coreJars = new File[nrCoreJars];
-        logger.debug("Number of webstart jars="+nrCoreJars);
+
+        logger.debug("Number of webstart jars="+jars.length);
         
         // Setup CORE jars
-        for(int i=0;i<nrCoreJars;i++){
-            _coreJars[i]=getJar(jnlpHelper.getCoreJarsFolder(), jars[i]);
-        }
+        for(String jarname : jars){
+            File jar = getJar(jnlpHelper.getCoreJarsFolder(), jarname);
+            fillJarSet(jar);
+         }
         
         // Setup exist.jar
-        _mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
+        File mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
+        fillJarSet(mainJar);
     }
     
-    
-    
-    /**
-     * Get references to all "core" jar files.
-     * @return Array of Files.
-     */
-    public File[] getCoreJars() {   return _coreJars;         }
-    
-    /**
-     * Get references to all "exist" jar files.
-     * @return Reference to exist.jar.
-     */
-    public File getMainJar() { return _mainJar;       }
-    
-    /**
-     * Setter for property mainJar.
-     * @param mainJar New value of property mainJar.
-     */
-    public void setMainJar(File mainJar) { _mainJar = mainJar;     }
-    
-    /**
-     *  Get File reference of associated jar-file.
-     * @param name
-     * @return File reference to resource.
-     */
-    public File getFile(String name){
-        File retVal=null;
-        if(name.equals("exist.jar")){
-            retVal = _mainJar;
-            
-        } else {
-            boolean found=false;
-            int index=0;
-            while(!found && index < _coreJars.length ){
-                if(_coreJars[index].getName().equals(name)){
-                    found=true;
-                    retVal=_coreJars[index];
-                }  else {
-                    index++;
-                }
+
+//    public List<String> getCoreJarNames(){
+//        List<String> corejars = new ArrayList<String>();
+//        for(String key : allFiles.keySet()){
+//            if(key.endsWith(".jar") && !key.equals("exist.jar")){
+//                corejars.add(key);
+//            }
+//        }
+//        return corejars;
+//    }
+
+    public List<File> getCoreJarFiles(){
+        List<File> corejars = new ArrayList<File>();
+
+        for(File file: allFiles.values()){
+            if(file.getName().endsWith(".jar") && !file.getName().equals("exist.jar")){
+                corejars.add(file);
             }
         }
+
+        return corejars;
+    }
+    
+    public File getMainJar(){
+        return allFiles.get("exist.jar");
+    }
+
+    public File getFile(String key){
+        File retVal = allFiles.get(key);
         return retVal;
     }
     
