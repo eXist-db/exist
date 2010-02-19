@@ -7,7 +7,7 @@ if [ -z "${EXIST}" ]; then
 fi
 
 
-CP="$EXIST/exist.jar:$EXIST/tools/ircbot/lib/pircbot.jar:$EXIST/lib/core/log4j-1.2.15.jar:$EXIST/lib/core/xmldb.jar:$EXIST/lib/core/xmlrpc-client-3.1.2.jar:$EXIST/lib/core/xmlrpc-server-3.1.2.jar:$EXIST/lib/core/xmlrpc-common-3.1.2.jar:$EXIST/lib/core/ws-commons-util-1.0.2.jar:$EXIST/tools/ircbot/classes"
+CP="$EXIST/exist.jar:$EXIST/tools/ircbot/lib/pircbot.jar:$EXIST/lib/core/log4j-1.2.15.jar:$EXIST/lib/core/xmldb.jar:$EXIST/lib/core/xmlrpc-client-3.1.3.jar:$EXIST/lib/core/xmlrpc-server-3.1.3.jar:$EXIST/lib/core/xmlrpc-common-3.1.3.jar:$EXIST/lib/core/ws-commons-util-1.0.2.jar:$EXIST/tools/ircbot/classes"
 
 echo $CP
 
