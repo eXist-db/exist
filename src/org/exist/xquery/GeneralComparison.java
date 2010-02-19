@@ -55,6 +55,7 @@ import java.util.List;
  * A general XQuery/XPath2 comparison expression.
  *
  * @author  wolf
+ * @author  andrzej@chaeron.com
  */
 public class GeneralComparison extends BinaryOp implements Optimizable, IndexUseReporter
 {
@@ -306,6 +307,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( LOG.isTraceEnabled() ) {
             LOG.trace( "Using QName index on type " + Type.getTypeName( indexType ) );
         }
+
         Sequence rightSeq = getRight().eval( contextSequence );
 
         for( SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext(); ) {
@@ -347,6 +349,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 if( LOG.isTraceEnabled() ) {
                     LOG.trace( "Using QName range index for key: " + key.getStringValue() );
                 }
+
                 NodeSet  temp;
                 NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
                 Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
@@ -357,17 +360,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 } else {
 
                     try {
-                        String regex;
+                        String matchString = key.getStringValue();
+                        int    matchType   = getMatchType( truncation );
 
-                        if( collator == null ) {
-                            regex = getRegexp( key.getStringValue() ).toString();
-                        } else {
+                        temp         = context.getBroker().getValueIndex().match( contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, matchString, contextQName, matchType, collator, truncation );
 
-                            // Don't change the key if we're going to do a Collator-based comparison
-                            regex = key.getStringValue();
-                        }
-
-                        temp         = context.getBroker().getValueIndex().match( contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, regex, contextQName, DBBroker.MATCH_REGEXP, collator, truncation );
                         hasUsedIndex = true;
                     }
                     catch( EXistException e ) {
@@ -386,6 +383,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }
+
         return( ( preselectResult == null ) ? NodeSet.EMPTY_SET : preselectResult );
     }
 
@@ -824,40 +822,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                                 NodeSet ns;
 
                                 String  matchString = key.getStringValue();
-
-                                int     matchType;
-
-                                // Figure out what type of matching we need to do.
-
-                                switch( truncation ) {
-
-                                    case Constants.TRUNC_RIGHT: {
-                                        matchType = DBBroker.MATCH_STARTSWITH;
-                                        break;
-                                    }
-
-                                    case Constants.TRUNC_LEFT: {
-                                        matchType = DBBroker.MATCH_ENDSWITH;
-                                        break;
-                                    }
-
-                                    case Constants.TRUNC_BOTH: {
-                                        matchType = DBBroker.MATCH_CONTAINS;
-                                        break;
-                                    }
-
-                                    case Constants.TRUNC_EQUALS: {
-                                        matchType = DBBroker.MATCH_EXACT;
-                                        break;
-                                    }
-
-                                    default: {
-
-                                        // We should never get here!
-                                        LOG.error( "Invalid truncation type: " + truncation );
-                                        throw( new XPathException( this, "Invalid truncation type: " + truncation ) );
-                                    }
-                                }
+                                int     matchType   = getMatchType( truncation );
 
                                 if( indexScan ) {
                                     ns = context.getBroker().getValueIndex().matchAll( docs, nodes, NodeSet.ANCESTOR, matchString, matchType, 0, true, collator, truncation );
@@ -924,6 +889,46 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             return( nodeSetCompare( nodes, contextSequence ) );
         }
+    }
+
+
+    private int getMatchType( int truncation ) throws XPathException
+    {
+        int matchType;
+
+        // Figure out what type of matching we need to do.
+
+        switch( truncation ) {
+
+            case Constants.TRUNC_RIGHT: {
+                matchType = DBBroker.MATCH_STARTSWITH;
+                break;
+            }
+
+            case Constants.TRUNC_LEFT: {
+                matchType = DBBroker.MATCH_ENDSWITH;
+                break;
+            }
+
+            case Constants.TRUNC_BOTH: {
+                matchType = DBBroker.MATCH_CONTAINS;
+                break;
+            }
+
+            case Constants.TRUNC_EQUALS: {
+                matchType = DBBroker.MATCH_EXACT;
+                break;
+            }
+
+            default: {
+
+                // We should never get here!
+                LOG.error( "Invalid truncation type: " + truncation );
+                throw( new XPathException( this, "Invalid truncation type: " + truncation ) );
+            }
+        }
+
+        return( matchType );
     }
 
 
