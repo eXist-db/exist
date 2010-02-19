@@ -238,12 +238,10 @@ public class GetFragmentBetween extends BasicFunction {
       String attrNamePrefix = reader.getAttributePrefix(j);
       String attrName = reader.getAttributeLocalName(j);
       String attrValue = reader.getAttributeValue(j);
+      attrValue = escape(attrValue);
       String attrString = "";
       if (! (attrNamePrefix == null || attrNamePrefix.length() == 0))
         attrString = attrNamePrefix + ":";
-      if (attrName.toLowerCase().equals("href")) {
-        attrValue = escape(attrValue);
-      }
       attrString = attrString + attrName + "=\"" + attrValue + "\"";
       elemAttrString = elemAttrString + " " + attrString;
     }
