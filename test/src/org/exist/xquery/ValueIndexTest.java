@@ -222,7 +222,7 @@ public class ValueIndexTest extends TestCase {
 	 *
 	 * andrzej@chaeron.com
      */
-	public void testStringMatchingFunctions() throws Exception
+	public void testPathIndexStringMatchingFunctions() throws Exception
 	{
       	try {
             configureCollection( CONFIG );
@@ -243,10 +243,81 @@ public class ValueIndexTest extends TestCase {
 	}    
     
 	
-	public void testStringMatchingFunctions2() throws Exception
+	public void testPathIndexStringMatchingFunctions2() throws Exception
 	{
       	try {
             configureCollection( CONFIG );
+            XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
+            resource.setContent( CITY );
+            testCollection.storeResource( resource );
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService( "XPathQueryService", "1.0" );
+			
+			try {
+            	queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '(*' ) ]", 0);
+			}
+			catch( Exception e ) {
+				e.printStackTrace();
+				fail( e.getMessage() );
+			}
+			
+			try {
+            	 queryResource(service, "mondial-test.xml", "//city[ contains( name, '*' ) ]", 0);
+			}
+			catch( Exception e ) {
+				e.printStackTrace();
+				fail( e.getMessage() );
+			}
+			
+			try {
+            	 queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '(*' ) ]", 0);
+			}
+			catch( Exception e ) {
+				e.printStackTrace();
+				fail( e.getMessage() );
+			}
+		} 
+		catch( XMLDBException e ) {
+			e.printStackTrace();
+			fail( e.getMessage() );
+		}
+	}    
+	
+	
+	/*
+     * Bugfix
+     *
+     * These following two tests were put in place to test a bug fix for QName matching functions, which was committed 2/19/2010. The issue was that the 2nd parameter
+	 * to the string matching functions was incorrectly interpreted as a regex, for QName indexes, which causd an exception
+	 * to be thrown if the string included characters that have special meaning in a regex, eg. '*' for contains.
+	 *
+	 * andrzej@chaeron.com
+     */
+	public void testQNameIndexStringMatchingFunctions() throws Exception
+	{
+      	try {
+            configureCollection( CONFIG_QNAME );
+            XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
+            resource.setContent( CITY );
+            testCollection.storeResource( resource );
+
+            XPathQueryService service = (XPathQueryService) testCollection.getService( "XPathQueryService", "1.0" );
+			
+			queryResource(service, "mondial-test.xml", "//city[ starts-with( name, '^*' ) ]", 0);
+            queryResource(service, "mondial-test.xml", "//city[ contains( name, '^*' ) ]", 0);
+            queryResource(service, "mondial-test.xml", "//city[ ends-with( name, '^*' ) ]", 0);
+		} 
+		catch( XMLDBException e ) {
+			e.printStackTrace();
+			fail( e.getMessage() );
+		}
+	}    
+    
+	
+	public void testQNameIndexStringMatchingFunctions2() throws Exception
+	{
+      	try {
+            configureCollection( CONFIG_QNAME );
             XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
             resource.setContent( CITY );
             testCollection.storeResource( resource );
