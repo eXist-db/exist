@@ -55,7 +55,7 @@ public abstract class TextSearchEngine extends Observable {
 	protected final static Logger LOG =
 		Logger.getLogger(TextSearchEngine.class);
 		
-    protected TreeSet stoplist = new TreeSet();
+    protected TreeSet<String> stoplist = new TreeSet<String>();
 	protected DBBroker broker = null;
 	protected Tokenizer tokenizer;
 	protected Configuration config;
