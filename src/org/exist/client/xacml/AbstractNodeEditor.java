@@ -22,6 +22,6 @@ public abstract class AbstractNodeEditor implements NodeEditor {
 	
 	public void removeChangeListener(ChangeListener listener) {
 		if(listeners != null)
-			listeners.remove(listeners);
+			listeners.remove(listener);
 	}
 }

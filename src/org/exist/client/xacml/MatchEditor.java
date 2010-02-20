@@ -252,7 +252,7 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	public void removeChangeListener(ChangeListener listener)
 	{
 		if(listeners != null)
-			listeners.remove(listeners);
+			listeners.remove(listener);
 	}
 	
 	private void documentUpdated(DocumentEvent event)
