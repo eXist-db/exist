@@ -23,7 +23,7 @@ package org.exist.dom;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.indexing.StructuralIndex;
+import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -248,6 +248,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
      */
     public XmldbURI getURI() {
         return collection.getURI().append(fileURI);
+    }
+    
+    public boolean isCollectionConfig() {
+    	return fileURI.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
     }
     
     /**
@@ -580,17 +584,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
     /**
      * The method <code>compareTo</code>
      *
-     * @param other an <code>Object</code> value
+     * @param other an <code>DocumentImpl</code> value
      * @return an <code>int</code> value
      */
     public final int compareTo(DocumentImpl other) {
-	final long otherId = other.docId;
-	if (otherId == docId)
-	    return Constants.EQUAL;
-	else if (docId < otherId)
-	    return Constants.INFERIOR;
-	else
-	    return Constants.SUPERIOR;
+    	final long otherId = other.docId;
+    	if (otherId == docId)
+    		return Constants.EQUAL;
+    	else if (docId < otherId)
+    		return Constants.INFERIOR;
+    	else
+    		return Constants.SUPERIOR;
     } 
 
 
@@ -690,7 +694,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
      * @return a <code>NodeList</code> value
      */
     public NodeList getChildNodes() {
-	NodeListImpl list = new NodeListImpl();
+    	NodeListImpl list = new NodeListImpl();
         DBBroker broker = null;
         try {
             broker = pool.get(null);

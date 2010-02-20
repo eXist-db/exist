@@ -527,7 +527,7 @@ public class NativeBroker extends DBBroker {
         return new EmbeddedXMLStreamReader(this, (DocumentImpl) node.getOwnerDocument(), iterator, null, reportAttributes);
     }
 
-    public Iterator getNodeIterator(StoredNode node) {
+    public Iterator<StoredNode> getNodeIterator(StoredNode node) {
 	if (node == null)
 	    throw new IllegalArgumentException("The node parameter cannot be null.");
         try {
@@ -1381,15 +1381,15 @@ public class NativeBroker extends DBBroker {
         
         if (mode == NodeProcessor.MODE_STORE)
             dropCollectionIndex(transaction, collection);
-        for(Iterator i = collection.iterator(this); i.hasNext(); ) {
-            DocumentImpl next = (DocumentImpl)i.next();
+        for(Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+            DocumentImpl next = i.next();
             reindexXMLResource(transaction, next, mode);
             if (mode == NodeProcessor.MODE_REPAIR)
                 pool.signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
         }
-        for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-	    XmldbURI next = (XmldbURI)i.next();
-	    //TODO : resolve URIs !!! (collection.getURI().resolve(next))
+        for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+        	XmldbURI next = i.next();
+        	//TODO : resolve URIs !!! (collection.getURI().resolve(next))
             Collection child = getCollection(collection.getURI().append(next));
             if(child == null)
                 LOG.warn("Collection '" + next + "' not found");
@@ -2439,19 +2439,21 @@ public class NativeBroker extends DBBroker {
      * the document if node is null.
      */
     private void reindexXMLResource(Txn transaction, DocumentImpl doc, int mode) {
-        if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
+        if(doc.isCollectionConfig())
             doc.getCollection().setConfigEnabled(false);
+        
         indexController.setDocument(doc, StreamListener.STORE);
         StreamListener listener = indexController.getStreamListener();
         NodeList nodes = doc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
-	    StoredNode node = (StoredNode) nodes.item(i);
-	    Iterator iterator = getNodeIterator(node);
+        	StoredNode node = (StoredNode) nodes.item(i);
+        	Iterator<StoredNode> iterator = getNodeIterator(node);
             iterator.next();
             scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
         }
         flush();
-        if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
+        
+        if(doc.isCollectionConfig())
             doc.getCollection().setConfigEnabled(true);
     }
     
