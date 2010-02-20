@@ -1002,11 +1002,12 @@ public class NativeValueIndex implements ContentLoadingObserver
      */
     public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation ) throws TerminatedException, EXistException
     {
-        // if the regexp starts with a char sequence, we restrict the index scan to entries starting with
+        // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
+		
         StringValue startTerm = null;
 
-        if( expr.startsWith( "^" ) && ( caseSensitiveQuery == caseSensitive ) ) {
+        if( type == DBBroker.MATCH_REGEXP && expr.startsWith( "^" ) && ( caseSensitiveQuery == caseSensitive ) ) {
             StringBuilder term = new StringBuilder();
 
             for( int j = 1; j < expr.length(); j++ ) {
@@ -1022,7 +1023,10 @@ public class NativeValueIndex implements ContentLoadingObserver
                 startTerm = new StringValue( term.toString() );
                 LOG.debug( "Match will begin index scan at '" + startTerm + "'" );
             }
-        }
+		} else if( type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH ) {
+			startTerm = new StringValue( expr );
+            LOG.debug( "Match will begin index scan at '" + startTerm + "'" );
+		}
 
         TermMatcher matcher;
 
