@@ -1023,7 +1023,7 @@ public class NativeValueIndex implements ContentLoadingObserver
                 startTerm = new StringValue( term.toString() );
                 LOG.debug( "Match will begin index scan at '" + startTerm + "'" );
             }
-		} else if( type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH ) {
+		} else if( collator == null && ( type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH ) ) {
 			startTerm = new StringValue( expr );
             LOG.debug( "Match will begin index scan at '" + startTerm + "'" );
 		}
