@@ -92,11 +92,12 @@ public class CollectionConfiguration {
 		defCollPermissions = secman.getCollectionDefaultPerms();
      }
     
-    
+    @Deprecated //use DocumentImpl.isCollectionConfig() 
 	public static boolean isCollectionConfigDocument(XmldbURI docName) {
 		return docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
 	}
 	
+    @Deprecated //use DocumentImpl.isCollectionConfig() 
 	public static boolean isCollectionConfigDocument(DocumentImpl doc ) {
 		XmldbURI docName = doc.getURI();
 		return isCollectionConfigDocument( docName );
