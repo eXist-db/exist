@@ -61,15 +61,15 @@ span.ui-dynatree-empty
 }
 span.ui-dynatree-vline
 {
-	background-image: url("ltL_ns.gif");
+	background-image: url("jquery.dynatree/ltL_ns");
 }
 span.ui-dynatree-connector
 {
-	background-image: url("ltL_nes.gif");
+	background-image: url("jquery.dynatree/ltL_nes");
 }
 .ui-dynatree-lastsib span.ui-dynatree-connector
 {
-	background-image: url("ltL_ne.gif");
+	background-image: url("jquery.dynatree/ltL_ne");
 }
 
 /******************************************************************************* 
@@ -85,30 +85,30 @@ span.ui-dynatree-connector
  
 span.ui-dynatree-expander
 {
-	background-image: url("ltP_nes.gif");
+	background-image: url("jquery.dynatree/ltP_nes");
 	cursor: pointer;
 }
 .ui-dynatree-exp-cl span.ui-dynatree-expander /* Collapsed, not delayed, last sibling */
 {
-	background-image: url("ltP_ne.gif");
+	background-image: url("jquery.dynatree/ltP_ne");
 }
 .ui-dynatree-exp-cd span.ui-dynatree-expander /* Collapsed, delayed, not last sibling */
 {
-	background-image: url("ltD_nes.gif");
+	background-image: url("jquery.dynatree/ltD_nes");
 }
 .ui-dynatree-exp-cdl span.ui-dynatree-expander /* Collapsed, delayed, last sibling */
 {
-	background-image: url("ltD_ne.gif");
+	background-image: url("jquery.dynatree/ltD_ne");
 }
 .ui-dynatree-exp-e span.ui-dynatree-expander,  /* Expanded, not delayed, not last sibling */
 .ui-dynatree-exp-ed span.ui-dynatree-expander  /* Expanded, delayed, not last sibling */
 {
-	background-image: url("ltM_nes.gif");
+	background-image: url("jquery.dynatree/ltM_nes");
 }
 .ui-dynatree-exp-el span.ui-dynatree-expander,  /* Expanded, not delayed, last sibling */
 .ui-dynatree-exp-edl span.ui-dynatree-expander  /* Expanded, delayed, last sibling */
 {
-	background-image: url("ltM_ne.gif");
+	background-image: url("jquery.dynatree/ltM_ne");
 }
 
 
@@ -118,29 +118,29 @@ span.ui-dynatree-expander
 span.ui-dynatree-checkbox
 {
 	margin-left: 3px;
-	background-image: url("cbUnchecked.gif");
+	background-image: url("jquery.dynatree/cbUnchecked");
 }
 span.ui-dynatree-checkbox:hover
 {
-	background-image: url("cbUnchecked_hover.gif");
+	background-image: url("jquery.dynatree/cbUnchecked_hover");
 }
 
 .ui-dynatree-partsel span.ui-dynatree-checkbox
 {
-	background-image: url("cbIntermediate.gif");
+	background-image: url("jquery.dynatree/cbIntermediate");
 }
 .ui-dynatree-partsel span.ui-dynatree-checkbox:hover
 {
-	background-image: url("cbIntermediate_hover.gif");
+	background-image: url("jquery.dynatree/cbIntermediate_hover");
 }
 
 .ui-dynatree-selected span.ui-dynatree-checkbox
 {
-	background-image: url("cbChecked.gif");
+	background-image: url("jquery.dynatree/cbChecked");
 }
 .ui-dynatree-selected span.ui-dynatree-checkbox:hover
 {
-	background-image: url("cbChecked_hover.gif");
+	background-image: url("jquery.dynatree/cbChecked_hover");
 }
 
 /******************************************************************************* 
@@ -151,29 +151,29 @@ span.ui-dynatree-checkbox:hover
 span.ui-dynatree-radio
 {
 	margin-left: 3px;
-	background-image: url("rbUnchecked.gif");
+	background-image: url("jquery.dynatree/rbUnchecked");
 }
 span.ui-dynatree-radio:hover
 {
-	background-image: url("rbUnchecked_hover.gif");
+	background-image: url("jquery.dynatree/rbUnchecked_hover");
 }
 
 .ui-dynatree-partsel span.ui-dynatree-radio
 {
-	background-image: url("rbIntermediate.gif");
+	background-image: url("jquery.dynatree/rbIntermediate");
 }
 .ui-dynatree-partsel span.ui-dynatree-radio:hover
 {
-	background-image: url("rbIntermediate_hover.gif");
+	background-image: url("jquery.dynatree/rbIntermediate_hover");
 }
 
 .ui-dynatree-selected span.ui-dynatree-radio
 {
-	background-image: url("rbChecked.gif");
+	background-image: url("jquery.dynatree/rbChecked");
 }
 .ui-dynatree-selected span.ui-dynatree-radio:hover
 {
-	background-image: url("rbChecked_hover.gif");
+	background-image: url("jquery.dynatree/rbChecked_hover");
 }
 
 /******************************************************************************* 
@@ -189,29 +189,29 @@ span.ui-dynatree-radio:hover
 span.ui-dynatree-icon /* Default icon */
 {
 	margin-left: 3px;
-	background-image: url("ltDoc.gif");
+	background-image: url("jquery.dynatree/ltDoc");
 }
 
 .ui-dynatree-ico-cf span.ui-dynatree-icon  /* Collapsed Folder */
 {
-	background-image: url("ltFld.gif");
+	background-image: url("jquery.dynatree/ltFld");
 }
 
 .ui-dynatree-ico-ef span.ui-dynatree-icon  /* Expanded Folder */
 {
-	background-image: url("ltFld_o.gif");
+	background-image: url("jquery.dynatree/ltFld_o");
 }
 
 /* Status node icons */
 
 .ui-dynatree-statusnode-wait span.ui-dynatree-icon
 {
-	background-image: url("ltWait.gif");
+	background-image: url("jquery.dynatree/ltWait");
 }
 
 .ui-dynatree-statusnode-error span.ui-dynatree-icon
 {
-	background-image: url("ltError.gif");
+	background-image: url("jquery.dynatree/ltError");
 }
 
 /******************************************************************************* 
