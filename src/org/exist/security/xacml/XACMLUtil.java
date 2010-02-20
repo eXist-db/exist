@@ -166,7 +166,7 @@ public class XACMLUtil implements UpdateListener
 	 */
 	public static boolean inPolicyCollection(DocumentImpl document)
 	{
-		return XACMLConstants.POLICY_COLLECTION.equals(document.getCollection().getURI());
+		return XACMLConstants.POLICY_COLLECTION_URI.equals(document.getCollection().getURI());
 	}
 	/**
 	* Performs any necessary cleanup operations.  Generally only
