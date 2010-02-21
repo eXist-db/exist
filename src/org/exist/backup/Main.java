@@ -111,7 +111,11 @@ public class Main {
 				pin = Main.class.getResourceAsStream("backup.properties");
 
 			if (pin != null)
-				properties.load(pin);
+				try {
+					properties.load(pin);
+				} finally {
+					pin.close();
+				}
 
 		} catch (IOException ioe) {
 		}
