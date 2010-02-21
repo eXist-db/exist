@@ -139,10 +139,13 @@ public class ServerShutdown {
         }
 
         if (pin != null) {
-
             // Try to load properties from stream
             try {
-                clientProps.load(pin);
+            	try {
+            		clientProps.load(pin);
+            	} finally {
+            		pin.close();
+            	}
             } catch (IOException ex) {
                 //
             }
