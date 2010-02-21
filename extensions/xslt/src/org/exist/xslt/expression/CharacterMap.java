@@ -88,7 +88,7 @@ public class CharacterMap extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:character-map");
         
     	if (name != null)

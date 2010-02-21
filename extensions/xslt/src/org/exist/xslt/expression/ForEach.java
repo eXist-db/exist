@@ -163,7 +163,7 @@ public class ForEach extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:for-each");
         
     	if (select != null)

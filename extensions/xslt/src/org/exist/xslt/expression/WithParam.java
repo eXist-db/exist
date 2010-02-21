@@ -25,14 +25,12 @@ import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xslt.XSLContext;
-import org.exist.xslt.expression.i.Parameted;
 import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
 
@@ -115,7 +113,7 @@ public class WithParam extends Declaration {
         }
         if (select != null) {
         	dumper.display(" select = ");
-        	dumper.display(select);
+        	select.dump(dumper);
         }
         if (as != null) {
         	dumper.display(" as = ");
@@ -132,17 +130,25 @@ public class WithParam extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:with-param");
         
-    	if (name != null)
-        	result.append(" name = "+name.toString());    
-    	if (select != null)
-        	result.append(" select = "+select.toString());    
-    	if (as != null)
-        	result.append(" as = "+as.toString());    
-    	if (tunnel != null)
-        	result.append(" tunnel = "+tunnel.toString());    
+    	if (name != null) {
+        	result.append(" name = ");
+        	result.append(name.toString());
+    	}
+    	if (select != null) {
+        	result.append(" select = ");
+        	result.append(select.toString());
+    	}
+    	if (as != null) {
+        	result.append(" as = ");
+        	result.append(as);
+    	}
+    	if (tunnel != null) {
+        	result.append(" tunnel = ");
+        	result.append(tunnel);
+    	}
 
         result.append("> ");
         

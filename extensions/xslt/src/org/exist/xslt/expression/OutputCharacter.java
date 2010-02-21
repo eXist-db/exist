@@ -84,7 +84,7 @@ public class OutputCharacter extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:output-character");
         
     	if (character != null)

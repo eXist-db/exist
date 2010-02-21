@@ -107,11 +107,13 @@ public class When extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:when");
 
-        if (test != null)
-        	result.append(" test = "+test.toString());    
+        if (test != null) {
+        	result.append(" test = ");
+        	result.append(test.toString());
+        }
         
         result.append("> ");    
 

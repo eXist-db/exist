@@ -67,7 +67,7 @@ public class Fallback extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:fallback");
         result.append("> ");    
 

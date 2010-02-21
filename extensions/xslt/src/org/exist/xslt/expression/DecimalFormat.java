@@ -167,7 +167,7 @@ public class DecimalFormat extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:decimal-format");
         if (name != null) 
         	result.append(" name = "+name.toString());    

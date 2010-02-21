@@ -122,7 +122,7 @@ public class Variable extends XSLPathExpr {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:variable");
         
         if (name != null)

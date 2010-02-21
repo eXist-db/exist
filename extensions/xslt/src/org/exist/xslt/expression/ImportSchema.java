@@ -90,7 +90,7 @@ public class ImportSchema extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:import-schema");
         
     	if (namespace != null)

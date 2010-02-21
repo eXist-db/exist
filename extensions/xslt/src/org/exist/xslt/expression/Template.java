@@ -250,7 +250,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:template");
         
     	if (match != null)

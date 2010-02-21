@@ -118,7 +118,7 @@ public class SequenceConstructor extends SimpleConstructor {
 		try {
 			SequenceIterator i = result.iterate();
 			Item next = i.nextItem();		
-			StringBuffer buf = null;
+			StringBuilder buf = null;
             boolean allowAttribs = true;
             while (next != null) {
 			    context.proceed(this, builder);
@@ -126,7 +126,7 @@ public class SequenceConstructor extends SimpleConstructor {
 				// following atomic values and seperate them by a space. 
 				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
 				    if(buf == null)
-				        buf = new StringBuffer();
+				        buf = new StringBuilder();
 					else if (buf.length() > 0)
 						buf.append(' ');
 					buf.append(next.getStringValue());
@@ -180,7 +180,7 @@ public class SequenceConstructor extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:sequence");
 
         if (attr_select != null)
