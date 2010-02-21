@@ -242,7 +242,7 @@ public class Database {
 
 	private static String dbName = "exist";
 	public static final String ROOT_PREFIX = DBBroker.ROOT_COLLECTION;
-	private static BrokerPool pool;
+	private static volatile BrokerPool pool;
 	private static TransactionManager txManager;
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
 	private static final WeakHashMap<NativeBroker,Boolean> instrumentedBrokers = new WeakHashMap<NativeBroker,Boolean>();
