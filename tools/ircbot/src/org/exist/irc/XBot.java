@@ -93,7 +93,12 @@ public class XBot extends PircBot {
         if (f.canRead()) {
             System.out.println("Reading properties file: " + f.getAbsolutePath());
             try {
-                properties.load(new FileInputStream(f));
+            	FileInputStream stream = new FileInputStream(f);
+            	try {
+            		properties.load(stream);
+            	} finally {
+            		stream.close();
+            	}
             } catch (IOException e) {
                 System.err.println("Failed to load properties: " + e.getMessage());
             }
