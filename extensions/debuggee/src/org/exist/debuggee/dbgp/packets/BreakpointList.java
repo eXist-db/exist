@@ -52,15 +52,16 @@ public class BreakpointList extends Command {
 
 	public byte[] responseBytes() {
 		if (breakpoints != null) {
-			String responce = "<response " +
-				"command=\"breakpoint_list\" " +
-				"transaction_id=\""+transactionID+"\">";
+			StringBuffer responce = new StringBuffer(); 
+			responce.append("<response  command=\"breakpoint_list\" transaction_id=\"");
+			responce.append(transactionID);
+			responce.append("\">");
 			for (Breakpoint breakpoint : breakpoints.values()) 
-				responce += breakpoint.toXMLString();
+				responce.append(breakpoint.toXMLString());
 				
-			responce += "</response>";
+			responce.append("</response>");
 
-			return responce.getBytes();
+			return responce.toString().getBytes();
 		}
 		return errorBytes("breakpoint_list");
 	}

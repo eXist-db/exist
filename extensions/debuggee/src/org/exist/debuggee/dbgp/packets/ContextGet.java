@@ -81,15 +81,16 @@ public class ContextGet extends Command {
 	}
 	
 	private String getPropertiesString() {
-		String properties = "";
 		if (variables == null)
-			return properties; //XXX: error?
+			return ""; //XXX: error?
 
-        XQueryContext ctx = getJoint().getContext();
+		StringBuffer properties = new StringBuffer();
+
+		XQueryContext ctx = getJoint().getContext();
 		for (Variable variable : variables.values()) {
-			properties += PropertyGet.getPropertyString(variable, ctx);
+			properties.append(PropertyGet.getPropertyString(variable, ctx));
 		}
-		return properties;
+		return properties.toString();
 	}
 
 	public byte[] commandBytes() {
