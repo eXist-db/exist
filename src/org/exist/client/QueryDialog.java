@@ -337,13 +337,17 @@ public class QueryDialog extends JFrame {
 					"Error", JOptionPane.ERROR_MESSAGE);
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
-				StringBuilder buf = new StringBuilder();
-				String line;
-				while((line = reader.readLine()) != null) {
-					buf.append(line);
-					buf.append('\n');
+				try {
+					StringBuilder buf = new StringBuilder();
+					String line;
+					while((line = reader.readLine()) != null) {
+						buf.append(line);
+						buf.append('\n');
+					}
+					query.setText(buf.toString());
+				} finally {
+					reader.close();
 				}
-				query.setText(buf.toString());
 			} catch (FileNotFoundException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
 			} catch (IOException e) {
