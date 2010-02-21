@@ -67,7 +67,7 @@ public class Otherwise extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:otherwise");
         result.append("> ");    
 

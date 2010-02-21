@@ -87,7 +87,7 @@ public class NamespaceAlias extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:namespace-alias");
         
     	if (stylesheet_prefix != null)

@@ -97,7 +97,7 @@ public class Function extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:function");
         
     	if (name != null)

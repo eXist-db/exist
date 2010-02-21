@@ -48,7 +48,7 @@ public class StackGet extends Command {
 	}
 	
 	public byte[] responseBytes() {
-		StringBuffer response = new StringBuffer();
+		StringBuilder response = new StringBuilder();
 		response.append("<response command=\"stack_get\" transaction_id=\"");
 		response.append(transactionID);
 		response.append("\">\n");
@@ -68,8 +68,8 @@ public class StackGet extends Command {
 
 	}
 	
-	private StringBuffer stackToString(int index) {
-		StringBuffer result = new StringBuffer();
+	private StringBuilder stackToString(int index) {
+		StringBuilder result = new StringBuilder();
 		if (stacks == null || stacks.size() == 0)
 			return result;
 		

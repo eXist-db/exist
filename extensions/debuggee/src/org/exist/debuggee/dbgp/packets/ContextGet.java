@@ -84,7 +84,7 @@ public class ContextGet extends Command {
 		if (variables == null)
 			return ""; //XXX: error?
 
-		StringBuffer properties = new StringBuffer();
+		StringBuilder properties = new StringBuilder();
 
 		XQueryContext ctx = getJoint().getContext();
 		for (Variable variable : variables.values()) {

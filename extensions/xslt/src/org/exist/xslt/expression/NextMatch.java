@@ -67,7 +67,7 @@ public class NextMatch extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:next-match");
         result.append("> ");    
 

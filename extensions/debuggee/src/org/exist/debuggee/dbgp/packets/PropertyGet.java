@@ -114,7 +114,7 @@ public class PropertyGet extends Command {
 		if (variable == null)
 			return errorBytes("property_get");
 		
-		StringBuffer responce = new StringBuffer();
+		StringBuilder responce = new StringBuilder();
 		responce.append("<response command=\"property_get\" transaction_id=\"");
 		responce.append(transactionID);
 		responce.append("\">");
@@ -124,13 +124,13 @@ public class PropertyGet extends Command {
 		return responce.toString().getBytes();
 	}
 
-	protected static StringBuffer getPropertyString(Variable variable, XQueryContext context) {
+	protected static StringBuilder getPropertyString(Variable variable, XQueryContext context) {
         Sequence value = variable.getValue();
         Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
 
         try {
-            StringBuffer property = new StringBuffer();
+        	StringBuilder property = new StringBuilder();
             if (value.hasOne()) {
                 String strVal = getPropertyValue(value.itemAt(0), serializer);
                 String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "node" :

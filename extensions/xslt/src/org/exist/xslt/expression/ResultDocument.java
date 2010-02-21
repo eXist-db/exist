@@ -250,7 +250,7 @@ public class ResultDocument extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:result-document");
         
     	if (format != null)

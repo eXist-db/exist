@@ -174,7 +174,7 @@ public class Copy extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:copy");
         
     	if (copy_namespaces != null)

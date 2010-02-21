@@ -105,7 +105,7 @@ public class CopyOf extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:copy-of");
         
     	if (select != null)

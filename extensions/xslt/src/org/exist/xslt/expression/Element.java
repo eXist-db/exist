@@ -141,7 +141,7 @@ public class Element extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:element");
         
     	if (name != null)

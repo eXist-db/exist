@@ -183,7 +183,7 @@ public class ApplyTemplates extends SimpleConstructor {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:apply-templates");
         
     	if (select != null)

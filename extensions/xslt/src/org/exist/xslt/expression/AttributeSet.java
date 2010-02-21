@@ -106,7 +106,7 @@ public class AttributeSet extends Declaration {
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	result.append("<xsl:attribute-set");
         
     	if (name != null)

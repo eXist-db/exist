@@ -106,7 +106,7 @@ public class XSLTS_case {
 
         ResourceSet result = service.query(query);
 
-    	StringBuffer content = new StringBuffer();
+        StringBuilder content = new StringBuilder();
     	for (int i = 0; i < result.getSize(); i++)
     		content.append((String) result.getResource(i).getContent());
 
