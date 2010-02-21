@@ -132,10 +132,15 @@ public class XQueryUseCase {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			byte[] t = new byte[512];
 			InputStream is = new FileInputStream(f);
-			int count = 0;
-			while((count = is.read(t)) != -1) {
-				os.write(t, 0, count);
+			try {
+				int count = 0;
+				while((count = is.read(t)) != -1) {
+					os.write(t, 0, count);
+				}
+				return new String(os.toString("UTF-8"));
+			} finally {
+				is.close();
+				os.close();
 			}
-			return new String(os.toString("UTF-8"));
 		}
 }
