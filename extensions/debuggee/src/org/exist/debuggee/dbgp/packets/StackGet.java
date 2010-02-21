@@ -48,42 +48,51 @@ public class StackGet extends Command {
 	}
 	
 	public byte[] responseBytes() {
-		String response = "" +
-			"<response " +
-					"command=\"stack_get\" " +
-					"transaction_id=\""+transactionID+"\">\n";
+		StringBuffer response = new StringBuffer();
+		response.append("<response command=\"stack_get\" transaction_id=\"");
+		response.append(transactionID);
+		response.append("\">\n");
 
 		if (stackDepth != null) {
 			int index = stacks.size() - 1 - stackDepth;
 			if (index >=0 && index < stacks.size())
-				response += stackToString(index);
+				response.append(stackToString(index));
 		} else {
 			for (int index = stacks.size()-1; index >= 0; index--)
-				response += stackToString(index);
+				response.append(stackToString(index));
 		}
 			
-		response += "</response>";
+		response.append("</response>");
 		
-		return response.getBytes();
+		return response.toString().getBytes();
 
 	}
 	
-	private String stackToString(int index) {
+	private StringBuffer stackToString(int index) {
+		StringBuffer result = new StringBuffer();
 		if (stacks == null || stacks.size() == 0)
-			return "";
+			return result;
 		
 		Expression expr = stacks.get(index);
 		
 		int level = stacks.size() - index - 1;
 		
-		return "<stack level=\""+String.valueOf(level)+"\" " +
-					"lineno=\""+expr.getLine()+"\" " +
-					"type=\"file\" " +
-					"filename=\""+getFileuri(expr.getSource())+"\" " +
+		result.append("<stack level=\"");
+		result.append(String.valueOf(level));
+		result.append("\" lineno=\"");
+		result.append(expr.getLine());
+		result.append("\" type=\"file\" filename=\"");
+		result.append(getFileuri(expr.getSource()));
+		result.append("\" ");
 //					+
 //					"where=\"\" " +
-					"cmdbegin=\""+expr.getLine()+":"+expr.getColumn()+"\"  />";
+		result.append("cmdbegin=\"");
+		result.append(expr.getLine());
+		result.append(":");
+		result.append(expr.getColumn());
+		result.append("\"  />");
 //					"cmdend=\""+(expr.getLine())+":"+(expr.getColumn()+1)+"\"/>";
+		return result; 
 	}
 	
 	

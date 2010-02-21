@@ -106,11 +106,11 @@ public class XSLTS_case {
 
         ResourceSet result = service.query(query);
 
-    	String content = "";
+    	StringBuffer content = new StringBuffer();
     	for (int i = 0; i < result.getSize(); i++)
-    		content = content + (String) result.getResource(i).getContent();
+    		content.append((String) result.getResource(i).getContent());
 
-        assertTrue(checkResult(outputURL, content));
+        assertTrue(checkResult(outputURL, content.toString()));
 	}
 
 	private boolean checkResult(String file, String result) throws Exception {

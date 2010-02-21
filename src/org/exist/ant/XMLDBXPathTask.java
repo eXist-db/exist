@@ -138,12 +138,13 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
 	        } else {
 	          ResourceIterator iter = results.getIterator();
 	          XMLResource res = null;
-	          String result = "";
+	          StringBuffer result = new StringBuffer();
 	          while (iter.hasMoreResources()) {
 	            res = (XMLResource) iter.nextResource();
-	            result += res.getContent().toString() + "\n";
+	            result.append(res.getContent().toString());
+	            result.append("\n");
 	          }
-	          getProject().setNewProperty(outputproperty, result);
+	          getProject().setNewProperty(outputproperty, result.toString());
 	        }
 	      }
       }
