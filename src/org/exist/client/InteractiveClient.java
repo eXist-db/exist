@@ -1883,15 +1883,17 @@ public class InteractiveClient {
         
         if(pin == null){
             // Try to load via classloader
-            pin = InteractiveClient.class
-                    .getResourceAsStream("client.properties");
+            pin = InteractiveClient.class.getResourceAsStream("client.properties");
         }
         
         if (pin != null){
-            
             // Try to load properties from stream
             try{
-                clientProps.load(pin);
+            	try {
+            		clientProps.load(pin);
+            	} finally {
+            		pin.close();
+            	}
             } catch (IOException ex) {
                 //
             }
