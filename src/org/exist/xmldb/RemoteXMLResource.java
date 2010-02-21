@@ -249,19 +249,19 @@ public class RemoteXMLResource
     }
 
     public void setContent(Object value) throws XMLDBException {
-	content = null;
+    	content = null;
     	if(!super.setContentInternal(value)) {
-		if(value instanceof String) {
-			content = new String((String)value);
-		} else if(value instanceof byte[]) {
-			try {
-				content = new String((byte[])value,"UTF-8");
-			} catch(UnsupportedEncodingException uee) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
-			}
-		} else {
+    		if(value instanceof String) {
+    			content = new String((String)value);
+    		} else if(value instanceof byte[]) {
+    			try {
+    				content = new String((byte[])value,"UTF-8");
+    			} catch(UnsupportedEncodingException uee) {
+    				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
+    			}
+    		} else {
 	    		content = value.toString();
-		}
+    		}
     	}
     }
 
@@ -320,20 +320,21 @@ public class RemoteXMLResource
     	return new InternalXMLSerializer();
     }
 
-    private class InternalXMLSerializer
-    	extends SAXSerializer
+    private class InternalXMLSerializer extends SAXSerializer
     {
-    	File tmpfile=null;
+    	File tmpfile = null;
     	
 		public InternalXMLSerializer() {
 			super();
 			try {
-		    	File tmpfile=File.createTempFile("eXistRXR", ".xml");
+		    	tmpfile = File.createTempFile("eXistRXR", ".xml");
 		    	tmpfile.deleteOnExit();
+		    	
 		    	FileOutputStream fos=new FileOutputStream(tmpfile);
 		    	BufferedOutputStream bos=new BufferedOutputStream(fos);
 		    	OutputStreamWriter writer=new OutputStreamWriter(bos,"UTF-8");
 				setOutput(writer, emptyProperties);
+			
 			} catch(IOException ioe) {
 				// Don't know where to report!!!
 			}
@@ -342,8 +343,7 @@ public class RemoteXMLResource
 		/**
 		 * @see org.xml.sax.DocumentHandler#endDocument()
 		 */
-		public void endDocument()
-			throws SAXException
+		public void endDocument() throws SAXException
 		{
 		    super.endDocument();
 		    try {
