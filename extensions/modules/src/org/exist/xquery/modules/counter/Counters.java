@@ -22,7 +22,7 @@ public class Counters {
 
     private final static Logger LOG = Logger.getLogger(Counters.class);
     
-    private static Counters instance;
+    private static volatile Counters instance;
 
     public final static String COUNTERSTORE = "counters";
     public final static String DELIMITER = ";";
