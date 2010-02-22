@@ -323,6 +323,7 @@ public class RemoteXMLResource
     	extends SAXSerializer
     {
     	File tmpfile=null;
+    	OutputStreamWriter writer = null;
     	
 		public InternalXMLSerializer() {
 			super();
@@ -334,7 +335,7 @@ public class RemoteXMLResource
 		    	tmpfile.deleteOnExit();
 		    	FileOutputStream fos=new FileOutputStream(tmpfile);
 		    	BufferedOutputStream bos=new BufferedOutputStream(fos);
-		    	OutputStreamWriter writer=new OutputStreamWriter(bos,"UTF-8");
+		    	writer=new OutputStreamWriter(bos,"UTF-8");
 				setOutput(writer, emptyProperties);
 			} catch(IOException ioe) {
 		    	throw new SAXException("Unable to create temp file for serialization data",ioe);
@@ -354,6 +355,13 @@ public class RemoteXMLResource
 		    } catch(XMLDBException xe) {
 		    	throw new SAXException("Unable to close temp file containing serialized data",xe);
 		    }
+		    
+		    try {
+		    	if (writer != null)
+		    		writer.close();
+			} catch (IOException e) {
+		    	throw new SAXException("Unable to close temp file containing serialized data",e);
+			}
 		}
     }
 
