@@ -326,6 +326,9 @@ public class RemoteXMLResource
     	
 		public InternalXMLSerializer() {
 			super();
+		}
+
+		public void startDocument() throws SAXException {
 			try {
 		    	File tmpfile=File.createTempFile("eXistRXR", ".xml");
 		    	tmpfile.deleteOnExit();
@@ -334,10 +337,11 @@ public class RemoteXMLResource
 		    	OutputStreamWriter writer=new OutputStreamWriter(bos,"UTF-8");
 				setOutput(writer, emptyProperties);
 			} catch(IOException ioe) {
-				// Don't know where to report!!!
+		    	throw new SAXException("Unable to create temp file for serialization data",ioe);
 			}
-		}
 
+			super.startDocument();
+		}
 		/**
 		 * @see org.xml.sax.DocumentHandler#endDocument()
 		 */
