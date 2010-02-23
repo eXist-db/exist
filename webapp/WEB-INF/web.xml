@@ -170,6 +170,12 @@
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
     </servlet>
     
+    <!-- OpenID -->
+    <servlet>
+        <servlet-name>OpenIdServlet</servlet-name>
+        <servlet-class>org.exist.security.openid.servlet.AuthenticatorOpenId</servlet-class>
+    </servlet>
+
     <!-- 
         ================ Cocoon2 Configuration starts here ================ 
     -->
