@@ -137,7 +137,14 @@ return
 		</html>
 	else
 		let $null := util:declare-option("exist:serialize", "method=text media-type=application/json")
-		let $asString := replace(util:serialize($formattedFeed, "indent=no"), "'", "\\'")
+		let $asString := 
+			translate(
+				replace(
+					util:serialize($formattedFeed, "indent=no"), 
+					"'", "\\'"
+				),
+				'&#xA;', ''
+			)
 		let $body := concat('&lt;ul class="twitter"&gt;', $asString, '&lt;/ul&gt;')
 		return
 			concat("twitterCallback('", $body, "')")
