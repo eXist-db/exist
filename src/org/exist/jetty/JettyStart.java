@@ -221,6 +221,7 @@ public class JettyStart implements LifeCycle.Listener {
             		if (handler instanceof ServletContextHandler) {
             			ServletContextHandler contextHandler = (ServletContextHandler) handler;
             			contextHandler.addServlet(new ServletHolder(openid),"/openid");
+            			logger.info("http://localhost:" + port + contextHandler.getContextPath() + "/openid");
             		}
                 //*************************************************************
             }
