@@ -36,18 +36,18 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  */
 public class LRUCache implements Cache {
     
-	private int max;
-	private SequencedLongHashMap map;
+	protected int max;
+	protected SequencedLongHashMap map;
 	
-    private Accounting accounting;
+    protected Accounting accounting;
 	
-    private int hitsOld = -1;
+    protected int hitsOld = -1;
 	
-    private double growthFactor;
+    protected double growthFactor;
     
-    private String fileName;
+    protected String fileName;
     
-    private CacheManager cacheManager = null;
+    protected CacheManager cacheManager = null;
 
     private String type;
 
@@ -183,11 +183,7 @@ public class LRUCache implements Cache {
         return fileName;
     }
     
-    public SequencedLongHashMap.Entry getFirst() {
-        return map.getFirstEntry();
-    }
-    
-	private final void removeOne(Cacheable item) {
+	protected void removeOne(Cacheable item) {
 		boolean removed = false;
 		SequencedLongHashMap.Entry next = map.getFirstEntry();
 		do {

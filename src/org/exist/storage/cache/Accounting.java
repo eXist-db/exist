@@ -49,7 +49,7 @@ public class Accounting {
     private long checkPeriodStart = System.currentTimeMillis();
     
     /** max. entries to keep in the table of replaced pages */
-    private int maxEntries = 1000;
+    private int maxEntries = 5000;
     
     /** total cache hits during the lifetime of the cache*/
     private int hits = 0;
@@ -157,6 +157,8 @@ public class Accounting {
      * cache efficiency
      */
     public boolean resizeNeeded() {
+        if (thrashingFactor == 0)
+            return thrashing > 0;
         return thrashing > totalSize * thrashingFactor;
     }
     

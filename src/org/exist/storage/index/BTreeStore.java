@@ -1,11 +1,9 @@
 package org.exist.storage.index;
 
 import org.exist.storage.BrokerPool;
-import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
-import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 

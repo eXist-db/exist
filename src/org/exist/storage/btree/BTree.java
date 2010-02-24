@@ -76,9 +76,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
-import org.exist.storage.cache.Cache;
-import org.exist.storage.cache.Cacheable;
-import org.exist.storage.cache.LRDCache;
+import org.exist.storage.cache.*;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.LogException;
@@ -231,9 +229,11 @@ public class BTree extends Paged {
 		return true;
 	}
 
-	private void initCache() {
-        cache = new LRDCache(cacheManager.getDefaultInitialSize(), 1.5,
-            growthThreshold, CacheManager.BTREE_CACHE);
+	protected void initCache() {
+//        cache = new LRDCache(cacheManager.getDefaultInitialSize(), 1.5,
+//            growthThreshold, CacheManager.BTREE_CACHE);
+        cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
+            0, CacheManager.BTREE_CACHE);
         cache.setFileName(getFile().getName());
         cacheManager.registerCache(cache);
 	}
@@ -747,7 +747,7 @@ public class BTree extends Paged {
      * @author wolf
      *
      */
-	protected final class BTreeNode implements Cacheable {
+	protected final class BTreeNode implements BTreeCacheable {
 		
         /** defines the default size for the keys array */
         private final static int DEFAULT_INITIAL_ENTRIES = 32;
@@ -861,8 +861,12 @@ public class BTree extends Paged {
 		public int getTimestamp() {
 			return timestamp;
 		}
-        
-		/**
+
+        public boolean isInnerPage() {
+            return ph.getStatus() == BRANCH;
+        }
+
+        /**
          * @see org.exist.storage.cache.Cacheable#sync(boolean syncJournal)
          */
 		public boolean sync(boolean syncJournal) {
