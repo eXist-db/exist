@@ -9,7 +9,7 @@ import org.exist.security.User;
 public class SessionManager {
 
 	private static long TIMEOUT = 3600000;
-	private static SessionManager instance = null;
+	private static volatile SessionManager instance = null;
 
 	public static final SessionManager getInstance() {
 		if (instance == null)
