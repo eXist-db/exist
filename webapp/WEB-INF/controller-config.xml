@@ -14,8 +14,6 @@
 	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
     <!-- Atom Publishing Protocol -->
     <forward pattern="/atom/" servlet="AtomServlet"/>
-    <!-- OpenID -->
-    <forward pattern="/openid" servlet="OpenIdServlet"/>
     <!-- Apache SOAP interface -->
     <forward pattern="/axis-servlet/AxisServlet" servlet="AxisServlet"/>
     <forward pattern=".*\.jws" servlet="AxisServlet"/>
