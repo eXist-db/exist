@@ -48,7 +48,7 @@ public class JMXAgent implements Agent {
 
     private final static Logger LOG = Logger.getLogger(JMXAgent.class);
 
-    private static Agent agent = null;
+    private static volatile Agent agent = null;
 
     public static Agent getInstance() {
         if (agent == null)
