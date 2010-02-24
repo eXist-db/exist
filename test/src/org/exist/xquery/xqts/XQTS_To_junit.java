@@ -255,7 +255,7 @@ public class XQTS_To_junit {
        	    
        	    out.write("package org.exist.xquery.xqts"+_package_+";\n\n"+
        	    		"import org.exist.xquery.xqts.XQTS_case;\n" +
-       	    		"import static org.junit.Assert.*;\n" +
+//       	    		"import static org.junit.Assert.*;\n" +
        	    		"import org.junit.Test;\n\n" +
        	    		"public class C_"+adoptString(testGroup)+" extends XQTS_case {\n" +
        	    		"	private String testGroup = \""+testGroup+"\";\n\n");
