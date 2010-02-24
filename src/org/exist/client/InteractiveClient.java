@@ -2183,15 +2183,18 @@ public class InteractiveClient {
             }
         } else if (cOpt.optionXpath != null || cOpt.optionQueryFile != null) {
             if (cOpt.optionQueryFile != null) {
-                BufferedReader reader = new BufferedReader(new FileReader(
-                        cOpt.optionQueryFile));
-                StringBuilder buf = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buf.append(line);
-                    buf.append('\n');
+                BufferedReader reader = new BufferedReader(new FileReader(cOpt.optionQueryFile));
+                try {
+                	StringBuilder buf = new StringBuilder();
+                	String line;
+                	while ((line = reader.readLine()) != null) {
+                		buf.append(line);
+                		buf.append('\n');
+                	}
+                	cOpt.optionXpath = buf.toString();
+                } finally {
+                	reader.close();
                 }
-                cOpt.optionXpath = buf.toString();
             }
             // if no argument has been found, read query from stdin
             if (cOpt.optionXpath.equals("stdin")) {
@@ -2343,7 +2346,7 @@ public class InteractiveClient {
             
         } else if (cOpt.needPasswd) {
             try {
-                properties.setProperty("password", console.readLine("password: ", new Character('*')));
+                properties.setProperty("password", console.readLine("password: ", Character.valueOf('*')));
             } catch (Exception e) {
             }
         }
