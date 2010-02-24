@@ -107,7 +107,7 @@ public class GetScheduledJobs extends BasicFunction
 		
 		boolean userhasDBARole = user.hasDbaRole();
 		
-		StringBuffer xmlBuf = new StringBuffer();
+		StringBuilder xmlBuf = new StringBuilder();
 		
 		int iJobs = 0;
 		String[] groups = scheduler.getJobGroupNames();
