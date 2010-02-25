@@ -88,7 +88,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="examples/pimport.xproc?stdin=/db/xproc/examples/test.xml" target="_example">p:import with p:library [<a href="examples/pimport.xproc?stdin=/db/xproc/examples/test.xml&debug=1" target="_example">debug</a>]</a>
+                        <a href="examples/pimport.xproc?stdin=/db/xproc/examples/test.xml" target="_example">p:import with p:library [<a href="examples/pimport.xproc?stdin=/db/xproc/examples/test.xml&amp;debug=1" target="_example">debug</a>]</a>
                     </td>
                     <td>rudimentary example of importing a custom step using p:import and p:library</td>
                 </tr>
