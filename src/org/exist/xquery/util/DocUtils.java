@@ -115,7 +115,7 @@ public class DocUtils {
                 throw new XPathException(e.getMessage(), e);
 
             } catch(SAXException e) {
-                throw new XPathException(e.getMessage(), e);
+                throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
             }
             catch(IOException e) {
                 // Special case: FileNotFoundException
@@ -125,7 +125,7 @@ public class DocUtils {
                 }
                 else
                 {
-                    throw new XPathException(e.getMessage(), e);
+                    throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
                 }
             } finally {
                 if (reader != null)
@@ -157,7 +157,7 @@ public class DocUtils {
 					
                     if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
                     {
-                        throw new XPathException("Document is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
+                        throw new XPathException("Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
                     }
 
                     if(lockOnLoad)
