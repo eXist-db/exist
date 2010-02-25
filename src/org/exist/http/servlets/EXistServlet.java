@@ -627,6 +627,8 @@ public class EXistServlet extends HttpServlet {
 			}	
 		}
 		
+        if (principal instanceof User)
+			return (User) principal;
 		
 		//Secondly try basic authentication
 		String auth = request.getHeader("Authorization");
