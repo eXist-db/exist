@@ -727,6 +727,11 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         isSorted = true;
     }
 
+    public void updateNoSort() {
+        updateDocs();
+        isSorted = true;
+    }
+
     private void updateDocs() {
         if (size == 1) {
             documentIds[0] = nodes[0].getDocument().getDocId();

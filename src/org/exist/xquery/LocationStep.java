@@ -53,6 +53,8 @@ public class LocationStep extends Step {
 
 	private final int ATTR_DIRECT_SELECT_THRESHOLD = 10;
 
+    private final int INDEX_SCAN_THRESHOLD = 10000;
+
 	protected NodeSet currentSet = null;
 
 	protected DocumentSet currentDocs = null;
@@ -689,7 +691,7 @@ public class LocationStep extends Step {
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
-			if (!contextSet.getProcessInReverseOrder()) {
+			if (!contextSet.getProcessInReverseOrder() && contextSet.getLength() < INDEX_SCAN_THRESHOLD) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
 						test.getName(), axis, docs, contextSet,
 						contextId);
@@ -774,7 +776,7 @@ public class LocationStep extends Step {
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
 			}
-			if (!contextSet.getProcessInReverseOrder()) {
+			if (!contextSet.getProcessInReverseOrder() && contextSet.getLength() < INDEX_SCAN_THRESHOLD) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
 						test.getName(), axis, docs, contextSet,
 						contextId);
