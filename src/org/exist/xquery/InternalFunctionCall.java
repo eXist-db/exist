@@ -54,8 +54,8 @@ public class InternalFunctionCall extends Function
         try {
             return function.eval(contextSequence, contextItem);
         } catch (XPathException e) {
-            if (e.getLine() == 0)
-                e.setLocation(line, column);
+            if (e.getLine() <= 0)
+                e.setLocation(line, column, getSource());
             throw e;
         } finally {
             context.stackLeave(this);

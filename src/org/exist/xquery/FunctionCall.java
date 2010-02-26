@@ -190,8 +190,8 @@ public class FunctionCall extends Function {
                 }
 //			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
             } catch (XPathException e) {
-                if(e.getLine() == 0) {
-                    e.setLocation(line, column);
+                if(e.getLine() <= 0) {
+                    e.setLocation(line, column, getSource());
                 }
                 // append location of the function call to the exception message:
                 e.addFunctionCall(functionDef, this);

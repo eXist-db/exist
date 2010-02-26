@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 
 public class XPathException extends Exception {
@@ -14,7 +15,8 @@ public class XPathException extends Exception {
 	private int column = 0;
 	private String message = null;
 	private List<FunctionStackElement> callStack = null;
-    
+    private XACMLSource source = null;
+
 	/**
 	 * @param message
 	 */
@@ -35,6 +37,7 @@ public class XPathException extends Exception {
         this.message = message;
         this.line = expr.getLine();
         this.column = expr.getColumn();
+        this.source = expr.getSource();
     }
 
     public XPathException(XQueryAST ast, String message) {
@@ -83,7 +86,13 @@ public class XPathException extends Exception {
         this.line = line;
         this.column = column;
     }
-    
+
+    public void setLocation(int line, int column, XACMLSource source) {
+        this.line = line;
+        this.column = column;
+        this.source = source;
+    }
+
 	public int getLine() {
 		return line;
 	}
@@ -95,7 +104,7 @@ public class XPathException extends Exception {
     public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if (callStack == null)
             callStack = new ArrayList<FunctionStackElement>();
-        callStack.add(new FunctionStackElement(def, call.getSource().toString(), call.getLine(), call.getColumn()));
+        callStack.add(new FunctionStackElement(def, def.getSource().getKey(), call.getLine(), call.getColumn()));
     }
 	
     public void prependMessage(String msg) {
@@ -110,18 +119,21 @@ public class XPathException extends Exception {
 		if(message == null)
 			message = "";
 		buf.append(message);
+        buf.append(" [");
         if (getLine() > 0) {
-			buf.append(" [at line ");
+			buf.append("at line ");
 			buf.append(getLine());
 			buf.append(", column ");
 			buf.append(getColumn());
-			buf.append("]");
 		}
+        if (source != null)
+            buf.append(", source: ").append(source.getKey());
+        buf.append("]");
         if (callStack != null) {
-            buf.append("\nIn call to function:\n");
+            buf.append("\nIn function:\n");
             for (Iterator<FunctionStackElement> i = callStack.iterator(); i.hasNext(); ) {
             	FunctionStackElement stack = i.next();
-                buf.append('\t').append(stack).append(" @").append(stack.column);
+                buf.append('\t').append(stack);
                 if (i.hasNext())
                     buf.append('\n');
             }
@@ -182,10 +194,9 @@ public class XPathException extends Exception {
         
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append(function).append(" ");
-            buf.append(file).append(" [");
+            buf.append(function).append(" [");
             buf.append(line).append(":");
-            buf.append(column).append(']');
+            buf.append(column).append(":").append(file).append(']');
             return buf.toString();
         }
     }
