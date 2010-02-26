@@ -424,9 +424,9 @@ public class XQueryServlet extends HttpServlet {
                try {
             	   query = xquery.compile(context, source);
                } catch (XPathException ex) {
-                  throw new EXistException("Cannot compile xquery "+source.toString(),ex);
+                  throw new EXistException("Cannot compile xquery: "+ ex.getMessage(), ex);
                } catch (IOException ex) {
-                  throw new EXistException("I/O exception while compiling xquery "+source.toString(),ex);
+                  throw new EXistException("I/O exception while compiling xquery: " + ex.getMessage() ,ex);
                }
             } else {
                context = query.getContext();
