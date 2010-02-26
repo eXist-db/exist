@@ -88,7 +88,7 @@
 
             <!-- Submit the project list  -->
             <xf:submission id="sprojects" method="put" ref="instance('projects')"
-                action="../rest/db/todo/todo-projects.xml" replace="none"/>
+                action="../../rest/db/todo/todo-projects.xml" replace="none"/>
             <!-- Submit an action, e.g. to delete a task -->
             <xf:submission id="saction" ref="instance('session')//action" method="post"
                 action="todo.xql" replace="none"/>
