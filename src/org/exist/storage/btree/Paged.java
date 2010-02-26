@@ -343,8 +343,10 @@ public abstract class Paged {
                 if(fileHeader.getVersion() != expectedVersion)
 					throw new DBException("Database file " +
 							getFile().getName() + " has a storage format incompatible with this " +
-							"version of eXist. Please do a backup/restore of your data first. Software version is: " +
-                            expectedVersion + "; db version is " + fileHeader.getVersion());
+							"version of eXist. You need to upgrade your database by creating a backup, cleaning " +
+                        " your data directory and restoring the data. In some cases, a reindex may be sufficient. " +
+                        "Please follow the instructions for the version you installed. File version is: " +
+                            expectedVersion + "; db expects version " + fileHeader.getVersion());
 				return true;
 			} else
 				return false;

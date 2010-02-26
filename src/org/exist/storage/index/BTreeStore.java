@@ -11,7 +11,7 @@ import java.io.File;
 
 public class BTreeStore extends BTree {
 
-    public final static short FILE_FORMAT_VERSION_ID = 1;
+    public final static short FILE_FORMAT_VERSION_ID = 2;
 
     protected Lock lock = null;
 
