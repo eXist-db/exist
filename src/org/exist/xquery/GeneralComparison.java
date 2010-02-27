@@ -451,6 +451,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 } else {
                     contextStep.setPreloadedData( preselectResult.getDocumentSet(), preselectResult );
                     result = getLeft().eval( contextSequence ).toNodeSet();
+                    // the expression can be called multiple times, so we need to clear the previous preselectResult
+                    preselectResult = null;
                 }
             }
 
