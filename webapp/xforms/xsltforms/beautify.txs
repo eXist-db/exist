@@ -38,7 +38,7 @@
 					<xsl:for-each select="(namespace::* | @*/namespace::*)[name()!='xml']">
 						<xsl:variable name="prefix" select="name()"/>
 						<xsl:variable name="uri" select="."/>
-						<xsl:if test="(not($parent/namespace::*[name()=$prefix and . = $uri]) or $root) and (($element|$element//*|$element//@*)[namespace-uri()=$uri])"> xmlns<xsl:if test="$prefix">:<xsl:value-of select="$prefix"/></xsl:if>="<xsl:value-of select="$uri"/>"</xsl:if>
+						<xsl:if test="(not($parent/namespace::*[name()=$prefix and . = $uri]) or $offset=0) and (($element|$element//*|$element//@*)[namespace-uri()=$uri])"> xmlns<xsl:if test="$prefix">:<xsl:value-of select="$prefix"/></xsl:if>="<xsl:value-of select="$uri"/>"</xsl:if>
 					</xsl:for-each>
 				</xsl:when>
 				<xsl:otherwise>
