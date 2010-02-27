@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2008-2009 Alain COUTHURES <agenceXML>
+// Copyright (C) 2008-2010 Alain COUTHURES <agenceXML>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -555,7 +555,14 @@ function Load($n) {
 			if(file_exists($n->getAttribute("filename"))) {
 				$xLoad = new DOMDocument();
 				$xLoad->load($n->getAttribute("filename"));
-				$n->parentNode->replaceChild($n->ownerDocument->importNode($xLoad->documentElement, true), $n);
+				$root = $n->ownerDocument->importNode($xLoad->documentElement, true);
+				$n->parentNode->replaceChild($root, $n);
+				for($i = 0; $i < $xLoad->childNodes->length; $i++) {
+					$cur = $xLoad->childNodes->item($i);
+					if($cur->nodeType == XML_PI_NODE) {
+						$root->parentNode->insertBefore($root->ownerDocument->importNode($cur, true), $root);
+					}
+				}
 			}
 			else {
 				$nofile = $n->ownerDocument->createElementNS("http://www.agencexml.com/txs", "txs:nofile");
@@ -727,7 +734,15 @@ function Transform($n) {
 		$xml->documentElement->parentNode->replaceChild($xml->importNode($n->firstChild, true), $xml->documentElement);
 	}
 	else {
-		$xml->documentElement->parentNode->replaceChild($xml->importNode($xpath->query("txs:input/*", $n)->item(0), true), $xml->documentElement);
+		$root = $xml->importNode($xpath->query("txs:input/*", $n)->item(0), true);
+		$xml->documentElement->parentNode->replaceChild($root, $xml->documentElement);
+		$rootNodes = $xpath->query("txs:input/node()", $n);
+		for($i = 0; $i < $rootNodes->length; $i++) {
+			$cur = $rootNodes->item($i);
+			if($cur->nodeType == XML_PI_NODE) {
+				$root->parentNode->insertBefore($root->ownerDocument->importNode($cur, true), $root);
+			}
+		}
 	}
 	$xsl = new DOMDocument();
 	$stsh = $n->getAttribute("stylesheet");
@@ -895,7 +910,7 @@ function Script($n) {
 		}
 	}
 }
-function Execute($filename, $xparams) {
+function Execute($filename, $xparams, $querystring) {
 	$xDoc = new DOMDocument();
 	$xDoc->load($filename);
 	$result = $xDoc->createElementNS("http://www.agencexml.com/txs", "txs:result");
@@ -908,11 +923,15 @@ function Execute($filename, $xparams) {
 	$m = substr($m, strpos($m, "."));
 	$today = getdate();
 	$param->setAttribute("value", sprintf("%04d-%02d-%02dT%02d:%02d:%02d%sZ",$today["year"],$today["mon"],$today["mday"],$today["hours"],$today["minutes"],$today["seconds"],$m));
+	$param2 = $xDoc->createElementNS("http://www.agencexml.com/txs", "txs:with-param");
+	$param2->setAttribute("name", "querystring");
+	$param2->setAttribute("value", $querystring);
 	$input = $xDoc->createElementNS("http://www.agencexml.com/txs", "txs:input");
 	$xPar = new DOMDocument();
 	$xPar->loadXML($xparams);
 	$input->appendChild($xDoc->importNode($xPar->documentElement,true));
 	$transf->appendChild($param);
+	$transf->appendChild($param2);
 	$transf->appendChild($input);
 	$result->appendChild($transf);
 	$xDoc->documentElement->appendChild($result);
@@ -935,6 +954,7 @@ if(array_key_exists("exec", $_GET) && $_GET["exec"] != "") {
 } else {
 	$execfile = "echo.txs";
 }
+$querystring = "";
 $reqparams = file_get_contents("php://input");
 if(substr($reqparams,0,9) == "postdata=") {
 	$reqparams = urldecode(substr($reqparams,strpos($reqparams,"=")+1));
@@ -948,8 +968,16 @@ if($reqparams == "") {
 		}
 	}
 	$reqparams .= "</req:params>";
+} else {
+	foreach($_GET as $param => $value) {
+	  $param = str_replace("amp;", "", $param);
+	  $querystring .= $param."=".@$value."&";
+	}
+	if( $querystring != "" ) {
+		$querystring = substr($querystring, 0, strlen($querystring)-1);
+	}
 }
-$response = Execute($execfile, $reqparams);
+$response = Execute($execfile, $reqparams, $querystring);
 $s = substr($response, strpos($response, "<txs:return ")+12);
 $ns = " ".substr($s, 0, strpos($s, " contenttype=\""));
 $s = substr($s, strpos($s, " contenttype=\"")+14);
@@ -969,6 +997,7 @@ $content = substr($content, 0, strpos($content, "</txs:return>"));
 $content = preg_replace("/<txs:stylesheet(.*)>/sU", "<xsl:stylesheet$1>", $content);
 $content = preg_replace("/<\/txs:stylesheet>/sU", "</xsl:stylesheet>", $content);
 $content = preg_replace("/<txs:output(.*)\/>/U", "<xsl:output$1/>", $content);
+//echo "<pre>".$content."</pre>";
 $content = preg_replace("/<txs:processing-instruction\s+name=\"(.*)\">(.*)<\/txs:processing-instruction>/U", "<?\$1 \$2?>\n", $content);
 switch($ctype){
 	case "text/javascript" :

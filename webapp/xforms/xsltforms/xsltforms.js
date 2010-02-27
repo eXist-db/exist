@@ -48,6 +48,7 @@ var Core = {
     isOpera : navigator.userAgent.match(/\bOpera\b/) != null,
     isIE : navigator.userAgent.match(/\bMSIE\b/) != null
            && navigator.userAgent.match(/\bOpera\b/) == null,
+		isIE6 : navigator.userAgent.match(/\bMSIE 6.0/) != null,
     isMozilla : navigator.userAgent.match(/\bGecko\b/) != null,
 		isFF2 : navigator.userAgent.match(/\bFirefox[\/\s]2.\b/) != null,
     setClass : function(element, className, value) {
@@ -117,7 +118,7 @@ var Core = {
 
 		
 
-    loadProperties : function(name) {
+    loadProperties : function(properties, name) {
         if (!this.ROOT) {
             var scripts = document.getElementsByTagName("script");
 
@@ -131,12 +132,12 @@ var Core = {
             }
         }
 
-        var uri = this.ROOT + name + ".properties";
+        var uri = this.ROOT + name;
         var req = Core.openRequest("GET", uri, false);
 
         if (req.overrideMimeType) {
-	        req.overrideMimeType("text/plain");
-	    }
+	        req.overrideMimeType("application/xml");
+				}
 
         try {        
             req.send(null);
@@ -144,26 +145,32 @@ var Core = {
             alert("File not found: " + uri);
         }
 
-        var text = req.responseText;
-        var lines = text.split(/\s*\n\s*/);
-        var properties = [];
-        
-        for (var j = 0; j < lines.length; j++) {
-        	var line = lines[j].replace(/^\s+|\s+$/, ''); //trim
-
-        	if (line[0] != '#' && line[0] != '!') {
-	            var spl = lines[j].split(/\s*=\s*/);
-	            properties[spl[0]] = spl[1];
-	        }
-        }
-        return properties;
+				if( req.status == 200 ) {
+					properties.setDoc(req.responseText);
+					properties.srcXML = Writer.toString(properties.doc.getElementsByTagName("properties")[0]);
+					properties.setDoc(properties.srcXML);
+					//XMLEvents.dispatch(properties.model, "xforms-rebuild");
+					//xforms.refresh();
+				}
     },
+
+		
+
     constructURI : function(uri) {
-        if (!uri.match(/\/\//)) {
-            uri = document.location.href.replace(/[^\/]+$/,"") + uri;
-        }
-    
-        return uri;
+			if (uri.match(/^[a-zA-Z0-9+.-]+:\/\//)) {
+				return uri;
+			}
+			if (uri.charAt(0) == '/') {
+				return document.location.href.substr(0, document.location.href.replace(/:\/\//, ":\\\\").indexOf("/")) + uri;
+			}
+			var href = document.location.href;
+			var idx = href.indexOf("?");
+			href =  idx == -1 ? href : href.substr(0, idx);
+			idx = href.replace(/:\/\//, ":\\\\").lastIndexOf("/");
+			if (href.length > idx + 1) {
+				return (idx == -1 ? href : href.substr(0, idx)) + "/" + uri;
+			}
+			return href + uri;
     },
 
 		
@@ -175,28 +182,38 @@ var Core = {
         if (content) { el.appendChild(document.createTextNode(content)); }
         return el;
     },
+
+		
+
     getWindowSize : function() {
-				var myWidth = 0, myHeight = 0;
+				var myWidth = 0, myHeight = 0, myOffsetX = 0, myOffsetY = 0, myScrollX = 0, myScrollY = 0;
 				if( typeof( window.innerWidth ) == 'number' ) {
 					//Non-IE
-					myWidth = window.innerWidth;
+					myWidth = document.documentElement.clientWidth;
 					myHeight = window.innerHeight;
+					myOffsetX = document.body ? Math.max(document.documentElement.clientWidth, document.body.clientWidth) : document.documentElement.clientWidth; // body margins ?
+					myOffsetY = document.body ? Math.max(document.documentElement.clientHeight, document.body.clientHeight) : document.documentElement.clientHeight; // body margins ?
+					myScrollX = window.scrollX;
+					myScrollY = window.scrollY;
 				} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
 					//IE 6+ in 'standards compliant mode'
 					myWidth = document.documentElement.clientWidth;
 					myHeight = document.documentElement.clientHeight;
-				} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
-					//IE 4 compatible
-					myWidth = document.body.clientWidth;
-					myHeight = document.body.clientHeight;
+					myOffsetX = Math.max(document.documentElement.clientWidth, document.body.clientWidth); // body margins ?
+					myOffsetY = Math.max(document.documentElement.clientHeight, document.body.clientHeight); // body margins ?
+					myScrollX = document.body.parentNode.scrollLeft;
+					myScrollY = document.body.parentNode.scrollTop;
 				}
         return {
             height : myHeight,
-            width : myWidth
+            width : myWidth,
+						offsetX : myOffsetX,
+						offsetY : myOffsetY,
+						scrollX : myScrollX,
+						scrollY : myScrollY
         };
     }
 };
-
 
 		
 
@@ -215,6 +232,56 @@ if (Core.isIE) {
         if (Core.isMozilla) { req.overrideMimeType("text/xml"); }
 
         return req;
+    };
+}
+
+		
+
+if (Core.isIE) {
+    Core.transformText = function(xml, xslt, inline) {
+			var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+			xmlDoc.loadXML(xml);
+			var xsltDoc = new ActiveXObject("Microsoft.XMLDOM");
+			if (inline) {
+				xmlDoc.loadXML(xml);
+			} else {
+				xsltDoc.async = false;
+				xsltDoc.load(xslt);
+			}
+			var resultNode = xmlDoc.transformNode(xsltDoc);
+			return resultNode;
+    };
+} else {
+    Core.transformText = function(xml, xslt, inline) {
+			var parser = new DOMParser();
+			var serializer = new XMLSerializer();
+			var xmlDoc = parser.parseFromString(xml, "text/xml");
+			var xsltDoc;
+			if (inline) {
+				xsltDoc = parser.parseFromString(xslt, "text/xml");
+			} else {
+				xsltDoc = document.implementation.createDocument("","",null);
+				if (xsltDoc.load) {
+					xsltDoc.async = false;
+					xsltDoc.load(xslt);
+				} else {
+					var xhttp = new XMLHttpRequest();
+					xhttp.open("GET", xslt, false);
+					xhttp.send("");
+					xslt = xhttp.responseText;
+					xsltDoc = parser.parseFromString(xslt, "text/xml");
+				}
+			}
+			var xsltProcessor = new XSLTProcessor();
+			if (!Core.isMozilla) {
+				xsltProcessor.setParameter(null, "xsltforms_caller", "true");
+			}
+			xsltProcessor.setParameter(null, "xsltforms_config", $("xf-instance-config").xfElement.srcXML);
+			xsltProcessor.setParameter(null, "xsltforms_debug", DebugMode+"");
+			xsltProcessor.setParameter(null, "xsltforms_lang", Language);
+			xsltProcessor.importStylesheet(xsltDoc);
+			var resultDocument = xsltProcessor.transformToDocument(xmlDoc);
+			return serializer.serializeToString(resultDocument);
     };
 }
 
@@ -268,45 +335,44 @@ var Dialog = {
     openPosition: {},
     dialogs : [],
     init : false,
+		depth : 0,
+		initzindex : 50,
+		selectstack : [],
 
 		
 
-    show : function(div, parent) {
-        if (!this.init) {
-            this.init = true;
+    show : function(div, parent, modal) {
+				if (modal) {
+					var surround = $('xforms-dialog-surround');
+					surround.style.display = "block";
+					surround.style.zIndex = (this.depth+this.initzindex)*2;
+					this.depth++;
+					var size = Core.getWindowSize();
+					surround.style.height = size.offsetY+"px";
+					surround.style.width = size.offsetX+"px";
+				}
 
-            Event.attach(document, "mousedown", function(event) {
-                var target = Event.getTarget(event);
-                var ds = Dialog.dialogs;
-                
-                for (var i = 0; i < ds.length; i++) {
-                    var d = ds[i];
-
-                    if (d.style.display != "none") {
-	                    var t = target;
-	                    
-	                    for (; t && t != d; t = t.parentNode) {}
-	                    
-	                    if (!t) { Dialog.hide(d); }
-	                }
-                }
-            } );
-        }
-
-        div = typeof div == "string"? $(div) : div;
+				if (typeof div != "string") {
+					var divid = div.getAttribute("id");
+					if (divid != null && divid != "") {
+						div = IdManager.find(divid);
+					}
+				} else {
+					div = IdManager.find(div);
+				}
         div.style.display = "block";
+				div.style.zIndex = (this.depth+this.initzindex)*2-1;
 
         if (parent) {
             var absPos = Core.getAbsolutePos(parent);
             Core.setPos(div, absPos.x, (absPos.y + parent.offsetHeight));
         } else {        
-     		var size = Core.getWindowSize();
-     		var h = (size.height - div.offsetHeight) / 2;
-            Core.setPos(div, (size.width - div.offsetWidth) / 2,
-                h > 0? h : 100);
+					var size = Core.getWindowSize();
+					var h = size.scrollY + (size.height - div.offsetHeight) / 2;
+					Core.setPos(div, (size.width - div.offsetWidth) / 2, h > 0 ? h : 100);
         }
 
-        this.showSelects(div, false);
+        this.showSelects(div, false, modal);
         
         if (!inArray(div, this.dialogs)) {
             this.dialogs.push(div);
@@ -315,46 +381,97 @@ var Dialog = {
 
 		
 
-    hide : function(div) {
-        this.showSelects(div, true);
-        div = typeof div == "string"? $(div) : div;
+    hide : function(div, modal) {
+				if (modal) {
+					this.depth--;
+					if (this.depth == 0) {
+						$('xforms-dialog-surround').style.display = "none";
+					} else {
+						$('xforms-dialog-surround').style.zIndex = (this.depth+this.initzindex)*2-2;
+					}
+				}
+        this.showSelects(div, true, modal);
+				if (typeof div != "string") {
+					var divid = div.getAttribute("id");
+					if (divid != null && divid != "") {
+						div = IdManager.find(divid);
+					}
+				} else {
+					div = IdManager.find(div);
+				}
 
         if (div) {
             div.style.display = "none";
         }
     },
-    showSelects : function(div, value) {
-        if (Core.isIE) {
-		    var selects = document.getElementsByTagName("select");
-		    var pos = Core.getAbsolutePos(div);
-		    var w = div.offsetWidth;
-		    var h = div.offsetHeight;
-		    if (value === false) {
-		        pos = this.openPosition;
-		    } else {
-		        this.openPosition = pos;
-		    }
-		    
-		    for (var i = 0; i < selects.length; i++) {
-		    	var s = selects[i];
-		    	var p = s.parentNode;
-		    	
-		    	while (p && p != div) {
-		    	    p = p.parentNode;
-		    	}
 
-                if (p != div) {
-                    var ps = Core.getAbsolutePos(s);
-          	        var ws = s.offsetWidth;
-                    var hs = s.offsetHeight;
+		
 
-                    if (ps.x + ws > pos.x && ps.x < pos.x + w
-                        && ps.y + hs > pos.y && ps.y < pos.y + h) {
-    	                s.style.visibility = value? "" : "hidden";
-    	            }
-			    }
-		    }
-        }
+    knownSelect : function(s) {
+			if (Core.isIE6) {
+				for (var i = 0; i < this.depth; i++) {
+					for (var j = 0; j < this.selectstack[i].length; j++) {
+						if (this.selectstack[i][j].select == s) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		},
+
+		
+
+    showSelects : function(div, value, modal) {
+			if (Core.isIE6) {
+				var selects = document.getElementsByTagName("select");
+				var pos = Core.getAbsolutePos(div);
+				var w = div.offsetWidth;
+				var h = div.offsetHeight;
+				var dis = [];
+				for (var i = 0; i < selects.length; i++) {
+					var s = selects[i];
+					var p = s.parentNode;
+					
+					while (p && p != div) {
+						p = p.parentNode;
+					}
+
+					if (p != div) {
+						var ps = Core.getAbsolutePos(s);
+						var ws = s.offsetWidth;
+						var hs = s.offsetHeight;
+						var under = ps.x + ws > pos.x && ps.x < pos.x + w && ps.y + hs > pos.y && ps.y < pos.y + h;
+						if (modal) {
+							if (value) {
+								dis = this.selectstack[this.depth];
+								for (var j = 0; j < dis.length; j++) {
+									if (dis[j].select == s) {
+										s.disabled = dis[j].disabled;
+										s.style.visibility = dis[j].visibility;
+										break;
+									}
+								}
+							} else {
+								var d = {"select": s, "disabled": s.disabled, "visibility": s.style.visibility};
+								dis[dis.length] = d;
+								if (under) {
+									s.style.visibility = "hidden";
+								} else {
+									s.disabled = true;
+								}
+							}
+						} else {
+								if (under) {
+									s.style.visibility = value? "" : "hidden";
+								}
+						}
+					}
+				}
+				if (modal && !value) {
+					this.selectstack[this.depth-1] = dis;
+				}
+			}
     }
 };
 
@@ -439,61 +556,44 @@ if (Core.isIE) {
 
 var I8N = {
     messages : null,
-		/*
-    {'calendar.day0' : 'Mon',
-     'calendar.day1' : 'Tue',
-     'calendar.day2' : 'Wed',
-     'calendar.day3' : 'Thu',
-     'calendar.day4' : 'Fri',
-     'calendar.day5' : 'Sat',
-     'calendar.day6' : 'Sun',
-
-     'calendar.initDay' : '0',
-
-     'calendar.month0' : 'January',
-     'calendar.month1' : 'February',
-     'calendar.month2' : 'March',
-     'calendar.month3' : 'April',
-     'calendar.month4' : 'May',
-     'calendar.month5' : 'June',
-     'calendar.month6' : 'July',
-     'calendar.month7' : 'August',
-     'calendar.month8' : 'September',
-     'calendar.month9' : 'October',
-     'calendar.month10' : 'November',
-     'calendar.month11' : 'December',
-
-     'format.date' : 'dd/MM/yyyy',
-     'format.datetime' : 'dd/MM/yyyy hh:mm:ss',
-     'format.decimal' : '.',
-
-     'status' : '... Loading ...'},
-		 */
     lang : null,
-    langs : ["cz", "de", "en_UK", "es", "fr" , "gl", "it", "nb-NO", "nl", "nn-NO", "pt", "ro", "ru", "sk"],
+    langs : ["cz", "de", "en", "en_us", "es", "fr" , "gl", "it", "ja", "nb_no", "nl", "nn_no", "pt", "ro", "ru", "si", "sk"],
 
 		
 
     get : function(key) {
-        if (I8N.messages == null) {
-            var lan = navigator.language || navigator.userLanguage;
-            var finded = inArray(lan, I8N.langs);
-
-            if (!finded) {
-	            var ind = lan.indexOf("-");
-	            
-	            if (ind != -1) {
-	                lan = lan.substring(0, ind);
-	            }
-	            
-	            finded = inArray(lan, I8N.langs);
-            }
-
-            var filename = "messages" + (finded? "_" + lan.replace("-", "_") : "");
-            I8N.messages = Core.loadProperties(filename);
-        }
-
-        return I8N.messages[key];
+			var properties = $("xf-instance-config").xfElement;
+			if (!properties.doc) {
+				properties.setDoc(properties.srcXML);
+			}
+			if (Language == "navigator" || Language != properties.doc.documentElement.getElementsByTagName("language")[0].firstChild.nodeValue) {
+				var lan = Language == "navigator" ? (navigator.language || navigator.userLanguage) : properties.doc.documentElement.getElementsByTagName("language")[0].firstChild.nodeValue;
+				lan = lan.replace("-", "_").toLowerCase();
+				var finded = inArray(lan, I8N.langs);
+				if (!finded) {
+					ind = lan.indexOf("_");
+					if (ind != -1) {
+							lan = lan.substring(0, ind);
+					}
+					finded = inArray(lan, I8N.langs);
+				}
+				if (finded) {
+					var filename = "config_" + lan + ".xsl";
+					Core.loadProperties(properties, filename);
+					Language = properties.doc.documentElement.getElementsByTagName("language")[0].firstChild.nodeValue;
+				} else {
+					Language = "default";
+				}
+			}
+			properties = properties.doc.documentElement.getElementsByTagName(key);
+			if (properties.length != 0) {
+				return properties[0].firstChild.nodeValue;
+			}
+			return "";
+			/*
+			}
+			return key == "status" ? LoadingMsg : "";
+			*/
     },
 
 		
@@ -640,11 +740,11 @@ NumberList.prototype.show = function() {
 	var input = this.input;
     this.current = parseInt(input.value);
     this.refresh();
-    Dialog.show(this.element, input);
+    Dialog.show(this.element, input, false);
 };
 
 NumberList.prototype.close = function() {
-    Dialog.hide(this.element);
+    Dialog.hide(this.element, false);
 }; 
 
 NumberList.prototype.createChild = function(content, handler, handler2) {
@@ -819,19 +919,25 @@ function setValue(node, value) {
 
 		
 
-function run(action, element, evt, synch) {
+function run(action, element, evt, synch, propagate) {
 	xforms.openAction();
     
 	if (synch) {
-		Dialog.show("statusPanel");
+		Dialog.show("statusPanel", null, false);
 
 		setTimeout(function() { 
 			action.execute(IdManager.find(element), null, evt);
-			Dialog.hide("statusPanel");
+			Dialog.hide("statusPanel", false);
+			if (!propagate) {
+				evt.stopPropagation();
+			}
 			xforms.closeAction();
 		}, 1 );
 	} else {
 		action.execute(IdManager.find(element), null, evt);
+		if (!propagate) {
+			evt.stopPropagation();
+		}
 		xforms.closeAction();
 	}
 }
@@ -933,7 +1039,7 @@ var xforms = {
 		this.refresh();
 		this.closeAction();
 		this.ready = true;
-		Dialog.hide("statusPanel");
+		Dialog.hide("statusPanel", false);
 	},
 
 		
@@ -1014,10 +1120,10 @@ var xforms = {
 		
 
 	error : function(element, event, message, causeMessage) {
-		Dialog.hide("statusPanel");
+		Dialog.hide("statusPanel", false);
 		
 		setValue($("statusPanel"), message);
-		Dialog.show("statusPanel");
+		Dialog.show("statusPanel", null, false);
 
 		if (element != null) {
 			XMLEvents.dispatch(element, event);
@@ -1090,18 +1196,20 @@ var xforms = {
 		}
 
 		if (!xf || !xf.isRepeat || xf.nodes.length > 0) {
-			for (var i = 0; i < childs.length; i++) {
+			for (var i = 0; i < childs.length && this.building; i++) {
 				hasXFElement = this.build(childs[i], ctx, selected) || hasXFElement;
 			}
 		}
-
-		if (xf && xf.changed) {
-			xf.refresh(selected);
-			xf.changed = false;
-		}
 		
-		if (element.hasXFElement == null) {
-			element.hasXFElement = hasXFElement;
+		if(this.building) {
+			if (xf && xf.changed) {
+				xf.refresh(selected);
+				xf.changed = false;
+			}
+			
+			if (element.hasXFElement == null) {
+				element.hasXFElement = hasXFElement;
+			}
 		}
 
 		return hasXFElement;
@@ -1159,7 +1267,8 @@ var xforms = {
 		
 		
 		
-function Binding(xpath, model, bind) {
+function Binding(isvalue, xpath, model, bind) {
+	this.isvalue = isvalue;
 	this.bind = bind? bind : null;
 	this.xpath = xpath? XPath.get(xpath) : null;
 	var modelelt = model;
@@ -1187,7 +1296,7 @@ Binding.prototype.evaluate = function(ctx, depsNodes, depsElements) {
 		exprCtx.initDeps(depsNodes, depsElements);
 		result = this.xpath.evaluate(exprCtx);
 	}
-	return result;
+	return this.isvalue ? stringValue(result) : result;
 };
     
 	
@@ -1211,44 +1320,38 @@ var IdManager = {
         element.id = newId;
     },
     find : function(id) {
-        var ids = this.data[id];
-        
-        if (ids) {
-	        for (var i = 0; i < ids.length; i++) {
-	            var element = $(ids[i]);
-	
-	            if (element) {
-	                var parent = element.parentNode;
-	        
-	                while (parent.nodeType == NodeType.ELEMENT) {
-	                	if (Core.hasClass(parent, "xforms-repeat-item")) {
-	                		if (Core.hasClass(parent, "xforms-repeat-item-selected")) {
-	                            return element;
-	                        } else {
-	                            break;
-	                        }
-	                     }
-	                
-	                     parent = parent.parentNode;
-	                }
-	            }
-	        }
-	    }
-        
-        var res = $(id);
-        
-        if (!res) {
-        	alert("element " + id + " not found");
-        }
-
-        return res;
+			var ids = this.data[id];
+			if (ids) {
+				for (var i = 0; i < ids.length; i++) {
+					var element = $(ids[i]);
+					if (element) {
+						var parent = element.parentNode;
+						while (parent.nodeType == NodeType.ELEMENT) {
+							if (Core.hasClass(parent, "xforms-repeat-item")) {
+								if (Core.hasClass(parent, "xforms-repeat-item-selected")) {
+									return element;
+								} else {
+									break;
+								}
+							}
+							parent = parent.parentNode;
+						}
+					}
+				}
+			}
+			var res = $(id);
+			//if (!res) {
+				//alert("element " + id + " not found");
+			//}
+			return res;
     },
     clear : function() {
         for (var i in this.data) {
             this.data[i] = null;
         }
         
-        this.data = null;
+        this.data = [];
+				index = 0;
     },
     data : [],
     index : 0
@@ -1502,24 +1605,39 @@ XFInstance.prototype.dispose = function() {
 		
 
 XFInstance.prototype.construct = function() {
-    if (!xforms.ready) {
-	    if (this.src) {
-	        try {
-	            var req = Core.openRequest("GET", this.src, false);
-	            DebugConsole.write("Loading " + this.src);
-	            req.send(null);
-	
-	            if (req.status != 200 && req.status != 0) {
-	            	throw "Request error: " + req.status;
-	        	}
-	
-				this.setDoc(req.responseText);
-	        } catch(e) {
-                xforms.error(this.element, "xforms-link-exception",
-                    "Fatal error loading " + this.src, e.toString());
-	        }
-	    } else {
-		   	this.setDoc(this.srcXML);
+	if (!xforms.ready) {
+		if (this.src) {
+			var cross = false;
+			if (this.src.match(/^[a-zA-Z0-9+.-]+:\/\//)) {
+				var domain = /^([a-zA-Z0-9+.-]+:\/\/[^\/]*)/;
+				var sdom = domain.exec(this.src);
+				var ldom = domain.exec(document.location.href);
+				cross = sdom[0] != ldom[0];
+			}
+			if (cross) {
+				this.setDoc('<dummy xmlns=""/>');
+				jsoninstobj = this;
+				var scriptelt = document.createElement("script");
+				scriptelt.setAttribute("src", this.src+"&callback=jsoninst");
+				scriptelt.setAttribute("id", "jsoninst");
+				scriptelt.setAttribute("type", "text/javascript");
+				var body = document.getElementsByTagName("body")[0];
+				body.insertBefore(scriptelt, body.firstChild);
+			} else {
+				try {
+					var req = Core.openRequest("GET", this.src, false);
+					DebugConsole.write("Loading " + this.src);
+					req.send(null);
+					if (req.status != 200 && req.status != 0) {
+						throw "Request error: " + req.status;
+					}
+					this.setDoc(req.responseText);
+				} catch(e) {
+					xforms.error(this.element, "xforms-link-exception", "Fatal error loading " + this.src, e.toString());
+				}
+			}
+		} else {
+			this.setDoc(this.srcXML);
 		}
 	}
 };
@@ -1548,6 +1666,7 @@ XFInstance.prototype.store = function(isReset) {
 XFInstance.prototype.setDoc = function(doc, isReset) {
 	this.doc = typeof doc == "string"? XDocument.parse(doc) : doc;
 	this.doc.model = this.model;
+	this.doc.instance = this;
   this.store(isReset);
 };
         
@@ -1606,13 +1725,13 @@ XFInstance.prototype.validate_ = function(node, readonly, relevant) {
         this.setProperty_(node, "readonly", readonly || (bind.readonly? booleanValue(bind.readonly.evaluate(ctx)) : false));
 
         this.setProperty_(node, "valid",
-            !node.relevant || (!node.required && (!value || value == ""))
-            || (value && node.type.validate(value) 
-                 && (!bind.constraint || booleanValue(bind.constraint.evaluate(ctx)))));
+            !node.relevant || (!(node.required && (!value || value == ""))
+																&& (!node.type || node.type.validate(value))
+																&& (!bind.constraint || booleanValue(bind.constraint.evaluate(ctx)))));
     } else {
         this.setProperty_(node, "relevant", relevant);
         this.setProperty_(node, "readonly", readonly);
-        this.setProperty_(node, "valid", !value || node.type.validate(value));
+        this.setProperty_(node, "valid", !node.type || node.type.validate(value));
     }
 };
 
@@ -1622,6 +1741,45 @@ XFInstance.prototype.setProperty_ = function (node, property, value) {
         this.model.addChange(node);   
     }
 };
+
+		
+
+function json2xml(name, json, root, inarray) {
+	var ret = root ? "<root>" : "";
+	if (json instanceof Array) {
+		if (inarray) {
+			ret += "<item>";
+		}
+		for (var i = 0; i < json.length; i++) {
+			ret += json2xml(name == "" ? "item" : name, json[i], false, true);
+		}
+		if (inarray) {
+			ret += "</item>";
+		}
+	} else {
+		ret += name == "" ? "" : "<"+name+">";
+		if (typeof(json) == "object") {
+			for (var m in json) {
+				ret += json2xml(m, json[m], false, false);
+			}
+		} else {
+			ret += json;
+		}
+		ret += name == "" ? "" : "</"+name+">";
+	}
+	ret += root ? "</root>" : "";
+	return ret;
+}
+
+		
+
+var jsoninstobj;
+function jsoninst(json) {
+	jsoninstobj.setDoc(json2xml("", json, true, false));
+	XMLEvents.dispatch(jsoninstobj.model, "xforms-rebuild");
+	xforms.refresh();
+	document.body.removeChild($("jsoninst"));
+}
     
 	
 		
@@ -1640,7 +1798,7 @@ function XFBind(id, parent, nodeset, type, readonly, required, relevant, calcula
 	this.depsNodes = [];
 	this.depsElements = [];
 	this.nodes = [];
-	this.binding = new Binding(this.nodeset);
+	this.binding = new Binding(false, this.nodeset);
 	parent.addBind(this);
 }
 
@@ -1715,7 +1873,7 @@ XFBind.prototype.recalculate = function() {
 function XFSubmission(id, model, ref, bind, action, method, version, indent,
 			mediatype, encoding, omitXmlDeclaration, cdataSectionElements,
 			replace, instance, separator, includenamespaceprefixes, validate,
-			synchr, show) {
+			synchr, show, serialization) {
 	this.init(id, model, "xforms-submission");
 	this.model = model;
 	this.action = action;
@@ -1726,6 +1884,7 @@ function XFSubmission(id, model, ref, bind, action, method, version, indent,
 	this.validate = validate;
 	this.synchr = synchr;
 	this.show = show;
+	this.serialization = serialization;
 
 	if (mediatype != null) {
 		var lines = mediatype.split(";");
@@ -1749,7 +1908,7 @@ function XFSubmission(id, model, ref, bind, action, method, version, indent,
 	this.includenamespaceprefixes = includenamespaceprefixes;
 
 	if (ref || bind) {
-		this.binding = new Binding(ref, model.element, bind);
+		this.binding = new Binding(false, ref, model.element, bind);
         
 		this.eval_ = function() {
 			return this.binding.evaluate()[0];
@@ -1771,19 +1930,13 @@ XFSubmission.prototype.submit = function() {
 	var node = this.eval_();
 	var action = "error";
 	if(this.action.evaluate) {
-		var n = this.action.evaluate()[0];
-		if (n) {
-			action = getValue(n);
-		}
+		action = stringValue(this.action.evaluate());
 	} else {
 		action = this.action;
 	}
 	var method = "post";
 	if(this.method.evaluate) {
-		var n = this.method.evaluate()[0];
-		if (n) {
-			method = getValue(n);
-		}
+		var method = stringValue(this.method.evaluate());
 	} else {
 		method = this.method;
 	}
@@ -1795,7 +1948,7 @@ XFSubmission.prototype.submit = function() {
 			return;
 		}
 
-		if (method == "get" || method == "delete") {
+		if ((method == "get" || method == "delete") && this.serialization != "none") {
 			var tourl = XFSubmission.toUrl_(node, this.separator);
 			action += (action.indexOf('?') == -1? '?' : this.separator)
 				+ tourl.substr(0, tourl.length - this.separator.length);
@@ -1839,91 +1992,117 @@ XFSubmission.prototype.submit = function() {
 		xforms.closeAction();
 	} else {
 	
-		try {
-			var req = Core.openRequest(method, action, !synchr);
-			var subm = this;
-		
-			var func = function() {
-				if (!synchr && req.readyState != 4) { return; }
-				
-				try {
-					if (req.status != 200 && req.status != 0) {
-						throw "Request error: " + req.status;
-					}
-		
-					if (subm.replace == "instance") {
-						var inst = instance == null? subm.model.getInstance() : $(instance).xfElement;
-						inst.setDoc(req.responseText);
-						XMLEvents.dispatch(subm.model, "xforms-rebuild");
-						xforms.refresh();
-					}
-		
-					XMLEvents.dispatch(subm, "xforms-submit-done");
-					xforms.closeAction();
+		var cross = false;
+		if (action.match(/^[a-zA-Z0-9+.-]+:\/\//)) {
+			var domain = /^([a-zA-Z0-9+.-]+:\/\/[^\/]*)/;
+			var sdom = domain.exec(action);
+			var ldom = domain.exec(document.location.href);
+			cross = sdom[0] != ldom[0];
+		}
+		if (cross) {
+			jsoninstobj = instance == null? (node ? node.ownerDocument.instance : this.model.getInstance()) : $(instance).xfElement;
+			var scriptelt = document.createElement("script");
+			scriptelt.setAttribute("src", action+"&callback=jsoninst");
+			scriptelt.setAttribute("id", "jsoninst");
+			scriptelt.setAttribute("type", "text/javascript");
+			var body = document.getElementsByTagName("body")[0];
+			body.insertBefore(scriptelt, body.firstChild);
+			XMLEvents.dispatch(this, "xforms-submit-done");
+			xforms.closeAction();
+		} else {
+			try {
+				var req = Core.openRequest(method, action, !synchr);
+				var subm = this;
+			
+				var func = function() {
+					if (!synchr && req.readyState != 4) { return; }
 					
-					if (subm.replace == "all") {
-						if( subm.show == "new" ) {
-							w = window.open("about:blank","_blank");
-							w.document.write(req.responseText);
-							w.document.close();
-						} else {
-							Dialog.hide("statusPanel");
-							xforms.close();
-							if(document.write) {
-								document.write(req.responseText);
-								document.close();
+					try {
+						if (req.status != 200 && req.status != 0) {
+							throw "Request error: " + req.status;
+						}
+			
+						if (subm.replace == "instance") {
+							var inst = instance == null? (node ? node.ownerDocument.instance : subm.model.getInstance()) : $(instance).xfElement;
+							inst.setDoc(req.responseText);
+							XMLEvents.dispatch(subm.model, "xforms-rebuild");
+							xforms.refresh();
+						}
+			
+						XMLEvents.dispatch(subm, "xforms-submit-done");
+						xforms.closeAction();
+						
+						if (subm.replace == "all") {
+							var resp = req.responseText;
+							var piindex = resp.indexOf("<?xml-stylesheet", 0);
+							while ( piindex != -1) {
+								var xslhref = resp.substr(piindex, resp.substr(piindex).indexOf("?>")).replace(/^.*href=\"([^\"]*)\".*$/, "$1");
+								resp = Core.transformText(resp, xslhref, false);
+								piindex = resp.indexOf("<?xml-stylesheet", 0);
+							}
+							if( subm.show == "new" ) {
+								w = window.open("about:blank","_blank");
+								w.document.write(resp);
+								w.document.close();
 							} else {
-								//document.documentElement.parentNode.replaceChild(req.responseXML.documentElement,document.documentElement);
-								var sData = req.responseText;
-								if (sData.indexOf("<?", 0) === 0) {
-									sData = sData.substr(sData.indexOf("?>")+2);
-								}                       
-								//alert(sData);
-								document.documentElement.innerHTML=sData;
+								Dialog.hide("statusPanel", false);
+								xforms.close();
+								if(document.write) {
+									document.write(resp);
+									document.close();
+								} else {
+									//document.documentElement.parentNode.replaceChild(req.responseXML.documentElement,document.documentElement);
+									if (resp.indexOf("<?", 0) === 0) {
+										resp = resp.substr(resp.indexOf("?>")+2);
+									}                       
+									//alert(resp);
+									document.documentElement.innerHTML = resp;
+								}
 							}
 						}
+					} catch(e) {
+						DebugConsole.write(e.message || e);
+						//alert(e.message || e);
+						XMLEvents.dispatch(subm, "xforms-submit-error");
+						xforms.closeAction();
 					}
-				} catch(e) {
-					DebugConsole.write(e.message || e);
-					//alert(e.message || e);
-					XMLEvents.dispatch(subm, "xforms-submit-error");
-					xforms.closeAction();
+				
+				};
+			
+				if (!synchr) {
+					req.onreadystatechange = func;
 				}
-			};
-		
-			if (!synchr) {
-				req.onreadystatechange = func;
-			}
-		
-			var media = this.mediatype;
-			var mt = (media || "application/xml")
-				+ (this.charset? ";charset" + this.charset : "");
-		
-			DebugConsole.write("Submit " + this.method + " - " + media + " - "
-				+ action + " - " + synchr);
+			
+				var media = this.mediatype;
+				var mt = (media || "application/xml")
+					+ (this.charset? ";charset=" + this.charset : "");
+			
+				DebugConsole.write("Submit " + this.method + " - " + mt + " - "
+					+ action + " - " + synchr);
 
-			if (method == "get" || method == "delete") {
-				if (media == XFSubmission.SOAP_) {
-					req.setRequestHeader("Accept", mt);
+				if (method == "get" || method == "delete") {
+					if (media == XFSubmission.SOAP_) {
+						req.setRequestHeader("Accept", mt);
+					}
+			
+					req.send(null);
+				} else {
+					req.setRequestHeader("Content-Type", mt);
+			
+					if (media == XFSubmission.SOAP_) {
+						req.setRequestHeader("SOAPAction", this.soapAction);
+					}
+					req.send(Writer.toString(node));
 				}
-		
-				req.send(null);
-			} else {
-				req.setRequestHeader("Content-Type", mt);
-		
-				if (media == XFSubmission.SOAP_) {
-					req.setRequestHeader("SOAPAction", this.soapAction);
+			
+				if (synchr) {
+					func();
 				}
-				req.send(Writer.toString(node));
+			} catch(e) {
+				DebugConsole.write(e.message || e);
+				XMLEvents.dispatch(this, "xforms-submit-error");
+				xforms.closeAction();
 			}
-		
-			if (synchr) {
-				func();
-			}
-		} catch(e) {
-			DebugConsole.write(e.message || e);
-			XMLEvents.dispatch(this, "xforms-submit-error");
-			xforms.closeAction();
 		}
 	}
 };
@@ -1954,7 +2133,7 @@ XFSubmission.toUrl_ = function(node, separator) {
 	}
     
 	if (!hasChilds && val.length > 0) {
-		url += node.nodeName + '=' + escape(val) + separator;
+		url += node.nodeName + '=' + encodeURIComponent(val) + separator;
 	}
     
 	return url;
@@ -2160,7 +2339,7 @@ XFAction.prototype.run = function(element, ctx, evt) {
 		
 		
 function XFDelete(nodeset, model, bind, at, context, ifexpr, whileexpr) {
-	this.binding = new Binding(nodeset, model, bind);
+	this.binding = new Binding(false, nodeset, model, bind);
 	//this.at = at?XPath.get(at):null;
 	this.at = XPath.get(at);
 	this.context = XPath.get(context);
@@ -2238,7 +2417,7 @@ XFDispatch.prototype.run = function() {
 		
 		
 function XFInsert(nodeset, model, bind, at, position, origin, context, ifexpr, whileexpr) {
-	this.binding = new Binding(nodeset, model, bind);
+	this.binding = new Binding(false, nodeset, model, bind);
 	this.origin = XPath.get(origin);
 	this.context = XPath.get(context);
 	this.at = XPath.get(at);
@@ -2266,6 +2445,8 @@ XFInsert.prototype.run = function(element, ctx) {
 	var node = null;
 	var originNodes = [];
 	var parent = null;
+	var pos = this.position == "after"? 1 : 0;
+	var res = 0;
 
 	if (this.origin) {
 		originNodes = this.origin.evaluate(ctx);
@@ -2281,54 +2462,58 @@ XFInsert.prototype.run = function(element, ctx) {
 
 	for(var i = 0; i < originNodes.length; i += 1) {
 		node = originNodes[i];
-		if (node.nodeType == NodeType.ATTRIBUTE) {
-			alert("TODO clone Attribute");
-		}
 
 		if (nodes.length === 0) {
 			parent = ctx;
 		} else {
 			parent = nodes[0].nodeType == NodeType.DOCUMENT? nodes[0] : nodes[0].parentNode;
 	        
-			if (parent.nodeType != NodeType.DOCUMENT) {
-				var res = this.at? numberValue(this.at.evaluate(new ExprContext(ctx, 1, nodes))) - 1: nodes.length - 1;
-				var pos = this.position == "after"? 1 : 0;
+			if (parent.nodeType != NodeType.DOCUMENT && node.nodeType != NodeType.ATTRIBUTE) {
+				res = this.at? Math.round(numberValue(this.at.evaluate(new ExprContext(ctx, 1, nodes)))) - 1: nodes.length - 1;
 				index = isNaN(res)? nodes.length : res + pos;
 			}
 		}
 
-		var clone = node.cloneNode(true, parent.ownerDocument);
-
-		DebugConsole.write("insert " + clone.nodeName + " in " + parent.nodeName
+		DebugConsole.write("insert " + node.nodeName + " in " + parent.nodeName
 			+ " at " + index + " - " + ctx.nodeName);
-
-		if (parent.nodeType == NodeType.DOCUMENT) {
-			var first = parent.firstChild;
-			parent.removeChild(first);
-			XNode.recycle(first);
-			parent.appendChild(clone);
+			
+		if (node.nodeType == NodeType.ATTRIBUTE) {
+			parent.setAttributeNS(node.namespaceURI, node.nodeName, node.nodeValue);
 		} else {
-			var nodeAfter;
+			var clone = node.cloneNode(true, parent.ownerDocument);
 
-			if (index >= nodes.length) {
+			if (parent.nodeType == NodeType.DOCUMENT) {
+				var first = parent.firstChild;
+				parent.removeChild(first);
+				XNode.recycle(first);
 				parent.appendChild(clone);
 			} else {
-				nodeAfter = nodes[index];
-				nodeAfter.parentNode.insertBefore(clone, nodeAfter);
-			}
+				var nodeAfter;
 
-			var repeat = nodes.length > 0? nodes[0].repeat : null;
+				if (index >= nodes.length) {
+					nodeAfter = nodes[nodes.length - 1].nextSibling;
+				} else {
+					nodeAfter = nodes[index];
+				}
+				if (nodeAfter) {
+					nodeAfter.parentNode.insertBefore(clone, nodeAfter);
+				} else {
+					parent.appendChild(clone);
+				}
 
-			if (repeat) {
-				repeat.insertNode(clone, nodeAfter);
+				var repeat = nodes.length > 0? nodes[0].repeat : null;
+
+				if (repeat) {
+					repeat.insertNode(clone, nodeAfter);
+				}
 			}
 		}
 	}
 
-	var model = clone.ownerDocument.model;
+	var model = parent.ownerDocument.model;
 	xforms.addChange(model);
 	model.setRebuilded(true);
-	XMLEvents.dispatch(model.findInstance(clone), "xforms-insert");
+	XMLEvents.dispatch(model.findInstance(parent), "xforms-insert");
 };
     
 	
@@ -2358,15 +2543,7 @@ XFLoad.prototype.run = function(element, ctx) {
 		}
 	} else {
 		if (typeof href == 'object') {
-			var xp = this.resource.xpath.evaluate(ctx);
-			if (typeof xp == 'string') {
-				href = xp;
-			} else {
-				href = '';
-				if (xp[0]) {
-					href = getValue(xp[0]);
-				}
-			}
+			href = stringValue(this.resource.xpath.evaluate(ctx));
 		}
 	}
 
@@ -2408,7 +2585,10 @@ XFMessage.prototype.run = function(element, ctx) {
 		}
 	} else {
 		var e = IdManager.find(this.id);
+		var building = xforms.building;
+		xforms.building = true;
 		xforms.build(e, ctx);
+		xforms.building = building;
 		text = e.textContent || e.innerText;
 	}
 
@@ -2499,15 +2679,7 @@ XFToggle.toggle = function(caseId, ctx) {
 		if (!ctx) {
 			ctx = xforms.defaultModel.getInstanceDocument() ? xforms.defaultModel.getInstanceDocument().documentElement : null;
 		}
-		var xp = caseId.xpath.evaluate(ctx);
-		if (typeof xp == 'string') {
-			caseId = xp;
-		} else {
-			caseId = '';
-			if (xp[0]) {
-				caseId = getValue(xp[0]);
-			}
-		}
+		caseId = stringValue(caseId.xpath.evaluate(ctx));
 	}
 	var element = IdManager.find(caseId);
 	var childs = element.parentNode.childNodes;
@@ -2523,24 +2695,26 @@ XFToggle.toggle = function(caseId, ctx) {
 
 		if (child == element) {
 			index = i - 1;
-		} else if (child.style && child.style.display != "none") {
-			XMLEvents.dispatch(child, "xforms-deselect");
-			child.style.display = "none";
-                 
-			if (ul != null) {
-				Core.setClass(ul.childNodes[i - 1], "ajx-tab-selected", false);
+		} else {
+			if (child.style && child.style.display != "none") {
+				child.style.display = "none";
+									 
+				if (ul != null) {
+					Core.setClass(ul.childNodes[i - 1], "ajx-tab-selected", false);
+				}
 			}
+			XMLEvents.dispatch(child, "xforms-deselect");
 		}
 	}
 
 	if (element.style.display == "none") {
 		element.style.display = "block";
-		XMLEvents.dispatch(element, "xforms-select");
 	    
 		if (ul != null) {
 			Core.setClass(ul.childNodes[index], "ajx-tab-selected", true);
 		}
 	}
+	XMLEvents.dispatch(element, "xforms-select");
 
 	xforms.closeAction();
 };
@@ -2674,6 +2848,59 @@ AJXTree.prototype.refresh = function() {
 		
 		
 		
+function XFAVT(id, attrs) {
+	this.init(id);
+	this.attrs = attrs;
+	this.bindings = [];
+	for (var i = 0; i < attrs.length; i++) {
+		
+	}
+	this.hasBinding = true;
+	this.isOutput = true;
+}
+
+XFAVT.prototype = new XFControl();
+
+
+		
+
+XFAVT.prototype.clone = function(id) { 
+	return new XFAVT(id, this.attrs);
+};
+
+
+		
+
+XFAVT.prototype.dispose = function() {
+	this.attrs = null;
+	XFControl.prototype.dispose.call(this);
+};
+
+
+		
+
+XFAVT.prototype.setValue = function(value) {
+	var node = this.element.node;
+	var element = this.valueElement;
+
+    if (element.nodeName.toLowerCase() == "span") {
+			if (this.mediatype == "application/xhtml+xml") {
+				while (element.firstChild) {
+					element.removeChild(element.firstChild);
+				}
+				XDocument.parse(value, element);
+			} else {
+        setValue(element, value);
+			}
+    } else {
+        element.src = value;
+    }
+};
+
+	
+		
+		
+		
 function XFElement() {
 }
 
@@ -2719,7 +2946,7 @@ XFElement.prototype.build = function(ctx) {
 			for (var j = 0; !build && j < changes.length; j++) {
 				if (el == changes[j]) {
 					if (el.instances) { //model
-						if (el.rebuilded) {
+						if (el.rebuilded || el.newRebuilded) {
 							build = true;
 						} else {
 							for (var k = 0; !build && k < depsN.length; k++) {
@@ -2796,6 +3023,7 @@ XFControl.prototype.focus = function(focusEvent) {
 		xforms.blur(true);
 		xforms.focus = this;
 		Core.setClass(this.element, "xforms-focus", true);
+		Core.setClass(this.element, "xforms-disabled", false);
 		var parent = this.element.parentNode;
 	
 		while (parent.nodeType == NodeType.ELEMENT) {
@@ -2864,7 +3092,7 @@ XFControl.prototype.refresh = function() {
     if (node) {
 		var value = getValue(node, true);
 		xforms.openAction();
-		var changed = value != this.currentValue;
+		var changed = value != this.currentValue || this.nodeChanged;
 		
 		if (this.relevant) {
 			Core.setClass(element, "xforms-disabled", false);
@@ -2887,10 +3115,11 @@ XFControl.prototype.refresh = function() {
 		xforms.closeAction();
 	} else if (this.outputValue != null) {
 		this.setValue(this.outputValue);
+		Core.setClass(element, "xforms-disabled", false);
     } else {
-		Core.setClass(element, "xforms-disabled", !this.hasValue);
-    }    
-    this.nodeChanged = false;
+	Core.setClass(element, "xforms-disabled", !this.hasValue);
+  }    
+  this.nodeChanged = false;
 };
 
 
@@ -2928,8 +3157,8 @@ XFControl.prototype.valueChanged = function(value) {
 		xforms.openAction();
 		setValue(node, value);
 		model.addChange(node);
-		XMLEvents.dispatch(model, "xforms-recalculate");
-		xforms.refresh();
+		//XMLEvents.dispatch(model, "xforms-recalculate");
+		//xforms.refresh();
 		xforms.closeAction();
 	}
 };
@@ -2986,6 +3215,8 @@ function XFGroup(id, binding) {
 	if (binding) {
 		this.hasBinding = true;
 		this.binding = binding;
+	} else {
+		Core.setClass(this.element, "xforms-disabled", false);
 	}
 }
 
@@ -3084,9 +3315,12 @@ XFInput.prototype.initInput = function(type) {
 	var input = cell.firstChild;
 	var clase = type["class"];
 
-	if (input.type == "password" || input.nodeName.toLowerCase() == "textarea") {
+	if (input.type == "password") {
 		this.type = Schema.getType("xsd_:string");
-		this.initEvents(input);
+		this.initEvents(input, true);
+	} else if (input.nodeName.toLowerCase() == "textarea") {
+		this.type = Schema.getType("xsd_:string");
+		this.initEvents(input, false);
 	} else if (type != this.type) {
 		this.type = type;
 
@@ -3106,7 +3340,7 @@ XFInput.prototype.initInput = function(type) {
 			if(this.itype != input.type) {
 				input = Core.createElement("input", cell, null, "xforms-value");
 			}
-			this.initEvents(input);
+			this.initEvents(input, (this.itype=="text"));
 
 			if (clase == "date" || clase == "datetime") {
 				this.calendarButton = Core.createElement("button", cell, "...", "aid-button");
@@ -3120,10 +3354,14 @@ XFInput.prototype.initInput = function(type) {
 
 			if (max) {
 				input.maxLength = max;
+			} else {
+				input.removeAttribute("maxLength");
 			}
 			
 			if (length) {
 				input.size = length;
+			} else {
+				input.removeAttribute("size");
 			}
 		}
 	}
@@ -3145,7 +3383,7 @@ XFInput.prototype.setValue = function(value) {
 
 	if (type["class"] == "boolean") {
 		this.input.checked = value == "true";
-	} else if (this.input.value != value && this != xforms.focus) {
+	} else if (this.input.value != value) { // && this != xforms.focus) {
 		this.input.value = value || "";
 	}
 };
@@ -3166,11 +3404,20 @@ XFInput.prototype.changeReadonly = function() {
 
 		
 
-XFInput.prototype.initEvents = function(input) {
-	if (this.incremental) {
-		Event.attach(input, "keyup", XFInput.keyUpIncremental);
-	} else if (this.inputmode) {
-		Event.attach(input, "keyup", XFInput.keyUpNormal);
+XFInput.prototype.initEvents = function(input, canActivate) {
+	if (this.inputmode) {
+		Event.attach(input, "keyup", XFInput.keyUpInputMode);
+	}
+	if (canActivate) {
+		if (this.incremental) {
+			Event.attach(input, "keyup", XFInput.keyUpIncrementalActivate);
+		} else {
+			Event.attach(input, "keyup", XFInput.keyUpActivate);
+		}
+	} else {
+		if (this.incremental) {
+			Event.attach(input, "keyup", XFInput.keyUpIncremental);
+		}
 	}
 };
 
@@ -3211,7 +3458,7 @@ XFInput.prototype.click = function(target) {
 
 		
 
-XFInput.keyUpNormal = function() {
+XFInput.keyUpInputMode = function() {
 	var xf = XFControl.getXFElement(this);
 	this.value = xf.inputmode(this.value);
 };
@@ -3219,13 +3466,41 @@ XFInput.keyUpNormal = function() {
 
 		
 
+XFInput.keyUpActivate = function(a) {
+	var xf = XFControl.getXFElement(this);
+	if (a.keyCode == 13) {
+		xforms.openAction();
+		xf.valueChanged(this.value || "");
+		XMLEvents.dispatch(xf, "DOMActivate");
+		xforms.closeAction();
+	}
+};
+
+
+		
+
+XFInput.keyUpIncrementalActivate = function(a) {
+	var xf = XFControl.getXFElement(this);
+	if (a.keyCode == 13) {
+		xforms.openAction();
+		xf.valueChanged(this.value || "");
+		XMLEvents.dispatch(xf, "DOMActivate");
+		xforms.closeAction();
+	} else {
+	xforms.openAction();
+	xf.valueChanged(this.value || "");
+	xforms.closeAction();
+	}
+};
+
+
+		
+
 XFInput.keyUpIncremental = function() {
 	var xf = XFControl.getXFElement(this);
-
-	if (xf.inputmode != null) {
-		this.value = xf.inputmode(this.value);
-	}
+	xforms.openAction();
 	xf.valueChanged(this.value || "");
+	xforms.closeAction();
 };
 
 
@@ -3267,6 +3542,8 @@ function XFItem(id, bindingL, bindingV) {
 		this.hasBinding = true;
 		this.bindingL = bindingL;
 		this.bindingV = bindingV;
+	} else {
+		Core.setClass(this.element, "xforms-disabled", false);
 	}
 
 	var element = this.element;
@@ -3356,13 +3633,15 @@ XFItem.prototype.click = function (target) {
 	if (input) {
 		var xf = XFControl.getXFElement(this.element);
 		
-		if (!xf.element.node.readonly) {
+		if (!xf.element.node.readonly && target == input) {
+/*		
 			if (target != input) {
 				if (input.type != "radio" || !input.checked) {
 					input.checked = !input.checked;
 					input.focus();
 				}
 			}
+*/
 
 			xf.itemClick(input.value);
 		}
@@ -3428,7 +3707,12 @@ XFItemset.prototype.build_ = function(ctx) {
 		
 
 XFItemset.prototype.refresh = function() {
-	Core.setClass(this.element, "xforms-disabled", this.nodes.length === 0);	
+	var parent = this.element.parentNode;
+	var i;
+	for (i = 0; parent.childNodes[i] != this.element; i++);
+	for (var j = 0; j < this.nodes.length || j == 0; j++) {
+		Core.setClass(parent.childNodes[i+j], "xforms-disabled", this.nodes.length === 0);
+	}
 };
 
 
@@ -3530,7 +3814,7 @@ XFOutput.prototype = new XFControl();
 		
 
 XFOutput.prototype.clone = function(id) { 
-	return new XFOutput(id, this.binding);
+	return new XFOutput(id, this.binding, this.mediatype);
 };
 
 
@@ -3550,7 +3834,12 @@ XFOutput.prototype.setValue = function(value) {
 
     if (element.nodeName.toLowerCase() == "span") {
 			if (this.mediatype == "application/xhtml+xml") {
-				XDocument.parse(value, element);
+				while (element.firstChild) {
+					element.removeChild(element.firstChild);
+				}
+				if (value != null) {
+					XDocument.parse(value, element);
+				}
 			} else {
         setValue(element, value);
 			}
@@ -3896,7 +4185,9 @@ XFSelect.prototype.changeReadonly = function() {
 			list[i].disabled = this.readonly;
 		}
 	} else {
-		this.select.disabled = this.readonly;
+		if (!Dialog.knownSelect(this.select)) {
+			this.select.disabled = this.readonly;
+		}
 	}
 };
 
@@ -4040,6 +4331,9 @@ function XFTrigger(id, binding, clone) {
 	this.init(id);
 	this.binding = binding;
 	this.hasBinding = !!binding;
+	if(!this.hasBinding) {
+		Core.setClass(this.element, "xforms-disabled", false);
+	}
 	this.isTrigger = true;
 	var button = this.element.getElementsByTagName("a")[0]
 		|| this.element.getElementsByTagName("button")[0];
@@ -4119,8 +4413,8 @@ function Calendar() {
     var ini = parseInt(I8N.get("calendar.initDay"), 10);
 
     for (var j = 0; j < 7; j++) {
-    	var ind = j + ini;
-        this.createElement(trDays, "name", I8N.get("calendar.day" + (ind >= 7? ind - 7 : ind)));
+    	var ind = (j + ini) % 7;
+        this.createElement(trDays, "name", I8N.get("calendar.day" + ind));
     }
 
     this.tBody = Core.createElement("tbody", this.element);
@@ -4137,11 +4431,12 @@ function Calendar() {
     	    date.setDate(cal.day);
     	    
             if (cal.isTimestamp) {
-    	    	date.setMinutes(cal.inputMin.value);
-    	    	date.setHours(cal.inputHour.value);
-    	    	cal.input.value = I8N.format(date);
+							date.setSeconds(cal.inputSec.value);
+							date.setMinutes(cal.inputMin.value);
+							date.setHours(cal.inputHour.value);
+							cal.input.value = I8N.format(date, null, true);
             } else {
-                cal.input.value = I8N.formatDate(date);
+              cal.input.value = I8N.formatDate(date);
             }
 
 	        Calendar.close();
@@ -4221,6 +4516,7 @@ Calendar.prototype.refreshControls = function(date) {
 Calendar.prototype.refresh = function() {
     var firstDay = this.getFirstDay();
     var daysOfMonth = this.getDaysOfMonth();
+		var ini = parseInt(I8N.get("calendar.initDay"), 10);
     var cont = 0;
     var day = 1;
     var currentMonthYear = this.selectMonth.value == this.currentMonth
@@ -4234,7 +4530,7 @@ Calendar.prototype.refresh = function() {
             Core.setClass(cell, "hover", false);
             Core.setClass(cell, "today", currentMonthYear && day == this.currentDay);
             Core.setClass(cell, "selected", day == this.day);
-            Core.setClass(cell, "weekend", j > 4);
+            Core.setClass(cell, "weekend", (j+ini)%7 > 4);
 
             cell.firstChild.nodeValue
                 = (cont >= firstDay && cont < firstDay + daysOfMonth)? day++ : "";
@@ -4250,8 +4546,9 @@ Calendar.prototype.getFirstDay = function() {
    date.setDate(1);
    date.setMonth(this.selectMonth.value);
    date.setYear(this.inputYear.value);
-
-   return date.getDay() === 0? 6 : date.getDay() - 1;
+	 var ini = parseInt(I8N.get("calendar.initDay"), 10);
+	 var d = date.getDay();
+	 return (d + (6 - ini)) % 7;
 };
 
 
@@ -4325,7 +4622,7 @@ Calendar.show = function(input, type) {
         cal.today();
     }
     
-    Dialog.show(cal.element, input);
+    Dialog.show(cal.element, input, false);
 };
 
 
@@ -4334,7 +4631,7 @@ Calendar.show = function(input, type) {
 Calendar.close = function() {
     var cal = Calendar.INSTANCE;
     cal.yearList.close();
-    Dialog.hide(cal.element);
+    Dialog.hide(cal.element, false);
 };
     
 	
@@ -4448,7 +4745,11 @@ Schema.prototype.getType = function(name) {
 
 Schema.getType = function(name) {
 	var res = name.split(":");
-	return Schema.getTypeNS(Schema.prefixes[res[0]], res[1]);
+	if (typeof(res[1]) == "undefined") {
+		return Schema.getTypeNS(Schema.prefixes["xforms"], res[0]);
+	} else {
+		return Schema.getTypeNS(Schema.prefixes[res[0]], res[1]);
+	}
 };
 
 
@@ -4458,14 +4759,14 @@ Schema.getTypeNS = function(ns, name) {
 	var schema = Schema.all[ns];
 	
 	if (!schema) {
-		alert("Schema " + ns + " not defined");
+		alert("Schema for namespace " + ns + " not defined for type " + name);
 		throw "Error";
 	}
 	
 	var type = schema.types[name];	
 
 	if (!type) {
-		alert("Type " + name + " not defined");
+		alert("Type " + name + " not defined in namespace " + ns);
 		throw "Error";
 	}
 
@@ -4830,10 +5131,10 @@ TypeDefs.Default = {
 		"class" : "datetime",
 		"displayLength" : 20,
 		"format" : function(value) {
-			return I8N.format(I8N.parse(value, "yyyy-MM-ddThh:mm:ss"));
+			return I8N.format(I8N.parse(value, "yyyy-MM-ddThh:mm:ss"),null, true);
 		},
 		"parse" : function(value) {
-			return I8N.format(I8N.parse(value), "yyyy-MM-ddThh:mm:ss");
+			return I8N.format(I8N.parse(value), "yyyy-MM-ddThh:mm:ss", true);
 		}
 	},
 
@@ -4905,7 +5206,7 @@ TypeDefs.Default = {
 
 	"nonPositiveInteger" : {
 		"base" : "xsd_:integer",
-		"patterns" : [ "^([-][0-9]+|0)$" ]
+		"patterns" : [ "^([\\-][0-9]+|0)$" ]
 	},
 
 		
@@ -4919,14 +5220,14 @@ TypeDefs.Default = {
 
 	"negativeInteger" : {
 		"base" : "xsd_:integer",
-		"patterns" : [ "^[-][0-9]+$" ]
+		"patterns" : [ "^[\\-][0-9]+$" ]
 	},
 
 		
 
 	"positiveInteger" : {
 		"base" : "xsd_:integer",
-		"patterns" : [ "^[+]0*[1-9][0-9]*$" ]
+		"patterns" : [ "^[+]?0*[1-9][0-9]*$" ]
 	},
 
 		
@@ -5104,7 +5405,7 @@ TypeDefs.XForms = {
 		
 
 	"decimal" : {
-		"patterns" : [ "^([-+]?[0-9]*[\\.[0-9]*]?)?$" ],
+		"patterns" : [ "^([\\-+]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+))?$" ],
 		"class" : "number",
 		"displayLength" : 8,
 		"format" : function(value) {
@@ -5167,7 +5468,7 @@ TypeDefs.XForms = {
 		
 
 	"duration" : {
-		"patterns" : [ "^(P([0-9]+Y)?([0-9]+M)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+S)?)?)?$" ]
+		"patterns" : [ "^(-?P(?!$)([0-9]+Y)?([0-9]+M)?([0-9]+D)?(T(?!$)([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]+)?S)?)?)?$" ]
 	},
 
 		
@@ -5223,7 +5524,7 @@ TypeDefs.XForms = {
 
 	"nonPositiveInteger" : {
 		"base" : "xforms:integer",
-		"patterns" : [ "^(([-][0-9]+|0))?$" ]
+		"patterns" : [ "^(([\\-][0-9]+|0))?$" ]
 	},
 
 		
@@ -5237,14 +5538,14 @@ TypeDefs.XForms = {
 
 	"negativeInteger" : {
 		"base" : "xforms:integer",
-		"patterns" : [ "^([-][0-9])?$" ]
+		"patterns" : [ "^([\\-][0-9])?$" ]
 	},
 
 		
 
 	"positiveInteger" : {
 		"base" : "xforms:integer",
-		"patterns" : [ "^[+]0*[1-9][0-9]*$" ]
+		"patterns" : [ "^[+]?0*[1-9][0-9]*$" ]
 	},
 
 		
@@ -5626,8 +5927,10 @@ function Listener(observer, name, phase, handler) {
 			}
 	
 	    if (!document.addEventListener) {
-	        event.preventDefault  = null;
-	        event.stopPropagation = null;
+	        try {
+						event.preventDefault = null;
+						event.stopPropagation = null;
+					} catch (e) {};
 	    }
 	};
 
@@ -5754,13 +6057,15 @@ XMLEvents.dispatch = function(target, name, type, bubbles, cancelable, defaultAc
         
         var res = target.fireEvent("onerrorupdate", event);
 
-        if ((res && !event.stopped) || !cancelable) {
-            defaultAction.call(target.xfElement, event);
-        }
-    
-        if (!bubbles) {
-            canceler.detach();
-        }
+				try {
+					if ((res && !event.stopped) || !cancelable) {
+							defaultAction.call(target.xfElement, event);
+					}
+			
+					if (!bubbles) {
+							canceler.detach();
+					}
+				} catch (e) {};
     }
 };
 
@@ -5903,8 +6208,14 @@ XMLEvents.define("xforms-binding-exception",     true, false);
 XMLEvents.define("ajx-start", true,  true, function(evt) { evt.target.xfElement.start(); });
 XMLEvents.define("ajx-stop",  true,  true, function(evt) { evt.target.xfElement.stop(); });
 XMLEvents.define("ajx-time",  true,  true);
-XMLEvents.define("ajx-show",  true,  true, function(evt) { Dialog.show(evt.target); });
-XMLEvents.define("ajx-hide",  true,  true, function(evt) { Dialog.hide(evt.target); });
+
+		
+
+XMLEvents.define("xforms-dialog-open",  true,  true, function(evt) { Dialog.show(evt.target, null, true); });
+
+		
+
+XMLEvents.define("xforms-dialog-close",  true,  true, function(evt) { Dialog.hide(evt.target, true); });
     
 	
 	
@@ -6261,13 +6572,14 @@ XNode.recycle = function(node) {
 		
 
 XNode.create = function(type, ns, name, value, owner) {
-    if (XNode.unused_.length > 0) {
-        var node = XNode.unused_.pop();
-        XNode.init.call(node, type, ns, name, value, owner);
-        return node;
-    } else {
-        return new XNode(type, ns, name, value, owner);
-    }
+	while (XNode.unused_.length > 0) {
+		var node = XNode.unused_.pop();
+		if (!node.clear) {
+			XNode.init.call(node, type, ns, name, value, owner);
+			return node;
+		}
+	}
+	return new XNode(type, ns, name, value, owner);
 };
     
 	
@@ -6350,13 +6662,16 @@ XDocument.prototype.transformToText = function(xslt) {
 		
 
 XDocument.unescape = function(xml) {
-		var regex_escapepb = /^\s*</;
-		if (!xml.match(regex_escapepb)) {
-			xml = xml.replace(/&lt;/g, "<");
-			xml = xml.replace(/&gt;/g, ">");
-			xml = xml.replace(/&amp;/g, "&");
-		}
-		return xml;
+	if (xml == null) {
+		return "";
+	}
+	var regex_escapepb = /^\s*</;
+	if (!xml.match(regex_escapepb)) {
+		xml = xml.replace(/&lt;/g, "<");
+		xml = xml.replace(/&gt;/g, ">");
+		xml = xml.replace(/&amp;/g, "&");
+	}
+	return xml;
 }
 
 		
@@ -6364,8 +6679,8 @@ XDocument.unescape = function(xml) {
 XDocument.parse = function(xml, root) {
 		xml = XDocument.unescape(xml);
     var regex_empty = /\/$/;
-    var regex_tagname = /^([\w:\-]*)/;
-    var regex_attribute = /([\w:\-]+)\s?=\s?('([^\']*)'|"([^\"]*)")/g;
+    var regex_tagname = /^([\w:\-\.]*)/;
+    var regex_attribute = /([\w:\-\.]+)\s?=\s?('([^\']*)'|"([^\"]*)")/g;
     var xmldoc;
 		var nons;
 		if(root) {
@@ -6381,8 +6696,12 @@ XDocument.parse = function(xml, root) {
     stack.push(parent);
     var x = stringSplit(xml, "<");
 
-    for (var i = 1; i < x.length; ++i) {
-        var xx = stringSplit(x[i], ">");
+    for (var i = 1; i < x.length; i++) {
+				var xx = stringSplit(x[i], ">");
+				if (xx.length == 1) {
+					x[i+1] = x[i] + "<" + x[i+1];
+					continue;
+				}
         var tag = xx[0];
         var text = xmlResolveEntities(xx[1] || "");
 
@@ -6404,6 +6723,9 @@ XDocument.parse = function(xml, root) {
 						if(parent == root) {
 							ns["xml"] = "http://www.w3.org/XML/1998/namespace";
 							ns.length++;
+							ns[""] = "";
+							XPath.registerNS("", "");
+							ns.length++;
 						}
             var att;
 
@@ -6412,7 +6734,9 @@ XDocument.parse = function(xml, root) {
                 var name = att[1];
                 
                 if (name.indexOf("xmlns") === 0) {
-                    ns[name.length == 5? "" : name.substring(6)] = val;
+										var prefix = name.length == 5? "" : name.substring(6);
+                    ns[prefix] = val;
+										XPath.registerNS(prefix, val);
                     ns.length++;
                 } else {
                     atts.push([name, val]);
@@ -6667,6 +6991,25 @@ var XMLWriter = {
 		
 		
 		
+function ArrayExpr(exprs) {
+  this.exprs = exprs;
+}
+
+
+		
+
+ArrayExpr.prototype.evaluate = function(ctx) {
+	var nodes = [];
+	for (var i = 0; i < this.exprs.length; i++) {
+		nodes[i] = this.exprs[i].evaluate(ctx);
+	}
+  return nodes;
+};
+
+	
+		
+		
+		
 function BinaryExpr(expr1, op, expr2) {
     this.expr1 = expr1;
     this.expr2 = expr2;
@@ -6679,8 +7022,34 @@ function BinaryExpr(expr1, op, expr2) {
 BinaryExpr.prototype.evaluate = function(ctx) {
     var v1 = this.expr1.evaluate(ctx);
     var v2 = this.expr2.evaluate(ctx);
-    var n1 = numberValue(v1);
-    var n2 = numberValue(v2);
+		var n1;
+		var n2;
+		if ((((typeof v1) == "object" && v1.length > 1) || ((typeof v2) == "object" && v2.length > 1)) && 
+		    (this.op == "=" || this.op == "!=" || this.op == "<" || this.op == "<=" || this.op == ">" || this.op == ">=")) {
+			for (var i = 0; i < v1.length; i++) {
+				n1 = numberValue([v1[i]]);
+				if (isNaN(n1)) {
+						n1 = stringValue([v1[i]]);
+				}
+				for (var j = 0; j <v2.length; j++) {
+					n2 = numberValue([v2[j]]);
+					if (isNaN(n2)) {
+							n2 = stringValue([v2[j]]);
+					}
+					switch (this.op) {
+						case '='   : if (n1 == n2) return true; break;
+						case '!='  : if (n1 != n2) return true; break;
+						case '<'   : if (n1 < n2) return true; break;
+						case '<='  : if (n1 <= n2) return true; break;
+						case '>'   : if (n1 > n2) return true; break;
+						case '>='  : if (n1 >= n2) return true; break;
+					}
+				}
+			}
+			return false;
+		}
+    n1 = numberValue(v1);
+    n2 = numberValue(v2);
     
     if (isNaN(n1) || isNaN(n2)) {
         n1 = stringValue(v1);
@@ -7004,6 +7373,7 @@ NodeTestType.prototype.evaluate = function(node) {
 		
 function NSResolver() {
     this.map = {};
+		this.notfound = false;
 }
 
 
@@ -7020,6 +7390,23 @@ NSResolver.prototype.registerAll = function(resolver) {
 
 NSResolver.prototype.register = function(prefix, uri) {
     this.map[prefix] = uri;
+		if( uri == "notfound" ) {
+			this.notfound = true;
+		}
+};
+
+
+		
+
+NSResolver.prototype.registerNotFound = function(prefix, uri) {
+		if( this.map[prefix] == "notfound" ) {
+			this.map[prefix] = uri;
+			for(p in this.map) {
+				if( this.map[p] == "notfound" ) {
+					this.notfound = true;
+				}
+			}
+		}
 };
 
 
@@ -7070,11 +7457,7 @@ function PredicateExpr(expr) {
 
 PredicateExpr.prototype.evaluate = function(ctx) {
     var v = this.expr.evaluate(ctx);
-    var number;
-
-    try { number = numberValue(v); } catch (e) { }
-    
-    return number? ctx.position == number : booleanValue(v);
+    return typeof v == "number" ? ctx.position == v : booleanValue(v);
 };
     
 	
@@ -7099,84 +7482,81 @@ StepExpr.prototype.evaluate = function(ctx) {
 	var list = [];
 
 	switch(this.axis) {
-	case XPathAxis.ANCESTOR_OR_SELF :
-		_push(ctx, list, input, this.nodetest);
-		// explicit no break here -- fallthrough
-	case XPathAxis.ANCESTOR :
-		for (var pn = input.parentNode; pn.parentNode; pn = input.parentNode) {
-			_push(ctx, list, pn, this.nodetest);
-            nodelist.push(pn); // ??? What is nodelist?
-        }
-
-        break;
-    case XPathAxis.ATTRIBUTE :
-        _pushList(ctx, list, input.attributes, this.nodetest);
-        break;
-    case XPathAxis.CHILD :
-        _pushList(ctx, list, input.childNodes, this.nodetest);
-        break;
-    case XPathAxis.DESCENDANT_OR_SELF :
-        _push(ctx, list, input, this.nodetest);
-        // explicit no break here -- fallthrough
-    case XPathAxis.DESCENDANT :
-        _pushDescendants(ctx, list, input, this.nodetest);
-        break;
-    case XPathAxis.FOLLOWING :
-        for (var n = input.parentNode; n; n = n.parentNode) {
-            for (var nn = n.nextSibling; nn; nn = nn.nextSibling) {
-                _push(ctx, list, nn, this.nodetest);
-                _pushDescendants(ctx, list, nn, this.nodetest);
-            }
-        }
-        break;
-    case XPathAxis.FOLLOWING_SIBLING :
-        for (var ns = input.nextSibling; ns; ns = ns.nextSibling) {
-            _push(ctx, list, ns, this.nodetest);
-        }
-        break;
+		case XPathAxis.ANCESTOR_OR_SELF :
+			_push(ctx, list, input, this.nodetest);
+			// explicit no break here -- fallthrough
+		case XPathAxis.ANCESTOR :
+			for (var pn = input.parentNode; pn.parentNode; pn = pn.parentNode) {
+				_push(ctx, list, pn, this.nodetest);
+			}
+			break;
+		case XPathAxis.ATTRIBUTE :
+			_pushList(ctx, list, input.attributes, this.nodetest);
+			break;
+		case XPathAxis.CHILD :
+			_pushList(ctx, list, input.childNodes, this.nodetest);
+			break;
+		case XPathAxis.DESCENDANT_OR_SELF :
+			_push(ctx, list, input, this.nodetest);
+			// explicit no break here -- fallthrough
+		case XPathAxis.DESCENDANT :
+			_pushDescendants(ctx, list, input, this.nodetest);
+			break;
+		case XPathAxis.FOLLOWING :
+			for (var n = input.parentNode; n; n = n.parentNode) {
+				for (var nn = n.nextSibling; nn; nn = nn.nextSibling) {
+					_push(ctx, list, nn, this.nodetest);
+					_pushDescendants(ctx, list, nn, this.nodetest);
+				}
+			}
+			break;
+		case XPathAxis.FOLLOWING_SIBLING :
+      for (var ns = input.nextSibling; ns; ns = ns.nextSibling) {
+         _push(ctx, list, ns, this.nodetest);
+      }
+      break;
     case XPathAxis.NAMESPACE : 
-        alert('not implemented: axis namespace');
-        break;
+      alert('not implemented: axis namespace');
+      break;
     case XPathAxis.PARENT :
-		if (input.parentNode) {
-			_push(ctx, list, input.parentNode, this.nodetest);
-		}
-
-        break;
+			if (input.parentNode) {
+				_push(ctx, list, input.parentNode, this.nodetest);
+			}
+      break;
     case XPathAxis.PRECEDING :
-        for (var p = input.parentNode; p; p = p.parentNode) {
-            for (var pp = p.previousSibling; pp; pp = pp.previousSibling) {
-                _push(ctx, list, pp, this.nodetest);
-                _pushDescendantsRev(ctx, list, pp, this.nodetest);
-            }
+      for (var p = input.parentNode; p; p = p.parentNode) {
+        for (var pp = p.previousSibling; pp; pp = pp.previousSibling) {
+          _push(ctx, list, pp, this.nodetest);
+          _pushDescendantsRev(ctx, list, pp, this.nodetest);
         }
-        break;
+      }
+      break;
     case XPathAxis.PRECEDING_SIBLING :
-        for (var ps = input.previousSibling; ps; ps = ps.previousSibling) {
-            _push(ctx, list, ps, this.nodetest);
-        }
-        break;
+      for (var ps = input.previousSibling; ps; ps = ps.previousSibling) {
+        _push(ctx, list, ps, this.nodetest);
+      }
+			break;
     case XPathAxis.SELF :
-        _push(ctx, list, input, this.nodetest);
-        break;
+      _push(ctx, list, input, this.nodetest);
+      break;
     default :
-        throw {name:'ERROR -- NO SUCH AXIS: ' + this.axis};
+      throw {name:'ERROR -- NO SUCH AXIS: ' + this.axis};
     }   
 
     for (var i = 0; i < this.predicates.length; i++) {
-        var pred = this.predicates[i];
-        var newList = [];
+      var pred = this.predicates[i];
+      var newList = [];
 
-        for (var j = 0; j < list.length; j++) {
-            var x = list[j];
-            var newCtx = ctx.clone(x, j + 1, list);
+      for (var j = 0; j < list.length; j++) {
+        var x = list[j];
+        var newCtx = ctx.clone(x, j + 1, list);
 
-            if (booleanValue(pred.evaluate(newCtx))) {
-                newList.push(x);
-            }
+        if (booleanValue(pred.evaluate(newCtx))) {
+          newList.push(x);
         }
+      }
     
-        list = newList;
+      list = newList;
     }
 
     return list;
@@ -7260,8 +7640,12 @@ function booleanValue(value) {
 		
 
 function numberValue(value) {
-    return typeof value == "boolean"? 'A' - 0
-        : (typeof value == "object"?  stringValue(value) : value) - 0;
+	if (typeof value == "boolean") {
+    return 'A' - 0;
+	} else {
+		var v = typeof value == "object"?  stringValue(value) : value;
+		return v === '' ? NaN : v - 0;
+	}
 }
 
 
@@ -7376,7 +7760,7 @@ function stringSplit(s, c) {
 		
 		
 		
-function XPath(expression, compiled) {
+function XPath(expression, compiled, ns) {
 	this.expression = expression;
 	if (typeof compiled == "string") {
 		alert("XSLTForms Exception\n--------------------------\n\nError parsing the following XPath expression :\n\n"+expression+"\n\n"+compiled);
@@ -7387,12 +7771,15 @@ function XPath(expression, compiled) {
 	this.nsresolver = new NSResolver();
 	XPath.expressions[expression] = this;
 
-	if (arguments.length > 2)  {
-		for (var i = 2; i < arguments.length; i += 2) {
-			this.nsresolver.register(arguments[i], arguments[i + 1]);
+	if (ns.length > 0)  {
+		for (var i = 0; i < ns.length; i += 2) {
+			this.nsresolver.register(ns[i], ns[i + 1]);
 		}
 	} else {
 		this.nsresolver.register("", "http://www.w3.org/1999/xhtml");
+	}
+	if (this.nsresolver.notfound) {
+		XPath.notfound = true;
 	}
 }
 
@@ -7420,12 +7807,42 @@ XPath.prototype.evaluate = function(ctx) {
 		
 
 XPath.expressions = {};
+XPath.notfound = false;
 
 
 		
 
 XPath.get = function(str) {
 	return XPath.expressions[str];
+};
+
+		
+
+XPath.create = function(expression, compiled) {
+	if (XPath.get(expression) != null) {
+		delete compiled;
+	} else {
+		var ns = [];
+		for (var i = 2; i < arguments.length; i += 2) {
+			ns[i-2] = arguments[i];
+			ns[i-1] = arguments[i+1];
+		}
+		new XPath(expression, compiled, ns);
+	}
+};
+
+		
+
+XPath.registerNS = function(prefix, uri) {
+	if (XPath.notfound) {
+		XPath.notfound = false;
+		for( e in XPath.expressions ) {
+			XPath.expressions[e].nsresolver.registerNotFound(prefix, uri);
+			if (XPath.expressions[e].nsresolver.notfound) {
+				XPath.notfound = true;
+			}
+		}
+	}
 };
     
 	
@@ -8620,6 +9037,12 @@ function validate_(node) {
         return false;
     }
 
+    for (var i = 0; i < node.attributes.length; i++) {
+        if (!this.validate_(node.attributes[i])) {
+            return false;
+        }
+    }
+
     for (var i = 0; i < node.childNodes.length; i++) {
         if (!this.validate_(node.childNodes[i])) {
             return false;
@@ -8650,8 +9073,12 @@ function booleanValue(value) {
 		
 
 function numberValue(value) {
-    return typeof value == "boolean"? 'A' - 0
-        : (typeof value == "object"?  stringValue(value) : value) - 0;
+	if (typeof value == "boolean") {
+    return 'A' - 0;
+	} else {
+		var v = typeof value == "object"?  stringValue(value) : value;
+		return v === '' ? NaN : v - 0;
+	}
 }
 
 
