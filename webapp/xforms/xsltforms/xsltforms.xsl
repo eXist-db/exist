@@ -779,7 +779,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<span>
 					<span>
 						<xsl:if test="local-name() != 'trigger' and local-name() != 'submit' and (local-name() != 'output' or (xforms:label/node() and string($appearance) != 'none'))">
-							<span class="focus">�<xsl:text/></span>
+							<span class="focus"><xsl:text/></span>
 						</xsl:if>
 						<xsl:if test="xforms:label/node() and string($appearance) != 'none'">
 							<span>
