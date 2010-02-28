@@ -54,7 +54,7 @@
                 example using client-side transformation.</para>
             <para>When applying the stylesheet server-side, you need to make sure serialization
                 parameters are correctly set. For example, you can apply the stylesheet within an
-                    <ulink url="urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
+                    <ulink url="../urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
             <example>
                 <title>Applying the stylesheet server-side via controller.xql</title>
                 <programlisting><markup><![CDATA[<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
