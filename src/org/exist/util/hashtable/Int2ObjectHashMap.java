@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -30,17 +29,17 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class Int2ObjectHashMap extends AbstractHashtable {
+public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 
 	protected int[] keys;
-	protected Object[] values;
+	protected V[] values;
 
 	protected double growthFactor = 1.5;
 	
 	public Int2ObjectHashMap() {
 		super();
 		keys = new int[tabSize];
-		values = new Object[tabSize];
+		values = (V[]) new Object[tabSize];
 	}
 
 	public Int2ObjectHashMap(int iSize) {
@@ -50,14 +49,14 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 	public Int2ObjectHashMap(int iSize, double growth) {
 		super(iSize);
 		keys = new int[tabSize];
-		values = new Object[tabSize];
+		values = (V[]) new Object[tabSize];
 		growthFactor = growth;
 	}
 	
 	public void clear() {
 		items = 0;
 		keys = new int[tabSize];
-		values = new Object[tabSize];
+		values = (V[]) new Object[tabSize];
 	}
 
 	/**
@@ -68,16 +67,16 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 	 * @param key
 	 * @param value
 	 */
-	public void put(int key, Object value) {
+	public void put(int key, V value) {
 		try {
 			insert(key, value);
 		} catch (HashtableOverflowException e) {
 			int[] copyKeys = keys;
-			Object[] copyValues = values;
+			V[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime((int) (tabSize * growthFactor));
 			keys = new int[tabSize];
-			values = new Object[tabSize];
+			values = (V[]) new Object[tabSize];
 			items = 0;
 
 			for (int k = 0; k < copyValues.length; k++) {
@@ -88,7 +87,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		}
 	}
 
-	public Object get(int key) {
+	public V get(int key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -149,7 +148,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 			if (values[idx] == REMOVED)
 				return null; // key has already been removed
 			Object o = values[idx];
-			values[idx] = REMOVED;
+			values[idx] = (V) REMOVED;
 			--items;
 			return o;
 		}
@@ -163,7 +162,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 				if (values[idx] == REMOVED)
 					return null; // key has already been removed
 				Object o = values[idx];
-				values[idx] = REMOVED;
+				values[idx] = (V) REMOVED;
 				--items;
 				return o;
 			}
@@ -171,15 +170,15 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		return null;
 	}
 
-	public Iterator iterator() {
-		return new Int2ObjectIterator(Int2ObjectIterator.KEYS);
+	public Iterator<Integer> iterator() {
+		return new Int2ObjectIterator(IteratorType.KEYS);
 	}
 
-	public Iterator valueIterator() {
-		return new Int2ObjectIterator(Int2ObjectIterator.VALUES);
+	public Iterator<V> valueIterator() {
+		return new Int2ObjectIterator(IteratorType.VALUES);
 	}
 
-	protected void insert(int key, Object value) throws HashtableOverflowException {
+	protected void insert(int key, V value) throws HashtableOverflowException {
 		if (value == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -234,7 +233,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		throw new HashtableOverflowException();
 	}
 
-	protected boolean hasEqualKeys(Int2ObjectHashMap other) {
+	protected boolean hasEqualKeys(Int2ObjectHashMap<?> other) {
 	    for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;
@@ -255,11 +254,11 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		return i;
 	}
 
-	protected class Int2ObjectIterator extends HashtableIterator {
+	protected class Int2ObjectIterator<T> extends HashtableIterator<T> {
 
 		int idx = 0;
 
-		public Int2ObjectIterator(int type) {
+		public Int2ObjectIterator(IteratorType type) {
 			super(type);
 		}
 
@@ -280,7 +279,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public T next() {
 			if (idx == tabSize)
 				return null;
 			while (values[idx] == null || values[idx] == REMOVED) {
@@ -288,10 +287,12 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 				if (idx == tabSize)
 					return null;
 			}
-			if (returnType == VALUES)
-				return values[idx++];
-			else
-				return new Integer(keys[idx++]);
+			switch(returnType) {
+				case VALUES: return (T) values[idx++];
+				case KEYS: return (T) Integer.valueOf(keys[idx++]);
+			}
+			
+			throw new IllegalStateException("This never happens");
 		}
 		
 		/* (non-Javadoc)
@@ -300,7 +301,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		public void remove() {
 			if(idx == 0)
 				throw new IllegalStateException("remove called before next");
-			values[idx - 1] = REMOVED;
+			values[idx - 1] = (V) REMOVED;
 			items--;
 		}
 	}

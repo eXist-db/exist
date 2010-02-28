@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -30,21 +29,21 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class Long2ObjectHashMap extends AbstractHashtable {
+public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 	 
 	protected long[] keys;
-	protected Object[] values;
+	protected V[] values;
 
 	public Long2ObjectHashMap() {
 		super();
 		keys = new long[tabSize];
-		values = new Object[tabSize];
+		values = (V[]) new Object[tabSize];
 	}
 
 	public Long2ObjectHashMap(int iSize) {
 		super(iSize);
 		keys = new long[tabSize];
-		values = new Object[tabSize];
+		values = (V[]) new Object[tabSize];
 	}
 
 	/**
@@ -55,16 +54,16 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 	 * @param key
 	 * @param value
 	 */
-	public void put(long key, Object value) {
+	public void put(long key, V value) {
 		try {
 			insert(key, value);
 		} catch (HashtableOverflowException e) {
 			long[] copyKeys = keys;
-			Object[] copyValues = values;
+			V[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
 			keys = new long[tabSize];
-			values = new Object[tabSize];
+			values = (V[]) new Object[tabSize];
 			items = 0;
 
 			for (int k = 0; k < copyValues.length; k++) {
@@ -75,7 +74,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		}
 	}
 
-	public Object get(long key) {
+	public V get(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
 			idx *= -1;
@@ -100,7 +99,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		return null;
 	}
 	
-	public Object remove(long key) {
+	public V remove(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
 			idx *= -1;
@@ -109,8 +108,8 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		} else if (keys[idx] == key) {
 			if(values[idx] == REMOVED)
 				return null;	// key has already been removed
-			Object o = values[idx];
-			values[idx] = REMOVED;
+			V o = values[idx];
+			values[idx] = (V) REMOVED;
 			--items;
 			return o;
 		}
@@ -122,8 +121,8 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 			} else if (keys[idx] == key) {
 				if(values[idx] == REMOVED)
 					return null;	// key has already been removed
-				Object o = values[idx];
-				values[idx] = REMOVED;
+				V o = values[idx];
+				values[idx] = (V) REMOVED;
 				--items;
 				return o;
 			}
@@ -138,15 +137,15 @@ public class Long2ObjectHashMap extends AbstractHashtable {
         items = 0;
     }
     
-	public Iterator iterator() {
-		return new Long2ObjectIterator(Long2ObjectIterator.KEYS);
+	public Iterator<Long> iterator() {
+		return new Long2ObjectIterator(IteratorType.KEYS);
 	}
 	
-	public Iterator valueIterator() {
-		return new Long2ObjectIterator(Long2ObjectIterator.VALUES);
+	public Iterator<V> valueIterator() {
+		return new Long2ObjectIterator(IteratorType.VALUES);
 	}
 	
-	protected Object insert(long key, Object value) throws HashtableOverflowException {
+	protected V insert(long key, V value) throws HashtableOverflowException {
 		if (value == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -165,7 +164,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
             bucket = idx;
         } else if (keys[idx] == key) {
 			// duplicate value
-        	Object dup = values[idx];
+        	V dup = values[idx];
 			values[idx] = value;
 			return dup;
 		}
@@ -187,7 +186,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 				return null;
 			} else if(keys[idx] == key) {
 				// duplicate value
-				Object dup = values[idx];
+				V dup = values[idx];
 				values[idx] = value;
 				return dup;
 			}
@@ -215,11 +214,11 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		return (int) (l ^ (l >>> 32));
 	}
 	
-	protected class Long2ObjectIterator extends HashtableIterator {
+	protected class Long2ObjectIterator<T> extends HashtableIterator<T> {
 		
 		int idx = 0;
 		
-		public Long2ObjectIterator(int type) {
+		public Long2ObjectIterator(IteratorType type) {
 			super(type);
 		}
 		
@@ -240,7 +239,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public T next() {
 			if(idx == tabSize)
 				return null;
 			while(values[idx] == null || values[idx] == REMOVED) {
@@ -248,10 +247,11 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 				if(idx == tabSize)
 					return null;
 			}
-			if(returnType == VALUES)
-				return values[idx++];
-			else
-				return new Long(keys[idx++]);
+			switch(returnType) {
+				case VALUES: return (T) values[idx++];
+				case KEYS: return (T) Long.valueOf(keys[idx++]);
+			}
+			throw new IllegalStateException("This never happens");
 		}
 	}
 }

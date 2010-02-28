@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -33,22 +32,22 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class Object2IntHashMap extends AbstractHashtable {
+public class Object2IntHashMap<K> extends AbstractHashtable<K, Integer> {
 
     public static final int UNKNOWN_KEY = -1;
     
-	protected Object[] keys;
+	protected K[] keys;
 	protected int[] values;
 
 	public Object2IntHashMap() {
 		super();
-		keys = new Object[tabSize];
+		keys = (K[]) new Object[tabSize];
 		values = new int[tabSize];
 	}
 
 	public Object2IntHashMap(int iSize) {
 		super(iSize);
-		keys = new Object[tabSize];
+		keys = (K[]) new Object[tabSize];
 		values = new int[tabSize];
 	}
 
@@ -60,15 +59,15 @@ public class Object2IntHashMap extends AbstractHashtable {
 	 * @param key
 	 * @param value
 	 */
-	public void put(Object key, int value) {
+	public void put(K key, int value) {
 		try {
 			insert(key, value);
 		} catch (HashtableOverflowException e) {
-			Object[] copyKeys = keys;
+			K[] copyKeys = keys;
 			int[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
-			keys = new Object[tabSize];
+			keys = (K[]) new Object[tabSize];
 			values = new int[tabSize];
 			items = 0;
 
@@ -80,7 +79,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 		}
 	}
 
-	public int get(Object key) {
+	public int get(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -101,7 +100,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 		return UNKNOWN_KEY;
 	}
 
-	public boolean containsKey(Object key) {
+	public boolean containsKey(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -122,14 +121,14 @@ public class Object2IntHashMap extends AbstractHashtable {
 		return false;
 	}
 
-	public int remove(Object key) {
+	public int remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
 		if (keys[idx] == null) {
 			return UNKNOWN_KEY;
 		} else if (keys[idx].equals(key)) {
-			keys[idx] = REMOVED;
+			keys[idx] = (K) REMOVED;
 			--items;
 			return values[idx];
 		}
@@ -139,7 +138,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 			if (keys[idx] == null) {
 				return UNKNOWN_KEY;
 			} else if (keys[idx].equals(key)) {
-				keys[idx] = REMOVED;
+				keys[idx] = (K) REMOVED;
 				--items;
 				return values[idx];
 			}
@@ -147,19 +146,19 @@ public class Object2IntHashMap extends AbstractHashtable {
 		return UNKNOWN_KEY;
 	}
 
-	public Iterator iterator() {
-		return new Object2LongIterator(HashtableIterator.KEYS);
+	public Iterator<K> iterator() {
+		return new Object2LongIterator<K>(IteratorType.KEYS);
 	}
 
-	public Iterator valueIterator() {
-		return new Object2LongIterator(HashtableIterator.VALUES);
+	public Iterator<Integer> valueIterator() {
+		return new Object2LongIterator<Integer>(IteratorType.VALUES);
 	}
 
-	public Iterator stableIterator() {
-		return new Object2LongStableIterator(HashtableIterator.KEYS);
+	public Iterator<K> stableIterator() {
+		return new Object2LongStableIterator<K>(IteratorType.KEYS);
 	}
 
-	protected void insert(Object key, int value) throws HashtableOverflowException {
+	protected void insert(K key, int value) throws HashtableOverflowException {
 		if (key == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -225,11 +224,11 @@ public class Object2IntHashMap extends AbstractHashtable {
 		return o.hashCode();
 	}
 
-	protected class Object2LongIterator extends HashtableIterator {
+	protected class Object2LongIterator<T> extends HashtableIterator<T> {
 
 		int idx = 0;
 
-		public Object2LongIterator(int type) {
+		public Object2LongIterator(IteratorType type) {
 			super(type);
 		}
 
@@ -250,7 +249,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public T next() {
 			if (idx == tabSize)
 				return null;
 			while (keys[idx] == null || keys[idx] == REMOVED) {
@@ -258,23 +257,24 @@ public class Object2IntHashMap extends AbstractHashtable {
 				if (idx == tabSize)
 					return null;
 			}
-			if (returnType == VALUES)
-				return new Long(values[idx++]);
-			else
-				return keys[idx++];
-		}
+			switch(returnType) {
+				case VALUES: return (T) Integer.valueOf(values[idx++]);
+				case KEYS: return (T) keys[idx++];
+			}
 
+			throw new IllegalStateException("This never happens");
+		}
 	}
 
-	protected class Object2LongStableIterator extends HashtableIterator {
+	protected class Object2LongStableIterator<T> extends HashtableIterator<T> {
 
-		Object[] mKeys = null;
+		K[] mKeys = null;
 		int[] mValues = null;
 		int idx = 0;
 
-		public Object2LongStableIterator(int type) {
+		public Object2LongStableIterator(IteratorType type) {
 			super(type);
-			mKeys = new Object[tabSize];
+			mKeys = (K[]) new Object[tabSize];
 			System.arraycopy(keys, 0, mKeys, 0, tabSize);
 			mValues = new int[tabSize];
 			System.arraycopy(values, 0, mValues, 0, tabSize);
@@ -297,7 +297,7 @@ public class Object2IntHashMap extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public T next() {
 			if (idx == tabSize)
 				return null;
 			while (mKeys[idx] == null || mKeys[idx] == REMOVED) {
@@ -305,10 +305,12 @@ public class Object2IntHashMap extends AbstractHashtable {
 				if (idx == tabSize)
 					return null;
 			}
-			if (returnType == VALUES)
-				return new Integer(mValues[idx++]);
-			else
-				return mKeys[idx++];
+			switch(returnType) {
+				case KEYS: return (T) mKeys[idx++];
+				case VALUES: return (T) Integer.valueOf(mValues[idx++]);
+			}
+
+			throw new IllegalStateException("This never happens");
 		}
 	}
 }
