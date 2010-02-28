@@ -53,7 +53,7 @@ public class Wait extends BasicFunction
                     new QName( "wait", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
                     "Wait for the specified number of milliseconds",
                     new SequenceType[]{
-                        new FunctionParameterSequenceType( "inverval", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of milliseconds to wait." ),
+                        new FunctionParameterSequenceType( "interval", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of milliseconds to wait." ),
                     },
                    new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" )
                 )
