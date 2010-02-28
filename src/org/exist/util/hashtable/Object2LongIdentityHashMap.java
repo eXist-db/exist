@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -31,7 +30,7 @@ package org.exist.util.hashtable;
  * @author Stephan Körnig
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class Object2LongIdentityHashMap extends Object2LongHashMap {
+public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 
 	public Object2LongIdentityHashMap() {
 		super();
@@ -41,7 +40,7 @@ public class Object2LongIdentityHashMap extends Object2LongHashMap {
 		super(iSize);
 	}
 
-	public long get(Object key) {
+	public long get(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -62,7 +61,7 @@ public class Object2LongIdentityHashMap extends Object2LongHashMap {
 		return -1;
 	}
 
-	public boolean containsKey(Object key) {
+	public boolean containsKey(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -83,14 +82,14 @@ public class Object2LongIdentityHashMap extends Object2LongHashMap {
 		return false;
 	}
 
-	public long remove(Object key) {
+	public long remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
 		if (keys[idx] == null) {
 			return -1; // key does not exist
 		} else if (keys[idx] == key) {
-			keys[idx] = REMOVED;
+			keys[idx] = (K) REMOVED;
 			--items;
 			return values[idx];
 		}
@@ -100,7 +99,7 @@ public class Object2LongIdentityHashMap extends Object2LongHashMap {
 			if (keys[idx] == null) {
 				return -1; // key not found
 			} else if (keys[idx] == key) {
-				keys[idx] = REMOVED;
+				keys[idx] = (K) REMOVED;
 				--items;
 				return values[idx];
 			}
@@ -108,7 +107,7 @@ public class Object2LongIdentityHashMap extends Object2LongHashMap {
 		return -1;
 	}
 
-	protected void insert(Object key, long value) throws HashtableOverflowException {
+	protected void insert(K key, long value) throws HashtableOverflowException {
 		if (key == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;

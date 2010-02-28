@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -31,10 +30,10 @@ import org.exist.dom.QName;
  */
 public class NamePool {
 
-    private ConcurrentMap pool;
+    private ConcurrentMap<QName, QName> pool;
 
     public NamePool() {
-        pool = new ConcurrentHashMap();
+        pool = new ConcurrentHashMap<QName, QName>();
     }
     
     public QName getSharedName(QName name) {

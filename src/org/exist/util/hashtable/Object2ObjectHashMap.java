@@ -1,23 +1,22 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
- *
+ *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *
+ *  
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *
+ *  
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *  
  *  $Id$
  */
 package org.exist.util.hashtable;
@@ -28,18 +27,18 @@ import java.util.Iterator;
 /**
  * @author wolf
  */
-public class Object2ObjectHashMap extends AbstractHashtable {
+public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 
-    protected Object[] keys;
-	protected Object[] values;
+    protected K[] keys;
+	protected V[] values;
 	
     /**
      * 
      */
     public Object2ObjectHashMap() {
         super();
-		keys = new Object[tabSize];
-		values = new Object[tabSize];
+		keys = (K[]) new Object[tabSize];
+		values = (V[]) new Object[tabSize];
     }
 
     /**
@@ -47,8 +46,8 @@ public class Object2ObjectHashMap extends AbstractHashtable {
      */
     public Object2ObjectHashMap(int iSize) {
         super(iSize);
-		keys = new Object[tabSize];
-		values = new Object[tabSize];
+		keys = (K[]) new Object[tabSize];
+		values = (V[]) new Object[tabSize];
     }
 
     /**
@@ -59,16 +58,16 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 	 * @param key
 	 * @param value
 	 */
-	public void put(Object key, Object value) {
+	public void put(K key, V value) {
 		try {
 			insert(key, value);
 		} catch (HashtableOverflowException e) {
-			Object[] copyKeys = keys;
-			Object[] copyValues = values;
+			K[] copyKeys = keys;
+			V[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
-			keys = new Object[tabSize];
-			values = new Object[tabSize];
+			keys = (K[]) new Object[tabSize];
+			values = (V[]) new Object[tabSize];
 			items = 0;
 
 			for (int k = 0; k < copyValues.length; k++) {
@@ -79,7 +78,7 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 		}
 	}
 	
-	public Object get(Object key) {
+	public V get(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -100,7 +99,7 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 		return null;
 	}
 	
-	public int getIndex(Object key) {
+	public int getIndex(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -121,16 +120,16 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 		return -1;
 	}
 	
-	public Object remove(Object key) {
+	public V remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
 		if (keys[idx] == null) {
 			return null; // key does not exist
 		} else if (keys[idx].equals(key)) {
-			keys[idx] = REMOVED;
+			keys[idx] = (K) REMOVED;
 			--items;
-			Object oldVal = values[idx];
+			V oldVal = values[idx];
 			values[idx] = null;
 			return oldVal;
 		}
@@ -140,9 +139,9 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 			if (keys[idx] == null) {
 				return null; // key not found
 			} else if (keys[idx].equals(key)) {
-				keys[idx] = REMOVED;
+				keys[idx] = (K) REMOVED;
 				--items;
-				Object oldVal = values[idx];
+				V oldVal = values[idx];
 				values[idx] = null;
 				return oldVal;
 			}
@@ -150,7 +149,7 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 		return null;
 	}
 	
-	protected void insert(Object key, Object value) throws HashtableOverflowException {
+	protected void insert(K key, V value) throws HashtableOverflowException {
 		if (key == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -219,22 +218,22 @@ public class Object2ObjectHashMap extends AbstractHashtable {
     /* (non-Javadoc)
      * @see org.exist.util.hashtable.AbstractHashtable#iterator()
      */
-    public Iterator iterator() {
-        return new Object2ObjectIterator(HashtableIterator.KEYS);
+    public Iterator<K> iterator() {
+        return new Object2ObjectIterator<K>(IteratorType.KEYS);
     }
 
     /* (non-Javadoc)
      * @see org.exist.util.hashtable.AbstractHashtable#valueIterator()
      */
-    public Iterator valueIterator() {
-        return new Object2ObjectIterator(HashtableIterator.VALUES);
+    public Iterator<V> valueIterator() {
+        return new Object2ObjectIterator<V>(IteratorType.VALUES);
     }
 
-    protected class Object2ObjectIterator extends HashtableIterator {
+    protected class Object2ObjectIterator<T> extends HashtableIterator<T> {
 
 		int idx = 0;
 
-		public Object2ObjectIterator(int type) {
+		public Object2ObjectIterator(IteratorType type) {
 			super(type);
 		}
 
@@ -255,7 +254,7 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public T next() {
 			if (idx == tabSize)
 				return null;
 			while (keys[idx] == null || keys[idx] == REMOVED) {
@@ -263,10 +262,12 @@ public class Object2ObjectHashMap extends AbstractHashtable {
 				if (idx == tabSize)
 					return null;
 			}
-			if (returnType == VALUES)
-				return values[idx++];
-			else
-				return keys[idx++];
+			switch(returnType) {
+				case KEYS: return (T) keys[idx++];
+				case VALUES: return (T) values[idx++];
+			}
+
+			throw new IllegalStateException("This never happens");
 		}
 
 	}

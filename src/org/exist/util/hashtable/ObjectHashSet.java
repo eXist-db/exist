@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -23,6 +22,7 @@
 package org.exist.util.hashtable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,16 +34,16 @@ import java.util.List;
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class ObjectHashSet extends AbstractHashtable {
+public class ObjectHashSet<K> extends AbstractHashSet<K> {
 
-	protected Object[] keys;
+	protected K[] keys;
 	
 	/**
 	 * 
 	 */
 	public ObjectHashSet() {
 		super();
-		keys = new Object[tabSize];
+		keys = (K[]) new Object[tabSize];
 	}
 
 	/**
@@ -51,17 +51,17 @@ public class ObjectHashSet extends AbstractHashtable {
 	 */
 	public ObjectHashSet(int iSize) {
 		super(iSize);
-		keys = new Object[tabSize];
+		keys = (K[]) new Object[tabSize];
 	}
 
-	public void add(Object key) {
+	public void add(K key) {
 		try {
 			insert(key);
 		} catch (HashtableOverflowException e) {
-			Object[] copyKeys = keys;
+			K[] copyKeys = keys;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
-			keys = new Object[tabSize];
+			keys = (K[]) new Object[tabSize];
 			items = 0;
 
 			for (int k = 0; k < copyKeys.length; k++) {
@@ -72,7 +72,7 @@ public class ObjectHashSet extends AbstractHashtable {
 		}
 	}
 	
-	protected void insert(Object key) throws HashtableOverflowException {
+	protected void insert(K key) throws HashtableOverflowException {
 		if (key == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -122,7 +122,7 @@ public class ObjectHashSet extends AbstractHashtable {
 		throw new HashtableOverflowException();
 	}
 	
-	public boolean contains(Object key) {
+	public boolean contains(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -143,7 +143,7 @@ public class ObjectHashSet extends AbstractHashtable {
 		return false;
 	}
 	
-	public Object remove(Object key) {
+	public K remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
 			idx *= -1;
@@ -151,7 +151,7 @@ public class ObjectHashSet extends AbstractHashtable {
 			return null; // key does not exist
 		} else if (keys[idx].equals(key)) {
 			key = keys[idx];
-			keys[idx] = REMOVED;
+			keys[idx] = (K) REMOVED;
 			--items;
 			return key;
 		}
@@ -162,7 +162,7 @@ public class ObjectHashSet extends AbstractHashtable {
 				return null; // key not found
 			} else if (keys[idx].equals(key)) {
 				key = keys[idx];
-				keys[idx] = REMOVED;
+				keys[idx] = (K) REMOVED;
 				--items;
 				return key;
 			}
@@ -181,23 +181,23 @@ public class ObjectHashSet extends AbstractHashtable {
 		return o.hashCode();
 	}
 
-    public List keys() {
-        ArrayList list = new ArrayList(items);
+    public List<K> keys() {
+        ArrayList<K> list = new ArrayList<K>(items);
         for (int i = 0; i < tabSize; i++) {
             if (keys[i] != null && keys[i] != REMOVED)
                 list.add(keys[i]);
         }
-        return list;
+        return Collections.unmodifiableList(list);
     }
 
     /* (non-Javadoc)
       * @see org.exist.util.hashtable.AbstractHashtable#iterator()
       */
-	public Iterator iterator() {
+	public Iterator<K> iterator() {
 		return new ObjectHashSetIterator();
 	}
 
-	public Iterator stableIterator() {
+	public Iterator<K> stableIterator() {
 		return new ObjectHashSetStableIterator();
 	}
 	
@@ -208,7 +208,7 @@ public class ObjectHashSet extends AbstractHashtable {
 		return null;
 	}
 	
-	protected class ObjectHashSetIterator implements Iterator {
+	protected class ObjectHashSetIterator implements Iterator<K> {
 
 		int idx = 0;
 
@@ -232,7 +232,7 @@ public class ObjectHashSet extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public K next() {
 			if (idx == tabSize)
 				return null;
 			while (keys[idx] == null || keys[idx] == REMOVED) {
@@ -250,13 +250,13 @@ public class ObjectHashSet extends AbstractHashtable {
 		}
 	}
 	
-	protected class ObjectHashSetStableIterator implements Iterator {
+	protected class ObjectHashSetStableIterator implements Iterator<K> {
 
 		int idx = 0;
-		Object mKeys[];
+		K mKeys[];
 		
 		public ObjectHashSetStableIterator() {
-			mKeys = new Object[tabSize];
+			mKeys = (K[]) new Object[tabSize];
 			System.arraycopy(keys, 0, mKeys, 0, tabSize);
 		}
 
@@ -277,7 +277,7 @@ public class ObjectHashSet extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
-		public Object next() {
+		public K next() {
 			if (idx == tabSize)
 				return null;
 			while (mKeys[idx] == null || mKeys[idx] == REMOVED) {

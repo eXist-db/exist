@@ -1,21 +1,22 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  Copyright (C) 2000-2010 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
  *  $Id$
  */
 package org.exist.util.hashtable;
@@ -29,9 +30,7 @@ package org.exist.util.hashtable;
  */
 import java.util.Iterator;
 
-import org.exist.util.hashtable.Long2ObjectHashMap.Long2ObjectIterator;
-
-public class SequencedLongHashMap extends AbstractHashtable {
+public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 
     /**
      * Represents an entry in the map. Each entry
@@ -40,33 +39,33 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * 
      * @author wolf
      */
-	public final static class Entry {
+	public final static class Entry<V> {
 		
 		long key;
-		Object value;
+		V value;
 		
         /** points to the next entry in insertion order. */
-		Entry next = null;
+		Entry<V> next = null;
         
         /** points to the previous entry in insertion order. */
-		Entry prev = null;
+		Entry<V> prev = null;
 		
         /** points to the prev entry if more than one key maps
          * to the same bucket in the table.
          */ 
-        Entry prevDup = null;
+        Entry<V> prevDup = null;
         
         /** points to the next entry if more than one key maps
          * to the same bucket in the table.
          */
-        Entry nextDup = null;
+        Entry<V> nextDup = null;
         
-		public Entry(long key, Object value) {
+		public Entry(long key, V value) {
 			this.key = key;
 			this.value = value;
 		}
         
-        public Entry getNext() {
+        public Entry<V> getNext() {
             return next;
         }
         
@@ -74,7 +73,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
             return key;
         }
         
-        public Object getValue() {
+        public V getValue() {
             return value;
         }
         
@@ -84,24 +83,24 @@ public class SequencedLongHashMap extends AbstractHashtable {
 	}
 	
 	protected long[] keys;
-	protected Entry[] values;
+	protected Entry<V>[] values;
 	
     /** points to the first entry inserted. */
-	private Entry first = null;
+	private Entry<V> first = null;
     
     /** points to the last inserted entry. */
-	private Entry last = null;
+	private Entry<V> last = null;
  
 	public SequencedLongHashMap() {
 		super();
 		keys = new long[tabSize];
-		values = new Entry[tabSize];
+		values = (Entry<V>[]) new Entry[tabSize];
 	}
 
 	public SequencedLongHashMap(int iSize) {
 		super(iSize);
 		keys = new long[tabSize];
-		values = new Entry[tabSize];
+		values = (Entry<V>[]) new Entry[tabSize];
 	}
 
     /**
@@ -110,8 +109,8 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * @param key
      * @param value
      */
-	public void put(long key, Object value) {
-		Entry entry = insert(key, value);
+	public void put(long key, V value) {
+		Entry<V> entry = insert(key, value);
 		
 		if(first == null) {
 			first = entry;
@@ -123,7 +122,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		}
 	}
 	
-	protected Entry insert(long key, Object value) {
+	protected Entry insert(long key, V value) {
 		if (value == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -132,12 +131,12 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		// look for an empty bucket
 		if (values[idx] == null) {
 			keys[idx] = key;
-			values[idx] = new Entry(key, value);
+			values[idx] = new Entry<V>(key, value);
 			++items;
 			return values[idx];
         }
         
-        Entry next = values[idx];
+        Entry<V> next = values[idx];
         while (next != null) {
             if (next.key == key) {
                 // duplicate value
@@ -149,7 +148,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
         }
         
         // add a new entry to the chain
-        next = new Entry(key, value);
+        next = new Entry<V>(key, value);
         next.nextDup = values[idx];
         values[idx].prevDup = next;
         values[idx] = next;
@@ -163,14 +162,14 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * 
      * @param key
      */
-	public Object get(long key) {
+	public V get(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
 			idx *= -1;
 		if (values[idx] == null)
 			return null; // key does not exist
 		
-		Entry next = values[idx];
+		Entry<V> next = values[idx];
         while (next != null) {
             if (next.key == key)
                 return next.value;
@@ -182,7 +181,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
     /**
      * Returns the first entry added to the map.
      */
-	public Entry getFirstEntry() {
+	public Entry<V> getFirstEntry() {
 		return first;
 	}
 	
@@ -191,8 +190,8 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * 
      * @param key
      */
-	public Object remove(long key) {
-		Entry entry = removeFromHashtable(key);
+	public V remove(long key) {
+		Entry<V> entry = removeFromHashtable(key);
 		if(entry != null) {
 			removeEntry(entry);
 			return entry.value;
@@ -200,7 +199,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
 			return null;
 	}
 	
-	private Entry removeFromHashtable(long key) {
+	private Entry<V> removeFromHashtable(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
 			idx *= -1;
@@ -208,7 +207,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
 			return null; // key does not exist
 		}
         
-		Entry next = values[idx];
+		Entry<V> next = values[idx];
         while (next != null) {
             if (next.key == key) {
                 if (next.prevDup == null) {
@@ -231,10 +230,10 @@ public class SequencedLongHashMap extends AbstractHashtable {
 	/**
 	 * Remove the first entry added to the map.
 	 */
-	public Object removeFirst() {
+	public Entry<V> removeFirst() {
 		if(first == null)
 			return null;
-		final Entry head = first;
+		final Entry<V> head = first;
 		removeFromHashtable(first.key);
 		removeEntry(first);
 		return head;
@@ -245,7 +244,7 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * 
      * @param entry
      */
-	public void removeEntry(Entry entry) {
+	public void removeEntry(Entry<V> entry) {
 		if(entry.prev == null) {
 			if(entry.next == null) {
 				first = null;
@@ -284,23 +283,23 @@ public class SequencedLongHashMap extends AbstractHashtable {
 	 * Returns an iterator over all keys in the
 	 * order in which they were inserted.
 	 */
-	public Iterator iterator() {
-		return new SequencedLongIterator(Long2ObjectIterator.KEYS);
+	public Iterator<Long> iterator() {
+		return new SequencedLongIterator<Long>(IteratorType.KEYS);
 	}
 	
     /**
      * Returns an iterator over all values in the order
      * in which they were inserted.
      */
-	public Iterator valueIterator() {
-		return new SequencedLongIterator(Long2ObjectIterator.VALUES);
+	public Iterator<V> valueIterator() {
+		return new SequencedLongIterator<V>(IteratorType.VALUES);
 	}
 	
-	protected class SequencedLongIterator extends HashtableIterator {
+	protected class SequencedLongIterator<T> extends HashtableIterator<T> {
 		
-		private Entry current;
+		private Entry<V> current;
 		
-		public SequencedLongIterator(int type) {
+		public SequencedLongIterator(IteratorType type) {
 			super(type);
 			current = first;
 		}
@@ -315,15 +314,17 @@ public class SequencedLongHashMap extends AbstractHashtable {
 		/* (non-Javadoc)
 		 * @see org.exist.util.hashtable.Long2ObjectHashMap.Long2ObjectIterator#next()
 		 */
-		public Object next() {
+		public T next() {
 			if(current == null)
 				return null;
 			Entry next = current;
 			current = current.next;
-			if(returnType == VALUES) {
-				return next.value;
-			} else
-				return new Long(next.key);
+			switch(returnType) {
+				case KEYS: return (T) Long.valueOf(next.key);
+				case VALUES: return (T) next.value;
+			}
+
+			throw new IllegalStateException("This never happens");
 		}
 	}
 }

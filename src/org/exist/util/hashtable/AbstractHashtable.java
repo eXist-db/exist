@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -30,24 +29,13 @@ import java.util.Iterator;
  * @author Stephan Körnig
  * @author Wolfgang Meier
  */
-public abstract class AbstractHashtable<K,V> {
+public abstract class AbstractHashtable<K,V> extends AbstractHashSet<K> {
 
-	private final int defaultSize = 1031; // must be a prime number
-
-	// marker for removed objects
-	protected final static Object REMOVED = new Object();
-	
-	protected int tabSize;
-	protected int items;
-
-	protected int maxRehash = 0;
-	
 	/**
 	 * Create a new hashtable with default size (1031).
 	 */
 	protected AbstractHashtable() {
-		items = 0;
-		tabSize = defaultSize;
+		super();
 	}
 
 	/**
@@ -59,81 +47,8 @@ public abstract class AbstractHashtable<K,V> {
 	 * @param iSize
 	 */
 	protected AbstractHashtable(int iSize) {
-		items = 0;
-		if (iSize < 1)
-			tabSize = defaultSize;
-		else {
-			if (!isPrime(iSize)) {
-				iSize = (iSize * 3) / 2;
-				iSize = (int) nextPrime((long) iSize);
-			}
-			tabSize = iSize;
-		}
+		super(iSize);
 	}
 
-	public int size() {
-		return items;
-	}
-	
-	public abstract Iterator<K> iterator();
 	public abstract Iterator<V> valueIterator();
-	
-	public final static boolean isPrime(long number) {
-		if (number < 2) return false;
-		if (number == 2) return true;
-		if (number % 2 == 0) return false;
-		if (number == 3) return true;
-		if (number % 3 == 0) return false;
- 
-		int y = 2;
-		int x = (int) Math.sqrt(number);
- 
-		for (int i = 5; i <= x; i += y, y = 6 - y) {
-			if (number % i == 0)
-				return false;
-		}
- 
-		return true;
-	}
-
-	public final static long nextPrime(long iVal) {
-		long retval = iVal;
-		for (;;) {
-			++retval;
-			if (isPrime(retval))
-				return retval;
-		}
-	}
-	
-	public int getMaxRehash() {
-		return maxRehash;
-	}
-	
-	protected abstract class HashtableIterator implements Iterator {
-		
-		public final static int KEYS = 0;
-		public final static int VALUES = 1;
-		
-		int returnType = KEYS;
-		
-		public HashtableIterator(int type) {
-			this.returnType = type;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#remove()
-		 */
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	protected final static class HashtableOverflowException extends Exception {
-		
-		private static final long serialVersionUID = 5786963685159736475L;
-
-		public HashtableOverflowException() {
-			super();
-		}
-	}
 }
