@@ -21,7 +21,7 @@
         <para>XSLTForms transforms the XForms xml into an XHTML page with javascript that can
             process XForms. As eXist has support for RESTful interactions, the action of saving the
             XML representation of data provided by XForms can be as easy as using HTTP PUT method
-            with an action attribute referencing an xml document in the XML Database. For more
+            with an resource attribute referencing an xml document in the XML Database. For more
             complex tasks, you can submit your XForms instances to an XQuery, post-process it there
             and get the results back into your XForms. Several <ulink url="examples.xml"
                 >examples</ulink> are provided.</para>
