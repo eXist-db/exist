@@ -71,12 +71,12 @@ import java.net.URLEncoder;
 
 
 /**
- * DOCUMENT ME!
+ * Base class for HTTP client methods
  *
  * @author   Adam Retter <adam.retter@devon.gov.uk>
  * @author   Andrzej Taramina <andrzej@chaeron.com>
- * @version  1.2
- * @serial   20070905
+ * @version  1.3
+ * @serial   20100228
  */
 
 public abstract class BaseHTTPClientFunction extends BasicFunction
@@ -87,14 +87,14 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     protected static final FunctionParameterSequenceType PUT_CONTENT_PARAM              = new FunctionParameterSequenceType( "content", Type.NODE, Cardinality.EXACTLY_ONE, "The XML PUT payload/content. If it is an XML Node it will be serialized, any other type will be atomized into a string." );
     protected static final FunctionParameterSequenceType POST_CONTENT_PARAM             = new FunctionParameterSequenceType( "content", Type.ITEM, Cardinality.EXACTLY_ONE, "The XML POST payload/content. If it is an XML Node it will be serialized, any other type will be atomized into a string." );
     protected static final FunctionParameterSequenceType POST_FORM_PARAM                = new FunctionParameterSequenceType( "content", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The form data in the format <httpclient:fields><httpclient:field name=\"\" value=\"\" type=\"string|file\"/>...</httpclient:fields>.  If the field values will be suitably URLEncoded and sent with the mime type application/x-www-form-urlencoded." );
-    protected static final FunctionParameterSequenceType PERSIST_PARAM                  = new FunctionParameterSequenceType( "persist", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The to indicate if the cookies persist for the query lifetime" );
+    protected static final FunctionParameterSequenceType PERSIST_PARAM                  = new FunctionParameterSequenceType( "persist", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates if the HTTP state (eg. cookies, credentials, etc.) should persist for the life of this xquery" );
     protected static final FunctionParameterSequenceType REQUEST_HEADER_PARAM           = new FunctionParameterSequenceType( "request-headers", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "Any HTTP Request Headers to set in the form  <headers><header name=\"\" value=\"\"/></headers>" );
 
     protected static final FunctionReturnSequenceType    XML_BODY_RETURN                = new FunctionReturnSequenceType( Type.ITEM, Cardinality.EXACTLY_ONE, "the XML body content" );
 
     final static String                                  NAMESPACE_URI                  = HTTPClientModule.NAMESPACE_URI;
     final static String                                  PREFIX                         = HTTPClientModule.PREFIX;
-    final static String                                  HTTP_MODULE_PERSISTENT_COOKIES = HTTPClientModule.HTTP_MODULE_PERSISTENT_COOKIES;
+    final static String                                  HTTP_MODULE_PERSISTENT_STATE 	= HTTPClientModule.HTTP_MODULE_PERSISTENT_STATE;
 
     final static String                                  HTTP_EXCEPTION_STATUS_CODE     = "500";
 
@@ -111,7 +111,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @param   method   The Http Method to set the request headers on
      * @param   headers  The headers node e.g. <headers><header name="Content-Type" value="application/xml"/></headers>
      *
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws  XPathException 
      */
     protected void setHeaders( HttpMethod method, Node headers ) throws XPathException
     {
@@ -140,38 +140,35 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * Performs a HTTP Request.
      *
      * @param   context         The context of the calling XQuery
-     * @param   method          The HTTP methor for the request
-     * @param   persistCookies  If true existing cookies are re-used and any issued cookies are persisted for future HTTP Requests
+     * @param   method          The HTTP method for the request
+     * @param   persistState  	If true existing HTTP state (cookies, credentials, etc) are re-used and athe state is persisted for future HTTP Requests
      *
      * @return  DOCUMENT ME!
      *
-     * @throws  IOException     DOCUMENT ME!
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws  IOException     
+     * @throws  XPathException  
      */
-    protected Sequence doRequest( XQueryContext context, HttpMethod method, boolean persistCookies ) throws IOException, XPathException
+    protected Sequence doRequest( XQueryContext context, HttpMethod method, boolean persistState ) throws IOException, XPathException
     {
         int      statusCode      = 0;
         Sequence encodedResponse = null;
 
-        //use existing cookies?
-        if( persistCookies ) {
-
-            //set existing cookies
-            Cookie[] cookies = ( Cookie[] )context.getXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES );
-
-            if( cookies != null ) {
-
-                for( int c = 0; c < cookies.length; c++ ) {
-                    method.setRequestHeader( "Cookie", cookies[c].toExternalForm() );
-                }
-            }
-        }
-
-        //execute the request
         HttpClient http = new HttpClient();
 
+		//execute the request
+		
         try {
-
+			 //use existing state?
+	        if( persistState ) {
+	
+	            //get existing state
+	           HttpState state = (HttpState)context.getXQueryContextVar( HTTP_MODULE_PERSISTENT_STATE );
+	
+	            if( state != null ) {
+					http.setState( state );
+	            }
+	        }
+			
             //set the proxy server (if any)
             String proxyHost = System.getProperty( "http.proxyHost" );
 
@@ -187,15 +184,9 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
 
             encodedResponse = encodeResponseAsXML( context, method, statusCode );
 
-            //persist cookies?
-            if( persistCookies ) {
-
-                //store/update cookies
-                HttpState state           = http.getState();
-                Cookie[]  incomingCookies = state.getCookies();
-                Cookie[]  currentCookies  = ( Cookie[] )context.getXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES );
-
-                context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_COOKIES, mergeCookies( currentCookies, incomingCookies ) );
+            //persist state?
+            if( persistState ) {
+                context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_STATE, http.getState() );
             }
         }
         catch( Exception e ) {
@@ -215,8 +206,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      *
      * @return  The data in XML format
      *
-     * @throws  XPathException  DOCUMENT ME!
-     * @throws  IOException     DOCUMENT ME!
+     * @throws  XPathException 
+     * @throws  IOException     
      */
     private Sequence encodeResponseAsXML( XQueryContext context, HttpMethod method, int statusCode ) throws XPathException, IOException
     {
@@ -268,8 +259,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      *
      * @return  The response in XML format
      *
-     * @throws  IOException     DOCUMENT ME!
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws  IOException     
+     * @throws  XPathException 
      */
     private Sequence encodeErrorResponse( XQueryContext context, String message ) throws IOException, XPathException
     {
@@ -310,8 +301,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @param   method   The HTTP Request Method
      * @param   builder  The MemTreeBuilder that is being used
      *
-     * @throws  IOException     DOCUMENT ME!
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws  IOException     
+     * @throws  XPathException  
      */
     private void insertResponseBody( XQueryContext context, HttpMethod method, MemTreeBuilder builder ) throws IOException, XPathException
     {
@@ -433,80 +424,6 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         }
 
         return( returnMimeType );
-    }
-
-
-    /**
-     * Merges two cookie arrays together.
-     *
-     * <p>If cookies are equal (same name, path and comain) then the incoming cookie is favoured over the current cookie</p>
-     *
-     * @param   current   The cookies already known
-     * @param   incoming  The new cookies
-     *
-     * @return  DOCUMENT ME!
-     */
-    protected Cookie[] mergeCookies( Cookie[] current, Cookie[] incoming )
-    {
-        Cookie[] cookies = null;
-
-        if( current == null ) {
-
-            if( ( incoming != null ) && ( incoming.length > 0 ) ) {
-                cookies = incoming;
-            }
-        } else if( incoming == null ) {
-            cookies = current;
-        } else {
-
-            java.util.HashMap<Integer, Cookie> replacements = new java.util.HashMap<Integer, Cookie>();
-            java.util.Vector<Cookie>           additions    = new java.util.Vector<Cookie>();
-
-            for( int i = 0; i < incoming.length; i++ ) {
-                boolean cookieExists = false;
-
-                for( int c = 0; c < current.length; i++ ) {
-
-                    if( current[c].equals( incoming[i] ) ) {
-
-                        //replacement
-                        replacements.put( new Integer( c ), incoming[i] );
-                        cookieExists = true;
-                        break;
-                    }
-                }
-
-                if( !cookieExists ) {
-
-                    //add
-                    additions.add( incoming[i] );
-                }
-            }
-
-            cookies = new Cookie[current.length + additions.size()];
-
-            //resolve replacements/copies
-            for( int c = 0; c < current.length; c++ ) {
-
-                if( replacements.containsKey( new Integer( c ) ) ) {
-
-                    //replace
-                    cookies[c] = replacements.get( new Integer( c ) );
-                } else {
-
-                    //copy
-                    cookies[c] = current[c];
-                }
-            }
-
-            //resolve additions
-            for( int a = 0; a < additions.size(); a++ ) {
-                int offset = current.length + a;
-                cookies[offset] = additions.get( a );
-            }
-        }
-
-        return( cookies );
     }
 
 }

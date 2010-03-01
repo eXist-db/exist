@@ -37,12 +37,12 @@ import java.io.IOException;
 
 
 /**
- * DOCUMENT ME!
+ * Performs HTTP Delete method
  *
  * @author   Adam Retter <adam.retter@devon.gov.uk>
  * @author   Andrzej Taramina <andrzej@chaeron.com>
- * @version  1.2
- * @serial   20070905
+ * @version  1.3
+ * @serial   20100228
  */
 public class DELETEFunction extends BaseHTTPClientFunction
 {
@@ -78,8 +78,8 @@ public class DELETEFunction extends BaseHTTPClientFunction
         //get the url
         String       url            = args[0].itemAt( 0 ).getStringValue();
 
-        //get the persist cookies
-        boolean      persistCookies = args[1].effectiveBooleanValue();
+        //get the persist state
+        boolean      persistState 	= args[1].effectiveBooleanValue();
 
         //setup DELETE request
         DeleteMethod delete         = new DeleteMethod( url );
@@ -92,7 +92,7 @@ public class DELETEFunction extends BaseHTTPClientFunction
         try {
 
             //execute the request
-            response = doRequest( context, delete, persistCookies );
+            response = doRequest( context, delete, persistState );
         }
         catch( IOException ioe ) {
             throw( new XPathException( this, ioe.getMessage(), ioe ) );
