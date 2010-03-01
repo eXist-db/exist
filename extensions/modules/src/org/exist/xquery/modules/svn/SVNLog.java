@@ -56,7 +56,7 @@ public class SVNLog extends BasicFunction {
 			new QName("log", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Retrieves the log entries from a subversion repository.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("repositort-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location in the subversion repository URI from which the logs should be retrieved"),
+                new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location in the subversion repository URI from which the logs should be retrieved"),
                 new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion password"),
                 new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to start from.  If empty, then start from the beginning."),
