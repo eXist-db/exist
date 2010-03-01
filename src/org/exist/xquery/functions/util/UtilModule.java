@@ -77,6 +77,7 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(GetNodeById.signature, GetNodeById.class),
         new FunctionDef(IndexKeys.signatures[0], IndexKeys.class),
         new FunctionDef(IndexKeys.signatures[1], IndexKeys.class),
+        new FunctionDef(IndexKeys.signatures[2], IndexKeys.class),
         new FunctionDef(IndexKeyOccurrences.signatures[0], IndexKeyOccurrences.class),
         new FunctionDef(IndexKeyOccurrences.signatures[1], IndexKeyOccurrences.class),
         new FunctionDef(IndexKeyDocuments.signatures[0], IndexKeyDocuments.class),
