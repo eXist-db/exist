@@ -12,13 +12,13 @@
             <!-- Try to load the default instance from the db. If no person exists in the
                 db, the query returns an empty <person/> element. Without that we would
                 receive an error. -->
-            <xf:instance id="default" src="../rest/db?_query=&lt;person&gt;{/person/name}&lt;/person&gt;&amp;_wrap=no"/>
-         
+            <xf:instance id="default" src="../rest/db?_query=&lt;person&gt;{/person/name}&lt;test/&gt;&lt;/person&gt;&amp;_wrap=no"/>
+   
             <!-- Template data: will be copied into the default instance if the db
                 does not yet contain a person. -->
             <xf:instance id="template">
                 <person xmlns="">
-                    <name>insert</name>
+                    <name></name>
                 </person>
             </xf:instance>
 
@@ -38,7 +38,7 @@
                 If the default instance is empty, fill it with data from the
                 template instance. -->
             <xf:action ev:event="xforms-ready" if="not(instance('default')/name)">
-		 <!--<xf:insert nodeset="instance('default')/*" origin="instance('template')/name"/>-->
+		 <xf:insert nodeset="instance('default')/*" origin="instance('template')/name"/>
             </xf:action>
         </xf:model>
         
@@ -71,7 +71,7 @@
         <table border="1">
             <td>Output:</td>
             <td>
-                <b> <xf:output ref="instance('default')/name[2]"/></b> 
+                <b> <xf:output ref="instance('default')/name"/></b> 
             </td>
         </table>
         <br/>
@@ -87,11 +87,5 @@
                 <p>Submit done</p>
             </xf:case>
         </xf:switch>
-                <xf:trigger>
-                    <xf:label>Insert</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:insert nodeset="instance('default')/*" origin="instance('template')/name"/>
-                    </xf:action>
-                </xf:trigger>
     </body>
 </html>
