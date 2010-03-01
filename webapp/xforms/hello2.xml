@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
-<?xsltforms-options debug="yes"?>
 <?oxygen NVDLSchema="../../../../Development/Oxygen%20XML%20Editor%2010/samples/nvdl/xhtml-xforms.nvdl"?>
 <html xmlns="http://www.w3.org/1999/xhtml" 
     xmlns:xf="http://www.w3.org/2002/xforms"
