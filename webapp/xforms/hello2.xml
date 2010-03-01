@@ -88,7 +88,7 @@
             </xf:case>
         </xf:switch>
                 <xf:trigger>
-                    <xf:label>Meniu</xf:label>
+                    <xf:label>Insert</xf:label>
                     <xf:action ev:event="DOMActivate">
                         <xf:insert nodeset="instance('default')/*" origin="instance('template')/name"/>
                     </xf:action>
