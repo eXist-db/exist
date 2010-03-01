@@ -681,7 +681,7 @@
         <!-- http://sourceforge.net/projects/saxon -->
         <property name="saxon.zip" value="${lib.user}/saxon.zip"/>
         
-        <get src="http://sourceforge.net/projects/saxon/files/Saxon-HE/9.2/saxonhe9-2-0-3j.zip/download"
+        <get src="http://sourceforge.net/projects/saxon/files/Saxon-HE/9.2/saxonhe9-2-0-6j.zip/download"
             dest="${lib.user}/saxon.zip" verbose="true"/>
 
         <unzip src="${saxon.zip}" dest="${lib.user}">
