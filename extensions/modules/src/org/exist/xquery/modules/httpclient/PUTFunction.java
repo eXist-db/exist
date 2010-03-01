@@ -47,12 +47,12 @@ import java.util.Properties;
 
 
 /**
- * DOCUMENT ME!
+ * Performs HTTP Put method
  *
  * @author   Adam Retter <adam.retter@devon.gov.uk>
  * @author   Andrzej Taramina <andrzej@chaeron.com>
- * @version  1.2
- * @serial   20070905
+ * @version  1.3
+ * @serial   20100228
  */
 public class PUTFunction extends BaseHTTPClientFunction
 {
@@ -91,8 +91,8 @@ public class PUTFunction extends BaseHTTPClientFunction
         //get the payload
         Item                  payload        = args[1].itemAt( 0 );
 
-        //get the persist cookies
-        boolean               persistCookies = args[2].effectiveBooleanValue();
+        //get the persist state
+        boolean               persistState 	 = args[2].effectiveBooleanValue();
 
         //serialize the node to SAX
         ByteArrayOutputStream baos           = new ByteArrayOutputStream();
@@ -132,7 +132,7 @@ public class PUTFunction extends BaseHTTPClientFunction
         try {
 
             //execute the request
-            response = doRequest( context, put, persistCookies );
+            response = doRequest( context, put, persistState );
 
         }
         catch( IOException ioe ) {

@@ -26,13 +26,13 @@ import org.exist.xquery.FunctionDef;
 
 
 /**
- * DOCUMENT ME!
+ * HTTPClient module
  *
  * @author   Adam Retter <adam.retter@devon.gov.uk>
  * @author   Andrzej Taramina <andrzej@chaeron.com>
  * @author   ljo
- * @version  1.2
- * @serial   20070905
+ * @version  1.3
+ * @serial   20100228
  */
 public class HTTPClientModule extends AbstractInternalModule
 {
@@ -42,7 +42,7 @@ public class HTTPClientModule extends AbstractInternalModule
     public final static String         INCLUSION_DATE                 = "2007-09-06";
     public final static String         RELEASED_IN_VERSION            = "eXist-1.2";
 
-    public final static String         HTTP_MODULE_PERSISTENT_COOKIES = "_eXist_httpclient_module_cookies";
+    public final static String         HTTP_MODULE_PERSISTENT_STATE = "_eXist_httpclient_module_persistent_state";
 
 	
     private final static FunctionDef[] functions                      = {

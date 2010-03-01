@@ -58,12 +58,12 @@ import java.util.Properties;
 
 
 /**
- * DOCUMENT ME!
+ * Performs HTTP Post method
  *
  * @author   Adam Retter <adam@exist-db.org>
  * @author   Andrzej Taramina <andrzej@chaeron.com>
  * @version  1.3
- * @serial   20090219
+ * @serial   20100228
  */
 public class POSTFunction extends BaseHTTPClientFunction
 {
@@ -120,8 +120,8 @@ public class POSTFunction extends BaseHTTPClientFunction
 
         Item       payload        = args[1].itemAt( 0 );
 
-        //get the persist cookies
-        boolean    persistCookies = args[2].effectiveBooleanValue();
+        //get the persist state
+        boolean    persistState	  = args[2].effectiveBooleanValue();
 
         PostMethod post           = new PostMethod( url );
 
@@ -187,7 +187,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         try {
 
             //execute the request
-            response = doRequest( context, post, persistCookies );
+            response = doRequest( context, post, persistState );
 
         }
         catch( IOException ioe ) {
