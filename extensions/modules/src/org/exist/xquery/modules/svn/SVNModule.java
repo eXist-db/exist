@@ -41,7 +41,8 @@ public class SVNModule extends AbstractInternalModule {
 
 
 	private final static FunctionDef[] functions = {
-		new FunctionDef(SVNLog.signature, SVNLog.class)
+            new FunctionDef(SVNLog.signature, SVNLog.class),
+            new FunctionDef(SVNLatestRevision.signature, SVNLatestRevision.class)
 	};
 
 	public SVNModule() {
