@@ -27,6 +27,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
+import org.exist.indexing.QNamedKeysIndex;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
@@ -80,7 +81,25 @@ public class IndexKeys extends BasicFunction {
                     new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys"),
                     new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made")
                 },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference"))      
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
+        new FunctionSignature(
+                new QName("index-keys-by-qname", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                "Can be used to query existing range indexes defined on a set of nodes. " +
+                "All index keys defined for the given node set are reported to a callback function. " +
+                "The function will check for indexes defined on path as well as indexes defined by QName. ",
+                new SequenceType[] {
+                    new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_MORE, "The node set"),
+                    new FunctionParameterSequenceType("start-value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "Only index keys of the same type but being greater than $start-value will be reported for non-string types. For string types, only keys starting with the given prefix are reported."),
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function reference as created by the util:function function. " +
+                "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
+                "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
+                "containing three int values: a) the overall frequency of the key within the node set, " +
+                "b) the number of distinct documents in the node set the key occurs in, " +
+                "c) the current position of the key in the whole list of keys returned."),
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys"),
+                    new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made")
+                 },
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
     };
 
     /**
@@ -100,8 +119,16 @@ public class IndexKeys extends BasicFunction {
             throws XPathException {
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
-        NodeSet nodes = args[0].toNodeSet();
-        DocumentSet docs = nodes.getDocumentSet();
+        NodeSet nodes = null;
+        DocumentSet docs = null;
+        QName qname = null;
+        if (isCalledAs("index-keys-by-qname")) {
+            qname = ((QNameValue)args[0].itemAt(0)).getQName();
+            docs = contextSequence == null ? context.getStaticallyKnownDocuments() : contextSequence.getDocumentSet();
+        } else {
+            nodes = args[0].toNodeSet();
+            docs = nodes.getDocumentSet();
+        }
         FunctionReference ref = (FunctionReference) args[2].itemAt(0);
         int max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
@@ -118,6 +145,11 @@ public class IndexKeys extends BasicFunction {
         		hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());
         	else
         		logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
+            if (qname != null) {
+                List<QName> qnames = new ArrayList<QName>(1);
+                qnames.add(qname);
+                hints.put(QNamedKeysIndex.QNAMES_KEY, qnames);
+            }
         	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
         	//TODO : add an extra argument to pass the END_VALUE ?
 	        int len = (occur.length > max ? max : occur.length);
