@@ -401,9 +401,11 @@ public class XQueryServlet extends HttpServlet {
             String password = getSessionAttribute(session, "password");
             
 			try {
-				User newUser = pool.getSecurityManager().authenticate(username, password);
-	        	if (newUser != null && newUser.isAuthenticated())
-	        		user = newUser;
+				if( username != null && password != null ) { 
+					User newUser = pool.getSecurityManager().authenticate(username, password);
+		        	if (newUser != null && newUser.isAuthenticated())
+		        		user = newUser;
+				}
 			} catch (AuthenticationException e) {
 				LOG.error("User can not be authenticated ("+username+").");
 			}
