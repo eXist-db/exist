@@ -119,16 +119,20 @@ public class XPathException extends Exception {
 		if(message == null)
 			message = "";
 		buf.append(message);
-        buf.append(" [");
-        if (getLine() > 0) {
-			buf.append("at line ");
-			buf.append(getLine());
-			buf.append(", column ");
-			buf.append(getColumn());
-		}
-        if (source != null)
-            buf.append(", source: ").append(source.getKey());
-        buf.append("]");
+        if (getLine() > 0 || source != null) {
+            buf.append(" [");
+            if (getLine() > 0) {
+                buf.append("at line ");
+                buf.append(getLine());
+                buf.append(", column ");
+                buf.append(getColumn());
+                if (source != null)
+                    buf.append(", ");
+            }
+            if (source != null)
+                buf.append("source: ").append(source.getKey());
+            buf.append("]");
+        }
         if (callStack != null) {
             buf.append("\nIn function:\n");
             for (Iterator<FunctionStackElement> i = callStack.iterator(); i.hasNext(); ) {
