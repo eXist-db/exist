@@ -158,6 +158,7 @@
 
 .save img {
     border: 0;
+    vertical-align: top;
 }
 
 .ui-widget {
