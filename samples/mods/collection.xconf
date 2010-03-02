@@ -13,5 +13,9 @@
             <text qname="mods:abstract"/>
             <text qname="mods:subject"/>
         </lucene>
+        <create qname="mods:dateIssued" type="xs:integer"/>
+        <create qname="@ID" type="xs:string"/>
+        <create qname="@type" type="xs:string"/>
+        <create qname="@lang" type="xs:string"/>
     </index>
 </collection>
