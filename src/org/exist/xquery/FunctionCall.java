@@ -283,7 +283,7 @@ public class FunctionCall extends Function {
                     context.getProfiler().end(this, "", returnSeq);
     			return returnSeq;
     		} catch(XPathException e) {
-    			if(e.getLine() == 0)
+    			if(e.getLine() <= 0)
                     e.setLocation(line, column);
     			// append location of the function call to the exception message:
     			e.addFunctionCall(functionDef, this);
