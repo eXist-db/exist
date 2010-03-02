@@ -97,8 +97,8 @@ declare function biblio:form-from-query($query as element()) as element()+ {
                 <jquery:input name="input{$pos}" value="{$field/string()}">
                     <jquery:autocomplete url="autocomplete.xql"
                         width="300" multiple="false"
-                        matchContains="false">
-                        <jquery:param name="field" function="autocompleteCallback"/>
+                        matchContains="false"
+                        paramsCallback="autocompleteCallback">
                     </jquery:autocomplete>
                 </jquery:input>
             </td>
@@ -218,7 +218,9 @@ declare function biblio:orderByName($m as element()) as xs:string?
 (: Map order parameter to xpath for order by clause :)
 declare function biblio:orderExpr($field as xs:string) as xs:string
 {
-    if ($field = "Author") then
+    if ($field eq "Score") then
+        "ft:score($hit)"
+    else if ($field = "Author") then
         "biblio:orderByName($hit)"
     else if ($field = "Title") then
         "$hit/mods:titleInfo[1]/mods:title[1]"

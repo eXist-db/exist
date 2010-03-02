@@ -25,12 +25,11 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     let $base := $config/@base/string()
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
     return (
-        <script type="text/javascript" src="{$base}/jquery-1.3.2.min.js"/>,
-        <script type="text/javascript" src="{$base}/jquery.autocomplete.min.js"/>,
-        <script type="text/javascript" src="{$base}/jquery-ui-1.7.2.custom.min.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-ui-1.8rc3.dev.min.js"/>,
         <script type="text/javascript" src="jquery-utils.js"/>,
-        <link rel="stylesheet" type="text/css" href="{$cssbase}/jquery.autocomplete.css"/>,
-        <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery-ui-1.7.2.custom.css"/>
+        <link rel="stylesheet" type="text/css" href="{$cssbase}/autoSuggest.css"/>,
+        <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery-ui-1.8rc2.custom.css"/>
     )
 };
 
@@ -236,15 +235,12 @@ declare function jquery:paginate($config as element(jquery:paginate)) as element
 :)
 declare function jquery:extra-params($id as xs:string, $auto as element(jquery:autocomplete)) {
     if ($auto/jquery:param) then
-        concat('extraParams: {',
-            string-join(
-                for $param in $auto/jquery:param
-                return
-                    concat($param/@name, ': function () { ', 
-                        " return ", $param/@function, '.call($("#', $id, '"));}'),
-                ', '
-            ),
-            '}, '
+        string-join(
+            for $param in $auto/jquery:param
+            return
+                concat($param/@name, ': function () { ', 
+                    " return ", $param/@function, '.call($("#', $id, '"));}'),
+            ', '
         )
     else
         ()
@@ -262,6 +258,37 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
     let $name := $node/@name/string()
     let $id := if ($node/@id) then $node/@id/string() else util:uuid()
     return (
+        if ($node/jquery:autocomplete) then
+            let $auto := $node/jquery:autocomplete
+            let $width := if ($auto/@width) then $auto/@width/string() else 200
+            let $multiple := if ($auto/@multiple) then $auto/@multiple/string() else "false"
+            let $matchContains := if ($auto/@matchContains) then $auto/@matchContains/string() else "false"
+            return
+                <script type="text/javascript">
+                    $(function() {{
+                        $('#{$id}').autocomplete({{
+                            source: function(request, response) {{
+                                var data = {{ term: request.term }};
+                                { 
+                                    for $cb in $auto/@paramsCallback
+                                    return
+                                        concat($cb, '($("#', $id, '"), data);')
+                                }
+                                $.ajax({{
+                                    url: "{$auto/@url/string()}",
+                                    dataType: "json",
+                   					data: data,
+                                    success: function(data) {{
+                                        response(data);
+                                    }}
+                                }});
+                            }},
+                            minLength: 3
+                        }});
+                    }});
+                </script>
+        else
+            (),
         <input>
         { $node/@* }
         { if (empty($node/@id)) then attribute id { $id } else () }
@@ -271,27 +298,14 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
             else
                 ()
         }
-        </input>,
-        if ($node/jquery:autocomplete) then
-            let $auto := $node/jquery:autocomplete
-            let $width := if ($auto/@width) then $auto/@width/string() else 200
-            let $multiple := if ($auto/@multiple) then $auto/@multiple/string() else "false"
-            let $matchContains := if ($auto/@matchContains) then $auto/@matchContains/string() else "false"
-            return
-                <script type="text/javascript">
-                    $('#{$id}').autocomplete("{$auto/@url/string()}", {{
-                        { jquery:extra-params($id, $auto) }
-                        width: { $width },
-                        multiple: { $multiple },
-                        matchContains: { $matchContains }
-                    }});
-                </script>
-        else
-            ()
+        </input>
     )
 };
 
 (:~
+    { jquery:extra-params($id, $auto) }
+                        width: { $width },
+                        minChars: 3
     Create an HTML select element. Copies all attributes of the jquery:select
     element. jquery:select should contain zero or more jquery:option elements
     which are transformed into HTML option elements. Each option must have a

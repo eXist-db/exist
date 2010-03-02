@@ -1,20 +1,28 @@
-function autocompleteCallback() {
-    var name = this.attr('name');
-    var select = this.parent().parent().find('select[name ^= field]');
-    if (select) {
-        return select.val();
-    } else
-        return 'noparam';
+function autocompleteCallback(node, params) {
+    var name = node.attr('name');
+    var select = node.parent().parent().find('select[name ^= field]');
+    if (select.length == 1) {
+        params.field = select.val();
+    }
 }
 
 function repeatCallback() {
     var input = $('input[name ^= input]', this);
-    input.autocomplete("autocomplete.xql", {
-        extraParams: { field: function () { return autocompleteCallback.call(input);} },
-        width: 300,
-        multiple: false,
-        matchContains: false
+    input.autocomplete({
+        source: function(request, response) {
+            var data = { term: request.term };
+            autocompleteCallback(input, data);
+            $.ajax({
+                url: "autocomplete.xql",
+                dataType: "json",
+                data: data,
+                success: function(data) {
+                    response(data);
+                }});
+        },
+        minLength: 3
     });
+
     $('select[name ^= operator]', this).each(function () {
         $(this).css('display', '');
     });

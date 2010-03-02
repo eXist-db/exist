@@ -298,7 +298,7 @@ declare function mods:simple-row($data as item()?, $label as xs:string) as eleme
         </tr>
 };
 
-declare function mods:location-full($entry as element()) as element(tr)? {
+declare function mods:location-full($entry as element()) as element(tr)* {
     for $d in $entry/mods:location/mods:url
     return
         <tr>
@@ -328,12 +328,19 @@ declare function mods:entry-full($entry as element()) {
             <tr class="related">
                 <td colspan="2">In:</td>
             </tr>,
-            mods:entry-full($related)
+            if ($related/@xlink:href) then
+                for $ref in //mods:mods[@ID = $related/@xlink:href]
+                return
+                    mods:entry-full($ref)
+            else
+                mods:entry-full($related)
         ) else
             ()
 };
 
 declare function mods:format-full($id as xs:string, $entry as element(mods:mods)) {
+    let $log := util:log("DEBUG", $entry)
+    return
     <table class="biblio-full">
     { mods:entry-full($entry) }
     </table>

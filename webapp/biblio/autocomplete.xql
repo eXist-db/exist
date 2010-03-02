@@ -2,30 +2,29 @@ xquery version "1.0";
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 
+declare option exist:serialize "media-type=text/json";
+
 declare variable $local:COLLECTION := "collection('/db')//";
 
 declare variable $local:FIELDS :=
 	<fields>
-		<field name="Title">mods:mods/mods:titleInfo</field>
-		<field name="Author">mods:mods/mods:name</field>
+		<field name="Title">mods:titleInfo</field>
+		<field name="Author">mods:name</field>
 		<field name="All">mods:mods</field>
 	</fields>;
 
-declare function local:nodeset() {
-    let $field := request:get-parameter("field", "All")
-    let $query := $local:FIELDS/field[@name = $field]/string()
-    let $found :=
-        util:eval(concat($local:COLLECTION, $query))
-    return
-        $found
-};
-
 declare function local:key($key, $options) {
-    $key
+    concat('"', $key, '"')
 };
 
-let $term := request:get-parameter("q", ())
-let $log := util:log("DEBUG", ("Q=", $term))
+let $term := request:get-parameter("term", ())
+let $field := request:get-parameter("field", "All")
+let $qname := $local:FIELDS/field[@name = $field]/string()
 let $callback := util:function(xs:QName("local:key"), 2)
 return
-    distinct-values(util:index-keys(local:nodeset(), $term, $callback, 20, "lucene-index"))
+    concat("[",
+        string-join(
+            util:index-keys-by-qname(xs:QName($qname), $term, $callback, 20, "lucene-index"),
+            ', '
+        ),
+        "]")

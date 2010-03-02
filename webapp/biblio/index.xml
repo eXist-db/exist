@@ -31,8 +31,8 @@
                                 <jquery:input name="input1">
                                     <jquery:autocomplete url="autocomplete.xql"
                                         width="300" multiple="false"
-                                        matchContains="false">
-                                        <jquery:param name="field" function="autocompleteCallback"/>
+                                        matchContains="false"
+                                        paramsCallback="autocompleteCallback">
                                     </jquery:autocomplete>
                                 </jquery:input>
                             </td>
@@ -41,6 +41,7 @@
                             <td class="buttons" colspan="2">
                                 Sort by
                                 <jquery:select name="sort">
+                                    <jquery:option value="Score"/>
                                     <jquery:option value="Author"/>
                                     <jquery:option value="Title"/>
                                     <jquery:option value="Date Issued"/>
@@ -66,6 +67,7 @@
                             <td class="buttons" colspan="3">
                                 Sort by
                                 <jquery:select name="sort">
+                                    <jquery:option value="Score"/>
                                     <jquery:option value="Author"/>
                                     <jquery:option value="Title"/>
                                     <jquery:option value="Date Issued"/>
