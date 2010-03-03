@@ -84,4 +84,8 @@ public final class ZipEntryInputSource
 	public String getSymbolicPath() {
 		return zipFile.getName()+"#"+zipEntry.getName();
 	}
+
+    public void close() {
+        // Nothing to close
+    }
 }
