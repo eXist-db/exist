@@ -44,7 +44,13 @@
                 </session>
             </xf:instance>
             <!-- list of projects -->
-            <xf:instance id="projects" src="../../rest/db/todo?_query=/projects&amp;_wrap=no"/>
+	    <xf:instance id="projects" xmlns="">
+		    <projects>
+			    <project>Default</project>
+			</projects>
+		</xf:instance>
+	    
+	    <xf:instance id="loadProjects" src="../../rest/db/todo?_query=/projects&amp;_wrap=no"/>
             <!-- priorities -->
             <xf:instance id="priorities">
                 <priorities xmlns="">
@@ -99,6 +105,8 @@
                 <xf:setvalue ref="instance('session')/action/@name"
                 value="'init'"/>
                 <xf:send submission="saction"/>
+		<xf:insert nodeset="instance('projects')/*" origin="instance('loadProjects')/*"/>
+		<xf:delete nodeset="instance('projects')/project[1]"/>
             </xf:action>
         </xf:model>
     </bookinfo>
