@@ -127,6 +127,7 @@ public class Query extends Function implements Optimizable {
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        long start = System.currentTimeMillis();
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
         LuceneIndexWorker index = (LuceneIndexWorker)
@@ -147,6 +148,7 @@ public class Query extends Function implements Optimizable {
         } catch (ParseException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
+        LOG.debug("Lucene query took " + (System.currentTimeMillis() - start));
         return preselectResult;
     }
 
