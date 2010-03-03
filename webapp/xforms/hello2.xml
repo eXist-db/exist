@@ -10,7 +10,7 @@
         <xf:model>
             <!-- Try to load the default instance from the db. If no person exists in the
                 db, the query returns an empty <person/> element. Without that we would
-                receive an error. -->
+                receive an error.  -->
             <xf:instance id="default" src="../rest/db?_query=&lt;person&gt;{/person/name}&lt;test/&gt;&lt;/person&gt;&amp;_wrap=no"/>
    
             <!-- Template data: will be copied into the default instance if the db
