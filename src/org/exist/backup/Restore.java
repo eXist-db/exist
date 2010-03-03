@@ -243,7 +243,7 @@ public class Restore extends DefaultHandler {
 					name = atts.getValue("name");
 				}
 				
-				BackupDescriptor subbd=contents.getChildBackupDescriptor(name);
+				BackupDescriptor subbd = contents.getChildBackupDescriptor(name);
 				if (subbd!=null)
 					stack.push(subbd);
 				else
@@ -285,7 +285,7 @@ public class Restore extends DefaultHandler {
                         }
                     }
                     EXistInputSource is=contents.getInputSource(filename);
-		    if(is==null)
+                    if(is==null)
                        listener.warn("Failed to restore resource '" + name + "'\nfrom file '" +
                                contents.getSymbolicPath(name,false) + "'.\nReason: Unable to obtain its EXistInputSource");
                     try {
@@ -350,6 +350,10 @@ public class Restore extends DefaultHandler {
                     } catch (Exception e) {
                        listener.warn("Failed to restore resource '" + name + "'\nfrom file '" +
                                contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
+                        e.printStackTrace();
+                        throw new RuntimeException(e);
+                    } finally {
+                        is.close();
                     }
                 }
             } else if (localName.equals("deleted")) {

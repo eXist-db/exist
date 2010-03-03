@@ -1,16 +1,12 @@
 package org.exist.util;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 
 public class FileInputSource extends EXistInputSource {
 
 	private File file;
-	
+	private InputStream inputStream = null;
+
 	/**
 	 * Empty constructor
 	 */
@@ -58,20 +54,32 @@ public class FileInputSource extends EXistInputSource {
 	 * null, otherwise.
 	 */
 	public InputStream getByteStream() {
-		InputStream retval=null;
-		
-		if(file!=null) {
+        // close any open stream first
+		close();
+
+        if(file!=null) {
 			try {
-				retval=new BufferedInputStream(new FileInputStream(file));
+				inputStream = new BufferedInputStream(new FileInputStream(file));
 			} catch(FileNotFoundException fnfe) {
 				// No way to notify :-(
 			}
 		}
 		
-		return retval;
+		return inputStream;
 	}
-	
-	/**
+
+    public void close() {
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                // ignore if the stream is already closed
+            }
+        }
+        inputStream = null;
+    }
+
+    /**
 	 * This method now does nothing, so collateral
 	 * effects from superclass with this one are avoided 
 	 */

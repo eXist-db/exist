@@ -10,4 +10,6 @@ public abstract class EXistInputSource extends InputSource {
 	public abstract long getByteStreamLength();
 	
 	public abstract String getSymbolicPath();
+
+    public abstract void close();
 }
