@@ -23,9 +23,7 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.HitCollector;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.*;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
@@ -312,7 +310,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Analyzer analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 QueryParser parser = new QueryParser(field, analyzer);
                 Query query = parser.parse(queryStr);
-                searcher.search(query, new LuceneHitCollector(searcher, contextId, docs, contextSet, resultSet, returnAncestor, query));
+                LuceneHitCollector collector = new LuceneHitCollector();
+                searcher.search(query, collector);
+                processHits(collector.getDocs(), searcher, contextId, docs, contextSet, resultSet, returnAncestor, query);
             }
         } finally {
             index.releaseSearcher(searcher);
@@ -353,7 +353,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = encodeQName(qname);
                 analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 Query query = queryTranslator.parse(field, queryRoot, analyzer);
-                searcher.search(query, new LuceneHitCollector(searcher, contextId, docs, contextSet, resultSet, returnAncestor, query));
+                LuceneHitCollector collector = new LuceneHitCollector();
+                searcher.search(query, collector);
+                processHits(collector.getDocs(), searcher, contextId, docs, contextSet, resultSet, returnAncestor, query);
             }
         } finally {
             index.releaseSearcher(searcher);
@@ -361,30 +363,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return resultSet;
     }
 
-    private class LuceneHitCollector extends HitCollector {
-
-        private IndexSearcher searcher;
-        private int contextId;
-        private DocumentSet docs;
-        private NodeSet contextSet;
-        private NodeSet resultSet;
-        private boolean returnAncestor;
-        private Query query;
-
-        private LuceneHitCollector(IndexSearcher searcher, int contextId, DocumentSet docs, NodeSet contextSet, NodeSet resultSet,
-                                   boolean returnAncestor, Query query) {
-            this.searcher = searcher;
-            this.contextId = contextId;
-            this.docs = docs;
-            this.contextSet = contextSet;
-            this.resultSet = resultSet;
-            this.returnAncestor = returnAncestor;
-            this.query = query;
-        }
-
-        public void collect(int i, float score) {
+    /**
+     * Process the query results collected from the Lucene index and
+     * map them to the corresponding XML nodes in eXist.
+     */
+    private void processHits(List<ScoreDoc> hits, IndexSearcher searcher, int contextId, DocumentSet docs, NodeSet contextSet,
+                             NodeSet resultSet, boolean returnAncestor, Query query) {
+        for (ScoreDoc scoreDoc : hits) {
             try {
-                Document doc = searcher.doc(i, NODE_FIELD_SELECTOR);
+                Document doc = searcher.doc(scoreDoc.doc, NODE_FIELD_SELECTOR);
                 Field fDocId = doc.getField("docId");
                 int docId = Integer.parseInt(fDocId.stringValue());
                 DocumentImpl storedDocument = docs.getDoc(docId);
@@ -401,7 +388,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                         if (parentNode != null) {
                             LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                            match.setScore(score);
+                            match.setScore(scoreDoc.score);
                             parentNode.addMatch(match);
                             resultSet.add(parentNode, sizeHint);
                             if (Expression.NO_CONTEXT_ID != contextId) {
@@ -411,16 +398,51 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         }
                     } else {
                         LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                        match.setScore(score);
+                        match.setScore(scoreDoc.score);
                         storedNode.addMatch(match);
                         resultSet.add(storedNode, sizeHint);
                     }
                 } else {
                     LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                    match.setScore(score);
+                    match.setScore(scoreDoc.score);
                     storedNode.addMatch(match);
                     resultSet.add(storedNode);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class LuceneHitCollector extends Collector {
+
+        private List<ScoreDoc> docs = new ArrayList<ScoreDoc>();
+        private int docBase;
+        private Scorer scorer;
+
+        private LuceneHitCollector() throws IOException {
+        }
+
+        public List<ScoreDoc> getDocs() {
+            return docs;
+        }
+        
+        public void setScorer(Scorer scorer) throws IOException {
+            this.scorer = scorer;
+        }
+
+        public void setNextReader(IndexReader indexReader, int docBase) throws IOException {
+            this.docBase = docBase;
+        }
+
+        public boolean acceptsDocsOutOfOrder() {
+            return false;
+        }
+
+        public void collect(int doc) {
+            try {
+                float score = scorer.score();
+                docs.add(new ScoreDoc(doc + docBase, score));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -625,7 +647,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String contentField = encodeQName(pending.qname);
 
                 doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
-                        Field.Store.COMPRESS,  Field.Index.NOT_ANALYZED));
+                        Field.Store.YES,  Field.Index.NOT_ANALYZED));
                 doc.add(new Field("nodeId", data, Field.Store.YES));
                 doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED));
 
@@ -640,6 +662,24 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             index.releaseWriter(writer);
             nodesToWrite = new ArrayList();
             cachedNodesSize = 0;
+        }
+    }
+
+    /**
+     * Optimize the Lucene index by merging all segments into a single one. This
+     * may take a while and write operations will be blocked during the optimize.
+     *
+     * @see http://lucene.apache.org/java/3_0_1/api/all/org/apache/lucene/index/IndexWriter.html#optimize()
+     */
+    public void optimize() {
+        IndexWriter writer = null;
+        try {
+            writer = index.getWriter();
+            writer.optimize(true);
+        } catch (IOException e) {
+            LOG.warn("An exception was caught while optimizing the lucene index: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
         }
     }
 
