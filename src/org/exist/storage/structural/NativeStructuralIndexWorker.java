@@ -134,9 +134,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 byte[] fromKey, toKey;
                 if (ancestorId == NodeId.DOCUMENT_NODE) {
                     fromKey = computeKey(type, qname, doc.getDocId());
-                    toKey = new byte[fromKey.length];
-                    System.arraycopy(fromKey, 0, toKey, 0, fromKey.length);
-                    ++toKey[toKey.length - 1];
+                    toKey = computeKey(type, qname, doc.getDocId() + 1);
                 } else {
                     fromKey = computeKey(type, qname, doc.getDocId(), ancestorId);
                     toKey = computeKey(type, qname, doc.getDocId(), ancestorId.nextSibling());
@@ -243,7 +241,6 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         DocumentImpl doc;
         int contextId;
         NewArrayNodeSet result;
-        int calls = 0;
 
         FindDescendantsCallback(byte type, int axis, int contextId, NewArrayNodeSet result) {
             this.type = type;
@@ -276,7 +273,6 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     storedNode.copyContext(ancestor);
                 storedNode.addMatches(ancestor);
             }
-            calls++;
             return true;
         }
     }
