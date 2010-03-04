@@ -11,8 +11,6 @@
     <property name="backrest.src" value="${backrest}/src"/>
     <property name="backrest.dist" value="${backrest}/dist/${project.name}-backrest-${project.version}"/>
     <property name="backrest.lib" value="${backrest.dist}/lib"/>
-    <property name="backrest.core" value="${backrest.lib}/core"/>
-    <property name="backrest.endorsed" value="${backrest.lib}/endorsed"/>
     
     
     <!-- ================================================================== -->
@@ -26,8 +24,6 @@
         <mkdir dir="${backrest}/dist"/>
         <mkdir dir="${backrest.dist}"/>
         <mkdir dir="${backrest.lib}"/>
-        <mkdir dir="${backrest.core}"/>
-        <mkdir dir="${backrest.endorsed}"/>
         <mkdir dir="${backrest.dist}/webapp"/>
         <mkdir dir="${backrest.dist}/webapp/WEB-INF"/>
         <mkdir dir="${backrest.dist}/webapp/WEB-INF/data"/>
@@ -37,60 +33,6 @@
     <!-- ================================================================== -->
     <!-- create backrest                                                               -->
     <!-- ================================================================== -->
-    
-    <target name="create-backrest-backup" depends="init-backrest, jar">
-        
-        <!-- Copy all the core jar files -->
-        
-        <copy todir="${backrest.core}" overwrite="true">
-            <fileset dir="${basedir}">
-                <include name="start.jar"/>
-                <include name="exist.jar"/>
-            </fileset>
-            
-            <fileset dir="${lib.core}">                         
-                <include name="xmldb.jar"/>
-                <include name="xmlrpc-common-*.jar"/>
-                <include name="xmlrpc-client-*.jar"/>
-                <include name="ws-commons-util-*.jar"/>
-                <include name="commons-pool-*.jar"/>
-                <include name="excalibur-cli-*.jar"/>
-                <include name="jline-*.jar"/>
-                <include name="log4j-*.jar"/>
-                <include name="sunxacml-*.jar"/>
-            </fileset>                     
-        </copy>
-        
-         <!-- Copy all the endorsed jar files -->
-        
-        <copy todir="${backrest.endorsed}" overwrite="true">
-            <fileset dir="${lib.endorsed}">      
-                <include name="*.jar"/>
-            </fileset>
-        </copy>
-        
-         <!-- Copy all the scripts -->
-        
-        <copy todir="${backrest.dist}" overwrite="true">
-            <fileset dir="${backrest.src}">      
-                <include name="*.bat"/>
-                <include name="*.sh"/>
-            </fileset>
-        </copy>
-        
-         <!-- Copy conf.xml -->
-        
-        <copy todir="${backrest.dist}" overwrite="true">
-            <fileset dir="${basedir}">      
-                <include name="conf.xml"/>
-            </fileset>
-        </copy>
-        
-        <!-- Copy backrest custom start.config file into a jar -->
-        
-         <jar destfile="${backrest.lib}/backrest.jar" basedir="${backrest.src}" includes="*.config"/>
-        
-    </target>
     
     <target name="create-backrest" depends="init-backrest, jar">
         
