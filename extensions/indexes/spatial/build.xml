@@ -64,17 +64,18 @@
     
     <target name="prepare-test-tresources">
         <mkdir dir="${resources.dir}"/>
-        <antcall target="download-port-talbot"/>
+        <antcall target="download-15385-SS7886-5i1"/>
     </target>
     
-    <available file="${resources.dir}/port-talbot.gml" property="port-talbot.present"/>
+    <available file="${resources.dir}/15385-SS7886-5i1.gml" property="15385-SS7886-5i1.present"/>
     
-    <target name="download-port-talbot" unless="port-talbot.present">
-        <get src="http://www.ordnancesurvey.co.uk/products/osmastermap/layers/topography/sampledata/2182-SS7886-2c1.gz" 
-            dest="${resources.dir}/2182-SS7886-2c1.gz" verbose="true"/>
-        <gunzip src="${resources.dir}/2182-SS7886-2c1.gz"  dest="${resources.dir}/port-talbot.gml"/>  
-        <delete file="${resources.dir}/2182-SS7886-2c1.gz"/>
-    </target>
+    <target name="download-15385-SS7886-5i1" unless="15385-SS7886-5i1.present">
+        <get src="http://www.ordnancesurvey.co.uk/products/osmastermap/layers/topography/sampledata/15385-SS7886-5i1.gz" 
+            dest="${resources.dir}/15385-SS7886-5i1.gz" verbose="true"/>
+        <gunzip src="${resources.dir}/15385-SS7886-5i1.gz" 
+            dest="${resources.dir}/15385-SS7886-5i1.gml"/>
+        <delete file="${resources.dir}/15385-SS7886-5i1.gz" />
+	</target>
     
     <target name="test" depends="compile-tests, prepare-test-tresources">        
         <!-- <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}"> -->
