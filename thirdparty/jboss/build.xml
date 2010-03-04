@@ -46,7 +46,7 @@
          Compile all sources
     =======================================================================-->
     <target name="compile" depends="prepare">
-        <javac srcdir="${src}"
+        <javac includeAntRuntime="false" srcdir="${src}"
                destDir="${build}"
                classpathref="cp"
                failonerror="true"

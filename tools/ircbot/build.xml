@@ -25,7 +25,7 @@
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
     <target depends="prepare" name="compile">
-        <javac debug="true" deprecation="${build.deprecation}"
+        <javac includeAntRuntime="false" debug="true" deprecation="${build.deprecation}"
                 destdir="${classes}" encoding="UTF-8"
                 optimize="${build.optimize}" srcdir="${src}"
                 source="${build.compiler.source}" target="${build.compiler.target}">
