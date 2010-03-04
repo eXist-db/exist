@@ -37,7 +37,7 @@
                 according to the organization of collections in the database.</para>
             <para>Other files stored during backup include index configuration files and user
                 settings. Resource and collection metadata is exported to a special XML file, called
-                    <filename>__contents__.xml</filename>, which lists information including the
+                <filename>__contents__.xml</filename>, which lists information including the
                 resource type, owner, modification date and/or the permissions assigned to a
                 resource. You will find one <filename>__contents__.xml</filename> file in each
                 directory created by the backup. This descriptor file is required to restore the
@@ -48,7 +48,7 @@
                 database with a restore or once the data is imported to another database
                 system.</para>
             <para>It is even possible to directly edit user data and permissions stored in the file
-                    <filename>/db/system/users.xml</filename>. This is particularly useful when
+                <filename>/db/system/users.xml</filename>. This is particularly useful when
                 making global changes to the user database. For example, to reset the passwords for
                 all your users, you can simply edit the file <filename>users.xml</filename> by
                 removing the <option>password</option> attribute, or set it to a default value and
@@ -105,7 +105,7 @@
             <procedure>
                 <step>
                     <para>Select either the Backup Icon (arrow pointed upward) in the toolbar OR
-                            <guimenuitem>Tools &#187; Backup</guimenuitem> from the menu.</para>
+                        <guimenuitem>Tools &#187; Backup</guimenuitem> from the menu.</para>
                 </step>
                 <step>
                     <para>From the <guimenuitem>Collection</guimenuitem> drop-down menu, select the
@@ -135,23 +135,23 @@
             <itemizedlist>
                 <listitem>
                     <para>start either the <filename>bin/backup.sh</filename> (Unix), OR the
-                            <filename>bin/backup.bat</filename> (Windows/DOS) script file</para>
+                        <filename>bin/backup.bat</filename> (Windows/DOS) script file</para>
                 </listitem>
                 <listitem>
                     <para>OR enter on the command-line:</para>
                     <synopsis>java -jar start.jar backup 
-                                                            -u <emphasis>[admin_username]</emphasis> 
-                                                            -p <emphasis>[admin_password]</emphasis> 
-                                                            -b <emphasis>[collection_path]</emphasis> 
-                                                            -d <emphasis>[target_path]</emphasis>
-                                                            -ouri=<emphasis>[xml_uri]</emphasis></synopsis>
+                        -u <emphasis>[admin_username]</emphasis> 
+                        -p <emphasis>[admin_password]</emphasis> 
+                        -b <emphasis>[collection_path]</emphasis> 
+                        -d <emphasis>[target_path]</emphasis>
+                        -ouri=<emphasis>[xml_uri]</emphasis></synopsis>
                     <para>To view the all of the available options for this command, use the
-                            <parameter>-h</parameter> parameter.</para>
+                        <parameter>-h</parameter> parameter.</para>
                 </listitem>
             </itemizedlist>
             <para>Use the <parameter>-b</parameter> parameter to indicate the <emphasis>collection
                     path</emphasis>, and the <parameter>-d</parameter> parameter to indicate the
-                    <emphasis>target directory</emphasis> on your system. You can also specify the
+                <emphasis>target directory</emphasis> on your system. You can also specify the
                 current admin username using the <parameter>-u</parameter> parameter, and the admin
                 password using the <parameter>-p</parameter> parameter. For example, to backup the
                 entire database on a Unix system to the target directory <filename
@@ -161,13 +161,13 @@
                     >xmldb:exist://localhost:8080/exist/xmlrpc</filename>. If you want to backup a
                 database at a different location, specify its <command>XML:DB URI</command>
                 (excluding any collection path) using the <parameter>-ouri</parameter> parameter.
-                For example, the following backup on a Unix system specifies the database URI
-                    <filename>xmldb:exist://192.168.1.2:8080/exist/xmlrpc</filename></para>
+                For example, the following backup on a Unix Tomcat system running on port 80 specifies the database URI
+                <filename>xmldb:exist://192.168.1.2:80/xmlrpc</filename></para>
             <synopsis>bin/backup.sh -u admin -p admin-pass -b /db -d /var/backup/hd060501
-                                                    -ouri=xmldb:exist://192.168.1.2:8080/exist/xmlrpc</synopsis>
+                -ouri=xmldb:exist://192.168.1.2:80/xmlrpc</synopsis>
             <note>
                 <para>Default settings for the user, password or server URIs can also be set via the
-                        <filename>backup.properties</filename> file.</para>
+                    <filename>backup.properties</filename> file.</para>
             </note>
         </section>
         <section>
@@ -226,7 +226,7 @@
                 <listitem>
                     <para>Documents which are intact but belong to a destroyed collection will be
                         stored into a special collection <filename
-                        >/db/lost_and_found</filename></para>
+                            >/db/lost_and_found</filename></para>
                 </listitem>
                 <listitem>
                     <para>Damaged documents are detected and are removed from the backup</para>
@@ -237,7 +237,7 @@
                 <para>The core class for the server-side backup as well as consistency checks is
                     called <classname>ConsistencyCheckTask</classname>. It can be registered as a
                     system task with eXist's <ulink url="configuration.xml#N104CF"
-                    >scheduler</ulink>. To do this, add the following definition to the scheduler
+                        >scheduler</ulink>. To do this, add the following definition to the scheduler
                     section in <filename>conf.xml</filename>:</para>
                 <example>
                     <title>Job Definition in conf.xml</title>
@@ -252,7 +252,7 @@
                 </example>
                 <para>This will launch a consistency check and database backup every 12 hours,
                     starting at midnight. The time/frequency of the backup is specified in the
-                        <option>cron-trigger</option> attribute. The syntax is borrowed from the
+                    <option>cron-trigger</option> attribute. The syntax is borrowed from the
                     Unix cron utility, though there are small differences. Please consult the Quartz
                     documentation about <ulink
                         url="http://www.opensymphony.com/quartz/wikidocs/TutorialLesson6.html"
@@ -294,7 +294,7 @@
                             <para>By default, no consistency check will be run during an incremental
                                 backup. For big databases, the consistency check may take too long,
                                 so it should be done for full backups only. Set
-                                    <option>incremental-check</option> to "yes" to run a consistency
+                                <option>incremental-check</option> to "yes" to run a consistency
                                 check during incremental backups.</para>
                         </listitem>
                     </varlistentry>
@@ -302,7 +302,7 @@
                         <term>max</term>
                         <listitem>
                             <para>If incremental backups are enabled, create a full backup every
-                                    <option>max</option> backup runs. If you set the parameter to
+                                <option>max</option> backup runs. If you set the parameter to
                                 e.g. 2, you will get a full backup after two incremental
                                 backups.</para>
                         </listitem>
@@ -348,7 +348,7 @@
                     options.</para>
                 <para>For every check run, an error report will be written into the directory
                     specified in <guimenuitem>Output Directory</guimenuitem>. If you clicked on
-                        <guimenuitem>Check Export</guimenuitem>, the utility will also export the
+                    <guimenuitem>Check Export</guimenuitem>, the utility will also export the
                     database into a zip file in the same directory. This backup can be restored via
                     the standard <ulink url="#restore">backup/restore tools</ulink>.</para>
             </section>
@@ -361,7 +361,7 @@
                     <graphic fileref="resources/jconsole.png"/>
                 </screenshot>
                 <para>eXist also includes a command-line JMX client. Call it with parameter
-                        <parameter>-s</parameter> to see the latest consistency report:</para>
+                    <parameter>-s</parameter> to see the latest consistency report:</para>
                 <synopsis>java -jar start.jar org.exist.management.client.JMXClient -s</synopsis>
                 <para>This may produce output as shown below:</para>
                 <example>
@@ -404,7 +404,7 @@
                     </step>
                     <step>
                         <para>Remove all <filename>.dbx</filename>, <filename>.lck</filename> and
-                                <filename>.log</filename> files. This means removing all your old
+                            <filename>.log</filename> files. This means removing all your old
                             data! eXist will recreate those files upon the next restart.</para>
                     </step>
                     <step>
@@ -435,7 +435,7 @@
                         <para>The dialog box shown below will then prompt you to select the backup
                             descriptor <filename>__contents__.xml</filename> from the topmost
                             directory you want restored. To restore the entire database, select the
-                                <filename>__contents__.xml</filename> from the <filename
+                            <filename>__contents__.xml</filename> from the <filename
                                 >db/</filename> directory.</para>
                         <screenshot>
                             <graphic fileref="resources/backup2.png"/>
@@ -466,13 +466,27 @@
                         instructions above for launching <filename>bin/backup.sh</filename> (Unix),
                         OR the <filename>bin/backup.bat</filename> (Windows/DOS) script files.
                         Include the <parameter>-r</parameter> parameter, and the full path of the
-                            <filename>__contents__.xml</filename> file to restore. As with the Admin
+                        <filename>__contents__.xml</filename> file to restore. As with the Admin
                         Client, if the backup uses a different password for the "admin" user than
                         the current session, you must specify the backup password using the
-                            <parameter>-P</parameter>. For Example:</para>
+                        <parameter>-P</parameter>. For Example:</para>
                     <synopsis>bin/backup.sh -u admin -p admin-pass -P backup-pass 
-                                            -r /var/backup/hd060501/db/__contents__.xml</synopsis>
+                        -r /var/backup/hd060501/db/__contents__.xml</synopsis>
                 </section>
+            </section>
+        </section>
+        <section id="standalone">
+            <title>Standalone Backup/Restore</title>
+            <section>
+                <title>Standalone Backup/Restore on Server platforms</title>
+                <para>The above instructions assume that you have a standard eXist installation directory in place, either from a release package or a full build environment. That is not
+                    always the case on remotely deployed server instances that might be running using only an eXist WAR file in an application server (eg. Tomcat).</para>
+                <para>To support such deployment scenarios, and make it easier to do restores local to the deployed server, there is an ant build target called:
+                    <synopsis>backrest</synopsis></para>
+                <para>Building the backrest target will create a fully-self contained zip file in the backrest directory that can be copied to a remote server and used to do both restores and backups local to that server.
+                </para>
+                <para>Just unzip the backrest zip file, preserviding subdirectories, and execute either the backup.bat or backup.sh scripts per the prior instructions and parameter usage.
+                </para>
             </section>
         </section>
     </chapter>
