@@ -22,7 +22,7 @@ it is mostly a unit test runner for firing off XQuery and XProc tests.</descript
     <!-- TODO: update to compile this at some point            -->
     <target name="saxon-compile" description="compile xquery java extension">
 
-    <javac destdir="lib" includes="**/**/**/*.java" source="1.5" srcdir="src/java">
+    <javac includeAntRuntime="false" destdir="lib" includes="**/**/**/*.java" source="1.5" srcdir="src/java">
             <classpath path="lib/saxon9sa/saxon9sa.jar:lib/saxon9sa"/>
     </javac>
 

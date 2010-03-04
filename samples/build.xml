@@ -37,7 +37,7 @@
     <target depends="prepare" name="compile" description="Compile samples">
         <echo
             message="Compiling samples with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
-        <javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${classes}"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${classes}"
             srcdir="${src}" source="${build.compiler.source}" target="${build.compiler.target}"
             optimize="${build.optimize}" encoding="UTF-8">
             <classpath>

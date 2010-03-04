@@ -50,7 +50,7 @@
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         
-        <javac debug="${build.debug}" deprecation="${build.deprecation}" 
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
             destdir="${classes}" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${src}" 
             source="${build.compiler.source}" target="${build.compiler.target}">

@@ -98,7 +98,7 @@
     
     <target name="compile" depends="XQuery, XQueryTreeParser" description="compile">
         <!-- Compile the java code from ${src} into ${classes} -->
-        <javac debug="true" srcdir="${src}" destdir="${classes}"             
+        <javac includeAntRuntime="false" debug="true" srcdir="${src}" destdir="${classes}"             
                source="${build.compiler.source}" target="${build.compiler.target}"
                listfiles="Yes" deprecation="Yes">
             <compilerarg value="-Xlint:unchecked"/>

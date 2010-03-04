@@ -58,7 +58,7 @@
          <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
             
-        <javac debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
             encoding="UTF-8"
             srcdir="${src}" destdir="${module.classes}" 
             source="${build.compiler.source}" target="${build.compiler.target}">
@@ -69,7 +69,7 @@
     </target>
 
     <target name="compile-tests" depends="compile">
-        <javac debug="${build.debug}" deprecation="${build.deprecation}"
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${test.classes}" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${test.src}"
             source="${build.compiler.source}" target="${build.compiler.target}">
