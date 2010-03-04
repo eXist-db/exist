@@ -191,6 +191,8 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		System.setProperty("hsqldb.default_table_type", "cached");
 		//Get a connection to the DB... and keep it
 		this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
+		if (LOG.isDebugEnabled())
+			LOG.debug("Connected to GML index: " + getDataDir() + "/" + db_file_name_prefix);
 		ResultSet rs = null;
 		try {
         	rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
