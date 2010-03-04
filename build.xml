@@ -7,33 +7,41 @@
 <!-- $Id$ -->
 
 <project basedir="." default="all" name="eXist-DB">
-
-  <description>eXist Open Source Native XML Database</description>
-
-  <!-- import default properties from file -->
-  <property file="build.properties"/>
-
-  <!-- set proxy if needed, use properties in build.properties  -->
-  <setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}" proxyport="${proxy.port}"
-    proxypassword="${proxy.password}" proxyuser="${proxy.user}" socksproxyhost="${proxy.socks.host}"
-    socksproxyport="${proxy.socks.port}"/>
-
-  <!-- Core build scripts -->
-  <import file="build/scripts/build-impl.xml"/>
-  <import file="build/scripts/soap.xml"/>
-  <import file="build/scripts/jarsigner.xml"/>
-  <import file="build/scripts/installer.xml"/>
-  <import file="build/scripts/dist.xml"/>
-
-  <!-- Specialties -->
-  <import file="build/scripts/minimal.xml"/>
-
-  <!-- Additional scripts -->
-  <import file="build/scripts/junit.xml"/>
-  <import file="build/scripts/performance.xml"/>
-  <import file="build/scripts/quality.xml"/>
-  <!--import file="build/scripts/demoserver.xml"/-->
-  <import file="build/scripts/static-docs.xml"/>
-  <import file="build/scripts/subversion.xml"/>
-
+    
+    <description>eXist Open Source Native XML Database</description>
+    
+    <!-- import default properties from file -->
+    
+    <property file="build.properties"/>
+    
+    <!-- set proxy if needed, use properties in build.properties  -->
+    
+    <setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}" proxyport="${proxy.port}"
+        proxypassword="${proxy.password}" proxyuser="${proxy.user}" socksproxyhost="${proxy.socks.host}"
+        socksproxyport="${proxy.socks.port}"/>
+    
+    <!-- Core build scripts -->
+    <import file="build/scripts/build-impl.xml"/>
+    <import file="build/scripts/soap.xml"/>
+    <import file="build/scripts/jarsigner.xml"/>
+    <import file="build/scripts/installer.xml"/>
+    <import file="build/scripts/dist.xml"/>
+    
+    <!-- Specialties -->
+    
+    <import file="build/scripts/minimal.xml"/>
+    
+    <!-- Additional scripts -->
+    
+    <import file="build/scripts/junit.xml"/>
+    <import file="build/scripts/performance.xml"/>
+    <import file="build/scripts/quality.xml"/>
+    <!--import file="build/scripts/demoserver.xml"/-->
+    <import file="build/scripts/static-docs.xml"/>
+    <import file="build/scripts/subversion.xml"/>
+    
+    <!-- Standalone backup/restore distribution build -->
+    
+    <import file="build/scripts/backrest.xml"/>
+    
 </project>
