@@ -25,15 +25,26 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
+import org.exist.EXistException;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.source.BinarySource;
+import org.exist.source.DBSource;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.source.URLSource;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -140,7 +151,12 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
 	      Source source = null;
 	      if (queryUri != null) {
 	        log("XQuery url " + queryUri, Project.MSG_DEBUG);
-	        source = new URLSource(new URL(queryUri));
+              if(queryUri.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                  Resource resource = base.getResource(queryUri);
+                  source = new BinarySource((byte[])resource.getContent(), true);
+              } else
+                  source = new URLSource(new URL(queryUri));
+              
 	        
 	      } else if (queryFile != null) {
 	        log("XQuery file " + queryFile.getAbsolutePath(),

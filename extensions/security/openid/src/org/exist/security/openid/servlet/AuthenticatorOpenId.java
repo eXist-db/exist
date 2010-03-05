@@ -38,6 +38,7 @@ import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
 import org.exist.security.UserAttributes;
 import org.exist.security.User;
+import org.exist.security.openid.OpenIDUtility;
 import org.exist.security.openid.SessionAuthentication;
 import org.exist.security.openid.UserImpl;
 import org.exist.xquery.util.HTTPUtils;
@@ -325,6 +326,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 						}
 					}
 				}
+                OpenIDUtility.registerUser(principal);
 				return principal; 
 			}
 		} catch (OpenIDException e) {

@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import java.security.Principal;
+import java.util.Set;
 
 import org.exist.xmldb.XmldbURI;
 
@@ -105,6 +106,27 @@ public interface User extends Principal {
 	@Deprecated
 	public String getDigestPassword();
 
+    /**
+     * Add a named attribute.
+     *
+     * @param name
+     * @param value
+     */
 	public void setAttribute(String name, Object value);
+
+    /**
+     * Get the named attribute value.
+     *
+     * @param name The String that is the name of the attribute.
+     * @return The value associated with the name or null if no value is associated with the name.
+     */
 	public Object getAttribute(String name);
+
+    /**
+     * Returns the set of attributes names.
+     *
+     * @return the Set of attribute names.
+     */
+    public Set<String> getAttributeNames();
+
 }
