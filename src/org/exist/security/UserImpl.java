@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Represents a user within the database.
@@ -592,14 +593,36 @@ public class UserImpl implements User {
 	}
 
 	private Map<String, Object> attributes = new HashMap<String, Object>();
-	
+
+    /**
+     * Add a named attribute.
+     *
+     * @param name
+     * @param value
+     */
 	@Override
 	public void setAttribute(String name, Object value) {
 		attributes.put(name, value);
 	}
 
+    /**
+     * Get the named attribute value.
+     *
+     * @param name The String that is the name of the attribute.
+     * @return The value associated with the name or null if no value is associated with the name.
+     */
 	@Override
 	public Object getAttribute(String name) {
 		return attributes.get(name);
 	}
+
+    /**
+     * Returns the set of attributes names.
+     *
+     * @return the Set of attribute names.
+     */
+    @Override
+    public Set<String> getAttributeNames() {
+        return attributes.keySet();
+    }
 }

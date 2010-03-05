@@ -21,8 +21,10 @@
  */
 package org.exist.security.openid;
 
+import java.lang.Override;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.exist.security.UserAttributes;
 import org.exist.security.Realm;
@@ -158,6 +160,12 @@ public class UserImpl implements User {
 
 	private Map<String, Object> attributes = new HashMap<String, Object>();
 	
+    /**
+     * Add a named attribute.
+     *
+     * @param name
+     * @param value
+     */
 	@Override
 	public void setAttribute(String name, Object value) {
 		String id = UserAttributes.alias.get(name);
@@ -167,6 +175,12 @@ public class UserImpl implements User {
 			attributes.put(id, value);
 	}
 
+    /**
+     * Get the named attribute value.
+     *
+     * @param name The String that is the name of the attribute.
+     * @return The value associated with the name or null if no value is associated with the name.
+     */
 	@Override
 	public Object getAttribute(String name) {
 		String id = UserAttributes.alias.get(name);
@@ -178,4 +192,14 @@ public class UserImpl implements User {
 		
 		return attributes.get(name);
 	}
+
+    /**
+     * Returns the set of attributes names.
+     *
+     * @return the Set of attribute names.
+     */
+    @Override
+    public Set<String> getAttributeNames() {
+        return attributes.keySet();
+    }
 }
