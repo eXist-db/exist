@@ -142,6 +142,13 @@ public class Indexer extends Observable implements ContentHandler,
 	private TextImpl text = new TextImpl();
 	private Stack<ElementImpl> usedElements = new Stack<ElementImpl>();
 
+    // when storing the document data, validation will be switched off, so
+    // entities will not be reported. We thus have to cache all needed entities
+    // during the validation run.
+    private Map<String, String> entityMap = null;
+    private String currentEntityName = null;
+    private XMLString currentEntityValue = new XMLString();
+    
 	/**
 	 * Create a new parser using the given database broker and user to store the
 	 * document.
@@ -249,6 +256,8 @@ public class Indexer extends Observable implements ContentHandler,
 		} else {
 			charBuf = new XMLString(ch, start, length);
 		}
+        if (currentEntityName != null)
+            currentEntityValue.append(ch, start, length);
 	}
 
 	public void comment(char[] ch, int start, int length) {
@@ -400,9 +409,6 @@ public class Indexer extends Observable implements ContentHandler,
 		childCnt[last.getPosition()] = last.getChildCount();
 	}
 
-	public void endEntity(String name) {
-	}
-
 	public void endPrefixMapping(String prefix) {
 		if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
 			ignorePrefix = null;
@@ -487,9 +493,6 @@ public class Indexer extends Observable implements ContentHandler,
 		} catch (ParserConfigurationException pce) {
 			LOG.warn(pce);
 		}
-	}
-
-	public void skippedEntity(String name) {
 	}
 
 	public void startCDATA() {
@@ -729,6 +732,30 @@ public class Indexer extends Observable implements ContentHandler,
 	}
 
 	public void startEntity(String name) {
+        // while validating, all entities are put into a map
+        // to cache them for later use
+        if (validate) {
+            if (entityMap == null)
+                entityMap = new HashMap<String, String>();
+            currentEntityName = name;
+        }
+	}
+
+    public void endEntity(String name) {
+        // store the entity into a map for later
+        if (validate && currentEntityValue != null) {
+            entityMap.put(currentEntityName, currentEntityValue.toString());
+            currentEntityName = null;
+            currentEntityValue.reset();
+        }
+	}
+
+    public void skippedEntity(String name) {
+        if (!validate) {
+            String value = entityMap.get(name);
+            if (value != null)
+                characters(value.toCharArray(), 0, value.length());
+        }
 	}
 
 	public void startPrefixMapping(String prefix, String uri) {
