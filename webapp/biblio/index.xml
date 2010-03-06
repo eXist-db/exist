@@ -22,8 +22,6 @@
         <jquery:tabset id="query-tabs" on-select="searchTabSelected">
             <jquery:tab id="simple" label="Simple Search">
                 <form class="search-form" action="index.xml" name="simple-search" method="POST">
-                    <jquery:form-repeat trigger="#add-field" form=".search-form"
-                        on-ready="repeatCallback"/>
                     <table>
                         <tr>
                             <td>Search:</td>
@@ -55,12 +53,15 @@
                 </form>
             </jquery:tab>
             <jquery:tab id="advanced" label="Advanced Search">
+                <jquery:form-repeat trigger="#add-field" delete="#remove-field" form=".search-form"
+                    on-ready="repeatCallback"/>
                 <form class="search-form" action="index.xml" name="advanced-search" method="POST">
                     <table>
                         <biblio:form-from-query/>
                         <tr>
-                            <td colspan="3">
-                                <a href="#" id="add-field"><span>+</span> Add row</a>
+                            <td colspan="3" align="right">
+                                <button id="add-field"><span>+</span> Add row</button>
+                                <button id="remove-field"><span>-</span> Remove row</button>
                             </td>
                         </tr>
                         <tr>

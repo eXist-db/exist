@@ -66,7 +66,7 @@ declare function biblio:form-from-query($query as element()) as element()+ {
                     <select name="operator{$pos}">
                     { if (empty($operator)) then attribute style { "display: none;" } else () }
                     {
-                        for $opt in ("and", "or")
+                        for $opt in ("and", "or", "not")
                         return
                             <option>
                             { $opt }
@@ -219,7 +219,7 @@ declare function biblio:orderByName($m as element()) as xs:string?
 declare function biblio:orderExpr($field as xs:string) as xs:string
 {
     if ($field eq "Score") then
-        "ft:score($hit)"
+        "ft:score($hit) descending"
     else if ($field = "Author") then
         "biblio:orderByName($hit)"
     else if ($field = "Title") then

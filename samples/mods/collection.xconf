@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<collection xmlns="http://exist-db.org/collection-config/1.0">
+<collection xmlns="http://exist-db.org/collection-config/1.0"
+	>
     <!-- Defines a bunch of numeric indexes on the mondial collection.
         This file should be stored into /db/system/config/db/mondial.
     -->
-    <index xmlns:mods="http://www.loc.gov/mods/v3">
+    <index xmlns:mods="http://www.loc.gov/mods/v3"
+		xmlns:xlink="http://www.w3.org/1999/xlink">
         <fulltext default="none" attributes="no">
         </fulltext>
-        <lucene>
+        <lucene xmlns:mods="http://www.loc.gov/mods/v3">
             <text qname="mods:mods"/>
             <text qname="mods:titleInfo"/>
             <text qname="mods:name"/>
             <text qname="mods:abstract"/>
             <text qname="mods:subject"/>
         </lucene>
-        <create qname="mods:dateIssued" type="xs:integer"/>
-        <create qname="@ID" type="xs:string"/>
-        <create qname="@type" type="xs:string"/>
-        <create qname="@lang" type="xs:string"/>
+		<create path="mods:namePart" type="xs:string"/>
+		<create qname="@ID" type="xs:string"/>
     </index>
 </collection>

@@ -126,31 +126,16 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
 declare function jquery:form-repeat($config as element(jquery:form-repeat)) as element() {
     let $formSelector := $config/@form/string()
     let $trigger := $config/@trigger/string()
+    let $delete := $config/@delete/string()
     let $onReady := $config/@on-ready/string()
     return
         <script type="text/javascript">
         $(document).ready(function() {{
-            $('{$trigger}').click(function(ev) {{
-                var last = $('{$formSelector} .repeat:last');
-                var newNode = last.clone();
-                last.after(newNode);
-                newNode.each(function () {{
-                    $(':input', this).each(function() {{
-                        var name = $(this).attr('name');
-                        var n = /(.*)(\d+)$/.exec(name);
-                        $(this).attr('name', n[1] + (Number(n[2]) + 1));
-                        if (this.value != '')
-                            this.value = '';
-                    }});
-                }});
-                {
-                    if ($onReady) then
-                        concat($onReady, ".call(newNode);")
-                    else
-                        ()
-                }
-                ev.preventDefault();
-            }});
+            var options = {{
+                deleteTrigger: '{$delete}',
+                onReady: { if ($onReady) then $onReady else 'new function() {}' }
+            }};
+            $('{$formSelector}').repeat('{$trigger}', options);
         }});
         </script>
 };
