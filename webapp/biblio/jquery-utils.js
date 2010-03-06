@@ -1,3 +1,54 @@
+(function($) {
+    $.fn.repeat = function(trigger, opts) {
+        var options = $.extend({
+            deleteTrigger: null,
+            onReady: function() { }
+        }, opts || {});
+        var container = this;
+        var selected = null;
+
+        $('.repeat', container).each(function() {
+            addEvent($(this));
+        });
+        $(trigger).click(function(ev) {
+            var last = $('.repeat:last', container);
+            var newNode = last.clone();
+            last.after(newNode);
+            newNode.each(function () {
+                $(':input', this).each(function() {
+                    var name = $(this).attr('name');
+                    var n = /(.*)(\d+)$/.exec(name);
+                    $(this).attr('name', n[1] + (Number(n[2]) + 1));
+                    if (this.value != '')
+                        this.value = '';
+                });
+            });
+            addEvent(newNode);
+            $('.repeat', container).removeClass('repeat-selected');
+            options.onReady.call(newNode);
+            ev.preventDefault();
+        });
+        if (options.deleteTrigger != null)
+            $(options.deleteTrigger).click(function(ev) {
+                deleteCurrent();
+                ev.preventDefault();
+            });
+        function addEvent(repeat) {
+            repeat.click(function() {
+                selected = repeat;
+                $('.repeat', container).removeClass('repeat-selected');
+                repeat.addClass('repeat-selected');
+            });
+        }
+
+        function deleteCurrent() {
+            if (selected) {
+                selected.remove();
+            }
+        }
+    }
+})(jQuery);
+
 /**
  * jQuery pagination plugin. Used by the jquery.xql XQuery library.
  * The passed URL should return an HTML table with one row for each
@@ -100,9 +151,10 @@
                 if (currentPage + 3 >= pages)
                     endPage = pages - 1;
                 else if (currentPage < 3)
-                    endPage = 6;
+                    endPage = pages > 6 ? 6 : pages - 1;
                 else
                     endPage = currentPage + 3;
+                
                 for (var i = startPage; i <= endPage; i++) {
                     var end = (i * options.itemsPerPage + options.itemsPerPage);
                     if (end > options.totalItems)

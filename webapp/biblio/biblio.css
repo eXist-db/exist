@@ -13,11 +13,6 @@
     text-align: right;
 }
 
-.search-form #add-field span {
-    font-size: 150%;
-    vertical-align: sub;
-}
-
 .search-form .buttons button {
     font-weight: bold;
     font-size: 112%;
@@ -39,6 +34,10 @@
 
 #results {
     margin-top: 1em;
+}
+
+.repeat-selected {
+    background-color: #CCC;
 }
 
 #filters {
