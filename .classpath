@@ -33,7 +33,6 @@
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-metadata-2.4-M1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-referencing-2.4-M1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-xml-2.4-M1.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/hsqldb-1.8.0.7.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/jsr108-0.01.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/jts-1.8.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/vecmath-1.3.1.jar"/>
@@ -82,12 +81,6 @@
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/fop.jar"/>
 	<classpathentry kind="lib" path="lib/user/mail-1.4.2.jar"/>
-	<classpathentry kind="lib" path="lib/user/icu4j-4.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/user/svnkit.jar" sourcepath="lib/user/svnkitsrc.zip"/>
-	<classpathentry kind="lib" path="lib/user/jfreechart-1.0.12.jar"/>
-	<classpathentry kind="lib" path="lib/user/jcommon-1.0.15.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.4.1.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.4.1.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20091111.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-api-1.5.8.jar"/>
@@ -99,8 +92,6 @@
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-api-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-impl-4.3.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-over-slf4j-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/core/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="lib" path="extensions/cocoon/lib/avalon-framework-api-4.1.5.jar"/>
 	<classpathentry kind="lib" path="extensions/cocoon/lib/avalon-framework-impl-4.1.5.jar"/>
 	<classpathentry kind="lib" path="extensions/cocoon/lib/cocoon-2.1.7-deprecated.jar"/>
@@ -146,5 +137,14 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/jsp/jsp-api-2.1-glassfish-9.1.1.B60.25.p2.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.3.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-7.0.1.v20091125.jar"/>
+	<classpathentry kind="lib" path="lib/user/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/user/batik-all-1.7.jar"/>
+	<classpathentry kind="lib" path="lib/user/nekohtml-1.9.11.jar"/>
+	<classpathentry kind="lib" path="lib/user/smack.jar"/>
+	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
+	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.3.1.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.9.2.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.9.2.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/hsqldb-1.8.1.2.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
