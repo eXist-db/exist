@@ -224,7 +224,7 @@ declare function mods:get-related($entry as element(mods:mods)) {
             $related0
     return
         if ($related) then
-            <span>In:
+            <span>. In:
             { 
                 mods:get-names($related), mods:get-title((), $related),
                 if ($related/mods:originInfo or $related/mods:part) then

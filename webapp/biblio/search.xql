@@ -52,14 +52,15 @@ declare variable $biblio:TEMPLATE_QUERY :=
     clauses.
 :)
 declare function biblio:form-from-query($query as element()) as element()+ {
+    let $log := util:log("DEBUG", ("Query: ", $query))
     for $field at $pos in $query//field
     return
         <tr class="repeat">
             <td>
             {
                 let $operator := 
-                    if ($field/preceding-sibling::field) then
-                        $field/parent/local-name(.)
+                    if ($field/preceding-sibling::*) then
+                        $field/../local-name(.)
                     else
                         ()
                 return
@@ -69,13 +70,13 @@ declare function biblio:form-from-query($query as element()) as element()+ {
                         for $opt in ("and", "or", "not")
                         return
                             <option>
-                            { $opt }
                             {
                                 if ($opt eq $operator) then
                                     attribute selected { "selected" }
                                 else
                                     ()
                             }
+                            { $opt }
                             </option>
                     }
                     </select>
@@ -125,6 +126,12 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
                 " union ", 
                 biblio:generate-query($xml/*[2])
             )
+        case element(not) return
+            (
+                biblio:generate-query($xml/*[1]), 
+                " except ", 
+                biblio:generate-query($xml/*[2])
+            )
         case element(field) return
             let $expr0 := $biblio:FIELDS/field[@name = $xml/@name]
             let $expr := if ($expr0) then $expr0 else $biblio:FIELDS/field[last()]
@@ -152,6 +159,12 @@ declare function biblio:xml-query-to-string($xml as element()) as xs:string* {
             (
                 biblio:xml-query-to-string($xml/*[1]), 
                 " OR ", 
+                biblio:xml-query-to-string($xml/*[2])
+            )
+        case element(not) return
+            (
+                biblio:xml-query-to-string($xml/*[1]), 
+                " NOT ", 
                 biblio:xml-query-to-string($xml/*[2])
             )
         case element(field) return
