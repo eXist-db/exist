@@ -1,14 +1,7 @@
 package org.exist.indexing.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -51,10 +44,16 @@ import org.w3c.dom.Element;
 
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
+    public static final String OPTION_DEFAULT_OPERATOR = "default-operator";
+    public static final String OPTION_PHRASE_SLOP = "phrase-slop";
+    public static final String OPTION_LEADING_WILDCARD = "leading-wildcard";
+    public static final String OPTION_FILTER_REWRITE = "filter-rewrite";
+    public static final String DEFAULT_OPERATOR_OR = "or";
+    
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
     private static final FieldSelector NODE_FIELD_SELECTOR = new NodeFieldSelector();
-    
+
     private LuceneIndex index;
     @SuppressWarnings("unused")
 	private IndexController controller;
@@ -296,7 +295,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws ParseException
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-        List<QName> qnames, String queryStr, int axis)
+        List<QName> qnames, String queryStr, int axis, Properties options)
         throws IOException, ParseException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes();
@@ -309,6 +308,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = encodeQName(qname);
                 Analyzer analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 QueryParser parser = new QueryParser(field, analyzer);
+                setOptions(options, parser);
                 Query query = parser.parse(queryStr);
                 LuceneHitCollector collector = new LuceneHitCollector();
                 searcher.search(query, collector);
@@ -318,6 +318,37 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             index.releaseSearcher(searcher);
         }
         return resultSet;
+    }
+
+    private void setOptions(Properties options, QueryParser parser) throws ParseException {
+        if (options == null)
+            return;
+        String option = options.getProperty(OPTION_DEFAULT_OPERATOR);
+        if (option != null) {
+            if (DEFAULT_OPERATOR_OR.equals(option))
+                parser.setDefaultOperator(QueryParser.OR_OPERATOR);
+            else
+                parser.setDefaultOperator(QueryParser.AND_OPERATOR);
+        }
+        option = options.getProperty(OPTION_LEADING_WILDCARD);
+        if (option != null)
+            parser.setAllowLeadingWildcard(option.equalsIgnoreCase("yes"));
+        option = options.getProperty(OPTION_PHRASE_SLOP);
+        if (option != null) {
+            try {
+                int slop = Integer.parseInt(option);
+                parser.setPhraseSlop(slop);
+            } catch (NumberFormatException e) {
+                throw new ParseException("value for option " + OPTION_PHRASE_SLOP + " needs to be a number");
+            }
+        }
+        option = options.getProperty(OPTION_FILTER_REWRITE);
+        if (option != null) {
+            if (option.equalsIgnoreCase("yes"))
+                parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+            else
+                parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
+        }
     }
 
     /**
@@ -339,7 +370,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws ParseException
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
-                         List<QName> qnames, Element queryRoot, int axis)
+                         List<QName> qnames, Element queryRoot, int axis, Properties options)
             throws IOException, ParseException, XPathException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes();
@@ -351,7 +382,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (QName qname : qnames) {
                 String field = encodeQName(qname);
                 analyzer = getAnalyzer(qname, context.getBroker(), docs);
-                Query query = queryTranslator.parse(field, queryRoot, analyzer);
+                Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
                 LuceneHitCollector collector = new LuceneHitCollector();
                 searcher.search(query, collector);
                 processHits(collector.getDocs(), searcher, contextId, docs, contextSet, resultSet, returnAncestor, query);

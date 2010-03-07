@@ -3,6 +3,7 @@ package org.exist.xquery.modules.lucene;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.ParseException;
@@ -12,29 +13,20 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicExpressionVisitor;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocationStep;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Optimizable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.modules.lucene.LuceneModule;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 public class Query extends Function implements Optimizable {
 	
 	protected static final Logger logger = Logger.getLogger(Query.class);
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("query", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Queries a node set using a Lucene full text index; a lucene index " +
@@ -55,7 +47,38 @@ public class Query extends Function implements Optimizable {
                 "all nodes from the input node set matching the query. match highlighting information " +
                 "will be available for all returned nodes. Lucene's match score can be retrieved via " +
                 "the ft:score function.")
-        );
+        ),
+        new FunctionSignature(
+            new QName("query", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+            "Queries a node set using a Lucene full text index; a lucene index " +
+            "must already be defined on the nodes, because if no index is available " +
+            "on a node, nothing will be found. Indexes on descendant nodes are not " +
+            "used. The context of the Lucene query is determined by the given input " +
+            "node set. The query is specified either as a query string based on " +
+            "Lucene's default query syntax or as an XML fragment. " +
+            "See http://exist-db.org/lucene.html#N1029E for complete documentation.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                		"The node set to search using a Lucene full text index which is defined on those nodes"),
+                new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE,
+                		"The query to search for, provided either as a string or text in Lucene's default query " +
+                		"syntax or as an XML fragment to bypass Lucene's default query parser"),
+                new FunctionParameterSequenceType("options", Type.NODE, Cardinality.ZERO_OR_ONE,
+                		"An XML fragment containing options to be passed to Lucene's query parser. The following " +
+                        "options are supported (a description can be found in the docs):\n" +
+                        "<options>\n" +
+                        "   <default-operator>and|or</default-operator>\n" +
+                        "   <phrase-slop>number</phrase-slop>\n" +
+                        "   <leading-wildcard>yes|no</leading-wildcard>\n" +
+                        "   <filter-rewrite>yes|no</filter-rewrite>\n" +
+                        "</options>")
+            },
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the input node set matching the query. match highlighting information " +
+                "will be available for all returned nodes. Lucene's match score can be retrieved via " +
+                "the ft:score function.")
+        )
+    };
 
     private LocationStep contextStep = null;
     protected QName contextQName = null;
@@ -64,7 +87,7 @@ public class Query extends Function implements Optimizable {
     protected boolean optimizeSelf = false;
     protected boolean optimizeChild = false;
 
-    public Query(XQueryContext context) {
+    public Query(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -76,6 +99,14 @@ public class Query extends Function implements Optimizable {
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         steps.add(arg);
+
+        if (arguments.size() == 3) {
+            arg = arguments.get(2);
+            arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+                new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+            arg = new DynamicTypeCheck(context, Type.ELEMENT, arg);
+            steps.add(arg);
+        }
     }
 
     /* (non-Javadoc)
@@ -143,13 +174,14 @@ public class Query extends Function implements Optimizable {
         Item key = getKey(contextSequence, null);
         List<QName> qnames = new ArrayList<QName>(1);
         qnames.add(contextQName);
+        Properties options = parseOptions(contextSequence, null);
         try {
             if (Type.subTypeOf(key.getType(), Type.ELEMENT))
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
-                    qnames, (Element) ((NodeValue)key).getNode(), NodeSet.DESCENDANT);
+                    qnames, (Element) ((NodeValue)key).getNode(), NodeSet.DESCENDANT, options);
             else
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
-                    qnames, key.getStringValue(), NodeSet.DESCENDANT);
+                    qnames, key.getStringValue(), NodeSet.DESCENDANT, options);
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         } catch (ParseException e) {
@@ -180,13 +212,14 @@ public class Query extends Function implements Optimizable {
                     qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
+                Properties options = parseOptions(contextSequence, contextItem);
                 try {
                     if (Type.subTypeOf(key.getType(), Type.ELEMENT))
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
-                                (Element)((NodeValue)key).getNode(), NodeSet.ANCESTOR);
+                                (Element)((NodeValue)key).getNode(), NodeSet.ANCESTOR, options);
                     else
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
-                                key.getStringValue(), NodeSet.ANCESTOR);
+                                key.getStringValue(), NodeSet.ANCESTOR, options);
                 } catch (IOException e) {
                     throw new XPathException(this, e.getMessage());
                 } catch (ParseException e) {
@@ -221,6 +254,30 @@ public class Query extends Function implements Optimizable {
 
     public int returnsType() {
         return Type.NODE;
+    }
+
+    private Properties parseOptions(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (getArgumentCount() < 3)
+            return null;
+        Properties options = new Properties();
+        Sequence optSeq = getArgument(2).eval(contextSequence, contextItem);
+        NodeValue optRoot = (NodeValue) optSeq.itemAt(0);
+        try {
+            XMLStreamReader reader = context.getXMLStreamReader(optRoot);
+            reader.next();
+             reader.next();
+            while (reader.hasNext()) {
+                int status = reader.next();
+                if (status == XMLStreamReader.START_ELEMENT) {
+                    options.put(reader.getLocalName(), reader.getElementText());
+                }
+            }
+            return options;
+        } catch (XMLStreamException e) {
+            throw new XPathException(this, "Error while parsing options to ft:query: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new XPathException(this, "Error while parsing options to ft:query: " + e.getMessage(), e);
+        }
     }
 }
 
