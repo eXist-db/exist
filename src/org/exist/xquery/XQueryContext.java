@@ -36,15 +36,11 @@ import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.*;
 import org.exist.http.servlets.SessionWrapper;
+import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -56,6 +52,7 @@ import org.exist.security.xacml.XACMLSource;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
@@ -74,13 +71,7 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.pragmas.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.TimeUtils;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.exist.xquery.update.Modification;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -89,6 +80,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
@@ -1048,6 +1040,18 @@ public class XQueryContext {
         staticDocuments = ndocs;
         return staticDocuments;
 	}
+
+    public ExtendedXMLStreamReader getXMLStreamReader(NodeValue nv) throws XMLStreamException, IOException {
+        ExtendedXMLStreamReader reader;
+        if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+            NodeImpl node = (NodeImpl) nv;
+            reader = new InMemoryXMLStreamReader(node.getDocument(), node.getDocument());
+        } else {
+            NodeProxy proxy = (NodeProxy) nv;
+            reader = getBroker().newXMLStreamReader(new NodeProxy(proxy.getDocument(), NodeId.DOCUMENT_NODE, proxy.getDocument().getFirstChildAddress()), false);
+        }
+        return reader;
+    }
 
     public void setProtectedDocs(LockedDocumentMap map) {
         this.protectedDocuments = map;
