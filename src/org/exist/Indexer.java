@@ -751,7 +751,7 @@ public class Indexer extends Observable implements ContentHandler,
 	}
 
     public void skippedEntity(String name) {
-        if (!validate) {
+        if (!validate && entityMap != null) {
             String value = entityMap.get(name);
             if (value != null)
                 characters(value.toCharArray(), 0, value.length());
