@@ -285,7 +285,10 @@ public class XMLToQuery {
     private void setRewriteMethod(MultiTermQuery query, Element node, Properties options) {
         String option = node.getAttribute("filter-rewrite");
         if (option == null)
+            option = "yes";
+        if (options != null)
             option = options.getProperty(LuceneIndexWorker.OPTION_FILTER_REWRITE, "yes");
+
         if (option.equalsIgnoreCase("yes"))
             query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
         else
