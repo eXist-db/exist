@@ -457,6 +457,78 @@
         <delete dir="${build.src}"/>
     </target>
 
+    <!-- ================================================================== -->
+    <!-- Create javadoc with UML diagrams                                   -->
+    <!-- ================================================================== -->
+    <target depends="prepare" name="javadocs-uml" description="Create javadoc with UML diagrams">
+        <mkdir dir="${build.src}"/>
+        <antcall target="copy-xapi"/>
+
+        <!--delete dir="webapp/api"/>
+        <mkdir dir="webapp/api"/-->
+        <echo message="Generating Javadocs ..."/>
+        <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
+        <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapp/api"
+            doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
+            source="${build.compiler.source}">
+            <packageset dir="${src}">
+                <include name="org/**"/>
+            </packageset>
+            <packageset dir="${build.src}">
+                <include name="org/**"/>
+            </packageset>
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.jetty"/>
+                <fileset dir="${catalina.home}/server/lib" includes="*.jar"/>
+            </classpath>
+            <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${tools.ant}/lib/UMLGraph-5.2.jar">
+                    <!-- Parameter definitions are at http://www.umlgraph.org/doc/cd-opt.html -->
+                    <param name="-inferrel"/>
+                    <param name="-inferdep"/>
+                    <!-- param name="-attributes"/ -->
+                    <!-- param name="-operations"/ -->
+                    <param name="-hide" value="java.*"/>
+                    <param name="-collpackages" value="java.util.*"/>
+                    <param name="-qualify"/>
+                    <param name="-postfixpackage"/>
+                    <param name="-nodefontsize" value="9"/>
+                    <param name="-nodefontpackagesize" value="7"/>
+                    <param name="-link" value="http://java.sun.com/javase/6/docs/api/"/>
+            </doclet>
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+            <link href="http://java.sun.com/javaee/5/docs/api/"/>
+            <link href="http://commons.apache.org/codec/apidocs"/>
+            <link href="http://commons.apache.org/collections/api/"/>
+            <link href="http://commons.apache.org/discovery/apidocs/"/>
+            <link href="http://commons.apache.org/fileupload/apidocs/"/>
+            <link href="http://commons.apache.org/io/api-1.4/"/>
+            <link href="http://commons.apache.org/logging/apidocs/"/>
+            <link href="http://commons.apache.org/pool/apidocs/"/>
+            <link href="http://hc.apache.org/httpclient-3.x/apidocs/"/>
+            <link href="http://jline.sourceforge.net/javadoc/"/>
+            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
+            <link href="http://nekohtml.sourceforge.net/javadoc/"/>
+            <link href="http://www.quartz-scheduler.org/docs/api/"/>
+            <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
+            <link href="http://ws.apache.org/axis/java/apiDocs/"/>
+            <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
+            <link href="http://www.antlr2.org/javadoc/"/>
+            <link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>          
+            <link href="http://xerces.apache.org/xerces2-j/javadocs/api/"/>
+            <link href="http://xerces.apache.org/xerces2-j/javadocs/xerces2/"/>
+            <link href="http://xerces.apache.org/xerces2-j/javadocs/xni/"/>
+            <link href="http://xml.apache.org/commons/components/apidocs/resolver/"/>
+            <link href="http://xml.apache.org/xalan-j/apidocs/"/>
+            <link href="http://java.sun.com/products/javamail/javadocs/"/>
+            <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>   
+        </javadoc>
+
+        <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
+
+        <delete dir="${build.src}"/>
+    </target>
+
     <target name="copy-xapi" if="has.xmldb.src">
         <echo message="Copying XML:DB API sources ..."/>
         <copy todir="${build.src}">
