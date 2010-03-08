@@ -17,7 +17,7 @@
         <script type="text/javascript" src="query.js"/>
         <link rel="stylesheet" type="text/css" href="biblio.css"/>
     </bookinfo>
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <jquery:tabset id="query-tabs" on-select="searchTabSelected">
             <jquery:tab id="simple" label="Simple Search">

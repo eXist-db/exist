@@ -31,9 +31,9 @@ declare variable $biblio:COLLECTION := "collection('/db')//";
 :)
 declare variable $biblio:FIELDS :=
 	<fields>
-		<field name="Title">mods:mods[ft:query(mods:titleInfo, '$q')]</field>
-		<field name="Author">mods:mods[ft:query(mods:name, '$q')]</field>
-		<field name="All">mods:mods[ft:query(., '$q')]</field>
+		<field name="Title">mods:mods[ft:query(mods:titleInfo, '$q', $options)]</field>
+		<field name="Author">mods:mods[ft:query(mods:name, '$q', $options)]</field>
+		<field name="All">mods:mods[ft:query(., '$q', $options)]</field>
 	</fields>;
 
 (:
@@ -248,6 +248,10 @@ declare function biblio:evaluate-query($query as xs:string, $sort as xs:string) 
     let $sortExpr := biblio:orderExpr($sort)
     let $orderedQuery :=
             concat("for $hit in ", $query, " order by ", $sortExpr, " return $hit")
+    let $options :=
+        <options>
+            <default-operator>and</default-operator>
+        </options>
     return
         util:eval($orderedQuery)
 };
