@@ -2490,7 +2490,7 @@ XFInsert.prototype.run = function(element, ctx) {
 			} else {
 				var nodeAfter;
 
-				if (index >= nodes.length) {
+				if (index >= nodes.length && nodes.length != 0) {
 					nodeAfter = nodes[nodes.length - 1].nextSibling;
 				} else {
 					nodeAfter = nodes[index];
