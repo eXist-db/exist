@@ -105,7 +105,7 @@
                 <xf:setvalue ref="instance('session')/action/@name"
                 value="'init'"/>
                 <xf:send submission="saction"/>
-		<xf:insert nodeset="instance('projects')/*" origin="instance('loadProjects')/*"/>
+		<xf:insert nodeset="instance('projects')/*" origin="instance('loadProjects')/projects/*"/>
 		<xf:delete nodeset="instance('projects')/project[1]"/>
             </xf:action>
         </xf:model>
