@@ -89,7 +89,6 @@
                     tr.append($(this).clone().addClass('pagination-data'));
                 });
                 table.append(tr);
-
                 $('.pagination-toggle', tr).click(function (ev) {
                     ev.preventDefault();
                     options.itemsPerPage = 1;

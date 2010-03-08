@@ -39,7 +39,7 @@ else if ($exist:resource eq 'retrieve') then
 		<forward url="{$exist:controller}/session.xql">
 		</forward>
 	</dispatch>
-else if (matches($exist:path, '(styles/syntax|scripts/|logo.jpg|default-style2.css|curvycorners.js)')) then
+else if (matches($exist:path, '(resources/|styles/syntax|scripts/|logo.jpg|default-style2.css|curvycorners.js)')) then
     let $newPath := replace($exist:path, '^.*((styles/|scripts/|logo).*)$', '/$1')
     return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

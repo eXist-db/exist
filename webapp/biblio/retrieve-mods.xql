@@ -13,16 +13,21 @@ declare function mods:add-part($part, $sep as xs:string) {
         concat(string-join($part, " "), $sep)
 };
 
-declare function mods:get-publisher($publisher as element(mods:publisher)?) as xs:string? {
-    if ($publisher/mods:name) then
-        let $name := $publisher/mods:name[1]
+declare function mods:get-publisher($publishers as element(mods:publisher)*) as xs:string? {
+    string-join(
+        for $publisher in $publishers
         return
-            string-join((
-                $name/mods:namePart/@transliteration,
-                $name/mods:namePart[not(@transliteration)]),
-                " ")
-    else
-        $publisher/string()
+            if ($publisher/mods:name) then
+                let $name := $publisher/mods:name[1]
+                return
+                    string-join((
+                        $name/mods:namePart/@transliteration,
+                        $name/mods:namePart[not(@transliteration)]),
+                        " ")
+            else
+                $publisher/string(),
+        ', '
+    )
 };
 
 declare function mods:get-extent($extent as element(mods:extent)) {
@@ -86,7 +91,7 @@ declare function mods:format-name($name as element(mods:name), $pos as xs:intege
 			if ($family and $given) then
 				if ($family/@lang = ('ja', 'zh')) then 
 				    (
-    				    mods:name-transliteration($name),
+    				    mods:name-transliteration($name), ' ',
     					($family/string(), $given/string())
     				)
 				else if ($pos eq 1) then
@@ -94,7 +99,7 @@ declare function mods:format-name($name as element(mods:name), $pos as xs:intege
 				else
 					($given/string(), ' ', $family/string())
             else string-join((
-                mods:name-transliteration($name),
+                mods:name-transliteration($name), ' ',
                 ($name/mods:namePart, $name)[1]
             ), ' ')
             , '')
@@ -111,7 +116,7 @@ declare function mods:get-authority($name as element(mads:name)?, $lang as xs:st
      			if ($family and $given) then
      				if ($family/@lang = ('ja', 'zh')) then 
      				    (
-         				    mods:name-transliteration($name),
+         				    mods:name-transliteration($name), ' ',
          					($family/string(), $given/string())
          				)
      				else if ($pos eq 1) then
@@ -119,7 +124,7 @@ declare function mods:get-authority($name as element(mads:name)?, $lang as xs:st
      				else
      					($given/string(), ' ', $family/string())
                  else string-join((
-                     mods:name-transliteration($name),
+                     mods:name-transliteration($name), ' ',
                      ($name/mads:namePart, $name)[1]
                  ), ' ')
             , '')
@@ -147,9 +152,9 @@ declare function mods:retrieve-name($name as element(mods:name), $pos as xs:int)
             ()
     return
         if ($mad) then
-            mods:get-name-from-mads($mad, $pos)
+            mods:get-name-from-mads($mad, $pos)[1]
         else
-            mods:format-name($name, $pos)
+            mods:format-name($name, $pos)[1]
 };
 
 declare function mods:retrieve-names($entry as element()) {
@@ -187,7 +192,7 @@ declare function mods:get-transliteration($entry as element(), $title as element
             ()
     return
         if ($title) then
-            <span class="title-transliteration">{ $title/mods:title/string() }.</span>
+            <span class="title-transliteration">{ $title/mods:title/string(), ' ' }</span> 
         else ()
 };
 
@@ -199,29 +204,24 @@ declare function mods:get-translated($entry as element(mods:mods), $title as ele
             ()
     return
         if ($title) then
-            <span class="title-translated">{ $title/mods:title/string() }.</span>
+            <span class="title-translated">{ $title/mods:title/string() }</span>
         else ()
 };
 
 declare function mods:get-title($id as xs:string?, $entry as element()) {
     let $title := ($entry/mods:titleInfo[@lang = 'ja'], $entry/mods:titleInfo[@lang = 'zh'], 
         $entry/mods:titleInfo)[1]
-    return (
-        <a class="pagination-toggle">
-            
-            { mods:get-transliteration($entry, $title), $title/mods:title/string() }
-        </a>,
-        ". "
-    )
+    return
+        <span><a class="pagination-toggle">{ mods:get-transliteration($entry, $title), $title/mods:title/string() }</a>. </span>
 };
 
 declare function mods:get-related($entry as element(mods:mods)) {
     let $related0 := $entry/mods:relatedItem[@type = 'host']
     let $related :=
         if ($related0/@xlink:href) then
-            //mods:mods[@ID = $related0/@xlink:href]
+            //mods:mods[@ID = $related0/@xlink:href][1]
         else
-            $related0
+            $related0[1]
     return
         if ($related) then
             <span>. In:
@@ -296,6 +296,7 @@ declare function mods:names-full($entry as element()) {
 
 declare function mods:simple-row($data as item()?, $label as xs:string) as element(tr)? {
     for $d in $data
+    where $data != ''
     return
         <tr>
             <td class="label">{$label}</td>

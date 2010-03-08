@@ -155,6 +155,10 @@
     border-top: 1px solid black;
 }
 
+.save {
+    vertical-align: top;
+}
+
 .save img {
     border: 0;
     vertical-align: top;
