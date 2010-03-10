@@ -59,7 +59,7 @@ public class GetScheduledJobs extends BasicFunction
     	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName( "get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new QName( "get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Gets the details of all scheduled jobs in the form: " +
 			"<scheduler:jobs xmlns:scheduler=\"http://exist-db.org/xquery/scheduler\" count=\"iJobs\">" +
 			"    <scheduler:group name=\"group\">" +

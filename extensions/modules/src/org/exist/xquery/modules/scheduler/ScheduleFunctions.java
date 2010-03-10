@@ -63,20 +63,20 @@ public class ScheduleFunctions extends BasicFunction
     public static final String              SCHEDULE_JAVA_PERIODIC_JOB   = "schedule-java-periodic-job";
 
    private final static FunctionSignature scheduleJavaCronJobNoParam = new FunctionSignature(
-			new QName(SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new QName( SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Schedules the Java Class named (the class must extend org.exist.scheduler.UserJavaJob) according " +
             "to the Cron expression. The job will be registered using the job name.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class."),
-				new FunctionParameterSequenceType("cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation."),
-                new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job.")
+				new FunctionParameterSequenceType( "java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class." ),
+				new FunctionParameterSequenceType( "cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation." ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." )
 			},
-			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution" )
 		);
 	
 	private final static FunctionSignature scheduleJavaCronJobParam = new FunctionSignature(
-            new QName(SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            new QName( SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
             "Schedules the Java Class named (the class must extend org.exist.scheduler.UserJavaJob) according " +
             "to the Cron expression. The job will be registered using the name passed in $job-name. The final " +
             "argument can be used to specify " +
@@ -84,16 +84,16 @@ public class ScheduleFunctions extends BasicFunction
             "in an XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>.",
             new SequenceType[]
             {
-				new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class."),
-				new FunctionParameterSequenceType("cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation."),
-                new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
-                new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
+				new FunctionParameterSequenceType( "java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class." ),
+				new FunctionParameterSequenceType( "cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation." ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." ),
+                new FunctionParameterSequenceType( "job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" )
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+            new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution" )
 		);
 	
 	private final static FunctionSignature scheduleJavaPeriodicParam = new FunctionSignature(
-            new QName(SCHEDULE_JAVA_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            new QName( SCHEDULE_JAVA_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
             "Schedules the Java Class named (the class must extend org.exist.scheduler.UserJavaJob) according " +
             "to the periodic value. The job will be registered using the job name. The $job-parameters " +
             "argument can be used to specify " +
@@ -102,32 +102,32 @@ public class ScheduleFunctions extends BasicFunction
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>,  Given the delay and the repeat.",
             new SequenceType[]
             {
-				new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class."),
-                new FunctionParameterSequenceType("period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job"),
-                new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
-                new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>"),
-                new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "The period in milliseconds to delay the start of a job."),
-                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution. A value of -1 means repeat forever.")
+				new FunctionParameterSequenceType( "java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the class to be executed.  It must extend the org.exist.scheduler.UserJavaJob class." ),
+                new FunctionParameterSequenceType( "period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job" ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." ),
+                new FunctionParameterSequenceType( "job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" ),
+                new FunctionParameterSequenceType( "delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "The period in milliseconds to delay the start of a job." ),
+                new FunctionParameterSequenceType( "repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution. A value of -1 means repeat forever." )
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+            new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution" )
 		);
 	
 	private final static FunctionSignature scheduleXQueryCronJobNoParam = new FunctionSignature(
-			new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new QName( SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Schedules the named XQuery resource (e.g. /db/foo.xql) according to the Cron expression. " +
 			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
             "The job will be registered using the job name.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource"),
-				new FunctionParameterSequenceType("cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation."),
-                new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job.")
+				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
+				new FunctionParameterSequenceType( "cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation." ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." )
 			},
-			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+			new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution" )
 		);
 	
 	private final static FunctionSignature scheduleXQueryCronJobParam = new FunctionSignature(
-            new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            new QName( SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
             "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the Cron expression. " +
 			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
             "The job will be registered using the job name. The final argument can be used to specify " +
@@ -136,16 +136,16 @@ public class ScheduleFunctions extends BasicFunction
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>",
             new SequenceType[]
             {
-				new FunctionParameterSequenceType("xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource"),
-				new FunctionParameterSequenceType("cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "A cron expression.  Please see the scheduler documentation."),
-                new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
-                new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
+				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
+				new FunctionParameterSequenceType( "cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "A cron expression.  Please see the scheduler documentation." ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." ),
+                new FunctionParameterSequenceType( "job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" )
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution")
+            new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution" )
 		);
 	
 	private final static FunctionSignature scheduleXQueryPeriodicParam = new FunctionSignature(
-            new QName(SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+            new QName( SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
             "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the period. " +
 			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
             "The job will be registered using the job name. The job parameters argument can be used to specify " +
@@ -155,20 +155,21 @@ public class ScheduleFunctions extends BasicFunction
 			",  Given the delay passed and the repeat value.",
             new SequenceType[]
             {
-				new FunctionParameterSequenceType("xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource"),
-                new FunctionParameterSequenceType("period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job"),
-                new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
-                new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>"),
-                new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job."),
-                new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution. A value of -1 means repeat forever.")
+				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
+                new FunctionParameterSequenceType( "period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job" ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." ),
+                new FunctionParameterSequenceType( "job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" ),
+                new FunctionParameterSequenceType( "delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job." ),
+                new FunctionParameterSequenceType( "repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution. A value of -1 means repeat forever." )
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution")
+            new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution" )
 		);
 
 	public final static FunctionSignature[] signatures = {
 			scheduleJavaCronJobNoParam, scheduleJavaCronJobParam,
 			scheduleJavaPeriodicParam, scheduleXQueryCronJobNoParam,
-			scheduleXQueryCronJobParam, scheduleXQueryPeriodicParam };
+			scheduleXQueryCronJobParam, scheduleXQueryPeriodicParam 
+	};
 
     private Scheduler                       scheduler                    = null;
 

@@ -53,13 +53,13 @@ public class DeleteScheduledJob extends BasicFunction
 {
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("delete-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new QName( "delete-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Delete the named job named from the Scheduler. Will only delete User Scheduled Jobs! Returns true if the Job was deleted.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to be deleted")
+				new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to be deleted" )
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean value indicating success or failure on deleting the named job.")
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean value indicating success or failure on deleting the named job." )
 		);
 	
     private Scheduler                     scheduler = null;
