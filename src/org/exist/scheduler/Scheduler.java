@@ -180,7 +180,7 @@ public class Scheduler
 
         //Setup the job's data map
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        setupJobDataMap( job, jobDataMap, params );
+        setupJobDataMap( job, jobDataMap, params, true );
 
         //create the minimum quartz supporting classes to execute a job
         SimpleTrigger trig = new SimpleTrigger();
@@ -216,7 +216,7 @@ public class Scheduler
 
 
     /**
-     * DOCUMENT ME!
+     * Create Periodic Job
      *
      * @param   period  The period, in milliseconds.
      * @param   job     The job to trigger after each period
@@ -231,7 +231,7 @@ public class Scheduler
 
 
     /**
-     * DOCUMENT ME!
+     * Create Periodic Job
      *
      * @param   period  The period, in milliseconds.
      * @param   job     The job to trigger after each period
@@ -245,9 +245,9 @@ public class Scheduler
         return( createPeriodicJob( period, job, delay, params, SimpleTrigger.REPEAT_INDEFINITELY ) );
     }
 
-
-    /**
-     * DOCUMENT ME!
+	
+	  /**
+     * Create Periodic Job
      *
      * @param   period       The period, in milliseconds.
      * @param   job          The job to trigger after each period
@@ -259,12 +259,30 @@ public class Scheduler
      */
     public boolean createPeriodicJob( long period, JobDescription job, long delay, Properties params, int repeatCount )
     {
+		return( createPeriodicJob( period, job, delay, params, repeatCount, true ) );
+	}
+	
+
+    /**
+     * Create Periodic Job
+     *
+     * @param   period       The period, in milliseconds.
+     * @param   job          The job to trigger after each period
+     * @param   delay        <= 0, start now, otherwise start in specified number of milliseconds
+     * @param   params       Any parameters to pass to the job
+     * @param   repeatCount  Number of times to repeat this job.
+     * @param   unschedule   Unschedule job on XPathException?
+     *
+     * @return  true if the job was successfully scheduled, false otherwise
+     */
+    public boolean createPeriodicJob( long period, JobDescription job, long delay, Properties params, int repeatCount, boolean unschedule )
+    {
         //Create the job details
         JobDetail  jobDetail  = new JobDetail( job.getName(), job.getGroup(), job.getClass() );
 
         //Setup the job's data map
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        setupJobDataMap( job, jobDataMap, params );
+        setupJobDataMap( job, jobDataMap, params, unschedule );
 
         //setup a trigger for the job, millisecond based
         SimpleTrigger trigger = new SimpleTrigger();
@@ -305,7 +323,7 @@ public class Scheduler
 
 
     /**
-     * DOCUMENT ME!
+     * Create Cron Job
      *
      * @param   cronExpression  The Cron scheduling expression
      * @param   job             The job to trigger after each period
@@ -318,8 +336,8 @@ public class Scheduler
     }
 
 
-    /**
-     * DOCUMENT ME!
+	 /**
+     * Create Cron Job
      *
      * @param   cronExpression  The Cron scheduling expression
      * @param   job             The job to trigger after each period
@@ -329,12 +347,28 @@ public class Scheduler
      */
     public boolean createCronJob( String cronExpression, JobDescription job, Properties params )
     {
+		return( createCronJob( cronExpression, job, params, true ) );
+	}
+	
+	
+    /**
+     * Create Cron Job
+     *
+     * @param   cronExpression  The Cron scheduling expression
+     * @param   job             The job to trigger after each period
+     * @param   params          Any parameters to pass to the job
+	 * @param   unschedule   Unschedule job on XPathException?.
+     *
+     * @return  true if the job was successfully scheduled, false otherwise
+     */
+    public boolean createCronJob( String cronExpression, JobDescription job, Properties params, boolean unschedule )
+    {
         //Create the job details
         JobDetail  jobDetail  = new JobDetail( job.getName(), job.getGroup(), job.getClass() );
 
         //Setup the job's data map
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        setupJobDataMap( job, jobDataMap, params );
+        setupJobDataMap( job, jobDataMap, params, unschedule );
 
         try {
 
@@ -609,7 +643,7 @@ public class Scheduler
      * @param  jobDataMap  The Job's Data Map
      * @param  params      Any parameters for the job
      */
-    private void setupJobDataMap( JobDescription job, JobDataMap jobDataMap, Properties params )
+    private void setupJobDataMap( JobDescription job, JobDataMap jobDataMap, Properties params, boolean unschedule )
     {
         //if this is a system job, store the BrokerPool in the job's data map
         jobDataMap.put( "brokerpool", brokerpool );
@@ -629,5 +663,8 @@ public class Scheduler
         if( params != null ) {
             jobDataMap.put( "params", params );
         }
+		
+		//Store the value of the unschedule setting
+		jobDataMap.put( "unschedule", new Boolean( unschedule ) );
     }
 }

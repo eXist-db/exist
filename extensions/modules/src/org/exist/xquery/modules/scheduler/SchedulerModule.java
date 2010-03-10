@@ -52,6 +52,8 @@ public class SchedulerModule extends AbstractInternalModule
         new FunctionDef( ScheduleFunctions.signatures[3], ScheduleFunctions.class ),
         new FunctionDef( ScheduleFunctions.signatures[4], ScheduleFunctions.class ),
         new FunctionDef( ScheduleFunctions.signatures[5], ScheduleFunctions.class ),
+        new FunctionDef( ScheduleFunctions.signatures[6], ScheduleFunctions.class ),
+        new FunctionDef( ScheduleFunctions.signatures[7], ScheduleFunctions.class ),
         new FunctionDef( GetScheduledJobs.signature, GetScheduledJobs.class ),
         new FunctionDef( DeleteScheduledJob.signature, DeleteScheduledJob.class ),
         new FunctionDef( PauseScheduledJob.signature, PauseScheduledJob.class ),
