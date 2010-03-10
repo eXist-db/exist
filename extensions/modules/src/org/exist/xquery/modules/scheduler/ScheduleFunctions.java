@@ -144,6 +144,25 @@ public class ScheduleFunctions extends BasicFunction
             new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution" )
 		);
 	
+	private final static FunctionSignature scheduleXQueryCronJobParamException = new FunctionSignature(
+            new QName( SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
+            "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the Cron expression. " +
+			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
+            "The job will be registered using the job name. The job parameters argument can be used to specify " +
+            "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
+            "in an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>",
+            new SequenceType[]
+            {
+				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
+				new FunctionParameterSequenceType( "cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "A cron expression.  Please see the scheduler documentation." ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." ),
+                new FunctionParameterSequenceType( "job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" ),
+				new FunctionParameterSequenceType( "unschedule", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Specifies whether to unschedule this job if an XPathException is raised, default is true." )
+            },
+            new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution" )
+		);
+	
 	private final static FunctionSignature scheduleXQueryPeriodicParam = new FunctionSignature(
             new QName( SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
             "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the period. " +
@@ -165,10 +184,37 @@ public class ScheduleFunctions extends BasicFunction
             new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution" )
 		);
 
+	private final static FunctionSignature scheduleXQueryPeriodicParamException = new FunctionSignature(
+            new QName( SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
+            "Schedules the named XQuery resource (e.g. /db/foo.xql) according to the period. " +
+			"XQuery job's will be launched under the guest account initially, although the running XQuery may switch permissions through calls to xmldb:login(). " +
+            "The job will be registered using the job name. The job parameters argument can be used to specify " +
+            "parameters for the job, which will be passed to the query as external variables. Parameters are specified " +
+            "in an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" +
+			",  Given the delay passed and the repeat value.",
+            new SequenceType[]
+            {
+				new FunctionParameterSequenceType( "xquery-resource", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the XQuery resource" ),
+                new FunctionParameterSequenceType( "period", Type.INTEGER, Cardinality.EXACTLY_ONE, "Time in milliseconds between execution of the job" ),
+                new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job." ),
+                new FunctionParameterSequenceType( "job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>" ),
+                new FunctionParameterSequenceType( "delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job." ),
+                new FunctionParameterSequenceType( "repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution. A value of -1 means repeat forever." ),
+				new FunctionParameterSequenceType( "unschedule", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Specifies whether to unschedule this job if an XPathException is raised, default is true." )
+            },
+            new FunctionParameterSequenceType( "success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution" )
+		);
+	
 	public final static FunctionSignature[] signatures = {
-			scheduleJavaCronJobNoParam, scheduleJavaCronJobParam,
-			scheduleJavaPeriodicParam, scheduleXQueryCronJobNoParam,
-			scheduleXQueryCronJobParam, scheduleXQueryPeriodicParam 
+			scheduleJavaCronJobNoParam, 
+			scheduleJavaCronJobParam,
+			scheduleJavaPeriodicParam, 
+			scheduleXQueryCronJobNoParam,
+			scheduleXQueryCronJobParam, 
+			scheduleXQueryCronJobParamException,
+			scheduleXQueryPeriodicParam,
+			scheduleXQueryPeriodicParamException
 	};
 
     private Scheduler                       scheduler                    = null;
@@ -201,11 +247,14 @@ public class ScheduleFunctions extends BasicFunction
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
         String     resource      = args[0].getStringValue();
+		boolean	   unschedule	 = true;
         long       periodicValue = 0;
         long       delayValue    = 0;
         int        repeatValue   = -1;
         String     jobName       = args[2].getStringValue();
         Properties properties    = null;
+		
+		boolean	   isPeriodic	= isCalledAs( SCHEDULE_XQUERY_PERIODIC_JOB ) || isCalledAs( SCHEDULE_JAVA_PERIODIC_JOB );
 
         if( ( getArgumentCount() >= 4 ) && args[3].hasOne() ) {
             Node options = ( ( NodeValue )args[3].itemAt( 0 ) ).getNode();
@@ -213,14 +262,14 @@ public class ScheduleFunctions extends BasicFunction
             parseParameters( options, properties );
         }
 
-        if( getArgumentCount() >= 5 ) {
+        if( isPeriodic && getArgumentCount() >= 5 ) {
             delayValue = ( ( IntegerValue )args[4].itemAt( 0 ) ).getLong();
         }
 
-        if( getArgumentCount() >= 6 ) {
+        if( isPeriodic && getArgumentCount() >= 6 ) {
             repeatValue = ( ( IntegerValue )args[5].itemAt( 0 ) ).getInt();
         }
-
+		
         User user = context.getUser();
 
         //Check if the user is a DBA
@@ -233,8 +282,14 @@ public class ScheduleFunctions extends BasicFunction
 
         //scheule-xquery-cron-job
         if( isCalledAs( SCHEDULE_XQUERY_CRON_JOB ) ) {
+			if( getArgumentCount() >= 5 ) {
+				unschedule	 = args[4].effectiveBooleanValue();
+			}
             job = new UserXQueryJob( jobName, resource, user );
         } else if( isCalledAs( SCHEDULE_XQUERY_PERIODIC_JOB ) ) {
+			if( getArgumentCount() >= 7 ) {
+				unschedule	 = args[6].effectiveBooleanValue();
+			}
             periodicValue = ( ( IntegerValue )args[1].itemAt( 0 ) ).getLong();
             job           = new UserXQueryJob( jobName, resource, user );
             isCron        = false;
@@ -280,7 +335,7 @@ public class ScheduleFunctions extends BasicFunction
                 //schedule the job
                 String cronExpression = args[1].getStringValue();
 
-                if( scheduler.createCronJob( cronExpression, ( UserJob )job, properties ) ) {
+                if( scheduler.createCronJob( cronExpression, ( UserJob )job, properties, unschedule ) ) {
                     return( BooleanValue.TRUE );
                 } else {
                     return( BooleanValue.FALSE );
@@ -288,7 +343,7 @@ public class ScheduleFunctions extends BasicFunction
             } else {
 
                 //schedule the job
-                if( scheduler.createPeriodicJob( periodicValue, ( UserJob )job, delayValue, properties, repeatValue ) ) {
+                if( scheduler.createPeriodicJob( periodicValue, ( UserJob )job, delayValue, properties, repeatValue, unschedule ) ) {
                     return( BooleanValue.TRUE );
                 } else {
                     return( BooleanValue.FALSE );

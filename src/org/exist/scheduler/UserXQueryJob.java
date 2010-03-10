@@ -133,11 +133,12 @@ public class UserXQueryJob extends UserJob
     public final void execute( JobExecutionContext jec ) throws JobExecutionException
     {
         JobDataMap jobDataMap     = jec.getJobDetail().getJobDataMap();
-        BrokerPool pool           = ( BrokerPool )jobDataMap.get( "brokerpool" );
+        BrokerPool pool           = (BrokerPool)jobDataMap.get( "brokerpool" );
         DBBroker   broker         = null;
-        String     xqueryresource = ( String )jobDataMap.get( "xqueryresource" );
-        User       user           = ( User )jobDataMap.get( "user" );
-        Properties params         = ( Properties )jobDataMap.get( "params" );
+        String     xqueryresource = (String)jobDataMap.get( "xqueryresource" );
+        User       user           = (User)jobDataMap.get( "user" );
+        Properties params         = (Properties)jobDataMap.get( "params" );
+		boolean	   unschedule	  = ((Boolean)jobDataMap.get( "unschedule" )).booleanValue();
 
         //if invalid arguments then abort
         if( ( pool == null ) || ( xqueryresource == null ) || ( user == null ) ) {
@@ -226,7 +227,7 @@ public class UserXQueryJob extends UserJob
             abort( "Permission denied for the scheduling user: " + user.getName() + "!" );
         }
         catch( XPathException xpe ) {
-            abort( "XPathException in the Job: " + xpe.getMessage() + "!" );
+            abort( "XPathException in the Job: " + xpe.getMessage() + "!", unschedule );
         }
         catch( MalformedURLException e ) {
             abort( "Could not load XQuery: " + e.getMessage() );
@@ -254,12 +255,19 @@ public class UserXQueryJob extends UserJob
 
     }
 
-
-    private void abort( String message ) throws JobExecutionException
+	private void abort( String message ) throws JobExecutionException
     {
-        //abort all triggers for this job
-        JobExecutionException jaa = new JobExecutionException( "UserXQueryJob Failed: " + message + " Unscheduling UserXQueryJob.", false );
-        jaa.setUnscheduleAllTriggers( true );
+		abort( message, true );
+	}
+	
+
+    private void abort( String message, boolean unschedule ) throws JobExecutionException
+    {
+        JobExecutionException jaa = new JobExecutionException( "UserXQueryJob Failed: " + message + ( unschedule ? " Unscheduling UserXQueryJob." : "" ), false );
+		
+		//abort all triggers for this job if specified that we should unschedule the job
+        jaa.setUnscheduleAllTriggers( unschedule );
+
         throw( jaa );
     }
 }
