@@ -53,13 +53,13 @@ public class PauseScheduledJob extends BasicFunction
 {
    public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("pause-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new QName( "pause-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Pause the named job in the scheduler. Will only pause user scheduled jobs!",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job in the scheduler")
+				new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job in the scheduler" )
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the success of the pausing of the named job")
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the success of the pausing of the named job" )
 		);
 	
     private Scheduler                     scheduler = null;

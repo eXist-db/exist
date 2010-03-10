@@ -53,13 +53,13 @@ public class ResumeScheduledJob extends BasicFunction
 {
    public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("resume-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			new QName( "resume-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Resumes the named job in the scheduler. Will only resume user scheduled jobs!",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to resume.")
+				new FunctionParameterSequenceType( "job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job to resume." )
 			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the indicator of successful resumption")
+			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the indicator of successful resumption" )
 		);
 	
     private Scheduler                     scheduler = null;
