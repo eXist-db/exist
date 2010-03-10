@@ -32,17 +32,18 @@ import org.exist.xquery.FunctionDef;
  *
  * @author   Adam Retter <adam.retter@devon.gov.uk>
  * @author   Loren Cahlander <loren.cahlander@gmail.com>
+ * @author   Andrzej Taramina <andrzej@chaeron.com>
  * @author   ljo
  * @version  1.3
  * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
- * @serial   2009-05-15
+ * @serial   2010-03-10
  */
 public class SchedulerModule extends AbstractInternalModule
 {
     public final static String         NAMESPACE_URI       = "http://exist-db.org/xquery/scheduler";
 
     public final static String         PREFIX              = "scheduler";
-    public final static String         INCLUSION_DATE      = "2006-11-16, 2009-02-06";
+    public final static String         INCLUSION_DATE      = "2006-11-16, 2009-02-06, 2010-03-10";
     public final static String         RELEASED_IN_VERSION = "eXist-1.2 (job-name argument-version in trunk)";
 
     private final static FunctionDef[] functions           = {

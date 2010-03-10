@@ -57,6 +57,7 @@ import java.util.Vector;
  * A Scheduler to trigger Startup, System and User defined jobs.
  *
  * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
 public class Scheduler
 {
