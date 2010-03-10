@@ -59,6 +59,7 @@ import java.util.Properties;
  * Class to represent a User's XQuery Job Extends UserJob.
  *
  * @author  Adam Retter <adam@exist-db.org>
+ * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
 public class UserXQueryJob extends UserJob
 {

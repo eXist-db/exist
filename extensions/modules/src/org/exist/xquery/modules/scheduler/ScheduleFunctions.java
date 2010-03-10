@@ -48,9 +48,10 @@ import java.util.Properties;
  *
  * @author   Adam Retter <adam.retter@devon.gov.uk>
  * @author   Loren Cahlander <loren.cahlander@gmail.com>
+ * @author   Andrzej Taramina <andrzej@chaeron.com>
  * @version  1.3
  * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
- * @serial   2009-05-15
+ * @serial   2010-03-10
  */
 public class ScheduleFunctions extends BasicFunction
 {
