@@ -23,62 +23,65 @@ package org.exist.scheduler;
 
 import org.quartz.JobExecutionException;
 
+
 /**
- * Exception class can be thrown by implementations of
- * org.exist.scheduler.Job
- * 
- * Also provides a mechanism for cleaning up a job after
- * failed execution
+ * Exception class can be thrown by implementations of org.exist.scheduler.Job.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * <p>Also provides a mechanism for cleaning up a job after failed execution</p>
+ *
+ * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
 public class JobException extends Exception
 {
-	private static final long serialVersionUID = 1567438994821964637L;
+    private static final long serialVersionUID = 1567438994821964637L;
 
-	public final static int JOB_ABORT = 0;			//Abort this job, but continue scheduling
-	public final static int JOB_ABORT_THIS = 1;		//Abort this job and cancel this trigger
-	public final static int JOB_ABORT_ALL = 2;		//Abort this job and cancel all triggers
-	public final static int JOB_REFIRE = 3;			//Refire this job now
-	
-	private int action = JOB_ABORT;
-	private String message;
-	
-	public JobException(int action, String message)
-	{
-		super(message);
-		
-		this.action = action;
-		this.message = message;
-	}
-	
-	/**
-	 * Should be called after this exception is caught
-	 * it cleans up the job, with regards to the scheduler
-	 * 
-	 * Jobs may be removed, refired immediately or left
-	 * for their next execution
-	 */
-	public void cleanupJob() throws JobExecutionException
-	{
-		switch(action)
-		{
-			case JOB_REFIRE:
-				throw new JobExecutionException(message, true);
-		
-			case JOB_ABORT_THIS:
-				JobExecutionException jat = new JobExecutionException(message, false); 
-				jat.setUnscheduleFiringTrigger(true);
-				throw jat;
-			
-			case JOB_ABORT_ALL:
-				JobExecutionException jaa = new JobExecutionException(message, false);
-				jaa.setUnscheduleAllTriggers(true);
-				throw jaa;
-		
-			case JOB_ABORT:
-			default:
-				throw new JobExecutionException(message, false);
-		}
-	}
+    public final static int   JOB_ABORT        = 0; //Abort this job, but continue scheduling
+    public final static int   JOB_ABORT_THIS   = 1; //Abort this job and cancel this trigger
+    public final static int   JOB_ABORT_ALL    = 2; //Abort this job and cancel all triggers
+    public final static int   JOB_REFIRE       = 3; //Refire this job now
+
+    private int               action           = JOB_ABORT;
+    private String            message;
+
+    public JobException( int action, String message )
+    {
+        super( message );
+
+        this.action  = action;
+        this.message = message;
+    }
+
+    /**
+     * Should be called after this exception is caught it cleans up the job, with regards to the scheduler.
+     *
+     * <p>Jobs may be removed, refired immediately or left for their next execution</p>
+     *
+     * @throws  JobExecutionException  DOCUMENT ME!
+     */
+    public void cleanupJob() throws JobExecutionException
+    {
+        switch( action ) {
+
+            case JOB_REFIRE: {
+                throw( new JobExecutionException( message, true ) );
+            }
+
+            case JOB_ABORT_THIS: {
+                JobExecutionException jat = new JobExecutionException( message, false );
+                jat.setUnscheduleFiringTrigger( true );
+                throw( jat );
+            }
+
+            case JOB_ABORT_ALL: {
+                JobExecutionException jaa = new JobExecutionException( message, false );
+                jaa.setUnscheduleAllTriggers( true );
+                throw( jaa );
+            }
+
+            case JOB_ABORT:
+            default: {
+                throw( new JobExecutionException( message, false ) );
+            }
+        }
+    }
 }

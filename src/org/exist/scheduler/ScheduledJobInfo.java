@@ -21,172 +21,184 @@
  */
 package org.exist.scheduler;
 
-import java.util.Date;
-
 import org.quartz.CronTrigger;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 
+import java.util.Date;
+
+
 /**
- * Information about a Scheduled Job
+ * Information about a Scheduled Job.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
 public class ScheduledJobInfo
 {
-	private Scheduler scheduler = null;
-	private Trigger trigger = null; 
-	
-	public final static int TRIGGER_STATE_ERROR = -1;
-	public final static int TRIGGER_STATE_NONE = 0;
-    public final static int TRIGGER_STATE_NORMAL = 1;
-    public final static int TRIGGER_STATE_PAUSED = 2;
-    public final static int TRIGGER_STATE_BLOCKED = 3;
+    public final static int TRIGGER_STATE_ERROR    = -1;
+    public final static int TRIGGER_STATE_NONE     = 0;
+    public final static int TRIGGER_STATE_NORMAL   = 1;
+    public final static int TRIGGER_STATE_PAUSED   = 2;
+    public final static int TRIGGER_STATE_BLOCKED  = 3;
     public final static int TRIGGER_STATE_COMPLETE = 4;
-	
-	public ScheduledJobInfo(Scheduler scheduler, Trigger trigger)
-	{
-		this.scheduler = scheduler;
-		this.trigger = trigger;
-	}
-	
-	/**
-	 * Get the Job's Name
-	 * 
-	 * @return the Job's Name
-	 */
-	public String getName()
-	{
-		return trigger.getJobName();
-	}
-	
-	/**
-	 * Get the Job's Group
-	 * 
-	 * @return the Job's Group
-	 */
-	public String getGroup()
-	{
-		return trigger.getJobGroup();
-	}
-	
-	/**
-	 * Get the Name of the Job's Trigger
-	 * 
-	 * @return the Name of the Job's Trigger
-	 */
-	public String getTriggerName()
-	{
-		return trigger.getName();
-	}
-	
-	/**
-	 * Get the Start time of the Job
-	 * 
-	 * @return the Start time of the Job
-	 */
-	public Date getStartTime()
-	{
-		return trigger.getStartTime();
-	}
-	
-	/**
-	 * Get the End time of the Job
-	 * 
-	 * @return the End time of the Job, or null of the job is Scheduled forever
-	 */
-	public Date getEndTime()
-	{
-		return trigger.getEndTime();
-	}
-	
-	/**
-	 * Get the Previous Fired time of the Job
-	 * 
-	 * @return the time the Job was Previously Fired, or null if the job hasnt fired yet
-	 */
-	public Date getPreviousFireTime()
-	{
-		return trigger.getPreviousFireTime();
-	}
+    private Scheduler       scheduler              = null;
+    private Trigger         trigger                = null;
 
-	/**
-	 * Get the Time the Job will Next be Fired
-	 * 
-	 * @return the time the Job will Next be Fired, or null if the job wont fire again
-	 */
-	public Date getNextFireTime()
-	{
-		return trigger.getNextFireTime();
-	}
-	
-	/**
-	 * Get the Final Time the Job will be Fired
-	 * 
-	 * @return the time the Job will be Fired for the Final time, or null if the job is Scheduled forever
-	 */
-	public Date getFinalFireTime()
-	{
-		return trigger.getFinalFireTime();
-	}
+    public ScheduledJobInfo( Scheduler scheduler, Trigger trigger )
+    {
+        this.scheduler = scheduler;
+        this.trigger   = trigger;
+    }
 
-	/**
-	 * Get the Expression that was used to configure the Triggers firing pattern
-	 * 
-	 * @return The expression that was used to configure the Triggers firing pattern
-	 */
-	public String getTriggerExpression()
-	{
-		if(trigger instanceof CronTrigger)
-		{
-			return ((CronTrigger)trigger).getCronExpression();
-		}
-		else if(trigger instanceof SimpleTrigger)
-		{
-			return String.valueOf(((SimpleTrigger)trigger).getRepeatInterval());
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Get the State of the Job's Trigger
-	 * 
-	 * @return the TRIGGER_STATE_*
-	 */
-	public int getTriggerState()
-	{
-		try
-		{
-			switch(scheduler.getTriggerState(trigger.getName(), trigger.getGroup()))
-			{
-				case Trigger.STATE_ERROR:
-					return TRIGGER_STATE_ERROR;
-					
-				case Trigger.STATE_NONE:
-					return TRIGGER_STATE_NONE;
-					
-				case Trigger.STATE_NORMAL:
-					return TRIGGER_STATE_NORMAL;
-					
-				case Trigger.STATE_PAUSED:
-					return TRIGGER_STATE_PAUSED;
-					
-				case Trigger.STATE_BLOCKED:
-					return TRIGGER_STATE_BLOCKED;
-					
-				case Trigger.STATE_COMPLETE:
-					return TRIGGER_STATE_COMPLETE;
-				
-				default:
-					return TRIGGER_STATE_ERROR;
-			}
-		}
-		catch(SchedulerException se)
-		{
-			return TRIGGER_STATE_ERROR;
-		}
-	}
+    /**
+     * Get the Job's Name.
+     *
+     * @return  the Job's Name
+     */
+    public String getName()
+    {
+        return( trigger.getJobName() );
+    }
+
+
+    /**
+     * Get the Job's Group.
+     *
+     * @return  the Job's Group
+     */
+    public String getGroup()
+    {
+        return( trigger.getJobGroup() );
+    }
+
+
+    /**
+     * Get the Name of the Job's Trigger.
+     *
+     * @return  the Name of the Job's Trigger
+     */
+    public String getTriggerName()
+    {
+        return( trigger.getName() );
+    }
+
+
+    /**
+     * Get the Start time of the Job.
+     *
+     * @return  the Start time of the Job
+     */
+    public Date getStartTime()
+    {
+        return( trigger.getStartTime() );
+    }
+
+
+    /**
+     * Get the End time of the Job.
+     *
+     * @return  the End time of the Job, or null of the job is Scheduled forever
+     */
+    public Date getEndTime()
+    {
+        return( trigger.getEndTime() );
+    }
+
+
+    /**
+     * Get the Previous Fired time of the Job.
+     *
+     * @return  the time the Job was Previously Fired, or null if the job hasnt fired yet
+     */
+    public Date getPreviousFireTime()
+    {
+        return( trigger.getPreviousFireTime() );
+    }
+
+
+    /**
+     * Get the Time the Job will Next be Fired.
+     *
+     * @return  the time the Job will Next be Fired, or null if the job wont fire again
+     */
+    public Date getNextFireTime()
+    {
+        return( trigger.getNextFireTime() );
+    }
+
+
+    /**
+     * Get the Final Time the Job will be Fired.
+     *
+     * @return  the time the Job will be Fired for the Final time, or null if the job is Scheduled forever
+     */
+    public Date getFinalFireTime()
+    {
+        return( trigger.getFinalFireTime() );
+    }
+
+
+    /**
+     * Get the Expression that was used to configure the Triggers firing pattern.
+     *
+     * @return  The expression that was used to configure the Triggers firing pattern
+     */
+    public String getTriggerExpression()
+    {
+        if( trigger instanceof CronTrigger ) {
+            return( ( ( CronTrigger )trigger ).getCronExpression() );
+        } else if( trigger instanceof SimpleTrigger ) {
+            return( String.valueOf( ( ( SimpleTrigger )trigger ).getRepeatInterval() ) );
+        }
+
+        return( null );
+    }
+
+
+    /**
+     * Get the State of the Job's Trigger.
+     *
+     * @return  the TRIGGER_STATE_*
+     */
+    public int getTriggerState()
+    {
+        try {
+
+            switch( scheduler.getTriggerState( trigger.getName(), trigger.getGroup() ) ) {
+
+                case Trigger.STATE_ERROR: {
+                    return( TRIGGER_STATE_ERROR );
+                }
+
+                case Trigger.STATE_NONE: {
+                    return( TRIGGER_STATE_NONE );
+                }
+
+                case Trigger.STATE_NORMAL: {
+                    return( TRIGGER_STATE_NORMAL );
+                }
+
+                case Trigger.STATE_PAUSED: {
+                    return( TRIGGER_STATE_PAUSED );
+                }
+
+                case Trigger.STATE_BLOCKED: {
+                    return( TRIGGER_STATE_BLOCKED );
+                }
+
+                case Trigger.STATE_COMPLETE: {
+                    return( TRIGGER_STATE_COMPLETE );
+                }
+
+                default: {
+                    return( TRIGGER_STATE_ERROR );
+                }
+            }
+        }
+        catch( SchedulerException se ) {
+            return( TRIGGER_STATE_ERROR );
+        }
+    }
 }
