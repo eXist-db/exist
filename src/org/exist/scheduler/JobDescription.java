@@ -22,30 +22,32 @@
 package org.exist.scheduler;
 
 /**
- * Interface defined requirements for a Scheduleable job
- * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * Interface defined requirements for a Scheduleable job.
+ *
+ * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
 public interface JobDescription
 {
-	/**
-	 * Get the name of the job
-	 * 
-	 *  @return The job's name
-	 */
-	public String getName();
+    /**
+     * Get the name of the job.
+     *
+     * @return  The job's name
+     */
+    String getName();
+
 
     /**
-     * Set the name of the job
-     * 
-     * @param name The job's new name
+     * Set the name of the job.
+     *
+     * @param  name  The job's new name
      */
-    public void setName(String name);
-    
-	/**
-	 * Get the name group for the job
-	 * 
-	 * @return The job's group name
-	 */
-	public String getGroup();
+    void setName( String name );
+
+
+    /**
+     * Get the name group for the job.
+     *
+     * @return  The job's group name
+     */
+    String getGroup();
 }

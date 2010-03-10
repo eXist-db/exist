@@ -2,7 +2,7 @@
  *  eXist Scheduler Module Extension ScheduleFunctions
  *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
@@ -16,11 +16,14 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 
 package org.exist.xquery.modules.scheduler;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import org.exist.dom.QName;
 import org.exist.scheduler.Scheduler;
@@ -34,36 +37,32 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import java.util.Properties;
 
+
 /**
- * eXist Scheduler Module Extension ScheduleFunctions
- * 
- * Schedules job's with eXist's Scheduler  
- * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
- * @author Loren Cahlander <loren.cahlander@gmail.com>
- * @serial 2009-05-15
- * @version 1.3
+ * eXist Scheduler Module Extension ScheduleFunctions.
  *
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
+ * <p>Schedules job's with eXist's Scheduler</p>
+ *
+ * @author   Adam Retter <adam.retter@devon.gov.uk>
+ * @author   Loren Cahlander <loren.cahlander@gmail.com>
+ * @version  1.3
+ * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
+ * @serial   2009-05-15
  */
 public class ScheduleFunctions extends BasicFunction
-{	
-	public static final String SCHEDULE_XQUERY_CRON_JOB = "schedule-xquery-cron-job";
+{
+    public static final String              SCHEDULE_XQUERY_CRON_JOB     = "schedule-xquery-cron-job";
 
-	public static final String SCHEDULE_XQUERY_PERIODIC_JOB = "schedule-xquery-periodic-job";
+    public static final String              SCHEDULE_XQUERY_PERIODIC_JOB = "schedule-xquery-periodic-job";
 
-	public static final String SCHEDULE_JAVA_CRON_JOB = "schedule-java-cron-job";
+    public static final String              SCHEDULE_JAVA_CRON_JOB       = "schedule-java-cron-job";
 
-	public static final String SCHEDULE_JAVA_PERIODIC_JOB = "schedule-java-periodic-job";
+    public static final String              SCHEDULE_JAVA_PERIODIC_JOB   = "schedule-java-periodic-job";
 
-	private Scheduler scheduler = null;
-	
-	private final static FunctionSignature scheduleJavaCronJobNoParam = new FunctionSignature(
+   private final static FunctionSignature scheduleJavaCronJobNoParam = new FunctionSignature(
 			new QName(SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
 			"Schedules the Java Class named (the class must extend org.exist.scheduler.UserJavaJob) according " +
             "to the Cron expression. The job will be registered using the job name.",
@@ -73,7 +72,8 @@ public class ScheduleFunctions extends BasicFunction
 				new FunctionParameterSequenceType("cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation."),
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job.")
 			},
-			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution"));
+			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+		);
 	
 	private final static FunctionSignature scheduleJavaCronJobParam = new FunctionSignature(
             new QName(SCHEDULE_JAVA_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
@@ -89,7 +89,8 @@ public class ScheduleFunctions extends BasicFunction
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
                 new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution"));
+            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+		);
 	
 	private final static FunctionSignature scheduleJavaPeriodicParam = new FunctionSignature(
             new QName(SCHEDULE_JAVA_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
@@ -108,7 +109,8 @@ public class ScheduleFunctions extends BasicFunction
                 new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "The period in milliseconds to delay the start of a job."),
                 new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of times to repeat the job after the initial execution. A value of -1 means repeat forever.")
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution"));
+            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+		);
 	
 	private final static FunctionSignature scheduleXQueryCronJobNoParam = new FunctionSignature(
 			new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
@@ -121,7 +123,8 @@ public class ScheduleFunctions extends BasicFunction
 				new FunctionParameterSequenceType("cron-expression", Type.STRING, Cardinality.EXACTLY_ONE, "The cron expression.  Please see the scheduler documentation."),
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job.")
 			},
-			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution"));
+			new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a flag indicating successful execution")
+		);
 	
 	private final static FunctionSignature scheduleXQueryCronJobParam = new FunctionSignature(
             new QName(SCHEDULE_XQUERY_CRON_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
@@ -138,7 +141,8 @@ public class ScheduleFunctions extends BasicFunction
                 new FunctionParameterSequenceType("job-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the job."),
                 new FunctionParameterSequenceType("job-parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution"));
+            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution")
+		);
 	
 	private final static FunctionSignature scheduleXQueryPeriodicParam = new FunctionSignature(
             new QName(SCHEDULE_XQUERY_PERIODIC_JOB, SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
@@ -158,155 +162,159 @@ public class ScheduleFunctions extends BasicFunction
                 new FunctionParameterSequenceType("delay", Type.INTEGER, Cardinality.EXACTLY_ONE, "Can be used with a period in milliseconds to delay the start of a job."),
                 new FunctionParameterSequenceType("repeat", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of times to repeat the job after the initial execution. A value of -1 means repeat forever.")
             },
-            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution"));
+            new FunctionParameterSequenceType("success", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Flag indicating successful execution")
+		);
 
 	public final static FunctionSignature[] signatures = {
 			scheduleJavaCronJobNoParam, scheduleJavaCronJobParam,
 			scheduleJavaPeriodicParam, scheduleXQueryCronJobNoParam,
 			scheduleXQueryCronJobParam, scheduleXQueryPeriodicParam };
-	
-	/**
-	 * ScheduleFunctions Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
-	public ScheduleFunctions(XQueryContext context, FunctionSignature signature)
-	{
-		super(context, signature);
-		
-		scheduler = context.getBroker().getBrokerPool().getScheduler();
+
+    private Scheduler                       scheduler                    = null;
+
+    /**
+     * ScheduleFunctions Constructor.
+     *
+     * @param  context    The Context of the calling XQuery
+     * @param  signature  DOCUMENT ME!
+     */
+    public ScheduleFunctions( XQueryContext context, FunctionSignature signature )
+    {
+        super( context, signature );
+
+        scheduler = context.getBroker().getBrokerPool().getScheduler();
     }
 
-	/**
-	 * evaluate thed call to the xquery function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the  function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		String resource = args[0].getStringValue();
-		long periodicValue = 0;
-		long delayValue = 0;
-		int repeatValue = -1;
-        String jobName = args[2].getStringValue();
-        Properties properties = null;
-		if (getArgumentCount() >= 4 && args[3].hasOne()) {
-            Node options = ((NodeValue)args[3].itemAt(0)).getNode();
+    /**
+     * evaluate thed call to the xquery function, it is really the main entry point of this class.
+     *
+     * @param   args             arguments from the function call
+     * @param   contextSequence  the Context Sequence to operate on (not used here internally!)
+     *
+     * @return  A sequence representing the result of the function call
+     *
+     * @throws  XPathException  DOCUMENT ME!
+     *
+     * @see     org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+    {
+        String     resource      = args[0].getStringValue();
+        long       periodicValue = 0;
+        long       delayValue    = 0;
+        int        repeatValue   = -1;
+        String     jobName       = args[2].getStringValue();
+        Properties properties    = null;
+
+        if( ( getArgumentCount() >= 4 ) && args[3].hasOne() ) {
+            Node options = ( ( NodeValue )args[3].itemAt( 0 ) ).getNode();
             properties = new Properties();
-            parseParameters(options, properties);
+            parseParameters( options, properties );
         }
-		if (getArgumentCount() >= 5) {
-            delayValue = ((IntegerValue)args[4].itemAt(0)).getLong();
-		}
-		if (getArgumentCount() >= 6) {
-            repeatValue = ((IntegerValue)args[5].itemAt(0)).getInt();
-		}
 
-		User user = context.getUser();
-		
-		//Check if the user is a DBA
-		if(!user.hasDbaRole())
-		{
-			return(BooleanValue.FALSE);
-		}
-		
-		Object job = null;
-		boolean isCron = true;
-		
-		//scheule-xquery-cron-job
-		if(isCalledAs(SCHEDULE_XQUERY_CRON_JOB))
-		{
-			job = new UserXQueryJob(jobName, resource, user);
-		}
-		else if(isCalledAs(SCHEDULE_XQUERY_PERIODIC_JOB))
-		{
-            periodicValue = ((IntegerValue) args[1].itemAt(0)).getLong();
-			job = new UserXQueryJob(jobName, resource, user);
-			isCron = false;
-		}
-		
-		//schedule-java-cron-job
-		else if(isCalledAs(SCHEDULE_JAVA_CRON_JOB) || isCalledAs(SCHEDULE_JAVA_PERIODIC_JOB))
-		{
-			if (isCalledAs(SCHEDULE_JAVA_PERIODIC_JOB)) {
-                periodicValue = ((IntegerValue) args[1].itemAt(0)).getLong();
-			}
-			try
-			{
-				//Check if the Class is a UserJob
-				Class<?> jobClass = Class.forName(resource);
-				job = jobClass.newInstance();
-				if(!(job instanceof UserJavaJob))
-				{
-					LOG.error("Cannot Schedule job. Class " + resource + " is not an instance of org.exist.scheduler.UserJavaJob");
-					return(BooleanValue.FALSE);
-				}
-                ((UserJavaJob)job).setName(jobName);
-			}
-			catch(ClassNotFoundException cnfe)
-			{
-				LOG.error(cnfe);
-				return(BooleanValue.FALSE);
-			}
-			catch(IllegalAccessException iae)
-			{
-				LOG.error(iae);
-				return(BooleanValue.FALSE);
-			}
-			catch(InstantiationException ie)
-			{
-				LOG.error(ie);
-				return(BooleanValue.FALSE);
-			}
-		}
-		
-		if(job != null)
-		{
-			if (isCron) {
-				//schedule the job
+        if( getArgumentCount() >= 5 ) {
+            delayValue = ( ( IntegerValue )args[4].itemAt( 0 ) ).getLong();
+        }
+
+        if( getArgumentCount() >= 6 ) {
+            repeatValue = ( ( IntegerValue )args[5].itemAt( 0 ) ).getInt();
+        }
+
+        User user = context.getUser();
+
+        //Check if the user is a DBA
+        if( !user.hasDbaRole() ) {
+            return( BooleanValue.FALSE );
+        }
+
+        Object  job    = null;
+        boolean isCron = true;
+
+        //scheule-xquery-cron-job
+        if( isCalledAs( SCHEDULE_XQUERY_CRON_JOB ) ) {
+            job = new UserXQueryJob( jobName, resource, user );
+        } else if( isCalledAs( SCHEDULE_XQUERY_PERIODIC_JOB ) ) {
+            periodicValue = ( ( IntegerValue )args[1].itemAt( 0 ) ).getLong();
+            job           = new UserXQueryJob( jobName, resource, user );
+            isCron        = false;
+        }
+
+        //schedule-java-cron-job
+        else if( isCalledAs( SCHEDULE_JAVA_CRON_JOB ) || isCalledAs( SCHEDULE_JAVA_PERIODIC_JOB ) ) {
+
+            if( isCalledAs( SCHEDULE_JAVA_PERIODIC_JOB ) ) {
+                periodicValue = ( ( IntegerValue )args[1].itemAt( 0 ) ).getLong();
+            }
+
+            try {
+
+                //Check if the Class is a UserJob
+                Class<?> jobClass = Class.forName( resource );
+                job = jobClass.newInstance();
+
+                if( !( job instanceof UserJavaJob ) ) {
+                    LOG.error( "Cannot Schedule job. Class " + resource + " is not an instance of org.exist.scheduler.UserJavaJob" );
+                    return( BooleanValue.FALSE );
+                }
+                ( ( UserJavaJob )job ).setName( jobName );
+            }
+            catch( ClassNotFoundException cnfe ) {
+                LOG.error( cnfe );
+                return( BooleanValue.FALSE );
+            }
+            catch( IllegalAccessException iae ) {
+                LOG.error( iae );
+                return( BooleanValue.FALSE );
+            }
+            catch( InstantiationException ie ) {
+                LOG.error( ie );
+                return( BooleanValue.FALSE );
+            }
+        }
+
+        if( job != null ) {
+
+            if( isCron ) {
+
+                //schedule the job
                 String cronExpression = args[1].getStringValue();
-				if(scheduler.createCronJob(cronExpression, (UserJob)job, properties))
-				{
-					return(BooleanValue.TRUE);
-				}
-				else
-				{
-					return(BooleanValue.FALSE);
-				}
-			} else {
-				//schedule the job
-				if(scheduler.createPeriodicJob(periodicValue, (UserJob)job, delayValue, properties, repeatValue))
-				{
-					return(BooleanValue.TRUE);
-				}
-				else
-				{
-					return(BooleanValue.FALSE);
-				}
-			}
-		}
-		else
-		{
-			return(BooleanValue.FALSE);
-		}
-	}
 
-    private void parseParameters(Node options, Properties properties) throws XPathException {
-        if(options.getNodeType() == Node.ELEMENT_NODE && options.getLocalName().equals("parameters")) {
+                if( scheduler.createCronJob( cronExpression, ( UserJob )job, properties ) ) {
+                    return( BooleanValue.TRUE );
+                } else {
+                    return( BooleanValue.FALSE );
+                }
+            } else {
+
+                //schedule the job
+                if( scheduler.createPeriodicJob( periodicValue, ( UserJob )job, delayValue, properties, repeatValue ) ) {
+                    return( BooleanValue.TRUE );
+                } else {
+                    return( BooleanValue.FALSE );
+                }
+            }
+        } else {
+            return( BooleanValue.FALSE );
+        }
+    }
+
+
+    private void parseParameters( Node options, Properties properties ) throws XPathException
+    {
+        if( ( options.getNodeType() == Node.ELEMENT_NODE ) && options.getLocalName().equals( "parameters" ) ) {
             Node child = options.getFirstChild();
-            while(child != null) {
-                if(child.getNodeType() == Node.ELEMENT_NODE && child.getLocalName().equals("param")) {
-                    Element elem = (Element)child;
-                    String name = elem.getAttribute("name");
-                    String value = elem.getAttribute("value");
-                    if(name == null || value == null)
-                        throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");
-                    properties.setProperty(name, value);
+
+            while( child != null ) {
+
+                if( ( child.getNodeType() == Node.ELEMENT_NODE ) && child.getLocalName().equals( "param" ) ) {
+                    Element elem  = ( Element )child;
+                    String  name  = elem.getAttribute( "name" );
+                    String  value = elem.getAttribute( "value" );
+
+                    if( ( name == null ) || ( value == null ) ) {
+                        throw( new XPathException( this, "Name or value attribute missing for stylesheet parameter" ) );
+                    }
+                    properties.setProperty( name, value );
                 }
                 child = child.getNextSibling();
             }

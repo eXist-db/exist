@@ -21,88 +21,98 @@
  */
 package org.exist.scheduler;
 
-import org.exist.storage.BrokerPool;
-import org.exist.storage.SystemTask;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import org.exist.storage.BrokerPool;
+import org.exist.storage.SystemTask;
+
+
 /**
- * Class to represent a SystemTask Job
- * Can be used by SystemTasks to schedule themselves as job's
- * 
- * SystemTaskJobs may only have a Single Instance
- * running in the scheduler at once, intersecting
- * schedules will be queued.
- * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * Class to represent a SystemTask Job Can be used by SystemTasks to schedule themselves as job's.
+ *
+ * <p>SystemTaskJobs may only have a Single Instance running in the scheduler at once, intersecting schedules will be queued.</p>
+ *
+ * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
 public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
 {
-	private String JOB_NAME = "SystemTask";
-	private final static String JOB_GROUP = "eXist.System";
-	
-	private SystemTask task = null;
-	
-	/**
-	 * Default Constructor for Quartz
-	 */
-	public SystemTaskJob()
-	{		
-	}
-	
-	/**
-	 * Constructor for Creating a new SystemTask Job
-	 */
-	public SystemTaskJob(String jobName, SystemTask task)
-	{
-		this.task = task;
-        if (jobName == null)
+    private final static String JOB_GROUP = "eXist.System";
+    private String              JOB_NAME  = "SystemTask";
+
+    private SystemTask          task      = null;
+
+    /**
+     * Default Constructor for Quartz.
+     */
+    public SystemTaskJob()
+    {
+    }
+
+
+    /**
+     * Constructor for Creating a new SystemTask Job.
+     *
+     * @param  jobName  DOCUMENT ME!
+     * @param  task     DOCUMENT ME!
+     */
+    public SystemTaskJob( String jobName, SystemTask task )
+    {
+        this.task = task;
+
+        if( jobName == null ) {
             this.JOB_NAME += ": " + task.getClass().getName();
-        else
+        } else {
             this.JOB_NAME = jobName;
-	}
-	
-	public final String getName()
-	{
-		return JOB_NAME;	
-	}
-	
-    public final void setName(String jobName) {
+        }
+    }
+
+    public final String getName()
+    {
+        return( JOB_NAME );
+    }
+
+
+    public final void setName( String jobName )
+    {
         this.JOB_NAME = jobName;
     }
-    
-	public final String getGroup()
-	{
-		return JOB_GROUP;
-	}
-	
-	/**
-	 * Returns the SystemTask for this Job
-	 * 
-	 * @return The SystemTask for this Job
-	 */
-	protected SystemTask getSystemTask()
-	{
-		return task;
-	}
-	
-	public final void execute(JobExecutionContext jec) throws JobExecutionException
-	{
-		JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
-		BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
-		SystemTask task = (SystemTask)jobDataMap.get("systemtask");
-		
-		//if invalid arguments then abort
-		if(pool == null || task == null)
-		{
-			//abort all triggers for this job
-			JobExecutionException jaa = new JobExecutionException("SystemTaskJob Failed: BrokerPool or SystemTask was null! Unscheduling SystemTask", false);
-			jaa.setUnscheduleAllTriggers(true);
-			throw jaa;
-		}
-		
-		//trigger the system task
-		pool.triggerSystemTask(task);
-	}
+
+
+    public final String getGroup()
+    {
+        return( JOB_GROUP );
+    }
+
+
+    /**
+     * Returns the SystemTask for this Job.
+     *
+     * @return  The SystemTask for this Job
+     */
+    protected SystemTask getSystemTask()
+    {
+        return( task );
+    }
+
+
+    public final void execute( JobExecutionContext jec ) throws JobExecutionException
+    {
+        JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
+        BrokerPool pool       = ( BrokerPool )jobDataMap.get( "brokerpool" );
+        SystemTask task       = ( SystemTask )jobDataMap.get( "systemtask" );
+
+        //if invalid arguments then abort
+        if( ( pool == null ) || ( task == null ) ) {
+
+            //abort all triggers for this job
+            JobExecutionException jaa = new JobExecutionException( "SystemTaskJob Failed: BrokerPool or SystemTask was null! Unscheduling SystemTask", false );
+            jaa.setUnscheduleAllTriggers( true );
+            throw( jaa );
+        }
+
+        //trigger the system task
+        pool.triggerSystemTask( task );
+    }
 }
