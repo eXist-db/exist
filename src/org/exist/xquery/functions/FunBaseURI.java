@@ -138,8 +138,9 @@ public class FunBaseURI extends BasicFunction {
                 //The parent property of the node is empty.
                 if (type == Node.PROCESSING_INSTRUCTION_NODE) {
                 	result = Sequence.EMPTY_SEQUENCE;
-                } else if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE) {
+                } else if (type == Node.ATTRIBUTE_NODE || type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE) {
                 	//Only elements, document nodes have a base-uri
+                	//attributes have it too -shabanovd
                     URI relativeURI;
                     URI baseURI;
                     try {
