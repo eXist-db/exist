@@ -67,8 +67,8 @@ public class BinaryToString extends BasicFunction {
         ),
         new FunctionSignature(
             new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the contents of a binary resource as an xs:string value. The binary data " +
-            "is transformed into a Java string using the encoding specified in the optional " +
+            "Returns the contents of a string as an base64binary value. The string data " +
+            "is transformed into a binary using the encoding specified in the optional " +
             "second argument or the default of UTF-8.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("encoded-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the encoded binary resource")
@@ -77,8 +77,8 @@ public class BinaryToString extends BasicFunction {
         ),
         new FunctionSignature(
             new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the contents of a binary resource as an xs:string value. The binary data " +
-            "is transformed into a Java string using the encoding specified in the optional " +
+            "Returns the contents of a string as a base64binary value. The string data " +
+            "is transformed into a binary using the encoding specified in the optional " +
             "second argument or the default of UTF-8.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("encoded-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the encoded binary resource"),
