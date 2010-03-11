@@ -40,8 +40,7 @@ public class LuceneModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
     public static final FunctionDef[] functions = {
-        new FunctionDef(Query.signatures[0], Query.class),
-        new FunctionDef(Query.signatures[1], Query.class),
+        new FunctionDef(Query.signature, Query.class),
         new FunctionDef(Score.signature, Score.class),
         new FunctionDef(Optimize.signature, Optimize.class)
     };
