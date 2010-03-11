@@ -45,6 +45,7 @@ public class ResponseModule extends AbstractInternalModule {
 		new FunctionDef(RedirectTo.signature, RedirectTo.class),
 		new FunctionDef(SetCookie.signatures[0], SetCookie.class),
 		new FunctionDef(SetCookie.signatures[1], SetCookie.class),
+		new FunctionDef(SetDateHeader.signature, SetDateHeader.class),
 		new FunctionDef(SetHeader.signature, SetHeader.class),
 		new FunctionDef(SetStatusCode.signature, SetStatusCode.class),
         new FunctionDef(StreamBinary.signature, StreamBinary.class),
