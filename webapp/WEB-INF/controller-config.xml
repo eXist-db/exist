@@ -5,7 +5,7 @@
 -->
 <configuration xmlns="http://exist.sourceforge.net/NS/exist">
     <!-- Webstart servlet -->
-    <forward pattern="/webstart" servlet="jnlp"/>
+    <!--forward pattern="/webstart" servlet="jnlp"/-->
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <!-- REST interface -->
