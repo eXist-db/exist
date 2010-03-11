@@ -59,6 +59,9 @@
     <condition property="include.module.jndi.config">
         <istrue value="${include.module.jndi}"/>
     </condition>
+    <condition property="include.module.lib.config">
+        <istrue value="${include.module.lib}"/>
+    </condition>
     <condition property="include.module.mail.config">
         <istrue value="${include.module.mail}"/>
     </condition>
@@ -279,6 +282,7 @@
             <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
             <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
+            <exclude name="org/exist/xquery/modules/lib/**" unless="include.module.lib.config"/>
             <exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
             <exclude name="org/exist/xquery/modules/math/**" unless="include.module.math.config"/>
             <exclude name="org/exist/xquery/modules/scheduler/**" unless="include.module.scheduler.config"/>
