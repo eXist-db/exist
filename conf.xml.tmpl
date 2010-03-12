@@ -391,12 +391,6 @@
 			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
 				buffer="32"/>
 
-			<!-- 
-                 The full text index is always required and should
-				         not be disabled. We still have some dependencies on
-                 this index in the database core. These will be removed
-                 once the redesign has been completed. 
-            -->
             <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
 
             <!-- 
