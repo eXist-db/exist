@@ -3414,30 +3414,36 @@ public class XQueryContext
 
         public void addListener( UpdateListener listener )
         {
-            listeners.add( listener );
+			synchronized( listeners ) {
+           		listeners.add( listener );
+			}
         }
 
 
         public void documentUpdated( DocumentImpl document, int event )
         {
-            for( UpdateListener listener : listeners ) {
-
-                if( listener != null ) {
-                    listener.documentUpdated( document, event );
-                }
-            }
+			synchronized( listeners ) {
+	            for( UpdateListener listener : listeners ) {
+	
+	                if( listener != null ) {
+	                    listener.documentUpdated( document, event );
+	                }
+	            }
+			}
         }
 
 
         public void unsubscribe()
         {
-            for( UpdateListener listener : listeners ) {
-
-                if( listener != null ) {
-                    listener.unsubscribe();
-                }
-            }
-            listeners.clear();
+			synchronized( listeners ) {
+	            for( UpdateListener listener : listeners ) {
+	
+	                if( listener != null ) {
+	                    listener.unsubscribe();
+	                }
+	            }
+	            listeners.clear();
+			}
         }
 
 
