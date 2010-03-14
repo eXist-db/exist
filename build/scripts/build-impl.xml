@@ -388,7 +388,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-security-openid,extension-xslt,test-compile"
+        depends="jar,wrapper,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-gate,extension-security-openid,extension-xslt,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -664,6 +664,10 @@
     
     <target name="extension-debuggee" depends="jar">
         <ant antfile="build.xml" dir="extensions/debuggee" inheritall="false"/>
+    </target>
+    
+    <target name="extension-gate" depends="jar">
+        <ant antfile="build.xml" dir="extensions/gate" inheritall="false"/>
     </target>
     
     <target name="extension-xslt" depends="jar">
