@@ -23,7 +23,7 @@ declare variable $jnlp {
       </security>
       <resources>
         <j2se version="1.6+"/>
-        <jar href="gate.jar" main="true"/>
+        <jar href="exist-gate.jar" main="true"/>
         <jar href="commons-codec-%latest%.jar"/>
         <jar href="commons-httpclient-%latest%.jar"/>
         <jar href="commons-logging-%latest%.jar"/>
