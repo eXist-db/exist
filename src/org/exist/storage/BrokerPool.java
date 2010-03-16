@@ -738,7 +738,7 @@ public class BrokerPool extends Observable {
         //REFACTOR : construct then configure
         xQueryPool = new XQueryPool(conf);
         //REFACTOR : construct then... configure
-        processMonitor = new ProcessMonitor();
+        processMonitor = new ProcessMonitor(maxShutdownWait);
         xqueryStats = new PerformanceStats(this);
 
         //REFACTOR : construct then... configure
