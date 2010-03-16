@@ -26,12 +26,18 @@
 		</para>
 		<para>
 		Steps accept input XML and produce output XML, its in this manner (somewhat analogous to unix pipes) that you can orchestrate and create sophisticated XML workflows. </para>
+
+            <important>
+                <para>eXist XProc support is very incomplete, updates will be posted to eXist mailing list on current status.</para>
+            </important>
     </section>
 
     <section>
         <title>Quick Start &amp; Examples</title>
         <para>Since eXist v1.3/1.4, xprocxq is built and configured by default and should be enabled and ready to use.
          </para>
+        <para>You must first run the <a href="/exist/admin/admin.xql?panel=setup">examples</a> setup to get any of the XProc
+        examples to work (loaded into the database).</para>
         <para>
             Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
 		</para>
