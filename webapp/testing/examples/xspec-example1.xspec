@@ -1,0 +1,21 @@
+<t:description xmlns:t="http://www.jenitennison.com/xslt/xspec"
+               xmlns:ex="http://example.org/ns/my"
+               query="http://example.org/ns/my"
+               query-at="testing-this-module.xql">
+
+   <t:scenario label="call">
+      <t:call function="ex:square">
+         <t:param select="3"/>
+      </t:call>
+      <t:expect label="the result" test="$x:result eq 9"/>
+      <t:expect label="the type"   test="$x:result instance of xs:integer"/>
+   </t:scenario>
+
+   <t:scenario label="must fail">
+      <t:call function="ex:square">
+         <t:param select="2"/>
+      </t:call>
+      <t:expect label="wrong result" test="$x:result eq 42"/>
+   </t:scenario>
+
+</t:description>
