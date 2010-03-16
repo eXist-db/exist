@@ -16,8 +16,8 @@
         <title>Testing</title>
 
         <abstract>
-            <para>Including a set of tests along with code is good practice (and a requirement when adding new code to eXist). We try to provide eXist
-                developers several ways to test code, be it Java, XSLT or even XQuery itself.</para>
+            <para>Including a set of tests along with code is good practice (and a requirement when adding new code to eXist).
+                We try to provide eXist developers several ways to test code, be it Java, XSLT or even XQuery itself.</para>
        </abstract>
 
         <section>
@@ -27,11 +27,15 @@
 
             <section>
                 <title>Using eXist internal XQuery Testing</title>
-                <para>When developing functionality that is intended to be part of the eXist distribution it
-                    is recommended to use eXist's own built in XQuery testing suite which has been developed
-                    to integrate closely with JUnit.</para>
+                <para>When developing functionality that is intended to be part of the eXist distribution (or required
+                    extensions) it is recommended to use eXist's own built in XQuery testing suite which has been developed
+                    to integrate closely with JUnit and eXist own build tools.</para>
 
+                <para>Existing tests can be viewed in the source code under test/src/xquery which tests XQuery code. A test is made up of
+                a declarative description which defines how to setup, teardown and perform the test itself ... roughly equivelant to JUNIT
+                style testing.</para>
 
+                <para>The following example uses the test/src/xquery/util tests which for the moment just tests the util:eval instruction.</para>
             <example>
             <title>Example XQuery Test definition</title>
                 <programlisting>
@@ -58,6 +62,17 @@
                 </programlisting>
             </example>
 
+                <para>
+                   I list out some of the more common elements of the test markup below.
+                    <ul>
+                        <li>testname: top level root element</li>
+                        <li>setup: can create collections and load up xml documents</li>
+                        <li>teardown: which you can use to remove and delete any artifacts your test may have produced</li>
+                        <li>test: this element contains the code which you want to test, along with the expected result</li>
+                    </ul>
+
+                </para>
+                <para>By providing a small JUNIT test file, like the one below, then this test becomes part of the eXist test suite.</para>
 
                 <example>
                 <title>Example XQuery Test definition</title>
@@ -77,10 +92,8 @@ public class UtilTests extends TestRunner {
                 ]]>                </markup>
                                 </programlisting>
                             </example>
-
-
-
-
+                 <para>You need to make sure that this Java file is located in the same directory as the test and that its getDirectory()
+                     method returns the path to this directory</para>
             </section>
 
             <section>
