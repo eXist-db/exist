@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="../logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Testing</title>
+        <orgname>The eXist Project</orgname>
+        <date>March 2010</date>
+        <author>
+            <firstname>James</firstname>
+            <surname>Fuller</surname>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Testing</title>
+
+        <abstract>
+            <para>You can use a variety of bundled and built in tools for testing within eXist.</para>
+       </abstract>
+
+        <section>
+            <title>XQuery Testing</title>
+            <para>eXist has two methods for unit testing xquery, either using its own built in
+                XQuery unit testing suite or through the use of XSpec testing framework</para>
+
+            <section>
+                <title>Using eXist internal XQuery Testing</title>
+                <para>When developing functionality that is intended to be part of the eXist distribution it
+                    is recommended to use eXist's own built in XQuery testing suite which has been developed
+                    to integrate closely with JUnit.</para>
+
+
+            <example>
+            <title>Example XQuery Test definition</title>
+                <programlisting>
+                <markup><![CDATA[
+
+<TestSet>
+    <testName>Util tests</testName>
+    <description>
+        <p>Testing eval statements</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="util-test"/>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/util-test"/>
+    </tearDown>
+    <test output="text">
+        <task>Simple eval</task>
+        <code>util:eval('let $a:=1 return $a')</code>
+        <expected>1</expected>
+    </test>
+</TestSet>]]>                </markup>
+                </programlisting>
+            </example>
+
+
+
+            </section>
+
+            <section>
+                <title>Using XSpec</title>
+
+
+                <example>
+                <title>Testing the following XQuery module</title>
+                    <programlisting>
+                    <markup><![CDATA[
+module namespace ex = "http://example.org/ns/my";
+
+declare function ex:square($n as xs:integer) as xs:integer{
+$n * $n
+};
+]]>                </markup>
+                    </programlisting>
+                </example>
+
+                <example>
+                <title>XSpec test definition</title>
+                    <programlisting>
+                    <markup><![CDATA[
+<t:description xmlns:t="http://www.jenitennison.com/xslt/xspec"
+               xmlns:ex="http://example.org/ns/my"
+               query="http://example.org/ns/my"
+               query-at="testing-this-module.xql">
+
+   <t:scenario label="call">
+      <t:call function="ex:square">
+         <t:param select="3"/>
+      </t:call>
+      <t:expect label="the result" test="$x:result eq 9"/>
+      <t:expect label="the type"   test="$x:result instance of xs:integer"/>
+   </t:scenario>
+
+   <t:scenario label="must fail">
+      <t:call function="ex:square">
+         <t:param select="2"/>
+      </t:call>
+      <t:expect label="wrong result" test="$x:result eq 42"/>
+   </t:scenario>
+
+</t:description>]]>                </markup>
+                    </programlisting>
+                </example>
+
+
+            </section>
+
+        </section>
+
+        <section>
+              <title>Other</title>
+            <section>
+                <title>Testing Java</title>
+                <para>tba</para>
+            </section>
+            <section>
+                  <title>Functional Testing with XProc</title>
+            </section>
+
+            <section>
+                  <title>Testing Resources</title>
+                <ul>
+                    <li><a href="http://www.xspec.org" target="_resource">XSpec - </a></li>
+                    <li><a href="http://xproc.org" target="_resource">XSpec Testing XSLT - Tony Graham XML Prague 2009 paper</a></li>        
+                </ul>
+            </section>
+
+        </section>
+
+
+
+
+
+    </chapter>
+</book>
