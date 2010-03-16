@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Util tests</testName>
+    <description>
+        <p>Testing eval statements</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="util-test"/>
+        <store collection="/db/util-test" name="test.xml"><![CDATA[
+            <test>
+                <para>a paragraph with text</para>
+            </test>
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/util-test"/>
+    </tearDown>
+    <test output="text">
+        <task>Simple eval</task>
+        <code>util:eval('let $a:=1 return $a')</code>
+        <expected>1</expected>
+    </test>
+</TestSet>
