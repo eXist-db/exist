@@ -28,7 +28,7 @@
 		Steps accept input XML and produce output XML, its in this manner (somewhat analogous to unix pipes) that you can orchestrate and create sophisticated XML workflows. </para>
 
             <important>
-                <para>eXist XProc support is very incomplete, updates will be posted to eXist mailing list on current status.</para>
+                <para>At the moment eXist XProc support is very incomplete,updates will be posted to eXist mailing list on current status.</para>
             </important>
     </section>
 
