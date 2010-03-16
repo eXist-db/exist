@@ -62,8 +62,10 @@ public class ProcessMonitor {
 
     private Map<Thread, JobInfo> processes = new HashMap<Thread, JobInfo>();
 
-	public ProcessMonitor() {
-		super();
+    private long maxShutdownWait;
+
+	public ProcessMonitor(long maxShutdownWait) {
+		this.maxShutdownWait = maxShutdownWait;
 	}
 
     public void startJob(String action) {
@@ -86,6 +88,7 @@ public class ProcessMonitor {
     public void endJob() {
         synchronized (processes) {
             processes.remove(Thread.currentThread());
+            notifyAll();
         }
     }
 
@@ -102,8 +105,24 @@ public class ProcessMonitor {
     }
 
     public void stopRunningJobs() {
-        for (JobInfo job : processes.values()) {
-            job.stop();
+        long waitStart = System.currentTimeMillis();
+        synchronized (processes) {
+            while (processes.size() > 0) {
+                synchronized (this) {
+                    try {
+                        //Wait until they become inactive...
+                        this.wait(1000);
+                    } catch (InterruptedException e) {
+                    }
+                }
+                //...or force the shutdown
+                if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait)
+                    break;
+            }
+
+            for (JobInfo job : processes.values()) {
+                job.stop();
+            }
         }
     }
 
