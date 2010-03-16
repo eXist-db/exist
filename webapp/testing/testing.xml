@@ -16,7 +16,7 @@
         <title>Testing</title>
 
         <abstract>
-            <para>You can use a variety of bundled and built in tools for testing within eXist.</para>
+            <para>You can use a variety of bundled and built in tools for testing whilst developing with eXist.</para>
        </abstract>
 
         <section>
@@ -56,6 +56,27 @@
 </TestSet>]]>                </markup>
                 </programlisting>
             </example>
+
+
+                <example>
+                <title>Example XQuery Test definition</title>
+                    <programlisting>
+                    <markup><![CDATA[
+package xquery.util;
+
+import xquery.TestRunner;
+
+public class UtilTests extends TestRunner {
+
+    @Override
+    protected String getDirectory() {
+        return "test/src/xquery/util";
+    }
+}
+                ]]>                </markup>
+                                </programlisting>
+                            </example>
+
 
 
 
