@@ -1,0 +1,5 @@
+to run unit tests you will need to 
+
+svn export http://svn.xproc.org/tests
+
+to a directory named tests.xproc.org
