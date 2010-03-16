@@ -136,7 +136,7 @@ $n * $n
               <title>Other</title>
             <section>
                 <title>Testing Java</title>
-                <para>tba</para>
+                <para>Check <a href="/exist/developper.html">here</a>.</para>
             </section>
             <section>
                   <title>Functional Testing with XProc</title>
@@ -149,12 +149,6 @@ $n * $n
                     <li><a href="http://xproc.org" target="_resource">XSpec Testing XSLT - Tony Graham XML Prague 2009 paper</a></li>        
                 </ul>
             </section>
-
         </section>
-
-
-
-
-
     </chapter>
 </book>
