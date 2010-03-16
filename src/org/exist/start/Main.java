@@ -344,24 +344,26 @@ public class Main {
 
             // try to find Jetty
             if (_mode.equals("jetty") || _mode.equals("cluster") || _mode.equals("standalone")) {
-                File _tools_dir = new File(_home_dir.getAbsolutePath() + File.separatorChar + "tools");
-                if (!_tools_dir.exists()) {
-                    System.err.println("ERROR: tools directory not found in " + _home_dir.getAbsolutePath());
-                    return;
-                }
-                String _jetty_dir = null;
-                String _dirs[] = _tools_dir.list();
-                for (int i = 0; i < _dirs.length; i++)
-                    if (_dirs[i].startsWith("jetty")) {
-                        _jetty_dir = _dirs[i];
-                        break;
+                if(System.getProperty("jetty.home")==null) {
+                    File _tools_dir = new File(_home_dir.getAbsolutePath() + File.separatorChar + "tools");
+                    if (!_tools_dir.exists()) {
+                        System.err.println("ERROR: tools directory not found in " + _home_dir.getAbsolutePath());
+                        return;
                     }
-                if (_jetty_dir == null) {
-                    System.err.println("ERROR: Jetty could not be found in " + _tools_dir.getPath());
-                    return;
+                    String _jetty_dir = null;
+                    String _dirs[] = _tools_dir.list();
+                    for (int i = 0; i < _dirs.length; i++)
+                        if (_dirs[i].startsWith("jetty")) {
+                            _jetty_dir = _dirs[i];
+                            break;
+                        }
+                    if (_jetty_dir == null) {
+                        System.err.println("ERROR: Jetty could not be found in " + _tools_dir.getPath());
+                        return;
+                    }
+                    System.setProperty("jetty.home",
+                            _tools_dir.getAbsolutePath() + File.separatorChar + _jetty_dir);
                 }
-                System.setProperty("jetty.home",
-                        _tools_dir.getAbsolutePath() + File.separatorChar + _jetty_dir);
                 String config;
                 if (_mode.equals("jetty"))
                     config = "jetty.xml";

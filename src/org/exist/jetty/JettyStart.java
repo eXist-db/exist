@@ -89,10 +89,15 @@ public class JettyStart implements LifeCycle.Listener {
     }
 
     public void run() {
-        File home = ConfigurationHelper.getExistHome();
-        File jettyHome = new File(home, "tools/jetty");
-        System.setProperty("jetty.home", jettyHome.getAbsolutePath());
-        run(new String[]{jettyHome.getAbsolutePath() + "/etc/standalone.xml"}, null);
+        String jettyProperty = System.getProperty("jetty.home");
+        if(jettyProperty==null) {
+            File home = ConfigurationHelper.getExistHome();
+            File jettyHome = new File(new File(home, "tools"), "jetty");
+            jettyProperty = jettyHome.getAbsolutePath();
+            System.setProperty("jetty.home", jettyProperty);
+        }
+        File standaloneFile = new File(new File(jettyProperty, "etc"), "standalone.xml");
+        run(new String[]{standaloneFile.getAbsolutePath()}, null);
     }
     
     public void run(String[] args, Observer observer) {
