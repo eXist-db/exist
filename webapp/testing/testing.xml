@@ -16,12 +16,13 @@
         <title>Testing</title>
 
         <abstract>
-            <para>You can use a variety of bundled and built in tools for testing whilst developing with eXist.</para>
+            <para>Including a set of tests along with code is good practice (and a requirement when adding new code to eXist). We try to provide eXist
+                developers several ways to test code, be it Java, XSLT or even XQuery itself.</para>
        </abstract>
 
         <section>
             <title>XQuery Testing</title>
-            <para>eXist has two methods for unit testing xquery, either using its own built in
+            <para>eXist has two methods for developing non-regression XQuery tests, either using its own built in
                 XQuery unit testing suite or through the use of XSpec testing framework</para>
 
             <section>
@@ -140,6 +141,7 @@ $n * $n
             </section>
             <section>
                   <title>Functional Testing with XProc</title>
+                <para>TBA</para>
             </section>
 
             <section>
