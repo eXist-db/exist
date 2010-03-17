@@ -95,7 +95,7 @@ declare function browse:upload($colName as xs:string) as element()
 {
     let $name := request:get-parameter("name", ()),
     $docName := if($name) then $name else request:get-uploaded-file-name("upload"),
-    $file := request:get-uploaded-file("upload") return
+    $file := request:get-uploaded-file-data("upload") return
     
         <div class="process">
             <h3>Actions:</h3>
