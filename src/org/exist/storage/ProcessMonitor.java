@@ -80,20 +80,18 @@ public class ProcessMonitor {
     public void startJob(String action, Object addInfo, Monitor monitor) {
         JobInfo info = new JobInfo(action, monitor);
         info.setAddInfo(addInfo);
-        synchronized (processes) {
+        synchronized (this) {
             processes.put(info.getThread(), info);
         }
     }
 
-    public void endJob() {
-        synchronized (processes) {
-            processes.remove(Thread.currentThread());
-            notifyAll();
-        }
+    public synchronized void endJob() {
+        processes.remove(Thread.currentThread());
+        notifyAll();
     }
 
     public JobInfo[] runningJobs() {
-        synchronized (processes) {
+        synchronized (this) {
             JobInfo jobs[] = new JobInfo[processes.size()];
             int j = 0;
             for (Iterator i = processes.values().iterator(); i.hasNext(); j++) {
@@ -106,20 +104,19 @@ public class ProcessMonitor {
 
     public void stopRunningJobs() {
         long waitStart = System.currentTimeMillis();
-        synchronized (processes) {
-            while (processes.size() > 0) {
-                synchronized (this) {
+        synchronized (this) {
+            if (maxShutdownWait > -1) {
+                while (processes.size() > 0) {
                     try {
                         //Wait until they become inactive...
                         this.wait(1000);
                     } catch (InterruptedException e) {
                     }
+                    //...or force the shutdown
+                    if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait)
+                        break;
                 }
-                //...or force the shutdown
-                if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait)
-                    break;
             }
-
             for (JobInfo job : processes.values()) {
                 job.stop();
             }
