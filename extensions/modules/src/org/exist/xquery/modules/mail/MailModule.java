@@ -47,8 +47,9 @@ import javax.mail.Store;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author Andrzej Taramina <andrzej@chaeron.com>
  * @author ljo
- * @serial 2009-03-12
- * @version 1.3
+ * @author José María Fernández <josemariafg@gmail.com>
+ * @serial 2010-03-19
+ * @version 1.4
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
@@ -76,6 +77,8 @@ public class MailModule extends AbstractInternalModule
 		new FunctionDef( MessageListFunctions.signatures[2], MessageListFunctions.class ),
 		new FunctionDef( MessageListFunctions.signatures[3], MessageListFunctions.class ),
 				
+		new FunctionDef( SendEmailFunction.signatures[0], SendEmailFunction.class ),
+		
 		// deprecated functions:
 		new FunctionDef( SendEmailFunction.deprecated, SendEmailFunction.class )
 	};
