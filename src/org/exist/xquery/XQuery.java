@@ -211,7 +211,7 @@ public class XQuery {
         	context.getWatchDog().reset();
         }
 
-        if (context.isDebugMode()) {
+        if (context.requireDebugMode()) {
        		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
        		if (debuggee != null) {
        			debuggee.joint(expression);
