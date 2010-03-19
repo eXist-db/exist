@@ -57,6 +57,10 @@
         </section>
         <section>
             <title>Services</title>
+            <para>The following table lists which services and modules 
+                ship with eXist; a description of each; the resources in the eXist 
+                installation where they are configured; and whether they are active 
+                by default in an out-of-the box configuration.</para>
             <informaltable>
                 <thead>
                     <tr bgcolor="#0990EE" valign="top">
@@ -345,12 +349,15 @@
                         <td>Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>Scheduler</td>
+                        <td>Scheduler function module</td>
                         <td></td>
                         <td>
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -533,74 +540,89 @@
                         <td>On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
+                        <td>Cluster</td>
                         <td></td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
+                        <td>Security</td>
                         <td></td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
+                        <td>Indexing</td>
                         <td></td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td>Scheduler</td>
+                        <td>This module executes scheduled system tasks.</td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
-                        <td/>
+                        <td>On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
+                        <td>Serializer</td>
                         <td></td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
-                        <td/>
+                        <td>On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td>XSLT Transformer</td>
+                        <td> Default settings for the XSLT Transformer. Allow's for a choice of
+                            implementation.</td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
-                        <td/>
+                        <td>On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
+                        <td>XML Validation</td>
                         <td></td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
-                        <td/>
+                        <td>Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td></td>
