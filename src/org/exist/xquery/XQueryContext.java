@@ -3408,6 +3408,11 @@ public class XQueryContext
         return( ( debuggeeJoint != null ) && isVarDeclared( Debuggee.SESSION ) );
     }
 
+	public boolean requireDebugMode() 
+	{
+		return isVarDeclared( Debuggee.SESSION );
+	}
+    
     private class ContextUpdateListener implements UpdateListener
     {
         private List<UpdateListener> listeners = new ArrayList<UpdateListener>();
