@@ -91,7 +91,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>debugger</td>
@@ -103,7 +103,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>fluent</td>
@@ -115,7 +115,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Sharepoint</td>
@@ -127,7 +127,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>OpenID</td>
@@ -139,7 +139,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Versioning</td>
@@ -151,7 +151,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XQDoc</td>
@@ -163,7 +163,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XSLT</td>
@@ -178,7 +178,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Cache</td>
@@ -190,7 +190,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Compression</td>
@@ -202,7 +202,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Context</td>
@@ -214,7 +214,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Counter</td>
@@ -226,7 +226,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Datetime</td>
@@ -238,7 +238,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Example</td>
@@ -250,7 +250,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>File</td>
@@ -262,7 +262,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Http Client</td>
@@ -274,7 +274,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Image</td>
@@ -286,7 +286,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>JFreechart</td>
@@ -298,7 +298,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>JNDI</td>
@@ -310,7 +310,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Lib</td>
@@ -322,7 +322,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Mail</td>
@@ -334,7 +334,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Math</td>
@@ -346,7 +346,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Scheduler function module</td>
@@ -361,7 +361,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>SimpleQL</td>
@@ -373,7 +373,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>SQL</td>
@@ -385,7 +385,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Subversion</td>
@@ -397,7 +397,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XMLDiff</td>
@@ -409,7 +409,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XMPP</td>
@@ -421,7 +421,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XSL FO</td>
@@ -433,7 +433,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XML RPC</td>
@@ -445,7 +445,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>DatabaseAdminServlet</td>
@@ -474,7 +474,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XQueryServlet</td>
@@ -486,7 +486,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XQueryURLRewrite</td>
@@ -501,7 +501,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Axis/SOAP</td>
@@ -513,7 +513,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Atom</td>
@@ -525,7 +525,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Webstart (jnlp)</td>
@@ -537,7 +537,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Cluster</td>
@@ -585,7 +585,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Serializer</td>
@@ -597,7 +597,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XSLT Transformer</td>
@@ -610,7 +610,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>On</td>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XML Validation</td>
@@ -622,17 +622,22 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td>Off</td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
+                        <td>XProc</td>
                         <td></td>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
-                        <td/>
+                        <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td></td>
