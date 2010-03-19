@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension
- *  Copyright (C) 2006-09 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2006-10 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -23,10 +23,10 @@
 package org.exist.xquery.modules.sql;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
@@ -41,165 +41,285 @@ import org.exist.xquery.XQueryContext;
  * 
  * @author Adam Retter <adam@exist-db.org>
  * @author ljo
- * @serial 2008-05-19
- * @version 1.1
+ * @serial 2010-03-18
+ * @version 1.2
  * 
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
 
 public class SQLModule extends AbstractInternalModule {
 
-	protected final static Logger LOG = Logger.getLogger(SQLModule.class);
+    protected final static Logger LOG = Logger.getLogger(SQLModule.class);
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sql";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sql";
 
-	public final static String PREFIX = "sql";
+    public final static String PREFIX = "sql";
     public final static String INCLUSION_DATE = "2006-09-25";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
-	private final static FunctionDef[] functions = {
-			new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
-			new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
-			new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
-			new FunctionDef(GetJNDIConnectionFunction.signatures[0], GetJNDIConnectionFunction.class),
-			new FunctionDef(GetJNDIConnectionFunction.signatures[1], GetJNDIConnectionFunction.class),
-			new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
+    private final static FunctionDef[] functions = {
+        new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
+        new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
+        new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
+        new FunctionDef(GetJNDIConnectionFunction.signatures[0], GetJNDIConnectionFunction.class),
+        new FunctionDef(GetJNDIConnectionFunction.signatures[1], GetJNDIConnectionFunction.class),
+        new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
+        new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class),
+        new FunctionDef(PrepareFunction.signatures[0], PrepareFunction.class)
+    };
 
-	};
+    private static long currentUID = System.currentTimeMillis();
+    public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
+    public final static String PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
 
-	private static long currentConnectionUID = System.currentTimeMillis();
-	public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
+    public SQLModule() {
+        super(functions);
+    }
 
-	public SQLModule() {
-		super(functions);
-	}
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
 
-	public String getNamespaceURI() {
-		return NAMESPACE_URI;
-	}
+    @Override
+    public String getDefaultPrefix() {
+        return PREFIX;
+    }
 
-	public String getDefaultPrefix() {
-		return PREFIX;
-	}
+    @Override
+    public String getDescription() {
+        return "A module for performing SQL queries against Databases, returning XML representations of the result sets.";
+    }
 
-	public String getDescription() {
-		return "A module for performing SQL queries against Databases, returning XML representations of the result sets.";
-	}
-
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
 
-	/**
-	 * Retrieves a previously stored Connection from the Context of an XQuery
-	 * 
-	 * @param context
-	 *            The Context of the XQuery containing the Connection
-	 * @param connectionUID
-	 *            The UID of the Connection to retrieve from the Context of the
-	 *            XQuery
-	 */
-	public final static Connection retrieveConnection(XQueryContext context,
-			long connectionUID) {
-		// get the existing connections map from the context
-		HashMap connections = (HashMap) context
-				.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
-		if (connections == null) {
-			return null;
-		}
+    /**
+     * Retrieves a previously stored Connection from the Context of an XQuery
+     *
+     * @param context
+     *            The Context of the XQuery containing the Connection
+     * @param connectionUID
+     *            The UID of the Connection to retrieve from the Context of the
+     *            XQuery
+     */
+    public final static Connection retrieveConnection(XQueryContext context, long connectionUID)
+    {
+        return retrieveObjectFromContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, connectionUID);
+    }
 
-		// get the connection
-		return (Connection) connections.get(new Long(connectionUID));
-	}
+    /**
+     * Stores a Connection in the Context of an XQuery
+     *
+     * @param context
+     *            The Context of the XQuery to store the Connection in
+     * @param con
+     *            The connection to store
+     *
+     * @return A unique ID representing the connection
+     */
+    public final static synchronized long storeConnection(XQueryContext context, Connection con)
+    {
+        return storeObjectInContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, con);
+    }
 
-	/**
-	 * Stores a Connection in the Context of an XQuery
-	 * 
-	 * @param context
-	 *            The Context of the XQuery to store the Connection in
-	 * @param con
-	 *            The connection to store
-	 * 
-	 * @return A unique ID representing the connection
-	 */
-	public final static synchronized long storeConnection(
-			XQueryContext context, Connection con) {
-		// get the existing connections map from the context
-		HashMap connections = (HashMap) context
-				.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
-		if (connections == null) {
-			// if there is no connections map, create a new one
-			connections = new HashMap();
-		}
+    /**
+     * Retrieves a previously stored PreparedStatement from the Context of an XQuery
+     *
+     * @param context
+     *            The Context of the XQuery containing the PreparedStatement
+     * @param preparedStatementUID
+     *            The UID of the PreparedStatement to retrieve from the Context of the XQuery
+     */
+    public final static PreparedStatementWithSQL retrievePreparedStatement(XQueryContext context, long preparedStatementUID)
+    {
+        return retrieveObjectFromContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatementUID);
+    }
 
-		// get an id for the connection
-		long conID = getUID();
+    /**
+     * Stores a PreparedStatement in the Context of an XQuery
+     *
+     * @param context
+     *            The Context of the XQuery to store the PreparedStatement in
+     * @param preparedStatement
+     *            The PreparedStatement to store
+     *
+     * @return A unique ID representing the PreparedStatement
+     */
+    public final static synchronized long storePreparedStatement(XQueryContext context, PreparedStatementWithSQL stmt)
+    {
+        return storeObjectInContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, stmt);
+    }
 
-		// place the connection in the connections map
-		connections.put(new Long(conID), con);
+     /**
+     * Retrieves a previously stored Object from the Context of an XQuery
+     *
+     * @param context
+     *            The Context of the XQuery containing the Object
+     * @param objectUID
+     *            The UID of the Object to retrieve from the Context of the
+     *            XQuery
+     */
+    private final static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID)
+    {
+        // get the existing connections map from the context
+        HashMap<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+        if(map == null)
+        {
+            return null;
+        }
 
-		// store the updated connections map back in the context
-		context.setXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR,
-				connections);
+        // get the connection
+        return map.get(objectUID);
+    }
 
-		return conID;
-	}
+    /**
+     * Stores an Object in the Context of an XQuery
+     *
+     * @param context
+     *            The Context of the XQuery to store the Object in
+     *
+     * @param contextMapName
+     *          The name of the context map
+     * @param o
+     *            The Object to store
+     *
+     * @return A unique ID representing the Object
+     */
+    private final static synchronized <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o)
+    {
+        // get the existing map from the context
+        HashMap<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+        if(map == null)
+        {
+            // if there is no map, create a new one
+            map = new HashMap<Long, T>();
+        }
 
-	/**
-	 * Closes all the open DB connections for the specified XQueryContext
-	 * 
-	 * @param xqueryContext
-	 *            The context to close JDBC connections for
-	 */
-	private final static void closeAllConnections(XQueryContext xqueryContext) {
-		// get the existing connections map from the context
-		HashMap connections = (HashMap) xqueryContext
-				.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
-		if (connections != null) {
-			// iterate over each connection
-			Set keys = connections.keySet();
-			for (Iterator itKeys = keys.iterator(); itKeys.hasNext();) {
-				// get the connection
-				Long conID = (Long) itKeys.next();
-				Connection con = (Connection) connections.get(conID);
-				try {
-					// close the connection
-					con.close();
+        // get an id for the map
+        long uid = getUID();
 
-					// remove it from the connections map
-					connections.remove(conID);
-				} catch (SQLException se) {
-					LOG.debug("Unable to close JDBC connection", se);
-				}
-			}
+        // place the object in the map
+        map.put(uid, o);
 
-			// update the context
-			xqueryContext.setXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR,
-					connections);
-		}
-	}
+        // store the map back in the context
+        context.setXQueryContextVar(contextMapName, map);
 
-	/**
-	 * Returns a Unique ID based on the System Time
-	 * 
-	 * @return The Unique ID
-	 */
-	private static synchronized long getUID() {
-		return currentConnectionUID++;
-	}
+        return uid;
+    }
 
-	/**
-	 * Resets the Module Context and closes any DB connections for the
-	 * XQueryContext
-	 * 
-	 * @param xqueryContext
-	 *            The XQueryContext
-	 */
-	public void reset(XQueryContext xqueryContext) {
-		// reset the module context
-		super.reset(xqueryContext);
+    /**
+     * Closes all the open DB Connections for the specified XQueryContext
+     *
+     * @param xqueryContext
+     *            The context to close JDBC Connections for
+     */
+    private final static void closeAllConnections(XQueryContext xqueryContext)
+    {
+        // get the existing Connections map from the context
+        HashMap<Long, Connection> connections = (HashMap<Long, Connection>)xqueryContext.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
+        
+        if(connections != null)
+        {
+            // iterate over each Connection
+            for(Entry<Long, Connection> entry : connections.entrySet())
+            {
+                Long conID = entry.getKey();
+                Connection con = entry.getValue();
 
-		// close any open connections
-		closeAllConnections(xqueryContext);
-	}
+                try
+                {
+                    // close the Connection
+                    con.close();
+                }
+                catch(SQLException se)
+                {
+                    LOG.debug("Unable to close JDBC Connection", se);
+                }
+                finally
+                {
+                    // remove it from the Connections map
+                    connections.remove(conID);
+                    con = null;
+                }
+            }
+
+            // update the context
+            xqueryContext.setXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR, connections);
+        }
+    }
+
+    /**
+     * Closes all the open DB PreparedStatements for the specified XQueryContext
+     *
+     * @param xqueryContext
+     *            The context to close JDBC PreparedStatements for
+     */
+    private final static void closeAllPreparedStatements(XQueryContext xqueryContext)
+    {
+        // get the existing PreparedStatements map from the context
+        HashMap<Long, PreparedStatementWithSQL> preparedStatements = (HashMap<Long, PreparedStatementWithSQL>)xqueryContext.getXQueryContextVar(SQLModule.PREPARED_STATEMENTS_CONTEXTVAR);
+
+        if(preparedStatements != null)
+        {
+            // iterate over each PreparedStatement
+            for(Entry<Long, PreparedStatementWithSQL> entry : preparedStatements.entrySet())
+            {
+                Long conID = entry.getKey();
+                PreparedStatementWithSQL stmt = entry.getValue();
+
+                try
+                {
+                    // close the PreparedStatement
+                    stmt.getStmt().close();
+                }
+                catch(SQLException se)
+                {
+                    LOG.debug("Unable to close JDBC PreparedStatement", se);
+                }
+                finally
+                {
+                    // remove it from the connections map
+                    preparedStatements.remove(conID);
+                    stmt = null;
+                }
+            }
+
+            // update the context
+            xqueryContext.setXQueryContextVar(SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
+        }
+    }
+
+
+
+    /**
+     * Returns a Unique ID based on the System Time
+     *
+     * @return The Unique ID
+     */
+    private static synchronized long getUID() {
+        return currentUID++;
+    }
+
+    /**
+     * Resets the Module Context and closes any DB connections for the
+     * XQueryContext
+     *
+     * @param xqueryContext
+     *            The XQueryContext
+     */
+    @Override
+    public void reset(XQueryContext xqueryContext)
+    {
+        // reset the module context
+        super.reset(xqueryContext);
+
+        // close any open PreparedStatements
+        closeAllPreparedStatements(xqueryContext);
+
+        // close any open Connections
+        closeAllConnections(xqueryContext);
+    }
 }

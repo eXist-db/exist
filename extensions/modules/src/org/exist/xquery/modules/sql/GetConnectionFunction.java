@@ -1,6 +1,6 @@
 /*
  *  eXist SQL Module Extension GetConnectionFunction
- *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
+ *  Copyright (C) 2008-10 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -149,7 +149,7 @@ public class GetConnectionFunction extends BasicFunction {
 				con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
 			}
 
-			// store the connection and return the uid handle of the connection
+			// store the Connection and return the uid handle of the Connection
 			return new IntegerValue(SQLModule.storeConnection(context, con));
 		} catch (IllegalAccessException iae) {
 			logger.error(
