@@ -17,17 +17,31 @@
             <firstname>Alex</firstname>
             <email>alexmilowski@users.sourceforge.net</email>
         </author>
+        <revhistory>
+            <revision>
+                <revnumber>2</revnumber>
+                <date>March 2010</date>
+                <author>
+                    <personname>
+                        <firstname>Loren</firstname>
+                        <surname>Cahlander</surname>
+                    </personname>
+                    <email>loren@syntactica.com</email>
+                </author>
+                <revremark>Changing to identify various features of eXist and how to turn on, turn off and configure the feature.</revremark>
+            </revision>
+        </revhistory>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Server Configuration</title>
+        <title>Application Server Configuration</title>
         <section>
             <title>Overview</title>
-            <para>This section deals with the configuration of the eXist server. The main
-                configuration file for <application>eXist</application> is called <filename
-                    >conf.xml</filename>, which is loaded from different directories depending on
-                the server set-up (see <ulink url="deployment.xml">Server Deployment</ulink> for
-                more information).</para>
+            <para>This section deals with the configuration of the eXist Application Server. The
+                main configuration file for <application>eXist</application> is called
+                    <filename>conf.xml</filename>, which is loaded from different directories
+                depending on the server set-up (see <ulink url="deployment.xml">Server
+                    Deployment</ulink> for more information).</para>
             <para>Specifically, if you installed the standalone eXist distribution with the
                 installer, the <filename>conf.xml</filename> file located in the root directory of
                 the distribution (as specified by the system property <option>exist.home</option>)
@@ -41,6 +55,727 @@
                 in this way, the configuration is read from the <filename>WEB-INF</filename>
                 directory.</para>
         </section>
+        <section>
+            <title>Services</title>
+            <informaltable>
+                <thead>
+                    <tr bgcolor="#0990EE" valign="top">
+                        <th>Service</th>
+                        <th>Description</th>
+                        <th>Resources</th>
+                        <th>Initial State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Cocoon</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>extensions/build.properties</listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/cocoon.xconf</para>
+                                </listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/logkit.xconf</para>
+                                </listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/instrumentation.xconf</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>debugger</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>fluent</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Sharepoint</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>OpenID</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Versioning</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>XQDoc</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>XSLT</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Cache</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Compression</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Context</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Counter</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Datetime</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Example</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>File</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Http Client</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Image</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>JFreechart</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>JNDI</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Lib</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Mail</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Math</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Scheduler</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>SimpleQL</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>SQL</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Subversion</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>XMLDiff</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>XMPP</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>XSL FO</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>XML RPC</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>DatabaseAdminServlet</td>
+                        <td>this servlet can be used to ensure that eXist is running in the
+                            background. Just set the start-parameter to true and load-on-startup to
+                            1 </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>webDAV</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>XQueryServlet</td>
+                        <td>generates HTML from an XQuery file</td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>XQueryURLRewrite</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                                <listitem>
+                                    <para>webapp/WEB-INF/controller-config.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Axis/SOAP</td>
+                        <td>Axis provides eXist's web-services via SOAP</td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>Atom</td>
+                        <td>Atom Publishing Protocol</td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Webstart (jnlp)</td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <itemizedlist>
+                                <listitem></listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                </tbody>
+            </informaltable>
+        </section>
+        
         <section>
             <title>eXist Configuration: Editing conf.xml</title>
             <para>The configuration file <filename moreinfo="none">conf.xml</filename> can be
