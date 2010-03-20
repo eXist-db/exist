@@ -166,7 +166,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                 path = (PathExpr) parent;
                 parent = path.getParent();
                 if (!(parent instanceof Predicate) || path.getLength() > 1) {
-                    LOG.warn("Boolean operator is not a top-level expression in the predicate: " + parent.getClass().getName());
+                    LOG.debug("Boolean operator is not a top-level expression in the predicate: " + parent.getClass().getName());
                     return;
                 }
                 predicate = (Predicate) parent;
