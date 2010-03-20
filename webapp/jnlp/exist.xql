@@ -15,10 +15,10 @@ declare variable $jnlp {
           user management, batch-loading XML data or querying.</description>
         <description kind="short">eXist XML-DB client</description>
         <description kind="tooltip">eXist XML-DB client</description>
-        <icon href="jnlp_logo.jpg" kind="splash"/>
-        <icon href="jnlp_logo.jpg"/>
-        <icon href="jnlp_icon_64x64.gif" width="64" height="64"/>
-        <icon href="jnlp_icon_32x32.gif" width="32" height="32"/>
+        <icon href="/resources/jnlp_logo.jpg" kind="splash"/>
+        <icon href="/resources/jnlp_logo.jpg"/>
+        <icon href="/resources/jnlp_icon_64x64.gif" width="64" height="64"/>
+        <icon href="/resources/jnlp_icon_32x32.gif" width="32" height="32"/>
       </information>
       <security>
         <all-permissions/>
