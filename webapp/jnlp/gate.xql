@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace jnlp    = "http://exist-db.org/xquery/hnlp" at "jnlp.xqm";
+import module namespace jnlp    = "http://exist-db.org/xquery/jnlp" at "jnlp.xqm";
 import module namespace request = "http://exist-db.org/xquery/request";
 
 declare variable $jnlp {

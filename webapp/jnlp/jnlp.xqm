@@ -1,4 +1,4 @@
-module namespace webstart = "http://exist-db.org/xquery/webstart";
+module namespace jnlp = "http://exist-db.org/xquery/jnlp";
 
 import module namespace lib    = "http://exist-db.org/xquery/lib";
 import module namespace request = "http://exist-db.org/xquery/request";
