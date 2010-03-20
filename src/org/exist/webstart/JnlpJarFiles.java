@@ -40,9 +40,6 @@ public class JnlpJarFiles {
     
     private static Logger logger = Logger.getLogger(JnlpJarFiles.class);
     
-//    // Holders for jar files
-//    private File[] _coreJars;
-//    private File _mainJar;
     private Map<String, File> allFiles = new HashMap<String, File>();
     
     // Names of core jar files sans ".jar" extension.
