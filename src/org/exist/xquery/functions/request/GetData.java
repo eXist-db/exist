@@ -97,17 +97,17 @@ public class GetData extends BasicFunction {
 		
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
-		
 		if(value.getObject() instanceof RequestWrapper)
 		{
 			RequestWrapper request = (RequestWrapper)value.getObject();	
 			
-			//if the content length is unknown, return
-			if(request.getContentLength() == -1)
+			//if the content length is unknown or 0, return
+			if (request.getContentLength() == -1 
+			 || request.getContentLength() == 0)
 			{
 				return Sequence.EMPTY_SEQUENCE;
 			}
-			
+
 			//first, get the content of the request
 			byte[] bufRequestData = null;
 			try
@@ -160,8 +160,8 @@ public class GetData extends BasicFunction {
 					InputSource src = new InputSource(new ByteArrayInputStream(bufRequestData));
 					SAXParser parser = factory.newSAXParser();
 					XMLReader reader = parser.getXMLReader();
-                    MemTreeBuilder builder = context.getDocumentBuilder();
-                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+					MemTreeBuilder builder = context.getDocumentBuilder();
+					DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
 					reader.setContentHandler(receiver);
 					reader.parse(src);
 					Document doc = receiver.getDocument();
@@ -181,8 +181,8 @@ public class GetData extends BasicFunction {
 				}
 				finally
 				{
-                    context.popDocumentContext();
-                }
+					context.popDocumentContext();
+				}
 				
 				//not a valid XML document, return a string representation of the document
 				String encoding = request.getCharacterEncoding();
