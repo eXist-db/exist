@@ -16,41 +16,39 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 /**
- *
+ * 
  * @author R. Alexander Milowski
  */
 public class HttpResponseMessage implements OutgoingMessage {
 
-   HttpServletResponse response;
-   /** Creates a new instance of HttpRequestMIMEMessage */
-   public HttpResponseMessage(HttpServletResponse response) {
-      this.response = response;
-   }
-   public void setStatusCode(int code) {
-      response.setStatus(code);
-   }
-   
-   public void setContentType(String value) {
-      response.setContentType(value);
-   }
-   
-   public void setHeader(String key,String value) {
-      response.setHeader(key,value);
-   }
-   
-   public OutputStream getOutputStream() 
-      throws IOException
-   {
-      return response.getOutputStream();
-   }
-   public Writer getWriter() 
-      throws IOException
-   {
-      return response.getWriter();
-   }
-   
-   public HttpServletResponse getResponse()
-   {
-	   return response;
-   }
+	HttpServletResponse response;
+
+	/** Creates a new instance of HttpRequestMIMEMessage */
+	public HttpResponseMessage(HttpServletResponse response) {
+		this.response = response;
+	}
+
+	public void setStatusCode(int code) {
+		response.setStatus(code);
+	}
+
+	public void setContentType(String value) {
+		response.setContentType(value);
+	}
+
+	public void setHeader(String key, String value) {
+		response.setHeader(key, value);
+	}
+
+	public OutputStream getOutputStream() throws IOException {
+		return response.getOutputStream();
+	}
+
+	public Writer getWriter() throws IOException {
+		return response.getWriter();
+	}
+
+	public HttpServletResponse getResponse() {
+		return response;
+	}
 }

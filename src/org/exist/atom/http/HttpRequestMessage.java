@@ -16,57 +16,56 @@ import java.io.InputStream;
 import java.io.Reader;
 
 /**
- *
+ * 
  * @author R. Alexander Milowski
  */
 public class HttpRequestMessage implements IncomingMessage {
 
-   String path;
-   String base;
-   HttpServletRequest request;
-   /** Creates a new instance of HttpRequestMIMEMessage */
-   public HttpRequestMessage(HttpServletRequest request,String path,String base) {
-      this.request = request;
-      this.path = path;
-      this.base = base;
-   }
-   
-   public String getMethod() {
-      return request.getMethod();
-   }
-   public String getPath() {
-      return path;
-   }
-   public String getParameter(String name) {
-      return request.getParameter(name);
-   }
-   
-   public String getHeader(String key) {
-      return request.getHeader(key);
-   }
+	String path;
+	String base;
+	HttpServletRequest request;
 
-   public int getContentLength() {
-      return request.getContentLength();
-   }
-   
-   public InputStream getInputStream() 
-      throws IOException
-   {
-      return request.getInputStream();
-   }   
+	/** Creates a new instance of HttpRequestMIMEMessage */
+	public HttpRequestMessage(HttpServletRequest request, String path,
+			String base) {
+		this.request = request;
+		this.path = path;
+		this.base = base;
+	}
 
-   public Reader getReader() 
-      throws IOException
-   {
-      return request.getReader();
-   }
-   
-   public String getModuleBase() {
-      return base;
-   }
-   
-   public HttpServletRequest getRequest()
-   {
-	   return request;
-   }
+	public String getMethod() {
+		return request.getMethod();
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public String getParameter(String name) {
+		return request.getParameter(name);
+	}
+
+	public String getHeader(String key) {
+		return request.getHeader(key);
+	}
+
+	public int getContentLength() {
+		return request.getContentLength();
+	}
+
+	public InputStream getInputStream() throws IOException {
+		return request.getInputStream();
+	}
+
+	public Reader getReader() throws IOException {
+		return request.getReader();
+	}
+
+	public String getModuleBase() {
+		return base;
+	}
+
+	public HttpServletRequest getRequest() {
+		return request;
+	}
 }
