@@ -14,7 +14,7 @@ declare function local:filter-jar($jar){
                      else ()
 };
 
-declare function webstart:jnlp($jnlp){
+declare function jnlp:prepare($jnlp){
 
     let $jnlp := element jnlp {
                     $jnlp/@*,

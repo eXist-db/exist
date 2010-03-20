@@ -1,7 +1,7 @@
 xquery version "1.0";
 
-import module namespace webstart = "http://exist-db.org/xquery/webstart" at "webstart.xqm";
-import module namespace request  = "http://exist-db.org/xquery/request";
+import module namespace jnlp    = "http://exist-db.org/xquery/hnlp" at "jnlp.xqm";
+import module namespace request = "http://exist-db.org/xquery/request";
 
 declare variable $jnlp {
 
@@ -34,5 +34,5 @@ declare variable $jnlp {
 
 };
 
-webstart:jnlp($jnlp)
+jnlp:prepare($jnlp)
 
