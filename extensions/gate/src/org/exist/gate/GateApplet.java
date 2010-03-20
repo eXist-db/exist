@@ -62,11 +62,11 @@ public class GateApplet extends Applet {
         // Detect OS open file command 
         String os = System.getProperty("os.name").toLowerCase();
         if ( os.indexOf("windows") != -1 || os.indexOf("nt") != -1){
-            opencmd = "cmd /c start";
+            opencmd = "cmd /c \"start %s\"";
         } else if ( os.indexOf("mac") != -1 ) {
-            opencmd = "open";
+            opencmd = "open %s";
         } else {
-        	opencmd = "xdg-open";
+        	opencmd = "xdg-open %s";
         }
         
 		Timer timer = new Timer();
@@ -82,7 +82,7 @@ public class GateApplet extends Applet {
 	}
 	
 	public void open(File file) throws IOException{
-    	String cmd = String.format(opencmd + " '%s'", file.getAbsolutePath());
+    	String cmd = String.format(opencmd, file.toURI().toURL());
     	Runtime.getRuntime().exec(cmd);
     }
 	
