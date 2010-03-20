@@ -38,7 +38,7 @@ declare variable $jnlp {
         <jar href="sunxacml-%latest%.jar"/>
       </resources>
       <application-desc main-class="org.exist.client.InteractiveClient">
-        <argument>{substring-before(request:get-url(), "/webstart")}/xmlrpc</argument>
+        <argument>{substring-before(request:get-url(), "/jnlp")}/xmlrpc</argument>
         <argument>--no-embedded-mode</argument>
       </application-desc>
     </jnlp>
