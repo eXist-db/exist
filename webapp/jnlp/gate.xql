@@ -13,10 +13,10 @@ declare variable $jnlp {
         <description>Java applet for automate document managment via REST.</description>
         <description kind="short">eXist Gate client</description>
         <description kind="tooltip">eXist Gate client</description>
-        <icon href="jnlp_logo.jpg" kind="splash"/>
-        <icon href="jnlp_logo.jpg"/>
-        <icon href="jnlp_icon_64x64.gif" width="64" height="64"/>
-        <icon href="jnlp_icon_32x32.gif" width="32" height="32"/>
+        <icon href="/resources/jnlp_logo.jpg" kind="splash"/>
+        <icon href="/resources/jnlp_logo.jpg"/>
+        <icon href="/resources/jnlp_icon_64x64.gif" width="64" height="64"/>
+        <icon href="/resources/jnlp_icon_32x32.gif" width="32" height="32"/>
       </information>
       <security>
         <all-permissions/>
