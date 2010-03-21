@@ -23,28 +23,18 @@ package org.exist.gate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.util.Properties;
 import java.util.Timer;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.GetMethod;
 
-public class Task implements Serializable{
-
-	private static final long serialVersionUID = 2712574630003981814L;
+public class Task{
 
 	private GateApplet gate;
 	
 	private String downloadFrom;
-	protected String uploadTo;
-	
-	protected String path;
-	
-	protected Long modified;
+	private String uploadTo;
+	private File tmp;
 	
 	public Task(String downloadFrom, String uploadTo, GateApplet gate){
 		this.downloadFrom = downloadFrom;
@@ -52,57 +42,53 @@ public class Task implements Serializable{
 		this.gate = gate;
 	}
 
+	public Task(String downloadFrom, String uploadTo, File tmp, GateApplet gate){
+		this.downloadFrom = downloadFrom;
+		this.uploadTo = uploadTo;
+		this.gate = gate;
+		this.tmp = tmp;
+	}
+
 	public void execute(){
-		
-		GetMethod get = new GetMethod(downloadFrom); 
-		
 		try {
-			
-			HttpClient http = gate.getHttp();
-			
-			http.executeMethod(get);
-			
-			long contentLength = ((HttpMethodBase) get).getResponseContentLength();
-			
-	        if (contentLength < Integer.MAX_VALUE) {
-	        	
-	        	InputStream is = get.getResponseBodyAsStream();
-	        	
-	    		File tmp = gate.createFile(new File(downloadFrom).getName());
-	    		OutputStream os = new FileOutputStream(tmp);
-	    		path = tmp.getAbsolutePath();
-	    		modified = tmp.lastModified();
-	    		
-	    		byte[] data = new byte[1024];
-	    		int read = 0;
-	    		
-	    		while((read = is.read(data)) > -1) {
-	    			os.write(data, 0, read);
-	    		}
-	    		
-	    		os.flush();
-	    		is.close();
-	    		os.close();
-	    		
-	    		Listener listener = new Listener(tmp, uploadTo, gate);
-	    		
-	    		Timer timer = new Timer();
-	    		timer.schedule(listener, GateApplet.PERIOD, GateApplet.PERIOD);
-	    		
-	    		gate.open(tmp);
-	    		
-	        }
-	        
+    		tmp = gate.download(downloadFrom);
+    		store();
+    		Listener listener = new Listener(this, gate);
+    		Timer timer = new Timer();
+    		timer.schedule(listener, GateApplet.PERIOD, GateApplet.PERIOD);
+    		gate.open(tmp);
         } catch (HttpException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			get.releaseConnection();
 		}
-		
-		 
-		
 	}
+	
+	public String getDownloadFrom(){
+		return downloadFrom;
+	}
+	public String getUploadTo(){
+		return uploadTo;
+	}
+	public File getFile(){
+		return tmp;
+	}
+	
+	public void store() throws IOException{
+		Properties prop = new Properties();
+		prop.put("download-from", downloadFrom);
+		prop.put("upload-to", uploadTo);
+		prop.put("file", tmp.getName());
+		prop.put("modified", new Long(tmp.lastModified()).toString());
+		File meta = new File(gate.getMeta(), tmp.getName() + ".xml");
+		if (!meta.exists()){
+			meta.createNewFile();
+		}
+		FileOutputStream os = new FileOutputStream(meta);
+		prop.storeToXML(os, "Gate task description");
+		os.close();
+	}
+	
+
 	
 }
