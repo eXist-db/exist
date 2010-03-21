@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2008 The eXist Project
+ * Copyright (C) 2001-2010 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -29,10 +29,10 @@ import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
 import org.exist.http.SOAPServer;
+import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -613,18 +613,12 @@ public class EXistServlet extends HttpServlet {
 			String username = ((XmldbPrincipal)principal).getName();
 			String password = ((XmldbPrincipal)principal).getPassword();
 			
-			LOG.info("Validating Principle: " + principal.getName());
-			UserImpl user = pool.getSecurityManager().getUser(username);
-			
-			if (user != null){
-				if (password.equalsIgnoreCase(user.getPassword())){
-					LOG.info("Valid User: " + user.getName());
-					return user;
-				}else{
-					LOG.info( "Password invalid for user: " + username );
-				}
-				LOG.info("User not found: " + principal.getName());
-			}	
+			LOG.info("Validating Principle: " + username);
+			try {
+				return pool.getSecurityManager().authenticate(username, password);
+			} catch (AuthenticationException e) {
+				LOG.info(e.getMessage());
+			}
 		}
 		
         if (principal instanceof User)
@@ -657,12 +651,11 @@ public class EXistServlet extends HttpServlet {
 	
 	private User getDefaultUser() {
 		if (defaultUsername != null) {
-			UserImpl user = pool.getSecurityManager().getUser(defaultUsername);
-			if (user != null) {
-				if (!user.validate(defaultPassword))
-					return null;
+			try {
+				return pool.getSecurityManager().authenticate(defaultUsername, defaultPassword);
+			} catch (AuthenticationException e) {
+				return null;
 			}
-			return user;
 		}
 		return null;
 	}
