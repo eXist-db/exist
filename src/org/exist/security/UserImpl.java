@@ -48,8 +48,6 @@ import java.util.Set;
 public class UserImpl implements User {
 
 	private final static Logger LOG = Logger.getLogger(UserImpl.class);
-	@Deprecated
-	public final static User DEFAULT = new UserImpl("guest", null, "guest");
 
 	private final static String GROUP = "group";
 	private final static String NAME = "name";
@@ -475,6 +473,7 @@ public class UserImpl implements User {
 	 * @return true if the password was correct, false if not, or if there was a
 	 *         problem.
 	 */
+	@Deprecated //use SecurityManager.authenticate
 	public final boolean validate(String passwd) {
 		SecurityManager sm;
 		try {
@@ -486,6 +485,7 @@ public class UserImpl implements User {
 		}
 	}
 
+	@Deprecated //use SecurityManager.authenticate
 	public final boolean validate(String passwd, SecurityManager sm) {
 		// security management is disabled if in repair mode
 		if (!CHECK_PASSWORDS)
@@ -524,6 +524,7 @@ public class UserImpl implements User {
 		return false;
 	}
 
+	@Deprecated //use SecurityManager.authenticate
 	public final boolean validateDigest(String passwd) {
 		if (digestPassword == null)
 			return true;
