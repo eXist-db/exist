@@ -28,11 +28,16 @@ import org.apache.commons.httpclient.HttpException;
 
 public class Listener extends TimerTask{
 	
-	private long lastModified;
-	private Task task;
-	private File file;
-	private GateApplet gate;
+	private long lastModified;	// time of last file change
+	private Task task;			// listened task 
+	private File file;			// listened file
+	private GateApplet gate;	
 	
+	/**
+	 * Create a listener for task
+	 * @param task listened task
+	 * @param gate GateApplet
+	 */
 	public Listener(Task task, GateApplet gate){
 		this.gate = gate;
 		this.task = task;
@@ -40,6 +45,12 @@ public class Listener extends TimerTask{
 		this.lastModified = file.lastModified();
 	}
 	
+	/**
+	 * Create a listener for task, used for task loaded from FS
+	 * @param task listened task
+	 * @param gate GateApplet
+	 * @param lastModified time of last task modification, stored in XML description of task 
+	 */
 	public Listener(Task task, GateApplet gate, long lastModified){
 		this.gate = gate;
 		this.task = task;
@@ -51,6 +62,10 @@ public class Listener extends TimerTask{
 		return file.lastModified() > this.lastModified;
 	}
 	
+	/**
+	 * Listen task's file changes, upload file to server 
+	 * and store task description on local FS   
+	 */
 	public void run() {
 		if (isModified()){
 			this.lastModified = file.lastModified();
