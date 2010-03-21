@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:
+ *  $Id$
  */
 package org.exist.xmldb;
 
@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.EXistException;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -214,8 +214,8 @@ public class DatabaseImpl implements Database {
     mode = REMOTE_CONNECTION;
     if (user == null) {
             //TODO : read this from configuration
-      user = "guest";
-      password = "guest";
+      user = SecurityManager.GUEST_USER;
+      password = SecurityManager.GUEST_USER;
     }
         if(password == null)
             password = "";
@@ -260,18 +260,15 @@ public class DatabaseImpl implements Database {
    */
   private User getUser(String user, String password, BrokerPool pool) throws XMLDBException {
     if (user == null) {
-      user = "guest";
-      password = "guest";
+      user = SecurityManager.GUEST_USER;
+      password = SecurityManager.GUEST_USER;
     }
     SecurityManager securityManager = pool.getSecurityManager();
-    UserImpl u = securityManager.getUser(user);
-    if (u == null) {
-      throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "User '" + user + "' does not exist");
-    }
-    if (!u.validate(password, securityManager)) {
-      throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Invalid password for user '" + user + "'");
-    }
-    return u;
+    try {
+        return securityManager.authenticate(user, password);
+	} catch (AuthenticationException e) {
+		throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
+	}
   }
 
   /**
