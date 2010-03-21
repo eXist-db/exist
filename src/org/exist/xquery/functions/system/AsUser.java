@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,8 +23,9 @@ package org.exist.xquery.functions.system;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.security.AuthenticationException;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
@@ -60,37 +61,38 @@ public class AsUser extends Function {
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	logger.info("Entering the " + SystemModule.PREFIX + ":as-user XQuery function");
-        Sequence userSeq = getArgument(0).eval(contextSequence, contextItem);
-        Sequence passwdSeq = getArgument(1).eval(contextSequence, contextItem);
-        if (userSeq.isEmpty()) {
+
+		DBBroker broker = context.getBroker();
+
+		Sequence usernameResult = getArgument(0).eval(contextSequence, contextItem);
+        if (usernameResult.isEmpty()) {
         	XPathException exception = new XPathException(this, "No user specified");
         	logger.error("No user specified, throwing an exception!", exception);
             throw exception;
         }
-        String userName = userSeq.getStringValue();
-        String passwd = passwdSeq.getStringValue();
-        org.exist.security.SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
-        UserImpl user = security.getUser(userName);
-		if (user == null) {
-	        XPathException exception = new XPathException(this, "Authentication failed");
-        	logger.error("Authentication failed for setting the user to [" + userName + "] because user does not exist, throwing an exception!", exception);
+        Sequence password = getArgument(1).eval(contextSequence, contextItem);
+
+        String username = usernameResult.getStringValue();
+        
+        org.exist.security.SecurityManager security = broker.getBrokerPool().getSecurityManager();
+        User user;
+        try {
+            user = security.authenticate(username, password.getStringValue());
+		} catch (AuthenticationException e) {
+	        XPathException exception = new XPathException(this, "Authentication failed", e);
+        	logger.error("Authentication failed for setting the user to [" + username + "] because of ["+e.getMessage()+"], throwing an exception!", exception);
             throw exception;
-        }
-        if (passwd.equals(user.getDigestPassword()) || user.validate(passwd)) {
-            User oldUser = context.getBroker().getUser();
-            try {
-                logger.info("Setting the authenticated user to: [" + userName + "]");
-                context.getBroker().setUser(user);
-                return getArgument(2).eval(contextSequence, contextItem);
-            } finally {
-                logger.info("Returning the user to the original user: [" + oldUser.getName() + "]");
-                context.getBroker().setUser(oldUser);
-            }
-        } else {
-	        XPathException exception = new XPathException(this, "Authentication failed");
-        	logger.error("Authentication failed for setting the user to [" + userName + "] because of bad password, throwing an exception!", exception);
-            throw exception;
-        }
+		}
+
+		User oldUser = broker.getUser();
+		try {
+			logger.info("Setting the authenticated user to: [" + username + "]");
+			broker.setUser(user);
+			return getArgument(2).eval(contextSequence, contextItem);
+		} finally {
+        	logger.info("Returning the user to the original user: [" + oldUser.getName() + "]");
+        	broker.setUser(oldUser);
+		}
     }
 
     /* (non-Javadoc)
