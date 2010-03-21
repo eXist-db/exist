@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Id$
+ *  $Id$
  */
 package org.exist.security;
 
@@ -257,7 +257,7 @@ public class UserImpl implements User {
 	public final void remGroup(String group) {
 		if (groups == null) {
 			groups = new String[1];
-			groups[0] = "guest";
+			groups[0] = SecurityManager.GUEST_GROUP;
 		} else {
 			int len = groups.length;
 
@@ -281,7 +281,7 @@ public class UserImpl implements User {
 				}
 			}
 			if (found == true && len == 1)
-				rgroup[0] = "guest";
+				rgroup[0] = SecurityManager.GUEST_GROUP;
 			groups = rgroup;
 		}
 		if (SecurityManager.DBA_GROUP.equals(group))
@@ -402,8 +402,8 @@ public class UserImpl implements User {
 	 * @deprecated
 	 */
 	public final void setPasswordDigest(String passwd) {
-		this.digestPassword = (passwd == null) ? null : passwd;
 		setPassword(passwd);
+		this.digestPassword = (passwd == null) ? null : passwd;
 	}
 
 	/**
@@ -414,8 +414,8 @@ public class UserImpl implements User {
 	 * @deprecated
 	 */
 	public final void setEncodedPassword(String passwd) {
-		this.password = (passwd == null) ? null : passwd;
 		setPassword(passwd);
+		this.password = (passwd == null) ? null : passwd;
 	}
 
 	public final String digest(String passwd) {
