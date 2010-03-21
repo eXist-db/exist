@@ -38,89 +38,100 @@ import org.exist.xquery.XQueryContext;
  * @author wolf
  */
 public class BasicAuthenticator implements Authenticator {
-	
-   protected final static Logger LOG = Logger.getLogger(BasicAuthenticator.class);
-   
+
+	protected final static Logger LOG = Logger
+			.getLogger(BasicAuthenticator.class);
+
 	private BrokerPool pool;
-	
+
 	public BasicAuthenticator(BrokerPool pool) {
 		this.pool = pool;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http
+	 * .HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public UserImpl authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException
-	{
+	public UserImpl authenticate(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
 		String credentials = request.getHeader("Authorization");
-                String username = null;
-                String password = null;
-                if (credentials!=null) {
-                   Base64Decoder dec = new Base64Decoder();
-                   dec.translate(credentials.substring("Basic ".length()));
-                   byte[] c = dec.getByteArray();
-                   String s = new String(c);
-                   //LOG.debug("BASIC auth credentials: "+s);
-                   int p = s.indexOf(':');
-                   username = p<0 ? s : s.substring(0, p);
-                   password = p<0 ? null : s.substring(p + 1);
-                }
-                
-		//get the user from the session if possible
-		HttpSession session = request.getSession( false );
+		String username = null;
+		String password = null;
+		if (credentials != null) {
+			Base64Decoder dec = new Base64Decoder();
+			dec.translate(credentials.substring("Basic ".length()));
+			byte[] c = dec.getByteArray();
+			String s = new String(c);
+			// LOG.debug("BASIC auth credentials: "+s);
+			int p = s.indexOf(':');
+			username = p < 0 ? s : s.substring(0, p);
+			password = p < 0 ? null : s.substring(p + 1);
+		}
+
+		// get the user from the session if possible
+		HttpSession session = request.getSession(false);
 		UserImpl user = null;
-		if(session != null)
-		{
-			user = (UserImpl)session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-			if (user != null && (username==null || user.getName().equals(username))) {
+		if (session != null) {
+			user = (UserImpl) session
+					.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+			if (user != null
+					&& (username == null || user.getName().equals(username))) {
 				return user;
 			}
 		}
-                
-                if (user!=null) {
-                   session.removeAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-                   
-                }
 
-		//get the credentials
-		if(credentials == null) {
-			//prompt for credentials
-			
-			//LOG.debug("Sending BASIC auth challenge.");
+		if (user != null) {
+			session.removeAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+
+		}
+
+		// get the credentials
+		if (credentials == null) {
+			// prompt for credentials
+
+			// LOG.debug("Sending BASIC auth challenge.");
 			sendChallenge(request, response);
 			return null;
 		}
-		
-		//authenticate the credentials
+
+		// authenticate the credentials
 		SecurityManager secman = pool.getSecurityManager();
 		user = secman.getUser(username);
-		if(user == null) {
-			//If user does not exist then send a challenge request again
+		if (user == null) {
+			// If user does not exist then send a challenge request again
 			sendChallenge(request, response);
 			return null;
 		}
 		if (!user.validate(password)) {
-			//If password is incorrect then send a challenge request again
+			// If password is incorrect then send a challenge request again
 			sendChallenge(request, response);
 			return null;
 		}
-		
-		//store the user in the session
-		if(session != null)
-		{
-			session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
+
+		// store the user in the session
+		if (session != null) {
+			session
+					.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER,
+							user);
 		}
-		
-		//return the authenticated user
+
+		// return the authenticated user
 		return user;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.http.servlets.Authenticator#sendChallenge(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.exist.http.servlets.Authenticator#sendChallenge(javax.servlet.http
+	 * .HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	public void sendChallenge(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
-	    response.setHeader("WWW-Authenticate", "Basic realm=\"exist\"");
+		response.setHeader("WWW-Authenticate", "Basic realm=\"exist\"");
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	}
 }
