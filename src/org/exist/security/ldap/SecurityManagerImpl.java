@@ -36,6 +36,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.security.Realm;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -531,13 +532,21 @@ public class SecurityManagerImpl implements SecurityManager
 
    @Override
    public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException {
-	   // TODO Auto-generated method stub
-	   return null;
+		User user = getUser(username);
+		if (user != null) {
+			User newUser = new UserImpl(realm, (UserImpl)user, credentials);
+			if (newUser.isAuthenticated())
+				return newUser;
+
+			throw new AuthenticationException("Wrong password for user [" + username + "] ");
+		}
+		throw new AuthenticationException("User [" + username + "] not found");
    }
 
+   Realm realm = new RealmImpl();
+   
    @Override
    public User authenticate(String username, Object credentials) throws AuthenticationException {
-	   // TODO Auto-generated method stub
-	   return null;
+	   return authenticate(realm, username, credentials);
    }
 }
