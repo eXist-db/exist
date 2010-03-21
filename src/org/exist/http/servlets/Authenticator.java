@@ -21,12 +21,13 @@
  *  $Id$
  */
 package org.exist.http.servlets;
+
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 
 /**
  * Interface for HTTP authentication methods.
@@ -43,7 +44,7 @@ public interface Authenticator {
      * @return The authenticated user or null if the user isn't autenticated
      * @throws IOException
      */
-	public UserImpl authenticate(HttpServletRequest request, HttpServletResponse response)
+	public User authenticate(HttpServletRequest request, HttpServletResponse response)
 	throws IOException;
 	
 	/**
