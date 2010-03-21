@@ -21,28 +21,30 @@
 package org.exist.gate;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.TimerTask;
 
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.HttpException;
 
 public class Listener extends TimerTask{
 	
 	private long lastModified;
-	private String uploadTo;
+	private Task task;
 	private File file;
 	private GateApplet gate;
 	
-	public Listener(File file, String uploadTo, GateApplet gate){
+	public Listener(Task task, GateApplet gate){
 		this.gate = gate;
-		this.file = file;
-		this.uploadTo = uploadTo;
+		this.task = task;
+		this.file = task.getFile();
 		this.lastModified = file.lastModified();
+	}
+	
+	public Listener(Task task, GateApplet gate, long lastModified){
+		this.gate = gate;
+		this.task = task;
+		this.file = task.getFile();
+		this.lastModified = lastModified;
 	}
 	
 	private boolean isModified(){
@@ -50,31 +52,17 @@ public class Listener extends TimerTask{
 	}
 	
 	public void run() {
-		
 		if (isModified()){
-			
 			this.lastModified = file.lastModified();
-			
-			PutMethod put = new PutMethod(uploadTo);
-			
 			try {
-				
-				InputStream is = new FileInputStream(file);
-				RequestEntity entity = new InputStreamRequestEntity(is);
-				put.setRequestEntity(entity);
-				gate.getHttp().executeMethod(put);
-				is.close();
-				
-			} catch (FileNotFoundException e) {
+				gate.upload(file, task.getUploadTo());
+				task.store();
+			} catch (HttpException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			} finally {
-				put.releaseConnection();
 			}
-			
 		}
-		
 	}
 	
 }
