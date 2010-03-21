@@ -54,9 +54,10 @@ import org.exist.http.NotFoundException;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.http.webdav.WebDAV;
+import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -91,9 +92,9 @@ public class AtomServlet extends HttpServlet {
 	 */
 	static class UserXmldbPrincipal implements XmldbPrincipal {
 		int authMethod;
-		UserImpl user;
+		User user;
 
-		UserXmldbPrincipal(int authMethod, UserImpl user) {
+		UserXmldbPrincipal(int authMethod, User user) {
 			this.authMethod = authMethod;
 			this.user = user;
 		}
@@ -102,6 +103,7 @@ public class AtomServlet extends HttpServlet {
 			return user.getName();
 		}
 
+		@Deprecated
 		public String getPassword() {
 			return authMethod == WebDAV.BASIC_AUTH ? user.getPassword() : user
 					.getDigestPassword();
@@ -160,7 +162,7 @@ public class AtomServlet extends HttpServlet {
 
 	private Authenticator authenticator;
 
-	private UserImpl defaultUser;
+	private User defaultUser;
 
 	/*
 	 * (non-Javadoc)
@@ -482,7 +484,7 @@ public class AtomServlet extends HttpServlet {
 				return;
 			}
 
-			UserImpl user = null;
+			User user = null;
 			if (noAuth.get(moduleName) == null) {
 				// Authenticate
 				user = authenticate(request, response);
@@ -565,7 +567,7 @@ public class AtomServlet extends HttpServlet {
 		BrokerPool.stopAll(false);
 	}
 
-	private UserImpl authenticate(HttpServletRequest request,
+	private User authenticate(HttpServletRequest request,
 			HttpServletResponse response) throws java.io.IOException {
 		// First try to validate the principial if passed from the servlet
 		// engine
@@ -576,16 +578,10 @@ public class AtomServlet extends HttpServlet {
 			String password = ((XmldbPrincipal) principal).getPassword();
 
 			LOG.info("Validating Principle: " + principal.getName());
-			UserImpl user = pool.getSecurityManager().getUser(username);
-
-			if (user != null) {
-				if (password.equalsIgnoreCase(user.getPassword())) {
-					LOG.info("Valid User: " + user.getName());
-					return user;
-				} else {
-					LOG.info("Password invalid for user: " + username);
-				}
-				LOG.info("User not found: " + principal.getName());
+			try {
+				return pool.getSecurityManager().authenticate(username, password);
+			} catch (AuthenticationException e) {
+				LOG.info(e.getMessage());
 			}
 		}
 
@@ -596,15 +592,12 @@ public class AtomServlet extends HttpServlet {
 		return authenticator.authenticate(request, response);
 	}
 
-	private UserImpl getDefaultUser() {
+	private User getDefaultUser() {
 		if (defaultUsername != null) {
-			UserImpl user = pool.getSecurityManager().getUser(defaultUsername);
-			if (user != null) {
-				if (!user.validate(defaultPassword)) {
-					return null;
-				}
+			try {
+				return pool.getSecurityManager().authenticate(defaultUsername, defaultPassword);
+			} catch (AuthenticationException e) {
 			}
-			return user;
 		}
 		return null;
 	}
