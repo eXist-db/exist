@@ -20,7 +20,9 @@ import javax.xml.xquery.XQSequence;
 import javax.xml.xquery.XQSequenceType;
 
 import org.exist.EXistException;
-import org.exist.security.UserImpl;
+import org.exist.security.AuthenticationException;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.Node;
@@ -36,8 +38,8 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	private final static Properties defaultProperties = new Properties();
 	static
 	{
-		defaultProperties.setProperty("javax.xml.xquery.property.UserName", "guest");
-		defaultProperties.setProperty("javax.xml.xquery.property.Password", "guest");
+		defaultProperties.setProperty("javax.xml.xquery.property.UserName", SecurityManager.GUEST_USER);
+		defaultProperties.setProperty("javax.xml.xquery.property.Password", SecurityManager.GUEST_USER);
 		defaultProperties.setProperty("javax.xml.xquery.property.MaxConnections", "0");
 	}
 	
@@ -88,17 +90,13 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 			//get the broker pool instance
 			BrokerPool pool = BrokerPool.getInstance();
 			
+			User user;
 			//get the user
-			UserImpl user = pool.getSecurityManager().getUser(username);
-			
-			if (user == null)
-			{
-	        	throw new XQException("User '" + username + "' does not exist");
-	        }
-	        if (!user.validate(password) )
-	        {
-	        	throw new XQException("Invalid password for user '" + username + "'");
-	        }
+			try {
+				user = pool.getSecurityManager().authenticate(username, password);
+			} catch (AuthenticationException e) {
+	        	throw new XQException(e.getMessage());
+			}
 			
 	        //BUG: where release???
 	        //get a broker for the user
