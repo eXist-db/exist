@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ *  $Id$
  */
 package org.exist.xmlrpc;
 
@@ -27,8 +27,9 @@ import org.apache.xmlrpc.XmlRpcRequest;
 import org.apache.xmlrpc.common.XmlRpcHttpRequestConfig;
 import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
 import org.exist.EXistException;
+import org.exist.security.AuthenticationException;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -70,18 +71,16 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
         // assume guest user if no user is specified
         // set a password for admin to permit this
         if (username == null) {
-            username = "guest";
-            password = "guest";
+            username = SecurityManager.GUEST_USER;
+            password = username;
         }
         // check user
-        UserImpl u = brokerPool.getSecurityManager().getUser(username);
-        if (u == null)
-            throw new XmlRpcException(0, "User " + username + " unknown" );
-        if (!u.validate(password)) {
-            LOG.debug("login denied for user " + username);
-            throw new XmlRpcException(0, "Invalid password for user " + username);
-        }
-        return u;
+        try {
+            return brokerPool.getSecurityManager().authenticate(username, password);
+		} catch (AuthenticationException e) {
+            LOG.debug(e.getMessage());
+            throw new XmlRpcException(0, e.getMessage());
+		}
     }
 
     protected BrokerPool getBrokerPool() {
