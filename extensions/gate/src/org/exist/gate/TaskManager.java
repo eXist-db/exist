@@ -30,6 +30,10 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * @author frog
+ *
+ */
 public class TaskManager extends TimerTask{
 	
 	private List <Task> tasks = new ArrayList<Task>();
@@ -43,11 +47,18 @@ public class TaskManager extends TimerTask{
 		this.gate = gate;
 	}
 	
+	/**
+	 * Add a task to execute
+	 * @param task added task
+	 */
 	public void addTask(Task task){
 		tasks.add(task);
 		haveNewTask = true;
 	}
 	
+	/**
+	 * Start a new task added into list
+	 */
 	public void run(){
 		if (haveNewTask){
 			haveNewTask = false;
@@ -55,7 +66,10 @@ public class TaskManager extends TimerTask{
 		}
 	}
 	
-	
+	/**
+	 * Load tasks from local file system
+	 * and start listeners for them
+	 */
 	public void load(){
 		for(File meta: gate.getMeta().listFiles()){
 			try {

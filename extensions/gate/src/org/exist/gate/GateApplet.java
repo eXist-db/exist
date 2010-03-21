@@ -44,6 +44,8 @@ public class GateApplet extends Applet {
 	
 	private HttpClient http = new HttpClient();
 	
+	// Since we use applet's methods from unsigned javascript, 
+	// we must have a trusted thread for operations in local file system  
 	private TaskManager manager = new TaskManager(this);
 	
 	private String opencmd;
@@ -86,9 +88,11 @@ public class GateApplet extends Applet {
         	opencmd = "xdg-open %s";
         }
         
+        // Load tasks of old applet's sessions
         manager.load();
         
-		Timer timer = new Timer();
+		// Start main trusted thread
+        Timer timer = new Timer();
 		timer.schedule(manager, PERIOD, PERIOD);
 	}
 	
@@ -96,10 +100,20 @@ public class GateApplet extends Applet {
 		return http;
 	}
 	
+	/**
+	 * Add task to manage the remote doc 
+	 * @param downloadFrom URL of remote doc for download
+	 * @param uploadTo URL of remote doc for upload back after doc will be changing
+	 */
 	public void manage(String downloadFrom, String uploadTo){
 		manager.addTask(new Task(downloadFrom, uploadTo, this));
 	}
 	
+	/**
+	 * Download remote doc
+	 * @param downloadFrom URL of remote doc for download * @return downloaded file
+	 * @throws IOException
+	 */
 	public File download(String downloadFrom) throws IOException{
 		File file = null;
 		GetMethod get = new GetMethod(downloadFrom); 
@@ -123,8 +137,14 @@ public class GateApplet extends Applet {
         return file;
 	}
 	
-	public void upload(File file, String uploadTo) throws HttpException, IOException{
-		PutMethod put = new PutMethod(uploadTo);
+	/**
+	 * Upload file to server 
+	 * @param file uploaded file
+	 * @param uploadTo URL of remote doc to upload
+	 * @throws HttpException
+	 * @throws IOException
+	 */
+	public void upload(File file, String uploadTo) throws HttpException, IOException{ PutMethod put = new PutMethod(uploadTo);
 		InputStream is = new FileInputStream(file);
 		RequestEntity entity = new InputStreamRequestEntity(is);
 		put.setRequestEntity(entity);
@@ -133,29 +153,52 @@ public class GateApplet extends Applet {
 		put.releaseConnection();
 	}
 	
+	/**
+	 * Open file on application, registered for type of file in current Desktop 
+	 * @param file opened file
+	 * @throws IOException
+	 */
 	public void open(File file) throws IOException{
     	String cmd = String.format(opencmd, file.toURI().toURL());
     	Runtime.getRuntime().exec(cmd);
     }
 	
+	/**
+	 * Create file in local cache
+	 * @param name name of file
+	 * @return file in cache
+	 * @throws IOException
+	 */
 	public File createFile(String name) throws IOException{
 		File tmp = new File(cache, name);
 		tmp.createNewFile();
 		return tmp;
 	}
 	
+	/**
+	 * @return task manager
+	 */
 	public TaskManager getTaskManager(){
 		return manager;
 	}
 	
+	/**
+	 * @return folder of GateApplet in local FS
+	 */
 	public File getEtc(){
 		return etc;
 	}
 	
+	/**
+	 * @return "meta" folder of applet in local FS
+	 */
 	public File getMeta(){
 		return meta;
 	}
 	
+	/**
+	 * @return "cache" folder in local FS
+	 */
 	public File getCache(){
 		return cache;
 	}

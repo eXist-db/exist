@@ -32,16 +32,29 @@ public class Task{
 
 	private GateApplet gate;
 	
-	private String downloadFrom;
-	private String uploadTo;
-	private File tmp;
+	private String downloadFrom;	// URL of file download from
+	private String uploadTo;		// URL for upload file
+	private File tmp;				// Downladed file 
 	
+	/**
+	 * Create a new task
+	 * @param downloadFrom URL of file download from
+	 * @param uploadTo URL for upload file after changes
+	 * @param gate GateApplet
+	 */
 	public Task(String downloadFrom, String uploadTo, GateApplet gate){
 		this.downloadFrom = downloadFrom;
 		this.uploadTo = uploadTo;
 		this.gate = gate;
 	}
-
+	
+	/**
+	 * Create a task, used for stored task
+	 * @param downloadFrom URL of file download from
+	 * @param uploadTo URL for upload file after changes
+	 * @param tmp path of file stored in local cache
+	 * @param gate GateApplet
+	 */
 	public Task(String downloadFrom, String uploadTo, File tmp, GateApplet gate){
 		this.downloadFrom = downloadFrom;
 		this.uploadTo = uploadTo;
@@ -49,6 +62,11 @@ public class Task{
 		this.tmp = tmp;
 	}
 
+	/**
+	 * Execute task: dowload file, store desrioption,
+	 * then file changes listener and open one 
+	 * in desktop application. 
+	 */
 	public void execute(){
 		try {
     		tmp = gate.download(downloadFrom);
@@ -74,6 +92,10 @@ public class Task{
 		return tmp;
 	}
 	
+	/**
+	 * Store task description into FS as XML doc
+	 * @throws IOException
+	 */
 	public void store() throws IOException{
 		Properties prop = new Properties();
 		prop.put("download-from", downloadFrom);
@@ -88,7 +110,5 @@ public class Task{
 		prop.storeToXML(os, "Gate task description");
 		os.close();
 	}
-	
-
 	
 }
