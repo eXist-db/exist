@@ -64,13 +64,15 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     }
     
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
-        UserImpl u = pool.getSecurityManager().getUser(userId);
-        if (u == null)
-            throw new RemoteException("user " + userId + " does not exist");
-        if (!u.validate(password))
-            throw new RemoteException("the supplied password is invalid");
-        LOG.debug("user " + userId + " connected");
-        return SessionManager.getInstance().createSession(u);
+    	try {
+            User u = pool.getSecurityManager().authenticate(userId, password);
+
+            LOG.debug("user " + userId + " connected");
+            
+            return SessionManager.getInstance().createSession(u);
+		} catch (Exception e) {
+            throw new RemoteException(e.getMessage());
+		}
     }
     
     public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException {
