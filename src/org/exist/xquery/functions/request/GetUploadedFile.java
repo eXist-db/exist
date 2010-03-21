@@ -57,18 +57,6 @@ public class GetUploadedFile extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("get-uploaded-file", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Retrieve the Java file object where the file part of a multi-part request has been stored. " +
-			"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
-			"does not point to a file part.",
-			new SequenceType[] {
-				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
-			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
-			"Deprecated in favour of get-uploaded-file-data()"
-		),
-			
-		new FunctionSignature(
 				new QName("get-uploaded-file-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 				"Retrieve the base64 encoded data where the file part of a multi-part request has been stored. " +
 				"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
@@ -115,50 +103,43 @@ public class GetUploadedFile extends BasicFunction {
 				logger.debug("Uploaded file: " + file.getAbsolutePath());
 			
 			
-			if(isCalledAs("get-uploaded-file-data"))
-			{
-				InputStream is = null;
-				try
-				{
-					is = new BufferedInputStream(new FileInputStream(file));
-					byte buf[] = new byte[1024];
-					int read = -1;
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					while((read = is.read(buf)) != -1)
-					{
-						baos.write(buf, 0, read);
-					}
-					
-					return new Base64Binary(baos.toByteArray());
-					
-				}
-				catch(FileNotFoundException fnfe)
-				{
-					throw new XPathException(this, fnfe.getMessage(), fnfe);
-				}
-				catch (IOException ioe)
-				{
-					throw new XPathException(this, ioe.getMessage(), ioe);
-				}
-				finally
-				{
-					if(is != null)
-					{
-						try
-						{
-							is.close();
-						}
-						catch (IOException ioe)
-						{
-							logger.warn(ioe.getMessage(), ioe);
-						}
-					}
-				}
-			}
-			else
-			{
-				return new JavaObjectValue(file);
-			}
+            InputStream is = null;
+            try
+            {
+                is = new BufferedInputStream(new FileInputStream(file));
+                byte buf[] = new byte[1024];
+                int read = -1;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                while((read = is.read(buf)) != -1)
+                {
+                    baos.write(buf, 0, read);
+                }
+
+                return new Base64Binary(baos.toByteArray());
+
+            }
+            catch(FileNotFoundException fnfe)
+            {
+                throw new XPathException(this, fnfe.getMessage(), fnfe);
+            }
+            catch (IOException ioe)
+            {
+                throw new XPathException(this, ioe.getMessage(), ioe);
+            }
+            finally
+            {
+                if(is != null)
+                {
+                    try
+                    {
+                        is.close();
+                    }
+                    catch (IOException ioe)
+                    {
+                        logger.warn(ioe.getMessage(), ioe);
+                    }
+                }
+            }
 		}
 		else
 		{
