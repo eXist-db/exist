@@ -403,6 +403,7 @@ public class UserImpl implements User {
 	 */
 	public final void setPasswordDigest(String passwd) {
 		this.digestPassword = (passwd == null) ? null : passwd;
+		setPassword(passwd);
 	}
 
 	/**
@@ -414,6 +415,7 @@ public class UserImpl implements User {
 	 */
 	public final void setEncodedPassword(String passwd) {
 		this.password = (passwd == null) ? null : passwd;
+		setPassword(passwd);
 	}
 
 	public final String digest(String passwd) {
