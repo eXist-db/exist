@@ -81,8 +81,8 @@ public class SecurityManagerImpl implements SecurityManager {
 	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
 
 	private BrokerPool pool;
-	private Int2ObjectHashMap groups = new Int2ObjectHashMap(65);
-	private Int2ObjectHashMap users = new Int2ObjectHashMap(65);
+	private Int2ObjectHashMap<Group> groups = new Int2ObjectHashMap<Group>(65);
+	private Int2ObjectHashMap<User> users = new Int2ObjectHashMap<User>(65);
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
 
@@ -470,8 +470,14 @@ public class SecurityManagerImpl implements SecurityManager {
 		User user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
 			user = (User) i.next();
-			if (user.getName().equals(username))
-				return new UserImpl(realm, (UserImpl)user, credentials);
+			if (user.getName().equals(username)) {
+				User newUser = new UserImpl(realm, (UserImpl)user, credentials);
+			
+				if (newUser.isAuthenticated())
+					return newUser;
+
+				throw new AuthenticationException("Wrong password for user [" + username + "] ");
+			}
 		}
 		throw new AuthenticationException("User " + username + " not found");
 	}
@@ -481,9 +487,14 @@ public class SecurityManagerImpl implements SecurityManager {
 		User user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
 			user = (User) i.next();
-			if (user.getName().equals(username))
-				return new UserImpl(realm, (UserImpl)user, credentials);
+			if (user.getName().equals(username)) {
+				User newUser = new UserImpl(realm, (UserImpl)user, credentials);
+				if (newUser.isAuthenticated())
+					return newUser;
+
+				throw new AuthenticationException("Wrong password for user [" + username + "] ");
+			}
 		}
-		throw new AuthenticationException("User " + username + " not found");
+		throw new AuthenticationException("User [" + username + "] not found");
 	}
 }

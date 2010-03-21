@@ -219,8 +219,12 @@ public class Database {
 	 * @throws DatabaseException if the user could not be logged in
 	 */
 	public static Database login(String username, String password) {
-		UserImpl user = pool.getSecurityManager().getUser(username);
-		if (user == null || !user.validate(password)) throw new DatabaseException("invalid user credentials");
+		User user;
+		try {
+			user = pool.getSecurityManager().authenticate(username, password);
+		} catch (AuthenticationException e) {
+			throw new DatabaseException(e.getMessage(),e);
+		}
 		return new Database(user);
 	}
 	
