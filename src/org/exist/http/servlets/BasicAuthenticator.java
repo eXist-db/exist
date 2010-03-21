@@ -28,8 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Base64Decoder;
 import org.exist.xquery.XQueryContext;
@@ -39,8 +40,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class BasicAuthenticator implements Authenticator {
 
-	protected final static Logger LOG = Logger
-			.getLogger(BasicAuthenticator.class);
+	protected final static Logger LOG = Logger.getLogger(BasicAuthenticator.class);
 
 	private BrokerPool pool;
 
@@ -55,7 +55,7 @@ public class BasicAuthenticator implements Authenticator {
 	 * org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http
 	 * .HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public UserImpl authenticate(HttpServletRequest request,
+	public User authenticate(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 		String credentials = request.getHeader("Authorization");
 		String username = null;
@@ -73,19 +73,16 @@ public class BasicAuthenticator implements Authenticator {
 
 		// get the user from the session if possible
 		HttpSession session = request.getSession(false);
-		UserImpl user = null;
+		User user = null;
 		if (session != null) {
-			user = (UserImpl) session
-					.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-			if (user != null
-					&& (username == null || user.getName().equals(username))) {
+			user = (User) session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+			if (user != null && (username == null || user.getName().equals(username))) {
 				return user;
 			}
 		}
 
 		if (user != null) {
 			session.removeAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-
 		}
 
 		// get the credentials
@@ -99,23 +96,17 @@ public class BasicAuthenticator implements Authenticator {
 
 		// authenticate the credentials
 		SecurityManager secman = pool.getSecurityManager();
-		user = secman.getUser(username);
-		if (user == null) {
-			// If user does not exist then send a challenge request again
-			sendChallenge(request, response);
-			return null;
-		}
-		if (!user.validate(password)) {
-			// If password is incorrect then send a challenge request again
+		try {
+			user = secman.authenticate(username, password);
+		} catch (AuthenticationException e) {
+			// if authentication failed then send a challenge request again
 			sendChallenge(request, response);
 			return null;
 		}
 
 		// store the user in the session
 		if (session != null) {
-			session
-					.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER,
-							user);
+			session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
 		}
 
 		// return the authenticated user
