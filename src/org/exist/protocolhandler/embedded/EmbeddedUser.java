@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,15 +17,15 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: EmbeddedUser.java 188 2007-03-30 14:59:28Z dizzzz $
+ *  $Id: EmbeddedUser.java 188 2007-03-30 14:59:28Z dizzzz $
  */
 
 package org.exist.protocolhandler.embedded;
 
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -49,15 +49,11 @@ public class EmbeddedUser {
         }
         
         SecurityManager secman = pool.getSecurityManager();
-        UserImpl user = secman.getUser(xmldbURL.getUsername());
-        if(user == null) {
-            return null;  // user does not exist
-            
-        } else if (!user.validate(xmldbURL.getPassword())) {
-            return null;  // wrong password
-        }
-        
-        return user;      // user does exist and password is valid
+        try {
+            return secman.authenticate(xmldbURL.getUsername(), xmldbURL.getPassword());
+		} catch (AuthenticationException e) {
+	        return null;  // authentication is failed
+		}
     }
     
     /**
@@ -67,6 +63,7 @@ public class EmbeddedUser {
      * @return      eXist GUEST user.
      */
     public static User getUserGuest(BrokerPool pool){
+    	//TODO: security: review -shabanovd 
         return pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
     }
     
