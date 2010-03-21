@@ -26,8 +26,9 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -93,23 +94,23 @@ public class SetCurrentUser extends BasicFunction {
 			
 			//try and validate the user and password
 			SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
-			UserImpl user = security.getUser(userName);
-			if (user == null)
-				return Sequence.EMPTY_SEQUENCE;
-			if (user.validate(passwd))
-			{
-				//validated user, store in session
-				context.getBroker().setUser(user);
-				SessionWrapper session = request.getSession(true);
-				session.setAttribute("user", userName);
-				session.setAttribute("password", new StringValue(passwd));
-				return BooleanValue.TRUE;
-			}
-			else
-			{
-				logger.warn("Could not validate user " + userName);
+			User user;
+			try {
+				user = security.authenticate(userName, passwd);
+			} catch (AuthenticationException e) {
+				logger.warn("Could not validate user " + userName + " ["+ e.getMessage() + "]");
 				return BooleanValue.FALSE;
 			}
+//			why it was empty if user wasn't found??? -shabanovd
+//			if (user == null)
+//				return Sequence.EMPTY_SEQUENCE;
+
+			//validated user, store in session
+			context.getBroker().setUser(user);
+			SessionWrapper session = request.getSession(true);
+			session.setAttribute("user", userName);
+			session.setAttribute("password", new StringValue(passwd));
+			return BooleanValue.TRUE;
 		}
 		else
 		{
