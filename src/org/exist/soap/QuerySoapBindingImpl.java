@@ -19,7 +19,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserImpl;
+import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.soap.Session.QueryResult;
 import org.exist.storage.BrokerPool;
@@ -110,13 +110,15 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     }
     
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
-        UserImpl u = pool.getSecurityManager().getUser(userId);
-        if (u == null)
-            throw new RemoteException("user " + userId + " does not exist");
-        if (!u.validate(password))
-            throw new RemoteException("the supplied password is invalid");
-        LOG.debug("user " + userId + " connected");
-        return SessionManager.getInstance().createSession(u);
+    	try {
+            User u = pool.getSecurityManager().authenticate(userId, password);
+			
+            LOG.debug("user " + userId + " connected");
+            
+            return SessionManager.getInstance().createSession(u);
+		} catch (Exception e) {
+            throw new RemoteException(e.getMessage());
+		}
     }
     
     public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException {
