@@ -389,7 +389,7 @@ public class UserImpl implements User {
 			this.password = null;
 			this.digestPassword = null;
 		} else {
-			this.password = MessageDigester.md5(passwd, true);
+			this.password = ((Password)_cred).pw;
 			this.digestPassword = digest(passwd);
 		}
 	}
@@ -402,7 +402,7 @@ public class UserImpl implements User {
 	 * @deprecated
 	 */
 	public final void setPasswordDigest(String passwd) {
-		setPassword(passwd);
+		//setPassword(passwd);
 		this.digestPassword = (passwd == null) ? null : passwd;
 	}
 
@@ -414,7 +414,7 @@ public class UserImpl implements User {
 	 * @deprecated
 	 */
 	public final void setEncodedPassword(String passwd) {
-		setPassword(passwd);
+		setPassword("{MD5}"+passwd);
 		this.password = (passwd == null) ? null : passwd;
 	}
 
