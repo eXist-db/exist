@@ -30,15 +30,22 @@ import org.exist.security.MessageDigester;
  */
 public class Password implements Credential {
 
-	private String pw;
+	public static String MD5 = "MD5";
+	
+	//private
+	public String pw;
+	private String algorithm = "";
 	
 	public Password(String password) {
 		if (password == null)
 			this.pw = null;
-		else if (password.startsWith("{MD5}"))
+		else if (password.startsWith("{MD5}")) {
 			this.pw = password.substring(5);
-		else
+			this.algorithm = MD5;
+		} else {
 			this.pw = crypt(password);
+			this.algorithm = MD5;
+		}
 	}
 	
 	private String crypt(String str) {
@@ -81,6 +88,9 @@ public class Password implements Credential {
 		}
     	
     	return false;
-    	
+    }
+    
+    public String toString() {
+    	return "{"+algorithm+"}"+pw;
     }
 }
