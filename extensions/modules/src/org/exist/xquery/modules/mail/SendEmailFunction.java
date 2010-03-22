@@ -859,9 +859,11 @@ public class SendEmailFunction extends BasicFunction
      * 	<bcc></bcc>
      * 	<subject></subject>
      * 	<message>
-     * 		<text></text>
-     * 		<xhtml></xhtml>
+     * 		<text charset=""></text>
+     * 		<xhtml charset=""></xhtml>
+     * 		<generic charset="" type=""></generic>
      * 	</message>
+     * 	<attachment mimetype="" filename=""></attachment>
      * </mail>
      *
      * @param mailElements	The XML mail Node
