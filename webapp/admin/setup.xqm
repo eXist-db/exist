@@ -101,6 +101,16 @@ declare function setup:importLocal() as element()+
                 setup:store-files("/db/system/config/db/mondial", $dir, "mondial.xconf", "text/xml"),
                 setup:create-collection("/db/system/config/db", "xmlad"),
                 setup:store-files("/db/system/config/db/xmlad", $dir, "acronyms.xconf", "text/xml"),
+
+                (: Storing Testing :)
+                setup:create-collection("/db", "testing"),
+                setup:store-files("/db/testing", $webapp, "testing/*.xml", "text/html"),
+                setup:store-files("/db/testing", $webapp, "testing/*.xq*", "application/xquery"),
+                setup:create-collection("/db/testing", "examples"),
+                setup:store-files("/db/testing/examples", $webapp, "testing/examples/*.xml", "text/html"),
+                setup:store-files("/db/testing/examples", $webapp, "testing/examples/*.xq*", "application/xquery"),
+
+                (: Storing XProc :)
                 setup:create-collection("/db", "xproc"),
                 setup:create-collection("/db/xproc", "unit-test"),
                 setup:create-collection("/db/xproc", "xml"),
@@ -137,6 +147,8 @@ declare function setup:importLocal() as element()+
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.js","application/x-javascript"),
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.css","text/css")
                 :)
+
+
     )
 };
 
