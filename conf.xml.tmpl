@@ -722,7 +722,11 @@
             <!-- JSON module -->
             <module src="resource:org/exist/xquery/lib/json.xq" 
                 uri="http://www.json.org"/>
-            
+
+            <!-- Test module -->
+            <module src="resource:org/exist/xquery/lib/test.xq"
+                uri="http://exist-db.org/xquery/testing"/>
+
             <!-- expath module imports (for p:http-request)//-->
             <module class="org.exist.xquery.modules.httpclient.HTTPClientModule" 
                 uri="http://exist-db.org/xquery/httpclient" />
