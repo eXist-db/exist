@@ -59,6 +59,7 @@ public class SessionModule extends AbstractInternalModule
 		new FunctionDef( GetAttribute.signature, GetAttribute.class ),
 		new FunctionDef( RemoveAttribute.signature, RemoveAttribute.class ),
 		new FunctionDef( GetAttributeNames.signature, GetAttributeNames.class ),
+		new FunctionDef( GetMaxInactiveInterval.signature, GetMaxInactiveInterval.class),
 		new FunctionDef( Invalidate.signature, Invalidate.class ),
 		new FunctionDef( SetAttribute.signature, SetAttribute.class) ,
 		new FunctionDef( SetCurrentUser.signature, SetCurrentUser.class ),
