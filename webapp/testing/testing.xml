@@ -72,7 +72,7 @@ return
         <a href="examples/unit-test-example.xql" target="_example">run unit-test-example.xql</a>
 
         </example>
-                <para>Running the example will output </para>
+                <para>Running the example will output the following</para>
 
                 <example>
                 <title>Example XQuery Test Output</title>
