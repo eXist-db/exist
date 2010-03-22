@@ -16,17 +16,77 @@
         <title>Testing</title>
 
         <abstract>
-            <para>Including a set of tests along with code is good practice (and a requirement when adding new code to eXist).
-                We try to provide eXist developers several ways to test code, be it Java, XSLT or even XQuery itself.</para>
+            <para>Including a set of tests along with code is good practice (and a requirement when committing new code to eXist).
+                eXist provides developers several ways to test code, be it Java, XSLT or even XQuery itself.</para>
        </abstract>
 
         <section>
             <title>XQuery Testing</title>
-            <para>eXist has two methods for developing non-regression XQuery tests, either using its own built in
-                XQuery unit testing suite or through the use of XSpec testing framework</para>
+            <para>eXist has its own built in approach to developing non-regression XQuery tests, using its built in XQuery library for testing
+            executed via Java or XQuery itself. This library is enabled via conf.xml</para>
 
             <section>
-                <title>Using eXist internal XQuery Testing</title>
+                <title>Using eXist XQuery Unit Test</title>
+
+                <para>The following example shows how to import the unit test suite, define TestSet element
+                using the t:run-testSet() function.</para>
+
+                <example>
+                <title>Example XQuery Test example</title>
+                    <programlisting>
+                    <markup><![CDATA[
+
+xquery version "1.0";
+
+import module namespace t="http://exist-db.org/xquery/testing";
+
+let $test := <TestSet>
+    <testName>Example test</testName>
+    <description>
+        <p>Testing the number of paragraphs</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="data.xml">
+            <root>
+                <para>This is a paragraph</para>
+            </root>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+    </tearDown>
+    <test output="text">
+        <task>Simple following axis test</task>
+        <code>count(doc("/db/test/data.xml")//para)</code>
+        <expected>1</expected>
+    </test>
+
+ </TestSet>
+return
+    t:run-testSet($test)
+ ]]>
+</markup>
+            </programlisting>
+        <a href="examples/unit-test-example.xql" target="_example">run unit-test-example.xql</a>
+
+        </example>
+                <para>Running the example will output </para>
+
+                <example>
+                <title>Example XQuery Test Output</title>
+                    <programlisting>
+                    <markup><![CDATA[
+<TestSet><testName>Example test</testName><description><p>Testing the number of paragraphs</p><author>James Fuller</author></description><test n="1" pass="true"/></TestSet>
+ ]]></markup>
+            </programlisting>
+        </example>
+
+            </section>
+            
+            <section>
+                <title>Integrate eXist XQuery Unit Testing for eXist core Testing</title>
                 <para>When developing functionality that is intended to be part of the eXist distribution (or required
                     extensions) it is recommended to use eXist's own built in XQuery testing suite which has been developed
                     to integrate closely with JUnit and eXist own build tools.</para>
@@ -96,54 +156,6 @@ public class UtilTests extends TestRunner {
                      method returns the path to this directory</para>
             </section>
 
-            <section>
-                <title>Using XSpec</title>
-
-
-                <example>
-                <title>Testing the following XQuery module</title>
-                    <programlisting>
-                    <markup><![CDATA[
-module namespace ex = "http://example.org/ns/my";
-
-declare function ex:square($n as xs:integer) as xs:integer{
-$n * $n
-};
-]]>                </markup>
-                    </programlisting>
-                </example>
-
-                <example>
-                <title>XSpec test definition</title>
-                    <programlisting>
-                    <markup><![CDATA[
-<t:description xmlns:t="http://www.jenitennison.com/xslt/xspec"
-               xmlns:ex="http://example.org/ns/my"
-               query="http://example.org/ns/my"
-               query-at="testing-this-module.xql">
-
-   <t:scenario label="call">
-      <t:call function="ex:square">
-         <t:param select="3"/>
-      </t:call>
-      <t:expect label="the result" test="$x:result eq 9"/>
-      <t:expect label="the type"   test="$x:result instance of xs:integer"/>
-   </t:scenario>
-
-   <t:scenario label="must fail">
-      <t:call function="ex:square">
-         <t:param select="2"/>
-      </t:call>
-      <t:expect label="wrong result" test="$x:result eq 42"/>
-   </t:scenario>
-
-</t:description>]]>                </markup>
-                    </programlisting>
-                </example>
-
-
-            </section>
-
         </section>
 
         <section>
@@ -160,8 +172,9 @@ $n * $n
             <section>
                   <title>Testing Resources</title>
                 <ul>
-                    <li><a href="http://www.xspec.org" target="_resource">XSpec - </a></li>
-                    <li><a href="http://xproc.org" target="_resource">XSpec Testing XSLT - Tony Graham XML Prague 2009 paper</a></li>        
+                    <li><a href="http://code.google.com/p/xspec/" target="_resource">XSpec - Unit Testing Suite for XSLT &amp; XQuery</a></li>
+                    <li><a href="http://www.xmlprague.cz/sessions.html#test_xslt_with_xspec" target="_resource">Jeni Tennison 'Testing XSLT with XSpec' - XML Prague 2009 paper</a></li>
+                    <li><a href="http://www.xmlprague.cz/sessions.html#testing_xslt" target="_resource">Tony Graham 'Testing XSLT' - XML Prague 2009 paper</a></li>
                 </ul>
             </section>
         </section>
