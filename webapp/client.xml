@@ -6,7 +6,7 @@
 
     <productname>Open Source Native XML Database</productname>
     <title>Java Admin Client</title>
-        <date>September 2009</date>
+        <date>March 2010</date>
     <author>
       <firstname>Wolfgang M.</firstname>
       <surname>Meier</surname>
@@ -68,7 +68,7 @@
             graphical user interface.</para>
         </listitem>
         <listitem>
-          <para>If option <option>-s</option> or <option>--nogui</option> is specified without an
+          <para>If option <option>-s</option> or <option>--no-gui</option> is specified without an
             action, the client switches to shell-mode and prompts for user input. No graphical
             interface is displayed.</para>
         </listitem>
