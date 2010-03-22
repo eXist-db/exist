@@ -49,6 +49,10 @@ public class Password implements Credential {
     	
     	if (credentials == this) return true;
     	
+    	//workaround old style, remove -shabanovd 
+    	if (credentials == null)
+    		credentials = "";
+    	
     	if (credentials instanceof Password || credentials instanceof String) {
 			return equals(credentials);
 		}
