@@ -11,7 +11,8 @@
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
-            </affiliation></author>
+            </affiliation>
+        </author>
         <author>
             <surname>Milowski</surname>
             <firstname>Alex</firstname>
@@ -28,7 +29,8 @@
                     </personname>
                     <email>loren@syntactica.com</email>
                 </author>
-                <revremark>Changing to identify various features of eXist and how to turn on, turn off and configure the feature.</revremark>
+                <revremark>Changing to identify various features of eXist and how to turn on, turn
+                    off and configure the feature.</revremark>
             </revision>
         </revhistory>
     </bookinfo>
@@ -57,23 +59,24 @@
         </section>
         <section>
             <title>Services</title>
-            <para>The following table lists which services and modules 
-                ship with eXist; a description of each; the resources in the eXist 
-                installation where they are configured; and whether they are active 
-                by default in an out-of-the box configuration.</para>
+            <para>The following table lists which services and modules ship with eXist; a
+                description of each; the resources in the eXist installation where they are
+                configured; and whether they are active by default in an out-of-the box
+                configuration.</para>
+            <note>This is a work in progress.  It is being refined, but I want to get it into the repository to maintain history.</note>
             <informaltable>
                 <thead>
                     <tr bgcolor="#0990EE" valign="top">
-                        <th>Service</th>
-                        <th>Description</th>
+                        <th width="20%">Service</th>
+                        <th width="30%">Description</th>
                         <th>Resources</th>
-                        <th>Initial State</th>
+                        <th width="7%">Initial State</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>Cocoon</td>
-                        <td></td>
+                        <td width="20%">Cocoon</td>
+                        <td width="30%"/>
                         <td>
                             <itemizedlist>
                                 <listitem>extensions/build.properties</listitem>
@@ -91,11 +94,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
-                        <td align="center" bgcolor="#00FF00">On</td>
+                        <td width="8%" align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>debugger</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -107,7 +110,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>fluent</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -118,8 +121,8 @@
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>Sharepoint</td>
-                        <td></td>
+                        <td>Desktop Application Support</td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -131,7 +134,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>OpenID</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -143,7 +146,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Versioning</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -155,7 +158,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XQDoc</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -167,7 +170,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XSLT</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -182,7 +185,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Cache</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -194,7 +197,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Compression</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -206,7 +209,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Context</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -218,7 +221,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Counter</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -230,7 +233,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Datetime</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -242,7 +245,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Example</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -254,7 +257,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>File</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -266,7 +269,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Http Client</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -278,7 +281,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Image</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -290,7 +293,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>JFreechart</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -302,7 +305,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>JNDI</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -314,7 +317,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Lib</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -326,7 +329,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Mail</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -338,7 +341,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Math</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -350,7 +353,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Scheduler function module</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -365,7 +368,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>SimpleQL</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -377,7 +380,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>SQL</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -389,7 +392,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Subversion</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -401,7 +404,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XMLDiff</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -413,7 +416,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XMPP</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -425,7 +428,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XSL FO</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -437,7 +440,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XML RPC</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -466,7 +469,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>webDAV</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -490,7 +493,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XQueryURLRewrite</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -529,7 +532,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Webstart (jnlp)</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -541,7 +544,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Cluster</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -553,7 +556,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Security</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -565,7 +568,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Indexing</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -589,7 +592,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Serializer</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -614,7 +617,7 @@
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XML Validation</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -626,7 +629,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XProc</td>
-                        <td></td>
+                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -640,161 +643,161 @@
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td></td>
-                        <td></td>
+                        <td/>
+                        <td/>
                         <td>
                             <itemizedlist>
-                                <listitem></listitem>
+                                <listitem/>
                             </itemizedlist>
                         </td>
                         <td/>
@@ -802,7 +805,7 @@
                 </tbody>
             </informaltable>
         </section>
-        
+
         <section>
             <title>eXist Configuration: Editing conf.xml</title>
             <para>The configuration file <filename moreinfo="none">conf.xml</filename> can be
@@ -1148,8 +1151,8 @@
                                         <code>org.exist.security.SecurityManager</code> interface,
                                     as in the following example:</para>
                                 <example>
-                                    <title>&lt;security&gt;
-                                        <emphasis>class</emphasis> Attribute (LDAP)</title>
+                                    <title>&lt;security&gt; <emphasis>class</emphasis> Attribute
+                                        (LDAP)</title>
                                     <programlisting><markup>&lt;security class="org.exist.security.LDAPSecurityManager" /&gt;</markup></programlisting>
                                 </example>
                                 <para>eXist is distributed with the following built-in security
@@ -1257,13 +1260,13 @@
                                 <para>Specifies whether string comparisons are to be case-sensitive.
                                     This option applies to XPath equality tests (i.e.
                                         "<option>=</option>" operator), as well as functions such as
-                                        <function>contains()</function>, <function
-                                        >starts-with()</function> and <function
-                                        >ends-with()</function>. This setting does not apply to
-                                    operators or functions of the fulltext index (e.g.
-                                        "<option>&amp;=</option>", "<option>|=</option>", "<function
-                                        >near()</function>") or the n-gram index, which are
-                                        <emphasis>never</emphasis> case-sensitive</para>
+                                        <function>contains()</function>,
+                                        <function>starts-with()</function> and
+                                        <function>ends-with()</function>. This setting does not
+                                    apply to operators or functions of the fulltext index (e.g.
+                                        "<option>&amp;=</option>", "<option>|=</option>",
+                                        "<function>near()</function>") or the n-gram index, which
+                                    are <emphasis>never</emphasis> case-sensitive</para>
                                 <para>Setting <option>caseSensitive="yes"</option> violates the
                                     XQuery specs! The option should be regarded as a dirty
                                     workaround, which will be removed in the future. Please use the
@@ -1720,16 +1723,18 @@
                         <varlistentry>
                             <term>raise-error-on-failed-retrieval=yes|no</term>
                             <listitem>
-                                <para>set to <literal>"yes"</literal> if a call to <command
-                                        >doc()</command>, <command>xmldb:document()</command>,
-                                        <command>collection()</command> or <command
-                                        >xmldb:xcollection()</command> should raise an error
+                                <para>set to <literal>"yes"</literal> if a call to
+                                        <command>doc()</command>,
+                                        <command>xmldb:document()</command>,
+                                        <command>collection()</command> or
+                                        <command>xmldb:xcollection()</command> should raise an error
                                     (FODC0002) when an XML resource can not be retrieved.</para>
-                                <para>set to <literal>"no"</literal> if a call to <command
-                                        >doc()</command>, <command>xmldb:document()</command>,
-                                        <command>collection()</command> or <command
-                                        >xmldb:xcollection()</command> should return an empty
-                                    sequence when an XML resource can not be retrieved.</para>
+                                <para>set to <literal>"no"</literal> if a call to
+                                        <command>doc()</command>,
+                                        <command>xmldb:document()</command>,
+                                        <command>collection()</command> or
+                                        <command>xmldb:xcollection()</command> should return an
+                                    empty sequence when an XML resource can not be retrieved.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -1741,9 +1746,10 @@
                                         url="indexing.xml#pathvsqname">indexing</ulink>). However,
                                     these features are relatively new. If you have doubts about the
                                     correctness of a query result, you may temporarily set
-                                        <option>enable-query-rewriting</option> to <literal
-                                        >"no"</literal> and see if the result changes in any way. If
-                                    it does, you have hit a bug which should be reported. </para>
+                                        <option>enable-query-rewriting</option> to
+                                        <literal>"no"</literal> and see if the result changes in any
+                                    way. If it does, you have hit a bug which should be reported.
+                                </para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -1788,9 +1794,9 @@ uri="http://www.json.org"/>]]></synopsis>
             <para>Beginning with Cocoon version 2.0, <emphasis>pseudo-protocols</emphasis> are
                 supported. Pseudo-protocols allow you to register handlers for special URLs via
                 so-called "source factories". In essence, these protocols specify resources wherever
-                a known protocol such as <filename>http://</filename> or <filename
-                    >file://</filename> is specified in the sitemap. Currently, the distribution
-                defines a pseudo-protocol to access XML:DB-enabled databases. </para>
+                a known protocol such as <filename>http://</filename> or
+                    <filename>file://</filename> is specified in the sitemap. Currently, the
+                distribution defines a pseudo-protocol to access XML:DB-enabled databases. </para>
             <para>In eXist, pseudo-protocols are configured in Cocoon's main configuration file
                     <filename moreinfo="none">WEB-INF/cocoon.xconf</filename>. To make use of these
                 protocols, simply specify the correct database driver class, as in the following
