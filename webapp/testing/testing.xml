@@ -142,17 +142,7 @@ return
                 </programlisting>
             </example>
 
-                <para>
-                   I list out some of the more common elements of the test markup below.
-                    <ul>
-                        <li>testname: top level root element</li>
-                        <li>setup: can create collections and load up xml documents</li>
-                        <li>teardown: which you can use to remove and delete any artifacts your test may have produced</li>
-                        <li>test: this element contains the code which you want to test, along with the expected result</li>
-                    </ul>
-
-                </para>
-                <para>By providing a small JUNIT test file, like the one below, then this test becomes part of the eXist test suite.</para>
+                <para>The next step is to provide a small JUNIT test file, like the one below, then this test becomes part of the eXist test suite.</para>
 
                 <example>
                 <title>Example XQuery Test definition</title>
