@@ -1,21 +1,23 @@
 /*
- *  eXist's  Gate extension - REST client for automate document management
- *  form any browser in any desktop application on any client platform
- *  Copyright (C) 2010,  Evgeny V. Gazdovsky (gazdovsky@gmail.com)
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
  */
 
 package org.exist.gate;
@@ -38,11 +40,17 @@ import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 
+/**
+ * Native eXist document management storage management
+ * @author Evgeny Gazdovsky (gazdovsky@gmail.com)
+ */
 public class GateApplet extends Applet {
 	
 	private static final long serialVersionUID = -8952536002584984227L;
 	
 	private HttpClient http = new HttpClient();
+	
+	private String sessionid = getParameter("sessionid");
 	
 	// Since we use applet's methods from unsigned javascript, 
 	// we must have a trusted thread for operations in local file system  
@@ -109,6 +117,12 @@ public class GateApplet extends Applet {
 		manager.addTask(new Task(downloadFrom, uploadTo, this));
 	}
 	
+	private void useCurrentSession(HttpMethodBase method){
+		if (sessionid != null){
+			method.setRequestHeader("Cookie", "JSESSIONID=" + sessionid);
+		}
+	}
+	
 	/**
 	 * Download remote doc
 	 * @param downloadFrom URL of remote doc for download * @return downloaded file
@@ -116,7 +130,8 @@ public class GateApplet extends Applet {
 	 */
 	public File download(String downloadFrom) throws IOException{
 		File file = null;
-		GetMethod get = new GetMethod(downloadFrom); 
+		GetMethod get = new GetMethod(downloadFrom);
+		useCurrentSession(get);
 		http.executeMethod(get);
 		long contentLength = ((HttpMethodBase) get).getResponseContentLength();
 		
@@ -144,7 +159,9 @@ public class GateApplet extends Applet {
 	 * @throws HttpException
 	 * @throws IOException
 	 */
-	public void upload(File file, String uploadTo) throws HttpException, IOException{ PutMethod put = new PutMethod(uploadTo);
+	public void upload(File file, String uploadTo) throws HttpException, IOException{ 
+		PutMethod put = new PutMethod(uploadTo);
+		useCurrentSession(put);
 		InputStream is = new FileInputStream(file);
 		RequestEntity entity = new InputStreamRequestEntity(is);
 		put.setRequestEntity(entity);

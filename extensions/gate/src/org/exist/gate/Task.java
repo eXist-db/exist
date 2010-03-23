@@ -1,21 +1,23 @@
 /*
- *  eXist's  Gate extension - REST client for automate document management
- *  form any browser in any desktop application on any client platform
- *  Copyright (C) 2010,  Evgeny V. Gazdovsky (gazdovsky@gmail.com)
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
  */
 
 package org.exist.gate;
@@ -28,6 +30,9 @@ import java.util.Timer;
 
 import org.apache.commons.httpclient.HttpException;
 
+/**
+ * @author Evgeny Gazdovsky (gazdovsky@gmail.com)
+ */
 public class Task{
 
 	private GateApplet gate;
