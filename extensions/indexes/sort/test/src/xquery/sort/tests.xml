@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Sort module tests</testName>
+    <description>
+        <p>Test sort indexes</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="sort1.xml">
+			<test>
+				<item>
+                    <name>c</name>
+				</item>
+                <item>
+                    <name>b</name>
+				</item>
+                <item>
+                    <name>a</name>
+				</item>
+			</test>
+		</store>
+    </setup>
+    <tearDown>
+        <!--remove-collection collection="/db/test"/-->
+    </tearDown>
+    <test output="text">
+        <task>Create index</task>
+        <code>
+            import module namespace sort="http://exist-db.org/xquery/sort"
+	        at "java:org.exist.xquery.modules.sort.SortModule";
+
+            declare function local:cb($node) {
+                $node/name/string()
+            };
+
+            let $fn := util:function(xs:QName("local:cb"), 1)
+            return
+                sort:create-index-callback("names", doc("/db/test/sort1.xml")//item, $fn)
+		</code>
+        <expected></expected>
+    </test>
+    <test output="xml">
+        <task>Use index</task>
+        <code>
+            import module namespace sort="http://exist-db.org/xquery/sort"
+	        at "java:org.exist.xquery.modules.sort.SortModule";
+
+            for $s in doc("/db/test/sort1.xml")//item
+            order by sort:index("names", $s)
+            return $s
+		</code>
+        <xpath>//item[1]/name = "a"</xpath>
+    </test>
+    <test output="text">
+        <task>Create index without callback</task>
+        <code>
+            import module namespace sort="http://exist-db.org/xquery/sort"
+	        at "java:org.exist.xquery.modules.sort.SortModule";
+
+            let $items := doc("/db/test/sort1.xml")//item
+            let $values := for $item in $items return $item/name/string()
+            return (
+                sort:create-index("names", $items, $values),
+                for $s in doc("/db/test/sort1.xml")//item
+                order by sort:index("names", $s)
+                return $s
+            )
+		</code>
+        <xpath>//item[1]/name = "a"</xpath>
+    </test>
+    <test output="xml">
+        <task>Remove index</task>
+        <code>
+            import module namespace sort="http://exist-db.org/xquery/sort"
+	        at "java:org.exist.xquery.modules.sort.SortModule";
+
+            sort:remove-index("names"),
+            for $s in doc("/db/test/sort1.xml")//item
+            order by sort:index("names", $s)
+            return $s
+		</code>
+        <!-- index has been removed. results won't be ordered. -->
+        <xpath>//item[1]/name = "c"</xpath>
+    </test>
+</TestSet>
