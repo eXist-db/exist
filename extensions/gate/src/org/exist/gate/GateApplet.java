@@ -50,7 +50,7 @@ public class GateApplet extends Applet {
 	
 	private HttpClient http = new HttpClient();
 	
-	private String sessionid = getParameter("sessionid");
+	private String sessionid;
 	
 	// Since we use applet's methods from unsigned javascript, 
 	// we must have a trusted thread for operations in local file system  
@@ -66,8 +66,9 @@ public class GateApplet extends Applet {
 	
 	public final static long PERIOD = 1000; 						// Default period/delay for different operations
 	
-	public GateApplet(){
-		super();
+	public void init(){
+		
+		sessionid = getParameter("sessionid");
 		
 		// Setup HTTP proxy
 		String proxyHost = System.getProperty( "http.proxyHost"); 
