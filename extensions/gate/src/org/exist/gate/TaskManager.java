@@ -72,29 +72,32 @@ public class TaskManager extends TimerTask{
 	 * and start listeners for them
 	 */
 	public void load(){
-		for(File meta: gate.getMeta().listFiles()){
-			try {
-				Properties prop = new Properties();
-				FileInputStream in = new FileInputStream(meta);
-				prop.loadFromXML(in);
-				File tmp = new File(gate.getCache(), prop.getProperty("file"));
-				if (tmp.exists()){
-					String downloadFrom = prop.getProperty("download-from");
-					String uploadTo = prop.getProperty("upload-to");
-					long modified = new Long(prop.getProperty("modified")).longValue();
-					Task task = new Task(downloadFrom, uploadTo, tmp, gate);
-					tasks.add(task);
-					Listener listener= new Listener(task, gate, modified);
-					Timer timer = new Timer();
-					timer.schedule(listener, GateApplet.PERIOD, GateApplet.PERIOD);
-					in.close();
-				} else {
-					meta.delete();
+		File metaFolder = gate.getMeta();
+		if (metaFolder.isDirectory()){
+			for(File meta: metaFolder.listFiles()){
+				try {
+					Properties prop = new Properties();
+					FileInputStream in = new FileInputStream(meta);
+					prop.loadFromXML(in);
+					File tmp = new File(prop.getProperty("file"));
+					if (tmp.exists()){
+						String downloadFrom = prop.getProperty("download-from");
+						String uploadTo = prop.getProperty("upload-to");
+						long modified = new Long(prop.getProperty("modified")).longValue();
+						Task task = new Task(downloadFrom, uploadTo, tmp, gate);
+						tasks.add(task);
+						Listener listener= new Listener(task, gate, modified);
+						Timer timer = new Timer();
+						timer.schedule(listener, GateApplet.PERIOD, GateApplet.PERIOD);
+						in.close();
+					} else {
+						meta.delete();
+					}
+				} catch (InvalidPropertiesFormatException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-			} catch (InvalidPropertiesFormatException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
 	}

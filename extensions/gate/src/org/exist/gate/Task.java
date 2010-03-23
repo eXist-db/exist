@@ -25,6 +25,8 @@ package org.exist.gate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.Timer;
 
@@ -40,7 +42,7 @@ public class Task{
 	private String downloadFrom;	// URL of file download from
 	private String uploadTo;		// URL for upload file
 	private File tmp;				// Downladed file 
-	
+
 	/**
 	 * Create a new task
 	 * @param downloadFrom URL of file download from
@@ -105,9 +107,14 @@ public class Task{
 		Properties prop = new Properties();
 		prop.put("download-from", downloadFrom);
 		prop.put("upload-to", uploadTo);
-		prop.put("file", tmp.getName());
+		prop.put("file", tmp.getAbsolutePath());
 		prop.put("modified", new Long(tmp.lastModified()).toString());
-		File meta = new File(gate.getMeta(), tmp.getName() + ".xml");
+		File fld = gate.getMeta();
+		if (!fld.isDirectory()){
+			fld.mkdirs();
+		}
+		String name = Integer.toHexString(downloadFrom.hashCode()) + ".xml";
+		File meta = new File(fld,  name);
 		if (!meta.exists()){
 			meta.createNewFile();
 		}

@@ -50,41 +50,43 @@ public class GateApplet extends Applet {
 	
 	private HttpClient http = new HttpClient();
 	
-	private String sessionid;
-	
 	// Since we use applet's methods from unsigned javascript, 
 	// we must have a trusted thread for operations in local file system  
 	private TaskManager manager = new TaskManager(this);
 	
+	private String sessionid;
 	private String opencmd;
 	
-	private File user  = new File(System.getProperty("user.home"));	// user home folder
-	private File exist = new File(user, ".eXist");					// .eXist's folder
-	private File etc   = new File(exist, "gate");					// Gate's folder
-	private File meta  = new File(etc, "meta");						// Store info about task here
-	private File cache = new File(etc, "cache");					// Store opened files here 
+	private File user;   // user home folder
+	private File exist;  // eXist's folder
+	private File etc;    // Gate's folder
+	private File meta;   // Task's meta storage folder
+	private File cache;  // Cache folder
+
 	
-	public final static long PERIOD = 1000; 						// Default period/delay for different operations
+	public final static long PERIOD = 1000; // Default period/delay for different operations
 	
 	public void init(){
 		
 		sessionid = getParameter("sessionid");
+		
+		user  = new File(System.getProperty("user.home"));
+		exist = new File(user, ".eXist");
+		etc   = new File(exist, "gate");
+
+		String host = getParameter("host");
+		if (host != null) {
+			etc = new File(etc, host);
+		}
+		
+		meta  = new File(etc, "meta");
+		cache = new File(etc, "cache");
 		
 		// Setup HTTP proxy
 		String proxyHost = System.getProperty( "http.proxyHost"); 
         if (proxyHost != null && !proxyHost.equals("")) {
         	ProxyHost proxy = new ProxyHost(proxyHost, Integer.parseInt(System.getProperty("http.proxyPort")));
             http.getHostConfiguration().setProxyHost(proxy);
-        }
-        
-        // Create gate folder
-        if (!cache.isDirectory()){
-        	cache.mkdirs();
-        }
-        
-        // Create meta folder
-        if (!meta.isDirectory()){
-        	meta.mkdirs();
         }
         
         // Detect OS open file command 
@@ -134,11 +136,11 @@ public class GateApplet extends Applet {
 		GetMethod get = new GetMethod(downloadFrom);
 		useCurrentSession(get);
 		http.executeMethod(get);
-		long contentLength = ((HttpMethodBase) get).getResponseContentLength();
+		long contentLength = get.getResponseContentLength();
 		
         if (contentLength < Integer.MAX_VALUE) {
         	InputStream is = get.getResponseBodyAsStream();
-    		file = createFile(new File(downloadFrom).getName());
+    		file = createFile(getCodeBase().getAuthority(), get.getPath());
     		OutputStream os = new FileOutputStream(file);
     		byte[] data = new byte[1024];
     		int read = 0;
@@ -187,8 +189,12 @@ public class GateApplet extends Applet {
 	 * @return file in cache
 	 * @throws IOException
 	 */
-	public File createFile(String name) throws IOException{
-		File tmp = new File(cache, name);
+	public File createFile(String host, String path) throws IOException{
+		File tmp = new File(cache, path);
+		File fld = tmp.getParentFile();
+		if (!fld.isDirectory()){
+			fld.mkdirs();
+		}
 		tmp.createNewFile();
 		return tmp;
 	}
@@ -208,7 +214,7 @@ public class GateApplet extends Applet {
 	}
 	
 	/**
-	 * @return "meta" folder of applet in local FS
+	 * @return "meta" folder of in local FS
 	 */
 	public File getMeta(){
 		return meta;
@@ -220,5 +226,5 @@ public class GateApplet extends Applet {
 	public File getCache(){
 		return cache;
 	}
-	
+
 }
