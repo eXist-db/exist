@@ -391,6 +391,12 @@
 			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
 				buffer="32"/>
 
+            <!--
+                The following index can be used to speed up 'order by' expressions
+                by pre-ordering a node set.
+            -->
+            <module id="sort-index" class="org.exist.indexing.sort.SortIndex"/>
+
             <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
 
             <!-- 

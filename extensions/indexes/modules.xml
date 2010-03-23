@@ -15,5 +15,6 @@
         <!-- spatial index that operates on geometries in the "http://www.opengis.net/gml" namespace -->
         <index name="spatial" dir="spatial" antfile="build.xml"/>
 
+        <index name="sort" dir="sort" antfile="build.xml"/>
     </indexes>
 </build>
