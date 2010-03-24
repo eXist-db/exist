@@ -16,7 +16,7 @@
  *  $Id: RenderFunction.java 10610 2009-11-26 09:12:00Z shabanovd $
  */
 
-package org.exist.xquery.modules.lib;
+package org.exist.xquery.functions.system;
 
 
 import java.io.File;
