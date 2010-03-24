@@ -16,7 +16,7 @@
  *  $Id: RenderFunction.java 10610 2009-11-26 09:12:00Z shabanovd $
  */
 
-package org.exist.xquery.modules.lib;
+package org.exist.xquery.functions.system;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -42,8 +42,8 @@ public class GetLibFunction extends LibFunction {
 	public final static FunctionSignature signatures[] = {
 
 			new FunctionSignature(
-					new QName("get-lib", LibModule.NAMESPACE_URI,
-							LibModule.PREFIX),
+					new QName("get-lib", SystemModule.NAMESPACE_URI,
+							SystemModule.PREFIX),
 					"Return a requested lib file from exist's libs",
 					new SequenceType[] {
 						new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "name of lib")
