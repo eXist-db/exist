@@ -1,12 +1,12 @@
 xquery version "1.0";
 
-import module namespace lib    = "http://exist-db.org/xquery/lib";
-import module namespace request = "http://exist-db.org/xquery/request";
+import module namespace system   = "http://exist-db.org/xquery/system";
+import module namespace request  = "http://exist-db.org/xquery/request";
 import module namespace response = "http://exist-db.org/xquery/response";
 
 let $name := request:get-attribute("name"),
-    $jar := lib:get-lib($name),
-    $last-modified := lib:get-lib-info($name)/@modified,
+    $jar := system:get-lib($name),
+    $last-modified := system:get-lib-info($name)/@modified,
     $type := if (ends-with($name, ".jar"))
                 then "application/x-java-archive"
                 else if (ends-with($name, ".jar"))
