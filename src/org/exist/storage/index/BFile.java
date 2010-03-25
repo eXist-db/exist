@@ -20,10 +20,13 @@
  */
 package org.exist.storage.index;
 
+import org.apache.log4j.Logger;
+
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
@@ -82,6 +85,8 @@ import java.util.Arrays;
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class BFile extends BTree {
+
+    protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
 
     public final static short FILE_FORMAT_VERSION_ID = 10;
     
@@ -424,7 +429,7 @@ public class BFile extends BTree {
         	buf.append(nf.format(dataCache.getHits()/(float)(dataCache.getHits() + dataCache.getFails())));        
         //buf.append(dataCache.getHits()).append(" / ");
         //buf.append(dataCache.getFails());
-        LOG.info(buf.toString());
+        LOGSTATS.info(buf.toString());
     }
 
     /**
