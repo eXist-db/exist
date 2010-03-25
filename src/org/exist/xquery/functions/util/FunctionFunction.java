@@ -99,8 +99,6 @@ public class FunctionFunction extends BasicFunction {
 	    UserDefinedFunction func;
 	    if(module == null) {
 	        func = context.resolveFunction(qname, arity);
-			if (func == null)
-				throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
 	    } else {
 	        if(module.isInternalModule()) {
                 logger.error("Cannot create a reference to an internal Java function");
@@ -108,6 +106,8 @@ public class FunctionFunction extends BasicFunction {
             }
 	        func = ((ExternalModule)module).getFunction(qname, arity);
 	    }
+        if (func == null)
+            throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
 	    FunctionCall funcCall = new FunctionCall(context, func);
         funcCall.setLocation(line, column);
 	    return funcCall;
