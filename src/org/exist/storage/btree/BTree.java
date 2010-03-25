@@ -72,10 +72,13 @@ package org.exist.storage.btree;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.log4j.Logger;
+
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DefaultCacheManager;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.LogEntryTypes;
@@ -107,6 +110,8 @@ import java.text.NumberFormat;
  */
 public class BTree extends Paged {
 
+    protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
+    
     /** Used as return value, if a value was not found */
     public final static long KEY_NOT_FOUND = -1;
 
@@ -2386,7 +2391,7 @@ public class BTree extends Paged {
         	buf.append(nf.format(cache.getHits() / (float)(cache.getFails() + cache.getHits())));        
 		//buf.append(cache.getHits()).append(" / ");
 		//buf.append(cache.getFails());
-		LOG.info(buf.toString());
+		LOGSTATS.info(buf.toString());
 //        try {
 //            treeStatistics().toLogger();
 //        } catch (IOException e) {

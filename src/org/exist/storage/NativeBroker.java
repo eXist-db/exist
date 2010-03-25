@@ -21,6 +21,8 @@
  */
 package org.exist.storage;
 
+import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
@@ -113,6 +115,10 @@ import java.util.StringTokenizer;
  *@author     Wolfgang Meier
  */
 public class NativeBroker extends DBBroker {
+	
+	public final static String EXIST_STATISTICS_LOGGER = "org.exist.statistics";
+	
+	protected final static Logger LOGSTATS = Logger.getLogger( EXIST_STATISTICS_LOGGER );
 	
     public final static byte LOG_RENAME_BINARY = 0x40;
     public final static byte LOG_CREATE_BINARY = 0x41;
@@ -3199,7 +3205,7 @@ public class NativeBroker extends DBBroker {
                 notifySync();
                 pool.getIndexManager().sync();
                 NumberFormat nf = NumberFormat.getNumberInstance();
-                LOG.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
+                LOGSTATS.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
                         nf.format(run.maxMemory() / 1024) + "K max; " +
                         nf.format(run.freeMemory() / 1024) + "K free");
                 domDb.printStatistics();

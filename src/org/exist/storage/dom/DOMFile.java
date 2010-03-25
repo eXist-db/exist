@@ -21,6 +21,8 @@
  */
 package org.exist.storage.dom;
 
+import org.apache.log4j.Logger;
+
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
@@ -114,6 +116,8 @@ import java.util.ArrayList;
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class DOMFile extends BTree implements Lockable {
+
+    protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
 	
     public static final String FILE_NAME = "dom.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.dom";
@@ -1431,7 +1435,7 @@ public class DOMFile extends BTree implements Lockable {
 	    buf.append(nf.format(dataCache.getHits()/(float)(dataCache.getFails() + dataCache.getHits())));        
 	//buf.append(dataCache.getHits()).append(" / ");
 	//buf.append(dataCache.getFails());
-	LOG.info(buf.toString());
+	LOGSTATS.info(buf.toString());
     }
 
     public BufferStats getDataBufferStats() {
