@@ -15,7 +15,8 @@ public class SortModule extends AbstractInternalModule {
         new FunctionDef(CreateOrderIndex.signatures[0], CreateOrderIndex.class),
         new FunctionDef(CreateOrderIndex.signatures[1], CreateOrderIndex.class),
         new FunctionDef(GetIndex.signature, GetIndex.class),
-        new FunctionDef(RemoveIndex.signature, RemoveIndex.class)
+        new FunctionDef(RemoveIndex.signatures[0], RemoveIndex.class),
+        new FunctionDef(RemoveIndex.signatures[1], RemoveIndex.class)
     };
 
     public SortModule() {

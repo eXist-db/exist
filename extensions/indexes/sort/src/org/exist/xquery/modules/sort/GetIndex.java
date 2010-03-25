@@ -16,13 +16,14 @@ public class GetIndex extends BasicFunction {
             new QName("index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
             "Look up a node in the sort index and return a number (&gt; 0) corresponding to the " +
             "position of that node in the ordered set which was created by a previous call to " +
-            "the sort:create-index function.",
+            "the sort:create-index function. The function returns the empty sequence if the node " +
+            "cannot be found in the index.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("id", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the index."),
                 new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_ONE, "The node to look up.")
              },
         new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, "A number &gt; 0 or the empty " +
-            "sequence if the $node argument was empty."));
+            "sequence if the $node argument was empty or the node could not be found in the index."));
 
     public GetIndex(XQueryContext context) {
         super(context, signature);
@@ -44,6 +45,6 @@ public class GetIndex extends BasicFunction {
         } catch (LockException e) {
             throw new XPathException(this, "Caught lock error while searching index. Giving up.", e);
         }
-        return new IntegerValue(pos, Type.LONG);
+        return pos < 0 ? Sequence.EMPTY_SEQUENCE : new IntegerValue(pos, Type.LONG);
     }
 }

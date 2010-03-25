@@ -27,8 +27,7 @@
     <test output="text">
         <task>Create index</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort"
-	        at "java:org.exist.xquery.modules.sort.SortModule";
+            import module namespace sort="http://exist-db.org/xquery/sort";
 
             declare function local:cb($node) {
                 $node/name/string()
@@ -43,8 +42,7 @@
     <test output="xml">
         <task>Use index</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort"
-	        at "java:org.exist.xquery.modules.sort.SortModule";
+            import module namespace sort="http://exist-db.org/xquery/sort";
 
             for $s in doc("/db/test/sort1.xml")//item
             order by sort:index("names", $s)
@@ -55,8 +53,7 @@
     <test output="text">
         <task>Create index without callback</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort"
-	        at "java:org.exist.xquery.modules.sort.SortModule";
+            import module namespace sort="http://exist-db.org/xquery/sort";
 
             let $items := doc("/db/test/sort1.xml")//item
             let $values := for $item in $items return $item/name/string()
@@ -72,8 +69,7 @@
     <test output="xml">
         <task>Remove index</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort"
-	        at "java:org.exist.xquery.modules.sort.SortModule";
+            import module namespace sort="http://exist-db.org/xquery/sort";
 
             sort:remove-index("names"),
             for $s in doc("/db/test/sort1.xml")//item
@@ -82,5 +78,35 @@
 		</code>
         <!-- index has been removed. results won't be ordered. -->
         <xpath>//item[1]/name = "c"</xpath>
+    </test>
+    <test output="text">
+        <task>Create and remove index for document</task>
+        <code>
+            import module namespace sort="http://exist-db.org/xquery/sort";
+            
+            let $items := doc("/db/test/sort1.xml")//item
+            let $values := for $item in $items return $item/name/string()
+            return (
+                sort:create-index("names", $items, $values),
+                sort:remove-index("names", doc("/db/test/sort1.xml")),
+                for $s in doc("/db/test/sort1.xml")//item
+                order by sort:index("names", $s)
+                return $s
+            )
+        </code>
+        <xpath>//item[1]/name = "c"</xpath>
+    </test>
+    <test output="text">
+        <task>Remove Document</task>
+        <code>
+            import module namespace sort="http://exist-db.org/xquery/sort";
+            
+            let $old := doc("/db/test/sort1.xml")//item[1]
+            let $remove :=
+                xdb:remove("/db/test", "sort1.xml")
+            return
+                sort:index("names", $old)
+        </code>
+        <expected>-1</expected>
     </test>
 </TestSet>
