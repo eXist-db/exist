@@ -83,11 +83,18 @@ public class CreateOrderIndex extends BasicFunction {
                 // call the callback function to get value
                 params[0] = node;
                 Sequence r = call.evalFunction(contextSequence, null, params);
-                if (!r.isEmpty())
-                    si.setValue(r.itemAt(0).atomize());
+                if (!r.isEmpty()) {
+                    AtomicValue v = r.itemAt(0).atomize();
+                    if (v.getType() == Type.UNTYPED_ATOMIC)
+                        v = v.convertTo(Type.STRING);
+                    si.setValue(v);
+                }
             } else {
                 // no callback, take value from second sequence
-                si.setValue(valuesIter.nextItem().atomize());
+                AtomicValue v = valuesIter.nextItem().atomize();
+                if (v.getType() == Type.UNTYPED_ATOMIC)
+                    v = v.convertTo(Type.STRING);
+                si.setValue(v);
             }
             items.add(si);
         }

@@ -2,11 +2,12 @@ package org.exist.indexing.sort;
 
 import org.exist.dom.NodeProxy;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.StringValue;
 
 public class SortItem implements Comparable<SortItem> {
 
     NodeProxy node;
-    AtomicValue value = AtomicValue.EMPTY_VALUE;
+    AtomicValue value = StringValue.EMPTY_STRING;
 
     public SortItem(NodeProxy node) {
         this.node = node;

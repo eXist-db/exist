@@ -20,6 +20,7 @@ import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,11 @@ public class SortIndexWorker implements IndexWorker {
     }
 
     public void flush() {
+        switch (mode) {
+            case StreamListener.REMOVE_ALL_NODES:
+                remove(document);
+                break;
+        }
     }
 
     /**
@@ -64,8 +70,6 @@ public class SortIndexWorker implements IndexWorker {
      * @throws LockException
      */
     public void createIndex(String name, List<SortItem> items) throws EXistException, LockException {
-        // remove any old index with the same name
-        remove(name);
         // get an id for the new index
         short id = getOrRegisterId(name);
         final Lock lock = index.btree.getLock();
@@ -143,6 +147,61 @@ public class SortIndexWorker implements IndexWorker {
         }
     }
 
+    public void remove(String name, DocumentImpl doc) throws EXistException, LockException {
+        short id = getId(name);
+        remove(doc, id);
+    }
+
+    private void remove(DocumentImpl doc, short id) throws LockException, EXistException {
+        final Lock lock = index.btree.getLock();
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            byte[] fromKey = computeKey(id, doc.getDocId());
+            byte[] toKey = computeKey(id, doc.getDocId() + 1);
+            final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
+            index.btree.remove(query, null);
+        } catch (BTreeException e) {
+            throw new EXistException("Exception caught while deleting sort index: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new EXistException("Exception caught while deleting sort index: " + e.getMessage(), e);
+        } catch (TerminatedException e) {
+            throw new EXistException("Exception caught while deleting sort index: " + e.getMessage(), e);
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+    }
+
+    public void remove(DocumentImpl doc) {
+        if (index.btree == null)
+            return;
+        byte[] fromKey = new byte[] { 1 };
+        byte[] endKey = new byte[] { 2 };
+
+        final Lock lock = index.btree.getLock();
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(endKey));
+            FindIdCallback callback = new FindIdCallback(true);
+            index.btree.query(query, callback);
+
+            for (long id : callback.allIds) {
+                remove(doc, (short) id);
+            }
+        } catch (BTreeException e) {
+            SortIndex.LOG.debug("Exception caught while reading sort index: " + e.getMessage(), e);
+        } catch (IOException e) {
+            SortIndex.LOG.debug("Exception caught while reading sort index: " + e.getMessage(), e);
+        } catch (TerminatedException e) {
+            SortIndex.LOG.debug("Exception caught while reading sort index: " + e.getMessage(), e);
+        } catch (LockException e) {
+            SortIndex.LOG.debug("Exception caught while reading sort index: " + e.getMessage(), e);
+        } catch (EXistException e) {
+            SortIndex.LOG.debug("Exception caught while reading sort index: " + e.getMessage(), e);
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+    }
+
     /**
      * Register the given index name and return a short id for it.
      *
@@ -156,11 +215,12 @@ public class SortIndexWorker implements IndexWorker {
         short id = getId(name);
         if (id < 0) {
             byte[] fromKey = { 1 };
-            IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey));
+            byte[] endKey = { 2 };
+            IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(endKey));
             final Lock lock = index.btree.getLock();
             try {
                 lock.acquire(Lock.READ_LOCK);
-                FindIdCallback callback = new FindIdCallback();
+                FindIdCallback callback = new FindIdCallback(false);
                 index.btree.query(query, callback);
                 id = (short)(callback.max + 1);
                 registerId(id, name);
@@ -179,9 +239,18 @@ public class SortIndexWorker implements IndexWorker {
 
     private final static class FindIdCallback implements BTreeCallback {
         long max = 0;
+        List<Long> allIds = null;
+
+        private FindIdCallback(boolean findIds) {
+            if (findIds)
+                allIds = new ArrayList<Long>(10);
+        }
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             max = Math.max(max, pointer);
+            if (allIds != null) {
+                allIds.add(pointer);
+            }
             return true;
         }
     }
@@ -228,6 +297,14 @@ public class SortIndexWorker implements IndexWorker {
         ByteConversion.shortToByteH(id, data, 1);
         ByteConversion.intToByteH(proxy.getDocument().getDocId(), data, 3);
         proxy.getNodeId().serialize(data, 7);
+        return data;
+    }
+
+    private byte[] computeKey(short id, int docId) {
+        byte[] data = new byte[7];
+        data[0] = 0;
+        ByteConversion.shortToByteH(id, data, 1);
+        ByteConversion.intToByteH(docId, data, 3);
         return data;
     }
 
