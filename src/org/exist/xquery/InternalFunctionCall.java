@@ -92,8 +92,14 @@ public class InternalFunctionCall extends Function
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException
 	{
 		contextInfo.setParent(this);
-		function.analyze(contextInfo);
-	}
+        try {
+            function.analyze(contextInfo);
+        } catch (XPathException e) {
+            if (e.getLine() <= 0)
+                e.setLocation(line, column, getSource());
+            throw e;
+        }
+    }
 	
 	public void setParent(Expression parent)
 	{
