@@ -239,6 +239,11 @@
                     <tgroup cols="2">
                         <tbody>
                             <tr>
+                                <td class="doclink">
+                                    <ulink url="devguide_manifesto.xml">eXist-db Developer Manifesto</ulink>:</td>
+                                <td>Guidelines for developing and contributing to the eXist-db code base.</td>
+                            </tr>
+                            <tr>
                                 <td class="doclink"><ulink url="building.xml">Building
                                     eXist</ulink>:</td>
                                 <td>compiling and building eXist distributions, using the Subversion
