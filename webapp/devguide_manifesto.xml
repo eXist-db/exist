@@ -33,10 +33,12 @@
                 take place through the <ulink url="http://sourceforge.net/mail/?group_id=17691"
                     >eXist-db Development mailing list</ulink>.</para>
             <para>If conflicts of interest occur during discussion, they must be resolved before any
-                code changes are made. Conflicts may be resolved by one of the senior core
-                developers, who have been contributing to eXist for a long time and have a good
-                overview of the project. Right now this includes: Pierrick Brihaye, Wolfgang Meier, Leif-Jöran Olsson,
-                Adam Retter and Dannes Wessels.</para>
+                code changes are made. If conflicts cannot be resolved by the community, one of the core
+                maintainers may act as a moderator. Maintainers are contributors who feel responsible 
+                for the project as a whole and have shown it in the past through their committment and
+                support. Right now this includes: Pierrick Brihaye, Wolfgang Meier, Leif-Jöran Olsson, Adam Retter 
+                and Dannes Wessels. We name those people, so you know who to talk to, but the list is in no way exclusive
+                and may change over time.</para>
         </section>
         <section>
             <title>Maintainability</title>
