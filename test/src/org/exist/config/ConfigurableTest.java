@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.config;
 
@@ -54,20 +54,8 @@ public class ConfigurableTest {
 	@Test
 	public void simple() throws Exception {
 		InputStream is = new ByteArrayInputStream(config1.getBytes("UTF-8"));
-		
-        // initialize xml parser
-        // we use eXist's in-memory DOM implementation to work
-        // around a bug in Xerces
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-        InputSource src = new InputSource(is);
-        SAXParser parser = factory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
-        SAXAdapter adapter = new SAXAdapter();
-        reader.setContentHandler(adapter);
-        reader.parse(src);
         
-        ConfigElementImpl config = new ConfigElementImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+        ConfigElement config = Configurator.parse(is);
         
         ConfigurableObject object = new ConfigurableObject(config);
         

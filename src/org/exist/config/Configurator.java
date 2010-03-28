@@ -21,22 +21,33 @@
  */
 package org.exist.config;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
+import org.exist.dom.ElementAtExist;
+import org.exist.memtree.SAXAdapter;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Configurater {
+public class Configurator {
 	
-	private final static Logger LOG = Logger.getLogger(Configurater.class);
+	private final static Logger LOG = Logger.getLogger(Configurator.class);
 
 	private static Map<Class<Configurable>, Map<String, Field>> map = 
 		new HashMap<Class<Configurable>, Map<String, Field>>();
@@ -108,5 +119,24 @@ public class Configurater {
 		}
 		
 		return true;
+	}
+
+	public static ConfigElement parse(InputStream is) throws IOException {
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			InputSource src = new InputSource(is);
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			SAXAdapter adapter = new SAXAdapter();
+			reader.setContentHandler(adapter);
+			reader.parse(src);
+    
+			return new ConfigElementImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+		} catch (ParserConfigurationException e) {
+			throw new IOException(e);
+		} catch (SAXException e) {
+			throw new IOException(e);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.config;
 
@@ -49,8 +49,8 @@ public class ConfigurableObject implements Configurable {
 	@ConfigurationField("valueBoolean")
 	protected Boolean someBoolean = true;
 
-	public ConfigurableObject(ConfigElementImpl config) {
-		Configurater.configure(this, config);
+	public ConfigurableObject(ConfigElement config) {
+		Configurator.configure(this, config);
 	}
 
 	/* (non-Javadoc)
