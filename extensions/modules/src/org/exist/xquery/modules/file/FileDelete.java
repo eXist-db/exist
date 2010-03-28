@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -38,6 +38,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ * @see java.io.File#delete() 
+ *
  * @author Andrzej Taramina
  *
  */
@@ -48,7 +50,7 @@ public class FileDelete extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "delete", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Delete a file.  This method is only available to the DBA role.",
+			"Delete a file or directory.  This method is only available to the DBA role.",
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
 				},				
