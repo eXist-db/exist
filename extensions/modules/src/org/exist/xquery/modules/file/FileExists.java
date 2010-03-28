@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-09 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -38,6 +38,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ * @see java.io.File#exists() 
+ *
  * @author Andrzej Taramina
  *
  */
@@ -48,7 +50,7 @@ public class FileExists extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if a file exists.  This method is only available to the DBA role.",
+			"Tests if a file or directory exists.  This method is only available to the DBA role.",
 			new SequenceType[] {				
 				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file in the file system" )
 				},				
