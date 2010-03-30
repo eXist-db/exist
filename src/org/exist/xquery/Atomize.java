@@ -72,6 +72,8 @@ public class Atomize extends AbstractExpression {
 	}
 
     public static Sequence atomize(Sequence input) throws XPathException {
+        if (input.isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
         if (input.hasOne())
             return input.itemAt(0).atomize();
         Item next;
@@ -81,6 +83,10 @@ public class Atomize extends AbstractExpression {
             result.add(next.atomize());
         }
         return result;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
     
 	/* (non-Javadoc)
