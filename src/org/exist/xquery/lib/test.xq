@@ -39,15 +39,21 @@ declare function t:tearDown($tearDown as element(tearDown)?) {
         t:setup-action($action)
 };
 
-declare function t:run-test($test as element(test), $count as xs:integer) {
-
-	let $context :=
+declare function t:init-prolog($test as element(test)) {
+	let $imports := $test/../imports
+	let $vars :=
 	    string-join(
         	for $var in $test/../variable
         	return
         	    concat("declare variable $", $var/@name, " := ", util:serialize($var/*, ()), ";"),
             ""
         )
+	return
+		string-join(($imports, $vars, $test/../functions), '')
+};
+
+declare function t:run-test($test as element(test), $count as xs:integer) {
+	let $context := t:init-prolog($test)
     let $output :=
 		util:catch("*",
 			util:eval(concat($context, $test/code/string())),
@@ -64,11 +70,16 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
             normalize-space(string-join(for $x in $output return string($x),' ')) eq normalize-space($expected)
         else
             deep-equal($output, $expected)
+    let $expanded :=
+		if ($output instance of node()) then
+        	util:expand($output)
+		else
+			$output
     return
         <test n="{$count}" pass="{$OK}">
         {
             if (not($OK)) then
-                ($test/task, $test/expected, <result>{$output}</result>)
+                ($test/task, $test/expected, <result>{$expanded}</result>)
             else ()
         }
         </test>

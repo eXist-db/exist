@@ -32,10 +32,8 @@
                 using the t:run-testSet() function.</para>
 
                 <example>
-                <title>Example XQuery Test example</title>
-                    <programlisting>
-                    <markup><![CDATA[
-
+                    <title>Example XQuery Test example</title>
+                    <programlisting language="xquery"><![CDATA[
 xquery version "1.0";
 
 import module namespace t="http://exist-db.org/xquery/testing";
@@ -54,6 +52,8 @@ let $test := <TestSet>
             </root>
         </store>
     </setup>
+    <imports><!-- Import statements --></imports>
+    <functions><!-- Function declarations --></functions>
     <tearDown>
         <remove-collection collection="/db/test"/>
     </tearDown>
@@ -66,23 +66,52 @@ let $test := <TestSet>
  </TestSet>
 return
     t:run-testSet($test)
- ]]>
-</markup>
-            </programlisting>
-        <a href="examples/unit-test-example.xql" target="_example">run unit-test-example.xql</a>
-
+    ]]></programlisting>
         </example>
 
+                <para><a href="examples/unit-test-example.xql" target="_example">run unit-test-example.xql</a></para>
+                
                 <para>
                      A <b>TestSet</b> defines the tests you would like to run, which uses the following elements:
 
-                    <ul>
-                        <li><b>setup</b>: create collections and store xml data for use with testing.</li>
-                        <li><b>tearDown</b>: remove collections and data after testing</li>
-                        <li><b>test</b>: define test and expected results </li>
-                    </ul>
-
-
+                    <variablelist>
+                        <varlistentry>
+                            <term>setup</term>
+                            <listitem>
+                                <para>create collections and store xml data for use with testing.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>tearDown</term>
+                            <listitem>
+                                <para>create collections and store xml data for use with testing.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>imports</term>
+                            <listitem>
+                                <para>May contain import statements or namespace declarations which will be added to the prolog
+                                of each test query, e.g.</para>
+                                
+                                <synopsis language="xquery">import module namespace sort="http://exist-db.org/xquery/sort";</synopsis>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>functions</term>
+                            <listitem>
+                                <para>A list of function declarations which will be added to the prolog
+                                of each test query. This way you can avoid pasting the same shared code into
+                                every query.</para>
+                            </listitem>
+                        </varlistentry>
+                        
+                        <varlistentry>
+                            <term>test</term>
+                            <listitem>
+                                <para>define test and expected results.</para>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
                 </para>
 
                 <para>Running the example will output the following</para>
