@@ -36,13 +36,13 @@ return
 			</view>
             <cache-control cache="no"/>
 		</dispatch>
-    else if ($name = ('default-style.css', 'default-style2.css')) then
-        let $newPath := replace($path, '^.*/([^/]+/[^/]+)$', '/$1')
-        return
+    else if (matches($exist:path, '(styles/syntax|scripts/syntax/|logo.jpg|default-style2.css|curvycorners.js)')) then
+    let $newPath := replace($exist:path, '^.*((styles/|scripts/|logo).*)$', '/$1')
+    return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<forward url="{$newPath}"/>
-			<cache-control cache="yes"/>
-		</dispatch>
+    		<forward url="{$newPath}"/>
+    		<cache-control cache="yes"/>
+    	</dispatch>
     else
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">
             <cache-control cache="yes"/>
