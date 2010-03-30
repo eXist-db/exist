@@ -58,11 +58,19 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
+        return convertTo(this, value, requiredType);
+    }
+
+    public static AtomicValue convertTo(String value, int requiredType) throws XPathException {
+        return convertTo(null, value, requiredType);
+    }
+    
+    public static AtomicValue convertTo(UntypedAtomicValue strVal, String value, int requiredType) throws XPathException {
 		switch (requiredType) {
 			case Type.ATOMIC :
 			case Type.ITEM :
 			case Type.UNTYPED_ATOMIC :
-				return this;
+				return strVal;
 			case Type.STRING :
 				return new StringValue(value);
             case Type.ANY_URI :
@@ -75,17 +83,17 @@ public class UntypedAtomicValue extends AtomicValue {
                     return BooleanValue.TRUE;
                 else
 					throw new XPathException("FORG0001: cannot cast '" + 
-							Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+							Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
 							Type.getTypeName(requiredType));
 			case Type.FLOAT :
 				return new FloatValue(value);
 			case Type.DOUBLE :
-				return new DoubleValue(this);
+				return new DoubleValue(strVal);
 			case Type.NUMBER :
 				//TODO : more complicated
-				return new DoubleValue(this);
+				return new DoubleValue(strVal);
 			case Type.DECIMAL :
-				return new DecimalValue(getStringValue());
+				return new DecimalValue(value);
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
@@ -128,7 +136,7 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new DayTimeDurationValue(dtdv.getCanonicalDuration());
 			default :
 				throw new XPathException("FORG0001: cannot cast '" + 
-						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+						Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
 						Type.getTypeName(requiredType));
 		}
 	}

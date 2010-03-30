@@ -39,6 +39,7 @@ public class UntypedValueCheck extends AbstractExpression {
 	private final Expression expression;
 	private final int requiredType;
 	private final Error error;
+    private final boolean atomize;
     
     public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression) {
         this(context, requiredType, expression, new Error(Error.TYPE_MISMATCH));
@@ -47,7 +48,13 @@ public class UntypedValueCheck extends AbstractExpression {
 	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression, Error error) {
 		super(context);
 		this.requiredType = requiredType;
-		this.expression = expression;
+        if (expression instanceof Atomize && requiredType != Type.ATOMIC) {
+            this.expression = ((Atomize)expression).getExpression();
+            this.atomize = true;
+        } else {
+            this.expression = expression;
+            this.atomize = false;
+        }
         this.error = error;
 	}
 	
@@ -73,32 +80,43 @@ public class UntypedValueCheck extends AbstractExpression {
         }
         
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		ValueSequence result = new ValueSequence();
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			Item item = i.nextItem();
-			//System.out.println(item.getStringValue() + " converting to " + Type.getTypeName(requiredType));
-			//Type untyped values or... refine existing type
-			if (item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
-				try {
-					item = item.convertTo(requiredType);
-				} catch (XPathException e) {
-	                error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
-	                        Type.getTypeName(item.getType()));
-	                throw new XPathException(expression, error.toString());
-				}
-			}
-			result.add(item);			
-		}
+        Sequence result = null;
+        if (seq.hasOne()) {
+            Item item = convert(seq.itemAt(0));
+            if (item != null)
+                result = item.toSequence();
+        } else {
+            result = new ValueSequence();
+            for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                //Type untyped values or... refine existing type
+                item = convert(item);
+                result.add(item);
+            }
+        }
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
         
         return result; 
 	}
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
-	 */
+
+    private Item convert(Item item) throws XPathException {
+        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
+            try {
+                item = item.convertTo(requiredType);
+            } catch (XPathException e) {
+                error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
+                    Type.getTypeName(item.getType()));
+                throw new XPathException(expression, error.toString());
+            }
+        }
+        return item;
+    }
+
+    /* (non-Javadoc)
+      * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
+      */
 	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {
 		return in_docs;

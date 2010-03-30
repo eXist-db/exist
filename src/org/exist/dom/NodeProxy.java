@@ -708,7 +708,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Item#convertTo(int)
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
-	    return new StringValue(getNodeValue()).convertTo(requiredType);
+        return UntypedAtomicValue.convertTo(getNodeValue(), requiredType);
     }
 
     /* (non-Javadoc)

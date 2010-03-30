@@ -63,91 +63,99 @@ public class DynamicTypeCheck extends AbstractExpression {
         if (Type.subTypeOf(requiredType, Type.ATOMIC) && !Type.subTypeOf(seq.getItemType(), requiredType)) {
             result = new ValueSequence();
         }
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			Item item = i.nextItem();
-			int type = item.getType();
-			if (type == Type.NODE &&
-					((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-				type = ((NodeProxy) item).getNodeType();
-				if (type == NodeProxy.UNKNOWN_NODE_TYPE)
-					//Retrieve the actual node
-					type= ((NodeProxy) item).getNode().getNodeType();
-			}
-			if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
-				//TODO : how to make this block more generic ? -pb				
-				if (type == Type.UNTYPED_ATOMIC) {	
-					try {
-						item = item.convertTo(requiredType);
-					//No way
-					} catch (XPathException e) {
-						throw new XPathException(expression, "FOCH0002: Required type is " +
-								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-								item.getStringValue() + ")'");
-					}
-				//Then, if numeric, try to refine the type					
-				//xs:decimal(3) treat as xs:integer 
-				} else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
-					try {
-						item = item.convertTo(requiredType);
-					//No way
-					} catch (XPathException e) {
-						throw new XPathException(expression, "FOCH0002: Required type is " +
-								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-								item.getStringValue() + ")'");
-					}
-				//Then, if duration, try to refine the type					
-				//No test on the type hierarchy ; this has to pass :
-				//fn:months-from-duration(xs:duration("P1Y2M3DT10H30M"))
-				//TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
-				} else if (Type.subTypeOf(requiredType, Type.DURATION) /*&& Type.subTypeOf(type, requiredType)*/) {
-					try {
-						item = item.convertTo(requiredType);
-					//No way
-					} catch (XPathException e) {
-						throw new XPathException(expression, "FOCH0002: Required type is " +
-								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-								item.getStringValue() + ")'");
-					}
-				//Then, if date, try to refine the type					
-				//No test on the type hierarchy
-				//TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
-				} else if (Type.subTypeOf(requiredType, Type.DATE) /*&& Type.subTypeOf(type, requiredType)*/) {
-					try {
-						item = item.convertTo(requiredType);
-					//No way
-					} catch (XPathException e) {
-						throw new XPathException(expression, "FOCH0002: Required type is " +
-								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-								item.getStringValue() + ")'");
-					}					
-				//URI type promotion: A value of type xs:anyURI (or any type derived 
-				//by restriction from xs:anyURI) can be promoted to the type xs:string. 
-				//The result of this promotion is created by casting the 
-				//original value to the type xs:string.
-				} else if (type == Type.ANY_URI && requiredType == Type.STRING) {
-						item = item.convertTo(Type.STRING);
-						type = Type.STRING;
-				} else {
-					if (!(Type.subTypeOf(type, requiredType))) {
-						throw new XPathException(expression, "FORG0001: " +
-								Type.getTypeName(item.getType()) + "(" + item.getStringValue() + 
-								") is not a sub-type of " + Type.getTypeName(requiredType));
-						
-					} else
-						throw new XPathException(expression, "FOCH0002: Required type is " +
-							Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-							item.getStringValue() + ")'");
-				}
-			}
-            if (result != null)
-                result.add(item);
-		}
+        if (seq.hasOne())
+            check(result, seq.itemAt(0));
+        else if (!seq.isEmpty()) {
+            for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                check(result, item);
+            }
+        }
 		return result == null ? seq : result;
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    private void check(Sequence result, Item item) throws XPathException {
+        int type = item.getType();
+        if (type == Type.NODE &&
+                ((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+            type = ((NodeProxy) item).getNodeType();
+            if (type == NodeProxy.UNKNOWN_NODE_TYPE)
+                //Retrieve the actual node
+                type= ((NodeProxy) item).getNode().getNodeType();
+        }
+        if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
+            //TODO : how to make this block more generic ? -pb
+            if (type == Type.UNTYPED_ATOMIC) {
+                try {
+                    item = item.convertTo(requiredType);
+                //No way
+                } catch (XPathException e) {
+                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                            Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+                            item.getStringValue() + ")'");
+                }
+            //Then, if numeric, try to refine the type
+            //xs:decimal(3) treat as xs:integer
+            } else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
+                try {
+                    item = item.convertTo(requiredType);
+                //No way
+                } catch (XPathException e) {
+                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                            Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+                            item.getStringValue() + ")'");
+                }
+            //Then, if duration, try to refine the type
+            //No test on the type hierarchy ; this has to pass :
+            //fn:months-from-duration(xs:duration("P1Y2M3DT10H30M"))
+            //TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
+            } else if (Type.subTypeOf(requiredType, Type.DURATION) /*&& Type.subTypeOf(type, requiredType)*/) {
+                try {
+                    item = item.convertTo(requiredType);
+                //No way
+                } catch (XPathException e) {
+                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                            Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+                            item.getStringValue() + ")'");
+                }
+            //Then, if date, try to refine the type
+            //No test on the type hierarchy
+            //TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
+            } else if (Type.subTypeOf(requiredType, Type.DATE) /*&& Type.subTypeOf(type, requiredType)*/) {
+                try {
+                    item = item.convertTo(requiredType);
+                //No way
+                } catch (XPathException e) {
+                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                            Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+                            item.getStringValue() + ")'");
+                }
+            //URI type promotion: A value of type xs:anyURI (or any type derived
+            //by restriction from xs:anyURI) can be promoted to the type xs:string.
+            //The result of this promotion is created by casting the
+            //original value to the type xs:string.
+            } else if (type == Type.ANY_URI && requiredType == Type.STRING) {
+                    item = item.convertTo(Type.STRING);
+                    type = Type.STRING;
+            } else {
+                if (!(Type.subTypeOf(type, requiredType))) {
+                    throw new XPathException(expression, "FORG0001: " +
+                            Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
+                            ") is not a sub-type of " + Type.getTypeName(requiredType));
+
+                } else
+                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                        Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+                        item.getStringValue() + ")'");
+            }
+        }
+        if (result != null)
+            result.add(item);
+    }
+
+    /* (non-Javadoc)
+    * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+    */
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1) {            
             dumper.display("dynamic-type-check"); 

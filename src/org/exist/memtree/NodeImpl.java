@@ -535,7 +535,7 @@ public class NodeImpl implements NodeAtExist, NodeValue {
 	 * @see org.exist.xquery.value.Item#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
-		return new StringValue(getStringValue()).convertTo(requiredType);
+		return UntypedAtomicValue.convertTo(null, getStringValue(), requiredType);
 	}
 
 	/* (non-Javadoc)
