@@ -4,24 +4,13 @@ import org.exist.dom.NodeProxy;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 
-public class SortItem implements Comparable<SortItem> {
+public interface SortItem extends Comparable<SortItem> {
 
-    NodeProxy node;
-    AtomicValue value = StringValue.EMPTY_STRING;
+    public void setValue(AtomicValue value);
 
-    public SortItem(NodeProxy node) {
-        this.node = node;
-    }
+    public AtomicValue getValue();
 
-    public void setValue(AtomicValue value) {
-        this.value = value;
-    }
-
-    public AtomicValue getValue() {
-        return value;
-    }
+    public NodeProxy getNode();
     
-    public int compareTo(SortItem sortItem) {
-        return value.compareTo(sortItem.value);
-    }
+    public int compareTo(SortItem sortItem);
 }

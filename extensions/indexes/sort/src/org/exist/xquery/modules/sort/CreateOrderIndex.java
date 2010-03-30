@@ -10,6 +10,8 @@ import org.exist.util.FastQSort;
 import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Element;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,9 @@ public class CreateOrderIndex extends BasicFunction {
                     new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
                         "The values to be indexed. There should be one value for each node in $nodes. " +
                         "$values thus needs to contain as many items as $nodes. If not, a dynamic error " +
-                        "is triggered.")
+                        "is triggered."),
+                    new FunctionParameterSequenceType("options", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
+                        "<options order='ascending|descending' empty='least|greatest'/>")
                  },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "")),
         new FunctionSignature(
@@ -44,10 +48,17 @@ public class CreateOrderIndex extends BasicFunction {
                     new FunctionParameterSequenceType("callback",Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
                         "A callback function which will be called for every node in the $nodes input set. " +
                         "The function receives the current node as single argument and should return " +
-                        "an atomic value by which the node will be sorted.")
+                        "an atomic value by which the node will be sorted."),
+                    new FunctionParameterSequenceType("options", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
+                        "<options order='ascending|descending' empty='least|greatest'/>")
                  },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, ""))
     };
+
+    protected static final Logger LOG = Logger.getLogger(CreateOrderIndex.class);
+
+    private boolean descending = false;
+    private boolean emptyLeast = false;
 
     public CreateOrderIndex(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -66,19 +77,37 @@ public class CreateOrderIndex extends BasicFunction {
         } else if (args[2].getItemCount() != args[1].getItemCount())
             throw new XPathException(this, "$nodes and $values sequences need to have the same length.");
 
+        // options
+        if (args[3].getItemCount() > 0) {
+            NodeValue optionValue = (NodeValue) args[3].itemAt(0);
+            Element options = (Element) optionValue.getNode();
+            String option = options.getAttribute("order");
+            if (option != null) {
+                descending = option.equalsIgnoreCase("descending");
+            }
+            option = options.getAttribute("empty");
+            if (option != null) {
+                emptyLeast = option.equalsIgnoreCase("least");
+            }
+        }
+        
         // create the input list to be sorted below
         List<SortItem> items = new ArrayList<SortItem>(args[1].getItemCount());
         Sequence params[] = new Sequence[1];
         SequenceIterator valuesIter = null;
         if (call == null)
             valuesIter = args[2].iterate();
+	    int c = 0;
+        int len = args[1].getItemCount();
+        int logChunk = len / 20;
         for (SequenceIterator nodesIter = args[1].iterate(); nodesIter.hasNext(); ) {
             NodeValue nv = (NodeValue) nodesIter.nextItem();
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 throw new XPathException(this, "Cannot create order-index on an in-memory node");
             NodeProxy node = (NodeProxy) nv;
-            SortItem si = new SortItem(node);
-
+            SortItem si = new SortItemImpl(node);
+	        if (LOG.isDebugEnabled() && ++c % logChunk == 0)
+		        LOG.debug("Storing item " + c + " out of " + len + " to sort index.");
             if (call != null) {
                 // call the callback function to get value
                 params[0] = node;
@@ -112,5 +141,65 @@ public class CreateOrderIndex extends BasicFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private class SortItemImpl implements SortItem {
+
+        NodeProxy node;
+        AtomicValue value = AtomicValue.EMPTY_VALUE;
+
+        public SortItemImpl(NodeProxy node) {
+            this.node = node;
+        }
+
+        public NodeProxy getNode() {
+            return node;
+        }
+
+        public void setValue(AtomicValue value) {
+            if (value.hasOne())
+                this.value = value;
+        }
+
+        public AtomicValue getValue() {
+            return value;
+        }
+
+        public int compareTo(SortItem other) {
+            int cmp = 0;
+            AtomicValue a = this.value;
+            AtomicValue b = other.getValue();
+            boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
+            boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+            if (aIsEmpty) {
+                if (bIsEmpty)
+                    // both values are empty
+                    return Constants.EQUAL;
+                else if (emptyLeast)
+                    cmp = Constants.INFERIOR;
+                else
+                    cmp = Constants.SUPERIOR;
+            } else if (bIsEmpty) {
+                // we don't need to check for equality since we know a is not empty
+                if (emptyLeast)
+                    cmp = Constants.SUPERIOR;
+                else
+                    cmp = Constants.INFERIOR;
+            } else if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
+                if(emptyLeast)
+                    cmp = Constants.INFERIOR;
+                else
+                    cmp = Constants.SUPERIOR;
+            } else if (b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
+                if(emptyLeast)
+                    cmp = Constants.SUPERIOR;
+                else
+                    cmp = Constants.INFERIOR;
+            } else
+                cmp = a.compareTo(b);
+            if(descending)
+                cmp = cmp * -1;
+            return cmp;
+        }
     }
 }
