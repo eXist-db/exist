@@ -179,7 +179,15 @@
                         <listitem>
                             <para>[performance]</para>
                         </listitem>
+                        <listitem>
+                            <para>[testsuite]</para>
+                        </listitem>
+                        <listitem>
+                            <para>[building]</para>
+                        </listitem>
                     </itemizedlist>
+                    <para>The change log scripts will ignore any messages which do not start with one
+                    of the tags above or whose tag is [ignore].</para>
                 </listitem>
             </itemizedlist>
         </section>
