@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,7 +56,7 @@ public class IndexController {
     
     public IndexController(DBBroker broker) {
     	this.broker = broker;
-        IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
+        List<IndexWorker> workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
         for (IndexWorker worker : workers) {
             indexWorkers.put(worker.getIndexId(), worker);
         }
