@@ -31,9 +31,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages all custom indexes registered with the database instance.
@@ -160,15 +158,15 @@ public class IndexManager {
      *
      * @return set of IndexWorkers
      */
-    protected synchronized IndexWorker[] getWorkers(DBBroker broker) {
-        final IndexWorker workers[] = new IndexWorker[indexers.size()];
-        Index index;
-        int j = 0;
-        for (Iterator<Index> i = indexers.values().iterator(); i.hasNext(); j++) {
-            index = i.next();
-            workers[j] = index.getWorker(broker);
+    protected synchronized List<IndexWorker> getWorkers(DBBroker broker) {
+        List<IndexWorker> workerList = new ArrayList<IndexWorker>(indexers.size());
+        for (Iterator<Index> i = indexers.values().iterator(); i.hasNext(); ) {
+            Index index = i.next();
+            IndexWorker worker = index.getWorker(broker);
+            if (worker != null)
+                workerList.add(worker);
         }
-        return workers;
+        return workerList;
     }
 
     /**
