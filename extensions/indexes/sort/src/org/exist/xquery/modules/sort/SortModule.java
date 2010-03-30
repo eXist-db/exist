@@ -15,12 +15,13 @@ public class SortModule extends AbstractInternalModule {
         new FunctionDef(CreateOrderIndex.signatures[0], CreateOrderIndex.class),
         new FunctionDef(CreateOrderIndex.signatures[1], CreateOrderIndex.class),
         new FunctionDef(GetIndex.signature, GetIndex.class),
+        new FunctionDef(HasIndex.signature, HasIndex.class),
         new FunctionDef(RemoveIndex.signatures[0], RemoveIndex.class),
         new FunctionDef(RemoveIndex.signatures[1], RemoveIndex.class)
     };
 
     public SortModule() {
-        super(functions, true);
+        super(functions, false);
     }
 
     @Override

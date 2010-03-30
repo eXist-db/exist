@@ -14,7 +14,10 @@
 				</item>
                 <item>
                     <name>b</name>
-				</item>
+                </item>
+			    <item>
+			        <name></name>
+			    </item>
                 <item>
                     <name>a</name>
 				</item>
@@ -24,89 +27,112 @@
     <tearDown>
         <!--remove-collection collection="/db/test"/-->
     </tearDown>
+	<imports>
+        import module namespace sort="http://exist-db.org/xquery/sort";
+	</imports>
+	<functions><![CDATA[
+        declare function local:cb($node) {
+            $node/name/text()
+		};
+
+		declare function local:create-index($options as element()?) as empty() {
+			let $fn := util:function(xs:QName("local:cb"), 1)
+            return
+                sort:create-index-callback("names", doc("/db/test/sort1.xml")//item, $fn, 
+                    $options)
+		};
+	]]></functions>
     <test output="text">
         <task>Create index</task>
-        <code>
-            import module namespace sort="http://exist-db.org/xquery/sort";
-
-            declare function local:cb($node) {
-                $node/name/string()
-            };
-
-            let $fn := util:function(xs:QName("local:cb"), 1)
-            return
-                sort:create-index-callback("names", doc("/db/test/sort1.xml")//item, $fn)
-		</code>
+        <code><![CDATA[
+			local:create-index(<options order="ascending" empty="greatest"/>)
+		]]></code>
         <expected></expected>
     </test>
     <test output="xml">
         <task>Use index</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort";
-
             for $s in doc("/db/test/sort1.xml")//item
             order by sort:index("names", $s)
             return $s
 		</code>
-        <xpath>//item[1]/name = "a"</xpath>
+        <xpath>//name[1][. = "a"]</xpath>
     </test>
     <test output="text">
         <task>Create index without callback</task>
-        <code>
-            import module namespace sort="http://exist-db.org/xquery/sort";
-
+        <code><![CDATA[
             let $items := doc("/db/test/sort1.xml")//item
             let $values := for $item in $items return $item/name/string()
             return (
-                sort:create-index("names", $items, $values),
+                sort:create-index("names", $items, $values, <options order="ascending" empty="least"/>),
                 for $s in doc("/db/test/sort1.xml")//item
                 order by sort:index("names", $s)
                 return $s
             )
-		</code>
-        <xpath>//item[1]/name = "a"</xpath>
+		]]></code>
+        <xpath>//name[1][. = "a"]</xpath>
     </test>
     <test output="xml">
         <task>Remove index</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort";
-
             sort:remove-index("names"),
             for $s in doc("/db/test/sort1.xml")//item
             order by sort:index("names", $s)
             return $s
 		</code>
         <!-- index has been removed. results won't be ordered. -->
-        <xpath>//item[1]/name = "c"</xpath>
+        <xpath>//name[1][. = "c"]</xpath>
     </test>
     <test output="text">
         <task>Create and remove index for document</task>
-        <code>
-            import module namespace sort="http://exist-db.org/xquery/sort";
-            
-            let $items := doc("/db/test/sort1.xml")//item
-            let $values := for $item in $items return $item/name/string()
-            return (
-                sort:create-index("names", $items, $values),
-                sort:remove-index("names", doc("/db/test/sort1.xml")),
-                for $s in doc("/db/test/sort1.xml")//item
-                order by sort:index("names", $s)
-                return $s
-            )
-        </code>
-        <xpath>//item[1]/name = "c"</xpath>
+        <code><![CDATA[
+			local:create-index(<options order="ascending" empty="greatest"/>),
+			sort:remove-index("names", doc("/db/test/sort1.xml")),
+			for $s in doc("/db/test/sort1.xml")//item
+			order by sort:index("names", $s)
+			return $s
+        ]]></code>
+        <xpath>//name[1][. = "c"]</xpath>
+    </test>
+    <test output="text">
+        <task>Descending</task>
+        <code><![CDATA[
+			local:create-index(<options order="ascending" empty="greatest"/>),
+			for $s in doc("/db/test/sort1.xml")//item
+			order by sort:index("names", $s)
+			return $s
+        ]]></code>
+        <xpath>//name[1][. = "c"]</xpath>
+    </test>
+    <test output="text">
+        <task>Ascending</task>
+        <code><![CDATA[
+			local:create-index(<options order="ascending" empty="greatest"/>),
+			for $s in doc("/db/test/sort1.xml")//item
+			order by sort:index("names", $s)
+			return $s
+        ]]></code>
+        <xpath>//name[1][. = "a"]</xpath>
+    </test>
+    <test output="text">
+        <task>Empty least</task>
+        <code><![CDATA[
+			local:create-index(<options order="ascending" empty="least"/>),
+			for $s in doc("/db/test/sort1.xml")//item
+			order by sort:index("names", $s)
+			return $s
+        ]]></code>
+        <xpath>//name[1][. = ""]</xpath>
     </test>
     <test output="text">
         <task>Remove Document</task>
         <code>
-            import module namespace sort="http://exist-db.org/xquery/sort";
-            
             let $old := doc("/db/test/sort1.xml")//item[1]
             let $remove :=
                 xdb:remove("/db/test", "sort1.xml")
             return
                 sort:index("names", $old)
         </code>
-        <expected>-1</expected>
+        <expected></expected>
     </test>
 </TestSet>

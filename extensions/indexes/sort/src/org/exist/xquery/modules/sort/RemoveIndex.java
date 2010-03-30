@@ -44,7 +44,7 @@ public class RemoveIndex extends BasicFunction {
         try {
             if (getArgumentCount() == 2) {
                 NodeValue nv = (NodeValue) args[1].itemAt(0);
-                if (!(nv.getImplementationType() == NodeValue.IN_MEMORY_NODE))
+                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                     throw new XPathException(this, "Second argument to remove should be a persistent node, not " +
                         "an in-memory node.");
                 NodeProxy proxy = (NodeProxy) nv;
