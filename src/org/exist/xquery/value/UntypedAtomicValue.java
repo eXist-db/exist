@@ -70,7 +70,7 @@ public class UntypedAtomicValue extends AtomicValue {
 			case Type.ATOMIC :
 			case Type.ITEM :
 			case Type.UNTYPED_ATOMIC :
-				return strVal;
+				return strVal == null ? new UntypedAtomicValue(value) : strVal;
 			case Type.STRING :
 				return new StringValue(value);
             case Type.ANY_URI :
@@ -88,10 +88,10 @@ public class UntypedAtomicValue extends AtomicValue {
 			case Type.FLOAT :
 				return new FloatValue(value);
 			case Type.DOUBLE :
-				return new DoubleValue(strVal);
+				return new DoubleValue(value);
 			case Type.NUMBER :
 				//TODO : more complicated
-				return new DoubleValue(strVal);
+				return new DoubleValue(value);
 			case Type.DECIMAL :
 				return new DecimalValue(value);
 			case Type.INTEGER :

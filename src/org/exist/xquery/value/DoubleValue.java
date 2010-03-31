@@ -45,21 +45,24 @@ public class DoubleValue extends NumericValue {
 	}
 
 	public DoubleValue(AtomicValue otherValue) throws XPathException {
-		try {
-			if (otherValue.getStringValue().equals("INF"))
+        this(otherValue.getStringValue());
+    }
+
+    public DoubleValue(String stringValue) throws XPathException {
+        try {
+			if (stringValue.equals("INF"))
 				value = Double.POSITIVE_INFINITY;
-			else if (otherValue.getStringValue().equals("-INF"))
+			else if (stringValue.equals("-INF"))
 				value = Double.NEGATIVE_INFINITY;
-			else if (otherValue.getStringValue().equals("NaN"))
+			else if (stringValue.equals("NaN"))
 				value = Double.NaN;
-			else					
-				value = Double.parseDouble(otherValue.getStringValue());
+			else
+				value = Double.parseDouble(stringValue);
 		} catch (NumberFormatException e) {
 			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-					" from '" + Type.getTypeName(otherValue.getItemType()) + "(\"" + 
-					otherValue.getStringValue() + "\")'");					
+					" from '" + stringValue + "'");
 		}
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#getType()
