@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<article>
-    <articleinfo>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        
         <productname>Open Source Native XML Database</productname>
         <title>Building eXist</title>
         <date>September 2009</date>
@@ -11,9 +13,9 @@
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
             </affiliation>
         </author>
-    </articleinfo>
+    </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
-    <section>
+    <chapter>
         <title>Quick Instructions</title>
 
         <section id="war">
@@ -54,7 +56,7 @@
                 well. You don't need to recompile eXist or sign any jars.</para>
         </section>
 
-        <section>
+        <section id="svn">
             <title>Building eXist from SVN</title>
 
             <para>Building eXist is quite easy and requires 3 simple steps:</para>
@@ -103,7 +105,7 @@
                 </step>
             </procedure>
         </section>
-    </section>
+    
 
     <section>
         <title>Using the Build System</title>
@@ -550,4 +552,5 @@ BUILD SUCCESSFULL
         </procedure>
 
     </section>
-</article>
+    </chapter>
+</book>
