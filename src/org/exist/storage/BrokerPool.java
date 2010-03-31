@@ -237,6 +237,7 @@ public class BrokerPool extends Observable {
                 // Catch all possible issues and report.
                 LOG.error("Unable to initialialize database instance '" + instanceName
                         + "': "+ex.getMessage(), ex);
+                // TODO: Add throw of exception? DW
             }
 
 		//TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
