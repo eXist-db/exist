@@ -12,6 +12,8 @@ declare function t:setup-action($action) {
 			t:store($action)
         case element(remove-collection) return
             xdb:remove($action/@collection)
+        case element(remove-document) return
+            xdb:remove($action/@collection, $action/@name)
         default return
             ()
 };
@@ -39,13 +41,22 @@ declare function t:tearDown($tearDown as element(tearDown)?) {
         t:setup-action($action)
 };
 
+declare function t:declare-variable($var as element(variable)) as item()? {
+    let $children := $var/*
+    return
+        if (empty($children)) then
+            string-join($var/node(), '')
+        else
+            util:serialize($children, ())
+};
+
 declare function t:init-prolog($test as element(test)) {
 	let $imports := $test/../imports
 	let $vars :=
 	    string-join(
         	for $var in $test/../variable
         	return
-        	    concat("declare variable $", $var/@name, " := ", util:serialize($var/*, ()), ";"),
+        	    concat("declare variable $", $var/@name, " := ", t:declare-variable($var), ";"),
             ""
         )
 	return
@@ -96,18 +107,20 @@ declare function t:xpath($output as item()*, $xpath as element()) {
 };
 
 declare function t:run-testSet($set as element(TestSet)) {
-    let $null := t:setup($set/setup)
-    let $result :=
-        <TestSet>
-        {$set/testName}
-        {$set/description}
-        {
-            for $test at $p in $set/test
-            return
-                t:run-test($test, $p)
-        }
-        </TestSet>
-    let $null := t:tearDown($set/tearDown)
+    let $copy := util:expand($set)
+    let $null := t:setup($copy/setup)
+    let $result := util:expand(
+           <TestSet>
+           {$copy/testName}
+           {$copy/description}
+           {
+               for $test at $p in $copy/test
+               return
+                   t:run-test($test, $p)
+           }
+           </TestSet>
+        )
+    let $null := t:tearDown($copy/tearDown)
     return $result
 };
 
