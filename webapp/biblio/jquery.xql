@@ -26,10 +26,9 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
     return (
         <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"/>,
-        <script type="text/javascript" src="{$base}/jquery-ui-1.8rc3.dev.min.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-ui-1.8.custom.min.js"/>,
         <script type="text/javascript" src="jquery-utils.js"/>,
-        <link rel="stylesheet" type="text/css" href="{$cssbase}/autoSuggest.css"/>,
-        <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery-ui-1.8rc2.custom.css"/>
+        <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery.ui.all.css"/>
     )
 };
 
@@ -268,7 +267,8 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
                                     }}
                                 }});
                             }},
-                            minLength: 3
+                            minLength: 3,
+                            delay: 700
                         }});
                     }});
                 </script>
@@ -325,6 +325,41 @@ declare function jquery:select-field($node as element(jquery:select)) as element
         </select>
 };
 
+declare function jquery:accordion($config as element(jquery:ajax-accordion)) as element()+ {
+    let $id := if ($config/@id) then $config/@id else 'jquery-accordion'
+    return (
+        <div id="{$id}">
+        {
+            for $panel in $config/jquery:panel
+            return (
+                <h3>{$panel/@id}<a href="#">{$panel/@title/string()}</a></h3>,
+                <div>
+                    <a>
+                        {$panel/@href}
+                        <img src="scripts/jquery/css/smoothness/images/ui-anim_basic_16x16.gif"/>
+                    </a>
+                </div>
+            )
+        }
+        </div>,
+        <script type="text/javascript">
+        $(document).ready(function(ev) {{
+            $('#{$id/string()}').accordion({{
+                autoHeight: false,
+                fillSpace: true,
+                active: false,
+                collapsible: true,
+                change: function (event, ui) {{
+                    var panel = ui.newHeader.next();
+                    if (panel.children().is('a'))
+                        panel.load(panel.find('a').attr('href'));
+                }}
+            }});
+        }});
+        </script>
+    )
+};
+
 (:~
     Main function to process an HTML template. All jquery:* elements
     in the template are expanded, if known.
@@ -343,6 +378,8 @@ declare function jquery:process-templates($node as node()) as node()* {
             jquery:input-field($node)
         case element(jquery:select) return
             jquery:select-field($node)
+        case element(jquery:ajax-accordion) return
+            jquery:accordion($node)
         case element(jquery:header) return
             jquery:header($node)
         case element() return

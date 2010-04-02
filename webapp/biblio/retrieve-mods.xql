@@ -71,11 +71,11 @@ declare function mods:get-conference($entry as element(mods:mods)) {
 };
 
 declare function mods:name-transliteration($name as element()) as xs:string? {
-    if ($name/*:namePart[@transliteration]) then
+    if ($name/mods:namePart[@transliteration]) then
         string-join((
-           $name/*:namePart[@transliteration][@type = 'family'],
-           $name/*:namePart[@transliteration][@type = 'given'],
-           $name/*:namePart[@transliteration][not(@type)]
+           $name/mods:namePart[@transliteration][@type = 'family'],
+           $name/mods:namePart[@transliteration][@type = 'given'],
+           $name/mods:namePart[@transliteration][not(@type)]
         ), ' ')
     else ()
 };

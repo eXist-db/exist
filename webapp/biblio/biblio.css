@@ -42,11 +42,10 @@
 
 #filters {
     float: right;
-    overflow: auto;
-    width: 120px;
+    width: 160px;
+    height: 320px;
     margin-left: 10px;
     padding: 4px;
-    border: 1px solid #BBBBBB;
 }
 
 #filters ul {
@@ -67,10 +66,11 @@
 
 #filters img {
     border: 0;
+    text-align: center;
 }
 
-#filters .include-target li {
-    margin-left: 4px;
+#filters li a {
+    font-weight: normal;
 }
 
 .even {
