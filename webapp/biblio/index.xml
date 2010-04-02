@@ -101,24 +101,11 @@
         </div>
         <div id="result-container">
             <div id="filters" style="display: none;">
-                <span>Filter results:</span>
-                <ul>
-                    <li>
-                        <span class="expand"><span class="expand-img"> </span> Author</span>
-                        <jquery:toggle href="filters.xql?type=author"
-                            trigger="#filters li:nth-child(1) .expand"/>
-                    </li>
-                    <li>
-                        <span class="expand"><span class="expand-img"> </span> Keyword</span>
-                        <jquery:toggle href="filters.xql?type=keyword"
-                            trigger="#filters li:nth-child(2) .expand"/>
-                    </li>
-                    <li>
-                        <span class="expand"><span class="expand-img"> </span> Date</span>
-                        <jquery:toggle href="filters.xql?type=date"
-                            trigger="#filters li:nth-child(3) .expand"/>
-                    </li>
-                </ul>
+                <jquery:ajax-accordion id="facets">
+                    <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
+                    <jquery:panel id="keywords" title="Index Terms:" href="filters.xql?type=keywords"/>
+                    <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
+                </jquery:ajax-accordion>
             </div>
             <jquery:paginate id="results" attribute="cached"
                 href="retrieve" navcontainer="#results-head .navbar"

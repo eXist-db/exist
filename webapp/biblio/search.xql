@@ -21,7 +21,9 @@ import module namespace jquery="http://exist-db.org/xquery/jquery" at "jquery.xq
 
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
-
+import module namespace sort="http://exist-db.org/xquery/sort"
+	at "java:org.exist.xquery.modules.sort.SortModule";
+	
 declare option exist:serialize "media-type=text/xml omit-xml-declaration=no";
 
 declare variable $biblio:COLLECTION := "collection('/db')//";
@@ -33,7 +35,9 @@ declare variable $biblio:FIELDS :=
 	<fields>
 		<field name="Title">mods:mods[ft:query(mods:titleInfo, '$q', $options)]</field>
 		<field name="Author">mods:mods[ft:query(mods:name, '$q', $options)]</field>
-		<field name="All">mods:mods[ft:query(., '$q', $options)]</field>
+		<field name="All">(mods:mods[ft:query(mods:titleInfo, '$q', $options)] union
+		  mods:mods[ft:query(mods:name, '$q', $options)])
+        </field>
 	</fields>;
 
 (:
@@ -231,14 +235,24 @@ declare function biblio:orderByName($m as element()) as xs:string?
 (: Map order parameter to xpath for order by clause :)
 declare function biblio:orderExpr($field as xs:string) as xs:string
 {
-    if ($field eq "Score") then
-        "ft:score($hit) descending"
-    else if ($field = "Author") then
-        "biblio:orderByName($hit)"
-    else if ($field = "Title") then
-        "$hit/mods:titleInfo[1]/mods:title[1]"
+    if (sort:has-index('mods:name')) then
+        if ($field eq "Score") then
+            "ft:score($hit) descending"
+        else if ($field = "Author") then
+            "sort:index('mods:name', $hit)"
+        else if ($field = "Title") then
+            "sort:index('mods:title', $hit)"
+        else
+            "sort:index('mods:date', $hit)"
     else
-        "$hit/mods:originInfo/mods:dateCreated[1] descending"
+        if ($field eq "Score") then
+            "ft:score($hit) descending"
+        else if ($field = "Author") then
+            "biblio:orderByName($hit)"
+        else if ($field = "Title") then
+            "$hit/mods:titleInfo[1]/mods:title[1]"
+        else
+            "$hit/mods:originInfo/mods:dateCreated[1] descending"
 };
 
 (:~
