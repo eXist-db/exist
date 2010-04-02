@@ -3161,6 +3161,29 @@ public class XQueryTest extends XMLTestCase {
     }
 
 
+    // http://sourceforge.net/support/tracker.php?aid=2903815
+    public void testReplaceBug_2903815() {
+
+        try {
+            String query = "let $f := <z>fred</z>" +
+                    "let $s:= <s>xxxxtxxx</s>" +
+                    "let $t := <t>t</t>" +
+                    "return replace($s,$t,$f)";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "xxxxfredxxx",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+
     // ======================================
     /**
      * @return

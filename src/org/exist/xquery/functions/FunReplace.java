@@ -164,7 +164,7 @@ public class FunReplace extends FunMatches {
     		String pattern =
     			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
             String replace =
-    			((StringValue) getArgument(2).eval(contextSequence, contextItem)).getStringValue(true);
+    			getArgument(2).eval(contextSequence, contextItem).getStringValue();
             //An error is raised [err:FORX0004] if the value of $replacement contains a "$" character that is not immediately followed by a digit 0-9 and not immediately preceded by a "\".
             //An error is raised [err:FORX0004] if the value of $replacement contains a "\" character that is not part of a "\\" pair, unless it is immediately followed by a "$" character.            
             for (int i = 0 ; i < replace.length() ; i++) {
