@@ -100,14 +100,14 @@
     <tearDown>
         <remove-collection collection="/db/test"/>
     </tearDown>
-    <variable name="input1">
+    <variable name="input1"><![CDATA[
         <book xmlns:xi="http://www.w3.org/2001/XInclude">
             <title>Book Title</title>
-            <xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)">
+            <xi:include href="/db/test/disclaimer.xml" xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)">
                 <xi:fallback><p>Not found</p></xi:fallback>
             </xi:include>
         </book>
-    </variable>
+    ]]></variable>
     <test>
         <task>Simple XInclude</task>
         <code>util:expand(doc("/db/test/test1.xml"))</code>
