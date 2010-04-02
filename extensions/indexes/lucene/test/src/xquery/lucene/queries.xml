@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSet>
-    <testName>Following and preceding axis tests</testName>
+    <testName>Lucene indexing tests</testName>
     <description>
-        <p>Test the following and preceding XPath axes</p>
+        <p>Tests for the Lucene extensions</p>
         <author>Wolfgang Meier</author>
     </description>
     <setup>
@@ -31,7 +31,8 @@
 		</store>
     </setup>
     <tearDown>
-        <!--remove-collection collection="/db/test"/-->
+        <remove-collection collection="/db/test"/>
+    	<remove-document collection="/db/system/config/db" name="collection.xconf"/>
     </tearDown>
 	<!-- Following axis tests -->
     <test output="xml">
@@ -87,6 +88,97 @@
 		</code>
 		<expected>
 			<b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>index-keys test 1</task>
+		<code><![CDATA[
+			declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+			
+			<terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)
+			return
+				util:index-keys-by-qname(xs:QName("p"), (), $callback, 10000, "lucene-index")
+			}
+			</terms>]]></code>
+		<expected>
+			<terms>
+				<t>acht</t>
+				<t>drei</t>
+				<t>eins</t>
+				<t>fünf</t>
+				<t>neun</t>
+				<t>sechs</t>
+				<t>sieben</t>
+				<t>vier</t>
+				<t>zehn</t>
+				<t>zwei</t>
+			</terms>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>index-keys test 2</task>
+		<code><![CDATA[
+			declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+			
+			<terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)
+			return
+				util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index")
+			}
+			</terms>]]></code>
+		<expected>
+			<terms>
+				<t>sechs</t>
+				<t>sieben</t>
+			</terms>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>index-keys test 2</task>
+		<code><![CDATA[
+			declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+			
+			<terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)
+			return
+				util:index-keys(doc("/db/test/text1.xml")//p, "s", $callback, 10000, "lucene-index")
+			}
+			</terms>]]></code>
+		<expected>
+			<terms>
+				<t>sechs</t>
+				<t>sieben</t>
+			</terms>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>index-keys test 2</task>
+		<code><![CDATA[
+			declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+			
+			<terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)
+			return
+				util:index-keys(doc("/db/test/text1.xml")//p[ft:query(., 'zehn')], "s", $callback, 10000, "lucene-index")
+			}
+			</terms>]]></code>
+		<expected>
+			<terms>
+				<t>sieben</t>
+			</terms>
 		</expected>
 	</test>
 </TestSet>
