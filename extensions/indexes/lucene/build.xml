@@ -32,6 +32,8 @@
 
             <test name="org.exist.indexing.lucene.LuceneIndexTest"
                 todir="${junit.index.reports}"/>
+            <test name="xquery.lucene.RunTests"
+                todir="${junit.index.reports}"/>
         </junit>
     </target>
 </project>
