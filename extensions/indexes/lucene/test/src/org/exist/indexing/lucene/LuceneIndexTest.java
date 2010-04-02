@@ -213,7 +213,7 @@ public class LuceneIndexTest {
             Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p", "")}, "with", 1);
             assertEquals(2, o[0].getOccurrences());
             checkIndex(docs, broker, new QName[] { new QName("hi", "") }, "just", 1);
-            checkIndex(docs, broker, null, "in", 2);
+            checkIndex(docs, broker, null, "in", 1);
 
             QName attrQN = new QName("rend", "");
             attrQN.setNameType(ElementValue.ATTRIBUTE);
@@ -703,7 +703,7 @@ public class LuceneIndexTest {
             Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p", "")}, "with", 1);
             assertEquals(2, o[0].getOccurrences());
             checkIndex(docs, broker, new QName[] { new QName("hi", "") }, "just", 1);
-            checkIndex(docs, broker, null, "in", 2);
+            checkIndex(docs, broker, null, "in", 1);
 
             QName attrQN = new QName("rend", "");
             attrQN.setNameType(ElementValue.ATTRIBUTE);
@@ -1259,7 +1259,7 @@ public class LuceneIndexTest {
             hints.put(QNamedKeysIndex.QNAMES_KEY, qnlist);
         }
         XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
-        Occurrences[] occur = index.scanIndex(context, docs, docs.docsToNodeSet(), hints);
+        Occurrences[] occur = index.scanIndex(context, docs, null, hints);
         if (occur != null && expected != occur.length) {
             for (int i = 0; i < occur.length; i++) {
                 System.out.println("term: " + occur[i].getTerm());              

@@ -9,14 +9,13 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
+import org.apache.lucene.util.BitVector;
+import org.apache.lucene.util.DocIdBitSet;
+import org.apache.lucene.util.OpenBitSet;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
@@ -402,8 +401,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         for (ScoreDoc scoreDoc : hits) {
             try {
                 Document doc = searcher.doc(scoreDoc.doc, NODE_FIELD_SELECTOR);
-                Field fDocId = doc.getField("docId");
-                int docId = Integer.parseInt(fDocId.stringValue());
+                String fDocId = doc.get("docId");
+                int docId = Integer.parseInt(fDocId);
                 DocumentImpl storedDocument = docs.getDoc(docId);
                 if (storedDocument == null)
                     return;
@@ -480,13 +479,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private NodeId readNodeId(Document doc) {
-        byte[] temp;
-        Field fNodeId = doc.getField("nodeId");
-        temp = fNodeId.binaryValue();
+        byte[] temp = doc.getBinaryValue("nodeId");
         int units = ByteConversion.byteToShort(temp, 0);
-        NodeId nodeId = index.getBrokerPool().getNodeFactory()
+        return index.getBrokerPool().getNodeFactory()
                 .createFromData(units, temp, 2);
-        return nodeId;
     }
 
     /**
@@ -534,16 +530,29 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes();
         //Expects a StringValue
-    	Object start = hints == null ? null : hints.get(START_VALUE);
-        Object end = hints == null ? null : hints.get(END_VALUE);
-        IntegerValue max = (IntegerValue) hints.get(VALUE_COUNT);
-
-        TreeMap<Term, Occurrences> map = new TreeMap<Term, Occurrences>();
+        String start = null, end = null;
+        long max = Long.MAX_VALUE;
+        if (hints != null) {
+    	    Object vstart = hints.get(START_VALUE);
+            Object vend = hints.get(END_VALUE);
+            start = vstart == null ? null : vstart.toString();
+            end = vend == null ? null : vend.toString();
+            IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
+            max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
+        }
+        if (nodes == null)
+            return scanIndexByQName(qnames, docs, start, end, max);
+        else
+            return scanIndexByNodes(qnames, docs, nodes, start, end, max);
+    }
+    
+    private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, String start, String end, long max) {
+        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
         IndexReader reader = null;
         try {
             reader = index.getReader();
@@ -557,48 +566,43 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (terms == null)
                     continue;
                 Term term;
+                TermDocs termDocs = reader.termDocs();
                 do {
                     term = terms.term();
                     if (term != null && term.field().equals(field)) {
                         boolean include = true;
                         if (end != null) {
-                            if (term.text().compareTo(start.toString()) > 0)
+                            if (term.text().compareTo(start) > 0)
                                 include = false;
-                        } else if (start != null && !term.text().startsWith(start.toString()))
+                        } else if (start != null && !term.text().startsWith(start))
                             include = false;
                         if (include) {
-                            TermDocs docsEnum = reader.termDocs(term);
-                            while (docsEnum.next()) {
-                                if (reader.isDeleted(docsEnum.doc()))
+                            termDocs.seek(term);
+                            while (termDocs.next()) {
+                                if (reader.isDeleted(termDocs.doc()))
                                     continue;
-                                Document doc = reader.document(docsEnum.doc());
+                                Document doc = reader.document(termDocs.doc());
                                 Field fDocId = doc.getField("docId");
                                 int docId = Integer.parseInt(fDocId.stringValue());
                                 DocumentImpl storedDocument = docs.getDoc(docId);
                                 if (storedDocument == null)
                                     continue;
 
-                                if (contextSet != null) {
-                                    NodeId nodeId = readNodeId(doc);
-                                    NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
-                                    include = (parentNode != null);
+                                Occurrences oc = map.get(term.text());
+                                if (oc == null) {
+                                    oc = new Occurrences(term.text());
+                                    map.put(term.text(), oc);
                                 }
-                                if (include) {
-                                    Occurrences oc = map.get(term);
-                                    if (oc == null) {
-                                        oc = new Occurrences(term.text());
-                                        map.put(term, oc);
-                                    }
-                                    oc.addDocument(storedDocument);
-                                    oc.addOccurrences(docsEnum.freq());
-                                }
+                                oc.addDocument(storedDocument);
+                                oc.addOccurrences(termDocs.freq());
                             }
-                            docsEnum.close();
+                            termDocs.close();
                         }
                     }
-                    if (max != null && map.size() >= max.getValue())
+                    if (map.size() >= max)
                         break;
                 } while (terms.next());
+                termDocs.close();
                 terms.close();
             }
         } catch (IOException e) {
@@ -608,6 +612,112 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         Occurrences[] occur = new Occurrences[map.size()];
         return map.values().toArray(occur);
+    }
+
+    private Occurrences[] scanIndexByNodes(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
+        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+
+        FieldSelector selector = new FieldSelector() {
+            public FieldSelectorResult accept(String field) {
+                if (field.equals("nodeId"))
+                    return FieldSelectorResult.LOAD;
+                else
+                    return FieldSelectorResult.NO_LOAD;
+            }
+        };
+        long startTime = System.currentTimeMillis();
+        IndexSearcher searcher = null;
+        try {
+            searcher = index.getSearcher();
+            IndexReader reader = searcher.getIndexReader();
+            for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
+                Query query = new TermQuery(new Term("docId", Integer.toString(doc.getDocId())));
+                DocumentCollector collector = new DocumentCollector(searcher.maxDoc());
+                searcher.search(query, collector);
+
+                DocIdSetIterator iter = collector.docs.iterator();
+                int next;
+                while ((next = iter.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+                    NodeId nodeId = null;
+                    if (nodes != null) {
+                        // load document to check if the current node is in the passed context set, if any
+                        Document luceneDoc = searcher.doc(next, selector);
+                        nodeId = readNodeId(luceneDoc);
+                    }
+                    if (nodeId == null || nodes.get(doc, nodeId) != null) {
+                        for (QName qname : qnames) {
+                            String field = encodeQName(qname);
+                            TermFreqVector tfv = reader.getTermFreqVector(next, field);
+                            if (tfv != null) {
+                                String[] terms = tfv.getTerms();
+                                int[] freq = tfv.getTermFrequencies();
+                                for (int j = 0; j < terms.length; j++) {
+                                    boolean include = true;
+                                    if (end != null) {
+                                        if (terms[j].compareTo(start) > 0)
+                                            include = false;
+                                    } else if (start != null && !terms[j].startsWith(start))
+                                        include = false;
+                                    if (include) {
+                                        Occurrences oc = map.get(terms[j]);
+                                        if (oc == null) {
+                                            oc = new Occurrences(terms[j]);
+                                            map.put(terms[j], oc);
+
+                                            if (map.size() >= max)
+                                                return occurrencesToArray(map);
+                                        }
+                                        oc.addDocument(doc);
+                                        oc.addOccurrences(freq[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            LOG.debug("findDocuments took " + (System.currentTimeMillis() - startTime));
+        } catch (IOException e) {
+            LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
+        } finally {
+            index.releaseSearcher(searcher);
+        }
+        return occurrencesToArray(map);
+    }
+
+    private Occurrences[] occurrencesToArray(TreeMap<String, Occurrences> map) {
+        Occurrences[] occur = new Occurrences[map.size()];
+        return map.values().toArray(occur);
+    }
+
+    private static class DocumentCollector extends Collector {
+
+        OpenBitSet docs;
+        int base = 0;
+
+        private DocumentCollector(int size) {
+            docs = new OpenBitSet(size);
+        }
+
+        @Override
+        public void setScorer(Scorer scorer) throws IOException {
+        }
+
+        @Override
+        public void collect(int doc) throws IOException {
+            docs.set(base + doc);
+        }
+
+        @Override
+        public void setNextReader(IndexReader indexReader, int base) throws IOException {
+            this.base = base;
+        }
+
+        @Override
+        public boolean acceptsDocsOutOfOrder() {
+            return true;
+        }
     }
 
     /**
@@ -680,7 +790,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
                         Field.Store.YES,  Field.Index.NOT_ANALYZED));
                 doc.add(new Field("nodeId", data, Field.Store.YES));
-                doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED));
+                doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED,
+                    Field.TermVector.YES));
 
                 if (pending.analyzer == null)
                     writer.addDocument(doc);
