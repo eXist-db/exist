@@ -8,16 +8,13 @@
         <link href="../examples.xml">Demo</link>
     </toolbar>
 
-    <group name="About Us">
+    <!--group name="About Us">
         <item>
             <link href="../credits.xml">Who we are</link>
         </item>
         <item>
             <link href="../acknowledge.xml">Acknowledgements</link>
         </item>
-        <!--item>
-            <link href="http://atomic.exist-db.org/blogs/eXist/Press/">Press/Contact</link>
-        </item-->
     </group>
     <group name="Documentation">
         <item>
@@ -57,11 +54,6 @@
         <item>
             <link href="../index.xml#mailing">Mailing List/IRC</link>
         </item>
-        <!--item>
-            <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
-                Third Party Tools
-            </link>
-        </item-->
     </group>
     <group name="Development">
         <item>
@@ -123,5 +115,5 @@
         <link href="http://www.izforge.com/izpack/">
             <img src="resources/izpack-88x31.png" border="0" alt="IzPack Installer Generator"/>
         </link>
-    </reference>
+    </reference-->
 </sidebar>
