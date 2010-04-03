@@ -15,6 +15,10 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace session="http://exist-db.org/xquery/session";
 
+declare function jquery:script($node as element()?) as xs:string? {
+    string-join($node/node(), "")
+};
+
 (:~
     Outputs the HTML script and link tags which are required by jQuery.
     You need to call this function once in your HTML head.
@@ -41,7 +45,7 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
             Tab content 1
         &lt;/jquery:tab&gt;
         &lt;jquery:tab id="complex" label="Advanced Search"&gt;
-            Tab content 2
+            Tab content 
         &lt;/jquery:tab&gt;
     &lt;/jquery:tabset&gt;
     </pre>
@@ -334,25 +338,39 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
             return (
                 <h3>{$panel/@id}<a href="#">{$panel/@title/string()}</a></h3>,
                 <div>
-                    <a>
-                        {$panel/@href}
-                        <img src="scripts/jquery/css/smoothness/images/ui-anim_basic_16x16.gif"/>
-                    </a>
+                {
+                    for $child in $panel/node() return
+                        jquery:process-templates($child)
+                }
                 </div>
             )
         }
         </div>,
         <script type="text/javascript">
         $(document).ready(function(ev) {{
+            var actions = {{}};
+            {
+                for $panel in $config/jquery:panel
+                return
+                    if ($panel/@href) then
+                        jquery:script(<s>actions["{$panel/@id/string()}"] = "{$panel/@href/string()}";</s>)
+                    else if ($panel/@on-select) then
+                        jquery:script(<s>actions["{$panel/@id/string()}"] = {$panel/@on-select/string()};</s>)
+                    else ()
+            }
             $('#{$id/string()}').accordion({{
                 autoHeight: false,
                 fillSpace: true,
                 active: false,
                 collapsible: true,
                 change: function (event, ui) {{
+                    var id = ui.newHeader.attr('id');
                     var panel = ui.newHeader.next();
-                    if (panel.children().is('a'))
-                        panel.load(panel.find('a').attr('href'));
+                    var action = actions[id];
+                    if (typeof action == "function")
+                        action.call();
+                    else
+                        panel.load(action);
                 }}
             }});
         }});
