@@ -40,7 +40,7 @@ return
         else if ($type eq 'keywords') then
             let $callback := util:function(xs:QName("local:key"), 2)
             return
-                util:index-keys($cached//mods:titleInfo, "", $callback, 200, "lucene-index")
+                util:index-keys($cached//mods:titleInfo, "", $callback, 600, "lucene-index")
         else
             ()
     }

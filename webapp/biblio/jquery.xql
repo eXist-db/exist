@@ -360,6 +360,56 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
     )
 };
 
+declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
+    let $trigger := $config/@trigger
+    let $id := $config/@id
+    let $modal := $config/@modal = 'true'
+    let $buttons :=
+        string-join(
+            for $button in $config/jquery:button
+            return
+                string-join(('"', $button/@label, '": function() {', $button/node(), '}'), ""),
+            ", "
+        )
+    return
+        <div>
+            { $id, for $child in $config/node()[not(self::jquery:*)] return jquery:process-templates($child) }
+            <script type="text/javascript">
+                $(document).ready(function(ev) {{
+                    $('#{$id/string()}').dialog({{
+                        modal: { if ($modal) then 'true' else 'false' },
+                        autoOpen: false,
+                        buttons: {{ { $buttons } }}
+                        {
+                            let $attribs :=
+                                for $attr in $config/@*
+                                return
+                                    if ($attr/local-name() = ("height", "minHeight", "maxHeight", 
+                                        "minWidth", "maxWidth", "width")) then
+                                        concat($attr/local-name(), ": ", $attr/string())
+                                    else if ($attr/local-name() = ("title", "position", 
+                                        "dialogClass", "closeText")) then
+                                        concat($attr/local-name(), ": '", $attr/string(), "'")
+                                    else
+                                        ()
+                            return
+                                if (exists($attribs)) then
+                                    concat(", ", string-join($attribs, ", "))
+                                else
+                                    ()
+                        }
+                    }});
+                    var trigger = '{$trigger/string()}';
+                    if (trigger != '')
+                        $(trigger).click(function() {{
+                            $('#{$id/string()}').dialog('open');
+                            return false;
+                        }});
+                }});
+            </script>
+        </div>
+};
+
 (:~
     Main function to process an HTML template. All jquery:* elements
     in the template are expanded, if known.
@@ -380,6 +430,8 @@ declare function jquery:process-templates($node as node()) as node()* {
             jquery:select-field($node)
         case element(jquery:ajax-accordion) return
             jquery:accordion($node)
+        case element(jquery:dialog) return
+            jquery:dialog($node)
         case element(jquery:header) return
             jquery:header($node)
         case element() return

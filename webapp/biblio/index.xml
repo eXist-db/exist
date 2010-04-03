@@ -96,6 +96,7 @@
             </jquery:tab>
         </jquery:tabset>
         <div id="results-head">
+            <a id="optimize-trigger" href="#">Create custom indexes</a>
             <div id="messages">Found: <biblio:result-count/></div>
             <div class="navbar"/>
         </div>
@@ -111,5 +112,32 @@
                 href="retrieve" navcontainer="#results-head .navbar"
                 on-ready="resultsLoaded"/>
         </div>
+        <jquery:dialog id="optimize-dialog" modal="true" title="Create Indexes"
+            trigger="#optimize-trigger" width="450">
+            <jquery:button label="Start">
+                var pass = $('input[name = password]');
+                $('#optimize-message').text('Running ...');
+                $.get('optimize.xql?password=' + pass, function (data, status) {
+                    if (status != "success")
+                        $('#optimize-message').text('Error during optimize!');
+                    else
+                        $('#optimize-dialog').dialog("close");
+                });
+            </jquery:button>
+            <p>Use this dialog to trigger an optimization run on your data set. 
+                This will create custom indexes to speed up sorting and other
+                functions.</p>
+            <p>The process may take some time, depending on the size of the data set.
+                To start, please enter the admin password for your db below:</p>
+            <form action="optimize.xql">
+                <ul>
+                    <li>
+                        <label for="password">Admin password: </label>
+                        <input type="password" size="30" name="password"/>
+                    </li>
+                    <li id="optimize-message"></li>
+                </ul>
+            </form>
+        </jquery:dialog>
     </chapter>
 </book>
