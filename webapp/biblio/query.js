@@ -1,3 +1,18 @@
+$(function() {
+    $('#keyword-form').submit(function () {
+        loadIndexTerms();
+        return false; 
+    });
+});
+
+function loadIndexTerms() {
+    var input = $('input[name = input-keyword-prefix]');
+    $('#keywords-result').load("filters.xql?type=keywords&prefix=" + input.val(), function () {
+        if ($('#keywords-result ul').hasClass('complete'))
+            input.css('display', 'none');
+    });
+}
+
 function autocompleteCallback(node, params) {
     var name = node.attr('name');
     var select = node.parent().parent().find('select[name ^= field]');

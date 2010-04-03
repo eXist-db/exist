@@ -378,12 +378,18 @@ declare function biblio:apply-filter() {
     let $filter := request:get-parameter("filter", ())
     let $value := request:get-parameter("value", ())
     return
-        <query>
-            <and>
-            { $prevQuery/* }
-            { <field name="{$filter}">{$value}</field> }
-            </and>
-        </query>
+        if (count($prevQuery/field) eq 1) then
+            <query>
+                <field>{$prevQuery/field/@name, 
+                    normalize-space(concat($prevQuery/field/string(), ' ', $value))}</field>
+            </query>
+        else
+            <query>
+                <and>
+                { $prevQuery/* }
+                { <field name="{$filter}">{$value}</field> }
+                </and>
+            </query>
 };
 
 session:create(),
