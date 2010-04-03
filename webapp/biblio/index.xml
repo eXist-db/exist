@@ -96,8 +96,8 @@
             </jquery:tab>
         </jquery:tabset>
         <div id="results-head">
-            <a id="optimize-trigger" href="#">Create custom indexes</a>
             <div id="messages">Found: <biblio:result-count/></div>
+            <a id="optimize-trigger" href="#">Create custom indexes</a>
             <div class="navbar"/>
         </div>
         <div id="result-container">

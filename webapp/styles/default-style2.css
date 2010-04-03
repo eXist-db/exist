@@ -142,6 +142,15 @@ button, input, select {
         overflow: visible;
         background-color: white;
     }
+
+    #content1col {
+        margin-left: 50px;
+        margin-right: 50px;
+        top: 215px;
+        display: block;
+        overflow: visible;
+        background-color: white;
+    }
 }
 
 #news {

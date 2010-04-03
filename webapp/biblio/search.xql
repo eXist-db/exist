@@ -378,10 +378,11 @@ declare function biblio:apply-filter() {
     let $filter := request:get-parameter("filter", ())
     let $value := request:get-parameter("value", ())
     return
-        if (count($prevQuery/field) eq 1) then
+        if ($filter = ('All', 'Title') and count($prevQuery/field) eq 1) then
             <query>
                 <field>{$prevQuery/field/@name, 
-                    normalize-space(concat($prevQuery/field/string(), ' ', $value))}</field>
+                    normalize-space(concat($prevQuery/field/string(), ' ', $value))
+                }</field>
             </query>
         else
             <query>

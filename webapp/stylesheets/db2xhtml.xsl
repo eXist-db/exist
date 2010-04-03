@@ -61,7 +61,15 @@
                 <xsl:apply-templates xmlns:xi="http://www.w3.org/2001/XInclude" select="xi:include"/>
                 <xsl:apply-templates select="bookinfo|articleinfo"/>
                 <xsl:apply-templates select="sidebar:sidebar"/>
-                <div id="content2col">
+                <div>
+                    <xsl:choose>
+                        <xsl:when test="sidebar:sidebar/sidebar:group">
+                            <xsl:attribute name="id">content2col</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="id">content1col</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <xsl:choose>
                         <xsl:when test="self::article">
                             <h1 class="chaptertitle rounded">
