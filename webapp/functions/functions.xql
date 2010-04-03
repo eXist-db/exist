@@ -40,7 +40,6 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
     let $functionSignature := $functionNode/xq:signature/text()
     let $functionDeprecated := $functionNode/xq:comment/xq:deprecated/text()
     let $functionDescription := $functionNode/xq:comment/xq:description/text()
-    let $functionParagraphs := tokenize($functionDescription, "\n")
     let $functionVersion := $functionNode/xq:comment/xq:version/text()
     let $functionParameters := $functionNode/xq:comment/xq:param
     let $functionSees := $functionNode/xq:comment/xq:see
@@ -61,11 +60,9 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
                 else 
                     $functionSignature
             }</div>
-            <div class="description">{
-                for $desc in $functionParagraphs
-                return
-                    <div class="f-description-para">{$desc}</div>
-            }</div>
+            <div class="description">
+                <div class="f-description-para">{$functionDescription}</div>
+            </div>
             <div class="authors">{
                 for $author in $authors
                 return
@@ -201,9 +198,9 @@ declare function local:list-modules($moduleURIs) {
         	order by $moduleURI
             return
                 <tr class="module">
-                    <td><a href="{local:moduleURI-to-URL($moduleURI)}">{$moduleName}</a></td>
-                    <td>{$moduleDescription}</td>
-                    <td>{$moduleURI}</td>
+                    <td class="mod-entry"><a href="{local:moduleURI-to-URL($moduleURI)}">{$moduleName}</a></td>
+                    <td class="mod-entry-desc">{$moduleDescription}</td>
+                    <td class="mod-entry">{$moduleURI}</td>
                 </tr>
         }</tbody>
     </table>
@@ -337,17 +334,19 @@ declare function local:main() {
             .function {border: 1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; }
             .name {font-weight: bold;}
             .signature {margin-left: 50px; font-style: italic;}
-            .description {margin-left: 20px; padding: 5px;}
-            .f-description-para {margin-bottom: 8px;}
+            .description {margin-left: 20px; padding: 5px; white-space: pre-wrap;}
+            .f-description-para {margin-bottom: 8px; white-space: pre-wrap;}
             .authors {display:none;}
             .parameters {margin-left: 100px;}
+            .mod-entry {vertical-align:top;}
+            .mod-entry-desc {width: 250px; vertical-align:top;}
             .f-params {}
-            .f-param1 {width: 250px;}
-            .f-param2 {}
+            .f-param1 {width: 250px; vertical-align:top;}
+            .f-param2 {white-space: pre-wrap;}
             .version {margin-left: 20px; padding: 5px;}
             .since {margin-left: 20px; padding: 5px;}
             .parameter {}
-            .returning {margin-left: 100px; color:green;}
+            .returning {margin-left: 100px; color:green; white-space: pre-wrap;}
             .deprecated {color:red; font-weight:bold;}
             #breadcrumbs {margin: 1em 0 1em 0; }
             ]]>
