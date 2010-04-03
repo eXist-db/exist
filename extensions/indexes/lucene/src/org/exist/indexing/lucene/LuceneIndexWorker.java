@@ -545,13 +545,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
             max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
         }
-        if (nodes == null)
-            return scanIndexByQName(qnames, docs, start, end, max);
+        if (nodes == null || max < Long.MAX_VALUE)
+            return scanIndexByQName(qnames, docs, nodes, start, end, max);
         else
             return scanIndexByNodes(qnames, docs, nodes, start, end, max);
     }
     
-    private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, String start, String end, long max) {
+    private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
         TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
         IndexReader reader = null;
         try {
@@ -562,7 +562,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (start == null)
                     terms = reader.terms(new Term(field, ""));
                 else
-                    terms = reader.terms(new Term(field, start.toString()));
+                    terms = reader.terms(new Term(field, start));
                 if (terms == null)
                     continue;
                 Term term;
@@ -582,19 +582,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 if (reader.isDeleted(termDocs.doc()))
                                     continue;
                                 Document doc = reader.document(termDocs.doc());
-                                Field fDocId = doc.getField("docId");
-                                int docId = Integer.parseInt(fDocId.stringValue());
+                                String fDocId = doc.get("docId");
+                                int docId = Integer.parseInt(fDocId);
                                 DocumentImpl storedDocument = docs.getDoc(docId);
                                 if (storedDocument == null)
                                     continue;
-
-                                Occurrences oc = map.get(term.text());
-                                if (oc == null) {
-                                    oc = new Occurrences(term.text());
-                                    map.put(term.text(), oc);
+                                NodeId nodeId = null;
+                                if (nodes != null) {
+                                    // load document to check if the current node is in the passed context set, if any
+                                    nodeId = readNodeId(doc);
                                 }
-                                oc.addDocument(storedDocument);
-                                oc.addOccurrences(termDocs.freq());
+                                if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
+                                    Occurrences oc = map.get(term.text());
+                                    if (oc == null) {
+                                        oc = new Occurrences(term.text());
+                                        map.put(term.text(), oc);
+                                    }
+                                    oc.addDocument(storedDocument);
+                                    oc.addOccurrences(termDocs.freq());
+                                }
                             }
                             termDocs.close();
                         }
@@ -664,9 +670,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                         if (oc == null) {
                                             oc = new Occurrences(terms[j]);
                                             map.put(terms[j], oc);
-
-                                            if (map.size() >= max)
-                                                return occurrencesToArray(map);
                                         }
                                         oc.addDocument(doc);
                                         oc.addOccurrences(freq[j]);
