@@ -61,7 +61,7 @@ public class IndexKeys extends BasicFunction {
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
                 "c) the current position of the key in the whole list of keys returned."),
-                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys")
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.ZERO_OR_ONE, "The maximum number of returned keys")
                  },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
     	new FunctionSignature(
@@ -78,7 +78,7 @@ public class IndexKeys extends BasicFunction {
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
                 "c) the current position of the key in the whole list of keys returned."),
-                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys"),
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.ZERO_OR_ONE , "The maximum number of returned keys"),
                     new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made")
                 },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
@@ -96,7 +96,7 @@ public class IndexKeys extends BasicFunction {
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
                 "c) the current position of the key in the whole list of keys returned."),
-                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.EXACTLY_ONE, "The maximum number of returned keys"),
+                    new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.ZERO_OR_ONE, "The maximum number of returned keys"),
                     new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made")
                  },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
@@ -130,7 +130,9 @@ public class IndexKeys extends BasicFunction {
             docs = nodes.getDocumentSet();
         }
         FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-        int max = ((IntegerValue) args[3].itemAt(0)).getInt();
+        int max = -1;
+        if (args[3].hasOne())
+            max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         if (this.getArgumentCount() == 5) {
@@ -140,7 +142,8 @@ public class IndexKeys extends BasicFunction {
         	if (indexWorker == null)
         		throw new XPathException(this, "Unknown index: " + args[4].itemAt(0).getStringValue());
         	Map<String, Object> hints = new HashMap<String, Object>();
-        	hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
+            if (max != -1)
+        	    hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
         	if (indexWorker instanceof OrderedValuesIndex)
         		hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());
         	else
@@ -155,7 +158,7 @@ public class IndexKeys extends BasicFunction {
             }
         	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
         	//TODO : add an extra argument to pass the END_VALUE ?
-	        int len = (occur.length > max ? max : occur.length);
+	        int len = (max != -1 && occur.length > max ? max : occur.length);
 	        Sequence params[] = new Sequence[2];
 	        ValueSequence data = new ValueSequence();
 	        for (int j = 0; j < len; j++) {
@@ -189,7 +192,7 @@ public class IndexKeys extends BasicFunction {
                 occur = t;
             }
 
-            int len = (occur.length > max ? max : occur.length);
+            int len = (max != -1 && occur.length > max ? max : occur.length);
 		    Sequence params[] = new Sequence[2];
 		    ValueSequence data = new ValueSequence();
 		    for (int j = 0; j < len; j++) {
