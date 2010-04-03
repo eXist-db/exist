@@ -167,3 +167,11 @@
 .ui-widget {
     font-size:1em;
 }
+
+#optimize-trigger {
+	float: right;
+}
+
+form ul li {
+	list-style: none;
+}
