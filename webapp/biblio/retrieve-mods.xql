@@ -217,9 +217,10 @@ declare function mods:get-title($id as xs:string?, $entry as element()) {
 
 declare function mods:get-related($entry as element(mods:mods)) {
     let $related0 := $entry/mods:relatedItem[@type = 'host']
+    let $collection := util:collection-name($entry)
     let $related :=
         if ($related0/@xlink:href) then
-            //mods:mods[@ID = $related0/@xlink:href][1]
+            collection($collection)//mods:mods[@ID = $related0/@xlink:href][1]
         else
             $related0[1]
     return
