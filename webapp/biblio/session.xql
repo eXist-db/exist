@@ -16,7 +16,6 @@ declare option exist:serialize "media-type=application/xhtml+xml";
 declare function bs:retrieve($start as xs:int, $count as xs:int) {
     let $cached := session:get-attribute("cached")
     let $stored := session:get-attribute("personal-list")
-    let $log := util:log("DEBUG", ("LIST: ", $stored))
     let $total := count($cached)
     let $available :=
         if ($start + $count gt $total) then
@@ -30,7 +29,6 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
             let $currentPos := $start + $pos - 1
             let $id := concat(document-uri(root($item)), '#', util:node-id($item))
             let $saved := $stored//*[@id = $id]
-            let $log := util:log("DEBUG", ("SAVED: ", $saved))
             return
                 <tr>
                     <td class="current">{$currentPos}</td>

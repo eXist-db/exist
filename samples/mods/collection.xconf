@@ -9,7 +9,7 @@
         <fulltext default="none" attributes="no">
         </fulltext>
         <lucene xmlns:mods="http://www.loc.gov/mods/v3">
-            <text qname="mods:mods"/>
+            <!--text qname="mods:mods"/-->
             <text qname="mods:titleInfo"/>
             <text qname="mods:name"/>
             <text qname="mods:abstract"/>
@@ -17,5 +17,7 @@
         </lucene>
 		<create path="mods:namePart" type="xs:string"/>
 		<create qname="@ID" type="xs:string"/>
+		<!--create qname="@type" type="xs:string"/>
+		<create qname="@lang" type="xs:string"/-->
     </index>
 </collection>
