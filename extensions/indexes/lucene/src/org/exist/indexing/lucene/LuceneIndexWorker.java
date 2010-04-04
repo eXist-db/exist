@@ -75,6 +75,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private int maxCachedNodesSize = 4096 * 1024;
     private Analyzer analyzer;
 
+    public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_DOC_ID = "docId";
+
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
         this.index = parent;
         this.broker = broker;
@@ -211,7 +214,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getWritingReader();
-            Term dt = new Term("docId", Integer.toString(docId));
+            Term dt = new Term(FIELD_DOC_ID, Integer.toString(docId));
             reader.deleteDocuments(dt);
             reader.flush();
         } catch (IOException e) {
@@ -230,7 +233,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             reader = index.getWritingReader();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                Term dt = new Term("docId", Integer.toString(doc.getDocId()));
+                Term dt = new Term(FIELD_DOC_ID, Integer.toString(doc.getDocId()));
                 TermDocs td = reader.termDocs(dt);
                 while (td.next()) {
                     reader.deleteDocument(td.doc());
@@ -257,7 +260,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getWritingReader();
-            Term dt = new Term("docId", Integer.toString(currentDoc.getDocId()));
+            Term dt = new Term(FIELD_DOC_ID, Integer.toString(currentDoc.getDocId()));
             TermDocs docsEnum = reader.termDocs(dt);
             while (docsEnum.next()) {
                 Document doc = reader.document(docsEnum.doc());
@@ -401,11 +404,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         for (ScoreDoc scoreDoc : hits) {
             try {
                 Document doc = searcher.doc(scoreDoc.doc, NODE_FIELD_SELECTOR);
-                String fDocId = doc.get("docId");
+                String fDocId = doc.get(FIELD_DOC_ID);
                 int docId = Integer.parseInt(fDocId);
                 DocumentImpl storedDocument = docs.getDoc(docId);
                 if (storedDocument == null)
-                    return;
+                    continue;
                 NodeId nodeId = readNodeId(doc);
                 NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
                 // if a context set is specified, we can directly check if the
@@ -479,7 +482,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private NodeId readNodeId(Document doc) {
-        byte[] temp = doc.getBinaryValue("nodeId");
+        byte[] temp = doc.getBinaryValue(FIELD_NODE_ID);
         int units = ByteConversion.byteToShort(temp, 0);
         return index.getBrokerPool().getNodeFactory()
                 .createFromData(units, temp, 2);
@@ -499,7 +502,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             java.util.Collection<?> fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
             for (Iterator<?> i = fields.iterator(); i.hasNext(); ) {
                 String field = (String) i.next();
-                if (!"docId".equals(field))
+                if (!FIELD_DOC_ID.equals(field))
                     indexes.add(decodeQName(field));
             }
         } catch (IOException e) {
@@ -582,7 +585,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 if (reader.isDeleted(termDocs.doc()))
                                     continue;
                                 Document doc = reader.document(termDocs.doc());
-                                String fDocId = doc.get("docId");
+                                String fDocId = doc.get(FIELD_DOC_ID);
                                 int docId = Integer.parseInt(fDocId);
                                 DocumentImpl storedDocument = docs.getDoc(docId);
                                 if (storedDocument == null)
@@ -625,8 +628,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         FieldSelector selector = new FieldSelector() {
             public FieldSelectorResult accept(String field) {
-                if (field.equals("nodeId"))
-                    return FieldSelectorResult.LOAD;
+                if (field.equals(FIELD_NODE_ID))
+                    return FieldSelectorResult.LOAD_AND_BREAK;
                 else
                     return FieldSelectorResult.NO_LOAD;
             }
@@ -638,7 +641,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             IndexReader reader = searcher.getIndexReader();
             for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                Query query = new TermQuery(new Term("docId", Integer.toString(doc.getDocId())));
+                Query query = new TermQuery(new Term(FIELD_DOC_ID, Integer.toString(doc.getDocId())));
                 DocumentCollector collector = new DocumentCollector(searcher.maxDoc());
                 searcher.search(query, collector);
 
@@ -790,9 +793,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 String contentField = encodeQName(pending.qname);
 
-                doc.add(new Field("docId", Integer.toString(currentDoc.getDocId()),
+                doc.add(new Field(FIELD_DOC_ID, Integer.toString(currentDoc.getDocId()),
                         Field.Store.YES,  Field.Index.NOT_ANALYZED));
-                doc.add(new Field("nodeId", data, Field.Store.YES));
+                doc.add(new Field(FIELD_NODE_ID, data, Field.Store.YES));
                 doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED,
                     Field.TermVector.YES));
 
@@ -984,8 +987,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 		private static final long serialVersionUID = -4899170629980829109L;
 
 		public FieldSelectorResult accept(String fieldName) {
-            if ("nodeId".equals(fieldName) || "docId".equals(fieldName))
+            if (FIELD_DOC_ID.equals(fieldName))
                 return FieldSelectorResult.LOAD;
+            if (FIELD_NODE_ID.equals(fieldName))
+                return FieldSelectorResult.LOAD_AND_BREAK;
             return FieldSelectorResult.NO_LOAD;
         }
     }
