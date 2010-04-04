@@ -5,16 +5,14 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.BitVector;
 import org.apache.lucene.util.DocIdBitSet;
+import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.util.OpenBitSet;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
@@ -214,7 +212,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getWritingReader();
-            Term dt = new Term(FIELD_DOC_ID, Integer.toString(docId));
+            Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(docId));
             reader.deleteDocuments(dt);
             reader.flush();
         } catch (IOException e) {
@@ -233,7 +231,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             reader = index.getWritingReader();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                Term dt = new Term(FIELD_DOC_ID, Integer.toString(doc.getDocId()));
+                Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(doc.getDocId()));
                 TermDocs td = reader.termDocs(dt);
                 while (td.next()) {
                     reader.deleteDocument(td.doc());
@@ -260,7 +258,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getWritingReader();
-            Term dt = new Term(FIELD_DOC_ID, Integer.toString(currentDoc.getDocId()));
+            Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(currentDoc.getDocId()));
             TermDocs docsEnum = reader.termDocs(dt);
             while (docsEnum.next()) {
                 Document doc = reader.document(docsEnum.doc());
@@ -641,7 +639,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             IndexReader reader = searcher.getIndexReader();
             for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                Query query = new TermQuery(new Term(FIELD_DOC_ID, Integer.toString(doc.getDocId())));
+                Query query = new TermQuery(new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(doc.getDocId())));
                 DocumentCollector collector = new DocumentCollector(searcher.maxDoc());
                 searcher.search(query, collector);
 
@@ -778,6 +776,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             // by default, Lucene only indexes the first 10,000 terms in a field
             writer.setMaxFieldLength(Integer.MAX_VALUE);
+
+            NumericField fDocId = new NumericField(FIELD_DOC_ID, Field.Store.YES, true);
+            Field fNodeId = new Field(FIELD_NODE_ID, new byte [] { 0 }, Field.Store.YES);
             for (PendingDoc pending : nodesToWrite) {
                 Document doc = new Document();
                 if (pending.boost > 0)
@@ -792,10 +793,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 pending.nodeId.serialize(data, 2);
 
                 String contentField = encodeQName(pending.qname);
+                fDocId.setIntValue(currentDoc.getDocId());
+                fNodeId.setValue(data);
 
-                doc.add(new Field(FIELD_DOC_ID, Integer.toString(currentDoc.getDocId()),
-                        Field.Store.YES,  Field.Index.NOT_ANALYZED));
-                doc.add(new Field(FIELD_NODE_ID, data, Field.Store.YES));
+                doc.add(fDocId);
+                doc.add(fNodeId);
                 doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED,
                     Field.TermVector.YES));
 
