@@ -61,7 +61,7 @@
     
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xmldb.log"/>
-        <param name="MaxFileSize" value="500KB"/>
+        <param name="MaxFileSize" value="2000KB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
