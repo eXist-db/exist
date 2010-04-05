@@ -34,10 +34,7 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.tmatesoft.svn.core.ISVNLogEntryHandler;
-import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNLogEntry;
-import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.*;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
@@ -54,7 +51,16 @@ public class SVNLog extends BasicFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("log", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Retrieves the log entries from a subversion repository.",
+			"Retrieves the log entries from a subversion repository.\n\nThe return is formatted as follows:\n" +
+                    "<log uri=\"\" start=\"\">\n" +
+                    "    <entry rev=\"\" author=\"\" date=\"\">\n" +
+                    "        <message></message>\n" +
+                    "        <paths>\n" +
+                    "            <path revtype=\"M\"></path>\n" +
+                    "        </paths>\n" +
+                    "    </entry>\n" +
+                    "</log>\n\n" +
+                    "revtype values are 'A' (item added), 'D' (item deleted), 'M' (item modified), or 'R' (item replaced).",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location in the subversion repository URI from which the logs should be retrieved"),
                 new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
@@ -62,7 +68,7 @@ public class SVNLog extends BasicFunction {
                 new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to start from.  If empty, then start from the beginning."),
                 new FunctionParameterSequenceType("end-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to end with.  If empty, then end with the HEAD revision")
             },
-			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entriess"));
+			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entries"));
 
     private final static QName LOG_ELEMENT = new QName("log", "", "");
     private final static QName ENTRY_ELEMENT = new QName("entry", "", "");
@@ -130,10 +136,16 @@ public class SVNLog extends BasicFunction {
             builder.endElement();
             builder.startElement(PATHS_ELEMENT, EMPTY_ATTRIBS);
             Map paths = entry.getChangedPaths();
-            for (Iterator i = paths.keySet().iterator(); i.hasNext(); ) {
-                String next = (String) i.next();
-                builder.startElement(PATH_ELEMENT, EMPTY_ATTRIBS);
-                builder.characters(next);
+            Iterator iterator = paths.entrySet().iterator();
+            while (iterator.hasNext() ) {
+                Map.Entry e = (Map.Entry) iterator.next();
+                SVNLogEntryPath svnLogEntryPath = (SVNLogEntryPath) e.getValue();
+                AttributesImpl pathAttribs = new AttributesImpl();
+                pathAttribs.addAttribute("", "revtype", "revtype", "CDATA", String.valueOf(svnLogEntryPath.getType()));
+//                pathAttribs.addAttribute("", "copypath", "copypath", "CDATA", svnLogEntryPath.getCopyPath());
+//                pathAttribs.addAttribute("", "copyrev", "copyrev", "CDATA", String.valueOf(svnLogEntryPath.getCopyRevision()));
+                builder.startElement(PATH_ELEMENT, pathAttribs);
+                builder.characters(e.getKey().toString());
                 builder.endElement();
             }
             builder.endElement();
