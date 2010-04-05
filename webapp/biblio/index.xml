@@ -115,7 +115,7 @@
                     <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
                 </jquery:ajax-accordion>
             </div>
-            <jquery:paginate id="results" attribute="cached"
+            <jquery:paginate id="results" attribute="mods:cached"
                 href="retrieve" navcontainer="#results-head .navbar"
                 on-ready="resultsLoaded"/>
         </div>
@@ -124,7 +124,7 @@
             <jquery:button label="Start">
                 var pass = $('input[name = password]');
                 $('#optimize-message').text('Running ...');
-                $.get('optimize.xql?password=' + pass, function (data, status) {
+                $.get('optimize.xql?pass=' + pass.val(), function (data, status) {
                     if (status != "success")
                         $('#optimize-message').text('Error during optimize!');
                     else
