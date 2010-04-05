@@ -146,5 +146,8 @@
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-2.9.2.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.9.2.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/hsqldb-1.8.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/user/jfreechart-1.0.13.jar"/>
+	<classpathentry kind="lib" path="lib/user/jcommon-1.0.16.jar"/>
+	<classpathentry kind="lib" path="lib/user/svnkit.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
