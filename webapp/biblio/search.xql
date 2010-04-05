@@ -325,7 +325,7 @@ declare function biblio:eval-query($queryAsXML as element()?) {
         let $sort := if ($sort0) then $sort0 else session:get-attribute("sort")
         let $results := biblio:evaluate-query($query, $sort)
         (:~ Take the query results and store them into the HTTP session. :)
-        let $null := session:set-attribute('cached', $results)
+        let $null := session:set-attribute('mods:cached', $results)
         let $null := session:set-attribute('query', $queryAsXML)
         let $null := session:set-attribute('sort', $queryAsXML)
         let $null := biblio:add-to-history($queryAsXML)
@@ -339,7 +339,7 @@ declare function biblio:eval-query($queryAsXML as element()?) {
     Clear the last query result.
 :)
 declare function biblio:clear() {
-    let $null := session:remove-attribute('cached')
+    let $null := session:remove-attribute('mods:cached')
     let $null := session:remove-attribute('query')
     let $null := session:remove-attribute('sort')
     return
@@ -425,7 +425,7 @@ let $results :=
             for $item in $list/listitem
             return
                 util:node-by-id(doc(substring-before($item/@id, '#')), substring-after($item/@id, '#'))
-        let $null := session:set-attribute('cached', $items)
+        let $null := session:set-attribute('mods:cached', $items)
         return
             count($items)
     ) else

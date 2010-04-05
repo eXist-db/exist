@@ -14,8 +14,8 @@ declare namespace bs="http://exist-db.org/xquery/biblio/session";
 declare option exist:serialize "media-type=application/xhtml+xml";
 
 declare function bs:retrieve($start as xs:int, $count as xs:int) {
-    let $cached := session:get-attribute("cached")
-    let $stored := session:get-attribute("personal-list")
+    let $cached := session:get-attribute("mods:cached")
+    let $stored := session:get-attribute("mods-personal-list")
     let $total := count($cached)
     let $available :=
         if ($start + $count gt $total) then
