@@ -35,7 +35,11 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.XIncludeFilter;
-import org.exist.util.serializer.*;
+import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.ReceiverToSAX;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SAXToReceiver;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -83,7 +87,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
-
+/**
+ * eXist-db servlet for XSLT transformations.
+ *
+ * @author Wolfgang
+ */
 public class XSLTServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -7258405385386062151L;
@@ -92,7 +100,7 @@ public class XSLTServlet extends HttpServlet {
     
     private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
     private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
-    private final static String REQ_ATTRIBUTE_PROPERTIES = "xslt.output.";
+    private final static String REQ_ATTRIBUTE_OUTPUT = "xslt.output.";
     private final static String REQ_ATTRIBUTE_BASE = "xslt.base";
     
     private final static Logger LOG = Logger.getLogger(XSLTServlet.class);
@@ -101,7 +109,10 @@ public class XSLTServlet extends HttpServlet {
 
     private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
-    
+
+    /**
+     * @return Value of TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE or TRUE if not present.
+     */
     private boolean isCaching() {
     	if (caching == null) {
     		Object property = pool.getConfiguration().getProperty(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE);
@@ -114,6 +125,8 @@ public class XSLTServlet extends HttpServlet {
     	return caching;
     }
 
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String stylesheet = (String) request.getAttribute(REQ_ATTRIBUTE_STYLESHEET);
@@ -151,6 +164,7 @@ public class XSLTServlet extends HttpServlet {
             }
         }
 
+        // Retrieve username / password from HTTP request attributes
         String userParam = (String) request.getAttribute("xslt.user");
         String passwd = (String) request.getAttribute("xslt.password");
         if (userParam == null) {
@@ -179,7 +193,7 @@ public class XSLTServlet extends HttpServlet {
                 broker = pool.get(user);
 
                 TransformerHandler handler = factory.newTransformerHandler(templates);
-                setParameters(request, handler.getTransformer());
+                setTransformerParameters(request, handler.getTransformer());
                 
                 Properties properties = handler.getTransformer().getOutputProperties();
                 setOutputProperties(request, properties);
@@ -198,6 +212,7 @@ public class XSLTServlet extends HttpServlet {
                     //check, do mediaType have "charset"
                     else if (mediaType.indexOf("charset") == -1)
                         response.setContentType(mediaType + "; charset=" + encoding);
+                    
                     else 
                         response.setContentType(mediaType);
                 }
@@ -239,7 +254,7 @@ public class XSLTServlet extends HttpServlet {
                     	//Handle gziped input stream
                     	InputStream stream;
                         
-                    	InputStream inStream = new BufferedInputStream(request.getInputStream());;
+                    	InputStream inStream = new BufferedInputStream(request.getInputStream());
                     	inStream.mark(10);
                         try {
                         	stream = new GZIPInputStream(inStream);
@@ -284,17 +299,23 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
+    /*
+     * Please add comments to this method. make assumption clear. These might not be valid.
+     */
     private Templates getSource(User user, HttpServletRequest request, HttpServletResponse response,
                                 SAXTransformerFactory factory, String stylesheet)
         throws ServletException, IOException {
         
-        String base;
+        // TODO looks like a fall back to filesystem. Will work for Unix, not for win32?
+        // TODO or is it a relative path to .......
         if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
             File f = new File(stylesheet);
             if (f.canRead()) {
+                // Found file, get URI
                 stylesheet = f.toURI().toASCIIString();
                 
             } else {
+                // TODO cannot read file, what does this mean?
                 if (f.isAbsolute()) {
                 	if (stylesheet.startsWith("//")) {
                         stylesheet = stylesheet.replaceFirst("//", "/");
@@ -302,7 +323,8 @@ public class XSLTServlet extends HttpServlet {
 
                 	String url = getServletContext().getRealPath(stylesheet);
                 	if (url == null) {
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found (URL: "+stylesheet+")");
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                                "Stylesheet not found (URL: "+stylesheet+")");
                         return null;
                 	}
                 		
@@ -315,13 +337,15 @@ public class XSLTServlet extends HttpServlet {
                 }
                 
                 if (!f.canRead()) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Stylesheet not found (URL: "+stylesheet+")");
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                            "Stylesheet not found (URL: "+stylesheet+")");
                     return null;
                 }
             }
         }
 
         // TODO please explain what happens here
+        String base;
         int p = stylesheet.lastIndexOf("/");
         if(p != Constants.STRING_NOT_FOUND) {
             base = stylesheet.substring(0, p);
@@ -341,6 +365,9 @@ public class XSLTServlet extends HttpServlet {
         return cached.getTemplates(user);
     }
 
+    /*
+     * Please explain what this method is about. Write about assumptions / input.
+     */
     private File getCurrentDir(HttpServletRequest request) {
         String path = request.getPathTranslated();
         if (path == null) {
@@ -360,12 +387,17 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
-    private void setParameters(HttpServletRequest request, Transformer transformer) throws XPathException {
+    /**
+     *  Copy "xslt." attributes from HTTP request to transformer. Does not copy 'input', 'output'
+     * and 'styleheet' attributes.
+     */
+    private void setTransformerParameters(HttpServletRequest request, Transformer transformer) throws XPathException {
         
         for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
+
             String name = (String) e.nextElement();
             if (name.startsWith(REQ_ATTRIBUTE_PREFIX) &&
-                !(name.startsWith(REQ_ATTRIBUTE_PROPERTIES) || REQ_ATTRIBUTE_INPUT.equals(name)
+                !(name.startsWith(REQ_ATTRIBUTE_OUTPUT) || REQ_ATTRIBUTE_INPUT.equals(name)
                                                             || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
                 Object value = request.getAttribute(name);
                 if (value instanceof NodeValue) {
@@ -380,13 +412,16 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Copies 'output' attributes to properties object.
+     */
     private void setOutputProperties(HttpServletRequest request, Properties properties) {
         for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
             String name = (String) e.nextElement();
-            if (name.startsWith(REQ_ATTRIBUTE_PROPERTIES)) {
+            if (name.startsWith(REQ_ATTRIBUTE_OUTPUT)) {
                 Object value = request.getAttribute(name);
                 if (value != null){
-                    properties.setProperty(name.substring(REQ_ATTRIBUTE_PROPERTIES.length()), value.toString());
+                    properties.setProperty(name.substring(REQ_ATTRIBUTE_OUTPUT.length()), value.toString());
                 }
             }
         }
@@ -491,6 +526,9 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
+    /*
+     * TODO: create generic resolver for whole database
+     */
     private class ExternalResolver implements URIResolver {
 
         private String baseURI;
@@ -500,8 +538,9 @@ public class XSLTServlet extends HttpServlet {
         }
 
         /* (non-Javadoc)
-           * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
-           */
+         * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
+         */
+        @Override
         public Source resolve(String href, String base)
                 throws TransformerException {
             URL url;
@@ -520,6 +559,9 @@ public class XSLTServlet extends HttpServlet {
         }
     }
 
+    /*
+     * TODO: create generic resolver for whole database
+     */
     private class DatabaseResolver implements URIResolver {
 
         DocumentImpl doc;
@@ -534,6 +576,7 @@ public class XSLTServlet extends HttpServlet {
         /* (non-Javadoc)
          * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
          */
+        @Override
         public Source resolve(String href, String base)
                 throws TransformerException {
             Collection collection = doc.getCollection();
