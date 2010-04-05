@@ -454,6 +454,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         public List<ScoreDoc> getDocs() {
+            Collections.sort(docs, new Comparator<ScoreDoc>() {
+
+                public int compare(ScoreDoc scoreDoc, ScoreDoc scoreDoc1) {
+                    if (scoreDoc.doc == scoreDoc1.doc)
+                        return 0;
+                    else if (scoreDoc.doc < scoreDoc1.doc)
+                        return -1;
+                    return 1;
+                }
+            });
             return docs;
         }
         
@@ -632,7 +642,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return FieldSelectorResult.NO_LOAD;
             }
         };
-        long startTime = System.currentTimeMillis();
         IndexSearcher searcher = null;
         try {
             searcher = index.getSearcher();
@@ -681,7 +690,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     }
                 }
             }
-            LOG.debug("findDocuments took " + (System.currentTimeMillis() - startTime));
         } catch (IOException e) {
             LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
         } finally {
