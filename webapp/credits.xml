@@ -45,7 +45,8 @@
         <section>
             <title>Credits</title>
             <para>The following people have contributed to eXist (by writing code or supplying
-                patches) or are active committers (in strict alphabetical order):</para>
+                patches) or are active committers (in strict alphabetical order).  To see a live
+                list, go to <ulink url="https://www.ohloh.net/p/exist/contributors">Ohloh</ulink>.</para>
             <informaltable cols="5">
                 <thead>
                     <tr bgcolor="#0990EE" valign="top">
