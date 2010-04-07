@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: configuration.xml 11542 2010-03-22 20:34:42Z ixitar $ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Server Configuration</title>
+        <date>September 2009</date>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation>
+        </author>
+        <author>
+            <surname>Milowski</surname>
+            <firstname>Alex</firstname>
+            <email>alexmilowski@users.sourceforge.net</email>
+        </author>
+        <revhistory>
+            <revision>
+                <revnumber>2</revnumber>
+                <date>March 2010</date>
+                <author>
+                    <personname>
+                        <firstname>Loren</firstname>
+                        <surname>Cahlander</surname>
+                    </personname>
+                    <email>loren@syntactica.com</email>
+                </author>
+                <revremark>Changing to identify various features of eXist and how to turn on, turn
+                    off and configure the feature.</revremark>
+            </revision>
+        </revhistory>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Function Modules</title>
+        <section>
+            <title>Services</title>
+            <para>The following table lists which services and modules ship with eXist; a
+                description of each; the resources in the eXist installation where they are
+                configured; and whether they are active by default in an out-of-the box
+                configuration.</para>
+            <note>This is a work in progress. It is being refined, but I want to get it into the
+                repository to maintain history.</note>
+            <informaltable>
+                <thead>
+                    <tr bgcolor="#0990EE" valign="top">
+                        <th width="20%">Service</th>
+                        <th width="30%">Description</th>
+                        <th>Resources</th>
+                        <th width="7%">Initial State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>Scheduler function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td align="center" bgcolor="#FF0000">Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>DatabaseAdminServlet</td>
+                        <td>
+                            <para>this servlet can be used to ensure that eXist is running in the
+                                background. Just set the start-parameter to true and load-on-startup
+                                to 1 </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>webapp/WEB-INF/web.xml</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td/>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>util function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>transform function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xmldb function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>request function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>response function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>session function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>text function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>example function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>validation function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>system function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>ngram indexing module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>spatial indexing module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>lucene indexing module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>xqdoc function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>kwic function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>sequences module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>versioning module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>json function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>testing function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>httpclient function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>http-client function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>xprocxq/const module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xprocxq function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>xprocxq/util module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xprocxq/functions function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>xprocxq/std module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xprocxq/ext module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>xprocxq/opt module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xprocxq/naming module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>backup function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>compression function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>datetime function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>file function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>image function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>jndi function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>lib function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>On</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>mail function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>math function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>scheduler function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>simple-ql function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>sql function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>xslfo function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xmldiff function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>cache function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>context function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>jfreechart function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>svn function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#FFFFFF" valign="top">
+                        <td>counter function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                    <tr bgcolor="#F6F6F6" valign="top">
+                        <td>xmpp function module</td>
+                        <td>
+                            <para> </para>
+                        </td>
+                        <td>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
+                            </itemizedlist>
+                        </td>
+                        <td>Off</td>
+                    </tr>
+                </tbody>
+            </informaltable>
+        </section>
+    </chapter>
+</book>
