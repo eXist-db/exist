@@ -106,7 +106,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             int hash = -1;
             if(resources != null && resources.length > 0) {
             	handle = ((Integer)result.get("id")).intValue();
-                hash = ((Integer)result.get("hash")).intValue();
+                Integer hashValue = (Integer)result.get("hash");
+                hash = hashValue == null ? -1 : hashValue.intValue();
             }
             return new RemoteResourceSet( collection, outputProperties, resources, handle, hash );
         } catch ( XmlRpcException xre ) {
