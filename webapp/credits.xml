@@ -52,14 +52,12 @@
                         <th>Contributor</th>
                         <th>SourceForge Alias</th>
                         <th>Date Joined</th>
-                        <th>Latest Contribution</th>
                         <th>Contributions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Luigi Bai</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -72,7 +70,6 @@
                         <td>Timo Boehme</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>patches</listitem>
@@ -81,7 +78,6 @@
                     </tr>
                     <tr valign="top">
                         <td>Sebastian Bossung</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -94,7 +90,6 @@
                         <td>Pierrick Brihaye</td>
                         <td>brihaye</td>
                         <td>August 2005</td>
-                        <td>March 2010</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -105,9 +100,11 @@
                         <td>Loren Cahlander</td>
                         <td>ixitar</td>
                         <td>March 2009</td>
-                        <td>March 2010</td>
                         <td>
                             <itemizedlist>
+                                <listitem>
+                                    <para>developer</para>
+                                </listitem>
                                 <listitem>Function Documents</listitem>
                                 <listitem>Security</listitem>
                                 <listitem>
@@ -120,7 +117,6 @@
                         <td>Mark R. Diggory</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>tomcat realm</listitem>
@@ -129,7 +125,6 @@
                     </tr>
                     <tr valign="top">
                         <td>James R. Fuller</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -143,7 +138,6 @@
                         <td>José María Fernández González</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>patches</listitem>
@@ -154,7 +148,6 @@
                         <td>Mark Harrah</td>
                         <td>harrah</td>
                         <td>January 2006</td>
-                        <td>March 2006</td>
                         <td>
                             <itemizedlist>
                                 <listitem>XACML</listitem>
@@ -163,7 +156,6 @@
                     </tr>
                     <tr valign="top">
                         <td>Piotr Kaminski</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -177,7 +169,6 @@
                         <td>Stephan Körnig</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>hashtables</listitem>
@@ -186,7 +177,6 @@
                     </tr>
                     <tr valign="top">
                         <td>Igor Abade V. Leite</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -199,7 +189,6 @@
                         <td>Evgeny Gazdovsky</td>
                         <td>gev</td>
                         <td>September 2008</td>
-                        <td>March 2010</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -208,7 +197,6 @@
                     </tr>
                     <tr valign="top">
                         <td>Chris Marasti-Georg</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -221,7 +209,6 @@
                         <td>Dan McCreary</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>documentation</listitem>
@@ -232,7 +219,6 @@
                         <td>Wolfgang Meier</td>
                         <td>wolfgang_m</td>
                         <td>January 2003</td>
-                        <td>March 2010</td>
                         <td>
                             <itemizedlist>
                                 <listitem>main developer</listitem>
@@ -243,7 +229,6 @@
                         <td>Alex Milowski</td>
                         <td>alexmilowski</td>
                         <td>February 2006</td>
-                        <td>December 2008</td>
                         <td>
                             <itemizedlist>
                                 <listitem>patches</listitem>
@@ -256,7 +241,6 @@
                         <td>Per Nyfelt</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>JBoss integration</listitem>
@@ -265,7 +249,6 @@
                     </tr>
                     <tr valign="top">
                         <td>Leif-Jöran Olsson</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -278,7 +261,6 @@
                         <td>Adam Retter</td>
                         <td/>
                         <td/>
-                        <td/>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -289,16 +271,17 @@
                         <td>Dmitriy Shabanov</td>
                         <td>shabanovd</td>
                         <td>May 2009</td>
-                        <td>March 2010</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
+                                <listitem>
+                                    <para>Security</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                     </tr>
                     <tr valign="top">
                         <td>Andrzej Taramina</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
@@ -311,7 +294,6 @@
                         <td>Giulio Valentino</td>
                         <td>gvalentino</td>
                         <td>September 2003</td>
-                        <td>April 2008</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -322,7 +304,6 @@
                         <td>Jean-Marc Vanel</td>
                         <td>jmvanel</td>
                         <td>March 2003</td>
-                        <td>March 2006</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -333,7 +314,6 @@
                         <td>Dannes Wessels</td>
                         <td>dizzzz</td>
                         <td>May 2005</td>
-                        <td>March 2010</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -344,7 +324,6 @@
                         <td>Joe Wicentowski</td>
                         <td>joewiz</td>
                         <td>November 2009</td>
-                        <td>February 2010</td>
                         <td>
                             <itemizedlist>
                                 <listitem>developer</listitem>
@@ -353,7 +332,6 @@
                     </tr>
                     <tr valign="top">
                         <td>Cherif Yaya</td>
-                        <td/>
                         <td/>
                         <td/>
                         <td>
