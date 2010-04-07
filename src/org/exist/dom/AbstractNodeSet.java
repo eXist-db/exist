@@ -537,15 +537,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param other
      */
     public NodeSet union(NodeSet other) {
+        if (isEmpty())
+            return other;
+        if (other.isEmpty())
+            return this;
         NewArrayNodeSet result = new NewArrayNodeSet();
         result.addAll(other);
         NodeProxy p, c;
         for (Iterator<NodeProxy> i = iterator(); i.hasNext();) {
             p = i.next();
-            if (other.contains(p)) {
-                c = other.get(p);
-                if(c != null)
-                    c.addMatches(p);
+            if ((c = other.get(p)) != null) {
+                c.addMatches(p);
             } else
                 result.add(p);
         }

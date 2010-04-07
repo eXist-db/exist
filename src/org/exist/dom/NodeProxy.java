@@ -1153,6 +1153,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#union(org.exist.dom.NodeSet)
      */
     public NodeSet union(NodeSet other) {
+        if (other.isEmpty())
+            return this;
         NewArrayNodeSet result = new NewArrayNodeSet();
         result.addAll(other);
         result.add(this);
