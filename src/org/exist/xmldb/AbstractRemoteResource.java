@@ -25,12 +25,16 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
+import org.exist.xquery.value.StringValue;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.xml.transform.OutputKeys;
 
 public abstract class AbstractRemoteResource
 	implements EXistResource, ExtendedResource, Resource
@@ -238,7 +242,54 @@ public abstract class AbstractRemoteResource
 			}
 		}
 	}
-	
+
+    /**
+     * Fallback method to retrieve data from eXist versions < 1.5.
+     * 
+     * @param handle
+     * @param pos
+     * @throws XMLDBException
+     */
+    protected void getRemoteContentFallback(int handle, int pos) throws XMLDBException {
+        Properties properties = parent.getProperties();
+        List params = new ArrayList(1);
+        params.add(new Integer(handle));
+        params.add(new Integer(pos));
+        params.add(properties);
+        byte[] data = null;
+        try {
+            data = (byte[]) parent.getClient().execute("retrieve", params);
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+        }
+        if (properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes")) {
+            try {
+                data = Compressor.uncompress(data);
+            } catch (IOException e) {
+
+            }
+        }
+        FileOutputStream fos = null;
+
+        try {
+            File tmpfile = File.createTempFile("eXistARR",getResourceType().equals("XMLResource")?".xml":".bin");
+            tmpfile.deleteOnExit();
+            fos = new FileOutputStream(tmpfile);
+            fos.write(data);
+            
+            contentFile = tmpfile;
+        } catch (IOException ioe) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+        } finally {
+            if (fos != null)
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    // IGNORE
+                }
+        }
+    }
+
 	protected void getRemoteContentIntoLocalFile(OutputStream os, boolean isRetrieve, int handle, int pos)
 		throws XMLDBException
 	{
@@ -329,7 +380,8 @@ public abstract class AbstractRemoteResource
 			isLocal=false;
 			contentFile=tmpfile;
 		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+            // backwards compatibility with eXist versions < 1.4
+            getRemoteContentFallback(handle, pos);
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		} catch (DataFormatException dfe) {
