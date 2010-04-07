@@ -67,6 +67,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.xml.sax.SAXParseException;
 
 public class XSLTServlet extends HttpServlet {
 
@@ -189,8 +190,14 @@ public class XSLTServlet extends HttpServlet {
                         reader.setContentHandler(saxreceiver);
                         reader.parse(new InputSource(request.getInputStream()));
                     }
+
+                } catch (SAXParseException e) {
+                    LOG.error(e.getMessage());
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+
                 } catch (SAXException e) {
                     throw new ServletException("SAX exception while transforming node: " + e.getMessage(), e);
+
                 } finally {
                     SerializerPool.getInstance().returnObject(sax);
                 }
