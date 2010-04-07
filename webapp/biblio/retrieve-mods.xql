@@ -336,7 +336,8 @@ declare function mods:entry-full($entry as element()) {
                 <td colspan="2">In:</td>
             </tr>,
             if ($related/@xlink:href) then
-                for $ref in //mods:mods[@ID = $related/@xlink:href]
+                let $collection := util:collection-name($entry)
+                for $ref in collection($collection)//mods:mods[@ID = $related/@xlink:href]
                 return
                     mods:entry-full($ref)
             else

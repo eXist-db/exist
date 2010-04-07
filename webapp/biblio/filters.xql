@@ -33,7 +33,7 @@ declare function local:keywords($results as element()*) {
 };
 
 let $type := request:get-parameter("type", ())
-let $cached := session:get-attribute("cached")
+let $cached := session:get-attribute("mods:cached")
 return
     if ($type eq 'author') then
         <ul xmlns="http://www.w3.org/1999/xhtml">
