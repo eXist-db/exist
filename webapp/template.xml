@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: security.xml 10339 2009-11-03 01:09:05Z ixitar $ -->
+<!-- This is a template for writing documentation for the eXist project.
+     Please copy this and change the data and replace the author information. -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <copyright>
+            <year>2010</year>
+            <holder>The eXist Project</holder>
+        </copyright>
+        <title/>
+        <date>April 2010</date>
+        <author>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>loren at syntactica.com</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title/>
+        <section>
+            <title/>
+            <para/>
+        </section>
+    </chapter>
+</book>
