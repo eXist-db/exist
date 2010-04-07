@@ -21,6 +21,7 @@
  */
 package org.exist.dom;
 
+import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -82,8 +83,9 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 
     private int state = 0;
 
-    private DocumentSet cachedDocuments = null;
-
+    private DocumentIterator docIter = null;
+    private CollectionIterator collectionIter = null;
+    
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
 
@@ -237,7 +239,6 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 
     private void setHasChanged() {
         state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
-        cachedDocuments = null;
     }
 
     private int findDoc(DocumentImpl doc) {
@@ -756,6 +757,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                 }
             }
         }
+        docIter = null;
+        collectionIter = null;
     }
 
     private void ensureDocCapacity() {
@@ -1174,13 +1177,14 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @param docs a <code>DocumentSet</code> value
      */
     public void setDocumentSet(DocumentSet docs) {
-    	cachedDocuments = docs;
     }
 
     // DocumentSet methods
 
     public Iterator getDocumentIterator() {
         sort();
+        if (docIter != null)
+            return docIter.reset();
         return new DocumentIterator();
     }
 
@@ -1200,6 +1204,11 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         }
 
         public void remove() {
+        }
+
+        protected DocumentIterator reset() {
+            currentDoc = 0;
+            return this;
         }
     }
     
@@ -1330,6 +1339,8 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      */
     public Iterator getCollectionIterator() {
         sort();
+        if (collectionIter != null)
+            return collectionIter.reset();
         return new CollectionIterator();
     }
 
@@ -1339,17 +1350,23 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      */
     private class CollectionIterator implements Iterator {
 
-        Iterator iterator = null;
+        Collection nextCollection = null;
+        int currentDoc = 0;
 
         CollectionIterator() {
-            if (documentCount > 0) {
-                ObjectHashSet collections = new ObjectHashSet();
+            findNext();
+        }
 
-                for (int i = 0; i < documentCount; i++) {
-                    collections.add(nodes[documentOffsets[i]].getDocument().getCollection());
+        private void findNext() {
+            while (currentDoc < documentCount) {
+                if (nextCollection == null ||
+                    nextCollection != nodes[documentOffsets[currentDoc]].getDocument().getCollection()) {
+                    nextCollection = nodes[documentOffsets[currentDoc]].getDocument().getCollection();
+                    return;
                 }
-                iterator = collections.iterator();
+                currentDoc++;
             }
+            nextCollection = null;
         }
 
         /**
@@ -1358,7 +1375,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
          * @return a <code>boolean</code> value
          */
         public boolean hasNext() {
-            return iterator != null && iterator.hasNext();
+            return nextCollection != null;
         }
 
         /**
@@ -1367,7 +1384,9 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
          * @return an <code>Object</code> value
          */
         public Object next() {
-            return iterator.next();
+            Collection current = nextCollection;
+            findNext();
+            return current;
         }
 
         /**
@@ -1377,6 +1396,12 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         public void remove() {
             // not needed
             throw new IllegalStateException();
+        }
+
+        protected CollectionIterator reset() {
+            nextCollection = null;
+            currentDoc = 0;
+            return this;
         }
     }
 
