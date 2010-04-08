@@ -312,12 +312,18 @@ public class OrderedValueSequence extends AbstractSequence {
 				try {
 					a = values[i];
 					b = other.values[i];
-                    if ((a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()))) { 
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.INFERIOR;							
+                    boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
+                    boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+                    if (aIsEmpty) {
+                        if (bIsEmpty)
+                            // both values are empty
+                            return Constants.EQUAL;
+                        else if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
+							cmp = Constants.INFERIOR;
                         else
                             cmp = Constants.SUPERIOR;
-                    } else if ((b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()))) { 
+                    } else if (bIsEmpty) {
+                        // we don't need to check for equality since we know a is not empty
                         if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
 							cmp = Constants.SUPERIOR;
 						else
