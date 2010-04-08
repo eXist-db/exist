@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="11.0">
+<project version="11.2">
     <meta>
         <filters directoryPatterns=".svn" filePatterns="*.java,*.class"
             positiveFilePatterns="" showHiddenFiles="false"/>
         <options>
-            <serialized version="11.0">
+            <serialized version="11.2">
                 <map>
                     <entry>
                         <String xml:space="preserve">key.xquery.option.pane.group</String>
@@ -45,22 +45,15 @@
             <file name="bin/backup.sh"/>
             <file name="bin/client.bat"/>
             <file name="bin/client.sh"/>
-            <file name="bin/cpappend.bat"/>
-            <file name="bin/exist.sh"/>
-            <file name="bin/exist-init.d.sh"/>
-            <file name="bin/query.py"/>
-            <file name="bin/rpclite.pl"/>
             <file name="bin/run.bat"/>
             <file name="bin/run.sh"/>
             <file name="bin/server.bat"/>
             <file name="bin/server.sh"/>
             <file name="bin/shutdown.bat"/>
             <file name="bin/shutdown.sh"/>
-            <file name="bin/startup_cluster.bat"/>
             <file name="bin/startup.bat"/>
             <file name="bin/startup.sh"/>
             <file name="bin/startupCluster.sh"/>
-            <file name="bin/xmlrpc.pl"/>
         </folder>
         <folder name="build">
             <folder name="scripts">
@@ -128,20 +121,10 @@
         </folder>
         <folder name="installer">
             <folder name="scripts">
-                <file name="installer/scripts/backup.bat"/>
-                <file name="installer/scripts/backup.sh"/>
                 <file name="installer/scripts/build.bat"/>
                 <file name="installer/scripts/build.sh"/>
-                <file name="installer/scripts/client.bat"/>
-                <file name="installer/scripts/client.sh"/>
-                <file name="installer/scripts/server.bat"/>
-                <file name="installer/scripts/server.sh"/>
                 <file name="installer/scripts/setup.bat"/>
                 <file name="installer/scripts/setup.sh"/>
-                <file name="installer/scripts/shutdown.bat"/>
-                <file name="installer/scripts/shutdown.sh"/>
-                <file name="installer/scripts/startup.bat"/>
-                <file name="installer/scripts/startup.sh"/>
             </folder>
             <file name="installer/index.html"/>
             <file name="installer/install.xml.tmpl"/>
@@ -181,7 +164,6 @@
             <folder name="admin">
                 <folder name="scripts">
                     <file name="webapp/admin/scripts/prettify.js"/>
-                    <file name="webapp/admin/scripts/utilities.js"/>
                 </folder>
                 <folder name="styles">
                     <file name="webapp/admin/styles/prettify.css"/>
@@ -3163,30 +3145,11 @@
                     <file name="webapp/xforms/xsltforms/echo.php"/>
                     <file name="webapp/xforms/xsltforms/focus.gif"/>
                     <file name="webapp/xforms/xsltforms/icon_error.gif"/>
-                    <file name="webapp/xforms/xsltforms/icon_file.gif"/>
-                    <file name="webapp/xforms/xsltforms/icon_folder.gif"/>
                     <file name="webapp/xforms/xsltforms/icon_help.gif"/>
                     <file name="webapp/xforms/xsltforms/icon_hint.gif"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_en_UK.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_es.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_fr.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_gl.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_nb_NO.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_nn_NO.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages_ru.properties"/>
-                    <file
-                        name="webapp/xforms/xsltforms/messages.properties"/>
                     <file name="webapp/xforms/xsltforms/tab.png"/>
                     <file
                         name="webapp/xforms/xsltforms/thBackground.png"/>
-                    <file name="webapp/xforms/xsltforms/Thumbs.db"/>
                     <file
                         name="webapp/xforms/xsltforms/titleBackground.png"/>
                     <file name="webapp/xforms/xsltforms/xsltforms.css"/>
@@ -3305,7 +3268,6 @@
                 <file name="webapp/xproc/extension-xproc-steps.xml"/>
                 <file name="webapp/xproc/functions-xproc-steps.xml"/>
                 <file name="webapp/xproc/optional-xproc-steps.xml"/>
-                <file name="webapp/xproc/run.xql"/>
                 <file name="webapp/xproc/sidebar.xml"/>
                 <file name="webapp/xproc/standard-xproc-steps.xml"/>
                 <file name="webapp/xproc/xproc.xml"/>
@@ -3371,22 +3333,15 @@
                     <file name="webapp/xquery/resources/powered.gif"/>
                 </folder>
                 <folder name="scripts">
-                    <folder name="syntax">
-                        <file
-                            name="webapp/xquery/scripts/syntax/sh-min.js"
-                        />
-                    </folder>
+                    <folder name="syntax"/>
                     <file name="webapp/xquery/scripts/fundocs.js"/>
                     <file name="webapp/xquery/scripts/svnlog.js"/>
                 </folder>
                 <folder name="styles">
                     <file name="webapp/xquery/styles/acronyms.css"/>
-                    <file name="webapp/xquery/styles/default-style.css"/>
                     <file name="webapp/xquery/styles/docsearch.css"/>
                     <file name="webapp/xquery/styles/functions.css"/>
                     <file name="webapp/xquery/styles/fundocs.css"/>
-                    <file name="webapp/xquery/styles/niftyCorners.css"/>
-                    <file name="webapp/xquery/styles/niftycube.js"/>
                     <file name="webapp/xquery/styles/svn.css"/>
                     <file name="webapp/xquery/styles/xquery.css"/>
                 </folder>
@@ -3437,7 +3392,6 @@
                 <file name="webapp/xquery/call.xql"/>
                 <file name="webapp/xquery/controller.xql"/>
                 <file name="webapp/xquery/docs.xql"/>
-                <file name="webapp/xquery/docsetup.xql"/>
                 <file name="webapp/xquery/error.css"/>
                 <file name="webapp/xquery/exist-articles.xql"/>
                 <file name="webapp/xquery/fibo.xql"/>
@@ -3451,7 +3405,6 @@
                 <file name="webapp/xquery/json-test.xql"/>
                 <file name="webapp/xquery/login.css"/>
                 <file name="webapp/xquery/login.xql"/>
-                <file name="webapp/xquery/logo.jpg"/>
                 <file name="webapp/xquery/search.xql"/>
                 <file name="webapp/xquery/session.xql"/>
                 <file name="webapp/xquery/sidebar.xml"/>
@@ -3506,6 +3459,8 @@
             <file name="webapp/roadmap.xml"/>
             <file name="webapp/scheduler.xml"/>
             <file name="webapp/security.xml"/>
+            <file name="webapp/service-fluent.xml"/>
+            <file name="webapp/service-openid.xml"/>
             <file name="webapp/sidebar.xml"/>
             <file name="webapp/sitemap.xmap"/>
             <file name="webapp/triggers.xml"/>
