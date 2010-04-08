@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <copyright>
+            <year>2010</year>
+            <holder>The eXist Project</holder>
+        </copyright>
+        <title>Configuring the OpenID Authentication Service</title>
+        <date>April 2010</date>
+        <author>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>loren at syntactica.com</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Configuring the OpenID Authentication Service</title>
+        <section>
+            <title>Introduction</title>
+            <para><ulink url="http://openid.net/">OpenID</ulink> is an authentication mechanism
+                where the identity of the user is maintained by trusted external providers.  This
+                takes the burden in maintaining ans securing passwords for users off of the eXist
+                database and on to the Identity Provider (IdP).</para> 
+        </section>
+        <section>
+            <title>Glossary</title>
+            <para>This is a glossary of terms associated with OpenID.</para>
+            <para>
+                
+                <glosslist id="openid">
+                <glossentry>
+                    <glossterm>IdP</glossterm>                    
+                    <glossdef>OpenID Provider</glossdef>
+                </glossentry>
+                    <glossentry>
+                        <glossterm>OpenID Provider</glossterm>
+                        <glossdef>An IdP that provides an OpenID authentication service on which a Relying Party (an eXist application for these purposes) relies for an assertion.</glossdef>
+                    </glossentry>
+                    
+                </glosslist>
+            </para>
+        </section>
+        <section>
+            <title>Configuration</title>
+            <para/>
+            <section>
+                <title>Building from Source</title>
+                <para>By default, the OpenID service is not built and thus is also not enabled.  To
+                    recompile the source with OpenID enabled, edit local.build.properties in the
+                    extensions directory and change the include.feature.security.openid property
+                    from false to true.  Then recompile.</para>
+                <example>
+                    <title>extensions/local.build.properties</title>
+                    <programlisting><![CDATA[#Security OpenID extensions for eXist
+include.feature.security.openid = true
+]]></programlisting>
+                </example>
+                <para>This extension compiles into <emphasis role="bold"><emphasis role="italic"
+                            >lib/extensions/exist-security-openid.jar</emphasis></emphasis>.</para>
+            </section>
+            <section>
+                <title>Enabling the Service</title>
+                <para>This service is enabled by building the feature from source as described
+                    above.</para>
+            </section>
+            <section>
+                <title>Disabling the Service</title>
+                <para>The only way to disable this service once it is enabled is to remove the
+                        <emphasis role="bold"><emphasis role="italic"
+                            >lib/extensions/exist-security-openid.jar</emphasis></emphasis>
+                    file.</para>
+            </section>
+        </section>
+        <section>
+            <title>Managing</title>
+            <para>The <emphasis role="italic">out of the box</emphasis> operation for OpenID does
+                not persist the user.  To manage the persistence of the user, an XQuery script needs
+                to be called.  The Java property <emphasis role="bold"><emphasis role="italic"
+                        >org.exist.security.openid.verify_logging_script</emphasis></emphasis> needs
+                to be set through the setting of the JAVA_OPTIONS system attribute.</para>
+            <example>
+                <title>Java property</title>
+                <programlisting><![CDATA[-Dorg.exist.security.openid.verify_logging_script=/db/cms/apps/authentication/util/register.xq
+]]></programlisting>
+            </example>
+            <para>The value <emphasis role="bold"><emphasis role="italic"
+                        >/db/cms/apps/authentication/util/register.xq</emphasis></emphasis> is an
+                example of a path name to an XQuery script within the eXist database.</para>
+        </section>
+    </chapter>
+</book>
