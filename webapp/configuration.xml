@@ -78,7 +78,13 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td width="20%">Cocoon</td>
                         <td width="30%">
-                            <para> </para>
+                            <para> Apache Cocoon is a Spring-based framework (since version 2.2 of
+                                Cocoon) built around the concepts of separation of concerns and
+                                component-based development. Cocoon implements these concepts around
+                                the notion of component pipelines, each component on the pipeline
+                                specializing on a particular operation. </para>
+                            <para>This feature currently does not have any development support in
+                                eXist.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -130,7 +136,7 @@
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>debugger</td>
+                        <td><ulink url="debugger.xml">debugger</ulink></td>
                         <td>
                             <para> </para>
                         </td>
@@ -144,7 +150,7 @@
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>fluent</td>
+                        <td><ulink url="service-fluent.xml">fluent</ulink></td>
                         <td>
                             <para> </para>
                         </td>
@@ -172,7 +178,7 @@
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>OpenID</td>
+                        <td><ulink url="service-openid.xml">OpenID</ulink></td>
                         <td>
                             <para> </para>
                         </td>

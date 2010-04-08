@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: configuration.xml 11542 2010-03-22 20:34:42Z ixitar $ -->
+<!-- $Id$ -->
 <book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>

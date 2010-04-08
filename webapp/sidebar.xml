@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
 	<search href="xquery/search.xql"/>
     <toolbar>

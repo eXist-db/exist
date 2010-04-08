@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <copyright>
+            <year>2010</year>
+            <holder>The eXist Project</holder>
+        </copyright>
+        <title>Fluent</title>
+        <date>April 2010</date>
+        <author>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>loren at syntactica.com</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Fluent</title>
+        <section>
+            <title>Introduction</title>
+            <para/> 
+        </section>
+        <section>
+            <title>Glossary</title>
+            <para>This is a glossary of terms associated with fluent.</para>
+            <para>
+                <glosslist id="fluent">
+                    <glossentry>
+                        <glossterm/>                    
+                        <glossdef/>
+                    </glossentry>                    
+                </glosslist>
+            </para>
+        </section>
+        <section>
+            <title>Configuration</title>
+            <para/>
+            <section>
+                <title>Building from Source</title>
+                <para/>
+                <example>
+                    <title>extensions/local.build.properties</title>
+                    <programlisting><![CDATA[#Fluent API for eXist
+include.feature.fluent = true
+]]></programlisting>
+                </example>
+                <para/>
+            </section>
+            <section>
+                <title>Enabling the Service</title>
+                <para/>
+            </section>
+            <section>
+                <title>Disabling the Service</title>
+                <para/>/para>
+            </section>
+        </section>
+        <section>
+            <title>Managing</title>
+            <para/>
+        </section>
+    </chapter>
+</book>
