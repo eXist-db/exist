@@ -27,7 +27,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
-import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -38,7 +37,9 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
@@ -66,11 +67,13 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 
     private final static int INITIAL_DOC_SIZE = 64;
 
+    private Set<Collection> cachedCollections = null;
+
     private int documentIds[] = new int[16];
     private int documentOffsets[] = new int[16];
     private int documentLengths[] = new int[16];
     private int documentCount = 0;
-    
+
     private NodeProxy nodes[];
 
     protected int size = 0;
@@ -1328,9 +1331,15 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      */
     public Iterator getCollectionIterator() {
         sort();
-        if (collectionIter != null)
-            return collectionIter.reset();
-        return new CollectionIterator();
+        if (cachedCollections == null) {
+            cachedCollections = new HashSet<Collection>();
+            for (int i = 0; i < documentCount; i++) {
+                DocumentImpl doc = nodes[documentOffsets[i]].getDocument();
+                if (!cachedCollections.contains(doc.getCollection()))
+                    cachedCollections.add(doc.getCollection());
+            }
+        }
+        return cachedCollections.iterator();
     }
 
     /**
