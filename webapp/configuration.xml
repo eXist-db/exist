@@ -138,7 +138,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td><ulink url="debugger.xml">debugger</ulink></td>
                         <td>
-                            <para> </para>
+                            <para> This is an XQuery debugger.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -152,7 +152,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td><ulink url="service-fluent.xml">fluent</ulink></td>
                         <td>
-                            <para> </para>
+                            <para>This is an API for embedded access to eXist which is tightly integrated with java.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -180,7 +180,8 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td><ulink url="service-openid.xml">OpenID</ulink></td>
                         <td>
-                            <para> </para>
+                            <para> OpenID is an authentication mechanism where the identity of the
+                                user is maintained by trusted external providers.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -194,7 +195,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Versioning</td>
                         <td>
-                            <para> </para>
+                            <para> Versioning extension</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -206,9 +207,10 @@
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>XQDoc</td>
+                        <td><ulink url="service-xqdoc.xml">XQDoc</ulink></td>
                         <td>
-                            <para> </para>
+                            <para> xqDoc provides a simple vendor neutral solution for documenting
+                                XQuery library and main modules that is similar to JavaDoc.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -222,7 +224,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XSLT</td>
                         <td>
-                            <para> </para>
+                            <para> XSLT extension</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -239,7 +241,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Cache</td>
                         <td>
-                            <para> </para>
+                            <para> Cache module</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -253,7 +255,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Compression</td>
                         <td>
-                            <para> </para>
+                            <para> Provides functions to manipulate archives, tar/zip/gzip</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -267,7 +269,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Context</td>
                         <td>
-                            <para> </para>
+                            <para> Context module</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -281,7 +283,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Counter</td>
                         <td>
-                            <para> </para>
+                            <para> Persistent counter module</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -295,7 +297,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Datetime</td>
                         <td>
-                            <para> </para>
+                            <para> Date/DateTime/Time utility functions module</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -309,7 +311,8 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Example</td>
                         <td>
-                            <para> </para>
+                            <para> This is an example Java based function module.  It is a template
+                                for creating other Java based function modules.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -323,7 +326,8 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>File</td>
                         <td>
-                            <para> </para>
+                            <para> Provides functions to manipulate files in the local file
+                                system.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -337,7 +341,8 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Http Client</td>
                         <td>
-                            <para> </para>
+                            <para> This provides functions to call other web servers as if eXist
+                                were a web browser.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -351,7 +356,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Image</td>
                         <td>
-                            <para> </para>
+                            <para> Generate thumbnails of images.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -365,7 +370,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>JFreechart</td>
                         <td>
-                            <para> </para>
+                            <para> Provides functions to generate graphs using JFreechart</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -379,7 +384,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>JNDI</td>
                         <td>
-                            <para> </para>
+                            <para> Provides functions to query a JNDI Directory</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -391,23 +396,17 @@
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>Lib</td>
+                        <td/>
                         <td>
                             <para> </para>
                         </td>
-                        <td>
-                            <itemizedlist>
-                                <listitem>
-                                    <para>extensions/build.properties</para>
-                                </listitem>
-                            </itemizedlist>
-                        </td>
-                        <td align="center" bgcolor="#FF0000">Off</td>
+                        <td/>
+                        <td align="center"/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Mail</td>
                         <td>
-                            <para> </para>
+                            <para> Send emails from XQuery</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -421,7 +420,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Math</td>
                         <td>
-                            <para> </para>
+                            <para> Math function module</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -435,7 +434,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Scheduler</td>
                         <td>
-                            <para> </para>
+                            <para> The Quartz scheduler</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -452,7 +451,8 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>SimpleQL</td>
                         <td>
-                            <para> </para>
+                            <para> Implements a simple query language which is translated into
+                                XQuery</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -466,7 +466,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>SQL</td>
                         <td>
-                            <para> </para>
+                            <para> A set of functions to query a SQL database.</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -480,7 +480,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Subversion</td>
                         <td>
-                            <para> </para>
+                            <para> Provides functions to query a subversion repository</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -494,7 +494,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XMLDiff</td>
                         <td>
-                            <para> </para>
+                            <para> Utility module to compare XML fragments</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -508,7 +508,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XMPP</td>
                         <td>
-                            <para> </para>
+                            <para> XMPP client; based on smack</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -522,7 +522,7 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XSL FO</td>
                         <td>
-                            <para> </para>
+                            <para> XSL FO transformations (Uses Apache FOP)</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -536,7 +536,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>XML RPC</td>
                         <td>
-                            <para> </para>
+                            <para> RpcServlet provides XML-RPC access to eXist</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -567,7 +567,7 @@
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>webDAV</td>
                         <td>
-                            <para> </para>
+                            <para> Servlet that enables webDAV</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -648,7 +648,9 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Security</td>
                         <td>
-                            <para> </para>
+                            <para> This defines the security manager that is to be used by eXist.
+                                The current options are native (where the usernames and hashed
+                                passwords are store in the database) or LDAP.</para>
                         </td>
                         <td>
                             <itemizedlist>

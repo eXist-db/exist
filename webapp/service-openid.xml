@@ -26,8 +26,8 @@
         <section>
             <title>Introduction</title>
             <para><ulink url="http://openid.net/">OpenID</ulink> is an authentication mechanism
-                where the identity of the user is maintained by trusted external providers.  This
-                takes the burden in maintaining ans securing passwords for users off of the eXist
+                where the identity of the user is maintained by trusted external providers. This
+                takes the burden in maintaining and securing passwords for users off of the eXist
                 database and on to the Identity Provider (IdP).</para> 
         </section>
         <section>
