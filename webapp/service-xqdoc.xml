@@ -8,7 +8,7 @@
             <year>2010</year>
             <holder>The eXist Project</holder>
         </copyright>
-        <title>Fluent</title>
+        <title>xqDoc</title>
         <date>April 2010</date>
         <author>
             <firstname>Loren</firstname>
@@ -22,14 +22,14 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Fluent</title>
+        <title>xqDoc</title>
         <section>
             <title>Introduction</title>
             <para/> 
         </section>
         <section>
             <title>Glossary</title>
-            <para>This is a glossary of terms associated with fluent.</para>
+            <para>This is a glossary of terms associated with xqDoc.</para>
             <para>
                 <glosslist id="fluent">
                     <glossentry>
