@@ -91,7 +91,8 @@ public class OpenIDUtility {
             LOG.info("no property set for " + REGISTER_XQUERY_SCRIPT_PROPERTY);
             return true;
         }
-        LOG.info("org.exist.security.openid.verify_logging_script = " + xqueryResourcePath);
+        xqueryResourcePath = xqueryResourcePath.trim();
+        LOG.info("org.exist.security.openid.verify_logging_script = \"" + xqueryResourcePath + "\"");
         
         BrokerPool pool = null;
         DBBroker broker = null;
@@ -118,6 +119,7 @@ public class OpenIDUtility {
                 source = new DBSource(broker, (BinaryDocument)resource, true);
             } else {
                 LOG.info("Resource " + xqueryResourcePath + " does not exist.");
+                LOG.info("pathURI " + pathUri );
                 return true;
             }
 
