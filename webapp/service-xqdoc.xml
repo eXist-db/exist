@@ -33,26 +33,27 @@
             <para>
                 <glosslist id="fluent">
                     <glossentry>
-                        <glossterm/>                    
-                        <glossdef/>
+                        <glossterm>xqDoc</glossterm>                    
+                        <glossdef></glossdef>
                     </glossentry>                    
                 </glosslist>
             </para>
         </section>
         <section>
             <title>Configuration</title>
-            <para/>
+            <para>By default, the xqDoc service is built and thus is also enabled.</para>
+            
             <section>
                 <title>Building from Source</title>
                 <para/>
                 <example>
                     <title>extensions/local.build.properties</title>
-                    <programlisting><![CDATA[#Fluent API for eXist
-include.feature.fluent = true
+                    <programlisting><![CDATA[#XQDoc extension
+include.feature.xqdoc = true
 ]]></programlisting>
                 </example>
                 <para>This extension compiles into <emphasis role="bold"><emphasis role="italic"
-                            >exist-fluent.jar</emphasis></emphasis> in the base directory.</para>
+                            >lib/optional/exist-xqdoc.jar</emphasis></emphasis> in the base directory.</para>
                 
             </section>
             <section>
@@ -64,7 +65,7 @@ include.feature.fluent = true
                 <title>Disabling the Service</title>
                 <para>The only way to disable this service once it is enabled is to remove the
                     <emphasis role="bold"><emphasis role="italic"
-                        >exist-fluent.jar</emphasis></emphasis>
+                        >lib/optional/exist-xqdoc.jar</emphasis></emphasis>
                     file.</para>
             </section>
         </section>
