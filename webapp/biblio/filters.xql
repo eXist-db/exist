@@ -11,6 +11,7 @@ import module namespace names="http://exist-db.org/xquery/biblio/names"
 declare namespace mods="http://www.loc.gov/mods/v3";
 
 declare variable $local:MAX_RESULTS := 1000;
+declare variable $local:MAX_RESULTS_NAMES := 2000;
 declare variable $local:MAX_TERMS := 30;
 
 declare function local:key($key, $options) {
@@ -38,27 +39,37 @@ return
     if ($type eq 'author') then
         <ul xmlns="http://www.w3.org/1999/xhtml">
         {
-            let $authors :=
-                for $author in $cached//mods:name
-                return names:format-name($author)
-            let $distinct := distinct-values($authors)
-            for $name in $distinct
-            order by $name
+            let $names := $cached//mods:name
             return
-                <li><a href="?filter=Author&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>
+                if (count($names) gt $local:MAX_RESULTS_NAMES) then
+                    <li>Too many names. Please restrict the result set.</li>
+                else
+                    let $authors :=
+                        for $author in $names
+                        return names:format-name($author)
+                    let $distinct := distinct-values($authors)
+                    for $name in $distinct
+                    order by $name
+                    return
+                        <li><a href="?filter=Author&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>
         }
         </ul>
     else if ($type eq 'date') then
         <ul xmlns="http://www.w3.org/1999/xhtml">
         {
-            let $dates :=
-                for $info in $cached/mods:originInfo
-                return
-                    ($info/mods:dateCreated | $info/mods:dateIssued)[1]
-            for $date in distinct-values($dates)
-            order by $date descending
+            let $dates := $cached/mods:originInfo
             return
-                <li><a href="?filter=Date&amp;value={$date}&amp;query-tabs=advanced">{$date}</a></li>
+                if (count($dates) gt $local:MAX_RESULTS_NAMES) then
+                    <li>Too many dates. Please restrict the result set.</li>
+                else
+                    let $dates :=
+                        for $info in $cached/mods:originInfo
+                        return
+                            ($info/mods:dateCreated | $info/mods:dateIssued)[1]
+                    for $date in distinct-values($dates)
+                    order by $date descending
+                    return
+                        <li><a href="?filter=Date&amp;value={$date}&amp;query-tabs=advanced">{$date}</a></li>
          }</ul>
     else if ($type eq 'keywords') then
         local:keywords($cached)

@@ -103,8 +103,7 @@
         <div id="result-container">
             <div id="filters" style="display: none;">
                 <jquery:ajax-accordion id="facets">
-                    <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
-                    <jquery:panel id="keywords" title="Index Terms:" on-select="loadIndexTerms">
+                    <jquery:panel id="keywords" title="Index Terms" on-select="loadIndexTerms">
                         <div class="keyword-prefix">
                             <form id="keyword-form">
                                 <input type="text" name="input-keyword-prefix" size="8" value="a"/>
@@ -112,6 +111,7 @@
                         </div>
                         <div id="keywords-result"></div>
                     </jquery:panel>
+                    <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
                     <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
                 </jquery:ajax-accordion>
             </div>
