@@ -39,7 +39,7 @@ declare variable $biblio:FIELDS :=
 		<field name="Title">mods:mods[ft:query(mods:titleInfo, '$q', $options)]</field>
 		<field name="Author">mods:mods[ft:query(mods:name, '$q', $options)]</field>
 		<field name="Date">(mods:mods[ft:query(mods:originInfo/mods:dateCreated, '$q', $options)] union
-		  mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)]</field>
+		  mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)])</field>
 		<field name="All">(mods:mods[ft:query(mods:titleInfo, '$q', $options)] union
 		  mods:mods[ft:query(mods:name, '$q', $options)])
         </field>
