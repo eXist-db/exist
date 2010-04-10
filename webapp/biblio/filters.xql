@@ -7,7 +7,7 @@ xquery version "1.0";
 :)
 import module namespace names="http://exist-db.org/xquery/biblio/names"
     at "names.xql";
-    
+
 declare namespace mods="http://www.loc.gov/mods/v3";
 
 declare variable $local:MAX_RESULTS := 1000;
