@@ -44,11 +44,13 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.security.AuthenticationException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -107,7 +109,15 @@ public class XQueryServlet extends HttpServlet {
 	private static final long serialVersionUID = 5266794852401553015L;
 
 	private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
-    
+
+    // Request attributes
+    public static final String ATTR_XQUERY_USER = "xquery.user";
+    public static final String ATTR_XQUERY_PASSWORD = "xquery.password";
+    public static final String ATTR_XQUERY_SOURCE = "xquery.source";
+    public static final String ATTR_XQUERY_URL = "xquery.url";
+    public static final String ATTR_XQUERY_REPORT_ERRORS = "xquery.report-errors";
+    public static final String ATTR_XQUERY_ATTRIBUTE = "xquery.attribute";
+
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
     public final static String DEFAULT_ENCODING = "UTF-8";
     public final static String DEFAULT_CONTENT_TYPE = "text/html";
@@ -295,8 +305,48 @@ public class XQueryServlet extends HttpServlet {
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
 
-        Source source;
-        Object sourceAttrib = request.getAttribute("xquery.source");
+        String requestPath = request.getRequestURI();
+        int p = requestPath.lastIndexOf("/");
+        if(p != Constants.STRING_NOT_FOUND)
+            requestPath = requestPath.substring(0, p);
+        String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
+
+        User user = defaultUser;
+
+        Principal principal = request.getUserPrincipal();
+        if (principal instanceof User) {
+			user = (User) principal;
+		}
+
+        // to determine the user, first check the request attribute "xquery.user", then
+        // the current session attribute "user"
+        Object userAttrib = request.getAttribute(ATTR_XQUERY_USER);
+        HttpSession session = request.getSession( false );
+        if(userAttrib != null || (session != null && request.isRequestedSessionIdValid())) {
+            Object passwdAttrib = request.getAttribute(ATTR_XQUERY_PASSWORD);
+            String username;
+            String password;
+            if (userAttrib != null) {
+                username = getValue(userAttrib);
+                password = getValue(passwdAttrib);
+            } else {
+                username = getSessionAttribute(session, "user");
+                password = getSessionAttribute(session, "password");
+            }
+			try {
+				if( username != null && password != null ) {
+					User newUser = pool.getSecurityManager().authenticate(username, password);
+		        	if (newUser != null && newUser.isAuthenticated())
+		        		user = newUser;
+				}
+			} catch (AuthenticationException e) {
+				LOG.error("User can not be authenticated ("+username+").");
+			}
+        }
+        
+        Source source = null;
+        Object sourceAttrib = request.getAttribute(ATTR_XQUERY_SOURCE);
+        Object urlAttrib = request.getAttribute(ATTR_XQUERY_URL);
         if (sourceAttrib != null) {
             String s;
             if (sourceAttrib instanceof Item)
@@ -304,11 +354,23 @@ public class XQueryServlet extends HttpServlet {
                     s = ((Item) sourceAttrib).getStringValue();
                 } catch (XPathException e) {
                     throw new ServletException("Failed to read XQuery source string from " +
-                        "request attribute 'xquery.source': " + e.getMessage(), e);
+                        "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
                 }
             else
                 s = sourceAttrib.toString();
             source = new StringSource(s);
+        } else if (urlAttrib != null) {
+            DBBroker broker = null;
+            try {
+        	    broker = pool.get(user);
+                source = SourceFactory.getSource(broker, moduleLoadPath, urlAttrib.toString(), true);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                sendError(output, "Error", e.getMessage());
+            } finally {
+                pool.release(broker);
+            }
         } else {
             File f = new File(path);
             if(!f.canRead()) {
@@ -318,9 +380,12 @@ public class XQueryServlet extends HttpServlet {
             }
             source = new FileSource(f, encoding, true);
         }
-
+        if (source == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            sendError(output, "Source not found", path);
+        }
         boolean reportErrors = false;
-        String errorOpt = (String) request.getAttribute("xquery.report-errors");
+        String errorOpt = (String) request.getAttribute(ATTR_XQUERY_REPORT_ERRORS);
         if (errorOpt != null)
             reportErrors = errorOpt.equalsIgnoreCase("YES");
         
@@ -381,37 +446,8 @@ public class XQueryServlet extends HttpServlet {
 //        } catch(URISyntaxException e) {
 //            baseUri = null;
 //        }
-        
-        String requestPath = request.getRequestURI();
-        int p = requestPath.lastIndexOf("/");
-        if(p != Constants.STRING_NOT_FOUND)
-            requestPath = requestPath.substring(0, p);
-        String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
 
-        User user = defaultUser;
-        
-        Principal principal = request.getUserPrincipal();
-        if (principal instanceof User) {
-			user = (User) principal;
-		}
-
-        HttpSession session = request.getSession( false );
-        if(session != null && request.isRequestedSessionIdValid()) {
-            String username = getSessionAttribute(session, "user");
-            String password = getSessionAttribute(session, "password");
-            
-			try {
-				if( username != null && password != null ) { 
-					User newUser = pool.getSecurityManager().authenticate(username, password);
-		        	if (newUser != null && newUser.isAuthenticated())
-		        		user = newUser;
-				}
-			} catch (AuthenticationException e) {
-				LOG.error("User can not be authenticated ("+username+").");
-			}
-        }
-
-        String requestAttr = (String) request.getAttribute("xquery.attribute");
+        String requestAttr = (String) request.getAttribute(ATTR_XQUERY_ATTRIBUTE);
 
         DBBroker broker = null;
         try {
@@ -466,7 +502,12 @@ public class XQueryServlet extends HttpServlet {
     			}
     		}
 
-            Sequence resultSequence = xquery.execute(query, null, outputProperties);
+            Sequence resultSequence;
+            try {
+                resultSequence = xquery.execute(query, null, outputProperties);
+            } finally {
+                xquery.getXQueryPool().returnCompiledXQuery(source, query);
+            }
 
             String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
             if (mediaType != null) {
@@ -508,6 +549,10 @@ public class XQueryServlet extends HttpServlet {
     
     private String getSessionAttribute(HttpSession session, String attribute) {
         Object obj = session.getAttribute(attribute);
+        return getValue(obj);
+    }
+
+    private String getValue(Object obj) {
         if(obj == null)
             return null;
         if(obj instanceof Sequence)
@@ -518,7 +563,7 @@ public class XQueryServlet extends HttpServlet {
             }
         return obj.toString();
     }
-    
+
     private void sendError(PrintWriter out, String message, XMLDBException e) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
