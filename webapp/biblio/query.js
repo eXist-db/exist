@@ -9,7 +9,7 @@ function loadIndexTerms() {
     var input = $('input[name = input-keyword-prefix]');
     $('#keywords-result').load("filters.xql?type=keywords&prefix=" + input.val(), function () {
         if ($('#keywords-result ul').hasClass('complete'))
-            input.css('display', 'none');
+            $('#keyword-form').css('display', 'none');
     });
 }
 

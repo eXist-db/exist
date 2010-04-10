@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-declare variable $local:CREDENTIALS := ();
+declare variable $local:CREDENTIALS := ("biblio", "mods");
 
 declare function local:set-user() {
     if (exists($local:CREDENTIALS)) then (

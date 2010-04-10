@@ -138,7 +138,11 @@
                 listLink.click(function (ev) {
                     ev.preventDefault();
                     options.itemsPerPage = 10;
-                    retrievePage(1);
+                    var currentPage = Math.floor(currentItem / options.itemsPerPage);
+                    currentItem = currentPage * options.itemsPerPage;
+                    if (currentItem == 0)
+                        currentItem = 1;
+                    retrievePage(currentItem);
                 });
                 span.append(listLink);
                 div.append(span);

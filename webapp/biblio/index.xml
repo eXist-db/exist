@@ -106,7 +106,9 @@
                     <jquery:panel id="keywords" title="Index Terms" on-select="loadIndexTerms">
                         <div class="keyword-prefix">
                             <form id="keyword-form">
-                                <input type="text" name="input-keyword-prefix" size="8" value="a"/>
+                                <input type="text" name="input-keyword-prefix" size="8" 
+                                    value="a" title="Change prefix to view more terms."/>
+                                <input type="submit" value="Show"/>
                             </form>
                         </div>
                         <div id="keywords-result"></div>
