@@ -20,11 +20,14 @@ xquery version "1.0";
 import module namespace jquery="http://exist-db.org/xquery/jquery" at "jquery.xql";
 
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
+
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 import module namespace sort="http://exist-db.org/xquery/sort"
 	at "java:org.exist.xquery.modules.sort.SortModule";
 	
 declare option exist:serialize "media-type=text/xml omit-xml-declaration=no";
+
+declare variable $biblio:CREDENTIALS := ("biblio", "mods");
 
 declare variable $biblio:COLLECTION := "collection('/db')//";
 
@@ -35,6 +38,8 @@ declare variable $biblio:FIELDS :=
 	<fields>
 		<field name="Title">mods:mods[ft:query(mods:titleInfo, '$q', $options)]</field>
 		<field name="Author">mods:mods[ft:query(mods:name, '$q', $options)]</field>
+		<field name="Date">(mods:mods[ft:query(mods:originInfo/mods:dateCreated, '$q', $options)] union
+		  mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)]</field>
 		<field name="All">(mods:mods[ft:query(mods:titleInfo, '$q', $options)] union
 		  mods:mods[ft:query(mods:name, '$q', $options)])
         </field>

@@ -1,5 +1,15 @@
 xquery version "1.0";
 
+declare variable $local:CREDENTIALS := ();
+
+declare function local:set-user() {
+    if (exists($local:CREDENTIALS)) then (
+        <set-attribute name="xquery.user" value="{$local:CREDENTIALS[1]}"/>,
+        <set-attribute name="xquery.password" value="{$local:CREDENTIALS[2]}"/>
+    ) else
+        ()
+};
+
 if ($exist:path eq '/') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<redirect url="index.xml"/>
@@ -10,6 +20,7 @@ if ($exist:path eq '/') then
 :)
 else if ($exist:resource eq 'index.xml') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        { local:set-user() }
         <view>
             <forward url="search.xql">
                 <!-- Errors should be passed through instead of terminating the request -->
@@ -36,6 +47,7 @@ else if ($exist:resource eq 'index.xml') then
 	item in the result set :)
 else if ($exist:resource eq 'retrieve') then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+	   { local:set-user() }
 		<forward url="{$exist:controller}/session.xql">
 		</forward>
 	</dispatch>
@@ -48,6 +60,7 @@ else if (matches($exist:path, '(resources/|styles/syntax|scripts/|logo.jpg|defau
     	</dispatch>
 else
     (: everything else is passed through :)
-    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        { local:set-user() }
         <cache-control cache="yes"/>
-    </ignore>
+    </dispatch>
