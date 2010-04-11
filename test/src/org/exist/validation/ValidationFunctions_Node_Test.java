@@ -30,14 +30,19 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import org.exist.security.Permission;
+import org.exist.security.UnixStylePermission;
 
 import org.exist.storage.DBBroker;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.UserManagementService;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 
 /**
@@ -49,9 +54,17 @@ import org.xmldb.api.modules.XPathQueryService;
 public class ValidationFunctions_Node_Test {
 
     private final static Logger logger = Logger.getLogger(ValidationFunctions_Node_Test.class);
+
+    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
+
+    private static CollectionManagementService  cmservice = null;
+    private static UserManagementService  umservice = null;
     private static XPathQueryService service;
     private static Collection root = null;
     private static Database database = null;
+
+
+
 
     public static void initLog4J() {
         Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
@@ -70,8 +83,31 @@ public class ValidationFunctions_Node_Test {
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "guest", "guest");
         service = (XPathQueryService) root.getService("XQueryService", "1.0");
+
+
+        cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        Collection col1 = cmservice.createCollection(TestTools.VALIDATION_HOME);
+        Collection col2 = cmservice.createCollection(TestTools.VALIDATION_XSD);
+
+        Permission permission = new UnixStylePermission("guest", "guest", 666);
+
+        umservice = (UserManagementService) root.getService("UserManagementService", "1.0");
+        umservice.setPermissions(col1, permission);
+        umservice.setPermissions(col2, permission);
+
+        String addressbook = eXistHome + "/samples/validation/addressbook";
+
+        TestTools.insertDocumentToURL(addressbook + "/addressbook.xsd",
+                "xmldb:exist://" + TestTools.VALIDATION_XSD + "/addressbook.xsd");
+        TestTools.insertDocumentToURL(addressbook + "/catalog.xml",
+                "xmldb:exist://" + TestTools.VALIDATION_XSD + "/catalog.xml");
+
+        TestTools.insertDocumentToURL(addressbook + "/addressbook_valid.xml",
+                "xmldb:exist://" + TestTools.VALIDATION_HOME + "/addressbook_valid.xml");
+        TestTools.insertDocumentToURL(addressbook + "/addressbook_invalid.xml",
+                "xmldb:exist://" + TestTools.VALIDATION_HOME + "/addressbook_invalid.xml");
     }
 
     // ===========================================================
@@ -203,6 +239,10 @@ public class ValidationFunctions_Node_Test {
     public static void shutdown() throws Exception {
 
         logger.info("shutdown");
+
+
+        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+ 
 
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =
