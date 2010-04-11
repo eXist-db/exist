@@ -438,7 +438,7 @@ public class Configuration implements ErrorHandler
         String trace = xquery.getAttribute(PerformanceStats.CONFIG_ATTR_TRACE);
         config.put(PerformanceStats.CONFIG_PROPERTY_TRACE, trace);
         
-        //built-in-modules
+        // built-in-modules
         Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
         Map<String, String> knownMappings = new HashMap<String, String>();
         XQueryContext.loadModuleClasses(xquery, classMap, knownMappings);
@@ -496,18 +496,24 @@ public class Configuration implements ErrorHandler
 				String type  = attr.getAttribute( "type" );
 				
 			    if( name == null || name.length() == 0 ) {
-                	LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name not specified" );
+                	LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className 
+                            + "', name not specified" );
+
 				} else if( type == null || type.length() == 0 || type.equalsIgnoreCase( "string" ) ) {
 					attributes.put( name, value );
+
 				} else if( type.equalsIgnoreCase( "boolean" ) ) {
 					attributes.put( name, Boolean.valueOf( value ) );
+
 				} else if( type.equalsIgnoreCase( "integer" ) ) {
 					try {
 						attributes.put( name, Integer.valueOf( value ) );
+
+					} catch( NumberFormatException nfe ) {
+						LOG.warn( "Discarded invalid attribute for TransformerFactory: '"
+                                + className + "', name: " + name + ", value not integer: " + value );
 					}
-					catch( NumberFormatException nfe ) {
-						LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name: " + name + ", value not integer: " + value );
-					}
+                    
 				} else {
 					// Assume string type
 					attributes.put( name, value );
@@ -776,6 +782,7 @@ public class Configuration implements ErrorHandler
             try {
                 config.put(BrokerPool.PROPERTY_NODES_BUFFER, new Integer(nodesBuffer));
                 LOG.debug(BrokerPool.PROPERTY_NODES_BUFFER + ": " + config.get(BrokerPool.PROPERTY_NODES_BUFFER));
+
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -787,6 +794,7 @@ public class Configuration implements ErrorHandler
             try {
                 config.put("db-connection.buffers", new Integer(buffers));
                 LOG.debug("db-connection.buffers: " + config.get("db-connection.buffers"));
+
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -798,6 +806,7 @@ public class Configuration implements ErrorHandler
             try {
                 config.put("db-connection.collections.buffers", new Integer(collBuffers));
                 LOG.debug("db-connection.collections.buffers: " + config.get("db-connection.collections.buffers"));
+
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -809,6 +818,7 @@ public class Configuration implements ErrorHandler
             try {
                 config.put("db-connection.words.buffers", new Integer(wordBuffers));
                 LOG.debug("db-connection.words.buffers: " + config.get("db-connection.words.buffers"));
+
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -819,6 +829,7 @@ public class Configuration implements ErrorHandler
             try {
                 config.put("db-connection.elements.buffers", new Integer(elementBuffers));
                 LOG.debug("db-connection.elements.buffers: " + config.get("db-connection.elements.buffers"));
+
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -829,21 +840,25 @@ public class Configuration implements ErrorHandler
         if (securityConf.getLength()>0) {
             Element security = (Element)securityConf.item(0);
             securityManagerClassName = security.getAttribute("class");
+
             //Unused
             String encoding = security.getAttribute("password-encoding");
             config.put("db-connection.security.password-encoding",encoding);
             if (encoding!=null) {
                 LOG.info("db-connection.security.password-encoding: " + config.get("db-connection.security.password-encoding"));
                 UserImpl.setPasswordEncoding(encoding);
+
             } else {
                 LOG.info("No password encoding set, defaulting.");
             }
+
             //Unused
             String realm = security.getAttribute("password-realm");            
             config.put("db-connection.security.password-realm",realm);
             if (realm!=null) {
                 LOG.info("db-connection.security.password-realm: " + config.get("db-connection.security.password-realm"));
                 UserImpl.setPasswordRealm(realm);
+
             } else {
                 LOG.info("No password realm set, defaulting.");
             }
@@ -852,6 +867,7 @@ public class Configuration implements ErrorHandler
         try {
             config.put(BrokerPool.PROPERTY_SECURITY_CLASS, Class.forName(securityManagerClassName));
             LOG.debug(BrokerPool.PROPERTY_SECURITY_CLASS + ": " + config.get(BrokerPool.PROPERTY_SECURITY_CLASS));
+
         } catch (Throwable ex) {
             if (ex instanceof ClassNotFoundException) {
                 throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName,ex);
@@ -864,18 +880,22 @@ public class Configuration implements ErrorHandler
         if (poolConf.getLength() > 0) {
             configurePool((Element) poolConf.item(0));
         }
+
         NodeList queryPoolConf = con.getElementsByTagName(XQueryPool.CONFIGURATION_ELEMENT_NAME);
         if (queryPoolConf.getLength() > 0) {
             configureXQueryPool((Element) queryPoolConf.item(0));
         }
+
         NodeList watchConf = con.getElementsByTagName(XQueryWatchDog.CONFIGURATION_ELEMENT_NAME);
         if (watchConf.getLength() > 0) {
             configureWatchdog((Element) watchConf.item(0));
         }
+
         NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
         if (recoveries.getLength() > 0) {
             configureRecovery(dbHome, (Element)recoveries.item(0));
         }
+
         NodeList defaultPermissions = con.getElementsByTagName(SecurityManagerImpl.CONFIGURATION_ELEMENT_NAME); 
         if (defaultPermissions.getLength() > 0) {
             configurePermissions((Element)defaultPermissions.item(0));
@@ -949,6 +969,7 @@ public class Configuration implements ErrorHandler
                     "to be an octal number");
             }
         }
+
         option = defaultPermission.getAttribute(SecurityManagerImpl.RESOURCE_ATTRIBUTE);
         if (option != null && option.length() > 0) {
             try {
@@ -1077,14 +1098,7 @@ public class Configuration implements ErrorHandler
         }
     }
     
-    /**
-     * @param dbHome
-     * @param doc
-     * @param indexer
-     * @throws DatabaseConfigurationException
-     * @throws MalformedURLException
-     * @throws IOException
-     */
+
     private void configureIndexer(String dbHome, Document doc, Element indexer) throws DatabaseConfigurationException, MalformedURLException {
         String parseNum = indexer.getAttribute(TextSearchEngine.INDEX_NUMBERS_ATTRIBUTE);
         if (parseNum != null) {
@@ -1183,7 +1197,8 @@ public class Configuration implements ErrorHandler
             config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
         }
     }
-    
+
+
     private void configureValidation(String dbHome, Document doc, Element validation) 
                                         throws DatabaseConfigurationException {
         
@@ -1218,8 +1233,10 @@ public class Configuration implements ErrorHandler
             File webappHome=null;
             if(dbHome==null){  /// DWES Why? let's make jUnit happy
                 webappHome=new File("webapp").getAbsoluteFile();
+
             } else if(dbHome.endsWith("WEB-INF")){
                 webappHome = new File(dbHome).getParentFile().getAbsoluteFile();
+                
             } else {
                 webappHome = new File(dbHome, "webapp").getAbsoluteFile();
             }
