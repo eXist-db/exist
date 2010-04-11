@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,9 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
@@ -42,7 +41,14 @@ import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.*;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.MemTreeBuilder;
@@ -76,9 +82,21 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.pragmas.*;
+import org.exist.xquery.pragmas.BatchTransactionPragma;
+import org.exist.xquery.pragmas.ForceIndexUse;
+import org.exist.xquery.pragmas.NoIndexPragma;
+import org.exist.xquery.pragmas.Optimize;
+import org.exist.xquery.pragmas.ProfilePragma;
+import org.exist.xquery.pragmas.TimerPragma;
 import org.exist.xquery.update.Modification;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.TimeUtils;
+import org.exist.xquery.value.Type;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -110,7 +128,8 @@ import javax.xml.stream.XMLStreamException;
 
 
 /**
- * The current XQuery execution context. Contains the static as well as the dynamic XQuery context components.
+ * The current XQuery execution context. Contains the static as well as the dynamic
+ * XQuery context components.
  *
  * @author  Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -321,11 +340,11 @@ public class XQueryContext
 
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
-    @SuppressWarnings( "unused" )
+
     private XQueryContext()
     {
+        // NOP
     }
-
 
     protected XQueryContext( AccessContext accessCtx )
     {
@@ -2547,10 +2566,12 @@ public class XQueryContext
             if( location.startsWith( JAVA_URI_START ) ) {
                 location = location.substring( JAVA_URI_START.length() );
                 module   = loadBuiltInModule( namespaceURI, location );
+                
             } else {
-                Source source;
+                Source moduleSource;
 
-                if( location.startsWith( XmldbURI.XMLDB_URI_PREFIX ) || ( ( location.indexOf( ':' ) < 0 ) && moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) ) {
+                if( location.startsWith( XmldbURI.XMLDB_URI_PREFIX )
+                        || ( ( location.indexOf( ':' ) < 0 ) && moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) ) {
 
                     // Is the module source stored in the database?
                     try {
@@ -2560,6 +2581,7 @@ public class XQueryContext
                             XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor( moduleLoadPath );
                             locationUri = moduleLoadPathUri.resolveCollectionPath( locationUri );
                         }
+                        
                         DocumentImpl sourceDoc = null;
 
                         try {
@@ -2572,44 +2594,45 @@ public class XQueryContext
                             if( ( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" ) ) {
                                 throw( new XPathException( "source for module " + location + " is not an XQuery or " + "declares a wrong mime-type" ) );
                             }
-                            source = new DBSource( broker, (BinaryDocument)sourceDoc, true );
+                            moduleSource = new DBSource( broker, (BinaryDocument)sourceDoc, true );
 
                             // we don't know if the module will get returned, oh well
-                            module = compileOrBorrowModule( prefix, namespaceURI, location, source );
-                        }
-                        catch( PermissionDeniedException e ) {
+                            module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
+
+                        } catch( PermissionDeniedException e ) {
                             throw( new XPathException( "permission denied to read module source from " + location ) );
-                        }
-                        finally {
+
+                        } finally {
 
                             if( sourceDoc != null ) {
                                 sourceDoc.getUpdateLock().release( Lock.READ_LOCK );
                             }
                         }
-                    }
-                    catch( URISyntaxException e ) {
+
+                    } catch( URISyntaxException e ) {
                         throw( new XPathException( e.getMessage(), e ) );
                     }
+                    
                 } else {
 
                     // No. Load from file or URL
                     try {
 
                         //TODO: use URIs to ensure proper resolution of relative locations
-                        source = SourceFactory.getSource( broker, moduleLoadPath, location, true );
-                    }
-                    catch( MalformedURLException e ) {
+                        moduleSource = SourceFactory.getSource( broker, moduleLoadPath, location, true );
+
+                    } catch( MalformedURLException e ) {
                         throw( new XPathException( "source location for module " + namespaceURI + " should be a valid URL: " + e.getMessage() ) );
-                    }
-                    catch( IOException e ) {
+
+                    } catch( IOException e ) {
                         throw( new XPathException( "source for module '" + namespaceURI + "' not found at '" + location + "': " + e.getMessage() ) );
-                    }
-                    catch( PermissionDeniedException e ) {
+
+                    } catch( PermissionDeniedException e ) {
                         throw( new XPathException( "Permission denied to access module '" + namespaceURI + "' at '" + location + "': " + e.getMessage() ) );
                     }
 
                     // we don't know if the module will get returned, oh well
-                    module = compileOrBorrowModule( prefix, namespaceURI, location, source );
+                    module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
                 }
             }
         }
@@ -2683,7 +2706,8 @@ public class XQueryContext
      *
      * @throws  XPathException
      */
-    private ExternalModule compileModule( String prefix, String namespaceURI, String location, Source source ) throws XPathException
+    private ExternalModule compileModule( String prefix, String namespaceURI,
+                                        String location, Source source ) throws XPathException
     {
         LOG.debug( "Loading module from " + location );
 
@@ -3189,37 +3213,46 @@ public class XQueryContext
 
         loadDefaultNS();
 
+        // Switch: enable optimizer
         String param = (String)getBroker().getConfiguration().getProperty( PROPERTY_ENABLE_QUERY_REWRITING );
         enableOptimizer     = ( param != null ) && param.equals( "yes" );
 
+        // Switch: Backward compatibility
         param               = (String)getBroker().getConfiguration().getProperty( PROPERTY_XQUERY_BACKWARD_COMPATIBLE );
         backwardsCompatible = ( param == null ) || param.equals( "yes" );
+
+        // Switch: raiseErrorOnFailedRetrieval
         Boolean option      = ( (Boolean)getBroker().getConfiguration().getProperty( PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL ) );
         raiseErrorOnFailedRetrieval = ( option != null ) && option.booleanValue();
 
-        // load built-in modules
-        Map<String, Class<Module>> modules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
+        // Get map of built-in modules
+        Map<String, Class<Module>> builtInModules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
 
-        if( modules != null ) {
+        if( builtInModules != null ) {
 
-            for( Map.Entry<String, Class<Module>> entry : modules.entrySet() ) {
-                Class<Module> mClass       = entry.getValue();
+            // Iterate on all map entries
+            for( Map.Entry<String, Class<Module>> entry : builtInModules.entrySet() ) {
+
+                // Get URI and class
                 String        namespaceURI = entry.getKey();
-
-                // first check if the module has already been loaded
-                // in the parent context
+                Class<Module> moduleClass  = entry.getValue();
+                
+                // first check if the module has already been loaded in the parent context
                 Module        module       = getModule( namespaceURI );
 
                 if( module == null ) {
-                    instantiateModule( namespaceURI, mClass );
-                } else if( ( getPrefixForURI( module.getNamespaceURI() ) == null ) && ( module.getDefaultPrefix().length() > 0 ) ) {
+                    // Module does not exist yet, instantiate
+                    instantiateModule( namespaceURI, moduleClass );
+
+                } else if( ( getPrefixForURI( module.getNamespaceURI() ) == null )
+                           && ( module.getDefaultPrefix().length() > 0 ) ) {
 
                     // make sure the namespaces of default modules are known,
                     // even if they were imported in a parent context
                     try {
                         declareNamespace( module.getDefaultPrefix(), module.getNamespaceURI() );
-                    }
-                    catch( XPathException e ) {
+                        
+                    } catch( XPathException e ) {
                         LOG.warn( "Internal error while loading default modules: " + e.getMessage(), e );
                     }
                 }
@@ -3228,8 +3261,10 @@ public class XQueryContext
     }
 
 
-    protected void loadDefaultNS()
-    {
+    /**
+     * Load default namespaces, e.g. xml, xsi, xdt, fn, local, exist and dbgp.
+     */
+    protected void loadDefaultNS(){
         try {
 
             // default namespaces
@@ -3248,9 +3283,10 @@ public class XQueryContext
 
             //TODO : include "err" namespace ?
             declareNamespace( "dbgp", Debuggee.NAMESPACE_URI );
-        }
-        catch( XPathException e ) {
+
+        } catch( XPathException e ) {
             //TODO : ignored because it should never happen
+            LOG.debug(e);
         }
     }
 
@@ -3275,8 +3311,8 @@ public class XQueryContext
 
 
     /**
-     * Check if the XQuery contains pragmas that define serialization settings. If yes, copy the corresponding settings to the current set of output
-     * properties.
+     * Check if the XQuery contains pragmas that define serialization settings. If yes,
+     * copy the corresponding settings to the current set of output properties.
      *
      * @param   properties  the properties object to which serialization parameters will be added.
      *
@@ -3295,7 +3331,8 @@ public class XQueryContext
             String[] pair = Option.parseKeyValuePair( contents[i] );
 
             if( pair == null ) {
-                throw( new XPathException( "Unknown parameter found in " + pragma.getQName().getStringValue() + ": '" + contents[i] + "'" ) );
+                throw( new XPathException( "Unknown parameter found in "
+                        + pragma.getQName().getStringValue() + ": '" + contents[i] + "'" ) );
             }
             LOG.debug( "Setting serialization property from pragma: " + pair[0] + " = " + pair[1] );
             properties.setProperty( pair[0], pair[1] );
@@ -3304,54 +3341,72 @@ public class XQueryContext
 
 
     /**
-     * Read list of built-in modules from the configuration. This method will only make sure that the specified module class exists and is a subclass
-     * of {@link org.exist.xquery.Module}.
+     * Read list of built-in modules from the configuration. This method will only make sure
+     * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
      *
-     * @param   xquery       configuration root
-     * @param   classMap     
-     * @param   externalMap  
+     * @param   xquery            configuration root
+     * @param   modulesClassMap   map containing all classes of modules
+     * @param   modulesSourceMap  map containing all source uris to external resources
      *
      * @throws  DatabaseConfigurationException
      */
-    public static void loadModuleClasses( Element xquery, Map<String, Class<?>> classMap, Map<String, String> externalMap ) throws DatabaseConfigurationException
+    public static void loadModuleClasses( Element xquery, Map<String, Class<?>> modulesClassMap,
+                        Map<String, String> modulesSourceMap ) throws DatabaseConfigurationException
     {
         // add the standard function module
-        classMap.put( Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class );
+        modulesClassMap.put( Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class );
 
         // add other modules specified in configuration
         NodeList builtins = xquery.getElementsByTagName( CONFIGURATION_MODULES_ELEMENT_NAME );
 
+        // search under <builtin-modules>
         if( builtins.getLength() > 0 ) {
             Element  elem    = (Element)builtins.item( 0 );
             NodeList modules = elem.getElementsByTagName( CONFIGURATION_MODULE_ELEMENT_NAME );
 
             if( modules.getLength() > 0 ) {
 
+                // iterate over all <module src= uri= class=> entries
                 for( int i = 0; i < modules.getLength(); i++ ) {
+
+                    // Get element.
                     elem = (Element)modules.item( i );
+
+                    // Get attributes uri class and src
                     String uri    = elem.getAttribute( XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE );
                     String clazz  = elem.getAttribute( XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE );
                     String source = elem.getAttribute( XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE );
 
+                    // uri attribute is the identifier and is always required
                     if( uri == null ) {
-                        throw( new DatabaseConfigurationException( "element 'module' requires an attribute 'uri'" ) );
+                        throw( new DatabaseConfigurationException(
+                                "element 'module' requires an attribute 'uri'" ) );
                     }
 
+                    // either class or source attribute must be present
                     if( ( clazz == null ) && ( source == null ) ) {
-                        throw( new DatabaseConfigurationException( "element 'module' requires either an attribute " + "'class' or 'src'" ) );
+                        throw( new DatabaseConfigurationException(
+                                "element 'module' requires either an attribute " + "'class' or 'src'" ) );
                     }
 
                     if( source != null ) {
-                        externalMap.put( uri, source );
+                        // Store src attribute info
+
+                        modulesSourceMap.put( uri, source );
 
                         if( LOG.isDebugEnabled() ) {
                             LOG.debug( "Registered mapping for module '" + uri + "' to '" + source + "'" );
                         }
+                        
                     } else {
-                        Class<?> mClass = lookupModuleClass( uri, clazz );
+                        // source class attribute info
 
-                        if( mClass != null ) {
-                            classMap.put( uri, mClass );
+                        // Get class of module
+                        Class<?> moduleClass = lookupModuleClass( uri, clazz );
+
+                        // Store class if thw module class actually exists
+                        if( moduleClass != null ) {
+                            modulesClassMap.put( uri, moduleClass );
                         }
 
                         if( LOG.isDebugEnabled() ) {
@@ -3364,29 +3419,41 @@ public class XQueryContext
     }
 
 
+    /**
+     *  Returns the Class object associated with the with the given module class name. All
+     * important exceptions are caught. @see org.exist.xquery.Module
+     *
+     * @param uri   namespace of class. For logging purposes only.
+     * @param clazz the fully qualified name of the desired module class.
+     * @return      the module Class object for the module with the specified name.
+     * @throws      DatabaseConfigurationException if the given module class is not an instance
+     *              of org.exist.xquery.Module
+     */
     private static Class<?> lookupModuleClass( String uri, String clazz ) throws DatabaseConfigurationException
     {
+        Class<?> mClass = null;
+        
         try {
-            Class<?> mClass = Class.forName( clazz );
+            mClass = Class.forName( clazz );
 
             if( !( Module.class.isAssignableFrom( mClass ) ) ) {
-                throw( new DatabaseConfigurationException( "Failed to load module: " + uri + ". Class " + clazz + " is not an instance of org.exist.xquery.Module." ) );
+                throw( new DatabaseConfigurationException( "Failed to load module: " + uri
+                        + ". Class " + clazz + " is not an instance of org.exist.xquery.Module." ) );
             }
-            return( mClass );
 
-        }
-        catch( ClassNotFoundException e ) {
+        } catch( ClassNotFoundException e ) {
 
             // Note: can't throw an exception here since this would create
             // problems with test cases and jar dependencies
-            LOG.warn( "Configuration problem: failed to load class for module " + uri + "; class: " + clazz + "; message: " + e.getMessage() );
+            LOG.warn( "Configuration problem: failed to load class for module " + uri
+                    + "; class: " + clazz + "; message: " + e.getMessage() );
 
+        } catch( NoClassDefFoundError e ) {
+            LOG.warn( "Module " + uri + " could not be initialized due to a missing "
+                    + "dependancy (NoClassDefFoundError): " + e.getMessage() );
         }
-        catch( NoClassDefFoundError e ) {
-            LOG.warn( "Module " + uri + " could not be initialized due to a missing " + "dependancy (NoClassDefFoundError): " + e.getMessage() );
-
-        }
-        return( null );
+        
+        return mClass;
     }
 
 
@@ -3412,14 +3479,18 @@ public class XQueryContext
 	{
 		return isVarDeclared( Debuggee.SESSION );
 	}
+
+
+    // ====================================================================================
+
     
-    private class ContextUpdateListener implements UpdateListener
-    {
+    private class ContextUpdateListener implements UpdateListener {
+
         private List<UpdateListener> listeners = new ArrayList<UpdateListener>();
 
         public void addListener( UpdateListener listener )
         {
-			synchronized( listeners ) {
+			synchronized( listeners ) { // TODO field must be final?
            		listeners.add( listener );
 			}
         }
@@ -3427,7 +3498,7 @@ public class XQueryContext
 
         public void documentUpdated( DocumentImpl document, int event )
         {
-			synchronized( listeners ) {
+			synchronized( listeners ) { // TODO field must be final?
 	            for( UpdateListener listener : listeners ) {
 	
 	                if( listener != null ) {
@@ -3440,7 +3511,7 @@ public class XQueryContext
 
         public void unsubscribe()
         {
-			synchronized( listeners ) {
+			synchronized( listeners ) { // TODO field must be final?
 	            for( UpdateListener listener : listeners ) {
 	
 	                if( listener != null ) {
