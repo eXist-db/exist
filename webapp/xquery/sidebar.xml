@@ -49,7 +49,7 @@
             <link href="acronyms.xql">XML Acronyms</link>
         </item>
         <item>
-            <link href="../cocoon/biblio.xq">Bibliographic</link>
+            <link href="../biblio/">Bibliographic</link>
         </item>
         <item>
             <link href="../examples.xml">All Examples</link>
