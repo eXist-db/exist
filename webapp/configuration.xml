@@ -239,7 +239,7 @@
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>Cache</td>
+                        <td><ulink url="service-cache.xml">Cache</ulink></td>
                         <td>
                             <para> Cache module</para>
                         </td>
@@ -248,19 +248,25 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>Compression</td>
+                        <td><ulink url="service-compression.xml">Compression</ulink></td>
                         <td>
-                            <para> Provides functions to manipulate archives, tar/zip/gzip</para>
+                            <para>Provides functions to manipulate archives, tar/zip/gzip</para>
                         </td>
                         <td>
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -290,6 +296,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#00FF00">On</td>
@@ -303,6 +312,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -319,6 +331,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#00FF00">On</td>
@@ -333,6 +348,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -349,6 +367,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#00FF00">On</td>
@@ -362,6 +383,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -377,6 +401,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#FF0000">Off</td>
@@ -390,6 +417,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -413,6 +443,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#00FF00">On</td>
@@ -426,6 +459,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -459,6 +495,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#FF0000">Off</td>
@@ -472,6 +511,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -487,6 +529,9 @@
                                 <listitem>
                                     <para>extensions/build.properties</para>
                                 </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
+                                </listitem>
                             </itemizedlist>
                         </td>
                         <td align="center" bgcolor="#FF0000">Off</td>
@@ -500,6 +545,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
@@ -528,6 +576,9 @@
                             <itemizedlist>
                                 <listitem>
                                     <para>extensions/build.properties</para>
+                                </listitem>
+                                <listitem>
+                                    <para>conf.xml</para>
                                 </listitem>
                             </itemizedlist>
                         </td>
