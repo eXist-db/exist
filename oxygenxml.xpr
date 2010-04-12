@@ -3461,6 +3461,8 @@
             <file name="webapp/security.xml"/>
             <file name="webapp/service-fluent.xml"/>
             <file name="webapp/service-openid.xml"/>
+            <file name="webapp/service-versioning.xml"/>
+            <file name="webapp/service-xslt.xml"/>
             <file name="webapp/sidebar.xml"/>
             <file name="webapp/sitemap.xmap"/>
             <file name="webapp/triggers.xml"/>

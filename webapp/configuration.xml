@@ -5,7 +5,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Server Configuration</title>
-        <date>September 2009</date>
+        <date>April 2010</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -21,7 +21,7 @@
         <revhistory>
             <revision>
                 <revnumber>2</revnumber>
-                <date>March 2010</date>
+                <date>April 2010</date>
                 <author>
                     <personname>
                         <firstname>Loren</firstname>
@@ -193,7 +193,7 @@
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>Versioning</td>
+                        <td><ulink url="service-versioning.xml">Versioning</ulink></td>
                         <td>
                             <para> Versioning extension</para>
                         </td>
@@ -222,9 +222,9 @@
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>XSLT</td>
+                        <td><ulink url="service-xslt.xml">XSLT</ulink></td>
                         <td>
-                            <para> XSLT extension</para>
+                            <para>XSLT extension</para>
                         </td>
                         <td>
                             <itemizedlist>
@@ -549,9 +549,8 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>DatabaseAdminServlet</td>
-                        <td><para>this servlet can be used to ensure that eXist is running in the
-                                background. Just set the start-parameter to true and load-on-startup
-                                to 1 </para></td>
+                        <td><para>This servlet can be used to ensure that eXist is running in the background. Just set the
+                                start-parameter to true and load-on-startup to 1 </para></td>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -580,7 +579,7 @@
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>XQueryServlet</td>
-                        <td><para>generates HTML from an XQuery file</para></td>
+                        <td><para>This generates HTML from an XQuery file</para></td>
                         <td>
                             <itemizedlist>
                                 <listitem>
@@ -648,9 +647,9 @@
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Security</td>
                         <td>
-                            <para> This defines the security manager that is to be used by eXist.
-                                The current options are native (where the usernames and hashed
-                                passwords are store in the database) or LDAP.</para>
+                            <para>This defines the security manager that is to be used by eXist. The
+                                current options are native (where the usernames and hashed passwords
+                                are store in the database) or LDAP.</para>
                         </td>
                         <td>
                             <itemizedlist>

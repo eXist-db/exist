@@ -6,18 +6,14 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <copyright>
-            <year>2010</year>
-            <holder>The eXist Project</holder>
-        </copyright>
         <title/>
         <date>April 2010</date>
         <author>
-            <firstname>Loren</firstname>
-            <surname>Cahlander</surname>
+            <firstname>John</firstname>
+            <surname>Public</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>loren at syntactica.com</email>
+                    <email>john.q.public@example.com</email>
                 </address>
             </affiliation>
         </author>
