@@ -76,6 +76,14 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
+                            <link href="biblio/">Bibliography</link>
+                        </td>
+                        <td width="70%"> A bibliographic demo, based on the MODS bibliographic
+                            format, which is maintained by the Library of Congress.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
                             <link href="xquery/acronyms.xql">XML Acronyms</link>
                         </td>
                         <td width="70%"> XQuery version of the <a
@@ -197,14 +205,6 @@
                         <emphasis>maintained</emphasis>!</p>
 
                 <table border="0" width="100%" cellspacing="10">
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="cocoon/biblio.xq">Bibliography</link>
-                        </td>
-                        <td width="70%"> A bibliographic demo, based on the MODS bibliographic
-                            format, which is maintained by the Library of Congress. Shows session
-                            handling and user authentication as well as some AJAX goodies. </td>
-                    </tr>
                     <tr>
                         <th align="left" colspan="2"> Cocoon XML:DB Pseudo-Protocol </th>
                     </tr>
