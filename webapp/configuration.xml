@@ -71,6 +71,7 @@
                         <th width="20%">Service</th>
                         <th width="30%">Description</th>
                         <th>Resources</th>
+                        <th>Initial Compilation</th>
                         <th width="7%">Initial State</th>
                     </tr>
                 </thead>
@@ -103,6 +104,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td width="8%" align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -121,6 +123,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td width="8%" align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -133,6 +136,7 @@
                                 <listitem/>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -147,10 +151,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td><ulink url="service-fluent.xml">fluent</ulink></td>
+                        <td><ulink url="config-fluent.xml">fluent</ulink></td>
                         <td>
                             <para>This is an API for embedded access to eXist which is tightly integrated with java.</para>
                         </td>
@@ -161,6 +166,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -175,10 +181,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td><ulink url="service-openid.xml">OpenID</ulink></td>
+                        <td><ulink url="config-openid.xml">OpenID</ulink></td>
                         <td>
                             <para> OpenID is an authentication mechanism where the identity of the
                                 user is maintained by trusted external providers.</para>
@@ -190,10 +197,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td><ulink url="service-versioning.xml">Versioning</ulink></td>
+                        <td><ulink url="config-versioning.xml">Versioning</ulink></td>
                         <td>
                             <para> Versioning extension</para>
                         </td>
@@ -204,10 +212,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td><ulink url="service-xqdoc.xml">XQDoc</ulink></td>
+                        <td><ulink url="config-xqdoc.xml">XQDoc</ulink></td>
                         <td>
                             <para> xqDoc provides a simple vendor neutral solution for documenting
                                 XQuery library and main modules that is similar to JavaDoc.</para>
@@ -219,10 +228,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td><ulink url="service-xslt.xml">XSLT</ulink></td>
+                        <td><ulink url="config-xslt.xml">XSLT</ulink></td>
                         <td>
                             <para>XSLT extension</para>
                         </td>
@@ -236,10 +246,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td><ulink url="service-cache.xml">Cache</ulink></td>
+                        <td><ulink url="config-cache.xml">Cache</ulink></td>
                         <td>
                             <para> Cache module</para>
                         </td>
@@ -253,10 +264,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td><ulink url="service-compression.xml">Compression</ulink></td>
+                        <td><ulink url="config-compression.xml">Compression</ulink></td>
                         <td>
                             <para>Provides functions to manipulate archives, tar/zip/gzip</para>
                         </td>
@@ -270,10 +282,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>Context</td>
+                        <td><ulink url="config-context.xml">Context</ulink></td>
                         <td>
                             <para> Context module</para>
                         </td>
@@ -284,10 +297,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>Counter</td>
+                        <td><ulink url="config-counter.xml">Counter</ulink></td>
                         <td>
                             <para> Persistent counter module</para>
                         </td>
@@ -301,10 +315,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>Datetime</td>
+                        <td><ulink url="config-datetime.xml">Datetime</ulink></td>
                         <td>
                             <para> Date/DateTime/Time utility functions module</para>
                         </td>
@@ -318,10 +333,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
-                        <td>Example</td>
+                        <td><ulink url="config-example.xml">Example</ulink></td>
                         <td>
                             <para> This is an example Java based function module.  It is a template
                                 for creating other Java based function modules.</para>
@@ -336,10 +352,11 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
-                        <td>File</td>
+                        <td><ulink url="config-file.xml">File</ulink></td>
                         <td>
                             <para> Provides functions to manipulate files in the local file
                                 system.</para>
@@ -354,6 +371,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -372,6 +390,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -389,6 +408,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -406,6 +426,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -423,6 +444,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -430,6 +452,7 @@
                         <td>
                             <para> </para>
                         </td>
+                        <td/>
                         <td/>
                         <td align="center"/>
                     </tr>
@@ -448,6 +471,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -465,6 +489,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -482,6 +507,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -500,6 +526,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -517,6 +544,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -534,6 +562,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -551,6 +580,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -565,6 +595,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -582,6 +613,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -596,6 +628,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -613,6 +646,7 @@
                             </itemizedlist>
                         </td>
                         <td/>
+                        <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>webDAV</td>
@@ -626,6 +660,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -638,6 +673,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -655,6 +691,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -667,6 +704,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -679,6 +717,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -693,6 +732,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -710,6 +750,7 @@
                             </itemizedlist>
                         </td>
                         <td/>
+                        <td/>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td>Indexing</td>
@@ -724,6 +765,7 @@
                             </itemizedlist>
                         </td>
                         <td/>
+                        <td/>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
                         <td>Scheduler</td>
@@ -735,6 +777,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -749,6 +792,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -762,6 +806,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
@@ -776,6 +821,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#FF0000">Off</td>
                     </tr>
                     <tr bgcolor="#FFFFFF" valign="top">
@@ -793,6 +839,7 @@
                                 </listitem>
                             </itemizedlist>
                         </td>
+                        <td/>
                         <td align="center" bgcolor="#00FF00">On</td>
                     </tr>
                 </tbody>

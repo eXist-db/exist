@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Counter</title>
+        <date>April 2010</date>
+        <author>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>ixitar@users.sourceforge.net</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Counter</title>
+        <section>
+            <title>Introduction</title>
+            <para/> 
+        </section>
+        <section>
+            <title>Glossary</title>
+            <para>This is a glossary of terms associated with versioning.</para>
+            <para>
+                <glosslist id="counter">
+                    <glossentry>
+                        <glossterm/>                    
+                        <glossdef/>
+                    </glossentry>                    
+                </glosslist>
+            </para>
+        </section>
+        <section>
+            <title>Configuration</title>
+            <para/>
+            <section>
+                <title>Building from Source</title>
+                <para/>
+                <example>
+                    <title>extensions/local.build.properties</title>
+                    <programlisting><![CDATA[# Persistent counter module
+include.module.counter = true
+]]></programlisting>
+                </example>
+                <para>This extension compiles into <emphasis role="bold"><emphasis role="italic"
+                    >lib/extensions/exist-modules.jar</emphasis></emphasis>.</para>
+                
+            </section>
+            <section>
+                <title>Enabling the Service</title>
+                <para>This service is enabled by building the feature from source as described
+                above and adding:</para>
+                <example>
+                    <title>conf.xml</title>
+                    <programlisting format="linespecific">
+                        <markup><![CDATA[            <module class="org.exist.xquery.modules.counter.CounterModule"
+                    uri="http://exist-db.org/xquery/counter"/>
+]]></markup>
+                    </programlisting>
+                </example>
+                <para>to <emphasis role="italic"><emphasis role="bold"
+                        >conf.xml</emphasis></emphasis> within the <emphasis role="italic"><emphasis
+                            role="bold">builtin-modules</emphasis></emphasis> tag.</para>
+            </section>
+            <section>
+                <title>Disabling the Service</title>
+                <para>The only way to disable this service once it is enabled is to remove the above
+                    entry in <emphasis role="bold"><emphasis role="italic"
+                        >conf.xml</emphasis></emphasis> file.</para>
+            </section>
+        </section>
+        <section>
+            <title>Managing</title>
+            <para/>
+        </section>
+    </chapter>
+</book>

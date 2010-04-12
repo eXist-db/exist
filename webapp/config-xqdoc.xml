@@ -4,73 +4,68 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>XSLT</title>
+        <copyright>
+            <year>2010</year>
+            <holder>The eXist Project</holder>
+        </copyright>
+        <title>xqDoc</title>
         <date>April 2010</date>
         <author>
-            <firstname>John</firstname>
-            <surname>Public</surname>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>john.q.public@example.com</email>
+                    <email>loren at syntactica.com</email>
                 </address>
             </affiliation>
         </author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>XSLT</title>
+        <title>xqDoc</title>
         <section>
             <title>Introduction</title>
             <para/> 
         </section>
         <section>
             <title>Glossary</title>
-            <para>This is a glossary of terms associated with versioning.</para>
+            <para>This is a glossary of terms associated with xqDoc.</para>
             <para>
-                <glosslist id="versioning">
+                <glosslist id="xqdoc">
                     <glossentry>
-                        <glossterm/>                    
-                        <glossdef/>
+                        <glossterm>xqDoc</glossterm>                    
+                        <glossdef></glossdef>
                     </glossentry>                    
                 </glosslist>
             </para>
         </section>
         <section>
             <title>Configuration</title>
-            <para/>
+            <para>By default, the xqDoc service is built and thus is also enabled.</para>
+            
             <section>
                 <title>Building from Source</title>
                 <para/>
                 <example>
                     <title>extensions/local.build.properties</title>
-                    <programlisting><![CDATA[#XSLT extension
-include.feature.xslt = true
+                    <programlisting><![CDATA[#XQDoc extension
+include.feature.xqdoc = true
 ]]></programlisting>
                 </example>
                 <para>This extension compiles into <emphasis role="bold"><emphasis role="italic"
-                    >lib/extensions/exist-xslt.jar</emphasis></emphasis>.</para>
+                            >lib/optional/exist-xqdoc.jar</emphasis></emphasis> in the base directory.</para>
                 
             </section>
             <section>
                 <title>Enabling the Service</title>
                 <para>This service is enabled by building the feature from source as described
-                above and adding the following entry into webapp/WEB-INF/web.xml.</para>
-                <example>
-                    <title>webapp/WEB-INF/web.xml</title>
-                    <programlisting format="linespecific">
-                    <markup><![CDATA[    <servlet>
-        <servlet-name>XSLTServlet</servlet-name>
-        <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
-    </servlet>]]></markup>
-                </programlisting>
-                </example>
-                
+                    above.</para>
             </section>
             <section>
                 <title>Disabling the Service</title>
                 <para>The only way to disable this service once it is enabled is to remove the
                     <emphasis role="bold"><emphasis role="italic"
-                        >lib/extensions/exist-xslt.jar</emphasis> and to remove the above entry from webapp/WEB-INF/web.xml</emphasis>
+                        >lib/optional/exist-xqdoc.jar</emphasis></emphasis>
                     file.</para>
             </section>
         </section>
