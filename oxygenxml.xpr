@@ -3459,6 +3459,8 @@
             <file name="webapp/roadmap.xml"/>
             <file name="webapp/scheduler.xml"/>
             <file name="webapp/security.xml"/>
+            <file name="webapp/service-cache.xml"/>
+            <file name="webapp/service-compression.xml"/>
             <file name="webapp/service-fluent.xml"/>
             <file name="webapp/service-openid.xml"/>
             <file name="webapp/service-versioning.xml"/>
