@@ -55,9 +55,14 @@ public class StringValue extends AtomicValue {
 
 	protected String value;
 
-	public StringValue(String string, int type) throws XPathException {
+    public StringValue(String string, int type) throws XPathException {
+        this(string, type, true);
+    }
+
+	public StringValue(String string, int type, boolean expand) throws XPathException {
 		this.type = type;
-		string = StringValue.expand(string); //Should we have character entities
+        if (expand)
+		    string = StringValue.expand(string); //Should we have character entities
 		if(type == Type.STRING)
 			this.value = string;
 		else if(type == Type.NORMALIZED_STRING)
