@@ -968,10 +968,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
         AtomicValue atomic;
         if (Type.subTypeOf(xpathType, Type.STRING)) {
             try {
-					atomic = new StringValue(value, xpathType);
-				} catch (XPathException e) {
-					return null;
-				}
+                atomic = new StringValue( value, xpathType, false );
+            }
+            catch( XPathException e ) {
+                return( null );
+            }
         } else {
             try {
                 atomic = new StringValue(value).convertTo(xpathType);
