@@ -4,7 +4,7 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>Compression</title>
+        <title>Context</title>
         <date>April 2010</date>
         <author>
             <firstname>Loren</firstname>
@@ -18,7 +18,7 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Compression</title>
+        <title>Context</title>
         <section>
             <title>Introduction</title>
             <para/> 
@@ -27,7 +27,7 @@
             <title>Glossary</title>
             <para>This is a glossary of terms associated with versioning.</para>
             <para>
-                <glosslist id="cache">
+                <glosslist id="context">
                     <glossentry>
                         <glossterm/>                    
                         <glossdef/>
@@ -43,8 +43,8 @@
                 <para/>
                 <example>
                     <title>extensions/local.build.properties</title>
-                    <programlisting><![CDATA[# Provides functions to manipulate archives, tar/zip/gzip
-include.module.compression = true
+                    <programlisting><![CDATA[# Context module
+include.module.context = false
 ]]></programlisting>
                 </example>
                 <para>This extension compiles into <emphasis role="bold"><emphasis role="italic"
@@ -58,8 +58,8 @@ include.module.compression = true
                 <example>
                     <title>conf.xml</title>
                     <programlisting format="linespecific">
-                        <markup><![CDATA[            <module class="org.exist.xquery.modules.compression.CompressionModule"
-                    uri="http://exist-db.org/xquery/compression" />
+                        <markup><![CDATA[             <module class="org.exist.xquery.modules.context.ContextModule"
+                uri="http://exist-db.org/xquery/context" />
 ]]></markup>
                     </programlisting>
                 </example>
