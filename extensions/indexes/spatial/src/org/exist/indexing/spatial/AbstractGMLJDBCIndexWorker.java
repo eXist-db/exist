@@ -228,6 +228,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	StoredNode topMost = node;
     	StoredNode currentNode = node;
     	for (int i = path.length() ; i > 0; i--) {
+    		//Stop below root
+    		if (currentNode.getParentNode() instanceof DocumentImpl)
+    			break;    			
     		currentNode = (StoredNode)currentNode.getParentNode();
     		if (GML_NS.equals(currentNode.getNamespaceURI()))
     			//TODO : retain only geometries
