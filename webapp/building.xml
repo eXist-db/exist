@@ -69,6 +69,14 @@
 
                     <synopsis>https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</synopsis>
 
+                    <para>The URL for the latest stable release is:</para>
+                    
+                    <synopsis>https://exist.svn.sourceforge.net/svnroot/exist/stable/eXist-1.4.x</synopsis>
+                    
+                    <para>You usually want to use the stable release branch on a production system.
+                        The stable branch is the basis for all official releases during the lifecycle of a
+                        major version.</para>
+                        
                     <para>You need an SVN client to check out the source code. Examples for SVN
                         clients are Tortoise SVN on the windows platform or the command line SVN
                         tools on Unix (see <ulink url="#checkout">below</ulink>). The <ulink
