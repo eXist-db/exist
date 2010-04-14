@@ -22,7 +22,7 @@
     <!-- Mime types stored as XML -->
     <mime-type name="text/xml" type="xml">
         <description>XML document</description>
-        <extensions>.xml,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.rdf,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform,.gml,.fo,.nvdl,.sch,.imdi</extensions>
+        <extensions>.xml,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.rdf,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform,.gml,.fo,.nvdl,.sch,.imdi,.cmdi</extensions>
     </mime-type>
     <mime-type name="application/xslt+xml" type="xml">
         <description>XSL document</description>
@@ -56,6 +56,14 @@
         <description>XML pipeline (XProc)</description>
         <extensions>.xpl,.xproc</extensions>
     </mime-type>
+    <mime-type name="application/oebps-package+xml" type="xml">
+        <description>Open Packaging Format (OPF) Document</description>
+        <extensions>.opf</extensions>
+    </mime-type>
+    <mime-type name="application/x-dtbncx+xml" type="xml">
+        <description>Navigation Control file for XML (NCX) Document</description>
+        <extensions>.ncx</extensions>
+    </mime-type>
     
     <!-- Binary mime types -->   
     <mime-type name="application/xquery" type="binary">
@@ -74,7 +82,10 @@
         <description>ZIP archive</description>
         <extensions>.zip</extensions>
     </mime-type>
-
+    <mime-type name="application/epub+zip" type="binary">
+        <description>EPUB document</description>
+        <extensions>.epub</extensions>
+    </mime-type>
 
     <!-- OpenOffice.org - Open Document -->
     <mime-type name="application/vnd.oasis.opendocument.text" type="binary">
