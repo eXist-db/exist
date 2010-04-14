@@ -41,8 +41,9 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
     let $functionDeprecated := $functionNode/xq:comment/xq:deprecated/text()
     let $functionDescription := $functionNode/xq:comment/xq:description/text()
     let $functionParagraphs := tokenize($functionDescription, "\n")
-    let $functionVersion := $functionNode/xq:comment/xq:version
+    let $functionVersion := $functionNode/xq:comment/xq:version/text()
     let $functionParameters := $functionNode/xq:comment/xq:param
+    let $functionSees := $functionNode/xq:comment/xq:see
     let $functionReturns := $functionNode/xq:comment/xq:return/text()
     let $authors := $functionNode/xq:comment/xq:author
     let $sinces := $functionNode/xq:comment/xq:since
@@ -54,7 +55,12 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
                 else $functionName
             }</div>
             <hr/>
-            <div class="signature">{if (not(starts-with($functionSignature, $parentModuleName))) then concat($parentModuleName, ':', $functionSignature) else $functionSignature}</div>
+            <div class="signature">{
+                if (not(starts-with($functionSignature, $parentModuleName))) then 
+                    concat($parentModuleName, ':', $functionSignature) 
+                else 
+                    $functionSignature
+            }</div>
             <div class="description">{
                 for $desc in $functionParagraphs
                 return
@@ -65,16 +71,25 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
                 return
                     <span class="author">{$author}</span>
             }</div>
-            <div class="version">{$functionVersion}</div>
+            {
+            if (string-length($functionVersion) > 0) then
+                <div class="version">Version {$functionVersion}</div>
+            else ()    
+            }
             <div class="sinces">{
-                for $since in $sinces
+                if (empty($sinces)) then ()
+                else
+                    <div class="since">Since {string-join($sinces, ", ")}</div>
+            }</div>
+            <div class="sees">{
+                for $see in $functionSees
                 return
-                    <span class="since">{$since}</span>
+                    <div class="see">See {$see}</div>
             }</div>
             <div class="parameters">
                 <table class="f-params">{
                     for $parameter in $functionParameters
-                    let $split := text:groups($parameter, "^(\$[^ ]+) (.*)$")
+                    let $split := text:groups(normalize-space($parameter), "^(\$[^ ]+) (.*)$")
                     return
                         <tr>
                             <td class="f-param1">{$split[2]}</td>
@@ -83,12 +98,10 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
                 }</table>
             </div>
             {
-            if (string-length($functionReturns) > 0)
-            then
+            if (string-length($functionReturns) > 0) then
                 <div class="returning"><hr/>Returns {$functionReturns}</div>
             else (),
-            if (string-length($functionDeprecated) > 0)
-            then
+            if (string-length($functionDeprecated) > 0) then
                 <div class="deprecated"><hr/>Deprecated: {$functionDeprecated}</div>
             else ()
             }
@@ -96,11 +109,12 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
 };
 
 (: Render a module or set of modules :)
+(: TODO add moduleSees, other standard XQDoc comments :)
 declare function local:render-module($moduleURIs as xs:string+, $functionName as xs:string?, $showlinks as xs:boolean) as element()+ {
     for $moduleURI in $moduleURIs
 	let $moduleDocs := /xq:xqdoc[xq:module/xq:uri eq $moduleURI]
 	let $moduleName := if ($moduleURI = 'http://www.w3.org/2005/xpath-functions') then 'fn' else $moduleDocs/xq:module/xq:name/text()
-	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/text()
+	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/node()
 	order by $moduleURI
 	return 
 	   <div class="module">
@@ -183,7 +197,7 @@ declare function local:list-modules($moduleURIs) {
         	        : for the link, so we just use 'fn' :) 
         	       'fn' 
                else $moduleDocs/xq:module/xq:name/text()
-        	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/text()
+        	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/node()
         	order by $moduleURI
             return
                 <tr class="module">
@@ -330,6 +344,8 @@ declare function local:main() {
             .f-params {}
             .f-param1 {width: 250px;}
             .f-param2 {}
+            .version {margin-left: 20px; padding: 5px;}
+            .since {margin-left: 20px; padding: 5px;}
             .parameter {}
             .returning {margin-left: 100px; color:green;}
             .deprecated {color:red; font-weight:bold;}
