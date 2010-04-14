@@ -362,6 +362,14 @@ public class ModuleContext extends XQueryContext {
     public Map<QName, Variable> getVariables() {
     	return parentContext.getVariables();
     }
+
+    public Map<QName, Variable> getLocalVariables() {
+    	return parentContext.getLocalVariables();
+    }
+
+    public Map<QName, Variable> getGlobalVariables() {
+    	return parentContext.getGlobalVariables();
+    }
     
     public int getCurrentStackSize() {
         return parentContext.getCurrentStackSize();

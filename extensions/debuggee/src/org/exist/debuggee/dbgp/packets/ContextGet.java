@@ -21,6 +21,7 @@
  */
 package org.exist.debuggee.dbgp.packets;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.mina.core.session.IoSession;
@@ -66,7 +67,17 @@ public class ContextGet extends Command {
 	@Override
 	public void exec() {
 		//TODO: different stack depth & context id
-		variables = getJoint().getVariables();
+		if (contextID.equals("")) 
+			variables = getJoint().getVariables();
+		
+		else if (contextID.equals(ContextNames.LOCAL)) 
+			variables = getJoint().getLocalVariables();
+		
+		else if (contextID.equals(ContextNames.GLOBAL)) 
+			variables = getJoint().getGlobalVariables();
+		
+		else //Class & unknow 
+			variables = new HashMap<QName, Variable>();
 	}
 
 	public byte[] responseBytes() {

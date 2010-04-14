@@ -77,6 +77,7 @@ public interface DebuggingSource {
 	public boolean isTerminated();
 
 	public List<Variable> getVariables();
+	public List<Variable> getVariables(int contextID);
 
 	public List<Location> getStackFrames();
 

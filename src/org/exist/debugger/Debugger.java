@@ -58,7 +58,7 @@ public interface Debugger {
 
 	//public Response getResponse(String transactionID);
 
-	public List<Variable> getVariables();
+	public List<Variable> getVariables(int contextID);
 
 	public List<Location> getStackFrames();
 }
