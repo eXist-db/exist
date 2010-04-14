@@ -65,6 +65,8 @@ public interface DebuggeeJoint {
 	public List<Expression> stackGet();
 	
 	public Map<QName, Variable> getVariables();
+	public Map<QName, Variable> getLocalVariables();
+	public Map<QName, Variable> getGlobalVariables();
 	public Variable getVariable(String name);
 	
 	//breakpoints methods

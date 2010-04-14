@@ -74,7 +74,11 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	 * @see org.exist.debugger.DebuggingSource#getVariables()
 	 */
 	public List<Variable> getVariables() {
-		return debugger.getVariables();
+		return debugger.getVariables(0);
+	}
+
+	public List<Variable> getVariables(int contextID) {
+		return debugger.getVariables(contextID);
 	}
 
 	/* (non-Javadoc)

@@ -110,6 +110,14 @@ public class DebuggerTest implements ResponseListener {
 				assertEquals("1", var.getValue());
 			}
 			
+			System.out.println("sending get-local-variables");
+			vars = source.getVariables(0);
+			assertEquals(1, vars.size());
+
+			System.out.println("sending get-glocal-variables");
+			vars = source.getVariables(1);
+			assertEquals(0, vars.size());
+
 			System.out.print("sending step-into & waiting stop status");
 			for (int i = 0; i < 7; i++) {
 				System.out.print(".");

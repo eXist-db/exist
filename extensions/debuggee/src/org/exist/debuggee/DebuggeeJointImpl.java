@@ -170,6 +170,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 						
 						if (breakpoint.getState() && breakpoint.getType().equals(Breakpoint.TYPE_LINE)) {
 							command.setStatus(BREAK);
+							//waitCommand();
+							//break;
 						}
 					}
 				}
@@ -306,6 +308,22 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			
 		Expression expr = stack.get(0);
 		return expr.getContext().getVariables();
+	}
+
+	public Map<QName, Variable> getLocalVariables() {
+		if (stack.size() == 0)
+			return new HashMap<QName, Variable>();
+			
+		Expression expr = stack.get(0);
+		return expr.getContext().getLocalVariables();
+	}
+	
+	public Map<QName, Variable> getGlobalVariables() {
+		if (stack.size() == 0)
+			return new HashMap<QName, Variable>();
+			
+		Expression expr = stack.get(0);
+		return expr.getContext().getGlobalVariables();
 	}
 
 	public Variable getVariable(String name) {

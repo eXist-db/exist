@@ -136,8 +136,10 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return null;
 	}
 	
-	public List<Variable> getVariables() {
-		ContextGet command = new ContextGet(session, " -i " + getNextTransaction());
+	public List<Variable> getVariables(int contextID) {
+		ContextGet command = new ContextGet(session, 
+				" -i " + getNextTransaction() + 
+				" -c " + String.valueOf(contextID));
 		command.toDebuggee();
 
 		Response response = getResponse(command.getTransactionId());
