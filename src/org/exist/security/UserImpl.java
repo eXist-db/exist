@@ -34,10 +34,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Represents a user within the database.
@@ -93,6 +98,35 @@ public class UserImpl implements User {
 
 	static public void setPasswordRealm(String value) {
 		realm = value;
+	}
+	
+	static public User getUserFromServletRequest(HttpServletRequest request) {
+        Principal principal = request.getUserPrincipal();
+        if (principal instanceof User) {
+			return (User) principal;
+			
+		//workaroud strange jetty authentication method, why encapsulate user object??? -shabanovd 
+        } else if (principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName()) ) {
+        	try {
+        		Method method = principal.getClass().getMethod("getSubject");
+        		Object obj = method.invoke(principal);
+				if (obj instanceof javax.security.auth.Subject) {
+					javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
+					for (Principal _principal_ : subject.getPrincipals()) {
+				        if (_principal_ instanceof User) {
+							return (User) _principal_;
+				        }
+					}
+				}
+			} catch (SecurityException e) {
+			} catch (IllegalArgumentException e) {
+			} catch (IllegalAccessException e) {
+			} catch (NoSuchMethodException e) {
+			} catch (InvocationTargetException e) {
+			}
+		}
+        
+        return null;
 	}
 
 	private String[] groups = null;
