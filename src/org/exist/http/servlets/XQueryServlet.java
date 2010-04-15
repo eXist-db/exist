@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.security.Principal;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
@@ -44,9 +43,9 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.security.AuthenticationException;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
@@ -313,10 +312,9 @@ public class XQueryServlet extends HttpServlet {
 
         User user = defaultUser;
 
-        Principal principal = request.getUserPrincipal();
-        if (principal instanceof User) {
-			user = (User) principal;
-		}
+        User requestUser = UserImpl.getUserFromServletRequest(request);
+        if (requestUser != null)
+        	user = requestUser;
 
         // to determine the user, first check the request attribute "xquery.user", then
         // the current session attribute "user"

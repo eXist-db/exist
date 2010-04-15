@@ -29,7 +29,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -106,6 +108,8 @@ public class XSLTServlet extends HttpServlet {
     private final static Logger LOG = Logger.getLogger(XSLTServlet.class);
 
     private BrokerPool pool;
+    
+    private User defaultUser = SecurityManager.GUEST;
 
     private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
@@ -164,23 +168,26 @@ public class XSLTServlet extends HttpServlet {
             }
         }
 
+        User user = defaultUser;
+
+        User requestUser = UserImpl.getUserFromServletRequest(request);
+        if (requestUser != null)
+        	user = requestUser;
+
         // Retrieve username / password from HTTP request attributes
         String userParam = (String) request.getAttribute("xslt.user");
         String passwd = (String) request.getAttribute("xslt.password");
-        if (userParam == null) {
-            userParam = org.exist.security.SecurityManager.GUEST_USER;
-            passwd = userParam;
-        }
-
         try {
-            pool = BrokerPool.getInstance();
-            User user;
-			try {
-				user = pool.getSecurityManager().authenticate(userParam, passwd);
-			} catch (AuthenticationException e1) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
-                return;
-			}
+    		pool = BrokerPool.getInstance();
+
+    		if (userParam != null) {
+        		try {
+        			user = pool.getSecurityManager().authenticate(userParam, passwd);
+        		} catch (AuthenticationException e1) {
+        			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
+        			return;
+        		}
+        	}
 
             SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
             Templates templates = getSource(user, request, response, factory, stylesheet);
