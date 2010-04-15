@@ -87,7 +87,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.net.URISyntaxException;
-import java.security.Principal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -187,9 +186,10 @@ public class XQueryURLRewrite implements Filter {
         }
 
     	User user = defaultUser;
-        Principal principal = request.getUserPrincipal();
-        if (principal instanceof User)
-			user = (User) principal;
+    	
+        User requestUser = UserImpl.getUserFromServletRequest(request);
+        if (requestUser != null)
+        	user = requestUser;
 
         try {
             configure();
