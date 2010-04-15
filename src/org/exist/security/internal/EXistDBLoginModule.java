@@ -147,21 +147,14 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 
 		// print debugging information
 		if (debug) {
-			System.out.println("\t\t[eXistLoginModule] "
-					+ "user entered user name: " + username);
-			System.out.print("\t\t[eXistLoginModule] "
-					+ "user entered password: ");
-			for (int i = 0; i < password.length; i++)
-				System.out.print(password[i]);
-			System.out.println();
+			System.out.println("\t\t[eXistLoginModule] user entered user name: " + username);
 		}
 		
 		try {
 			userPrincipal = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
 		} catch (AuthenticationException e) {
 			if (debug)
-				System.out.println("\t\t[eXistLoginModule] "
-						+ "authentication failed");
+				System.out.println("\t\t[eXistLoginModule] authentication failed");
 			throw new FailedLoginException(e.getMessage());
 		} catch (EXistException e) {
 			throw new FailedLoginException(e.getMessage());
@@ -204,8 +197,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 				subject.getPrincipals().add(userPrincipal);
 
 			if (debug) {
-				System.out.println("\t\t[eXistLoginModule] "
-						+ "added User to Subject");
+				System.out.println("\t\t[eXistLoginModule] added User to Subject");
 			}
 
 			commitSucceeded = true;
