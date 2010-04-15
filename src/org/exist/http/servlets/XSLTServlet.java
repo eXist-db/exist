@@ -26,10 +26,10 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -174,12 +174,13 @@ public class XSLTServlet extends HttpServlet {
 
         try {
             pool = BrokerPool.getInstance();
-            UserImpl user = pool.getSecurityManager().getUser(userParam);
-            if (user != null) {
-                if (!user.validate(passwd)) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
-                }
-            }
+            User user;
+			try {
+				user = pool.getSecurityManager().authenticate(userParam, passwd);
+			} catch (AuthenticationException e1) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
+                return;
+			}
 
             SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
             Templates templates = getSource(user, request, response, factory, stylesheet);
