@@ -853,20 +853,35 @@ public class NativeBroker extends DBBroker {
     }
 
 	private void moveBinaryFork(Txn transaction, File sourceDir, Collection destination, XmldbURI newName) throws IOException {
-        File targetDir = getCollectionFile(fsDir,destination.getURI().append(newName),false);
-        if (sourceDir.exists()) {
-           targetDir.getParentFile().mkdirs();
-           if (sourceDir.renameTo(targetDir)) {
-              Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
-              try {
-                 logManager.writeToLog(loggable);
-              } catch (TransactionException e) {
-                  LOG.warn(e.getMessage(), e);
-              }
-           } else {
-              LOG.fatal("Cannot move "+sourceDir+" to "+targetDir);
-           }
-        }
+		File targetDir = getCollectionFile(fsDir,destination.getURI().append(newName),false);
+		if (sourceDir.exists()) {
+			if(targetDir.exists()) {
+				File targetDelDir = getCollectionFile(fsBackupDir,transaction,destination.getURI().append(newName),true);
+				targetDelDir.getParentFile().mkdirs();
+	
+				if (targetDir.renameTo(targetDelDir)) {
+					Loggable loggable = new RenameBinaryLoggable(this,transaction,targetDir,targetDelDir);
+					try {
+						logManager.writeToLog(loggable);
+					} catch (TransactionException e) {
+						LOG.warn(e.getMessage(), e);
+					}
+				} else {
+					LOG.fatal("Cannot rename "+targetDir+" to "+targetDelDir);
+				}
+			}
+			targetDir.getParentFile().mkdirs();
+			if (sourceDir.renameTo(targetDir)) {
+				Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
+				try {
+					logManager.writeToLog(loggable);
+				} catch (TransactionException e) {
+					LOG.warn(e.getMessage(), e);
+				}
+			} else {
+				LOG.fatal("Cannot move "+sourceDir+" to "+targetDir);
+			}
+		}
 	}
 
 	private void moveCollectionRecursive(Txn transaction, Collection collection, Collection destination, XmldbURI newName) throws PermissionDeniedException, IOException, LockException {
@@ -1004,6 +1019,20 @@ public class NativeBroker extends DBBroker {
                 pool.getConfigurationManager().invalidateAll(uri);
 
                 // remove child collections
+                if (sourceDir.exists()) {
+                   targetDir.getParentFile().mkdirs();
+                   if (sourceDir.renameTo(targetDir)) {
+                     Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
+                     try {
+                        logManager.writeToLog(loggable);
+                     } catch (TransactionException e) {
+                         LOG.warn(e.getMessage(), e);
+                     }
+
+                   } else {
+                      LOG.fatal("Cannot rename "+sourceDir+" to "+targetDir);
+                   }
+                }
                 if(LOG.isDebugEnabled())
                     LOG.debug("Removing children collections from their parent '" + collName + "'...");
 
@@ -1172,20 +1201,6 @@ public class NativeBroker extends DBBroker {
                     freeResourceId(transaction, doc.getDocId());
                 }
 
-                if (sourceDir.exists()) {
-                   targetDir.getParentFile().mkdirs();
-                   if (sourceDir.renameTo(targetDir)) {
-                     Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
-                     try {
-                        logManager.writeToLog(loggable);
-                     } catch (TransactionException e) {
-                         LOG.warn(e.getMessage(), e);
-                     }
-
-                   } else {
-                      LOG.fatal("Cannot rename "+sourceDir+" to "+targetDir);
-                   }
-                }
                 if(LOG.isDebugEnabled())
                     LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
 
