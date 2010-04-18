@@ -1,21 +1,19 @@
 package org.exist.storage.structural;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.SymbolTable;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.DBException;
-import org.exist.storage.index.BFile;
 import org.exist.storage.index.BTreeStore;
 import org.exist.storage.lock.Lock;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.w3c.dom.Element;
-
-import java.io.File;
 
 public class NativeStructuralIndex extends AbstractIndex {
 
