@@ -11,10 +11,8 @@ declare option exist:serialize "media-type=text/xml";
 
 (: ### general functions begin ###:)
 
-declare function functx:camel-case-to-words( $arg as xs:string?, $delim as xs:string ) as xs:string {
-   concat(substring($arg,1,1),
-             replace(substring($arg,2),'(\p{Lu})',
-                        concat($delim, '$1')))
+declare function functx:camel-case-to-words( $arg as xs:string?, $delim as xs:string ) as xs:string? {
+   concat(substring($arg,1,1), replace(substring($arg,2),'(\p{Lu})', concat($delim, '$1')))
 };
 
 declare function functx:capitalize-first( $arg as xs:string? ) as xs:string? {       
@@ -158,17 +156,17 @@ declare function mods:get-related-part($entry as element()) {
             if ($volume and $issue) then
             <tr>
                 <td class="label">Volume/Issue</td>
-            <td>{string-join(($volume/string(), $issue/string()), '/')}</td>
+            <td class="record">{string-join(($volume/string(), $issue/string()), '/')}</td>
             </tr>
             else if ($volume) then
             <tr>
                 <td class="label">Volume</td>
-            <td>{$volume/string()}</td>
+            <td class="record">{$volume/string()}</td>
             </tr>
             else if ($issue) then
             <tr>
                 <td class="label">Issue</td>
-            <td>{$issue/string()}</td>
+            <td class="record">{$issue/string()}</td>
             </tr>
             else
             ()
@@ -176,7 +174,7 @@ declare function mods:get-related-part($entry as element()) {
             if ($date) then
             <tr>
                 <td class="label">Date</td>
-            <td>{$date/string()}</td>
+            <td class="record">{$date/string()}</td>
             </tr>
             else
             ()
@@ -184,12 +182,12 @@ declare function mods:get-related-part($entry as element()) {
             if ($start and $end) then
             <tr>
                 <td class="label">Pages</td>
-            <td>{string-join(($start/string(), $end/string()), '-')}</td>
+            <td class="record">{string-join(($start/string(), $end/string()), '-')}</td>
             </tr>
             else if ($start) then
             <tr>
                 <td class="label">Pages</td>
-            <td>{$start/string()}</td>
+            <td class="record">{$start/string()}</td>
             </tr>
             else
             ()
@@ -231,8 +229,8 @@ declare function mods:get-related-part($entry as element()) {
 declare function mods:name-transliteration($name as element()) as xs:string? {
     if ($name/mods:namePart[@transliteration]) then
         string-join((
-           $name/mods:namePart[@transliteration][@type = 'family'],
-           $name/mods:namePart[@transliteration][@type = 'given'],
+           $name/mods:namePart[@transliteration][@type = 'family'][1], (: The [1] takes care of cases where several transliterations (both Japanese and Chinese) are used. Such transliterations are irregular. :)
+           $name/mods:namePart[@transliteration][@type = 'given'][1],
            $name/mods:namePart[@transliteration][not(@type)]
         ), ' ')
     else ()
@@ -361,10 +359,13 @@ declare function mods:get-names($entry as element()) {
         if ($nameCount eq 0) then
             ()
         else if ($nameCount eq 1) then
-            concat($names[1], '. ')(: Places period after single author name. :)
+            if (ends-with($names[1], ".")) then (: Places period after single author name, if it does not end in period. :)
+            concat($names[1], ' ')
+            else
+            concat($names[1], '. ')
         else
             concat(
-                string-join(subsequence($names, 1, $nameCount - 1), ", "),
+                string-join(subsequence($names, 1, $nameCount - 1), ", "),(: Places comma after single author name. :)
                 ", and ",(: Is comma needed? :)
                 $names[$nameCount],
                 ". "(: Places period after last author name. :)
@@ -534,7 +535,7 @@ declare function mods:title-full($titleInfo as element(mods:titleInfo)) {
                 ()
         }
         </td>
-        <td>{ string-join(($titleInfo/mods:title, $titleInfo/mods:subTitle), ' : ') }</td>
+        <td class="record">{ string-join(($titleInfo/mods:title, $titleInfo/mods:subTitle), ' : ') }</td>
     </tr>
 };
 
@@ -584,28 +585,57 @@ declare function mods:get-related($entry as element(mods:mods)) {
 
 
 declare function mods:names-full($entry as element()) {
-    if (($entry/mods:name)) then
-    (: serials have no names. :)
-    (: The following assumes that @type="text". :)
-    (: [1] should not be necessary. :)
-    (: The hard-coded "Author" is probably correct for records without <role><roleTerm>. :)
-    <tr>
-        <td class="label">{
-        if ($entry/mods:name[1]/mods:role/mods:roleTerm) then
-        functx:capitalize-first($entry/mods:name[1]/mods:role/mods:roleTerm)
-        else "Author"
-        }</td>
-        <td>{
-            let $names := mods:retrieve-names($entry)
-            for $name in $names
-            return
-                ($name, <br/>)
+if (($entry/mods:name)) then
+let $names := $entry/mods:name
+    for $name in $names
+    return
+    if ($name[@type = 'personal']) then
+        <tr>
+            <td class="label">
+            {
+            if ($name/mods:role/mods:roleTerm) then
+                functx:capitalize-first($name/mods:role/mods:roleTerm)
+            else 'Author'
+            }
+            </td>
+            <td class="record">
+            {       
+        let $family := $name/mods:namePart[@type = 'family']
+        let $given := $name/mods:namePart[@type = 'given']
+        let $address := $name/mods:namePart[@type = 'termsOfAddress']
+        let $date := $name/mods:namePart[@type = 'date'] (: Not treated. :)
+        return
+            if ($family and $given) then (: If the namePart is split up into family and given. :)
+                if ($family/@lang = ('ja', 'zh')) then
+                    (mods:name-transliteration($name), ' ', concat($family[not(@transliteration)][1]/string(), $given[not(@transliteration)][1]/string()))
+                    (: Sometimes we have names in Chinese characters, in transliteration _and_ a Western name. :)
+                else
+                    string-join(($family, $given, $address),', ')
+            else (: If the namePart is not split up in family and given. :)
+                if ($name/mods:namePart/@transliteration) then (: If there is transliteration. :)
+                    ($name/mods:namePart[@transliteration], ' ' , $name/mods:namePart[not(@transliteration)]) 
+                else
+                    string-join(($family, $given, $address),', ')
         }</td>
     </tr>
+    else if ($name[@type = 'corporate']) then
+        <tr>
+            <td class="label">
+            {
+            if ($name/mods:role/mods:roleTerm) then
+                functx:capitalize-first($name/mods:role/mods:roleTerm)
+            else 'Corporation'
+            }
+            </td>
+            <td class="record">
+            { $name/mods:namePart/string() }
+        </td>
+    </tr>
     else
-        ()
+    ()
+else
+()
 };
-
 
 declare function mods:simple-row($data as item()?, $label as xs:string) as element(tr)? {
     for $d in $data
@@ -613,7 +643,7 @@ declare function mods:simple-row($data as item()?, $label as xs:string) as eleme
     return
         <tr>
             <td class="label">{$label}</td>
-            <td>{string($data)}</td>
+            <td class="record">{string($data)}</td>
         </tr>
 };
 
@@ -624,14 +654,13 @@ declare function mods:url($entry as element()) as element(tr)* {
             <td class="label">URL {if ($url[@displayLabel]) then
             concat('(',($url/@displayLabel/string()),')')
         else ()}</td>
-            <td><a href="{$url}">{$url/string()}</a></td>
+            <td class="record"><a href="{$url}">{$url/string()}</a></td>
         </tr>
 };
-
         
 (: Prepares for the recursive mods:format-full. :)
 declare function mods:entry-full($entry as element()) {
-    mods:names-full($entry), 
+mods:names-full($entry),
     for $titleInfo in (
         $entry/mods:titleInfo[empty(@type)],
         $entry/mods:titleInfo[@type = 'abbreviated'],
@@ -650,20 +679,9 @@ declare function mods:entry-full($entry as element()) {
     mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
     mods:simple-row($entry/mods:abstract, "Abstract"),
     mods:simple-row($entry/mods:typeOfResource/string(), "Type of Resource"),
-    for $subject in (
-        $entry/mods:subject/mods:topic,
-        $entry/mods:subject/mods:geographic,
-        $entry/mods:subject/mods:temporal,
-        $entry/mods:subject/mods:titleInfo,
-        $entry/mods:subject/mods:name,
-        $entry/mods:subject/mods:genre,
-        $entry/mods:subject/mods:hierarchicalGeographic,
-        $entry/mods:subject/mods:cartographics,
-        $entry/mods:subject/mods:geographicCode,
-        $entry/mods:subject/mods:occupation
-    )
+    for $subject in ( $entry/mods:subject/* )
     return
-    mods:simple-row($subject/string(), functx:capitalize-first($subject/name())),    
+    mods:simple-row($subject, functx:capitalize-first(functx:camel-case-to-words($subject/name(), ' '))), (: NB! Several subjects have subelements. They are run together here. :)    
     mods:url($entry),
     (: If there is a related "host" item, get its contents from the related record through its href if it has one; otherwise process the information as given in the record itself. :)
         (: Problem: what if relatedItem is not "host"? :)
@@ -672,7 +690,7 @@ declare function mods:entry-full($entry as element()) {
     return
         if ($relatedItem) then (
             <tr class="related">(: Sets the horizontal ruler. Takes up too much space. :)
-                <td colspan="2">In:</td>
+                <td colspan="2" class="related">In:</td>
             </tr>,
             if (($relatedItem/@xlink:href) and (collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href])) then            
                 for $ref in collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href]
@@ -683,44 +701,6 @@ declare function mods:entry-full($entry as element()) {
         ) else
             ()
 };
-
-(: was:
-declare function mods:entry-full($entry as element()) {
-    mods:names-full($entry), 
-    for $titleInfo in (
-        $entry/mods:titleInfo[empty(@type)],
-        $entry/mods:titleInfo[@type = 'abbreviated'],
-        $entry/mods:titleInfo[@type = 'translated'],
-        $entry/mods:titleInfo[@type = 'alternative'],
-        $entry/mods:titleInfo[@type = 'uniform']
-    )
-    return 
-    mods:title-full($titleInfo),
-    mods:simple-row(mods:get-place($entry/mods:originInfo/mods:place), "Place"),
-    mods:simple-row(mods:get-publisher($entry/mods:originInfo/mods:publisher), "Publisher"),
-    mods:simple-row($entry/mods:originInfo/mods:dateCreated[1], "Date created"),
-    mods:simple-row($entry/mods:originInfo/mods:dateIssued[1], "Date issued"),
-    mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
-    mods:simple-row($entry/mods:abstract, "Abstract"),
-    mods:location-full($entry),
-    (: If there is a related item, get its contents from the related record through its href if it has one; otherwise process the information as given in the record itself:)
-    let $relatedItem := $entry/mods:relatedItem[@type = 'host']
-    return
-        if ($relatedItem) then (
-            <tr class="related">
-                <td colspan="2">In:</td>
-            </tr>,
-            if ($relatedItem/@xlink:href) then
-                let $collection := util:collection-name($entry)
-                for $ref in collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href]
-                return
-                    (mods:entry-full($ref), mods:get-related-part($entry))
-            else
-                    (mods:entry-full($relatedItem), mods:get-related-part($entry))
-        ) else
-            ()
-};
-:)
 
 (: Creates view for detail view. :)
 declare function mods:format-full($id as xs:string, $entry as element(mods:mods)) {
@@ -733,7 +713,7 @@ declare function mods:format-full($id as xs:string, $entry as element(mods:mods)
 
 (: Creates view for hitlist. :)
 declare function mods:format-short($id as xs:string, $entry as element(mods:mods)) {
-    <p>{ 
+(: Was originally wrapped in <p>. :)
         mods:get-names($entry),
         mods:get-short-title($id, $entry),
         if ($entry/mods:name[@type = 'conference']) then
@@ -747,5 +727,4 @@ declare function mods:format-short($id as xs:string, $entry as element(mods:mods
             <span> (<a href="{$entry/mods:location/mods:url}">{$entry/mods:location/mods:url/@displayLabel/string()}</a>)</span>
         else ()
         :)
-    }</p>
 };
