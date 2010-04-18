@@ -105,8 +105,9 @@
                     <para>The use of Static Analysis tools is highly recommended, these bring value
                         by reducing risk, and are even valuable to the most highly skilled
                         developers. Such tools include <ulink
-                            url="http://checkstyle.sourceforge.net">Checkstyle</ulink> and <ulink
-                            url="http://findbugs.sourceforge.net">FindBugs</ulink>.</para>
+                            url="http://checkstyle.sourceforge.net">Checkstyle</ulink>, <ulink
+                            url="http://findbugs.sourceforge.net">FindBugs</ulink> and
+                            <ulink url="http://pmd.sourceforge.net/">PMD</ulink>.</para>
                 </listitem>
             </itemizedlist>
         </section>
