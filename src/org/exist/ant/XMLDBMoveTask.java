@@ -1,32 +1,34 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.ant;
 
 import java.net.URISyntaxException;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.XmldbURI;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -51,6 +53,7 @@ public class XMLDBMoveTask extends AbstractXMLDBTask {
         if (uri == null) {
             throw new BuildException("You have to specify an XMLDB collection URI");
         }
+
         if (resource == null && collection == null) {
             throw new BuildException("Missing parameter: either resource or collection should be specified");
         }
@@ -81,18 +84,21 @@ public class XMLDBMoveTask extends AbstractXMLDBTask {
                     } else {
                         log(msg, Project.MSG_ERR);
                     }
+
                 } else {
                     service.moveResource(
                             XmldbURI.xmldbUriFor(resource),
                             XmldbURI.xmldbUriFor(destination),
                             XmldbURI.xmldbUriFor(name));
                 }
+
             } else {
                 log("Moving collection: " + collection, Project.MSG_INFO);
-                service.move( XmldbURI.xmldbUriFor(collection),
+                service.move(XmldbURI.xmldbUriFor(collection),
                         XmldbURI.xmldbUriFor(destination),
-                        XmldbURI.xmldbUriFor(name) );
+                        XmldbURI.xmldbUriFor(name));
             }
+            
         } catch (XMLDBException e) {
             String msg = "XMLDB exception during move: " + e.getMessage();
             if (failonerror) {
