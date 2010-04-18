@@ -35,7 +35,7 @@ import org.exist.backup.Restore;
  */
 public class RestoreTask extends AbstractXMLDBTask {
 
-    private File file = null;
+    private File zipFile = null;
     private File dir = null;
     private DirSet dirSet = null;
     private String restorePassword = null;
@@ -48,7 +48,7 @@ public class RestoreTask extends AbstractXMLDBTask {
             throw new BuildException("You have to specify an XMLDB collection URI");
         }
 
-        if (dir == null && dirSet == null && file == null) {
+        if (dir == null && dirSet == null && zipFile == null) {
             throw new BuildException("Missing required argument: either dir, dirset or file required");
         }
 
@@ -81,39 +81,38 @@ public class RestoreTask extends AbstractXMLDBTask {
                 } else if (dirSet != null) {
                     DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
                     scanner.scan();
-                    String[] files = scanner.getIncludedFiles();
-                    log("Found " + files.length + " files.\n");
+                    String[] includedFiles = scanner.getIncludedFiles();
+                    log("Found " + includedFiles.length + " files.\n");
 
-                    File file = null;
-                    for (int i = 0; i < files.length; i++) {
-                        dir = new File(scanner.getBasedir() + File.separator + files[i]);
-                        file = new File(dir, "__contents__.xml");
-                        if (!file.exists()) {
-                            String msg = "Did not found file " + file.getAbsolutePath();
+                    for (String included : includedFiles) {
+                        dir = new File(scanner.getBasedir() + File.separator + included);
+                        File contentsFile = new File(dir, "__contents__.xml");
+                        if (!contentsFile.exists()) {
+                            String msg = "Did not found file " + contentsFile.getAbsolutePath();
                             if (failonerror) {
                                 throw new BuildException(msg);
                             } else {
                                 log(msg, Project.MSG_ERR);
                             }
                         } else {
-                            log("Restoring from " + file.getAbsolutePath() + " ...\n");
+                            log("Restoring from " + contentsFile.getAbsolutePath() + " ...\n");
                             // TODO subdirectories as sub-collections?
-                            Restore restore = new Restore(user, password, restorePassword, file, uri);
+                            Restore restore = new Restore(user, password, restorePassword, contentsFile, uri);
                             restore.restore(false, null);
                         }
                     }
 
-                } else if (file != null) {
-                    log("Restoring from " + file.getAbsolutePath(), Project.MSG_INFO);
-                    if (!file.exists()) {
-                        String msg = "File not found: " + file.getAbsolutePath();
+                } else if (zipFile != null) {
+                    log("Restoring from " + zipFile.getAbsolutePath(), Project.MSG_INFO);
+                    if (!zipFile.exists()) {
+                        String msg = "File not found: " + zipFile.getAbsolutePath();
                         if (failonerror) {
                             throw new BuildException(msg);
                         } else {
                             log(msg, Project.MSG_ERR);
                         }
                     } else {
-                        Restore restore = new Restore(user, password, restorePassword, file, uri);
+                        Restore restore = new Restore(user, password, restorePassword, zipFile, uri);
                         restore.restore(false, null);
                     }
                 }
@@ -143,7 +142,7 @@ public class RestoreTask extends AbstractXMLDBTask {
     }
 
     public void setFile(File file) {
-        this.file = file;
+        this.zipFile = file;
     }
 
     public void setRestorePassword(String pass) {
