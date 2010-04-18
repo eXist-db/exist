@@ -1,3 +1,6 @@
+p, td {
+    line-height:2em;
+}
 .search-form {
 }
 
@@ -90,11 +93,6 @@
     text-decoration: underline;
 }
 
-.pagination-n {
-    vertical-align: top;
-    width: 20px;
-}
-
 .pagination-link {
     margin-right: 1em;
     padding: 2px 4px;
@@ -138,11 +136,27 @@
     background-color: white;
 }
 
+.pagination-n, .actions {
+    width: 20px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+}
+
 .biblio-full .label {
     font-weight: bold;
     text-align: right;
-    padding-right: 15px;
+    padding-right: 1em;
     vertical-align: top;
+    width: 10em;
+}
+
+.biblio-full .record {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+    width:30em;
 }
 
 .biblio-full .label:after {
@@ -150,8 +164,8 @@
 }
 
 .biblio-full .related td {
-    margin-top: 10px;
-    padding-top: 10px;
+    margin: 0;
+    padding: 0;
     border-top: 1px solid black;
 }
 
@@ -161,7 +175,7 @@
 
 .save img {
     border: 0;
-    vertical-align: top;
+    margin: 0;
 }
 
 .ui-widget {
