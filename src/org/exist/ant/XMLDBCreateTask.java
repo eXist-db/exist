@@ -111,16 +111,16 @@ public class XMLDBCreateTask extends AbstractXMLDBTask {
         //log("PATH=" + path, Project.MSG_DEBUG);
 
         XmldbURI[] segments = collPath.getPathSegments();
-        for (int i = 0; i < segments.length; i++) {
-            baseUri = baseUri.append(segments[i]);
+        for (XmldbURI segment : segments) {
+            baseUri = baseUri.append(segment);
             
             log("Get collection " + baseUri, Project.MSG_DEBUG);
             c = DatabaseManager.getCollection(baseUri.toString(), user, password);
             if (c == null) {
                 log("Create collection management service for collection " + current.getName(), Project.MSG_DEBUG);
                 mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
-                log("Create child collection " + segments[i]);
-                current = mgtService.createCollection(segments[i].toString());
+                log("Create child collection " + segment);
+                current = mgtService.createCollection(segment.toString());
                 log("Created collection " + current.getName() + '.');
 
             } else {

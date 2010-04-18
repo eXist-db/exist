@@ -94,10 +94,10 @@ public abstract class AbstractXMLDBTask extends Task {
     protected void registerDatabase() throws BuildException {
         try {
             log("Registering database", Project.MSG_DEBUG);
-            Database dbs[] = DatabaseManager.getDatabases();
+            Database allDataBases[] = DatabaseManager.getDatabases();
 
-            for (int i = 0; i < dbs.length; i++) {
-                if (dbs[i].acceptsURI(uri)) {
+            for (Database database : allDataBases) {
+                if (database.acceptsURI(uri)) {
                     return;
                 }
             }
@@ -119,16 +119,18 @@ public abstract class AbstractXMLDBTask extends Task {
         }
     }
 
-    protected final Collection mkcol(Collection root, String baseURI, String path, String relPath)
+    protected final Collection mkcol(Collection rootCollection, String baseURI, String path, String relPath)
             throws XMLDBException {
+
         CollectionManagementService mgtService;
-        Collection current = root, c;
+        Collection current = rootCollection, collection;
         String token;
 
         ///TODO : use dedicated function in XmldbURI
-        StringTokenizer tok = new StringTokenizer(relPath, "/");
-        while (tok.hasMoreTokens()) {
-            token = tok.nextToken();
+        StringTokenizer tokenizer = new StringTokenizer(relPath, "/");
+        while (tokenizer.hasMoreTokens()) {
+            
+            token = tokenizer.nextToken();
             if (path != null) {
                 path = path + "/" + token;
             } else {
@@ -136,8 +138,8 @@ public abstract class AbstractXMLDBTask extends Task {
             }
 
             log("Get collection " + baseURI + path, Project.MSG_DEBUG);
-            c = DatabaseManager.getCollection(baseURI + path, user, password);
-            if (c == null) {
+            collection = DatabaseManager.getCollection(baseURI + path, user, password);
+            if (collection == null) {
                 log("Create collection management service for collection " + current.getName(), Project.MSG_DEBUG);
                 mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
                 log("Create child collection " + token, Project.MSG_DEBUG);
@@ -145,7 +147,7 @@ public abstract class AbstractXMLDBTask extends Task {
                 log("Created collection " + current.getName() + '.', Project.MSG_DEBUG);
                 
             } else {
-                current = c;
+                current = collection;
             }
         }
         return current;

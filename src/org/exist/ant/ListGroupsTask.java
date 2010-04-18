@@ -45,17 +45,25 @@ public class ListGroupsTask extends UserTask {
             log("Listing all groups", Project.MSG_DEBUG);
             String[] groups = service.getGroups();
             if (groups != null) {
-                StringBuilder buf = new StringBuilder();
-                for (int i = 0; i < groups.length; i++) {
-                    buf.append(groups[i]);
-                    if (i < groups.length - 1) {
-                        buf.append(separator);
+
+                boolean isFirst=true;
+                StringBuilder buffer = new StringBuilder();
+                for (String group : groups) {
+
+                    // only insert separator for 2nd or later item
+                    if(isFirst){
+                        isFirst=false;
+                    } else {
+                        buffer.append(separator);
                     }
+
+                    buffer.append(group);
+
                 }
 
-                if (buf.length() > 0) {
-                    log("Setting output property " + outputproperty + " to " + buf.toString(), Project.MSG_DEBUG);
-                    getProject().setNewProperty(outputproperty, buf.toString());
+                if (buffer.length() > 0) {
+                    log("Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG);
+                    getProject().setNewProperty(outputproperty, buffer.toString());
                 }
             }
 
