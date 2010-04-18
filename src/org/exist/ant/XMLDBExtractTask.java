@@ -1,6 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -12,10 +13,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *  $Id$
  */
 package org.exist.ant;
 
@@ -133,10 +135,12 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         String[] resources = base.listResources();
         if (resources != null) {
             File dir = destDir;
+            
             log("Extracting to directory " + destDir.getAbsolutePath(), Project.MSG_DEBUG);
             if (path != null) {
                 dir = new File(destDir, path);
             }
+
             for (String resource : resources) {
                 res = base.getResource(resource);
                 log("Extracting resource: " + res.getId(), Project.MSG_DEBUG);
@@ -159,7 +163,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
 
         if (childCols != null) {
             Collection col = null;
-            
+
             for (String childCol : childCols) {
                 col = base.getChildCollection(childCol);
                 if (col != null) {
@@ -238,8 +242,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             writer.close();
 
         } else {
-            String msg = "Destination xml file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
-                    "overwrite property to overwrite this file.";
+            String msg = "Destination xml file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use "
+                    + "overwrite property to overwrite this file.";
             if (failonerror) {
                 throw new BuildException(msg);
             } else {
@@ -260,7 +264,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 parentDir.mkdirs();
             }
         }
-        
+
         //dest != null && ( !dest.exists() ||
         if (dest != null || overwrite == true) {
 
@@ -280,8 +284,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
 
 
         } else {
-            String msg = "Dest binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
-                    "overwrite property to overwrite file.";
+            String msg = "Dest binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use "
+                    + "overwrite property to overwrite file.";
             if (failonerror) {
                 throw new BuildException(msg);
             } else {
