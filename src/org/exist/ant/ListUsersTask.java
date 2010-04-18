@@ -49,17 +49,25 @@ public class ListUsersTask extends UserTask {
             log("Listing all users", Project.MSG_DEBUG);
             User[] users = service.getUsers();
             if (users != null) {
-                StringBuilder buf = new StringBuilder();
-                for (int i = 0; i < users.length; i++) {
-                    buf.append(users[i].getName());
-                    if (i < users.length - 1) {
-                        buf.append(separator);
+
+                boolean isFirst=true;
+                StringBuilder buffer = new StringBuilder();
+
+                for (User user : users) {
+                    // only insert separator for 2nd or later item
+                    if(isFirst){
+                        isFirst=false;
+                    } else {
+                        buffer.append(separator);
                     }
+
+                    buffer.append(user.getName());
+
                 }
                 
-                if (buf.length() > 0) {
-                    log("Setting output property " + outputproperty + " to " + buf.toString(), Project.MSG_DEBUG);
-                    getProject().setNewProperty(outputproperty, buf.toString());
+                if (buffer.length() > 0) {
+                    log("Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG);
+                    getProject().setNewProperty(outputproperty, buffer.toString());
                 }
             }
 

@@ -35,8 +35,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBListTask extends AbstractXMLDBTask {
 
-    private boolean collections = false;
-    private boolean resources = false;
+    private boolean hasCollections = false;
+    private boolean hasResources = false;
     private String separator = ",";
     private String outputproperty;
 
@@ -48,7 +48,7 @@ public class XMLDBListTask extends AbstractXMLDBTask {
             throw new BuildException("You have to specify an XMLDB collection URI");
         }
 
-        if (collections == false && resources == false) {
+        if (hasCollections == false && hasResources == false) {
             throw new BuildException("You have at least one of collections or resources or both");
         }
 
@@ -66,39 +66,52 @@ public class XMLDBListTask extends AbstractXMLDBTask {
                 }
             }
 
-            StringBuilder buf = new StringBuilder();
-            if (collections) {
-                String[] cols = base.listChildCollections();
-                if (cols != null) {
+            StringBuilder buffer = new StringBuilder();
+            
+            if (hasCollections) {
+                String[] childCollections = base.listChildCollections();
+                if (childCollections != null) {
                     log("Listing child collections", Project.MSG_DEBUG);
-                    for (int i = 0; i < cols.length; i++) {
-                        buf.append(cols[i]);
-                        if (i < cols.length - 1) {
-                            buf.append(separator);
+                    boolean isFirst=true;
+                    
+                    for (String col : childCollections) {
+                        // only insert separator for 2nd or later item
+                        if(isFirst){
+                            isFirst=false;
+                        } else {
+                            buffer.append(separator);
                         }
+
+                        buffer.append(col);
                     }
                 }
             }
 
-            if (resources) {
+            if (hasResources) {
                 log("Listing resources", Project.MSG_DEBUG);
-                String[] res = base.listResources();
-                if (res != null) {
-                    if (buf.length() > 0) {
-                        buf.append(separator);
+                String[] resources = base.listResources();
+                if (resources != null) {
+                    if (buffer.length() > 0) {
+                        buffer.append(separator);
                     }
-                    for (int i = 0; i < res.length; i++) {
-                        buf.append(res[i]);
-                        if (i < res.length - 1) {
-                            buf.append(separator);
+
+                    boolean isFirst=true;
+                    for (String resource : resources) {
+                        // only insert separator for 2nd or later item
+                        if(isFirst){
+                            isFirst=false;
+                        } else {
+                            buffer.append(separator);
                         }
+
+                        buffer.append(resource);
                     }
                 }
             }
 
-            if (buf.length() > 0) {
+            if (buffer.length() > 0) {
                 log("Set property " + outputproperty, Project.MSG_INFO);
-                getProject().setNewProperty(outputproperty, buf.toString());
+                getProject().setNewProperty(outputproperty, buffer.toString());
             }
             
         } catch (XMLDBException e) {
@@ -112,11 +125,11 @@ public class XMLDBListTask extends AbstractXMLDBTask {
     }
 
     public void setCollections(boolean collections) {
-        this.collections = collections;
+        this.hasCollections = collections;
     }
 
     public void setResources(boolean resources) {
-        this.resources = resources;
+        this.hasResources = resources;
     }
 
     public void setSeparator(String separator) {

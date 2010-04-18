@@ -172,20 +172,20 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                         // using fileset
                         DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
                         scanner.scan();
-                        String[] files = scanner.getIncludedFiles();
-                        log("Found " + files.length + " files.\n");
+                        String[] includedFiles = scanner.getIncludedFiles();
+                        log("Found " + includedFiles.length + " files.\n");
 
                         File baseDir = scanner.getBasedir();
-                        for (int i = 0; i < files.length; i++) {
-                            file = new File(baseDir, files[i]);
-                            log("Storing " + files[i] + " ...\n");
+                        for (String included : includedFiles) {
+                            file = new File(baseDir, included);
+                            log("Storing " + included + " ...\n");
 
                             //TODO : use dedicated function in XmldbURI
                             // check whether the relative file path contains file seps
 
-                            p = files[i].lastIndexOf(File.separatorChar);
+                            p = included.lastIndexOf(File.separatorChar);
                             if (p != Constants.STRING_NOT_FOUND) {
-                                relDir = files[i].substring(0, p);
+                                relDir = included.substring(0, p);
                                 // It's necessary to do this translation on Windows, and possibly MacOS:
                                 relDir = relDir.replace(File.separatorChar, '/');
                                 if (createSubcollections && (prevDir == null || (!relDir.equals(prevDir)))) {
