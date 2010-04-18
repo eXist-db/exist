@@ -999,247 +999,247 @@ public class DOMFile extends BTree implements Lockable {
      * @return The number of records
      */
     private short countRecordsInPage(DOMPage page) {
-	short count = 0;
-	final int dlen = page.getPageHeader().getDataLength();
-	for (int pos = 0; pos < dlen; count++) {
-	    short tid = ByteConversion.byteToShort(page.data, pos);
-	    pos += LENGTH_TID;
-	    if (ItemId.isLink(tid)) {
-		pos += LENGTH_FORWARD_LOCATION;
-	    } else {
-		final short vlen = ByteConversion.byteToShort(page.data, pos);
-		pos += LENGTH_DATA_LENGTH;
-		if (ItemId.isRelocated(tid)) {
-		    pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + LENGTH_OVERFLOW_LOCATION : LENGTH_ORIGINAL_LOCATION + vlen;
-		} else
-		    pos += vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen;
-	    }
-	}
-	// LOG.debug("page " + page.getPageNum() + " has " + count + "
-	// records.");
-	return count;
+		short count = 0;
+		final int dlen = page.getPageHeader().getDataLength();
+		for (int pos = 0; pos < dlen; count++) {
+		    short tid = ByteConversion.byteToShort(page.data, pos);
+		    pos += LENGTH_TID;
+		    if (ItemId.isLink(tid)) {
+			pos += LENGTH_FORWARD_LOCATION;
+		    } else {
+			final short vlen = ByteConversion.byteToShort(page.data, pos);
+			pos += LENGTH_DATA_LENGTH;
+			if (ItemId.isRelocated(tid)) {
+			    pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + LENGTH_OVERFLOW_LOCATION : LENGTH_ORIGINAL_LOCATION + vlen;
+			} else
+			    pos += vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen;
+		    }
+		}
+		// LOG.debug("page " + page.getPageNum() + " has " + count + "
+		// records.");
+		return count;
     }
 
     public String debugPageContents(DOMPage page) {
-	StringBuilder buf = new StringBuilder();
-	buf.append("Page " + page.getPageNum() + ": ");
-	short count = 0;
-	final int dlen = page.getPageHeader().getDataLength();
-	for (int pos = 0; pos < dlen; count++) {
-		buf.append(pos + "/");
-	    final short tid = ByteConversion.byteToShort(page.data, pos);
-	    pos += LENGTH_TID;
-	    buf.append(ItemId.getId(tid));
-        if (ItemId.isLink(tid)) {
-            buf.append("L");
-        } else if (ItemId.isRelocated(tid)) {            
-            buf.append("R");
-        }
-		if (ItemId.isLink(tid)) {
-			final long forwardLink = ByteConversion.byteToLong(page.data, pos);
-			buf.append(':').append(forwardLink).append(" ");
-			pos += LENGTH_FORWARD_LOCATION;
-	    } else {
-			final short vlen = ByteConversion.byteToShort(page.data, pos);
-				pos += LENGTH_DATA_LENGTH;
-			if (vlen < 0) {
-			    LOG.warn("Illegal length: " + vlen);
-			    return buf.append("[illegal length : " + vlen + "] ").toString();
-			    //Probably unable to continue...
-			}	
-			else if (ItemId.isRelocated(tid)) {
-            	//TODO : output to buffer ?
-                pos += LENGTH_ORIGINAL_LOCATION; 
-            }	
-			else {	
-				buf.append("[");
-				switch (Signatures.getType(page.data[pos])) {
-				case Node.ELEMENT_NODE : {
-				    buf.append("element");
-				    int readOffset = pos;
-				    readOffset += 1;
-				    final int children = ByteConversion.byteToInt(page.data, readOffset);
-				    readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
-				    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
-				    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-				    //That might happen during recovery runs : TODO, investigate
-				    if (owner == null) {
-				    	buf.append("(can't read data, owner is null)");
-				    } else {
-						try {				                	
-					        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
-					        readOffset += nodeId.size();					                
-						    buf.append("(" + nodeId.toString() + ")");
-							final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
-							buf.append(" children : " + children);
-							buf.append(" attributes : " + attributes);					    
-						} catch (Exception e) {				                		
-							//TODO : more friendly message. Provide the array of bytes ?
-						    buf.append("(unable to read the node ID at : " + readOffset);								         						
-							buf.append(" children : " + children);
-							//Probably a wrong offset so... don't read it
-							buf.append(" attributes : unknown");					    
-						}             
-				    }	
-				    buf.append( "] ");
-				    break;
-				}
-				case Node.TEXT_NODE:
-				case Node.CDATA_SECTION_NODE: {
-				    if (Signatures.getType(page.data[pos]) == Node.TEXT_NODE)
-				    	buf.append("text");		
-				    else
-				    	buf.append("CDATA");		
-				    int readOffset = pos;
-				    readOffset += 1;
-				    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
-				    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-				    //That might happen during recovery runs : TODO, investigate
-				    if (owner == null) {
-				    	buf.append("(can't read data, owner is null)");
-				    } else {
-						try {			    	
-					        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
-					        readOffset += nodeId.size();
-						    buf.append("(" + nodeId.toString() + ")");
-							final ByteArrayOutputStream os = new ByteArrayOutputStream();
-							os.write(page.data, readOffset, vlen - (readOffset - pos));
-							String value;
-							try {
-							    value = new String(os.toByteArray(),"UTF-8");
-							    if (value.length() > 15) {
-							    	value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-							    }
-							} catch (UnsupportedEncodingException e) {
-							    value = "can't decode value string";
+		StringBuilder buf = new StringBuilder();
+		buf.append("Page " + page.getPageNum() + ": ");
+		short count = 0;
+		final int dlen = page.getPageHeader().getDataLength();
+		for (int pos = 0; pos < dlen; count++) {
+			buf.append(pos + "/");
+		    final short tid = ByteConversion.byteToShort(page.data, pos);
+		    pos += LENGTH_TID;
+		    buf.append(ItemId.getId(tid));
+	        if (ItemId.isLink(tid)) {
+	            buf.append("L");
+	        } else if (ItemId.isRelocated(tid)) {            
+	            buf.append("R");
+	        }
+			if (ItemId.isLink(tid)) {
+				final long forwardLink = ByteConversion.byteToLong(page.data, pos);
+				buf.append(':').append(forwardLink).append(" ");
+				pos += LENGTH_FORWARD_LOCATION;
+		    } else {
+				final short vlen = ByteConversion.byteToShort(page.data, pos);
+					pos += LENGTH_DATA_LENGTH;
+				if (vlen < 0) {
+				    LOG.warn("Illegal length: " + vlen);
+				    return buf.append("[illegal length : " + vlen + "] ").toString();
+				    //Probably unable to continue...
+				}	
+				else if (ItemId.isRelocated(tid)) {
+	            	//TODO : output to buffer ?
+	                pos += LENGTH_ORIGINAL_LOCATION; 
+	            }	
+				else {	
+					buf.append("[");
+					switch (Signatures.getType(page.data[pos])) {
+					case Node.ELEMENT_NODE : {
+					    buf.append("element");
+					    int readOffset = pos;
+					    readOffset += 1;
+					    final int children = ByteConversion.byteToInt(page.data, readOffset);
+					    readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
+					    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
+					    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+					    //That might happen during recovery runs : TODO, investigate
+					    if (owner == null) {
+					    	buf.append("(can't read data, owner is null)");
+					    } else {
+							try {				                	
+						        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+						        readOffset += nodeId.size();					                
+							    buf.append("(" + nodeId.toString() + ")");
+								final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
+								buf.append(" children : " + children);
+								buf.append(" attributes : " + attributes);					    
+							} catch (Exception e) {				                		
+								//TODO : more friendly message. Provide the array of bytes ?
+							    buf.append("(unable to read the node ID at : " + readOffset);								         						
+								buf.append(" children : " + children);
+								//Probably a wrong offset so... don't read it
+								buf.append(" attributes : unknown");					    
+							}             
+					    }	
+					    buf.append( "] ");
+					    break;
+					}
+					case Node.TEXT_NODE:
+					case Node.CDATA_SECTION_NODE: {
+					    if (Signatures.getType(page.data[pos]) == Node.TEXT_NODE)
+					    	buf.append("text");		
+					    else
+					    	buf.append("CDATA");		
+					    int readOffset = pos;
+					    readOffset += 1;
+					    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
+					    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+					    //That might happen during recovery runs : TODO, investigate
+					    if (owner == null) {
+					    	buf.append("(can't read data, owner is null)");
+					    } else {
+							try {			    	
+						        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+						        readOffset += nodeId.size();
+							    buf.append("(" + nodeId.toString() + ")");
+								final ByteArrayOutputStream os = new ByteArrayOutputStream();
+								os.write(page.data, readOffset, vlen - (readOffset - pos));
+								String value;
+								try {
+								    value = new String(os.toByteArray(),"UTF-8");
+								    if (value.length() > 15) {
+								    	value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+								    }
+								} catch (UnsupportedEncodingException e) {
+								    value = "can't decode value string";
+								}
+								buf.append(":'" + value + "'");					    
+							} catch (Exception e) {
+								//TODO : more friendly message. Provide the array of bytes ?
+								buf.append("(unable to read the node ID at : " + readOffset);	              
 							}
-							buf.append(":'" + value + "'");					    
-						} catch (Exception e) {
-							//TODO : more friendly message. Provide the array of bytes ?
-							buf.append("(unable to read the node ID at : " + readOffset);	              
-						}
-				    } 
-				    buf.append("] ");
-				    break;
-				}
-				case Node.ATTRIBUTE_NODE: {
-				    buf.append("attribute");
-				    int readOffset = pos;
-				    final byte idSizeType = (byte) (page.data[readOffset] & 0x3);
-				    final boolean hasNamespace = (page.data[readOffset] & 0x10) == 0x10;
-				    readOffset += 1;
-				    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);	
-				    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-				    //That might happen during recovery runs : TODO, investigate
-				    if (owner == null) {
-				    	buf.append("(can't read data, owner is null)");
-				    } else {
-						try {
-					        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
-					        readOffset += nodeId.size();
-						    buf.append("(" + nodeId.toString() + ")");	
-							readOffset += Signatures.getLength(idSizeType); 
-							if (hasNamespace) {
-							    //Untested
-							    final short NSId = ByteConversion.byteToShort(page.data, readOffset);
-							    readOffset += AttrImpl.LENGTH_NS_ID;
-							    final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
-							    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
-							    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-							    os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
-							    String prefix = "";
-							    try {
-								prefix = new String(os.toByteArray(),"UTF-8");				                	
-							    } catch (UnsupportedEncodingException e) {
-								LOG.error("can't decode prefix string");
-							    }		
-							    final String NsURI = ((NativeBroker)owner).getBrokerPool().getSymbols().getNamespace(NSId);
-							    buf.append(prefix + "{" + NsURI + "}");
-							}		                
-							final ByteArrayOutputStream os = new ByteArrayOutputStream();
-							os.write(page.data, readOffset, vlen - (readOffset - pos));
-							String value;
+					    } 
+					    buf.append("] ");
+					    break;
+					}
+					case Node.ATTRIBUTE_NODE: {
+					    buf.append("attribute");
+					    int readOffset = pos;
+					    final byte idSizeType = (byte) (page.data[readOffset] & 0x3);
+					    final boolean hasNamespace = (page.data[readOffset] & 0x10) == 0x10;
+					    readOffset += 1;
+					    final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);	
+					    readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+					    //That might happen during recovery runs : TODO, investigate
+					    if (owner == null) {
+					    	buf.append("(can't read data, owner is null)");
+					    } else {
 							try {
-							    value = new String(os.toByteArray(),"UTF-8");
-							    if (value.length() > 15) {
-								value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-							    }
-							} catch (UnsupportedEncodingException e) {
-							    value = "can't decode value string";
+						        NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromData(dlnLen, page.data, readOffset);
+						        readOffset += nodeId.size();
+							    buf.append("(" + nodeId.toString() + ")");	
+								readOffset += Signatures.getLength(idSizeType); 
+								if (hasNamespace) {
+								    //Untested
+								    final short NSId = ByteConversion.byteToShort(page.data, readOffset);
+								    readOffset += AttrImpl.LENGTH_NS_ID;
+								    final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
+								    readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
+								    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+								    os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
+								    String prefix = "";
+								    try {
+									prefix = new String(os.toByteArray(),"UTF-8");				                	
+								    } catch (UnsupportedEncodingException e) {
+									LOG.error("can't decode prefix string");
+								    }		
+								    final String NsURI = ((NativeBroker)owner).getBrokerPool().getSymbols().getNamespace(NSId);
+								    buf.append(prefix + "{" + NsURI + "}");
+								}		                
+								final ByteArrayOutputStream os = new ByteArrayOutputStream();
+								os.write(page.data, readOffset, vlen - (readOffset - pos));
+								String value;
+								try {
+								    value = new String(os.toByteArray(),"UTF-8");
+								    if (value.length() > 15) {
+									value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+								    }
+								} catch (UnsupportedEncodingException e) {
+								    value = "can't decode value string";
+								}
+								buf.append(":'" + value + "'");				    
+							} catch (Exception e) {
+								//TODO : more friendly message. Provide the array of bytes ?
+								buf.append("(unable to read the node ID at : " + readOffset);	    
 							}
-							buf.append(":'" + value + "'");				    
-						} catch (Exception e) {
-							//TODO : more friendly message. Provide the array of bytes ?
-							buf.append("(unable to read the node ID at : " + readOffset);	    
-						}
-				    }
-				    buf.append("] ");
-				    break;
+					    }
+					    buf.append("] ");
+					    break;
+					}
+					default:
+					    buf.append("Unknown node type !").append("]");
+					}
 				}
-				default:
-				    buf.append("Unknown node type !").append("]");
-				}
-			}
-			pos += vlen;
-	    }
-	}
-	buf.append("; records in page: " + count + " (header says " + page.getPageHeader().getRecordCount() + ")");
-	buf.append("; nextTID: " + page.getPageHeader().getCurrentTID());
+				pos += vlen;
+		    }
+		}
+		buf.append("; records in page: " + count + " (header says " + page.getPageHeader().getRecordCount() + ")");
+		buf.append("; nextTID: " + page.getPageHeader().getCurrentTID());
         buf.append("; length: " + page.getPageHeader().getDataLength());
         for (int i = page.data.length ; i > 0 ; i--) {
-	    if (page.data[i - 1] != 0) {
-		buf.append(" (last non-zero byte: " + i + ")");
-		break;
+		    if (page.data[i - 1] != 0) {
+		    	buf.append(" (last non-zero byte: " + i + ")");
+		    	break;
+		    }
 	    }
-        }
-	return buf.toString();
+		return buf.toString();
     }
 
     public boolean close() throws DBException {
         if (!isReadOnly())
             flush();
-	super.close();
-	return true;
+        super.close();
+        return true;
     }
 
     public void closeAndRemove() {
-	if (!lock.isLockedForWrite())
-	    LOG.warn("the file doesn't own a write lock");
+		if (!lock.isLockedForWrite())
+		    LOG.warn("the file doesn't own a write lock");
     	super.closeAndRemove();
     	cacheManager.deregisterCache(dataCache);
     }
 
     public boolean create() throws DBException {
-	if (super.create((short) -1))
-	    return true;
-	else
-	    return false;
+		if (super.create((short) -1))
+		    return true;
+		else
+		    return false;
     }
 
     public FileHeader createFileHeader(int pageSize) {
-	return new BTreeFileHeader(1024, pageSize);
+    	return new BTreeFileHeader(1024, pageSize);
     }
 
     protected void unlinkPages(Page page) throws IOException {
-	super.unlinkPages(page);
+    	super.unlinkPages(page);
     }
 
     public PageHeader createPageHeader() {
-	return new DOMFilePageHeader();
+    	return new DOMFilePageHeader();
     }
 
     public ArrayList findKeys(IndexQuery query) throws IOException,
 						       BTreeException {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");
-	final FindCallback cb = new FindCallback(FindCallback.KEYS);
-	try {
-	    query(query, cb);
-	} catch (TerminatedException e) {
-	    // Should never happen here
-	    LOG.warn("Method terminated");
-	}
-	return cb.getValues();
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");
+		final FindCallback cb = new FindCallback(FindCallback.KEYS);
+		try {
+		    query(query, cb);
+		} catch (TerminatedException e) {
+		    // Should never happen here
+		    LOG.warn("Method terminated");
+		}
+		return cb.getValues();
     }
 	
     //	private final static class ChildNode {
@@ -1323,51 +1323,51 @@ public class DOMFile extends BTree implements Lockable {
 
     protected long findValue(DBBroker broker, NodeProxy node) throws IOException,
 								       BTreeException {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");
-	final DocumentImpl doc = node.getDocument();
-	final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
-	// first try to find the node in the index
-	final long p = findValue(nodeRef);
-	if (p == KEY_NOT_FOUND) {
-            // node not found in index: try to find the nearest available
-            // ancestor and traverse it
-            NodeId id = node.getNodeId();
-            long parentPointer = KEY_NOT_FOUND;
-            do {
-                id = id.getParentId();
-                if (id == NodeId.DOCUMENT_NODE) {
-                    SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
-                    throw new BTreeException("node " + node.getNodeId() + " not found.");
-                }
-                NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
-                try {
-                    parentPointer = findValue(parentRef);
-                } catch (BTreeException bte) {
-                    LOG.info("report me", bte);
-                }
-            } while (parentPointer == KEY_NOT_FOUND);
-
-            try {
-                final NodeProxy parent = new NodeProxy(doc, id, parentPointer);
-                final EmbeddedXMLStreamReader cursor = broker.getXMLStreamReader(parent, true);
-                while(cursor.hasNext()) {
-                    int status = cursor.next();
-                    if (status != XMLStreamReader.END_ELEMENT) {
-                        NodeId nextId = (NodeId) cursor.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                        if (nextId.equals(node.getNodeId()))
-                            return cursor.getCurrentPosition();
-                    }
-                }
-                if (LOG.isDebugEnabled())
-                    LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up. This is usually not an error.");
-                return KEY_NOT_FOUND;
-            } catch (XMLStreamException e) {
-                SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
-                throw new BTreeException("node " + node.getNodeId() + " not found.");
-            }
-	} else
-	    return p;
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");
+		final DocumentImpl doc = node.getDocument();
+		final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
+		// first try to find the node in the index
+		final long p = findValue(nodeRef);
+		if (p == KEY_NOT_FOUND) {
+	        // node not found in index: try to find the nearest available
+	        // ancestor and traverse it
+	        NodeId id = node.getNodeId();
+	        long parentPointer = KEY_NOT_FOUND;
+	        do {
+	            id = id.getParentId();
+	            if (id == NodeId.DOCUMENT_NODE) {
+	                SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+	                throw new BTreeException("node " + node.getNodeId() + " not found.");
+	            }
+	            NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
+	            try {
+	                parentPointer = findValue(parentRef);
+	            } catch (BTreeException bte) {
+	                LOG.info("report me", bte);
+	            }
+	        } while (parentPointer == KEY_NOT_FOUND);
+	
+	        try {
+	            final NodeProxy parent = new NodeProxy(doc, id, parentPointer);
+	            final EmbeddedXMLStreamReader cursor = broker.getXMLStreamReader(parent, true);
+	            while(cursor.hasNext()) {
+	                int status = cursor.next();
+	                if (status != XMLStreamReader.END_ELEMENT) {
+	                    NodeId nextId = (NodeId) cursor.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+	                    if (nextId.equals(node.getNodeId()))
+	                        return cursor.getCurrentPosition();
+	                }
+	            }
+	            if (LOG.isDebugEnabled())
+	                LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up. This is usually not an error.");
+	            return KEY_NOT_FOUND;
+	        } catch (XMLStreamException e) {
+	            SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+	            throw new BTreeException("node " + node.getNodeId() + " not found.");
+	        }
+		} else
+		    return p;
     }
 
     /**
@@ -1382,16 +1382,16 @@ public class DOMFile extends BTree implements Lockable {
      *                           Description of the Exception
      */
     public ArrayList findValues(IndexQuery query) throws IOException, BTreeException {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");
-	FindCallback cb = new FindCallback(FindCallback.VALUES);
-	try {
-	    query(query, cb);
-	} catch (TerminatedException e) {
-	    // Should never happen
-	    LOG.warn("Method terminated");
-	}
-	return cb.getValues();
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");
+		FindCallback cb = new FindCallback(FindCallback.VALUES);
+		try {
+		    query(query, cb);
+		} catch (TerminatedException e) {
+		    // Should never happen
+		    LOG.warn("Method terminated");
+		}
+		return cb.getValues();
     }
 
     /**
@@ -1402,45 +1402,45 @@ public class DOMFile extends BTree implements Lockable {
      *                           Description of the Exception
      */
     public boolean flush() throws DBException {
-	boolean flushed = false;
-	//TODO : record transaction as a valuable flush ?
-        if (isTransactional)
-            logManager.flushToLog(true);
-	if (!BrokerPool.FORCE_CORRUPTION) {
-	    flushed = flushed | super.flush();
-	    flushed = flushed | dataCache.flush();
-	}
-	// closeDocument();
-	return flushed;
+		boolean flushed = false;
+		//TODO : record transaction as a valuable flush ?
+	        if (isTransactional)
+	            logManager.flushToLog(true);
+		if (!BrokerPool.FORCE_CORRUPTION) {
+		    flushed = flushed | super.flush();
+		    flushed = flushed | dataCache.flush();
+		}
+		// closeDocument();
+		return flushed;
     }
 
     public void printStatistics() {
-	super.printStatistics();
-	NumberFormat nf = NumberFormat.getPercentInstance();
-	NumberFormat nf2 = NumberFormat.getInstance();
-	StringBuilder buf = new StringBuilder();
-	buf.append(getFile().getName()).append(" DATA ");
+		super.printStatistics();
+		NumberFormat nf = NumberFormat.getPercentInstance();
+		NumberFormat nf2 = NumberFormat.getInstance();
+		StringBuilder buf = new StringBuilder();
+		buf.append(getFile().getName()).append(" DATA ");
         buf.append("Buffers occupation : ");
         if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
 	    buf.append("N/A");
         else
 	    buf.append(nf.format(dataCache.getUsedBuffers()/(float)dataCache.getBuffers()));
         buf.append(" (" + nf2.format(dataCache.getUsedBuffers()) + " out of " + nf2.format(dataCache.getBuffers()) + ")");		
-	//buf.append(dataCache.getBuffers()).append(" / ");
-	//buf.append(dataCache.getUsedBuffers()).append(" / ");
+		//buf.append(dataCache.getBuffers()).append(" / ");
+		//buf.append(dataCache.getUsedBuffers()).append(" / ");
         buf.append(" Cache efficiency : ");
         if (dataCache.getHits() == 0 && dataCache.getFails() == 0)
 	    buf.append("N/A");
         else
 	    buf.append(nf.format(dataCache.getHits()/(float)(dataCache.getFails() + dataCache.getHits())));        
-	//buf.append(dataCache.getHits()).append(" / ");
-	//buf.append(dataCache.getFails());
-	LOGSTATS.info(buf.toString());
+		//buf.append(dataCache.getHits()).append(" / ");
+		//buf.append(dataCache.getFails());
+		LOGSTATS.info(buf.toString());
     }
 
     public BufferStats getDataBufferStats() {
-	return new BufferStats(dataCache.getBuffers(), dataCache
-			       .getUsedBuffers(), dataCache.getHits(), dataCache.getFails());
+    	return new BufferStats(dataCache.getBuffers(), dataCache
+    			.getUsedBuffers(), dataCache.getHits(), dataCache.getFails());
     }
 
     /**
@@ -1450,23 +1450,23 @@ public class DOMFile extends BTree implements Lockable {
      * @return Description of the Return Value
      */
     public Value get(Value key) {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");		
-	try {
-	    final long p = findValue(key);
-	    if (p == KEY_NOT_FOUND) {
-		LOG.warn("value not found : " + key);
-		return null;
-	    }
-	    return get(p);
-	} catch (BTreeException bte) {
-	    LOG.warn(bte);
-	    return null;
-	    // key not found
-	} catch (IOException ioe) {
-	    LOG.warn(ioe);
-	    return null;
-	}
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");		
+		try {
+		    final long p = findValue(key);
+		    if (p == KEY_NOT_FOUND) {
+			LOG.warn("value not found : " + key);
+			return null;
+		    }
+		    return get(p);
+		} catch (BTreeException bte) {
+		    LOG.warn(bte);
+		    return null;
+		    // key not found
+		} catch (IOException ioe) {
+		    LOG.warn(ioe);
+		    return null;
+		}
     }
 
     /**
@@ -1477,21 +1477,21 @@ public class DOMFile extends BTree implements Lockable {
      * @return Description of the Return Value
      */
     public Value get(DBBroker broker, NodeProxy node) {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");		
-	try {
-	    final long p = findValue(broker, node);
-	    if (p == KEY_NOT_FOUND) {
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");		
+		try {
+		    final long p = findValue(broker, node);
+		    if (p == KEY_NOT_FOUND) {
+			    return null;
+		    }
+		    return get(p);
+		} catch (BTreeException bte) {
+		    LOG.warn(bte);
 		    return null;
-	    }
-	    return get(p);
-	} catch (BTreeException bte) {
-	    LOG.warn(bte);
-	    return null;
-	} catch (IOException ioe) {
-	    LOG.warn(ioe);
-	    return null;
-	}
+		} catch (IOException ioe) {
+		    LOG.warn(ioe);
+		    return null;
+		}
     }
 
     /**
@@ -1502,53 +1502,53 @@ public class DOMFile extends BTree implements Lockable {
      * @return Description of the Return Value
      */
     public Value get(long p) {
-   	 return get(p, true);
+    	return get(p, true);
     }
     
     public Value get(long p, boolean warnIfMissing) {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");		
-	RecordPos rec = findRecord(p);
-	if (rec == null) {
-	    if (warnIfMissing) SanityCheck.TRACE("object at " + StorageAddress.toString(p)	+ " not found.");
-	    return null;
-	}
-	final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
-	rec.offset += LENGTH_DATA_LENGTH;
-	if (ItemId.isRelocated(rec.getTID()))
-	    rec.offset += LENGTH_ORIGINAL_LOCATION;
-	Value v;
-	if (vlen == OVERFLOW) {
-	    final long pnum = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
-	    final byte[] data = getOverflowValue(pnum);
-	    v = new Value(data);
-	} else
-	    v = new Value(rec.getPage().data, rec.offset, vlen);
-	v.setAddress(p);
-	return v;
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");		
+		RecordPos rec = findRecord(p);
+		if (rec == null) {
+		    if (warnIfMissing) SanityCheck.TRACE("object at " + StorageAddress.toString(p)	+ " not found.");
+		    return null;
+		}
+		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		rec.offset += LENGTH_DATA_LENGTH;
+		if (ItemId.isRelocated(rec.getTID()))
+		    rec.offset += LENGTH_ORIGINAL_LOCATION;
+		Value v;
+		if (vlen == OVERFLOW) {
+		    final long pnum = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
+		    final byte[] data = getOverflowValue(pnum);
+		    v = new Value(data);
+		} else
+		    v = new Value(rec.getPage().data, rec.offset, vlen);
+		v.setAddress(p);
+		return v;
     }
 
     protected byte[] getOverflowValue(long pnum) {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");
-	try {
-	    OverflowDOMPage overflow = new OverflowDOMPage(pnum);
-	    return overflow.read();
-	} catch (IOException e) {
-	    LOG.warn("io error while loading overflow value", e);
-	    return null;
-	}
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");
+		try {
+		    OverflowDOMPage overflow = new OverflowDOMPage(pnum);
+		    return overflow.read();
+		} catch (IOException e) {
+		    LOG.warn("io error while loading overflow value", e);
+		    return null;
+		}
     }
 	
     public void removeOverflowValue(Txn transaction, long pnum) {
-	if (!lock.isLockedForWrite())
-	    LOG.warn("the file doesn't own a write lock");
-	try {
-	    OverflowDOMPage overflow = new OverflowDOMPage(pnum);
-	    overflow.delete(transaction);
-	} catch (IOException e) {
-	    LOG.warn("io error while removing overflow value", e);
-	}
+		if (!lock.isLockedForWrite())
+		    LOG.warn("the file doesn't own a write lock");
+		try {
+		    OverflowDOMPage overflow = new OverflowDOMPage(pnum);
+		    overflow.delete(transaction);
+		} catch (IOException e) {
+		    LOG.warn("io error while removing overflow value", e);
+		}
     }
 	
     /**
@@ -1558,14 +1558,14 @@ public class DOMFile extends BTree implements Lockable {
      *                     The new currentPage value
      */
     private final void setCurrentPage(DOMPage page) {
-	long pnum = pages.get(owner);
-	if (pnum == page.page.getPageNum())
-	    return;
-	// pages.remove(owner);
-	// LOG.debug("current page set: " + page.getPage().getPageNum() + " by " +
-	// owner.hashCode() +
-	// "; thread: " + Thread.currentThread().getName());
-	pages.put(owner, page.page.getPageNum());
+		long pnum = pages.get(owner);
+		if (pnum == page.page.getPageNum())
+		    return;
+		// pages.remove(owner);
+		// LOG.debug("current page set: " + page.getPage().getPageNum() + " by " +
+		// owner.hashCode() +
+		// "; thread: " + Thread.currentThread().getName());
+		pages.put(owner, page.page.getPageNum());
     }
 
     /**
@@ -1602,20 +1602,20 @@ public class DOMFile extends BTree implements Lockable {
      * @return The currentPage value
      */
     protected final DOMPage getCurrentPage(long p) {
-	DOMPage page = (DOMPage) dataCache.get(p);
-	if (page == null) {
-	    // LOG.debug("Loading page " + p + " from file");
-	    page = new DOMPage(p);
-	}
-	return page;
+		DOMPage page = (DOMPage) dataCache.get(p);
+		if (page == null) {
+		    // LOG.debug("Loading page " + p + " from file");
+		    page = new DOMPage(p);
+		}
+		return page;
     }
 
     public void closeDocument() {
-	if (!lock.hasLock())
-	    LOG.warn("the file doesn't own a lock");		
-	pages.remove(owner);
-	// SanityCheck.TRACE("current doc closed by: " + owner +
-	// "; thread: " + Thread.currentThread().getName());
+		if (!lock.hasLock())
+		    LOG.warn("the file doesn't own a lock");		
+		pages.remove(owner);
+		// SanityCheck.TRACE("current doc closed by: " + owner +
+		// "; thread: " + Thread.currentThread().getName());
     }
 
     /**
@@ -3575,26 +3575,26 @@ public class DOMFile extends BTree implements Lockable {
 
 	int mode;
 
-	ArrayList values = new ArrayList();
+	ArrayList<Value> values = new ArrayList<Value>();
 
 	public FindCallback(int mode) {
 	    this.mode = mode;
 	}
 
-	public ArrayList getValues() {
+	public ArrayList<Value> getValues() {
 	    return values;
 	}
 
 	public boolean indexInfo(Value value, long pointer) {
 	    switch (mode) {
 	    case VALUES:
-		RecordPos rec = findRecord(pointer);
-		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
-		values.add(new Value(rec.getPage().data, rec.offset + LENGTH_DATA_LENGTH, vlen));
-		return true;
+			RecordPos rec = findRecord(pointer);
+			final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+			values.add(new Value(rec.getPage().data, rec.offset + LENGTH_DATA_LENGTH, vlen));
+			return true;
 	    case KEYS:
-		values.add(value);
-		return true;
+			values.add(value);
+			return true;
 	    }
 	    return false;
 	}
