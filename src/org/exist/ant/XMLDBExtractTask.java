@@ -95,6 +95,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                     } else {
                         writeResource(res, destFile);
                     }
+
                 } else {
                     // extraction of a collection
                     extractResources(base, null);
@@ -102,6 +103,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                         extractSubCollections(base, null);
                     }
                 }
+
             } catch (XMLDBException e) {
                 String msg = "XMLDB exception caught while executing query: " + e.getMessage();
                 if (failonerror) {
@@ -109,6 +111,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 } else {
                     log(msg, e, Project.MSG_ERR);
                 }
+
             } catch (IOException e) {
                 String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
                 if (failonerror) {
@@ -134,8 +137,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             if (path != null) {
                 dir = new File(destDir, path);
             }
-            for (int i = 1; i < resources.length; i++) {
-                res = base.getResource(resources[i]);
+            for (String resource : resources) {
+                res = base.getResource(resource);
                 log("Extracting resource: " + res.getId(), Project.MSG_DEBUG);
                 if (!dir.exists() && createdirectories) {
                     dir.mkdirs();
@@ -153,23 +156,28 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
      */
     private void extractSubCollections(Collection base, String path) throws XMLDBException, IOException {
         String[] childCols = base.listChildCollections();
+
         if (childCols != null) {
             Collection col = null;
-            for (int i = 0; i < childCols.length; i++) {
-                col = base.getChildCollection(childCols[i]);
+            
+            for (String childCol : childCols) {
+                col = base.getChildCollection(childCol);
                 if (col != null) {
                     log("Extracting collection: " + col.getName(), Project.MSG_DEBUG);
                     File dir = destDir;
                     String subdir;
+
                     if (path != null) {
-                        dir = new File(destDir, path + File.separator + childCols[i]);
-                        subdir = path + File.separator + childCols[i];
+                        dir = new File(destDir, path + File.separator + childCol);
+                        subdir = path + File.separator + childCol;
                     } else {
-                        subdir = childCols[i];
+                        subdir = childCol;
                     }
+
                     if (!dir.exists() && createdirectories == true) {
                         dir.mkdirs();
                     }
+
                     extractResources(col, subdir);
                     if (subcollections == true) {
                         extractSubCollections(col, subdir);
@@ -186,6 +194,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     private void writeResource(Resource res, File dest) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException {
         if (res instanceof XMLResource) {
             writeXMLResource((XMLResource) res, dest);
+
         } else if (res instanceof ExtendedResource) {
             writeBinaryResource(res, dest);
         }
@@ -202,6 +211,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 parentDir.mkdirs();
             }
         }
+
         if (dest != null || overwrite == true) {
             Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
@@ -215,15 +225,18 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 }
                 File file = new File(dest, fname);
                 writer = new OutputStreamWriter(new FileOutputStream(file), encoding);
+
             } else {
 
                 writer = new OutputStreamWriter(new FileOutputStream(dest), encoding);
             }
+
             log("Writing resource " + res.getId() + " to destination " + dest.getAbsolutePath(), Project.MSG_DEBUG);
             serializer.setOutput(writer, outputProperties);
             res.getContentAsSAX(serializer);
             SerializerPool.getInstance().returnObject(serializer);
             writer.close();
+
         } else {
             String msg = "Destination xml file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " +
                     "overwrite property to overwrite this file.";
@@ -247,6 +260,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 parentDir.mkdirs();
             }
         }
+        
         //dest != null && ( !dest.exists() ||
         if (dest != null || overwrite == true) {
 
