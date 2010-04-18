@@ -4,7 +4,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.storage.ElementValue;
 import org.exist.xquery.NodeSelector;
 
 /**
