@@ -116,14 +116,14 @@ declare function mods:get-part-and-origin($entry as element()) {
                 else (),
                 ' (', $part/mods:date, ')',
                 if ($part/mods:extent) then
-                    concat(": ", mods:get-extent($part/mods:extent[1]))
+                    concat(": ", mods:get-extent($part/mods:extent[1]),'.')
                 else ()
             )
         else (
             mods:add-part($origin/mods:place/mods:placeTerm, ": "),
             mods:add-part(mods:get-publisher($origin/mods:publisher[1]), ", "),
-            ($origin/mods:dateCreated/string(), $origin/mods:dateIssued/string(), $part/mods:date/string())[1]
-        )
+            mods:add-part($origin/mods:dateCreated/string(),'.'), 
+            mods:add-part($origin/mods:dateIssued/string(), '.'))
 };
 
 (: ### <originInfo> ends ### :)
@@ -272,7 +272,7 @@ declare function mods:format-name($name as element(mods:name), $pos as xs:intege
 	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
 	()
 	else if ($name/@type = 'corporate') then
-        $name/mods:namePart[@lang]/string()
+        concat($name/mods:namePart[@transliteration][1]/string(), ' ',$name/mods:namePart[not(@transliteration)][1]/string())
         (: Does not need manipulation, since it is never decomposed. :)
 	else	       
 		let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)][1]
@@ -628,7 +628,7 @@ let $names := $entry/mods:name
             }
             </td>
             <td class="record">
-            { $name/mods:namePart/string() }
+            { $name/mods:namePart[@transliteration]/string(), ' ', $name/mods:namePart[not(@transliteration)]/string() }
         </td>
     </tr>
     else
