@@ -144,9 +144,12 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             for (String resource : resources) {
                 res = base.getResource(resource);
                 log("Extracting resource: " + res.getId(), Project.MSG_DEBUG);
+                
                 if (!dir.exists() && createdirectories) {
                     dir.mkdirs();
-                } else {
+                }
+                
+                if (dir.exists()) {
                     writeResource(res, dir);
                 }
 
