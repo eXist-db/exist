@@ -341,11 +341,6 @@ public class XQueryContext
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
 
-    private XQueryContext()
-    {
-        // NOP
-    }
-
     protected XQueryContext( AccessContext accessCtx )
     {
         if( accessCtx == null ) {
