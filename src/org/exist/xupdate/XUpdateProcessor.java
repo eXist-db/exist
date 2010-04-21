@@ -218,10 +218,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				preserveWhitespaceTemp = temp.booleanValue();
 		}
 	}
-
-	private XUpdateProcessor() throws ParserConfigurationException {
-	    this(null, null, null);
-	}
 	
 	public void setBroker(DBBroker broker) {
 	    this.broker = broker;
