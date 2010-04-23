@@ -27,10 +27,13 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.util.TableOrder;
 import org.w3c.dom.Node;
 
+import java.awt.Color;
+
 /**
  * Class for storing all configuration items for charts, except chart type.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
+ * @author Andrzej Taramina (andrzej@chaeron.com)
  */
 public class Configuration {
 
@@ -49,10 +52,29 @@ public class Configuration {
     private String rangeAxisLabel;
     private String timeAxisLabel;
     private String valueAxisLabel;
+    private String pieSectionLabel;
+    private String pieSectionNumberFormat                   = "0";
+    private String pieSectionPercentFormat                  = "0.0%";
+    
+    private String categoryItemLabelGeneratorClass;
+    private String categoryItemLabelGeneratorParameter      = "{2}";
+    private String categoryItemLabelGeneratorNumberFormat   = "0";
     
     // Orientation and Order
     private TableOrder order = TableOrder.BY_COLUMN;
     private PlotOrientation orientation = PlotOrientation.HORIZONTAL;
+    
+    // Colors
+    
+    private Color titleColor;
+    private Color chartBackgroundColor;
+    private Color plotBackgroundColor;
+    
+    
+    // Range
+    
+    private Double  rangeLowerBound;
+    private Double  rangeUpperBound;
 
     // Misc flags
     private boolean generateLegend = false;
@@ -113,6 +135,51 @@ public class Configuration {
     public String getRangeAxisLabel() {
         return rangeAxisLabel;
     }
+    
+    public String getPieSectionLabel() {
+        return pieSectionLabel;
+    }
+    
+    public String getPieSectionNumberFormat() {
+        return pieSectionNumberFormat;
+    }
+    
+    public String getPieSectionPercentFormat() {
+        return pieSectionPercentFormat;
+    }
+    
+    public Color getTitleColor() {
+        return titleColor;
+    }
+    
+    public Color getChartBackgroundColor() {
+        return chartBackgroundColor;
+    }
+    
+    public Color getPlotBackgroundColor() {
+        return plotBackgroundColor;
+    }
+    
+    public Double getRangeLowerBound() {
+        return rangeLowerBound;
+    }
+    
+    public Double getRangeUpperBound() {
+        return rangeUpperBound;
+    }
+    
+    public String getCategoryItemLabelGeneratorClass() {
+        return categoryItemLabelGeneratorClass;
+    }
+    
+    public String getCategoryItemLabelGeneratorParameter() {
+        return categoryItemLabelGeneratorParameter;
+    }
+    
+    public String getCategoryItemLabelGeneratorNumberFormat() {
+        return categoryItemLabelGeneratorNumberFormat;
+    }
+
 
     /**
      *  Read configuration from node and initialize configuration.
@@ -174,6 +241,31 @@ public class Configuration {
                         } else {
                             rangeAxisLabel = value;
                         }
+                        
+                     } else if (child.getLocalName().equals("pieSectionLabel")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'pieSectionLabel' cannot be parsed");
+                        } else {
+                            pieSectionLabel = value;
+                        }
+                        
+                     } else if (child.getLocalName().equals("pieSectionNumberFormat")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'pieSectionNumberFormat' cannot be parsed");
+                        } else {
+                            pieSectionNumberFormat = value;
+                        }
+                        
+                     } else if (child.getLocalName().equals("pieSectionPercentFormat")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'pieSectionPercentFormat' cannot be parsed");
+                        } else {
+                            pieSectionPercentFormat = value;
+                        }
+
 
                     } else if (child.getLocalName().equals("orientation")) {
                         String value = getValue(child);
@@ -246,7 +338,72 @@ public class Configuration {
                             imageHeight = value;
                         }
 
+                    } else if (child.getLocalName().equals("titleColor")) {
+                        Color value = Colour.getColor(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'titleColor' cannot be parsed");
+                        } else {
+                            titleColor = value;
+                        }
+
+                    } else if (child.getLocalName().equals("chartBackgroundColor")) {
+                        Color value = Colour.getColor(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'chartBackgroundColor' cannot be parsed");
+                        } else {
+                            chartBackgroundColor = value;
+                        }
+                        
+                    } else if (child.getLocalName().equals("plotBackgroundColor")) {
+                        Color value = Colour.getColor(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'plotBackgroundColor' cannot be parsed");
+                        } else {
+                            plotBackgroundColor = value;
+                        }
+                        
+                    } else if (child.getLocalName().equals("rangeLowerBound")) {
+                        Double value = value = parseDouble(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'rangeLowerBound' cannot be parsed");
+                        } else {
+                            rangeLowerBound = value;
+                        }
+                        
+                    } else if (child.getLocalName().equals("rangeUpperBound")) {
+                        Double value = value = parseDouble(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'rangeUpperBound' cannot be parsed");
+                        } else {
+                            rangeUpperBound = value;
+                        }
+                        
+                   } else if (child.getLocalName().equals("categoryItemLabelGeneratorClass")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'categoryItemLabelGeneratorClass' cannot be parsed");
+                        } else {
+                            categoryItemLabelGeneratorClass = value;
+                        }
+                        
+                    } else if (child.getLocalName().equals("categoryItemLabelGeneratorParameter")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'categoryItemLabelGeneratorParameter' cannot be parsed");
+                        } else {
+                            categoryItemLabelGeneratorParameter = value;
+                        }
+                    
+                    } else if (child.getLocalName().equals("categoryItemLabelGeneratorNumberFormat")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'categoryItemLabelGeneratorNumberFormat' cannot be parsed");
+                        } else {
+                            categoryItemLabelGeneratorNumberFormat = value;
+                        }
                     }
+                    
+                 
                 }
 
                 //next node
@@ -284,6 +441,22 @@ public class Configuration {
 
         try {
             return Integer.valueOf(value);
+
+        } catch (NumberFormatException ex) {
+            logger.debug(ex.getMessage());
+        }
+        return null;
+    }
+    
+    
+    /**
+     *  Parse text and return Double. NULL is returned when value
+     * cannot be converted.
+     */
+    private Double parseDouble(String value) {
+
+        try {
+            return Double.valueOf(value);
 
         } catch (NumberFormatException ex) {
             logger.debug(ex.getMessage());
