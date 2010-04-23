@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
@@ -215,6 +216,7 @@ public class JFreeChartFactory {
     {
         setCategoryRange( chart, config );
         setCategoryItemLabelGenerator( chart, config );
+        setSeriesColors( chart, config );
     }
     
     
@@ -259,6 +261,40 @@ public class JFreeChartFactory {
             renderer.setBaseItemLabelGenerator( generator );
             
             renderer.setItemLabelsVisible( true );
+        }
+    }
+    
+    
+    private static void setSeriesColors( JFreeChart chart, Configuration config )
+    {
+        String seriesColors          = config.getSeriesColors();
+        
+        if( seriesColors != null ) {
+            CategoryItemRenderer renderer = ((CategoryPlot)chart.getPlot()).getRenderer();
+            
+            StringTokenizer st = new StringTokenizer( seriesColors, "," );
+            
+            int i = 0;
+            
+            while( st.hasMoreTokens() ) {
+                String colorName = st.nextToken().trim();
+                
+                Color color = null;
+                
+                try {
+                    color = Colour.getColor( colorName );
+                } 
+                catch( XPathException e ) {              
+                }
+                   
+                if( color != null ) {
+                    renderer.setSeriesPaint( i, color );
+                } else {
+                    logger.warn( "Invalid colour name or hex value specified for SeriesColors: " + colorName + ", default colour will be used instead." );
+                }
+                
+                i++;
+            }
         }
     }
     

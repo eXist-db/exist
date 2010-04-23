@@ -70,6 +70,8 @@ public class Configuration {
     private Color chartBackgroundColor;
     private Color plotBackgroundColor;
     
+    private String seriesColors;
+    
     
     // Range
     
@@ -178,6 +180,10 @@ public class Configuration {
     
     public String getCategoryItemLabelGeneratorNumberFormat() {
         return categoryItemLabelGeneratorNumberFormat;
+    }
+    
+    public String getSeriesColors() {
+        return seriesColors;
     }
 
 
@@ -360,6 +366,14 @@ public class Configuration {
                             throw new XPathException("Value for 'plotBackgroundColor' cannot be parsed");
                         } else {
                             plotBackgroundColor = value;
+                        }
+                        
+                    } else if (child.getLocalName().equals("seriesColors")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'seriesColors' cannot be parsed");
+                        } else {
+                            seriesColors = value;
                         }
                         
                     } else if (child.getLocalName().equals("rangeLowerBound")) {
