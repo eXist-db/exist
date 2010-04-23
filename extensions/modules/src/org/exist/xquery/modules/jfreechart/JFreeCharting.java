@@ -59,6 +59,7 @@ import org.jfree.chart.JFreeChart;
  * JFreechart extension functions.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
+ * @author Andrzej Taramina (andrzej@chaeron.com)
  */
 public class JFreeCharting extends BasicFunction {
 	
@@ -82,7 +83,8 @@ public class JFreeCharting extends BasicFunction {
             "configuration should be supplied as follows: <configuration>"+
             "<param1>Value1</param1><param2>Value2</param2>/<configuration>.  " +
             "Supported parameters: width height title categoryAxisLabel " +
-            "valueAxisLabel domainAxisLabel rangeAxisLabel orientation " +
+            "valueAxisLabel domainAxisLabel rangeAxisLabel pieSectionLabel pieSectionNumberFormat pieSectionPercentFormat orientation " +
+            "titleColor chartBackgroundColor plotBackgroundColor rangeLowerBound rangeUpperrBound categoryItemLabelGeneratorClass " +
             "order legend tooltips urls.";
 
     public final static FunctionSignature signatures[] = {
