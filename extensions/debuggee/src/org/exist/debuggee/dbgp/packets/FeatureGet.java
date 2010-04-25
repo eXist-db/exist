@@ -30,12 +30,17 @@ import org.apache.mina.core.session.IoSession;
 public class FeatureGet extends Command {
 
 	String name;
-	String value = null;
+	String value;
 	
 	boolean success = false; 
 	
 	public FeatureGet(IoSession session, String args) {
 		super(session, args);
+	}
+
+	protected void init() {
+		name = null;
+		value = null;
 	}
 
 	protected void setArgument(String arg, String val) {

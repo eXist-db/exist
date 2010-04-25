@@ -21,6 +21,8 @@
  */
 package org.exist.debugger.model;
 
+import java.io.IOException;
+
 import org.exist.debugger.DebuggerImpl;
 import org.exist.debugger.DebuggingSource;
 
@@ -207,7 +209,7 @@ public class BreakpointImpl implements Breakpoint {
 		return (DebuggerImpl)debuggingSource.getDebugger();
 	}
 
-	public boolean sync() {
+	public boolean sync() throws IOException {
 		if (getId() == -1) {
 			return getDebugger().setBreakpoint(this);
 		} else if (getId() > 0) {
@@ -217,7 +219,7 @@ public class BreakpointImpl implements Breakpoint {
 		return false;
 	}
 
-	public boolean remove() {
+	public boolean remove() throws IOException {
 		return getDebugger().removeBreakpoint(this);
 	}
 }

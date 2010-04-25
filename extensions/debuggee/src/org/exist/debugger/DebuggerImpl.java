@@ -45,7 +45,9 @@ import org.exist.debugger.model.LocationImpl;
 import org.exist.debugger.model.Variable;
 import org.exist.debugger.model.VariableImpl;
 import org.exist.util.Base64Decoder;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -55,13 +57,20 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	protected final static Logger LOG = Logger.getLogger(DebuggerImpl.class);
 
-	private static Debugger instance = null;
+	private static DebuggerImpl instance = null;
 	
 	public static Debugger getDebugger() throws IOException {
 		if (instance == null)
 			instance = new DebuggerImpl();
 		
 		return instance;
+	}
+
+	public static void shutdownDebugger() {
+		if (instance == null)
+			return;
+		
+		instance.acceptor.unbind();
 	}
 
 	private NioSocketAcceptor acceptor;
@@ -81,6 +90,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	
 	private DebuggerImpl() throws IOException {
 		acceptor = new NioSocketAcceptor();
+		acceptor.setCloseOnDeactivation(true);
 		acceptor.getFilterChain().addLast("protocol",
 				new ProtocolCodecFilter(new CodecFactory()));
 		acceptor.setHandler(new ProtocolHandler(this));
@@ -115,7 +125,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	 * 
 	 * @see org.exist.debugger.Debugger#source(java.lang.String)
 	 */
-	public DebuggingSource getSource(String fileURI) {
+	public DebuggingSource getSource(String fileURI) throws IOException {
 		if (fileURI == null)
 			return null;
 		
@@ -146,19 +156,19 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return null;
 	}
 	
-	public List<Variable> getVariables() {
+	public List<Variable> getVariables() throws IOException {
 		return getVariables(null);
 	}
 
-	public List<Variable> getLocalVariables() {
+	public List<Variable> getLocalVariables() throws IOException {
 		return getVariables(ContextNames.LOCAL);
 	}
 
-	public List<Variable> getGlobalVariables() {
+	public List<Variable> getGlobalVariables() throws IOException {
 		return getVariables(ContextNames.GLOBAL);
 	}
 
-	private List<Variable> getVariables(String contextID) {
+	private List<Variable> getVariables(String contextID) throws IOException {
 		
 		ContextGet command = new ContextGet(session, 
 				" -i " + getNextTransaction()); 
@@ -181,7 +191,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	}
 	
 
-	public List<Location> getStackFrames() {
+	public List<Location> getStackFrames() throws IOException {
 		StackGet command = new StackGet(session, " -i " + getNextTransaction());
 		command.toDebuggee();
 
@@ -222,13 +232,11 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		notifyAll();
 	}
 
-	public Response getResponse(String transactionID) {
+	public Response getResponse(String transactionID) throws IOException {
 		try {
 			return getResponse(transactionID, 0);
 		} catch (ExceptionTimeout e) {
 			return null;
-		} catch (IOException e) {
-			return null; //UNDERSTAND: throw error?
 		}
 	}
 
@@ -238,8 +246,11 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		while (!responses.containsKey(transactionID)) {
 			try {
-				if (responseCode != 0)
+				if (responseCode != 0) {
+					if (responses.containsKey(transactionID))
+						break;
 					throw new IOException("Got responce code "+responseCode+" on debugging request");
+				}
 				
 				else if (timeout == 0)
 					wait(10); //slow down next check
@@ -266,16 +277,23 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	private AbstractCommandContinuation currentCommand = null;
 
-	private void waitFor(String transactionId, String status) {
+	private void waitFor(String transactionId, String status) throws IOException {
 		Response response = null;
 		while (true) {
 			response = getResponse(transactionId);
 			
-			if (response != null)
-				if (response.getAttribute("status").equals(status))
+			if (response != null) {
+				if (response.getElemetsByName("error").getLength() != 0)
 					break;
-				else if (response.getAttribute("status").equals(STOPPED))
+
+				String getStatus = response.getAttribute("status");
+
+				if (getStatus.equals(status)) {
 					break;
+				} else if (getStatus.equals(STOPPED)) {
+					break;
+				}
+			}
 			
 			try {
 				Thread.sleep(500);
@@ -291,7 +309,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		command.toDebuggee();
 	}
 
-	public void run() {
+	public void run() throws IOException {
 		Run command = new Run(session, " -i " + getNextTransaction());
 
 		command.toDebuggee();
@@ -306,7 +324,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		command.toDebuggee();
 	}
 	
-	public void stepInto() {
+	public void stepInto() throws IOException {
 		StepInto command = new StepInto(session, " -i " + getNextTransaction());
 
 		command.toDebuggee();
@@ -321,7 +339,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		command.toDebuggee();
 	}
 
-	public void stepOut() {
+	public void stepOut() throws IOException {
 		StepOut command = new StepOut(session, " -i " + getNextTransaction());
 
 		command.toDebuggee();
@@ -336,7 +354,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		command.toDebuggee();
 	}
 
-	public void stepOver() {
+	public void stepOver() throws IOException {
 		StepOver command = new StepOver(session, " -i " + getNextTransaction());
 
 		command.toDebuggee();
@@ -351,7 +369,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		command.toDebuggee();
 	}
 
-	public void stop() {
+	public void stop() throws IOException {
 		Stop command = new Stop(session, " -i " + getNextTransaction());
 
 		command.toDebuggee();
@@ -359,7 +377,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		waitFor(command.getTransactionId(), BREAK);
 	}
 
-	public boolean setBreakpoint(Breakpoint breakpoint) {
+	public boolean setBreakpoint(Breakpoint breakpoint) throws IOException {
 		BreakpointSet command = new BreakpointSet(session, " -i " + getNextTransaction());
 		command.setBreakpoint((BreakpointImpl) breakpoint);
 		
@@ -375,7 +393,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return true;
 	}
 
-	public boolean updateBreakpoint(Breakpoint breakpoint) {
+	public boolean updateBreakpoint(Breakpoint breakpoint) throws IOException {
 		BreakpointUpdate command = new BreakpointUpdate(session, " -i " + getNextTransaction());
 		command.setBreakpoint(breakpoint);
 		
@@ -389,7 +407,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return true;
 	}
 
-	public boolean removeBreakpoint(BreakpointImpl breakpoint) {
+	public boolean removeBreakpoint(BreakpointImpl breakpoint) throws IOException {
 		BreakpointRemove command = new BreakpointRemove(session, " -i " + getNextTransaction());
 		command.setBreakpoint(breakpoint);
 		
@@ -403,8 +421,37 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return true;
 	}
 
-	public synchronized void setResponseCode(int code) {
+	protected synchronized void terminate(String url, int code) {
 		responseCode = code;
 		notifyAll();
+		
+		System.out.println("setResponseCode responseCode = "+responseCode);
+	}
+
+	private String getText(NodeList nodes) {
+		if ((nodes.getLength() == 1) && (nodes.item(0).getNodeType() == Node.TEXT_NODE))
+			return ((Text)nodes.item(0)).getData();
+		
+		return "";
+	}
+	
+	@Override
+	public String evaluate(String script) throws IOException {
+		Eval command = new Eval(session, " -i " + getNextTransaction());
+		command.setScript(script);
+		command.toDebuggee();
+
+		Response response = getResponse(command.getTransactionId());
+
+		if ("1".equals(response.getAttribute("success"))) {
+			Node property = response.getElemetsByName("property").item(0);
+			Base64Decoder dec = new Base64Decoder();
+			dec.translate(getText(property.getChildNodes()));
+			byte[] c = dec.getByteArray();
+
+			return new String(c);
+		}
+
+		return null;
 	}
 }

@@ -21,6 +21,7 @@
  */
 package org.exist.debugger;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.exist.debugger.model.*;
@@ -66,22 +67,22 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#getStackFrames()
 	 */
-	public List<Location> getStackFrames() {
+	public List<Location> getStackFrames() throws IOException {
 		return debugger.getStackFrames();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#getVariables()
 	 */
-	public List<Variable> getVariables() {
+	public List<Variable> getVariables() throws IOException {
 		return debugger.getVariables();
 	}
 
-	public List<Variable> getLocalVariables() {
+	public List<Variable> getLocalVariables() throws IOException {
 		return debugger.getLocalVariables();
 	}
 
-	public List<Variable> getGlobalVariables() {
+	public List<Variable> getGlobalVariables() throws IOException {
 		return debugger.getGlobalVariables();
 	}
 
@@ -127,7 +128,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#run()
 	 */
-	public void run() {
+	public void run() throws IOException {
 		debugger.run();
 	}
 
@@ -141,7 +142,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepInto()
 	 */
-	public void stepInto() {
+	public void stepInto() throws IOException {
 		debugger.stepInto();
 	}
 
@@ -155,7 +156,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOut()
 	 */
-	public void stepOut() {
+	public void stepOut() throws IOException {
 		debugger.stepOut();
 	}
 
@@ -169,7 +170,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOver()
 	 */
-	public void stepOver() {
+	public void stepOver() throws IOException {
 		debugger.stepOver();
 	}
 
@@ -183,7 +184,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stop()
 	 */
-	public void stop() {
+	public void stop() throws IOException {
 		debugger.stop();
 	}
 
@@ -195,6 +196,11 @@ public class DebuggingSourceImpl implements DebuggingSource {
 
 	public void setText(String text) {
 		code = text;
+	}
+
+	@Override
+	public String evaluate(String script) throws IOException {
+		return debugger.evaluate(script);
 	}
 
 }
