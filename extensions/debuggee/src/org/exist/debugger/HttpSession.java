@@ -55,7 +55,7 @@ public class HttpSession implements Runnable {
 		try {
 			System.out.println("sending http request with debugging flag");
 			
-			debugger.setResponseCode(client.executeMethod(method));
+			debugger.terminate(url, client.executeMethod(method));
 
 			System.out.println("get http response");
 		} catch (Exception e) {

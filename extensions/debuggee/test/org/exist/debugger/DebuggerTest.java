@@ -40,7 +40,7 @@ import org.junit.Test;
  */
 public class DebuggerTest implements ResponseListener {
 	
-	@Test
+	//@Test
 	public void testDebugger() {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -162,7 +162,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testBreakpoints() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -178,9 +178,7 @@ public class DebuggerTest implements ResponseListener {
 			breakpoint.setLineno(24);
 			breakpoint.sync();
 			
-			System.out.println("before run1");
 			source.run();
-			System.out.println("after run1");
 			
 			List<Location> stack = source.getStackFrames();
 			assertEquals(1, stack.size());
@@ -188,9 +186,50 @@ public class DebuggerTest implements ResponseListener {
 			
 			breakpoint.remove();
 
-			System.out.println("before run2");
 			source.run();
-			System.out.println("after run2");
+			
+		} catch (IOException e) {
+			assertNotNull("IO exception: "+e.getMessage(), null);
+		} catch (ExceptionTimeout e) {
+			assertNotNull("Timeout exception: "+e.getMessage(), null);
+		}
+	}
+
+	@Test
+	public void testEvaluation() throws IOException {
+		assertNotNull("Database wasn't initilised.", database);
+		
+		Debugger debugger = DebuggerImpl.getDebugger();
+		
+		try {
+			System.out.println("sending init request");
+			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+
+			assertNotNull("Debugging source can't be NULL.", source);
+			
+			Breakpoint breakpoint = source.newBreakpoint();
+			breakpoint.setLineno(24);
+			breakpoint.sync();
+			
+			String res = source.evaluate("$dbgp:session");
+			assertNull(res);
+
+			res = source.evaluate("let $seq := (98.5, 98.3, 98.9) return count($seq)");
+			assertEquals("3", res);
+
+			//xquery engine have problem here, because context not copied correctly
+//			res = source.evaluate("f:fibo(2)");
+//			System.out.println(res);
+			
+			source.run();
+			
+			List<Location> stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(24, stack.get(0).getLineBegin());
+			
+			breakpoint.remove();
+
+			source.stop();
 			
 		} catch (IOException e) {
 			assertNotNull("IO exception: "+e.getMessage(), null);
@@ -199,7 +238,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testResourceNotExistOrNotRunnable() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -244,6 +283,8 @@ public class DebuggerTest implements ResponseListener {
 
     @AfterClass
     public static void closeDB() {
+       	DebuggerImpl.shutdownDebugger();
+
        	database.shutdown();
     }
 

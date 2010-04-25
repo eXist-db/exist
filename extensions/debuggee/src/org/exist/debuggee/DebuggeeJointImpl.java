@@ -33,12 +33,15 @@ import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
+import org.exist.storage.BrokerPool;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Sequence;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -415,5 +418,20 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 	public CommandContinuation getCurrentCommand() {
 		return command;
+	}
+
+	@Override
+	public String evalution(String script) throws Exception {
+		
+		XQueryContext context = compiledXQuery.getContext().copyContext();
+		context.setDebuggeeJoint(null);
+		context.undeclareGlobalVariable(Debuggee.SESSION);
+		
+		XQuery service = BrokerPool.getInstance().get(null).getXQueryService();
+		CompiledXQuery compiled = service.compile(context, script);
+		
+		Sequence resultSequence = service.execute(compiled, null);
+		
+		return resultSequence.getStringValue();
 	}
 }

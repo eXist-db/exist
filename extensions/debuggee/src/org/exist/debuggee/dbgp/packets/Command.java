@@ -60,7 +60,7 @@ public abstract class Command implements Packet {
 	}
 	
 	protected void init() {
-		//used by BreakpointSet
+		//used to init original class vars
 	}
 
 	public String getTransactionId() {
@@ -126,6 +126,9 @@ public abstract class Command implements Packet {
 		} else if (command.equals("step_out")) {
 			return new StepOut(session, args);
 		
+		} else if (command.equals("stop")) {
+			return new Stop(session, args);
+		
 		} else if (command.equals("stack_get")) {
 			return new StackGet(session, args);
 		
@@ -170,6 +173,9 @@ public abstract class Command implements Packet {
 
         } else if (command.equals("feature_get")) {
 			return new FeatureGet(session, args);
+
+        } else if (command.equals("eval")) {
+			return new Eval(session, args);
 
         }
 			
