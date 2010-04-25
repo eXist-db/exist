@@ -67,8 +67,15 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	int currentTransactionId = 1;
 	
 //	private String lastStatus = FIRST_RUN;
+	
+	protected int responseCode = 0;
 
-	public DebuggerImpl() {
+	public DebuggerImpl() throws IOException {
+		acceptor = new NioSocketAcceptor();
+		acceptor.getFilterChain().addLast("protocol",
+				new ProtocolCodecFilter(new CodecFactory()));
+		acceptor.setHandler(new ProtocolHandler(this));
+		acceptor.bind(new InetSocketAddress(eventPort));
 	}
 
 	private int getNextTransaction() {
@@ -81,15 +88,9 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	public DebuggingSource init(String url) throws IOException,
 			ExceptionTimeout {
-		acceptor = new NioSocketAcceptor();
-		acceptor.getFilterChain().addLast("protocol",
-				new ProtocolCodecFilter(new CodecFactory()));
-		acceptor.setHandler(new ProtocolHandler(this));
-		acceptor.bind(new InetSocketAddress(eventPort));
-
 		LOG.info("Debugger is listening at port " + eventPort);
 
-		Thread session = new Thread(new HttpSession(url));
+		Thread session = new Thread(new HttpSession(this, url));
 		session.start();
 
 		// 30s timeout
@@ -203,16 +204,21 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 			return getResponse(transactionID, 0);
 		} catch (ExceptionTimeout e) {
 			return null;
+		} catch (IOException e) {
+			return null; //UNDERSTAND: throw error?
 		}
 	}
 
 	public synchronized Response getResponse(String transactionID, int timeout)
-			throws ExceptionTimeout {
+			throws ExceptionTimeout, IOException {
 		long sTime = System.currentTimeMillis();
 
 		while (!responses.containsKey(transactionID)) {
 			try {
-				if (timeout == 0)
+				if (responseCode != 0)
+					throw new IOException("Got responce code "+responseCode+" on debugging request");
+				
+				else if (timeout == 0)
 					wait(10); //slow down next check
 				else
 					wait(timeout);
@@ -231,7 +237,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 			return response;
 		}
 
-		// throw error???
+		//UNDERSTAND: throw error???
 		return null;
 	}
 
@@ -370,5 +376,10 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		//XXX: handle error
 
 		return true;
+	}
+
+	public synchronized void setResponseCode(int code) {
+		responseCode = code;
+		notifyAll();
 	}
 }

@@ -31,9 +31,11 @@ import org.apache.commons.httpclient.methods.PostMethod;
  */
 public class HttpSession implements Runnable {
 	
+	private DebuggerImpl debugger;
 	private String url;
 	
-	protected HttpSession(String url) {
+	protected HttpSession(DebuggerImpl debugger, String url) {
+		this.debugger = debugger;
 		this.url = url;
 	}
 
@@ -41,14 +43,7 @@ public class HttpSession implements Runnable {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
-//		HttpState initialState = new HttpState();
-//
-//		Cookie mycookie = new Cookie(".exist-db.org", "XDEBUG_SESSION", "default", "/", null, false);
-//
-//		initialState.addCookie(mycookie);
-		
 		HttpClient client = new HttpClient();
-//		client.setState(initialState);
 
 		PostMethod method = new PostMethod(url);
 
@@ -59,7 +54,8 @@ public class HttpSession implements Runnable {
 
 		try {
 			System.out.println("sending http request with debugging flag");
-			client.executeMethod(method);
+			
+			debugger.setResponseCode(client.executeMethod(method));
 
 			System.out.println("get http response");
 		} catch (Exception e) {
