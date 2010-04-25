@@ -78,4 +78,6 @@ public interface DebuggeeJoint {
 	public Breakpoint removeBreakpoint(int breakpointID);
 	
 	public void sessionClosed(boolean disconnect);
+
+	public String evalution(String script) throws Exception;
 }

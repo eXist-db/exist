@@ -21,6 +21,8 @@
  */
 package org.exist.debugger.model;
 
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
@@ -135,6 +137,6 @@ public interface Breakpoint {
 	public String toXMLString();
 
 	//Synchronize changes
-	public boolean sync();
-	public boolean remove();
+	public boolean sync() throws IOException;
+	public boolean remove() throws IOException;
 }
