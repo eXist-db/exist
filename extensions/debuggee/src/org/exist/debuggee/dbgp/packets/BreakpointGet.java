@@ -33,7 +33,7 @@ public class BreakpointGet extends Command {
 	/**
 	 * is the unique session breakpoint id returned by breakpoint_set.
 	 */
-	private int breakpointID;
+	private Integer breakpointID;
 	
 	private Breakpoint breakpoint;
 	
@@ -41,6 +41,10 @@ public class BreakpointGet extends Command {
 		super(session, args);
 	}
 
+	protected void init() {
+		breakpointID = null;
+	}
+	
 	protected void setArgument(String arg, String val) {
 		if (arg.equals("d")) {
 			breakpointID = Integer.valueOf(val);
@@ -55,7 +59,8 @@ public class BreakpointGet extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = getJoint().getBreakpoint(breakpointID);
+		if (breakpointID != null)
+			breakpoint = getJoint().getBreakpoint(breakpointID);
 	}
 
 	public byte[] responseBytes() {

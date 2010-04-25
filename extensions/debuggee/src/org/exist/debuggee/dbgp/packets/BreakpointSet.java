@@ -33,15 +33,15 @@ public class BreakpointSet extends Command implements Breakpoint {
 
 	private BreakpointImpl breakpoint;
 	
-	private int status = -1;
+	private int status;
 
 	public BreakpointSet(IoSession session, String args) {
 		super(session, args);
-		System.out.println("breakpoint = "+breakpoint);
 	}
 
 	protected void init() {
 		breakpoint = new BreakpointImpl();
+		status = -1;
 	}
 	
 	protected void setArgument(String arg, String val) {

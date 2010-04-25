@@ -34,12 +34,16 @@ public class BreakpointRemove extends Command {
 	/**
 	 * is the unique session breakpoint id returned by breakpoint_set.
 	 */
-	private int breakpointID;
+	private Integer breakpointID;
 	
 	private Breakpoint breakpoint;
 	
 	public BreakpointRemove(IoSession session, String args) {
 		super(session, args);
+	}
+
+	protected void init() {
+		breakpointID = null;
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -56,7 +60,8 @@ public class BreakpointRemove extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = getJoint().removeBreakpoint(breakpointID);
+		if (breakpointID != null)
+			breakpoint = getJoint().removeBreakpoint(breakpointID);
 	}
 
 	public byte[] responseBytes() {

@@ -33,32 +33,41 @@ public class BreakpointUpdate extends Command {
 	/**
 	 * is the unique session breakpoint id returned by breakpoint_set.
 	 */
-	private int breakpointID;
+	private Integer breakpointID;
 	
 	/**
 	 * breakpoint state [optional, defaults to "enabled"]
 	 */
-	private Boolean state = null;
+	private Boolean state;
 	
 	/**
 	 * the line number (lineno) of the breakpoint [optional]
 	 */
-	private Integer lineNo = null;
+	private Integer lineNo;
 
 	/**
 	 * hit value (hit_value) used with the hit condition to determine if should break; a value of zero indicates hit count processing is disabled for this breakpoint [optional, defaults to zero (i.e. disabled)]
 	 */
-	private Integer hitValue = null;
+	private Integer hitValue;
 	
 	/**
 	 * hit condition string (hit_condition); see HIT_CONDITION hit_condition documentation above; BTW 'o' stands for 'operator' [optional, defaults to '>=']
 	 */
-	private String hitCondition = null;
+	private String hitCondition;
 
 	private Breakpoint breakpoint;
 	
 	public BreakpointUpdate(IoSession session, String args) {
 		super(session, args);
+	}
+
+	protected void init() {
+		breakpointID = null;
+		state = null;
+		lineNo = null;
+		hitValue = null;
+		hitCondition = null;
+		breakpoint = null;
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -87,7 +96,8 @@ public class BreakpointUpdate extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = getJoint().getBreakpoint(breakpointID);
+		if (breakpointID != null)
+			breakpoint = getJoint().getBreakpoint(breakpointID);
 		
 		if (breakpoint == null)
 			return;
