@@ -48,7 +48,7 @@ public class DebugClient implements ResponseListener {
     public DebugClient() throws IOException {
         Terminal.setupTerminal();
         console = new ConsoleReader();
-        debugger = new DebuggerImpl();
+        debugger = DebuggerImpl.getDebugger();
     }
 
     public void readlineInputLoop() {

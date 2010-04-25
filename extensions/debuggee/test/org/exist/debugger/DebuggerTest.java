@@ -47,8 +47,7 @@ public class DebuggerTest implements ResponseListener {
 		Debugger debugger;
 		
 		try {
-			System.out.println("creating debugger");
-			debugger = new DebuggerImpl();
+			debugger = DebuggerImpl.getDebugger();
 
 			System.out.println("sending init request");
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
@@ -163,15 +162,13 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testBreakpoints() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
-		Debugger debugger = new DebuggerImpl();
+		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
-			System.out.println("creating debugger");
-
 			System.out.println("sending init request");
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
 
@@ -181,7 +178,9 @@ public class DebuggerTest implements ResponseListener {
 			breakpoint.setLineno(24);
 			breakpoint.sync();
 			
+			System.out.println("before run1");
 			source.run();
+			System.out.println("after run1");
 			
 			List<Location> stack = source.getStackFrames();
 			assertEquals(1, stack.size());
@@ -189,7 +188,9 @@ public class DebuggerTest implements ResponseListener {
 			
 			breakpoint.remove();
 
+			System.out.println("before run2");
 			source.run();
+			System.out.println("after run2");
 			
 		} catch (IOException e) {
 			assertNotNull("IO exception: "+e.getMessage(), null);
@@ -202,8 +203,7 @@ public class DebuggerTest implements ResponseListener {
 	public void testResourceNotExistOrNotRunnable() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
-		System.out.println("creating debugger");
-		Debugger debugger = new DebuggerImpl();
+		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		Exception exception = null;
 		
