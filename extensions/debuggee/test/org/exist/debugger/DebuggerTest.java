@@ -40,7 +40,7 @@ import org.junit.Test;
  */
 public class DebuggerTest implements ResponseListener {
 	
-	//@Test
+	@Test
 	public void testDebugger() {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -113,12 +113,20 @@ public class DebuggerTest implements ResponseListener {
 			}
 			
 			System.out.println("sending get-local-variables");
-			vars = source.getVariables(0);
-			assertEquals(2, vars.size());
+			vars = source.getLocalVariables();
+			assertEquals(1, vars.size());
+			for (Variable var : vars) {
+				assertEquals("n", var.getName());
+				assertEquals("1", var.getValue());
+			}
 
 			System.out.println("sending get-glocal-variables");
-			vars = source.getVariables(1);
+			vars = source.getGlobalVariables();
 			assertEquals(1, vars.size());
+			for (Variable var : vars) {
+				assertEquals("dbgp:session", var.getName());
+				assertEquals("default", var.getValue());
+			}
 
 			System.out.print("sending step-into & waiting stop status");
 			for (int i = 0; i < 7; i++) {
@@ -130,11 +138,13 @@ public class DebuggerTest implements ResponseListener {
 			System.out.println("sending get-variables second time");
 			vars = source.getVariables();
 			
-			assertEquals(1, vars.size());
+			assertEquals(2, vars.size());
 			
 			for (Variable var : vars) {
-				assertEquals("n", var.getName());
-				assertEquals("2", var.getValue());
+				if (var.getName().equals("n"))
+					assertEquals("2", var.getValue());
+				else if (var.getName().equals("dbgp:session"))
+					assertEquals("default", var.getValue());
 			}
 
 			System.out.println("sending step-over");

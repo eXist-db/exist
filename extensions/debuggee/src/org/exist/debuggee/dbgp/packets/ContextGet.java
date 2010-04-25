@@ -38,17 +38,22 @@ public class ContextGet extends Command {
 	/**
 	 * stack depth (optional)
 	 */
-	private Integer stackDepth = null;
+	private Integer stackDepth;
 	
 	/**
 	 * context id (optional, retrieved by context-names)
 	 */
-	private String contextID = "";
+	private String contextID;
 	
 	private Map<QName, Variable> variables;
 
 	public ContextGet(IoSession session, String args) {
 		super(session, args);
+	}
+
+	protected void init() {
+		stackDepth = null;
+		contextID = null;
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -67,7 +72,7 @@ public class ContextGet extends Command {
 	@Override
 	public void exec() {
 		//TODO: different stack depth & context id
-		if (contextID.equals("")) 
+		if (contextID == null || contextID.equals("")) 
 			variables = getJoint().getVariables();
 		
 		else if (contextID.equals(ContextNames.LOCAL)) 
@@ -110,9 +115,13 @@ public class ContextGet extends Command {
 		if (stackDepth != null)
 			command += " -d "+String.valueOf(stackDepth);
 
-		if (contextID != null && contextID.equals(""))
-			command += " -c "+String.valueOf(contextID);
+		if (contextID != null && !contextID.equals(""))
+			command += " -c "+contextID;
 		
 		return command.getBytes();
+	}
+
+	public void setContextID(String contextID) {
+		this.contextID = contextID;
 	}
 }
