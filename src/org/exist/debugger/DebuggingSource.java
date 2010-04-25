@@ -21,6 +21,7 @@
  */
 package org.exist.debugger;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.exist.debugger.model.Breakpoint;
@@ -62,11 +63,11 @@ public interface DebuggingSource {
 	public void stop(ResponseListener listener);
 
 
-	public void run();
-	public void stepInto();
-	public void stepOver();
-	public void stepOut();
-	public void stop();
+	public void run() throws IOException;
+	public void stepInto() throws IOException;
+	public void stepOver() throws IOException;
+	public void stepOut() throws IOException;
+	public void stop() throws IOException;
 
 	/**
 	 * Stops interaction with the debugger engine. Once this command is executed, the IDE will no longer be able to communicate with the debugger engine. This does not end execution of the script as does the stop command above, but rather detaches from debugging. Support of this continuation command is optional, and the IDE should verify support for it via the feature_get command. If the IDE has created stdin/stdout/stderr pipes for execution of the script (eg. an interactive shell or other console to catch script output), it should keep those open and usable by the process until the process has terminated normally.
@@ -76,12 +77,15 @@ public interface DebuggingSource {
 	public boolean isSuspended();
 	public boolean isTerminated();
 
-	public List<Variable> getVariables();
-	public List<Variable> getVariables(int contextID);
+	public List<Variable> getVariables() throws IOException;
+	public List<Variable> getLocalVariables() throws IOException;
+	public List<Variable> getGlobalVariables() throws IOException;
 
-	public List<Location> getStackFrames();
+	public List<Location> getStackFrames() throws IOException;
 
 	public Breakpoint newBreakpoint();
 
 	public String getText();
+
+	public String evaluate(String script) throws IOException;
 }

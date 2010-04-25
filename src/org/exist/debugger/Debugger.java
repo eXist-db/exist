@@ -35,30 +35,34 @@ public interface Debugger {
 
 	public DebuggingSource init(String url) throws IOException, ExceptionTimeout;
 
-	public DebuggingSource getSource(String fileURI);
+	public DebuggingSource getSource(String fileURI) throws IOException;
 
 	public void sessionClosed();
 
 //	public boolean setBreakpoint(Breakpoint breakpoint);
 
 	public void run(ResponseListener listener);
-	public void run();
+	public void run() throws IOException;
 
 	public void stepInto(ResponseListener listener);
-	public void stepInto();
+	public void stepInto() throws IOException;
 	
 	public void stepOut(ResponseListener listener);
-	public void stepOut();
+	public void stepOut() throws IOException;
 	
 	public void stepOver(ResponseListener listener);
-	public void stepOver();
+	public void stepOver() throws IOException;
 
 	public void stop(ResponseListener listener);
-	public void stop();
+	public void stop() throws IOException;
 
 	//public Response getResponse(String transactionID);
 
-	public List<Variable> getVariables(int contextID);
+	public List<Variable> getVariables() throws IOException;
+	public List<Variable> getLocalVariables() throws IOException;
+	public List<Variable> getGlobalVariables() throws IOException;
 
-	public List<Location> getStackFrames();
+	public List<Location> getStackFrames() throws IOException;
+
+	public String evaluate(String script) throws IOException;
 }
