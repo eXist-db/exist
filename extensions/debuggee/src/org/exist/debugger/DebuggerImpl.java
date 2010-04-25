@@ -55,6 +55,15 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	protected final static Logger LOG = Logger.getLogger(DebuggerImpl.class);
 
+	private static Debugger instance = null;
+	
+	public static Debugger getDebugger() throws IOException {
+		if (instance == null)
+			instance = new DebuggerImpl();
+		
+		return instance;
+	}
+
 	private NioSocketAcceptor acceptor;
 
 	private int eventPort = 9000;
@@ -69,8 +78,8 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 //	private String lastStatus = FIRST_RUN;
 	
 	protected int responseCode = 0;
-
-	public DebuggerImpl() throws IOException {
+	
+	private DebuggerImpl() throws IOException {
 		acceptor = new NioSocketAcceptor();
 		acceptor.getFilterChain().addLast("protocol",
 				new ProtocolCodecFilter(new CodecFactory()));
@@ -262,9 +271,11 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		while (true) {
 			response = getResponse(transactionId);
 			
-			if (response != null && response.getAttribute("status").equals(status)) {
-				break;
-			}
+			if (response != null)
+				if (response.getAttribute("status").equals(status))
+					break;
+				else if (response.getAttribute("status").equals(STOPPED))
+					break;
 			
 			try {
 				Thread.sleep(500);
