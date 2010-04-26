@@ -525,12 +525,30 @@ public abstract class AbstractRemoteResource
 		throws XMLDBException
 	{
 		String errmsg="file "+ file.getAbsolutePath();
+                InputStream is = null;
 		try {
-			return readFile(new FileInputStream(file),errmsg);
+                        is = new FileInputStream(file);
+			
+                        return readFile(is,errmsg);
+
 		} catch (FileNotFoundException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				errmsg + " could not be found", e);
 		}
+                finally
+                {
+                    if(is != null)
+                    {
+                        try
+                        {
+                            is.close();
+                        }
+                        catch(IOException ioe)
+                        {
+                            //ignore(ioe);
+                        }
+                    }
+                }
 	}
 
 	private static byte[] readFile(InputSource is)
