@@ -26,148 +26,135 @@ import java.util.Collection;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
+import org.tmatesoft.svn.core.SVNErrorCode;
+import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
+import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.io.ISVNEditor;
 import org.tmatesoft.svn.core.io.ISVNReporterBaton;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 public class VersioningRepositoryImpl {
+
+	public final static Logger LOG = Logger.getLogger(VersioningRepositoryImpl.class);
+
+	private SVNURL svnurl = null;
+	private XmldbURI collection = null;
+	private org.tmatesoft.svn.core.io.SVNRepository repository = null;
 	
-    public final static Logger LOG = Logger.getLogger(VersioningRepositoryImpl.class);
+	private ISVNAuthenticationManager authManager;
 
-    private boolean connected = false;
-    private long latestRevision = -1;
-    
-    XmldbURI collection = null;
-    org.tmatesoft.svn.core.io.SVNRepository repository = null;
+	public VersioningRepositoryImpl(XmldbURI collection, String url)
+			throws SVNException {
+		this(collection, url, "anonymous", "anonymous");
+	}
 
-    protected VersioningRepositoryImpl() {
-    	//FEATURE: different collections connected with different repository 
-    }
+	public VersioningRepositoryImpl(XmldbURI collection, String url,
+			String username, String password) throws SVNException {
 
-    public boolean connect(XmldbURI collection, String url) {
-    	return connect(collection, url, "anonymous", "anonymous");
-    }
+		this.collection = collection;
 
-    public boolean connect(XmldbURI collection, String url, String username, String password) {
-
-    	if (connected)
-    		return true;
-    	
-    	setupLibrary();
-
-    	this.collection = collection;
-    	
-        try {
-            repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(url));
-        } catch (SVNException svne) {
-            LOG.error("error while creating an SVNRepository for location '" + url + "': " + svne.getMessage());
-            return false;
-        }
-
-        ISVNAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
-        repository.setAuthenticationManager(authManager);
-
-        try {
-            SVNNodeKind nodeKind = repository.checkPath("", -1);
-            if (nodeKind == SVNNodeKind.NONE) {
-            	LOG.error("There is no entry at '" + url + "'.");
-                return false;
-            } else if (nodeKind == SVNNodeKind.FILE) {
-            	LOG.error("The entry at '" + url + "' is a file while a directory was expected.");
-                return false;
-            }
-
-            System.out.println("Repository Root: " + repository.getRepositoryRoot(true));
-            System.out.println("Repository UUID: " + repository.getRepositoryUUID(true));
-            System.out.println("");
-
-        } catch (SVNException svne) {
-        	LOG.error("error while listing entries: " + svne.getMessage());
-            return false;
-        }
-
-        try {
-            latestRevision = repository.getLatestRevision();
-        } catch (SVNException svne) {
-        	LOG.error("error while fetching the latest repository revision: " + svne.getMessage());
-            return false;
-        }
-
-        System.out.println("");
-        System.out.println("---------------------------------------------");
-        System.out.println("Repository latest revision: " + latestRevision);
-        
-        connected = true;
-        
-        return true;
-    }
-
-    private void setupLibrary() {
-        /*
-         * For using over http:// and https://
-         */
-        DAVRepositoryFactory.setup();
-        
-        /*
-         * For using over svn:// and svn+xxx://
-         */
-        SVNRepositoryFactoryImpl.setup();
-        
-        /*
-         * For using over file:///
-         */
-        FSRepositoryFactory.setup();
-    }
-    
-    protected boolean commit() {
-    	return update(latestRevision);
-    }
-
-    protected boolean update() {
-    	return update(latestRevision);
-    }
-
-    protected boolean update(long toRevision) {
-        ISVNReporterBaton reporterBaton = new ExportReporterBaton(toRevision);
-        
-        ISVNEditor exportEditor;
+		setupType(url);
 		
-        try {
+		authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
+		((DefaultSVNAuthenticationManager) authManager).setAuthenticationForced(true);
+		repository.setAuthenticationManager(authManager);
+		
+		checkRoot();
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Connected to " + svnurl);
+			LOG.debug("Repository latest revision: " + latestRevision());
+		}
+	}
+
+	private void setupType(String url) throws SVNException {
+		svnurl = SVNURL.parseURIDecoded(url);
+		
+		//over http:// and https://
+		if (url.startsWith("http")) {
+			DAVRepositoryFactory.setup(); 
+			repository = DAVRepositoryFactory.create(svnurl);
+		
+		//over svn:// and svn+xxx://
+		} else if (url.startsWith("svn")) {
+			SVNRepositoryFactoryImpl.setup(); 
+			repository = SVNRepositoryFactoryImpl.create(svnurl);
+		
+		//over file:///
+		} else {
+			FSRepositoryFactory.setup(); 
+			repository = FSRepositoryFactory.create(svnurl);
+		}
+	}
+
+	private void checkRoot() throws SVNException {
+		SVNNodeKind nodeKind = repository.checkPath("", -1);
+		if (nodeKind == SVNNodeKind.NONE) {
+			SVNErrorMessage error = SVNErrorMessage
+				.create(SVNErrorCode.UNKNOWN,
+						"No entry at URL ''{0}''", svnurl);
+			throw new SVNException(error);
+		} else if (nodeKind == SVNNodeKind.FILE) {
+			SVNErrorMessage error = SVNErrorMessage
+					.create(SVNErrorCode.UNKNOWN,
+						"Entry at URL ''{0}'' is a file while directory was expected", svnurl);
+			throw new SVNException(error);
+		}
+	}
+	
+	public long latestRevision() throws SVNException {
+		return repository.getLatestRevision();
+	}
+
+	protected boolean commit() {
+		return false;
+	}
+
+	protected boolean update() throws SVNException {
+		return update(latestRevision());
+	}
+
+	protected boolean update(long toRevision)  throws SVNException {
+		ISVNReporterBaton reporterBaton = new ExportReporterBaton(toRevision);
+
+		ISVNEditor exportEditor;
+
+		try {
 			exportEditor = new ExportEditor(collection);
 
-	        repository.update(toRevision, null, true, reporterBaton, exportEditor);
-		
+			repository.update(toRevision, null, true, reporterBaton, exportEditor);
+
 		} catch (EXistException e) {
-			e.printStackTrace();
-			
-			return false;
-			
-		} catch (SVNException e) {
 			e.printStackTrace();
 
 			return false;
+
 		}
-        
-        System.out.println("Exported revision: " + toRevision);
-        
-        return true;
-    }
-    
-    @SuppressWarnings("unchecked")
-	public Collection<SVNLogEntry> log(String[] targetPaths, Collection<SVNLogEntry> entries, long startRevision, long endRevision, boolean changedPath, boolean strictNode) throws SVNException {
-    	return repository.log( new String[] { "" } , entries , startRevision , endRevision , changedPath , strictNode );
-    }
+
+		System.out.println("Exported revision: " + toRevision);
+
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<SVNLogEntry> log(String[] targetPaths,
+			Collection<SVNLogEntry> entries, long startRevision,
+			long endRevision, boolean changedPath, boolean strictNode)
+			throws SVNException {
+		
+		return repository.log(new String[] { "" }, entries, startRevision,
+				endRevision, changedPath, strictNode);
+	}
 }

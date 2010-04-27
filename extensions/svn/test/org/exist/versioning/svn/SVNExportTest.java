@@ -78,12 +78,9 @@ public class SVNExportTest {
 	public void testExport() throws SVNException {
 		assertNotNull("Database wasn't initilised.", test);
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl();
-
 		XmldbURI collectionURL = ((CollectionImpl) test).getPathURI();
 
-		assertTrue("Can't connect to svn repository.", 
-				repository.connect(collectionURL, url));
+		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, url);
 
 		for (Integer rev : Arrays.asList(currectRevList)) {
 			if (rev < 4758) continue;
@@ -119,12 +116,9 @@ public class SVNExportTest {
 	public void testExportXML() throws SVNException {
 		assertNotNull("Database wasn't initilised.", testXML);
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl();
-
 		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
 
-		assertTrue("Can't connect to svn repository.", 
-				repository.connect(collectionURL, urlXML));
+		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, urlXML);
 
 		for (Integer rev : Arrays.asList(currectRevListXML)) {
 			if (rev < 4758) continue;
@@ -172,13 +166,10 @@ public class SVNExportTest {
 		
 		String repositoryURL = "https://support.syntactica.com/exist_svn/"+repositoryID+"/";
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl();
-
 		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
 
-		assertTrue("Can't connect to svn repository.", 
-				repository.connect(collectionURL, repositoryURL, "existtest", "existtest"));
-		
+		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, repositoryURL, "existtest", "existtest");
+
 		deleteRepository(repositoryID);
 	}
 
@@ -187,12 +178,9 @@ public class SVNExportTest {
 	public void testLog() throws SVNException {
 		assertNotNull("Database wasn't initilised.", test);
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl();
-
 		XmldbURI collectionURL = ((CollectionImpl) test).getPathURI();
 
-		assertTrue("Can't connect to svn repository.", 
-				repository.connect(collectionURL, url));
+		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, url);
 
 		java.util.Collection<SVNLogEntry> logEntries = repository.log(new String[] { "" },
 				null, 0, -1, false, false);
