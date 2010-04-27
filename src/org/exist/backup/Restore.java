@@ -215,7 +215,7 @@ public class Restore extends DefaultHandler {
 						try {
 							date_created = new DateTimeValue(created).getDate();
 						} catch (XPathException e2) {
-						} 
+						}
 
 					 
 					
@@ -284,10 +284,6 @@ public class Restore extends DefaultHandler {
                             return;
                         }
                     }
-                    EXistInputSource is=contents.getInputSource(filename);
-                    if(is==null)
-                       listener.warn("Failed to restore resource '" + name + "'\nfrom file '" +
-                               contents.getSymbolicPath(name,false) + "'.\nReason: Unable to obtain its EXistInputSource");
                     try {
                         if (dialog != null && current instanceof Observable) {
                             ((Observable) current).addObserver(dialog.getObserver());
@@ -299,11 +295,7 @@ public class Restore extends DefaultHandler {
                         if (mimetype != null)
                             ((EXistResource)res).setMimeType(mimetype);
 
-                        if(is.getByteStreamLength() > 0) {
-                            res.setContent(is);
-                        } else {
-                            res.setContent("");
-                        }
+                        res.setContent(contents.getContent(filename));
 
                         // Restoring name
 
@@ -319,7 +311,7 @@ public class Restore extends DefaultHandler {
 
                         if (modified != null)
                             try {
-                                date_modified = (Date)(new DateTimeValue(modified)).getDate();
+                                date_modified = (new DateTimeValue(modified)).getDate();
                             } catch (XPathException e2) {
                                 listener.warn("Illegal modification date. Skipping ...");
                             }
@@ -352,8 +344,6 @@ public class Restore extends DefaultHandler {
                                contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
                         e.printStackTrace();
                         throw new RuntimeException(e);
-                    } finally {
-                        is.close();
                     }
                 }
             } else if (localName.equals("deleted")) {

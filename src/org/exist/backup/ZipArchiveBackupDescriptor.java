@@ -68,8 +68,15 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor
 			throw new FileNotFoundException(archive.getName()+" is a bit corrupted ("+base+" descriptor not found): not a valid eXist backup archive");
 		}
 	}
-	
-	public BackupDescriptor getChildBackupDescriptor(String describedItem) {
+    
+    public Object getContent(String fileName) {
+        EXistInputSource is = getInputSource(fileName);
+        if (is.getByteStreamLength() == 0)
+            return "";
+        return is;
+    }
+
+    public BackupDescriptor getChildBackupDescriptor(String describedItem) {
 		BackupDescriptor bd=null;
 		try {
 			bd=new ZipArchiveBackupDescriptor(archive,base+describedItem+"/");
