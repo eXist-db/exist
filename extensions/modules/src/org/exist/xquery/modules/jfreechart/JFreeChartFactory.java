@@ -302,6 +302,7 @@ public class JFreeChartFactory {
     private static void setPieChartParameters( JFreeChart chart, Configuration config )
     {
         setPieSectionLabel( chart, config );
+        setSectionColors( chart, config );
     }
     
     
@@ -313,6 +314,42 @@ public class JFreeChartFactory {
         
         if( pieSectionLabel != null ) {
             ((PiePlot)chart.getPlot()).setLabelGenerator( new StandardPieSectionLabelGenerator( pieSectionLabel, new DecimalFormat( pieSectionNumberFormat ), new DecimalFormat( pieSectionPercentFormat ) ) );
+        }
+    }
+    
+    
+    private static void setSectionColors( JFreeChart chart, Configuration config )
+    {
+        String sectionColors          = config.getSectionColors();
+        String sectionColorsDelimiter = config.getSectionColorsDelimiter();
+        
+        if( sectionColors != null ) {
+            PiePlot plot = ((PiePlot)chart.getPlot());
+            
+            StringTokenizer st = new StringTokenizer( sectionColors, sectionColorsDelimiter );
+            
+            while( st.hasMoreTokens() ) {
+                String sectionName = st.nextToken().trim();
+                String colorName = "";
+                
+                if( st.hasMoreTokens() ) {
+                    colorName = st.nextToken().trim();
+                }
+                
+                Color color = null;
+                
+                try {
+                    color = Colour.getColor( colorName );
+                } 
+                catch( XPathException e ) {              
+                }
+                   
+                if( color != null ) {
+                    plot.setSectionPaint( sectionName, color );
+                } else {
+                    logger.warn( "Invalid colour name or hex value specified for SectionColors: " + colorName + ", default colour will be used instead. Section Name: " + sectionName );
+                }
+            }
         }
     }
     

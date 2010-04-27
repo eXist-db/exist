@@ -72,6 +72,9 @@ public class Configuration {
     
     private String seriesColors;
     
+    private String sectionColors;
+    private String sectionColorsDelimiter                   = ",";
+    
     
     // Range
     
@@ -184,6 +187,14 @@ public class Configuration {
     
     public String getSeriesColors() {
         return seriesColors;
+    }
+    
+    public String getSectionColors() {
+        return sectionColors;
+    }
+    
+    public String getSectionColorsDelimiter() {
+        return sectionColorsDelimiter;
     }
 
 
@@ -374,6 +385,22 @@ public class Configuration {
                             throw new XPathException("Value for 'seriesColors' cannot be parsed");
                         } else {
                             seriesColors = value;
+                        }
+                        
+                     } else if (child.getLocalName().equals("sectionColors")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'sectionColors' cannot be parsed");
+                        } else {
+                            sectionColors = value;
+                        }
+                        
+                     } else if (child.getLocalName().equals("sectionColorsDelimiter")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'sectionColorsDelimiter' cannot be parsed");
+                        } else {
+                            sectionColorsDelimiter = value;
                         }
                         
                     } else if (child.getLocalName().equals("rangeLowerBound")) {

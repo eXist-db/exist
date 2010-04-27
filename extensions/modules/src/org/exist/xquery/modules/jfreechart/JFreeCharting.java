@@ -84,7 +84,7 @@ public class JFreeCharting extends BasicFunction {
             "<param1>Value1</param1><param2>Value2</param2>/<configuration>.  " +
             "Supported parameters: width height title categoryAxisLabel " +
             "valueAxisLabel domainAxisLabel rangeAxisLabel pieSectionLabel pieSectionNumberFormat pieSectionPercentFormat orientation " +
-            "titleColor chartBackgroundColor plotBackgroundColor rangeLowerBound rangeUpperrBound categoryItemLabelGeneratorClass seriesColors " +
+            "titleColor chartBackgroundColor plotBackgroundColor rangeLowerBound rangeUpperrBound categoryItemLabelGeneratorClass seriesColors sectionColors sectionColorsDelimiter " +
             "order legend tooltips urls.";
 
     public final static FunctionSignature signatures[] = {
