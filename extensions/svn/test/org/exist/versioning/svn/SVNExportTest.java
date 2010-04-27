@@ -80,7 +80,7 @@ public class SVNExportTest {
 
 		XmldbURI collectionURL = ((CollectionImpl) test).getPathURI();
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, url);
+		Subversion repository = new Subversion(collectionURL, url);
 
 		for (Integer rev : Arrays.asList(currectRevList)) {
 			if (rev < 4758) continue;
@@ -118,7 +118,7 @@ public class SVNExportTest {
 
 		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, urlXML);
+		Subversion repository = new Subversion(collectionURL, urlXML);
 
 		for (Integer rev : Arrays.asList(currectRevListXML)) {
 			if (rev < 4758) continue;
@@ -168,7 +168,7 @@ public class SVNExportTest {
 
 		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, repositoryURL, "existtest", "existtest");
+		Subversion repository = new Subversion(collectionURL, repositoryURL, "existtest", "existtest");
 
 		deleteRepository(repositoryID);
 	}
@@ -180,7 +180,7 @@ public class SVNExportTest {
 
 		XmldbURI collectionURL = ((CollectionImpl) test).getPathURI();
 
-		VersioningRepositoryImpl repository = new VersioningRepositoryImpl(collectionURL, url);
+		Subversion repository = new Subversion(collectionURL, url);
 
 		java.util.Collection<SVNLogEntry> logEntries = repository.log(new String[] { "" },
 				null, 0, -1, false, false);
