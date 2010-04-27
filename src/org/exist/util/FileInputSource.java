@@ -57,10 +57,10 @@ public class FileInputSource extends EXistInputSource {
         // close any open stream first
 		close();
 
-        if(file!=null) {
+        if(file != null) {
 			try {
 				inputStream = new BufferedInputStream(new FileInputStream(file));
-			} catch(FileNotFoundException fnfe) {
+			} catch(Exception fnfe) {
 				// No way to notify :-(
 			}
 		}

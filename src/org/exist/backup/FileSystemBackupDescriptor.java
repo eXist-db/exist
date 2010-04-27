@@ -26,7 +26,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 		}
 		descriptor=theDesc;
 	}
-	
+
 	public BackupDescriptor getChildBackupDescriptor(String describedItem) {
 		File child=new File(new File(descriptor.getParentFile(),describedItem),BackupDescriptor.COLLECTION_DESCRIPTOR);
 		BackupDescriptor bd=null;
@@ -64,8 +64,17 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 		
 		return is;
 	}
-	
-	public String getSymbolicPath() {
+
+    public File getFile() {
+        return descriptor;
+    }
+
+    public Object getContent(String describedItem) {
+        File child=new File(descriptor.getParentFile(),describedItem);
+        return child;
+    }
+
+    public String getSymbolicPath() {
 		return descriptor.getAbsolutePath();
 	}
 	

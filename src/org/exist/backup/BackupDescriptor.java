@@ -20,6 +20,8 @@ public interface BackupDescriptor {
     public final static String INCREMENTAL_PROP_NAME = "incremental";
     public final static String DATE_PROP_NAME = "date";
 
+    public Object getContent(String fileName);
+    
 	public EXistInputSource getInputSource();
 	
 	public EXistInputSource getInputSource(String describedItem);
