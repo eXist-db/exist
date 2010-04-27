@@ -47,9 +47,6 @@ public class VersioningRepositoryImpl {
 	
     public final static Logger LOG = Logger.getLogger(VersioningRepositoryImpl.class);
 
-    private String name = "anonymous";
-    private String password = "anonymous";
-    
     private boolean connected = false;
     private long latestRevision = -1;
     
@@ -61,6 +58,10 @@ public class VersioningRepositoryImpl {
     }
 
     public boolean connect(XmldbURI collection, String url) {
+    	return connect(collection, url, "anonymous", "anonymous");
+    }
+
+    public boolean connect(XmldbURI collection, String url, String username, String password) {
 
     	if (connected)
     		return true;
@@ -76,7 +77,7 @@ public class VersioningRepositoryImpl {
             return false;
         }
 
-        ISVNAuthenticationManager authManager = new BasicAuthenticationManager(name, password);
+        ISVNAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
         repository.setAuthenticationManager(authManager);
 
         try {
@@ -131,6 +132,10 @@ public class VersioningRepositoryImpl {
         FSRepositoryFactory.setup();
     }
     
+    protected boolean commit() {
+    	return update(latestRevision);
+    }
+
     protected boolean update() {
     	return update(latestRevision);
     }
