@@ -28,6 +28,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -111,6 +114,7 @@ public class SVNExportTest {
 			9907, 10524
 	};
 
+	@Ignore
 	@Test
 	public void testExportXML() throws SVNException {
 		assertNotNull("Database wasn't initilised.", testXML);
@@ -128,6 +132,54 @@ public class SVNExportTest {
 			System.out.println("update to rev "+rev);
 			assertTrue("Updating failed to rev "+rev, repository.update(rev));
 		}
+	}
+	
+	private String createRepository() {
+		HttpClient client = new HttpClient();
+
+		PostMethod method = new PostMethod("http://support.syntactica.com/cgi-bin/3A075407-AC4E-3308-9616FD4EB832EDBB.pl");
+
+		try {
+			int statusCode = client.executeMethod(method);
+
+			if (statusCode != HttpStatus.SC_OK) {
+		        return null;
+		    }
+			
+			return method.getResponseBodyAsString();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private void deleteRepository(String id) {
+		HttpClient client = new HttpClient();
+
+		PostMethod method = new PostMethod("http://support.syntactica.com/cgi-bin/938A1512-5156-11DF-A4C4-D82A2BCCFF1C.pl?d="+id);
+
+		try {
+			client.executeMethod(method);
+		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testCommitXML() throws SVNException {
+		assertNotNull("Database wasn't initilised.", testXML);
+
+		String repositoryID = createRepository();
+		assertNotNull(repositoryID);
+		
+		String repositoryURL = "https://support.syntactica.com/exist_svn/"+repositoryID+"/";
+
+		VersioningRepositoryImpl repository = new VersioningRepositoryImpl();
+
+		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
+
+		assertTrue("Can't connect to svn repository.", 
+				repository.connect(collectionURL, repositoryURL, "existtest", "existtest"));
+		
+		deleteRepository(repositoryID);
 	}
 
 	@Ignore
