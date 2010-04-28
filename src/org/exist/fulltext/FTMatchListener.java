@@ -32,7 +32,7 @@ public class FTMatchListener extends AbstractMatchListener {
     private final static Logger LOG = Logger.getLogger(FTMatchListener.class);
 
     private Match match;
-    private Stack offsetStack = null;
+    private Stack<NodeOffset> offsetStack = null;
 
     public FTMatchListener(DBBroker broker, NodeProxy proxy) {
         reset(broker, proxy);
@@ -70,8 +70,8 @@ public class FTMatchListener extends AbstractMatchListener {
             nextMatch = nextMatch.getNextMatch();
         }
         if (ancestors != null && !ancestors.isEmpty()) {
-            for (Iterator i = ancestors.iterator(); i.hasNext();) {
-                NodeProxy p = (NodeProxy) i.next();
+            for (Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
+                NodeProxy p = i.next();
                 int startOffset = 0;
                 try {
                     XMLStreamReader reader = broker.getXMLStreamReader(p, false);
@@ -89,7 +89,7 @@ public class FTMatchListener extends AbstractMatchListener {
                     LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
                 }
                 if (offsetStack == null)
-                    offsetStack = new Stack();
+                    offsetStack = new Stack<NodeOffset>();
                 offsetStack.push(new NodeOffset(p.getNodeId(), startOffset));
             }
         }
@@ -103,7 +103,7 @@ public class FTMatchListener extends AbstractMatchListener {
         while (nextMatch != null) {
             if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
                 if (offsetStack == null)
-                    offsetStack = new Stack();
+                    offsetStack = new Stack<NodeOffset>();
                 offsetStack.push(new NodeOffset(nextMatch.getNodeId()));
                 break;
             }
@@ -126,7 +126,7 @@ public class FTMatchListener extends AbstractMatchListener {
     }
 
     public void characters(CharSequence seq) throws SAXException {
-        List offsets = null;    // a list of offsets to process
+        List<Match.Offset> offsets = null;    // a list of offsets to process
         if (offsetStack != null) {
             // walk through the stack to find matches which start in
             // the current string of text
@@ -144,7 +144,7 @@ public class FTMatchListener extends AbstractMatchListener {
                                 offset.getOffset() + offset.getLength() > no.offset) {
                                 // add it to the list to be processed
                                 if (offsets == null) {
-                                    offsets = new ArrayList(4);
+                                    offsets = new ArrayList<Match.Offset>(4);
                                 }
                                 // adjust the offset and add it to the list
                                 int start = offset.getOffset() - no.offset;
@@ -171,7 +171,7 @@ public class FTMatchListener extends AbstractMatchListener {
             if (next.getIndexId() == FTIndex.ID &&
                 next.getNodeId().equals(getCurrentNode().getNodeId())) {
                 if (offsets == null)
-                    offsets = new ArrayList();
+                    offsets = new ArrayList<Match.Offset>();
                 int freq = next.getFrequency();
                 for (int i = 0; i < freq; i++) {
                     offsets.add(next.getOffset(i));
