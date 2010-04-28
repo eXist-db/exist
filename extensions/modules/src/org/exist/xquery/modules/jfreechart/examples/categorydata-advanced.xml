@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Sample data for JFreeChart. 
+    $Id: categorydata.xml 8835 2009-04-13 19:07:15Z dizzzz $ 
+-->
+<CategoryDataset>
+    <Series name="Series 1">
+        <Item>
+            <Key>Category 1</Key>
+            <Value>15.4</Value>
+        </Item>
+        <Item>
+            <Key>Category 2</Key>
+            <Value>12.7</Value>
+        </Item>
+        <Item>
+            <Key>Category 3</Key>
+            <Value>5.7</Value>
+        </Item>
+        <Item>
+            <Key>Category 4</Key>
+            <Value>9.1</Value>
+        </Item>
+    </Series>
+    <Series name="Series 2">
+        <Item>
+            <Key>Category 1</Key>
+            <Value>45.4</Value>
+        </Item>
+        <Item>
+            <Key>Category 2</Key>
+            <Value>73.7</Value>
+        </Item>
+        <Item>
+            <Key>Category 3</Key>
+            <Value>23.7</Value>
+        </Item>
+        <Item>
+            <Key>Category 4</Key>
+            <Value>19.4</Value>
+        </Item>
+    </Series>
+</CategoryDataset>
