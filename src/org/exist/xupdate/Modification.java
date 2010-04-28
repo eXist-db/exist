@@ -91,7 +91,7 @@ public abstract class Modification {
 	protected Map<String, Object> variables;
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap triggers;
+    protected Int2ObjectHashMap<DocumentTrigger> triggers;
 
     private AccessContext accessCtx;
 
@@ -107,7 +107,7 @@ public abstract class Modification {
 		this.docs = docs;
 		this.namespaces = new HashMap<String, String>(namespaces);
 		this.variables = new TreeMap<String, Object>(variables);
-        this.triggers = new Int2ObjectHashMap(97);
+        this.triggers = new Int2ObjectHashMap<DocumentTrigger>(97);
         // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
 
