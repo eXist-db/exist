@@ -51,9 +51,7 @@ public class SVNUnlock extends BasicFunction {
 			new QName("unlock", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Unlocks a resource in a subversion repository.\n\nThis is a stub and currently does nothing.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location in the subversion repository URI"),
-                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion password"),
+                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
                 new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource.")
             },
 			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));

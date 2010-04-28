@@ -44,24 +44,24 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
  * Time: 9:48:14 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SVNUpdate extends BasicFunction {
+public class SVNConnect extends BasicFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("update", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Updates a resource from a subversion repository.\n\nThis is a stub and currently does nothing.",
+			new QName("connect", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
+			"Establishes a connection to a subversion repository.\n\nThis is a stub and currently does nothing.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
-                new FunctionParameterSequenceType("revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The revision number to update to.  An empty value updates to the latest revision.")
+                new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The subversion repository URI"),
+                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The subversion password"),
             },
-			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "The commit information."));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "The connection information."));
 
     /**
      *
      * @param context
      */
-    public SVNUpdate(XQueryContext context) {
+    public SVNConnect(XQueryContext context) {
         super(context, signature);
     }
     /**
@@ -75,7 +75,7 @@ public class SVNUpdate extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 //        DAVRepositoryFactory.setup();
 //        SVNRepositoryFactoryImpl.setup();
-//        String uri = args[0].getStringValue();
+        String uri = args[0].getStringValue();
 //        try {
 //            SVNRepository repo =
 //                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
