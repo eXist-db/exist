@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    A sample pie dataset for JFreeChart. 
+    $Id: piedata.xml 8835 2009-04-13 19:07:15Z dizzzz $
+-->
+<PieDataset>
+  <Item>
+    <Key>Java</Key>
+    <Value>15.4</Value>
+  </Item>
+  <Item>
+    <Key>C++</Key>
+    <Value>12.7</Value>
+  </Item>
+  <Item>
+    <Key>PHP</Key>
+    <Value>5.7</Value>
+  </Item>
+  <Item>
+    <Key>Python</Key>
+    <Value>9.1</Value>
+  </Item>
+</PieDataset>
