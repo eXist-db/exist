@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -68,7 +69,7 @@ public class SVNLog extends BasicFunction {
                 new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to start from.  If empty, then start from the beginning."),
                 new FunctionParameterSequenceType("end-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to end with.  If empty, then end with the HEAD revision")
             },
-			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entries"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entries"));
 
     private final static QName LOG_ELEMENT = new QName("log", "", "");
     private final static QName ENTRY_ELEMENT = new QName("entry", "", "");
