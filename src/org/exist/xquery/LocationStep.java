@@ -1247,8 +1247,8 @@ public class LocationStep extends Step {
 			NodeSet temp = contextSet.getParents(contextId);
 			NodeSet result = new NewArrayNodeSet();
 			NodeProxy p;
-			for (Iterator i = temp.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
+			for (Iterator<NodeProxy> i = temp.iterator(); i.hasNext();) {
+				p = i.next();
 
 				if (test.matches(p)) {
 					result.add(p);
@@ -1682,10 +1682,10 @@ public class LocationStep extends Step {
 		
 		Predicate pred;
 
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
+		for (Iterator<Predicate> i = predicates.iterator(); i.hasNext();) {
 //				&& (result instanceof VirtualNodeSet || !result.isEmpty());) {
 			// TODO : log and/or profile ?
-			pred = (Predicate) i.next();
+			pred = i.next();
 			pred.setContextDocSet(getContextDocSet());
 
 			//result = pred.evalPredicate(outerSequence, result, axis);
@@ -1778,7 +1778,7 @@ public class LocationStep extends Step {
 		// LOG.debug("parentDepth for " + test.getName() + ": " + parentDepth);
 
 		if (useDirectChildSelect) {
-			NewArrayNodeSet result = new NewArrayNodeSet();
+			//NewArrayNodeSet result = new NewArrayNodeSet();
 			for (NodeProxy p : contextSet) {
 				if (p.directMatchChild(test.getName(), contextId))
 					return true;
