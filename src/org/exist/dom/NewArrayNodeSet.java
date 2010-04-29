@@ -1173,7 +1173,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
 
     // DocumentSet methods
 
-    public Iterator getDocumentIterator() {
+    public Iterator<DocumentImpl> getDocumentIterator() {
         sort();
         if (docIter != null)
             return docIter.reset();
@@ -1329,7 +1329,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      *
      * @return an <code>Iterator</code> value
      */
-    public Iterator getCollectionIterator() {
+    public Iterator<Collection> getCollectionIterator() {
         sort();
         if (cachedCollections == null) {
             cachedCollections = new HashSet<Collection>();

@@ -716,7 +716,7 @@ public class ElementImpl extends NamedNode implements Element {
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
-                final Iterator iterator = broker.getNodeIterator(this);
+                final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
                 iterator.next();
                 final int ccount = getChildCount();
                 for (int i = 0; i < ccount; i++) {
@@ -749,7 +749,7 @@ public class ElementImpl extends NamedNode implements Element {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator iterator = broker.getNodeIterator(this);
+            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch (EXistException e) {
@@ -760,11 +760,11 @@ public class ElementImpl extends NamedNode implements Element {
         return null;
     }
 
-    private AttrImpl findAttribute(String qname, Iterator iterator, StoredNode current) {
+    private AttrImpl findAttribute(String qname, Iterator<StoredNode> iterator, StoredNode current) {
     	final int ccount = current.getChildCount();
         StoredNode next;
         for (int i = 0; i < ccount; i++) {
-            next = (StoredNode) iterator.next();
+            next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
             	break;
             if (next.getNodeName().equals(qname))
@@ -777,7 +777,7 @@ public class ElementImpl extends NamedNode implements Element {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator iterator = broker.getNodeIterator(this);
+            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch (EXistException e) {
@@ -788,10 +788,10 @@ public class ElementImpl extends NamedNode implements Element {
         return null;
     }
 
-    private AttrImpl findAttribute(QName qname, Iterator iterator, StoredNode current) {
+    private AttrImpl findAttribute(QName qname, Iterator<StoredNode> iterator, StoredNode current) {
     	final int ccount = current.getChildCount();        
         for (int i = 0; i < ccount; i++) {
-        	StoredNode next = (StoredNode) iterator.next();
+        	StoredNode next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
             	break;
     		if (next.getQName().equalsSimple(qname))
@@ -890,7 +890,7 @@ public class ElementImpl extends NamedNode implements Element {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator iterator = broker.getNodeIterator(this);
+            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
             iterator.next();
             StoredNode next;
             for (int i = 0; i < getChildCount(); i++) {
