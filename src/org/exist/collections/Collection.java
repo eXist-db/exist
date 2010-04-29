@@ -1269,8 +1269,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         	return;
         //Allow just one configuration document per collection
         //TODO : do not throw the exception if a system property allows several ones -pb
-    	for(Iterator i = iterator(broker); i.hasNext(); ) {
-	        DocumentImpl confDoc = (DocumentImpl) i.next();
+    	for(Iterator<DocumentImpl> i = iterator(broker); i.hasNext(); ) {
+	        DocumentImpl confDoc = i.next();
 	        XmldbURI currentConfDocName = confDoc.getFileURI();
 	        if(currentConfDocName != null && !currentConfDocName.equals(docUri)) {
 	        	throw new EXistException("Could not store configuration '" + docUri + "': A configuration document with a different name ("
@@ -1562,8 +1562,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         ostream.writeInt(collectionId);
         ostream.writeInt(subcollections.size());
         XmldbURI childColl;
-        for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
-            childColl = (XmldbURI)i.next();
+        for (Iterator<XmldbURI> i = subcollections.iterator(); i.hasNext(); ) {
+            childColl = i.next();
             ostream.writeUTF(childColl.toString());
         }
         SecurityManager secman = broker.getBrokerPool().getSecurityManager();
@@ -1826,7 +1826,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
         buf.append("[");
-        for(Iterator i = documents.keySet().iterator(); i.hasNext(); ) {
+        for(Iterator<String> i = documents.keySet().iterator(); i.hasNext(); ) {
             buf.append(i.next());
             if(i.hasNext())
                 buf.append(", ");

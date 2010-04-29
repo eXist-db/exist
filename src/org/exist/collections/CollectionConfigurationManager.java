@@ -213,8 +213,8 @@ public class CollectionConfigurationManager {
             return;
         loadConfiguration(broker, configCollection);
         XmldbURI path = configCollection.getURI();
-        for (Iterator i = configCollection.collectionIterator(); i.hasNext(); ) {
-            XmldbURI childName = (XmldbURI) i.next();
+        for (Iterator<XmldbURI> i = configCollection.collectionIterator(); i.hasNext(); ) {
+            XmldbURI childName = i.next();
             Collection child = broker.getCollection(path.appendInternal(childName));
             if (child == null)
                 LOG.error("Collection is registered but could not be loaded: " + childName);
@@ -224,8 +224,8 @@ public class CollectionConfigurationManager {
 
     protected void loadConfiguration(DBBroker broker, Collection configCollection) throws CollectionConfigurationException {
         if (configCollection != null && configCollection.getDocumentCount() > 0) {
-            for(Iterator i = configCollection.iterator(broker); i.hasNext(); ) {
-                DocumentImpl confDoc = (DocumentImpl) i.next();
+            for(Iterator<DocumentImpl> i = configCollection.iterator(broker); i.hasNext(); ) {
+                DocumentImpl confDoc = i.next();
                 if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
                     if (LOG.isTraceEnabled())
                         LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
@@ -391,6 +391,7 @@ public class CollectionConfigurationManager {
         } 
     }
 
+    /*
     private void debugCache() {
         StringBuilder buf = new StringBuilder();
         for (Iterator i = configurations.keySet().iterator(); i.hasNext(); ) {
@@ -398,4 +399,5 @@ public class CollectionConfigurationManager {
         }
         LOG.debug(buf.toString());
     }
+    */
 }
