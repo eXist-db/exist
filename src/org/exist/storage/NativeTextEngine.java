@@ -420,8 +420,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         else
             token = expr;
         final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 250);
-		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
-            final int collectionId = ((Collection) iter.next()).getId();
+		for (Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
+            final int collectionId = (iter.next()).getId();
             Value key;
             if (qname == null)
                 key = new WordRef(collectionId, token);
@@ -570,7 +570,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final NodeSet result = new NewArrayNodeSet();
         final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, axis, docs, qname);
 		final Lock lock = dbTokens.getLock();		
-		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+		for (Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();        
             //Compute a key for the token                
             Value value;
@@ -611,7 +611,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	public String[] getIndexTerms(DocumentSet docs, TermMatcher matcher) {
         final IndexCallback cb = new IndexCallback(null, matcher);		
 		final Lock lock = dbTokens.getLock();		
-		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+		for (Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();  
             //Compute a key for the token                                 
             Value value = new WordRef(collectionId);
@@ -639,8 +639,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             throws PermissionDeniedException {
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, false);
         final Lock lock = dbTokens.getLock();
-		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {            
-            final int collectionId = ((Collection) i.next()).getId();          
+		for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {            
+            final int collectionId = (i.next()).getId();          
             final IndexQuery query;
             if (start == null) {
             	Value startRef = new WordRef(collectionId);            	
@@ -678,8 +678,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final Lock lock = dbTokens.getLock();
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, true);
         for (int q = 0; q < qnames.length; q++) {
-            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-                final int collectionId = ((Collection) i.next()).getId();
+            for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
+                final int collectionId = (i.next()).getId();
                 final IndexQuery query;
                 if (start == null) {
                     Value startRef = new QNameWordRef(collectionId, qnames[q],

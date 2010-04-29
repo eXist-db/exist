@@ -54,8 +54,8 @@ public class NotificationService extends IdentityHashMap {
 	 */
 	public synchronized void notifyUpdate(DocumentImpl document, int event) {
 		UpdateListener listener;
-		for (Iterator i = keySet().iterator(); i.hasNext(); ) {
-	        listener = (UpdateListener) i.next();
+		for (Iterator<UpdateListener> i = keySet().iterator(); i.hasNext(); ) {
+	        listener = i.next();
 	        listener.documentUpdated(document, event);
 		}
 	}
@@ -66,8 +66,8 @@ public class NotificationService extends IdentityHashMap {
 	 */
 	public synchronized void notifyMove(NodeId oldNodeId, StoredNode newNode) {
 		UpdateListener listener;
-		for (Iterator i = keySet().iterator(); i.hasNext(); ) {
-	        listener = (UpdateListener) i.next();
+		for (Iterator<UpdateListener> i = keySet().iterator(); i.hasNext(); ) {
+	        listener = i.next();
 	        listener.nodeMoved(oldNodeId, newNode);
 		}
 	}
@@ -75,8 +75,8 @@ public class NotificationService extends IdentityHashMap {
     public void debug() {
 		LOG.debug("Registered UpdateListeners:");
 		UpdateListener listener;
-		for (Iterator i = keySet().iterator(); i.hasNext(); ) {
-	        listener = (UpdateListener) i.next();
+		for (Iterator<UpdateListener> i = keySet().iterator(); i.hasNext(); ) {
+	        listener = i.next();
 	        listener.debug();
 		}
 	}
