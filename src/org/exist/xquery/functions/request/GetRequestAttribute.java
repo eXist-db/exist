@@ -91,7 +91,7 @@ public class GetRequestAttribute extends BasicFunction {
                 return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
             } else {
                 ValueSequence names = new ValueSequence();
-                for (Enumeration e = ((RequestWrapper) value.getObject()).getAttributeNames(); e.hasMoreElements(); ) {
+                for (Enumeration<String> e = ((RequestWrapper) value.getObject()).getAttributeNames(); e.hasMoreElements(); ) {
                     names.add(new StringValue(e.nextElement().toString()));
                 }
                 return names;

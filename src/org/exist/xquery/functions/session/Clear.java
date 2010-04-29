@@ -79,7 +79,7 @@ public class Clear extends BasicFunction {
 		if(session.getObject() instanceof SessionWrapper)
 		{
 			SessionWrapper sessionWrapper = (SessionWrapper)session.getObject();
-			for(Enumeration e = sessionWrapper.getAttributeNames(); e.hasMoreElements();)
+			for(Enumeration<String> e = sessionWrapper.getAttributeNames(); e.hasMoreElements();)
 			{
 				String attribName = (String) e.nextElement();
 				sessionWrapper.removeAttribute(attribName);
