@@ -128,7 +128,7 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
     
     private void returnModules(XQueryContext context, ExternalModule self) {
-   	 for (Iterator it = context.getRootModules(); it.hasNext(); ) {
+   	 for (Iterator<Module> it = context.getRootModules(); it.hasNext(); ) {
    		 Module module = (Module) it.next();
    		 if (module != self && !module.isInternalModule()) {
    			 ExternalModule extModule = (ExternalModule) module;
@@ -220,14 +220,14 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
     
     private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
-        Map borrowedModules = new TreeMap();
+        Map<String,Module> borrowedModules = new TreeMap<String,Module>();
         for (Iterator<Module> it = context.getAllModules(); it.hasNext(); ) {
             Module module = it.next();
             if (module == null || !module.isInternalModule()) {
                 ExternalModule extModule = (ExternalModule) module;
                 ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
                 if (borrowedModule == null) {
-                    for (Iterator it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
+                    for (Iterator<Module> it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
                         ExternalModule moduleToReturn = (ExternalModule) it2.next();
                         returnObject(moduleToReturn.getSource(), moduleToReturn);
                     }
@@ -245,14 +245,14 @@ public class XQueryPool extends Object2ObjectHashMap {
             if (context.getModule(moduleNamespace) != null) {
                 context.setModule(moduleNamespace, module);
             }
-            List importedModuleNamespaceUris = new ArrayList();
+            List<String> importedModuleNamespaceUris = new ArrayList<String>();
             for (Iterator<Module> it2 = module.getContext().getModules(); it2.hasNext(); ) {
                 Module nestedModule = it2.next();
                  if (!nestedModule.isInternalModule()) {
                     importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
                 }
             }
-            for (Iterator it2 = importedModuleNamespaceUris.iterator(); it2.hasNext(); ) {
+            for (Iterator<String> it2 = importedModuleNamespaceUris.iterator(); it2.hasNext(); ) {
                 String namespaceUri = (String) it2.next();
                 Module imported = (Module) borrowedModules.get(namespaceUri);
                 module.getContext().setModule(namespaceUri, imported);

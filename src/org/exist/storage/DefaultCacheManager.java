@@ -87,7 +87,7 @@ public class DefaultCacheManager implements CacheManager {
     public static final String SHRINK_THRESHOLD_PROPERTY  = "db-connection.cache-shrink-threshold";
     
     /** Caches maintained by this class */
-    private List caches = new ArrayList();
+    private List<Cache> caches = new ArrayList<Cache>();
 
     private long totalMem;
 

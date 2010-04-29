@@ -94,9 +94,9 @@ public class ProcessMonitor {
         synchronized (this) {
             JobInfo jobs[] = new JobInfo[processes.size()];
             int j = 0;
-            for (Iterator i = processes.values().iterator(); i.hasNext(); j++) {
+            for (Iterator<JobInfo> i = processes.values().iterator(); i.hasNext(); j++) {
                 //BUG: addInfo = XmldbURI ? -shabanovd
-                jobs[j] = (JobInfo) i.next();
+                jobs[j] = i.next();
             }
             return jobs;
         }

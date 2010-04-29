@@ -822,7 +822,7 @@ public class NativeValueIndex implements ContentLoadingObserver
     }
 
 
-    private NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames, Indexable value, NodeSet result ) throws TerminatedException
+    private NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result ) throws TerminatedException
     {
         return( findAll( relation, docs, contextSet, axis, qnames, value, result, null ) );
     }
@@ -844,12 +844,12 @@ public class NativeValueIndex implements ContentLoadingObserver
      *
      * @throws  TerminatedException  DOCUMENT ME!
      */
-    private NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames, Indexable value, NodeSet result, Collator collator ) throws TerminatedException
+    private NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result, Collator collator ) throws TerminatedException
     {
         final SearchCallback cb   = new SearchCallback( docs, contextSet, result, axis == NodeSet.ANCESTOR );
         final Lock           lock = dbValues.getLock();
 
-        for( Iterator iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+        for( Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = ( ( Collection )iter.next() ).getId();
             final int idxOp        = checkRelationOp( relation );
             Value     searchKey;
@@ -974,7 +974,7 @@ public class NativeValueIndex implements ContentLoadingObserver
     }
 
 
-    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result ) throws TerminatedException, EXistException
+    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result ) throws TerminatedException, EXistException
     {
         return( matchAll( docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, null, 0 ) );
     }
@@ -1000,7 +1000,7 @@ public class NativeValueIndex implements ContentLoadingObserver
      * @throws  TerminatedException  DOCUMENT ME!
      * @throws  EXistException       DOCUMENT ME!
      */
-    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation ) throws TerminatedException, EXistException
+    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation ) throws TerminatedException, EXistException
     {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
@@ -1067,8 +1067,8 @@ public class NativeValueIndex implements ContentLoadingObserver
         final MatcherCallback cb   = new MatcherCallback( docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR );
         final Lock            lock = dbValues.getLock();
 
-        for( Iterator iter = docs.getCollectionIterator(); iter.hasNext(); ) {
-            final int collectionId = ( ( Collection )iter.next() ).getId();
+        for( Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+            final int collectionId = iter.next().getId();
             Value     searchKey;
 
             if( qnames == null ) {
@@ -1143,7 +1143,7 @@ public class NativeValueIndex implements ContentLoadingObserver
         final IndexScanCallback cb         = new IndexScanCallback( docs, contextSet, type, false );
         final Lock              lock       = dbValues.getLock();
 
-        for( Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+        for( Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
 
             try {
                 lock.acquire( Lock.READ_LOCK );
@@ -1203,7 +1203,7 @@ public class NativeValueIndex implements ContentLoadingObserver
     public ValueOccurrences[] scanIndexKeys( DocumentSet docs, NodeSet contextSet, QName[] qnames, Indexable start )
     {
         if( qnames == null ) {
-            List qnlist = getDefinedIndexes( docs );
+            List<QName> qnlist = getDefinedIndexes( docs );
             qnames = new QName[qnlist.size()];
             qnames = ( QName[] )qnlist.toArray( qnames );
         }
@@ -1214,7 +1214,7 @@ public class NativeValueIndex implements ContentLoadingObserver
 
         for( int j = 0; j < qnames.length; j++ ) {
 
-            for( Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+            for( Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
 
                 try {
                     lock.acquire( Lock.READ_LOCK );
@@ -1258,11 +1258,11 @@ public class NativeValueIndex implements ContentLoadingObserver
     }
 
 
-    protected List getDefinedIndexes( DocumentSet docs )
+    protected List<QName> getDefinedIndexes( DocumentSet docs )
     {
-        List qnames = new ArrayList();
+        List<QName> qnames = new ArrayList<QName>();
 
-        for( Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+        for( Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = ( Collection )i.next();
             IndexSpec  idxConf    = collection.getIndexConfiguration( broker );
 
@@ -1916,7 +1916,7 @@ public class NativeValueIndex implements ContentLoadingObserver
 
     private class ValueIndexStreamListener extends AbstractStreamListener
     {
-        private Stack contentStack = null;
+        private Stack<XMLString> contentStack = null;
 
         public ValueIndexStreamListener()
         {
@@ -1931,7 +1931,7 @@ public class NativeValueIndex implements ContentLoadingObserver
             if( ( rSpec != null ) || ( qSpec != null ) ) {
 
                 if( contentStack == null ) {
-                    contentStack = new Stack();
+                    contentStack = new Stack<XMLString>();
                 }
                 XMLString contentBuf = new XMLString();
                 contentStack.push( contentBuf );
