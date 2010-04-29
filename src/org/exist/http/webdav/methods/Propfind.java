@@ -108,18 +108,18 @@ public class Propfind extends AbstractWebDAVMethod {
     private final static QName SUPPORTED_LOCK_PROP = new QName("supportedlock", WebDAV.DAV_NS, PREFIX);
     private final static QName EXCLUSIVE_LOCK_PROP = new QName("exclusive", WebDAV.DAV_NS, PREFIX);
     private final static QName WRITE_LOCK_PROP = new QName("write", WebDAV.DAV_NS, PREFIX);
-    private final static QName ETAG_PROP = new QName("etag", WebDAV.DAV_NS, PREFIX);
+    //private final static QName ETAG_PROP = new QName("etag", WebDAV.DAV_NS, PREFIX);
     private final static QName STATUS_PROP = new QName("status", WebDAV.DAV_NS, PREFIX);
     private final static QName COLLECTION_PROP = new QName("collection", WebDAV.DAV_NS, PREFIX);
     
     private final static QName LOCK_DISCOVERY_PROP = new QName("lockdiscovery", WebDAV.DAV_NS, PREFIX);
-    private final static QName ACTIVELOCK_PROP = new QName("activelock", WebDAV.DAV_NS, PREFIX);
+    //private final static QName ACTIVELOCK_PROP = new QName("activelock", WebDAV.DAV_NS, PREFIX);
     private final static QName LOCKTYPE_PROP = new QName("activelock", WebDAV.DAV_NS, PREFIX);
     private final static QName LOCK_SCOPE_PROP = new QName("lockscope", WebDAV.DAV_NS, PREFIX);
     private final static QName LOCK_DEPTH_PROP = new QName("depth", WebDAV.DAV_NS, PREFIX);
     private final static QName LOCK_OWNER_PROP = new QName("owner", WebDAV.DAV_NS, PREFIX);
     private final static QName LOCK_TIMEOUT_PROP = new QName("timeout", WebDAV.DAV_NS, PREFIX);
-    private final static QName LOCK_TOKEN_PROP = new QName("locktocken", WebDAV.DAV_NS, PREFIX);
+    //private final static QName LOCK_TOKEN_PROP = new QName("locktocken", WebDAV.DAV_NS, PREFIX);
     
     
     private final static QName[] DEFAULT_COLLECTION_PROPS = {
