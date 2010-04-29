@@ -83,9 +83,9 @@ public class GetAttributeNames extends BasicFunction {
 		{
 			ValueSequence result = new ValueSequence();
 			SessionWrapper sessionWrapper = (SessionWrapper)session.getObject();
-			for(Enumeration e = sessionWrapper.getAttributeNames(); e.hasMoreElements();)
+			for(Enumeration<String> e = sessionWrapper.getAttributeNames(); e.hasMoreElements();)
 			{
-				String attribName = (String) e.nextElement();
+				String attribName = e.nextElement();
 				result.add(new StringValue(attribName));
 			}
 			return result;

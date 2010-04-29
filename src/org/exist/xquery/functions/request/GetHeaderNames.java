@@ -86,9 +86,9 @@ public class GetHeaderNames extends BasicFunction {
                 if (value.getObject() instanceof RequestWrapper)
                 {
                         ValueSequence result = new ValueSequence();
-                        for (Enumeration e = ((RequestWrapper) value.getObject()).getHeaderNames(); e.hasMoreElements();)
+                        for (Enumeration<String> e = ((RequestWrapper) value.getObject()).getHeaderNames(); e.hasMoreElements();)
                         {
-                                String param = (String) e.nextElement();
+                                String param = e.nextElement();
                                 result.add(new StringValue(param));
                         }
                         return result;

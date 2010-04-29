@@ -170,7 +170,7 @@ public class Transform extends BasicFunction {
             new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
-	private final Map cache = new HashMap();
+	private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private boolean caching = true;
 
     private boolean stopOnError = true;

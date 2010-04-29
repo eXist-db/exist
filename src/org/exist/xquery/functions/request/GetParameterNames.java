@@ -82,11 +82,11 @@ public class GetParameterNames extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			ValueSequence result = new ValueSequence();
-			for (Enumeration e =
+			for (Enumeration<String> e =
 				((RequestWrapper) value.getObject()).getParameterNames();
 				e.hasMoreElements();
 				) {
-				String param = (String) e.nextElement();
+				String param = e.nextElement();
 				result.add(new StringValue(param));
 			}
 			return result;
