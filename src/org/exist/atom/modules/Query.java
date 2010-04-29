@@ -84,7 +84,7 @@ public class Query extends AtomModuleBase implements Atom {
    
    boolean allowQueryPost;
 
-   Map methods;
+   Map<String, MethodConfiguration> methods;
    MethodConfiguration get;
    MethodConfiguration post;
    MethodConfiguration put;
@@ -94,7 +94,7 @@ public class Query extends AtomModuleBase implements Atom {
    /** Creates a new instance of AtomProtocol */
    public Query() {
       xqueryMimeType = MimeTable.getInstance().getContentType("application/xquery");
-      methods = new HashMap();
+      methods = new HashMap<String, MethodConfiguration>();
       methods.put("GET",new MethodConfiguration());
       methods.put("POST",new MethodConfiguration());
       methods.put("PUT",new MethodConfiguration());
