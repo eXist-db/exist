@@ -38,7 +38,7 @@ public interface RequestWrapper {
 
     public Object getAttribute(String name);
 
-    public Enumeration getAttributeNames();
+    public Enumeration<String> getAttributeNames();
     
     public String getCharacterEncoding();
 	
@@ -62,7 +62,7 @@ public interface RequestWrapper {
 	
 	public String getParameter(String arg0);
 	
-	public Enumeration getParameterNames();
+	public Enumeration<String> getParameterNames();
 	
 	public String[] getParameterValues(String arg0);
 	

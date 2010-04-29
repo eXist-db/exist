@@ -133,7 +133,7 @@ public class Put extends AbstractWebDAVMethod {
                     LOG.debug("Create '0 byte' place for XML resource");
                     String txt="<!-- place holder for null byte sized XML document --><null/>";
                     
-                    InputSource is = new InputSource(url);
+                    //InputSource is = new InputSource(url);
                     IndexInfo info = collection.validateXMLResource(txn, broker, pathUri, txt);
                     doc = info.getDocument();
                     doc.getMetadata().setMimeType(contentType);

@@ -31,7 +31,7 @@ public interface SessionWrapper {
 	
 	public Object getAttribute(String arg0);
 	
-	public Enumeration getAttributeNames();
+	public Enumeration<String> getAttributeNames();
 	
 	public long getCreationTime();
 	

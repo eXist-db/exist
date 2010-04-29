@@ -401,9 +401,9 @@ public class XSLTServlet extends HttpServlet {
      */
     private void setTransformerParameters(HttpServletRequest request, Transformer transformer) throws XPathException {
         
-        for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
+        for (Enumeration<String> e = request.getAttributeNames(); e.hasMoreElements(); ) {
 
-            String name = (String) e.nextElement();
+            String name = e.nextElement();
             if (name.startsWith(REQ_ATTRIBUTE_PREFIX) &&
                 !(name.startsWith(REQ_ATTRIBUTE_OUTPUT) || REQ_ATTRIBUTE_INPUT.equals(name)
                                                             || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
@@ -424,8 +424,8 @@ public class XSLTServlet extends HttpServlet {
      * Copies 'output' attributes to properties object.
      */
     private void setOutputProperties(HttpServletRequest request, Properties properties) {
-        for (Enumeration e = request.getAttributeNames(); e.hasMoreElements(); ) {
-            String name = (String) e.nextElement();
+        for (Enumeration<String> e = request.getAttributeNames(); e.hasMoreElements(); ) {
+            String name = e.nextElement();
             if (name.startsWith(REQ_ATTRIBUTE_OUTPUT)) {
                 Object value = request.getAttribute(name);
                 if (value != null){
