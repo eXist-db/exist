@@ -102,7 +102,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                }
                
                // Return the collection feed
-               String charset = getContext().getDefaultCharset();
+               //String charset = getContext().getDefaultCharset();
                if (returnContent) {
                   if (id==null) {
                      response.setStatusCode(200);
