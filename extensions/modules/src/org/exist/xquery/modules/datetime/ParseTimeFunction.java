@@ -1,10 +1,10 @@
 package org.exist.xquery.modules.datetime;
 
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -49,7 +49,7 @@ public class ParseTimeFunction extends BasicFunction
         String dateFormat = args[1].itemAt(0).toString();
 
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        ParsePosition pp = new ParsePosition(0);
+        //ParsePosition pp = new ParsePosition(0);
 
         try
         {
