@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.httpclient;
 
-import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
