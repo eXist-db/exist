@@ -40,6 +40,6 @@
     <test output="text">
         <task>Simple eval</task>
         <code>xmlcalabash:process('xmldb:exist:///db/xmlcalabash-test/pipe.xml','-')</code>
-        <expected>&lt;test test="here"&gt;some test input&lt;/test&gt;</expected>
+        <expected><test test="here">some test input</test></expected>
     </test>
 </TestSet>
