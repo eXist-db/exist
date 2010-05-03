@@ -9,6 +9,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.SAXAdapter;
+import org.exist.memtree.DocumentImpl;
+import org.exist.Namespaces;
 
 import java.io.*;
 import java.net.URI;
@@ -24,6 +27,8 @@ import com.xmlcalabash.io.ReadablePipe;
 import com.xmlcalabash.util.S9apiUtils;
 import com.xmlcalabash.util.RelevantNodes;
 import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.SAXException;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.DocumentBuilder;
 import net.sf.saxon.s9api.XdmNode;
@@ -44,9 +49,11 @@ import net.sf.saxon.s9api.XQueryEvaluator;
 import net.sf.saxon.s9api.Serializer;
 
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.ParserConfigurationException;
 
 import com.xmlcalabash.runtime.XPipeline;
-
 
 public class ProcessFunction extends BasicFunction {
 
@@ -93,16 +100,38 @@ public class ProcessFunction extends BasicFunction {
         System.setOut(new PrintStream(byteStream, true));
         main.run(calabash_args);
         outputResult = byteStream.toString();
-
         System.setOut(stdout);
 
        } catch (Exception e) {
            System.err.println(e);
        }
 
-        ValueSequence result = new ValueSequence();
-        result.add(new StringValue(outputResult));
+        StringReader reader = new StringReader(outputResult);
+                try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            InputSource src = new InputSource(reader);
 
-        return result;
+            XMLReader xr = null;
+
+            if (xr == null) {
+                SAXParser parser = factory.newSAXParser();
+                xr = parser.getXMLReader();
+            }
+
+            SAXAdapter adapter = new SAXAdapter(context);
+            xr.setContentHandler(adapter);
+            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+            xr.parse(src);
+
+            return (DocumentImpl) adapter.getDocument();
+        } catch (ParserConfigurationException e) {
+            throw new XPathException(this, "Error while constructing XML parser: " + e.getMessage(), e);
+        } catch (SAXException e) {
+            throw new XPathException(this, "Error while parsing XML: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new XPathException(this, "Error while parsing XML: " + e.getMessage(), e);
+        }
+
 	}
 }
