@@ -138,7 +138,7 @@
         </and>
     </condition>
 
-    <target name="prepare-libs-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
+    <target name="prepare-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
         <echo message="Load: ${include.module.xslfo}"/>
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xsl-fo module"/>
@@ -265,7 +265,7 @@
         ========================================
     -->
 
-    <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql,prepare-jfreechart,prepare-xmpp">
+    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-xmpp">
         <mkdir dir="${classes}"/>
     </target>
 
