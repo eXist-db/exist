@@ -1,7 +1,11 @@
 This module relies on the presence of the following jar files in your EXIST_HOME/lib/user folder:
 
 	calabash.jar
-	saxon9pe.jar
+	saxon9pe.jar or saxon9he.jar or saxon9ee.jar
+
+
+If you are building from source then the module build process will try and download
+these files for you if you enable the module.
 
 Please read XML Calabash documentation for information on other dependencies related to using specific
 optional XProc steps.
