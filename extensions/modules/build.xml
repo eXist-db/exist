@@ -180,6 +180,49 @@
 
     </target>
 
+
+    <target name="prepare-xmlcalabash" unless="libs.available.xmlcalabash" if="include.module.xmlcalabash.config">
+        <echo message="Load: ${include.module.xslfo}"/>
+        <echo message="------------------------------------------------------"/>
+        <echo message="Downloading libraries required by the xsl-fo module"/>
+        <echo message="------------------------------------------------------"/>
+
+        <!-- Apache FOP -->
+        <get src="${include.module.xslfo.url}" dest="fop-0.95-bin.zip" verbose="true" usetimestamp="true"/>
+        <unzip src="fop-0.95-bin.zip" dest="${top.dir}/${lib.user}">
+            <patternset>
+                <include name="fop-0.95/build/fop.jar"/>
+                <include name="fop-0.95/lib/batik-all-1.7.jar"/>
+                <include name="fop-0.95/lib/xmlgraphics-commons-1.3.1.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        <delete file="fop-0.95-bin.zip"/>
+
+        <!-- Avalon API -->
+        <get src="${include.module.xslfo.avalon.api.url}" dest="avalon-framework-api-4.3.zip" verbose="true"
+            usetimestamp="true"/>
+        <unzip src="avalon-framework-api-4.3.zip" dest="${top.dir}/${lib.user}">
+            <patternset>
+                <include name="avalon-framework-api-4.3/avalon-framework-api-4.3.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        <delete file="avalon-framework-api-4.3.zip"/>
+
+        <!-- Avalon Impl -->
+        <get src="${include.module.xslfo.avalon.impl.url}" dest="avalon-framework-impl-4.3.zip" verbose="true"
+            usetimestamp="true"/>
+        <unzip src="avalon-framework-impl-4.3.zip" dest="${top.dir}/${lib.user}">
+            <patternset>
+                <include name="avalon-framework-impl-4.3/avalon-framework-impl-4.3.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        <delete file="avalon-framework-impl-4.3.zip"/>
+
+    </target>
+
     <!-- 
         Special targets for simpleql module 
     -->
