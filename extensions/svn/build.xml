@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="jar" name="svn">
+    
+    <property name="src" value="./src"/>
+    <property name="classes" value="./classes"/>
+    <property name="top.dir" value="../.."/>
+    
+    <property file="${top.dir}/build.properties"/>
+
+    <property file="../local.build.properties"/>
+    <property file="../build.properties"/>
+    
+    <condition property="include.feature.svn.config">
+        <istrue value="${include.feature.svn}"/>
+    </condition>
+    
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.endorsed}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.user}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/extensions">
+            <include name="**/lib/*.jar"/>
+        </fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+        <pathelement path="${top.dir}/exist-optional.jar"/>
+        <pathelement path="${top.dir}/start.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
+    
+    <target name="prepare">
+        <mkdir dir="${classes}"/>
+    </target>
+    
+    <target name="compile" depends="prepare" if="include.feature.svn.config">
+        <echo message="---------------------------"/>
+        <echo message="Compiling SVN module"/>
+        <echo message="---------------------------"/>
+        
+        <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+        
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
+            destdir="${classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src}" 
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+    </target>
+    
+    <target name="jar" depends="compile" if="include.feature.svn.config">
+        <echo message="Creating exist-svn.jar ..."/>
+        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-svn.jar">  
+            <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
+        </jar>
+    </target>
+    
+    <target name="clean">
+        <delete dir="${classes}"/>
+        <delete file="${top.dir}/${lib.extensions}/exist-svn.jar" failonerror="false"/>
+    </target>
+</project>
