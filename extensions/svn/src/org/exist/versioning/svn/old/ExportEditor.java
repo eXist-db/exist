@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.versioning.svn;
+package org.exist.versioning.svn.old;
 
 import java.io.File;
 import java.io.FileInputStream;

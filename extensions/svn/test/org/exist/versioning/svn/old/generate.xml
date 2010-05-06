@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test xmlns="http://exist.sourceforge.net/NS/exist">
+    <configuration>
+        <connection id="con" user="admin" password="" base="xmldb:exist://embedded-eXist-server"/>
+        <!-- <connection id="con" user="admin" password="" base="xmldb:exist://localhost:8080/exist/xmlrpc/"/> -->
+        <action name="sequence" class="org.exist.performance.ActionSequence"/>
+        <action name="create-collection" class="org.exist.performance.actions.CreateCollection"/>
+        <action name="remove-collection" class="org.exist.performance.actions.RemoveCollection"/>
+        <action name="store-files" class="org.exist.performance.actions.StoreFromFile"/>
+        <action name="store" class="org.exist.performance.actions.StoreInline"/>
+        <action name="generate" class="org.exist.performance.actions.DataGenerator"/>
+        <action name="xquery" class="org.exist.performance.actions.XQuery"/>
+    </configuration>
+    <group name="simple">
+        <setup connection="con">
+            <create-collection parent="/db" name="test"/>
+            <create-collection parent="/db/system/config" name="db"/>
+            <store collection="/db/system/config/db" name="collection.xconf">
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index>
+                        <fulltext default="all" attributes="false">
+                        </fulltext>
+                        
+                        <create path="//book/@id" type="xs:string"/>
+                        <create path="//book/@n" type="xs:integer"/>
+                        <create path="//section/@id" type="xs:string"/>
+                    </index>
+                </collection>
+            </store>
+            <generate count="1" todir="test/svn/temp" prefix="book">
+                <book xmlns="" id="{$filename}" n="{$count}">
+                    <chapter>
+                        <title>{pt:random-text(7)}</title>
+                        
+                        {
+                        for $section in 1 to 8 return
+                        <section id="sect{$section}">
+                            <title>{pt:random-text(7)}</title>
+                            {
+                            for $para in 1 to 10 return
+                            <para>{pt:random-text(40)}</para>
+                            }
+                        </section>
+                        }
+                    </chapter>
+                </book>
+            </generate>
+            <store-files dir="test/svn/temp" includes="**/*.xml" collection="/db/test"/>
+        </setup>
+    </group>
+</test>

@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.versioning.svn;
+package org.exist.versioning.svn.old;
 
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;

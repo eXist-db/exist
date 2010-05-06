@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.versioning.svn;
+package org.exist.versioning.svn.old;
 
 import java.io.File;
 import java.util.Collection;
@@ -51,6 +51,7 @@ import org.tmatesoft.svn.core.wc.SVNCommitClient;
 import org.tmatesoft.svn.core.wc.SVNCommitPacket;
 import org.tmatesoft.svn.core.wc.SVNEvent;
 import org.tmatesoft.svn.core.wc.SVNEventAction;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
@@ -152,19 +153,19 @@ public class Subversion implements ISVNEventHandler {
 		return null;
 	}
 
-	protected boolean update() throws SVNException {
-		return update(latestRevision());
+	public boolean update() throws SVNException {
+		return update(SVNRevision.HEAD);
 	}
 
-	protected boolean update(long toRevision) throws SVNException {
-		ISVNReporterBaton reporterBaton = new ExportReporterBaton(toRevision);
+	public boolean update(SVNRevision toRevision) throws SVNException {
+		ISVNReporterBaton reporterBaton = new ExportReporterBaton(toRevision.getNumber());
 
 		ISVNEditor exportEditor;
 
 		try {
 			exportEditor = new ExportEditor(collection);
 
-			repository.update(toRevision, null, true, reporterBaton,
+			repository.update(toRevision.getNumber(), null, true, reporterBaton,
 					exportEditor);
 
 		} catch (EXistException e) {
