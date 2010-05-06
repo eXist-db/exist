@@ -326,7 +326,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 	Committed to revision 74
  * 
  */
-public class WorkingCopy {
+public class WorkingCopyTest {
 
     private static String myHomePath = "/db";
     private static String myWorkingCopyName = "MyWorkingCopy";
