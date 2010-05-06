@@ -11,25 +11,17 @@
  */
 package org.exist.versioning.svn;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.exist.storage.DBBroker;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.wc.ISVNEventHandler;
 import org.exist.versioning.svn.wc.SVNClientManager;
 import org.exist.versioning.svn.wc.SVNCopySource;
 import org.exist.versioning.svn.wc.SVNUpdateClient;
 import org.exist.versioning.svn.wc.SVNWCUtil;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
@@ -37,25 +29,16 @@ import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
-import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.wc.SVNRevision;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 public class WorkingCopy {
 
-    private static XmldbURI myHomePath = null;
-	
     private static SVNClientManager ourClientManager;
     private static ISVNEventHandler myCommitEventHandler;
     private static ISVNEventHandler myUpdateEventHandler;
     private static ISVNEventHandler myWCEventHandler;
     
-    public WorkingCopy(XmldbURI collectionPath, String username, String password) {
-    	myHomePath = collectionPath;
+    public WorkingCopy(String username, String password) {
     	
     	setupLibrary();
 
