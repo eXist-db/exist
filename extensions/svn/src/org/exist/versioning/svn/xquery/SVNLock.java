@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.xquery.modules.svn;
+package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;

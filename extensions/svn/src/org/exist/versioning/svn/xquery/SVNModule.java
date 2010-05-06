@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.xquery.modules.svn;
+package org.exist.versioning.svn.xquery;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -33,16 +33,23 @@ import org.exist.xquery.FunctionDef;
  */
 public class SVNModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/svn";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/versioning/svn";
 
-	public final static String PREFIX = "svn";
-    public final static String INCLUSION_DATE = "2008-04-05";
-    public final static String RELEASED_IN_VERSION = "eXist-1.4";
+	public final static String PREFIX = "subversion";
+    public final static String INCLUSION_DATE = "2010-05-06";
+    public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
 
 	private final static FunctionDef[] functions = {
-            new FunctionDef(SVNLog.signature, SVNLog.class),
+            new FunctionDef(SVNCleanup.signature, SVNCleanup.class),
+            new FunctionDef(SVNCommit.signature, SVNCommit.class),
+            new FunctionDef(SVNConnect.signature, SVNConnect.class),
+            new FunctionDef(SVNDisconnect.signature, SVNDisconnect.class),
             new FunctionDef(SVNLatestRevision.signature, SVNLatestRevision.class),
+            new FunctionDef(SVNLock.signature, SVNLock.class),
+            new FunctionDef(SVNLog.signature, SVNLog.class),
+            new FunctionDef(SVNUnlock.signature, SVNUnlock.class),
+            new FunctionDef(SVNUpdate.signature, SVNUpdate.class)
 	};
 
 	public SVNModule() {

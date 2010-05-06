@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.xquery.modules.svn;
+package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
@@ -44,24 +44,24 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
  * Time: 9:48:14 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SVNCleanup extends BasicFunction {
+public class SVNCommit extends BasicFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("clean-up", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"? a resource to a subversion repository.\n\nThis is a stub and currently does nothing.",
+			new QName("commit", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
+			"Commits a resource to a subversion repository.\n\nThis is a stub and currently does nothing.",
 			new SequenceType[] {
                 new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource."),
-                new FunctionParameterSequenceType("delete", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "")
+                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
+                new FunctionParameterSequenceType("message", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN commit message.")
             },
-			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "The commit information."));
 
     /**
      *
      * @param context
      */
-    public SVNCleanup(XQueryContext context) {
+    public SVNCommit(XQueryContext context) {
         super(context, signature);
     }
     /**
@@ -75,7 +75,7 @@ public class SVNCleanup extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 //        DAVRepositoryFactory.setup();
 //        SVNRepositoryFactoryImpl.setup();
-//        String uri = args[0].getStringValue();
+        String uri = args[0].getStringValue();
 //        try {
 //            SVNRepository repo =
 //                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));

@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.xquery.modules.svn;
+package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
@@ -44,24 +44,22 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
  * Time: 9:48:14 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SVNCommit extends BasicFunction {
+public class SVNDisconnect extends BasicFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("commit", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Commits a resource to a subversion repository.\n\nThis is a stub and currently does nothing.",
+			new QName("disconnect", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
+			"Disconnect a connection to a subversion repository.\n\nThis is a stub and currently does nothing.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
-                new FunctionParameterSequenceType("message", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN commit message.")
+                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository")
             },
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "The commit information."));
+			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
 
     /**
      *
      * @param context
      */
-    public SVNCommit(XQueryContext context) {
+    public SVNDisconnect(XQueryContext context) {
         super(context, signature);
     }
     /**

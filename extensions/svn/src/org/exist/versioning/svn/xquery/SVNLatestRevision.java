@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.xquery.modules.svn;
+package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -52,8 +52,7 @@ public class SVNLatestRevision extends BasicFunction {
                 new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion password")
             },
-			new FunctionParameterSequenceType("revision-number", Type.LONG, Cardinality.EXACTLY_ONE, "The latest revision number of the repository"),
-                "Moved to subversion:get-latest-revision-number() with namespace http://exist-db.org/xquery/versioning/svn");
+			new FunctionParameterSequenceType("revision-number", Type.LONG, Cardinality.EXACTLY_ONE, "The latest revision number of the repository"));
 
 
     public SVNLatestRevision(XQueryContext context) {
