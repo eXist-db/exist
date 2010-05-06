@@ -19,7 +19,7 @@
  *
  * $Id$
  */
-package org.exist.xquery.modules.svn;
+package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
@@ -68,8 +68,7 @@ public class SVNLog extends BasicFunction {
                 new FunctionParameterSequenceType("start-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to start from.  If empty, then start from the beginning."),
                 new FunctionParameterSequenceType("end-revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The subversion revision to end with.  If empty, then end with the HEAD revision")
             },
-			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entries"),
-                "Moved to subversion:log() with namespace http://exist-db.org/xquery/versioning/svn");
+			new FunctionParameterSequenceType("logs", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the log entries"));
 
     private final static QName LOG_ELEMENT = new QName("log", "", "");
     private final static QName ENTRY_ELEMENT = new QName("entry", "", "");
