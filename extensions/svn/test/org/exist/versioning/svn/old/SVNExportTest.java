@@ -17,20 +17,29 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
-package org.exist.versioning.svn;
+package org.exist.versioning.svn.old;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.exist.EXistException;
+import org.exist.performance.Runner;
+import org.exist.performance.TestResultWriter;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -39,8 +48,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
+import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.w3c.dom.Document;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -86,11 +98,9 @@ public class SVNExportTest {
 			if (rev < 4758) continue;
 			
 			System.out.println("update to rev "+rev);
-			assertTrue("Updating failed to rev "+rev, repository.update(rev));
+			assertEquals((long)rev, repository.update(SVNRevision.create(rev)));
 		}
 	}
-
-	static Collection testXML = null;
 
 	// svn url
 	private String urlXML = "https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/webapp/xqts/";
@@ -114,9 +124,9 @@ public class SVNExportTest {
 	@Ignore
 	@Test
 	public void testExportXML() throws SVNException {
-		assertNotNull("Database wasn't initilised.", testXML);
+		assertNotNull("Database wasn't initilised.", test);
 
-		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
+		XmldbURI collectionURL = ((CollectionImpl) test).getPathURI();
 
 		Subversion repository = new Subversion(collectionURL, urlXML);
 
@@ -124,11 +134,13 @@ public class SVNExportTest {
 			if (rev < 4758) continue;
 			
 			System.out.println("update to rev "+rev);
-			assertTrue("Updating failed to rev "+rev, repository.update(rev));
+			assertEquals((long)rev, repository.update(SVNRevision.create(rev)));
 		}
 	}
 	
 	private String createRepository() {
+		if (local) return "svn";
+		
 		HttpClient client = new HttpClient();
 
 		PostMethod method = new PostMethod("http://support.syntactica.com/cgi-bin/3A075407-AC4E-3308-9616FD4EB832EDBB.pl");
@@ -147,6 +159,8 @@ public class SVNExportTest {
 	}
 
 	private void deleteRepository(String id) {
+		if (local) return;
+
 		HttpClient client = new HttpClient();
 
 		PostMethod method = new PostMethod("http://support.syntactica.com/cgi-bin/938A1512-5156-11DF-A4C4-D82A2BCCFF1C.pl?d="+id);
@@ -156,23 +170,75 @@ public class SVNExportTest {
 		} catch (Exception e) {
 		}
 	}
+	
+	//private String repositoryURL = "https://support.syntactica.com/exist_svn/";
+	private String myRepositoryURL = "file://localhost/srv/";
+	private boolean local = true;
 
 	@Test
-	public void testCommitXML() throws SVNException {
-		assertNotNull("Database wasn't initilised.", testXML);
+	public void testCommit() throws SVNException {
+		assertNotNull("Database wasn't initilised.", test);
 
 		String repositoryID = createRepository();
 		assertNotNull(repositoryID);
 		
-		String repositoryURL = "https://support.syntactica.com/exist_svn/"+repositoryID+"/";
+		String repositoryURL = myRepositoryURL+repositoryID+"/";
 
-		XmldbURI collectionURL = ((CollectionImpl) testXML).getPathURI();
+		XmldbURI collectionURL = ((CollectionImpl) test).getPathURI();
 
-		Subversion repository = new Subversion(collectionURL, repositoryURL, "existtest", "existtest");
+		Subversion repository = new Subversion(collectionURL, repositoryURL, "", "");
+		
+		repository.update(SVNRevision.HEAD);
+		
+		//create temp folder
+		File tmp = new File("test"+File.separator+"svn"+File.separator+"temp");
+		tmp.mkdirs();
+		
+		//load configuration for data generation
+        String configFilePath = "org/exist/versioning/svn/generate.xml";
+        InputStream is = getClass().getClassLoader().getResourceAsStream(configFilePath);
+        assertNotNull(is);
 
+        //generate data
+        Runner runner = null;
+        try {
+            runner = configure(is);
+            runner.run("simple");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("ERROR: " + e.getMessage());
+        }
+        
+        System.out.println( repository.latestRevision() );
+        
+//        repository.getChangelists(collectionURL, null, SVNDepth.INFINITY);
+        
+        try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+		}
+		
 		deleteRepository(repositoryID);
 	}
 
+    private Runner configure(InputStream is) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(is);
+
+            return new Runner(doc.getDocumentElement(), null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("ERROR: " + e.getMessage());
+        }
+        return null;
+    }
+
+	
 	@Ignore
 	@Test
 	public void testLog() throws SVNException {
@@ -220,13 +286,6 @@ public class SVNExportTest {
 			}
 
 			test = mgmt.createCollection("test");
-
-			try {
-				mgmt.removeCollection("testXML");
-			} catch (XMLDBException e) {
-			}
-
-			testXML = mgmt.createCollection("testXML");
 
 		} catch (Exception e) {
 			e.printStackTrace();
