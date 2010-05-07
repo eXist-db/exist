@@ -352,7 +352,7 @@ public class SVNWCUtil {
                     // now externals could point to our dir.
                     for (int i = 0; i < externals.length; i++) {
                         SVNExternal external = externals[i];
-                        File externalFile = new File(parent, external.getPath());
+                        File externalFile = new Resource(parent, external.getPath());
                         if (externalFile.equals(versionedDir)) {
                             return parentRoot;
                         }

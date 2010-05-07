@@ -21,14 +21,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.internal.wc.SVNErrorManager;
+import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNProperties;
 import org.tmatesoft.svn.core.SVNPropertyValue;
 import org.tmatesoft.svn.core.internal.util.SVNEncodingUtil;
-import org.tmatesoft.svn.core.internal.wc.SVNErrorManager;
-import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
 import org.tmatesoft.svn.util.SVNLogType;
 
 
@@ -38,10 +39,10 @@ import org.tmatesoft.svn.util.SVNLogType;
  */
 public class SVNLogImpl extends SVNLog {
 
-    private File myFile;
-    private File myTmpFile;
+    private Resource myFile;
+    private Resource myTmpFile;
 
-    public SVNLogImpl(File logFile, File tmpFile, SVNAdminArea adminArea) {
+    public SVNLogImpl(Resource logFile, Resource tmpFile, SVNAdminArea adminArea) {
         super(adminArea);
         myFile = logFile;
         myTmpFile = tmpFile;
@@ -54,7 +55,8 @@ public class SVNLogImpl extends SVNLog {
         
         Writer os = null;
         try {
-            os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(myTmpFile), "UTF-8");
+//            os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(myTmpFile), "UTF-8");
+          os = SVNFileUtil.openFileForWriting(myTmpFile);
             for (Iterator commands = myCache.iterator(); commands.hasNext();) {
                 SVNProperties command = (SVNProperties) commands.next();
                 SVNPropertyValue name = command.remove("");

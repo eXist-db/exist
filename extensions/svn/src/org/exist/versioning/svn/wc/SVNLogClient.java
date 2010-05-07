@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.SVNAnnotationGenerator;
 import org.exist.versioning.svn.internal.util.SVNDate;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
@@ -270,8 +271,8 @@ public class SVNLogClient extends SVNBasicClient {
         if (endRev < startRev) {
             SVNErrorManager.error(SVNErrorMessage.create(SVNErrorCode.CLIENT_BAD_REVISION, "Start revision must precede end revision"), SVNLogType.DEFAULT);
         }
-        File tmpFile = new File(path.getParentFile(), SVNFileUtil.getAdminDirectoryName());
-        tmpFile = new File(tmpFile, "tmp/text-base");
+        File tmpFile = new Resource(path.getParentFile(), SVNFileUtil.getAdminDirectoryName());
+        tmpFile = new Resource(tmpFile, "tmp/text-base");
         if (!tmpFile.isDirectory()) {
             tmpFile = SVNFileUtil.createTempDirectory("annotate");
         }
@@ -714,7 +715,7 @@ public class SVNLogClient extends SVNBasicClient {
         SVNRepository repos = null;
         if (rootWCPath != null && needsWC(pegRevision)) {            
             // open and use wc to create repository.
-            File root = new File(rootWCPath);
+            File root = new Resource(rootWCPath);
             SVNAdminArea area = wcAccess.probeOpen(root, false, 0);
             repos = createRepository(null, root, area, pegRevision, sessionRevision, null);
             if (area != null) {

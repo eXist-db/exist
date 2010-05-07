@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.ISVNCleanupHandler;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminAreaInfo;
@@ -324,7 +325,7 @@ public class SVNUpdateEditor15 implements ISVNUpdateEditor, ISVNCleanupHandler {
         if (SVNWCManager.ensureAdminAreaExists(childDir, myCurrentDirectory.URL, rootURL, null, 
                 myTargetRevision, myCurrentDirectory.myAmbientDepth)) {
             // hack : remove created lock file.
-            SVNFileUtil.deleteFile(new File(childDir, SVNFileUtil.getAdminDirectoryName() + "/lock"));
+            SVNFileUtil.deleteFile(new Resource(childDir, SVNFileUtil.getAdminDirectoryName() + "/lock"));
         }
         SVNAdminArea childArea = myWCAccess.open(childDir, true, 0);
         myWCAccess.registerCleanupHandler(childArea, myCurrentDirectory);
@@ -840,7 +841,7 @@ public class SVNUpdateEditor15 implements ISVNUpdateEditor, ISVNCleanupHandler {
                     "Destination directory of add-with-history is missing a URL");
             SVNErrorManager.error(err, SVNLogType.WC);
         }
-        dstDir = new File(SVNPathUtil.validateFilePath(dstDir.getAbsolutePath())).getAbsoluteFile();
+        dstDir = new Resource(SVNPathUtil.validateFilePath(dstDir.getAbsolutePath())).getAbsoluteFile();
         String dstReposPath = SVNPathUtil.getPathAsChild(dstEntry.getRepositoryRootURL().toDecodedString(), 
                 dstEntry.getSVNURL().toDecodedString());
         if (dstReposPath == null) {
@@ -900,7 +901,7 @@ public class SVNUpdateEditor15 implements ISVNUpdateEditor, ISVNCleanupHandler {
         }
         
         String extraComponents = SVNPathUtil.getPathAsChild(ancestorPath, copyFromPath);
-        currentWD = new File(currentWD, extraComponents);
+        currentWD = new Resource(currentWD, extraComponents);
         File currentWDParent = currentWD.getParentFile();
         
         kind = SVNFileType.getType(currentWD);
@@ -983,7 +984,7 @@ public class SVNUpdateEditor15 implements ISVNUpdateEditor, ISVNCleanupHandler {
         if (hasTextConflicts || hasPropConflicts) {
             info.isSkipped = true;
             Collection skippedPaths = getSkippedPaths();
-            File file = new File(myAdminInfo.getAnchor().getRoot(), path);
+            File file = new Resource(myAdminInfo.getAnchor().getRoot(), path);
             skippedPaths.add(file);
             SVNEvent event = SVNEventFactory.createSVNEvent(adminArea.getFile(info.Name), SVNNodeKind.FILE, 
                     null, myTargetRevision, hasTextConflicts ? SVNStatusType.CONFLICTED : SVNStatusType.UNKNOWN,
@@ -1372,7 +1373,7 @@ public class SVNUpdateEditor15 implements ISVNUpdateEditor, ISVNCleanupHandler {
             SVNAdminArea area = null;
             SVNEntry dirEntry = null;
             
-            File areaPath = new File(myAdminInfo.getAnchor().getRoot(), info.getPath());            
+            File areaPath = new Resource(myAdminInfo.getAnchor().getRoot(), info.getPath());            
             try {
                 area = myWCAccess.getAdminArea(areaPath);
                 if (area != null) {
@@ -1533,7 +1534,7 @@ public class SVNUpdateEditor15 implements ISVNUpdateEditor, ISVNCleanupHandler {
 
         public SVNAdminArea getAdminArea() throws SVNException {
             String path = getPath();
-            File file = new File(myAdminInfo.getAnchor().getRoot(), path);
+            File file = new Resource(myAdminInfo.getAnchor().getRoot(), path);
             SVNAdminArea area = myAdminInfo.getWCAccess().retrieve(file);
             if (myIsLockOnDemand && area != null && !area.isLocked()) {
                 area.lock(false);

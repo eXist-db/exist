@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.SVNAdminUtil;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNFileListUtil;
@@ -88,8 +89,8 @@ public class SVNXMLAdminArea extends SVNAdminArea {
 
     public SVNXMLAdminArea(File dir) {
         super(dir);
-        myLockFile = new File(getAdminDirectory(), "lock");
-        myEntriesFile = new File(getAdminDirectory(), "entries");
+        myLockFile = new Resource(getAdminDirectory(), "lock");
+        myEntriesFile = new Resource(getAdminDirectory(), "entries");
     }
 
     private void saveProperties(SVNLog log) throws SVNException {
@@ -314,10 +315,11 @@ public class SVNXMLAdminArea extends SVNAdminArea {
                 SVNErrorManager.error(err, SVNLogType.WC);
             }
     
-            File tmpFile = new File(getAdminDirectory(), "tmp/entries");
+            Resource tmpFile = new Resource(getAdminDirectory(), "tmp/entries");
             Writer os = null;
             try {
-                os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(tmpFile), "UTF-8");
+//                os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(tmpFile), "UTF-8");
+            	os = SVNFileUtil.openFileForWriting(tmpFile);
                 writeEntries(os);
             } catch (IOException e) {
                 SVNFileUtil.closeFile(os);
@@ -770,24 +772,24 @@ public class SVNXMLAdminArea extends SVNAdminArea {
     public SVNAdminArea createVersionedDirectory(File dir, String url, String rootURL, String uuid, long revNumber, boolean createMyself, SVNDepth depth) throws SVNException {
         dir = createMyself ? getRoot() : dir;
         dir.mkdirs();
-        File adminDir = createMyself ? getAdminDirectory() : new File(dir, SVNFileUtil.getAdminDirectoryName());
+        File adminDir = createMyself ? getAdminDirectory() : new Resource(dir, SVNFileUtil.getAdminDirectoryName());
         adminDir.mkdir();
         SVNFileUtil.setHidden(adminDir, true);
         // lock dir.
-        File lockFile = createMyself ? myLockFile : new File(adminDir, "lock");
+        File lockFile = createMyself ? myLockFile : new Resource(adminDir, "lock");
         SVNFileUtil.createEmptyFile(lockFile);
         SVNAdminUtil.createReadmeFile(adminDir);
-        SVNFileUtil.createEmptyFile(createMyself ? getAdminFile("empty-file") : new File(adminDir, "empty-file"));
+        SVNFileUtil.createEmptyFile(createMyself ? getAdminFile("empty-file") : new Resource(adminDir, "empty-file"));
         File[] tmp = {
-                createMyself ? getAdminFile("tmp") : new File(adminDir, "tmp"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "props") : new File(adminDir, "tmp" + File.separatorChar + "props"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "prop-base") : new File(adminDir, "tmp" + File.separatorChar + "prop-base"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "text-base") : new File(adminDir, "tmp" + File.separatorChar + "text-base"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "wcprops") : new File(adminDir, "tmp" + File.separatorChar + "wcprops"),
-                createMyself ? getAdminFile("props") : new File(adminDir, "props"), 
-                createMyself ? getAdminFile("prop-base") : new File(adminDir, "prop-base"),
-                createMyself ? getAdminFile("text-base") : new File(adminDir, "text-base"), 
-                createMyself ? getAdminFile("wcprops") : new File(adminDir, "wcprops")};
+                createMyself ? getAdminFile("tmp") : new Resource(adminDir, "tmp"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "props") : new Resource(adminDir, "tmp" + Resource.separatorChar + "props"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "prop-base") : new Resource(adminDir, "tmp" + Resource.separatorChar + "prop-base"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "text-base") : new Resource(adminDir, "tmp" + Resource.separatorChar + "text-base"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "wcprops") : new Resource(adminDir, "tmp" + Resource.separatorChar + "wcprops"),
+                createMyself ? getAdminFile("props") : new Resource(adminDir, "props"), 
+                createMyself ? getAdminFile("prop-base") : new Resource(adminDir, "prop-base"),
+                createMyself ? getAdminFile("text-base") : new Resource(adminDir, "text-base"), 
+                createMyself ? getAdminFile("wcprops") : new Resource(adminDir, "wcprops")};
         for (int i = 0; i < tmp.length; i++) {
             tmp[i].mkdir();
         }

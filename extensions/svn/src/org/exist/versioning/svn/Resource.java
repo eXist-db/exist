@@ -25,7 +25,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.Writer;
@@ -66,7 +65,7 @@ public class Resource extends File {
 
     protected XmldbURI uri;
     
-    private boolean initialized = false;
+    protected boolean initialized = false;
     
     private Collection collection = null;
     private DocumentImpl resource = null;
@@ -93,7 +92,13 @@ public class Resource extends File {
 		this.uri = resource.uri.append(child);
 	}
 
-    public Resource getParentFile() {
+	public Resource(String parent, String child) {
+		super(XmldbURI.create(parent).append(child).toString());
+
+		this.uri = XmldbURI.create(parent).append(child);
+	}
+
+	public Resource getParentFile() {
     	XmldbURI parentPath = uri.removeLastSegment();
 		if (parentPath == XmldbURI.EMPTY_URI) return null;
 
@@ -127,7 +132,7 @@ public class Resource extends File {
 		Txn transaction = tm.beginTransaction();
 		
 		try {
-			Collection child = broker.getOrCreateCollection(transaction, uri);
+			Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
 			broker.saveCollection(transaction, child);
 			tm.commit(transaction);
 		} catch (Exception e) {
@@ -389,8 +394,9 @@ public class Resource extends File {
 				if (resource == null) {
 					//may be, it's collection ... cheking ...
 					collection = broker.getCollection(uri);
-					if (collection == null)
+					if (collection == null) {
 						throw new IOException("Resource not found: "+uri);
+					}
 				} else {
 					collection = resource.getCollection();
 				}
@@ -507,7 +513,35 @@ public class Resource extends File {
 	}
 
 	public Collection getCollection() throws IOException {
-		init();
+		if (!initialized) {
+	    	DBBroker broker = null; 
+			BrokerPool db = null;
+
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				throw new IOException(e);
+			}
+
+			try {
+				if (uri.endsWith("/")) {
+					collection = broker.getCollection(uri);
+				} else {
+					collection = broker.getCollection(uri);
+					if (collection == null)
+						collection = broker.getCollection(uri.removeLastSegment());
+				}
+				if (collection == null)
+					throw new IOException("Collection not found: "+uri);
+				
+				return collection;
+			} catch (Exception e) {
+				throw new IOException(e);
+			} finally {
+				db.release(broker);
+			}
+		}
 
 		if (resource == null)
 			return collection;

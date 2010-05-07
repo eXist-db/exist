@@ -19,13 +19,13 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 
 import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.internal.wc.SVNErrorManager;
+import org.exist.versioning.svn.internal.wc.SVNFileType;
+import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.internal.wc.SVNErrorManager;
-import org.tmatesoft.svn.core.internal.wc.SVNFileType;
-import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
 import org.tmatesoft.svn.util.SVNLogType;
 
 /**
@@ -107,8 +107,8 @@ public class SVNAdminArea14Factory extends SVNAdminAreaFactory {
     }
     
     protected int getVersion(File path) throws SVNException {
-        File adminDir = new File(path, SVNFileUtil.getAdminDirectoryName());
-        File entriesFile = new File(adminDir, "entries");
+        File adminDir = new Resource(path, SVNFileUtil.getAdminDirectoryName());
+        File entriesFile = new Resource(adminDir, "entries");
         int formatVersion = -1;
 
         BufferedReader reader = null;

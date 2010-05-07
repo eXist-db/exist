@@ -32,6 +32,7 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.wc.ISVNConflictHandler;
 import org.exist.versioning.svn.wc.ISVNMerger;
 import org.exist.versioning.svn.wc.ISVNMergerFactory;
@@ -677,8 +678,8 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
     private SVNCompositeConfigFile getConfigFile() {
         if (myConfigFile == null) {
             SVNConfigFile.createDefaultConfiguration(myConfigDirectory);
-            SVNConfigFile userConfig = new SVNConfigFile(new File(myConfigDirectory, "config"));
-            SVNConfigFile systemConfig = new SVNConfigFile(new File(SVNFileUtil.getSystemConfigurationDirectory(), "config"));
+            SVNConfigFile userConfig = new SVNConfigFile(new Resource(myConfigDirectory, "config"));
+            SVNConfigFile systemConfig = new SVNConfigFile(new Resource(SVNFileUtil.getSystemConfigurationDirectory(), "config"));
             myConfigFile = new SVNCompositeConfigFile(systemConfig, userConfig);
             myConfigFile.setGroupsToOptions(myConfigOptions);
         }

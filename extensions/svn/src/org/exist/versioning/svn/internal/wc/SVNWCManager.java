@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminAreaFactory;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminAreaInfo;
@@ -768,7 +769,7 @@ public class SVNWCManager {
     }
 
     public static boolean isEntrySwitched(File path, SVNEntry entry) throws SVNException {
-        path = new File(SVNPathUtil.validateFilePath(path.getAbsolutePath())).getAbsoluteFile();
+        path = new Resource(SVNPathUtil.validateFilePath(path.getAbsolutePath())).getAbsoluteFile();
         File parent = path.getParentFile();
         if (parent == null) {
             return false;
@@ -813,7 +814,7 @@ public class SVNWCManager {
         SVNWCAccess wcAccess = info.getWCAccess();
         File fullPath = info.getAnchor().getRoot();
         if (!"".equals(info.getTargetName())) {
-            fullPath = new File(fullPath, info.getTargetName());
+            fullPath = new Resource(fullPath, info.getTargetName());
         }
         SVNEntry targetEntry = wcAccess.getEntry(fullPath, false);
         if (targetEntry == null || !targetEntry.isDirectory()) {
@@ -930,7 +931,7 @@ public class SVNWCManager {
             if (entry.isThisDir()) {
                 continue;
             }
-            File entryPath = new File(path, entry.getName());
+            File entryPath = new Resource(path, entry.getName());
             if (entry.isFile()) {
                 if (depth == SVNDepth.EMPTY) {
                     try {

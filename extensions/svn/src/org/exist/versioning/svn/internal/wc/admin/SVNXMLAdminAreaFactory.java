@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 
+import org.exist.versioning.svn.Resource;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
@@ -61,8 +62,8 @@ public class SVNXMLAdminAreaFactory extends SVNAdminAreaFactory {
     }
 
     protected int doCheckWC(File path, Level logLevel) throws SVNException {
-        File adminDir = new File(path, SVNFileUtil.getAdminDirectoryName());
-        File formatFile = new File(adminDir, "format");
+        File adminDir = new Resource(path, SVNFileUtil.getAdminDirectoryName());
+        File formatFile = new Resource(adminDir, "format");
         int formatVersion = -1;
 
         BufferedReader reader = null;
@@ -105,8 +106,8 @@ public class SVNXMLAdminAreaFactory extends SVNAdminAreaFactory {
     }
 
     protected int getVersion(File path) throws SVNException {
-        File adminDir = new File(path, SVNFileUtil.getAdminDirectoryName());
-        File formatFile = new File(adminDir, "format");
+        File adminDir = new Resource(path, SVNFileUtil.getAdminDirectoryName());
+        File formatFile = new Resource(adminDir, "format");
         BufferedReader reader = null;
         String line = null;
         int formatVersion = -1;

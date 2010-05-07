@@ -53,9 +53,9 @@ public class ConflictedMerge {
         //initialize SVNKit to work through file:/// protocol
         SamplesUtility.initializeFSFSprotocol();
         
-        File baseDirectory = new File(args[0]);
-        File reposRoot = new File(baseDirectory, "exampleRepository");
-        File wcRoot = new File(baseDirectory, "exampleWC");
+        File baseDirectory = new Resource(args[0]);
+        File reposRoot = new Resource(baseDirectory, "exampleRepository");
+        File wcRoot = new Resource(baseDirectory, "exampleWC");
         
         try {
             //first create a repository and fill it with data

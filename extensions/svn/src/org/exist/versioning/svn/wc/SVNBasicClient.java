@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.util.SVNMergeInfoUtil;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNFileUtil;
@@ -688,7 +689,7 @@ public class SVNBasicClient implements ISVNEventHandler {
         SVNWCAccess wcAccess = createWCAccess();
         Map mergeInfo = null;
         if (limitPath != null) {
-        	limitPath = new File(SVNPathUtil.validateFilePath(limitPath.getAbsolutePath())).getAbsoluteFile();
+        	limitPath = new Resource(SVNPathUtil.validateFilePath(limitPath.getAbsolutePath())).getAbsoluteFile();
         }
         
         try {
@@ -704,7 +705,7 @@ public class SVNBasicClient implements ISVNEventHandler {
                     break;
                 }
     
-                path = new File(SVNPathUtil.validateFilePath(path.getAbsolutePath())).getAbsoluteFile();
+                path = new Resource(SVNPathUtil.validateFilePath(path.getAbsolutePath())).getAbsoluteFile();
                 if (wcMergeInfo == null && inherit != SVNMergeInfoInheritance.EXPLICIT &&
                 		path.getParentFile() != null) {
                     

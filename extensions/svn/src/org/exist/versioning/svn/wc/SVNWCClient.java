@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.SVNAdminUtil;
 import org.exist.versioning.svn.internal.wc.SVNCancellableOutputStream;
 import org.exist.versioning.svn.internal.wc.SVNCommitUtil;
@@ -2232,9 +2233,9 @@ public class SVNWCClient extends SVNBasicClient {
         repository.lock(pathsToRevisions, lockMessage, stealLock, new ISVNLockHandler() {
             public void handleLock(String path, SVNLock lock, SVNErrorMessage error) throws SVNException {
                 if (error != null) {
-                    handleEvent(SVNEventFactory.createLockEvent(new File(path), SVNEventAction.LOCK_FAILED, lock, error), ISVNEventHandler.UNKNOWN);
+                    handleEvent(SVNEventFactory.createLockEvent(new Resource(path), SVNEventAction.LOCK_FAILED, lock, error), ISVNEventHandler.UNKNOWN);
                 } else {
-                    handleEvent(SVNEventFactory.createLockEvent(new File(path), SVNEventAction.LOCKED, lock, null), ISVNEventHandler.UNKNOWN);
+                    handleEvent(SVNEventFactory.createLockEvent(new Resource(path), SVNEventAction.LOCKED, lock, null), ISVNEventHandler.UNKNOWN);
                 }
             }
 
@@ -2345,9 +2346,9 @@ public class SVNWCClient extends SVNBasicClient {
 
             public void handleUnlock(String path, SVNLock lock, SVNErrorMessage error) throws SVNException {
                 if (error != null) {
-                    handleEvent(SVNEventFactory.createLockEvent(new File(path), SVNEventAction.UNLOCK_FAILED, null, error), ISVNEventHandler.UNKNOWN);
+                    handleEvent(SVNEventFactory.createLockEvent(new Resource(path), SVNEventAction.UNLOCK_FAILED, null, error), ISVNEventHandler.UNKNOWN);
                 } else {
-                    handleEvent(SVNEventFactory.createLockEvent(new File(path), SVNEventAction.UNLOCKED, null, null), ISVNEventHandler.UNKNOWN);
+                    handleEvent(SVNEventFactory.createLockEvent(new Resource(path), SVNEventAction.UNLOCKED, null, null), ISVNEventHandler.UNKNOWN);
                 }
             }
         });
@@ -2965,7 +2966,7 @@ public class SVNWCClient extends SVNBasicClient {
                 SVNExternal[] externalDefs = SVNExternal.parseExternals("", value);
                 for (int i = 0; i < externalDefs.length; i++) {
                     String externalPath = externalDefs[i].getPath();
-                    File externalDir = new File(info.getAnchor().getRoot(), SVNPathUtil.append(path, externalPath));
+                    File externalDir = new Resource(info.getAnchor().getRoot(), SVNPathUtil.append(path, externalPath));
                     if (processedDirs.add(externalDir)) {
                         //if externalDir is an empty unversioned dir SVNFileType won't help us to avoid 
                     	//getting in an infinite loop
@@ -2999,7 +3000,7 @@ public class SVNWCClient extends SVNBasicClient {
                 SVNExternal[] externalDefs = SVNExternal.parseExternals("", value);
                 for (int i = 0; i < externalDefs.length; i++) {
                     String externalPath = externalDefs[i].getPath();
-                    File externalDir = new File(info.getAnchor().getRoot(), SVNPathUtil.append(path, externalPath));
+                    File externalDir = new Resource(info.getAnchor().getRoot(), SVNPathUtil.append(path, externalPath));
                     if (processedDirs.add(externalDir)) {
                         //if externalDir is an empty unversioned dir SVNFileType won't help us to avoid 
                         //getting in an infinite loop
@@ -3236,9 +3237,9 @@ public class SVNWCClient extends SVNBasicClient {
                 depth = segments;
             }
         }
-        wcAccess.probeOpen(new File(commonParentPath).getAbsoluteFile(), true, depth);
+        wcAccess.probeOpen(new Resource(commonParentPath).getAbsoluteFile(), true, depth);
         for (int i = 0; i < paths.length; i++) {
-            File file = new File(commonParentPath, paths[i]);
+            File file = new Resource(commonParentPath, paths[i]);
             SVNEntry entry = wcAccess.getVersionedEntry(file, false);
             if (entry.getURL() == null) {
                 SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.ENTRY_MISSING_URL, "''{0}'' has no URL", file);
@@ -3449,7 +3450,7 @@ public class SVNWCClient extends SVNBasicClient {
                 if (depth == SVNDepth.FILES && !childEntry.isFile()) {
                     continue;
                 }
-                File childPath = new File(path, childEntry.getName());
+                File childPath = new Resource(path, childEntry.getName());
                 reverted |= doRevert(childPath, dir, depthBelowHere, useCommitTimes, changeLists);
             }
             
@@ -3657,7 +3658,7 @@ public class SVNWCClient extends SVNBasicClient {
             if (entry.isThisDir() || entry.isFile()) {
                 continue;
             }
-            File childDir = new File(newArea.getRoot(), entry.getName());
+            File childDir = new Resource(newArea.getRoot(), entry.getName());
             SVNAdminArea childArea = newArea.getWCAccess().getAdminArea(childDir);
             if (childArea != null) {
                 setWCFormat(info, childArea, format);

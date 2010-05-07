@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
@@ -62,7 +63,7 @@ public class SVNAdminUtil {
         }
         OutputStream os = null;
         try {
-            os = SVNFileUtil.openFileForWriting(new File(adminDir, "README.txt"));
+            os = SVNFileUtil.openFileForWriting(new Resource(adminDir, "README.txt"), true);
             os.write(README_TEXT);            
         } catch (IOException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, e.getLocalizedMessage());
@@ -76,7 +77,7 @@ public class SVNAdminUtil {
     public static void createFormatFile(File adminDir) throws SVNException {
         OutputStream os = null;
         try {
-            os = SVNFileUtil.openFileForWriting(new File(adminDir, "format"));
+            os = SVNFileUtil.openFileForWriting(new Resource(adminDir, "format"), true);
             os.write(FORMAT_TEXT);            
         } catch (IOException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, e.getLocalizedMessage());
