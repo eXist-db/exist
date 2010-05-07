@@ -36,6 +36,14 @@ import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.exist.dom.QName;
+import org.exist.http.servlets.SessionWrapper;
+import org.exist.versioning.svn.old.Subversion;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.value.*;
+import org.tmatesoft.svn.core.SVNException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,9 +59,9 @@ public class SVNDisconnect extends BasicFunction {
 			new QName("disconnect", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Disconnect a connection to a subversion repository.\n\nThis is a stub and currently does nothing.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository")
+                    new FunctionParameterSequenceType("connection-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the connection")
             },
-			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true(), if successful."));
 
     /**
      *
@@ -71,19 +79,39 @@ public class SVNDisconnect extends BasicFunction {
      * @param contextSequence
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-//        DAVRepositoryFactory.setup();
-//        SVNRepositoryFactoryImpl.setup();
-        String uri = args[0].getStringValue();
+        boolean returnValue = false;
+
+        String connectionName = args[0].getStringValue();
+        JavaObjectValue session;
 //        try {
-//            SVNRepository repo =
-//                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
-//            ISVNAuthenticationManager authManager =
-//                    SVNWCUtil.createDefaultAuthenticationManager(args[1].getStringValue(), args[2].getStringValue());
-//            repo.setAuthenticationManager(authManager);
-//
+        Subversion subversion = null;
+        SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+
+        // session object is read from global variable $session
+        Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+
+        if( var == null || var.getValue() == null ) {
+            // No saved session, so create one
+            throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
+//            session = SessionModule.createSession( context, this );
+        } else if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
+            throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
+        } else {
+            session = (JavaObjectValue)var.getValue().itemAt( 0 );
+        }
+
+        if( session.getObject() instanceof SessionWrapper) {
+            subversion = (Subversion)((SessionWrapper)session.getObject()).getAttribute (connectionName );
+            if (subversion != null) {
+                ((SessionWrapper)session.getObject()).removeAttribute(connectionName);
+                returnValue = true;
+            }
+        } else {
+            throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
+        }
 //        } catch (SVNException e) {
 //            throw new XPathException(this, e.getMessage(), e);
 //        }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return( BooleanValue.valueOf( returnValue ) );
     }
 }
