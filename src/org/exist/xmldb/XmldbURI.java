@@ -162,7 +162,10 @@ public class XmldbURI implements Comparable<Object> {
 	 * @throws URISyntaxException If the given string is not a valid xmldb URI.
 	 */
 	protected XmldbURI(URI xmldbURI) throws URISyntaxException {
+		xmldbURI = xmldbURI.normalize();
+		
 		boolean hadXmldbPrefix=false;
+		
 		if(xmldbURI.getScheme()!=null) {
 			if (!XMLDB_SCHEME.equals(xmldbURI.getScheme())) {
 				throw new URISyntaxException(xmldbURI.toString(), "xmldb URI scheme does not start with " + XMLDB_URI_PREFIX);
