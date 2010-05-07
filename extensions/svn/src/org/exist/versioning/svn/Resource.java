@@ -264,7 +264,7 @@ public class Resource extends File {
             DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
             if (doc == null) {
             	tm.abort(transaction);
-            	return false;
+            	return true;
             }
             
             if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
