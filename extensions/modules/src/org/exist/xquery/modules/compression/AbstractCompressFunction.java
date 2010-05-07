@@ -389,7 +389,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		// iterate over child documents
 		MutableDocumentSet childDocs = new DefaultDocumentSet();
 		col.getDocuments(context.getBroker(), childDocs, true);
-		for (Iterator itChildDocs = childDocs.getDocumentIterator(); itChildDocs
+		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs
 				.hasNext();) {
 			DocumentImpl childDoc = (DocumentImpl) itChildDocs.next();
 			childDoc.getUpdateLock().acquire(Lock.READ_LOCK);
@@ -400,7 +400,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			}
 		}
 		// iterate over child collections
-		for (Iterator itChildCols = col.collectionIterator(); itChildCols.hasNext();) {
+		for (Iterator<XmldbURI> itChildCols = col.collectionIterator(); itChildCols.hasNext();) {
 			// get the child collection
 			XmldbURI childColURI = (XmldbURI) itChildCols.next();
 			Collection childCol = context.getBroker().getCollection(col.getURI().append(childColURI));
