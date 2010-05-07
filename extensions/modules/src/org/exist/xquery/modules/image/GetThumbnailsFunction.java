@@ -227,7 +227,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 		Image image = null;
 		ByteArrayOutputStream os = null;
 
-		Iterator i = allPictures.iterator(dbbroker);
+		Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
 
 		while (i.hasNext()) {
 			docImage = (DocumentImpl) i.next();

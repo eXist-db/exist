@@ -22,15 +22,13 @@
  */
 package org.exist.xquery.modules.context;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
-import org.exist.xquery.Function;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
@@ -42,7 +40,6 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 
@@ -215,7 +212,7 @@ public class ContextAttributes extends Function
 		synchronized( context ) {
 			// get the existing attributes map from the context
 			
-			HashMap<String, Sequence> attributes = (HashMap)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
+			HashMap<String, Sequence> attributes = (HashMap<String, Sequence>)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
 			
 			if( attributes != null ) {
 				Sequence value = attributes.get( key );
@@ -244,7 +241,7 @@ public class ContextAttributes extends Function
 		synchronized( context ) {
 			// get the existing attributes map from the context
 			
-			HashMap<String, Sequence> attributes = (HashMap)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
+			HashMap<String, Sequence> attributes = (HashMap<String, Sequence>)context.getXQueryContextVar( ATTRIBUTES_CONTEXTVAR );
 			
 			if( attributes == null ) {
 				// if there is no attributes map, create a new one
