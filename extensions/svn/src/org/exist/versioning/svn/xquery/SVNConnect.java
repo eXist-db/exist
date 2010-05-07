@@ -106,6 +106,7 @@ public class SVNConnect extends BasicFunction {
 
         if( session.getObject() instanceof SessionWrapper) {
             ((SessionWrapper)session.getObject()).setAttribute (connectionName, subversion );
+            returnValue = true;
         } else {
             throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
         }
