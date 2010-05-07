@@ -14,6 +14,7 @@ package org.exist.versioning.svn.wc;
 import java.io.File;
 import java.util.Date;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNEntry;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNDirEntry;
@@ -177,17 +178,17 @@ public class SVNInfo {
         
         if (file != null) {
             if (conflictOld != null) {
-                myConflictOldFile = new File(file.getParentFile(), conflictOld);
+                myConflictOldFile = new Resource(file.getParentFile(), conflictOld);
             }
             if (conflictNew != null) {
-                myConflictNewFile = new File(file.getParentFile(), conflictNew);
+                myConflictNewFile = new Resource(file.getParentFile(), conflictNew);
             }
             if (conflictWorking != null) {
-                myConflictWrkFile = new File(file.getParentFile(),
+                myConflictWrkFile = new Resource(file.getParentFile(),
                         conflictWorking);
             }
             if (propRejectFile != null) {
-                myPropConflictFile = new File(file.getParentFile(),
+                myPropConflictFile = new Resource(file.getParentFile(),
                         propRejectFile);
             }
         }

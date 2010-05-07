@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.SVNAmbientDepthFilterEditor;
 import org.exist.versioning.svn.internal.wc.SVNCancellableEditor;
 import org.exist.versioning.svn.internal.wc.SVNCancellableOutputStream;
@@ -1234,9 +1235,9 @@ public class SVNUpdateClient extends SVNBasicClient {
                     String path = (String) externals.next();
                     String external = (String) adminAreaInfo.getNewExternals().get(path);
                     SVNExternal[] exts = SVNExternal.parseExternals(path, external);
-                    File owner = new File(adminAreaInfo.getAnchor().getRoot(), path);
+                    File owner = new Resource(adminAreaInfo.getAnchor().getRoot(), path);
                     for (int i = 0; i < exts.length; i++) {
-                        File externalFile = new File(owner, exts[i].getPath()); 
+                        File externalFile = new Resource(owner, exts[i].getPath()); 
                         try {
                             doCanonicalizeURLs(externalFile, omitDefaultPort, true);
                         } catch (SVNCancelException e) {
@@ -1309,12 +1310,12 @@ public class SVNUpdateClient extends SVNBasicClient {
                     if (adminArea.getThisDirName().equals(childEntry.getName())) {
                         continue;
                     } else if (depth == SVNDepth.INFINITY) {
-                        File childTo = new File(to, childEntry.getName());
-                        File childFrom = new File(from, childEntry.getName());
+                        File childTo = new Resource(to, childEntry.getName());
+                        File childFrom = new Resource(from, childEntry.getName());
                         copyVersionedDir(childFrom, childTo, revision, eolStyle, force, depth);
                     }
                 } else if (childEntry.isFile()) {
-                    File childTo = new File(to, childEntry.getName());
+                    File childTo = new Resource(to, childEntry.getName());
                     copyVersionedFile(childTo, adminArea, childEntry.getName(), revision, eolStyle);
                 }
             }
@@ -1325,8 +1326,8 @@ public class SVNUpdateClient extends SVNBasicClient {
                     SVNExternal[] externals = SVNExternal.parseExternals(adminArea.getRoot().getAbsolutePath(), externalsValue);
                     for (int i = 0; i < externals.length; i++) {
                         SVNExternal info = externals[i];
-                        File srcPath = new File(adminArea.getRoot(), info.getPath());
-                        File dstPath = new File(to, info.getPath());
+                        File srcPath = new Resource(adminArea.getRoot(), info.getPath());
+                        File dstPath = new Resource(to, info.getPath());
                         if (SVNPathUtil.getSegmentsCount(info.getPath()) > 1) {
                             if (!dstPath.getParentFile().exists() && !dstPath.getParentFile().mkdirs()) {
                                 SVNErrorManager.error(SVNErrorMessage.create(SVNErrorCode.CLIENT_IS_DIRECTORY, "Could not create directory ''{0}''", dstPath.getParentFile()), SVNLogType.WC);
@@ -1432,7 +1433,7 @@ public class SVNUpdateClient extends SVNBasicClient {
         } else if (dstKind == SVNNodeKind.FILE) {
             String url = repository.getLocation().toString();
             if (dstPath.isDirectory()) {
-                dstPath = new File(dstPath, SVNEncodingUtil.uriDecode(SVNPathUtil.tail(url)));
+                dstPath = new Resource(dstPath, SVNEncodingUtil.uriDecode(SVNPathUtil.tail(url)));
             }
             if (dstPath.exists()) {
                 if (!force) {
@@ -1670,7 +1671,7 @@ public class SVNUpdateClient extends SVNBasicClient {
                 String path = (String) paths.next();
                 externalDiff.oldExternal = (SVNExternal) oldParsedExternals.get(path);
                 externalDiff.newExternal = (SVNExternal) newParsedExternals.get(path);
-                externalDiff.owner = new File(root, diffPath);
+                externalDiff.owner = new Resource(root, diffPath);
                 if (!isExport) {
                     externalDiff.ownerURL = getOwnerURL(externalDiff.owner);
                 } 
@@ -1684,7 +1685,7 @@ public class SVNUpdateClient extends SVNBasicClient {
                 if (!oldParsedExternals.containsKey(path)) {
                     externalDiff.oldExternal = null;
                     externalDiff.newExternal = (SVNExternal) newParsedExternals.get(path);
-                    externalDiff.owner = new File(root, diffPath);
+                    externalDiff.owner = new Resource(root, diffPath);
                     if (!isExport) {
                         externalDiff.ownerURL = getOwnerURL(externalDiff.owner);
                     } 
@@ -1725,7 +1726,7 @@ public class SVNUpdateClient extends SVNBasicClient {
         try {
             handleExternalChange(access, targetDir, externalDiff);
         } catch (SVNException svne) {
-            File target = new File(externalDiff.owner, targetDir);
+            File target = new Resource(externalDiff.owner, targetDir);
             SVNEvent event = SVNEventFactory.createSVNEvent(target, SVNNodeKind.UNKNOWN, null, SVNRepository.INVALID_REVISION, 
                     SVNEventAction.FAILED_EXTERNAL, SVNEventAction.UPDATE_EXTERNAL, svne.getErrorMessage(), null);
             dispatchEvent(event);
@@ -1746,7 +1747,7 @@ public class SVNUpdateClient extends SVNBasicClient {
      * oldURL is always null during checkout or export operation.
      */
     private void handleExternalChange(SVNWCAccess access, String targetDir, ExternalDiff externalDiff) throws SVNException {
-        File target = new File(externalDiff.owner, targetDir);
+        File target = new Resource(externalDiff.owner, targetDir);
         SVNURL oldURL = null;
         SVNURL newURL = null;
         String externalDefinition = null;

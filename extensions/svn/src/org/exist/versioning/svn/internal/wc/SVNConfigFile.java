@@ -12,14 +12,10 @@
 package org.exist.versioning.svn.internal.wc;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,11 +33,11 @@ import org.tmatesoft.svn.core.SVNException;
  */
 public class SVNConfigFile {
 
-    private File myFile;
+    private Resource myFile;
     private String[] myLines;
     private long myLastModified;
 
-    public SVNConfigFile(File file) {
+    public SVNConfigFile(Resource file) {
         myFile = file.getAbsoluteFile();
     }
     
@@ -222,7 +218,7 @@ public class SVNConfigFile {
         String eol = System.getProperty("line.separator");
         eol = eol == null ? "\n" : eol;
         try {
-            writer = new FileWriter(myFile);
+            writer = myFile.getWriter();
             for (int i = 0; i < myLines.length; i++) {
                 String line = myLines[i];
                 if (line == null) {
@@ -269,14 +265,14 @@ public class SVNConfigFile {
         return false;
     }
 
-    private String[] doLoad(File file) {
+    private String[] doLoad(Resource file) {
         if (!file.isFile() || !file.canRead()) {
             return new String[0];
         }
         BufferedReader reader = null;
         Collection lines = new ArrayList();
         try {
-            reader = new BufferedReader(new FileReader(myFile));
+            reader = new BufferedReader(file.getReader());
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
@@ -295,16 +291,16 @@ public class SVNConfigFile {
                 return;
             }
         }
-        File configFile = new Resource(configDir, "config");
-        File serversFile = new Resource(configDir, "servers");
-        File readmeFile = new Resource(configDir, "README.txt");
+        Resource configFile = new Resource(configDir, "config");
+        Resource serversFile = new Resource(configDir, "servers");
+        Resource readmeFile = new Resource(configDir, "README.txt");
         
         writeFile("/org/tmatesoft/svn/core/internal/wc/config/config", configFile);
         writeFile("/org/tmatesoft/svn/core/internal/wc/config/servers", serversFile);
         writeFile("/org/tmatesoft/svn/core/internal/wc/config/README.txt", readmeFile);
     }
 
-    private static void writeFile(String url, File configFile) {
+    private static void writeFile(String url, Resource configFile) {
         if (url == null || configFile == null || configFile.exists()) {
             return;
         }
@@ -316,7 +312,8 @@ public class SVNConfigFile {
         String eol = System.getProperty("line.separator", "\n");
         Writer os = null;
         try {
-            os = new BufferedWriter(new OutputStreamWriter(SVNFileUtil.openFileForWriting(configFile)));
+//            os = new BufferedWriter(new OutputStreamWriter(SVNFileUtil.openFileForWriting(configFile)));
+          os = SVNFileUtil.openFileForWriting(configFile);
             String line;
             while((line = is.readLine()) != null) {
                 os.write(line);

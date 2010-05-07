@@ -436,43 +436,43 @@ public class WorkingCopyTest {
         ourClientManager.getWCClient().setEventHandler(myWCEventHandler);
 
         long committedRevision = -1;
-        System.out.println("Making a new directory at '" + url + "'...");
-        try{
-            /*
-             * creates a new version comtrolled directory in a repository and 
-             * displays what revision the repository was committed to
-             */
-            committedRevision = makeDirectory(url, "making a new directory at '" + url + "'").getNewRevision();
-        }catch(SVNException svne){
-            error("error while making a new directory at '" + url + "'", svne);
-        }
-        System.out.println("Committed to revision " + committedRevision);
-        System.out.println();
-
-        Resource anImportDir = new Resource(myHomePath+importDir);
-        Resource anImportFile = new Resource(anImportDir, SVNPathUtil.tail(importFile));
-        /*
-         * creates a new local directory - './importDir' and a new file - 
-         * './importDir/importFile.txt' that will be imported into the repository
-         * into the '/MyRepos/importDir' directory 
-         */
-        createLocalDir(anImportDir, new Resource[]{anImportFile}, new String[]{importFileText});
-        
-        System.out.println("Importing a new directory into '" + importToURL + "'...");
-        try{
-            /*
-             * recursively imports an unversioned directory into a repository 
-             * and displays what revision the repository was committed to
-             */
-            boolean isRecursive = true;
-            committedRevision = importDirectory(anImportDir, importToURL, "importing a new directory '" + anImportDir.getAbsolutePath() + "'", isRecursive).getNewRevision();
-        }catch(SVNException svne){
-            error("error while importing a new directory '" + anImportDir.getAbsolutePath() + "' into '" + importToURL + "'", svne);
-        }
-        System.out.println("Committed to revision " + committedRevision);
-        System.out.println();
-        
-        
+//        System.out.println("Making a new directory at '" + url + "'...");
+//        try{
+//            /*
+//             * creates a new version comtrolled directory in a repository and 
+//             * displays what revision the repository was committed to
+//             */
+//            committedRevision = makeDirectory(url, "making a new directory at '" + url + "'").getNewRevision();
+//        }catch(SVNException svne){
+//            error("error while making a new directory at '" + url + "'", svne);
+//        }
+//        System.out.println("Committed to revision " + committedRevision);
+//        System.out.println();
+//
+//        Resource anImportDir = new Resource(myHomePath+importDir);
+//        Resource anImportFile = new Resource(anImportDir, SVNPathUtil.tail(importFile));
+//        /*
+//         * creates a new local directory - './importDir' and a new file - 
+//         * './importDir/importFile.txt' that will be imported into the repository
+//         * into the '/MyRepos/importDir' directory 
+//         */
+//        createLocalDir(anImportDir, new Resource[]{anImportFile}, new String[]{importFileText});
+//        
+//        System.out.println("Importing a new directory into '" + importToURL + "'...");
+//        try{
+//            /*
+//             * recursively imports an unversioned directory into a repository 
+//             * and displays what revision the repository was committed to
+//             */
+//            boolean isRecursive = true;
+//            committedRevision = importDirectory(anImportDir, importToURL, "importing a new directory '" + anImportDir.getAbsolutePath() + "'", isRecursive).getNewRevision();
+//        }catch(SVNException svne){
+//            error("error while importing a new directory '" + anImportDir.getAbsolutePath() + "' into '" + importToURL + "'", svne);
+//        }
+//        System.out.println("Committed to revision " + committedRevision);
+//        System.out.println();
+//        
+//        
         /*
          * creates a local directory where the working copy will be checked out into
          */

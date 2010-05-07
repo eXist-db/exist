@@ -624,46 +624,23 @@ public class SVNAdminArea14 extends SVNAdminArea {
                 SVNErrorManager.error(err, SVNLogType.DEFAULT);
             }
             
-            if (ourIsOptimizedWritingEnabled) {
-                File tmpFile = new File(getAdminDirectory(), "tmp/entries");
-                boolean renamed = myEntriesFile.renameTo(tmpFile);
-                if (!renamed) {
-                    myEntriesFile.delete();
-                    tmpFile = null;
-                }
-                Writer os = null;
-                try {
-                    os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(myEntriesFile), "UTF-8");
-                    writeEntries(os);
-                } catch (IOException e) {
-                    SVNFileUtil.closeFile(os);
-                    if (tmpFile != null) {
-                        SVNFileUtil.rename(tmpFile, myEntriesFile);
-                    }
-                    SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "Cannot write entries file ''{0}'': {1}", new Object[] {myEntriesFile, e.getLocalizedMessage()});
-                    SVNErrorManager.error(err, e, SVNLogType.WC);
-                } finally {
-                    SVNFileUtil.closeFile(os);
-                    SVNFileUtil.deleteFile(tmpFile);
-                }
-                SVNFileUtil.setReadonly(myEntriesFile, true);
-            } else {
-                File tmpFile = new Resource(getAdminDirectory(), "tmp/entries");
-                Writer os = null;
-                try {
-                    os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(tmpFile), "UTF-8");
-                    writeEntries(os);
-                } catch (IOException e) {
-                    SVNFileUtil.closeFile(os);
-                    SVNFileUtil.deleteFile(tmpFile);
-                    SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "Cannot write entries file ''{0}'': {1}", new Object[] {myEntriesFile, e.getMessage()});
-                    SVNErrorManager.error(err, e, SVNLogType.WC);
-                } finally {
-                    SVNFileUtil.closeFile(os);
-                }
-                SVNFileUtil.setReadonly(tmpFile, true);
-                SVNFileUtil.rename(tmpFile, myEntriesFile);
+            Resource tmpFile = new Resource(getAdminDirectory(), "tmp/entries");
+            Writer os = null;
+            try {
+                //os = new OutputStreamWriter(SVNFileUtil.openFileForWriting(tmpFile), "UTF-8");
+                os = SVNFileUtil.openFileForWriting(tmpFile);
+                writeEntries(os);
+            } catch (IOException e) {
+                SVNFileUtil.closeFile(os);
+                SVNFileUtil.deleteFile(tmpFile);
+                SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "Cannot write entries file ''{0}'': {1}", new Object[] {myEntriesFile, e.getMessage()});
+                SVNErrorManager.error(err, e, SVNLogType.WC);
+            } finally {
+                SVNFileUtil.closeFile(os);
             }
+            SVNFileUtil.setReadonly(tmpFile, true);
+            SVNFileUtil.rename(tmpFile, myEntriesFile);
+
             if (close) {
                 closeEntries();
             }

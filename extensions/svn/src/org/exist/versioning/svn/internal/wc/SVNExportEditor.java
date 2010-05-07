@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNTranslator;
 import org.exist.versioning.svn.wc.ISVNEventHandler;
 import org.exist.versioning.svn.wc.ISVNOptions;
@@ -83,7 +84,7 @@ public class SVNExportEditor implements ISVNEditor {
     }
 
     public void addDir(String path, String copyFromPath, long copyFromRevision) throws SVNException {
-        myCurrentDirectory = new File(myRoot, path);
+        myCurrentDirectory = new Resource(myRoot, path);
         myCurrentPath = path;
 
         SVNFileType dirType = SVNFileType.getType(myCurrentDirectory);
@@ -128,7 +129,7 @@ public class SVNExportEditor implements ISVNEditor {
 
     public void addFile(String path, String copyFromPath, long copyFromRevision)
             throws SVNException {
-        File file = new File(myRoot, path);
+        File file = new Resource(myRoot, path);
 
         if (!myIsForce && file.exists()) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.WC_OBSTRUCTED_UPDATE, "File ''{0}'' already exists", file);

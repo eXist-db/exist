@@ -284,7 +284,7 @@ public abstract class SVNAdminAreaFactory implements Comparable {
     }
         
     private static boolean checkAdminAreaExists(File dir, String url, long revision) throws SVNException {
-        File adminDir = new File(dir, SVNFileUtil.getAdminDirectoryName());
+        File adminDir = new Resource(dir, SVNFileUtil.getAdminDirectoryName());
         if (adminDir.exists() && !adminDir.isDirectory()) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.WC_OBSTRUCTED_UPDATE, "''{0}'' is not a directory", dir);
             SVNErrorManager.error(err, SVNLogType.WC);

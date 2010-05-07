@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.ISVNCleanupHandler;
 import org.exist.versioning.svn.internal.wc.admin.ISVNEntryHandler;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
@@ -1455,7 +1456,7 @@ public class SVNUpdateEditor implements ISVNUpdateEditor, ISVNCleanupHandler {
                     "Destination directory of add-with-history is missing a URL");
             SVNErrorManager.error(err, SVNLogType.WC);
         }
-        dstDir = new File(SVNPathUtil.validateFilePath(dstDir.getAbsolutePath())).getAbsoluteFile();
+        dstDir = new Resource(SVNPathUtil.validateFilePath(dstDir.getAbsolutePath())).getAbsoluteFile();
         String dstReposPath = SVNPathUtil.getPathAsChild(dstEntry.getRepositoryRootURL().toDecodedString(),
                 dstEntry.getSVNURL().toDecodedString());
         if (dstReposPath == null) {
@@ -1515,7 +1516,7 @@ public class SVNUpdateEditor implements ISVNUpdateEditor, ISVNCleanupHandler {
         }
 
         String extraComponents = SVNPathUtil.getPathAsChild(ancestorPath, copyFromPath);
-        currentWD = new File(currentWD, extraComponents);
+        currentWD = new Resource(currentWD, extraComponents);
         File currentWDParent = currentWD.getParentFile();
 
         kind = SVNFileType.getType(currentWD);
@@ -2026,7 +2027,7 @@ public class SVNUpdateEditor implements ISVNUpdateEditor, ISVNCleanupHandler {
             SVNAdminArea area = null;
             SVNEntry dirEntry = null;
 
-            File areaPath = new File(myAdminInfo.getAnchor().getRoot(), info.getPath());
+            File areaPath = new Resource(myAdminInfo.getAnchor().getRoot(), info.getPath());
             try {
                 area = myWCAccess.getAdminArea(areaPath);
                 if (area != null) {
@@ -2206,7 +2207,7 @@ public class SVNUpdateEditor implements ISVNUpdateEditor, ISVNCleanupHandler {
 
         public SVNAdminArea getAdminArea() throws SVNException {
             String path = getPath();
-            File file = new File(myAdminInfo.getAnchor().getRoot(), path);
+            File file = new Resource(myAdminInfo.getAnchor().getRoot(), path);
             SVNAdminArea area = myAdminInfo.getWCAccess().retrieve(file);
             if (myIsLockOnDemand && area != null && !area.isLocked()) {
                 area.lock(false);

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNFileType;
@@ -393,7 +394,7 @@ public class SVNWCAccess implements ISVNEventHandler {
                 if (entry.getDepth() == SVNDepth.EXCLUDE) {
                     continue;
                 }
-                File childPath = new File(path, entry.getName());
+                File childPath = new Resource(path, entry.getName());
                 try {
                     // this method will put created area into our map.
                     doOpen(childPath, writeLock, stealLock, upgradeFormat, depth, tmp, logLevel);
@@ -492,8 +493,8 @@ public class SVNWCAccess implements ISVNEventHandler {
     }
 
     public boolean isLocked(File path) throws SVNException {
-        File lockFile = new File(path, SVNFileUtil.getAdminDirectoryName());
-        lockFile = new File(lockFile, "lock");
+        File lockFile = new Resource(path, SVNFileUtil.getAdminDirectoryName());
+        lockFile = new Resource(lockFile, "lock");
         if (SVNFileType.getType(lockFile) == SVNFileType.FILE) {
             return true;
         } else if (SVNFileType.getType(lockFile) == SVNFileType.NONE) {
@@ -706,7 +707,7 @@ public class SVNWCAccess implements ISVNEventHandler {
                     SVNErrorManager.error(err, SVNLogType.WC);
                 }
             }
-            File adminDir = new File(path, SVNFileUtil.getAdminDirectoryName());
+            File adminDir = new Resource(path, SVNFileUtil.getAdminDirectoryName());
             SVNFileType wcType = SVNFileType.getType(adminDir);
             
             if (type == SVNFileType.NONE) {

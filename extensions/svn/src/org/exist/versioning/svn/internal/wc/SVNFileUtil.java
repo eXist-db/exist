@@ -186,7 +186,7 @@ public class SVNFileUtil {
             path = SVNPathUtil.removeTail(path);
         }
         path = path.replace('/', File.separatorChar);
-        file = new File(path);
+        file = new Resource(path);
         return file.getParentFile();
     }
 
@@ -239,7 +239,7 @@ public class SVNFileUtil {
         File base = file.getParentFile();
         while (base != null) {
             if (base.isDirectory()) {
-                File adminDir = new File(base, getAdminDirectoryName());
+                File adminDir = new Resource(base, getAdminDirectoryName());
                 if (adminDir.exists() && adminDir.isDirectory()) {
                     break;
                 }
@@ -398,7 +398,7 @@ public class SVNFileUtil {
                 fileName.append(i);
             }
             fileName.append(suffix);
-            file = new File(parent, fileName.toString());
+            file = new Resource(parent, fileName.toString());
             i++;
         } while (i < 99999);
 
@@ -1040,15 +1040,8 @@ public class SVNFileUtil {
     }
 
     public static OutputStream openFileForWriting(File file, boolean append) throws SVNException {
-        if (file == null) {
+        if (!prepareFileForWriting(file)) {
             return null;
-        }
-        if (file.getParentFile() != null && !file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        if (file.isFile() && !file.canWrite()) {
-            // force writable.
-            setReadonly(file, false);
         }
         try {
             return new BufferedOutputStream(createFileOutputStream(file, append));
@@ -1058,6 +1051,34 @@ public class SVNFileUtil {
             SVNErrorManager.error(err, e, Level.FINE, SVNLogType.DEFAULT);
         }
         return null;
+    }
+
+    public static Writer openFileForWriting(Resource file) throws SVNException {
+        if (!prepareFileForWriting(file)) {
+            return null;
+        }
+        try {
+            return file.getWriter();
+        } catch (IOException e) {
+            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
+                    "Cannot write to ''{0}'': {1}", new Object[] { file, e.getMessage() });
+            SVNErrorManager.error(err, e, Level.FINE, SVNLogType.DEFAULT);
+        }
+        return null;
+    }
+
+    public static boolean prepareFileForWriting(File file) throws SVNException {
+        if (file == null) {
+            return false;
+        }
+        if (file.getParentFile() != null && !file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        if (file.isFile() && !file.canWrite()) {
+            // force writable.
+            setReadonly(file, false);
+        }
+        return true;
     }
     
     public static OutputStream createFileOutputStream(File file, boolean append) throws IOException {

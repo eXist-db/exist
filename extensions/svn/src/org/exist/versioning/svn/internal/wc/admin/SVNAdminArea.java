@@ -593,8 +593,8 @@ public abstract class SVNAdminArea {
 
     public SVNLog getLog() {
         int index = 0;
-        File logFile = null;
-        File tmpFile = null;
+        Resource logFile = null;
+        Resource tmpFile = null;
         while (true) {
             logFile = getAdminFile("log" + (index == 0 ? "" : "." + index));
             if (logFile.exists()) {
@@ -616,7 +616,7 @@ public abstract class SVNAdminArea {
         SVNLog log = null;
         runner.logStarted(this);
         try {
-            File logFile = null;
+        	Resource logFile = null;
             while (true) {
                 if (getWCAccess() != null) {
                     getWCAccess().checkCancelled();
@@ -1061,7 +1061,7 @@ public abstract class SVNAdminArea {
         return myAdminRoot;
     }
 
-    public File getAdminFile(String name) {
+    public Resource getAdminFile(String name) {
         return new Resource(getAdminDirectory(), name);
     }
 

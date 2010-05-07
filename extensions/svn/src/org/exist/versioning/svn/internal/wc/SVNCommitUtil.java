@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNEntry;
 import org.exist.versioning.svn.internal.wc.admin.SVNVersionedProperties;
@@ -182,7 +183,7 @@ public class SVNCommitUtil {
             }
         }
 
-        File baseDir = new File(rootPath).getAbsoluteFile();
+        File baseDir = new Resource(rootPath).getAbsoluteFile();
         rootPath = baseDir.getAbsolutePath().replace(File.separatorChar, '/');
         Collection dirsToLock = new SVNHashSet(); // relative paths to lock.
         Collection dirsToLockRecursively = new SVNHashSet(); 
@@ -191,7 +192,7 @@ public class SVNCommitUtil {
             String target = SVNWCManager.getActualTarget(baseDir);
             if (!"".equals(target)) {
                 // we will have to lock target as well, not only base dir.
-                SVNFileType targetType = SVNFileType.getType(new File(rootPath));
+                SVNFileType targetType = SVNFileType.getType(new Resource(rootPath));
                 relativePaths.add(target);
                 if (targetType == SVNFileType.DIRECTORY) {
                     // lock recursively if forced and copied...
@@ -213,7 +214,7 @@ public class SVNCommitUtil {
             for (Iterator targets = relativePaths.iterator(); targets.hasNext();) {
                 statusClient.checkCancelled();
                 String targetPath = (String) targets.next();
-                File targetFile = new File(baseDir, targetPath);
+                File targetFile = new Resource(baseDir, targetPath);
                 SVNFileType targetKind = SVNFileType.getType(targetFile);
                 if (targetKind == SVNFileType.DIRECTORY) {
                     if (depth == SVNDepth.INFINITY || depth == SVNDepth.IMMEDIATES || 
@@ -281,13 +282,13 @@ public class SVNCommitUtil {
                 for (Iterator nonRecusivePaths = dirsToLock.iterator(); nonRecusivePaths.hasNext();) {
                     statusClient.checkCancelled();
                     String path = (String) nonRecusivePaths.next();
-                    File pathFile = new File(baseDir, path);
+                    File pathFile = new Resource(baseDir, path);
                     baseAccess.open(pathFile, true, 0);
                 }
                 for (Iterator recusivePaths = dirsToLockRecursively.iterator(); recusivePaths.hasNext();) {
                     statusClient.checkCancelled();
                     String path = (String) recusivePaths.next();
-                    File pathFile = new File(baseDir, path);
+                    File pathFile = new Resource(baseDir, path);
                     baseAccess.open(pathFile, true, SVNWCAccess.INFINITE_DEPTH);
                 }
             }
@@ -374,7 +375,7 @@ public class SVNCommitUtil {
                 statusClient.checkCancelled();
                 File root = (File) roots.next();
                 Collection filesList = (Collection) rootsMap.get(root);
-                File[] filesArray = (File[]) filesList.toArray(new File[filesList.size()]);
+                File[] filesArray = (File[]) filesList.toArray(new Resource[filesList.size()]);
                 Collection relativePaths = new ArrayList();
                 SVNWCAccess wcAccess = createCommitWCAccess(filesArray, depth, force, relativePaths, statusClient);
                 relativePathsMap.put(wcAccess, relativePaths);
@@ -403,7 +404,7 @@ public class SVNCommitUtil {
             String target = targets.hasNext() ? (String) targets.next() : "";
             baseAccess.checkCancelled();
             // get entry for target
-            File targetFile = new File(baseAccess.getAnchor(), target);
+            File targetFile = new Resource(baseAccess.getAnchor(), target);
             String parentPath = SVNPathUtil.removeTail(target);
             SVNAdminArea dir = baseAccess.probeRetrieve(targetFile);
             SVNEntry entry = null;
