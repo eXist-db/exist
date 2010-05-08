@@ -217,6 +217,7 @@ public class JFreeChartFactory {
         setCategoryRange( chart, config );
         setCategoryItemLabelGenerator( chart, config );
         setSeriesColors( chart, config );
+		setAxisColors( chart, config );
     }
     
     
@@ -295,6 +296,21 @@ public class JFreeChartFactory {
                 
                 i++;
             }
+        }
+    }
+	
+	
+	private static void setAxisColors( JFreeChart chart, Configuration config )
+    {
+        Color categoryAxisColor          = config.getCategoryAxisColor();
+		Color valueAxisColor          	 = config.getValueAxisColor();
+        
+        if( categoryAxisColor != null ) {
+			((CategoryPlot)chart.getPlot()).getDomainAxis().setLabelPaint( categoryAxisColor );  
+        }
+		
+		if( valueAxisColor != null ) {
+			((CategoryPlot)chart.getPlot()).getRangeAxis().setLabelPaint( valueAxisColor );  
         }
     }
     
