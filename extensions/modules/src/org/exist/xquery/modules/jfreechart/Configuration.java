@@ -69,6 +69,10 @@ public class Configuration {
     private Color titleColor;
     private Color chartBackgroundColor;
     private Color plotBackgroundColor;
+	
+	private Color categoryAxisColor;
+    private Color timeAxisColor;
+    private Color valueAxisColor;
     
     private String seriesColors;
     
@@ -92,9 +96,17 @@ public class Configuration {
     public String getTimeAxisLabel() {
         return timeAxisLabel;
     }
+	
+	public Color getTimeAxisColor() {
+        return timeAxisColor;
+    }
 
     public String getCategoryAxisLabel() {
         return categoryAxisLabel;
+    }
+	
+	public Color getCategoryAxisColor() {
+        return categoryAxisColor;
     }
 
     public boolean isGenerateLegend() {
@@ -124,6 +136,10 @@ public class Configuration {
     public String getValueAxisLabel() {
         return valueAxisLabel;
     }
+	
+	public Color getValueAxisColor() {
+        return valueAxisColor;
+    }
 
     public int getImageHeight() {
         return imageHeight;
@@ -135,7 +151,7 @@ public class Configuration {
 
     public String getDomainAxisLabel() {
         return domainAxisLabel;
-    }
+    }	
 
     public String getRangeAxisLabel() {
         return rangeAxisLabel;
@@ -226,6 +242,14 @@ public class Configuration {
                         } else {
                             categoryAxisLabel = value;
                         }
+						
+					} else if (child.getLocalName().equals("categoryAxisColor")) {
+                        Color value = Colour.getColor(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'categoryAxisColor' cannot be parsed");
+                        } else {
+                            categoryAxisColor = value;
+                        }
 
                     } else if (child.getLocalName().equals("valueAxisLabel")) {
                         String value = getValue(child);
@@ -233,6 +257,14 @@ public class Configuration {
                             throw new XPathException("Value for 'valueAxisLabel' cannot be parsed");
                         } else {
                             valueAxisLabel = value;
+                        }
+						
+					} else if (child.getLocalName().equals("valueAxisColor")) {
+                        Color value = Colour.getColor(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'valueAxisColor' cannot be parsed");
+                        } else {
+                            valueAxisColor = value;
                         }
 
                     } else if (child.getLocalName().equals("timeAxisLabel")) {
@@ -242,6 +274,14 @@ public class Configuration {
                         } else {
                             timeAxisLabel = value;
                         }
+						
+					} else if (child.getLocalName().equals("timeAxisColor")) {
+                        Color value = Colour.getColor(getValue(child));
+                        if (value == null) {
+                            throw new XPathException("Value for 'timeAxisColor' cannot be parsed");
+                        } else {
+                            timeAxisColor = value;
+                        }
 
                     } else if (child.getLocalName().equals("domainAxisLabel")) {
                         String value = getValue(child);
@@ -250,7 +290,7 @@ public class Configuration {
                         } else {
                             domainAxisLabel = value;
                         }
-                        
+
                     } else if (child.getLocalName().equals("rangeAxisLabel")) {
                         String value = getValue(child);
                         if (value == null) {
@@ -258,8 +298,8 @@ public class Configuration {
                         } else {
                             rangeAxisLabel = value;
                         }
-                        
-                     } else if (child.getLocalName().equals("pieSectionLabel")) {
+						
+					} else if (child.getLocalName().equals("pieSectionLabel")) {
                         String value = getValue(child);
                         if (value == null) {
                             throw new XPathException("Value for 'pieSectionLabel' cannot be parsed");

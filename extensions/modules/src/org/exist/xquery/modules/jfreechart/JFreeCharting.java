@@ -82,9 +82,10 @@ public class JFreeCharting extends BasicFunction {
     private static final String parametersText="The configuration for the chart.  The " +
             "configuration should be supplied as follows: <configuration>"+
             "<param1>Value1</param1><param2>Value2</param2>/<configuration>.  " +
-            "Supported parameters: width height title categoryAxisLabel " +
+            "Supported parameters: width height title categoryAxisLabel timeAxisLabel " +
             "valueAxisLabel domainAxisLabel rangeAxisLabel pieSectionLabel pieSectionNumberFormat pieSectionPercentFormat orientation " +
             "titleColor chartBackgroundColor plotBackgroundColor rangeLowerBound rangeUpperrBound categoryItemLabelGeneratorClass seriesColors sectionColors sectionColorsDelimiter " +
+			"categoryAxisColor valueAxisColortimeAxisColor " +
             "order legend tooltips urls.";
 
     public final static FunctionSignature signatures[] = {
