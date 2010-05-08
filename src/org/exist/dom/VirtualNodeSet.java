@@ -21,6 +21,13 @@
  */
 package org.exist.dom;
 
+import java.io.IOException;
+import java.util.Iterator;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -33,11 +40,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * This node set is called virtual because it is just a placeholder for
@@ -140,7 +142,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      *
      * @return an <code>Iterator</code> value
      */
-    public Iterator getCollectionIterator() {
+    public Iterator<Collection> getCollectionIterator() {
         return context.getCollectionIterator();
     }
 
@@ -327,8 +329,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     private final NodeSet getNodes() {
         NewArrayNodeSet result = new NewArrayNodeSet();
-        for (Iterator i = context.iterator(); i.hasNext();) {
-            NodeProxy proxy = (NodeProxy) i.next();            
+        for (Iterator<NodeProxy> i = context.iterator(); i.hasNext();) {
+            NodeProxy proxy = i.next();
             if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
                 if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
                     // skip binary resources
@@ -379,7 +381,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                             NodeProxy contextNode = new NodeProxy(p);
                             contextNode.deepCopyContext(proxy);
                             //TODO : is this StoredNode construction necessary ?
-                            Iterator domIter = broker.getNodeIterator(new StoredNode(contextNode));
+                            Iterator<StoredNode> domIter = broker.getNodeIterator(new StoredNode(contextNode));
                             domIter.next();
                             contextNode.setMatches(proxy.getMatches());
                             addChildren(contextNode, result, node, domIter, 0);
@@ -463,11 +465,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param recursions an <code>int</code> value
      */
     private void addChildren(NodeProxy contextNode, NodeSet result,
-                                   StoredNode node, Iterator iter,
+                                   StoredNode node, Iterator<StoredNode> iter,
                                    int recursions) {
         if (node.hasChildNodes()) {
             for (int i = 0; i < node.getChildCount(); i++) {
-                StoredNode child = (StoredNode) iter.next();
+                StoredNode child = iter.next();
                 if(child == null)
                     LOG.debug("CHILD == NULL; doc = " + 
                               ((DocumentImpl)node.getOwnerDocument()).getURI());
@@ -588,8 +590,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
         int docs = context.getDocumentSet().getDocumentCount();
         if (contextLen > docs * MAX_CHILD_COUNT_FOR_OPTIMIZE)
             return false;   // more than 5 nodes per document
-        for (Iterator i = context.iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy) i.next();
+        for (Iterator<NodeProxy> i = context.iterator(); i.hasNext();) {
+            NodeProxy p = i.next();
             if (p.getNodeId() == NodeId.DOCUMENT_NODE)
                 return false;
             NodeImpl n = (NodeImpl) p.getNode();
@@ -606,8 +608,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
     public void setSelfIsContext() {
         useSelfAsContext = true;
         if (realSet != null && realSetIsComplete) {
-            for (Iterator i = realSet.iterator(); i.hasNext();) {
-                NodeProxy p = (NodeProxy) i.next();
+            for (Iterator<NodeProxy> i = realSet.iterator(); i.hasNext();) {
+                NodeProxy p = i.next();
                 p.addContextNode(contextId, p);
             }
         }

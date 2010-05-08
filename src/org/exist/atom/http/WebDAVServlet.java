@@ -486,8 +486,8 @@ public class WebDAVServlet extends HttpServlet {
 		System.out
 				.println("-------------------------------------------------------");
 		System.out.println(request.getMethod() + " " + request.getPathInfo());
-		for (Enumeration e = request.getHeaderNames(); e.hasMoreElements();) {
-			String header = (String) e.nextElement();
+		for (Enumeration<String> e = request.getHeaderNames(); e.hasMoreElements();) {
+			String header = e.nextElement();
 			System.out.println(header + " = " + request.getHeader(header));
 		}
 	}
