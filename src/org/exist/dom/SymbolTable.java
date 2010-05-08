@@ -276,8 +276,8 @@ public class SymbolTable {
         int id = mimeTypeByName.get(mimeType);
         if (id == -1) {
             int maxId = 0;
-            for (Iterator i = mimeTypeById.iterator(); i.hasNext(); ) {
-                Integer val = (Integer) i.next();
+            for (Iterator<Integer> i = mimeTypeById.iterator(); i.hasNext(); ) {
+                Integer val = i.next();
                 maxId = Math.max(maxId, val.intValue());
             }
             id = ++maxId;
@@ -324,8 +324,8 @@ public class SymbolTable {
 		ostream.writeInt(defaultMappings.size());
 		String prefix;
 		short nsId;
-		for (Iterator i = defaultMappings.iterator(); i.hasNext();) {
-			prefix = (String) i.next();
+		for (Iterator<String> i = defaultMappings.iterator(); i.hasNext();) {
+			prefix = i.next();
 			nsId = (short)defaultMappings.get(prefix);
 			ostream.writeUTF(prefix);
 			ostream.writeShort(nsId);
@@ -333,8 +333,8 @@ public class SymbolTable {
         ostream.writeInt(mimeTypeByName.size());
         String mime;
         int mimeId;
-        for (Iterator i = mimeTypeByName.iterator(); i.hasNext(); ) {
-            mime = (String) i.next();
+        for (Iterator<String> i = mimeTypeByName.iterator(); i.hasNext(); ) {
+            mime = i.next();
             mimeId = mimeTypeByName.get(mime);
             ostream.writeUTF(mime);
             ostream.writeInt(mimeId);

@@ -775,8 +775,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 			if (other.contains(d.getDocId()))
 				r.add(d);
         }
-		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
 				r.add(d);
 		}
@@ -787,8 +787,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         if (other.getDocumentCount() > partCount)
 			return false;
 		DocumentImpl d;
-		for (Iterator i = other.getDocumentIterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
+		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+			d = i.next();
 			if (!contains(d.getDocId()))
 				return false;
 		}

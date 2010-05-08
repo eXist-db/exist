@@ -402,13 +402,13 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 //        return getLastNode(iterator, node);
     }
 
-    protected StoredNode getLastNode(Iterator iterator, StoredNode node) {
+    protected StoredNode getLastNode(Iterator<StoredNode> iterator, StoredNode node) {
         if (!node.hasChildNodes())
             return node;
         final int children = node.getChildCount();
         StoredNode next = null;
         for (int i = 0; i < children; i++) {
-            next = (StoredNode) iterator.next();
+            next = iterator.next();
             //Recursivity helps taversing...
             next = getLastNode(iterator, next);
         }

@@ -61,8 +61,8 @@ public class SortedNodeSet extends AbstractNodeSet {
 	public void addAll(NodeSet other) {
 		long start = System.currentTimeMillis();		
 		MutableDocumentSet docs = new DefaultDocumentSet();
-		for (Iterator i = other.iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy)i.next();
+		for (Iterator<NodeProxy> i = other.iterator(); i.hasNext();) {
+            NodeProxy p = i.next();
 			docs.add(p.getDocument());
 		}
 		// TODO(pkaminsk2): why replicate XQuery.compile here?
@@ -116,7 +116,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		addAll((NodeSet) other);
 	}
 
-	public boolean contains(NodeProxy proxy) {		
+	public boolean contains(NodeProxy proxy) {
 		for (Iterator i = list.iterator(); i.hasNext();) {
             NodeProxy p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
