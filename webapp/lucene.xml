@@ -560,6 +560,63 @@ return //SPEECH[ft:query(., $query)]]]></synopsis>
                     parameter (a float value). The score of the nodes matching the corresponding
                     query part will be multiplied by the <emphasis>boost</emphasis>.</para>
             </section>
+            <section>
+                <title>Additional parameters</title>
+                <para>The ft:query function allows a third parameter, which can be used to pass
+                    some additional settings to the query engine. The parameter should contain an XML 
+                    fragment which lists the configuration properties to be set as child elements:</para>
+                
+                <example>
+                    <title/>
+                    <programlisting language="xquery"><![CDATA[
+let $options :=
+    <options>
+        <default-operator>and</default-operator>
+        <phrase-slop>1</phrase-slop>
+        <leading-wildcard>no</leading-wildcard>
+        <filter-rewrite>yes</filter-rewrite>
+    </options>
+return
+    //SPEECH[ft:query(., $query, $options)]]]></programlisting>
+                </example>
+                
+                <para>The meaning of those properties is as follows</para>
+                
+                <variablelist>
+                    <varlistentry>
+                        <term>filter-rewrite</term>
+                        <listitem>
+                            <para>Controls how terms are expanded for wildcard or regular expression
+                            searches. If set to "yes", Lucene will use a filter to pre-process
+                            matching terms. If set to "no", all matching terms will be added to a single
+                            boolean query which is then executed. This may generate a "too many clauses"
+                            exception when applied to large data sets. Setting filter-rewrite to "yes"
+                            avoids those issues.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>default-operator</term>
+                        <listitem>
+                            <para>The default operator with which multiple terms will be combined.
+                            Allowed values: "or", "and".</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>phrase-slop</term>
+                        <listitem>
+                            <para>Sets the default slop for phrases. If zero, then exact phrase matches are 
+                                required. Default value is zero.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>leading-wildcard</term>
+                        <listitem>
+                            <para>When set to "yes", * or ? are allowed as the first character of a PrefixQuery and 
+                                WildcardQuery. Note that this can produce very slow queries on big indexes.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </section>
         </section>
     </chapter>
 </book>
