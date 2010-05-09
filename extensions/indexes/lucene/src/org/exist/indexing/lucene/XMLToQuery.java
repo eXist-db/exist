@@ -42,6 +42,7 @@ import java.io.StringReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Parses the XML representation of a Lucene query and transforms
@@ -55,21 +56,21 @@ public class XMLToQuery {
         this.index = index;
     }
 
-    public Query parse(String field, Element root, Analyzer analyzer) throws XPathException {
+    public Query parse(String field, Element root, Analyzer analyzer, Properties options) throws XPathException {
         Query query;
         String localName = root.getLocalName();
         if ("query".equals(localName))
-            query = parseChildren(field, root, analyzer);
+            query = parseChildren(field, root, analyzer, options);
         else if ("term".equals(localName))
             query = termQuery(field, root);
         else if ("wildcard".equals(localName))
-            query = wildcardQuery(field, root);
+            query = wildcardQuery(field, root, options);
         else if ("prefix".equals(localName))
-            query = prefixQuery(field, root);
+            query = prefixQuery(field, root, options);
         else if ("fuzzy".equals(localName))
             query = fuzzyQuery(field, root);
         else if ("bool".equals(localName))
-            query = booleanQuery(field, root, analyzer);
+            query = booleanQuery(field, root, analyzer, options);
         else if ("phrase".equals(localName))
             query = phraseQuery(field, root, analyzer);
         else if ("near".equals(localName))
@@ -77,7 +78,7 @@ public class XMLToQuery {
         else if ("first".equals(localName))
             query = getSpanFirst(field, root, analyzer);
         else if ("regex".equals(localName))
-            query = regexQuery(field, root);
+            query = regexQuery(field, root, options);
         else
             throw new XPathException("Unknown element in lucene query expression: " + localName);
         setBoost(root, query);
@@ -235,12 +236,16 @@ public class XMLToQuery {
         return new TermQuery(new Term(field, getText(node)));
     }
 
-    private Query wildcardQuery(String field, Element node) {
-        return new WildcardQuery(new Term(field, getText(node)));
+    private Query wildcardQuery(String field, Element node, Properties options) {
+        WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
+        setRewriteMethod(query, node, options);
+        return query;
     }
 
-    private Query prefixQuery(String field, Element node) {
-        return new PrefixQuery(new Term(field, getText(node)));
+    private Query prefixQuery(String field, Element node, Properties options) {
+        PrefixQuery query = new PrefixQuery(new Term(field, getText(node)));
+        setRewriteMethod(query, node, options);
+        return query;
     }
 
     private Query fuzzyQuery(String field, Element node) throws XPathException {
@@ -256,23 +261,38 @@ public class XMLToQuery {
         return new FuzzyQuery(new Term(field, getText(node)), minSimilarity);
     }
 
-    private Query regexQuery(String field, Element node) throws XPathException {
-        return new RegexQuery(new Term(field, getText(node)));
+    private Query regexQuery(String field, Element node, Properties options) throws XPathException {
+        RegexQuery query = new RegexQuery(new Term(field, getText(node)));
+        setRewriteMethod(query, node, options);
+        return query;
     }
 
-    private Query booleanQuery(String field, Element node, Analyzer analyzer) throws XPathException {
+    private Query booleanQuery(String field, Element node, Analyzer analyzer, Properties options) throws XPathException {
         BooleanQuery query = new BooleanQuery();
         Node child = node.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 Element elem = (Element) child;
-                Query childQuery = parse(field, elem, analyzer);
+                Query childQuery = parse(field, elem, analyzer, options);
                 BooleanClause.Occur occur = getOccur(elem);
                 query.add(childQuery, occur);
             }
             child = child.getNextSibling();
         }
         return query;
+    }
+
+    private void setRewriteMethod(MultiTermQuery query, Element node, Properties options) {
+        String option = node.getAttribute("filter-rewrite");
+        if (option == null)
+            option = "yes";
+        if (options != null)
+            option = options.getProperty(LuceneIndexWorker.OPTION_FILTER_REWRITE, "yes");
+
+        if (option.equalsIgnoreCase("yes"))
+            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+        else
+            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
     }
 
     private BooleanClause.Occur getOccur(Element elem) {
@@ -289,12 +309,12 @@ public class XMLToQuery {
         return occur;
     }
 
-    private Query parseChildren(String field, Element root, Analyzer analyzer) throws XPathException {
+    private Query parseChildren(String field, Element root, Analyzer analyzer, Properties options) throws XPathException {
         Query query = null;
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                Query childQuery = parse(field, (Element) child, analyzer);
+                Query childQuery = parse(field, (Element) child, analyzer, options);
                 if (query != null) {
                     if (query instanceof BooleanQuery)
                         ((BooleanQuery) query).add(childQuery, BooleanClause.Occur.SHOULD);
