@@ -1,7 +1,9 @@
-(: Advanced Example code for jfreechart module :)
-(: Load the data files into /db :)
-(: $Id: categorydata.xq 8838 2009-04-14 18:01:51Z dizzzz $ :)
-
+(: 
+    Advanced Example code for jfreechart module 
+    Load the data files into /db 
+    
+    $Id$ 
+:)
 declare namespace jfreechart = "http://exist-db.org/xquery/jfreechart";
 
 (: Example use of all advanced config parameters :)

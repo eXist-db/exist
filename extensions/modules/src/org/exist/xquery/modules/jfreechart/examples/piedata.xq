@@ -1,6 +1,9 @@
-(: Example code for jfreechart module :)
-(: Load the data files into /db :)
-(: $Id$ :)
+(: 
+    Example code for jfreechart module 
+    Load the data files into /db  
+    
+    $Id$ 
+:)
 declare namespace jfreechart = "http://exist-db.org/xquery/jfreechart";
 
 jfreechart:stream-render("PieChart",

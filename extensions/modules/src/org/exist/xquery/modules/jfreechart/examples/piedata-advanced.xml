@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     A sample pie dataset for JFreeChart. 
-    $Id: piedata.xml 8835 2009-04-13 19:07:15Z dizzzz $
+    
+    $Id$
 -->
 <PieDataset>
   <Item>
