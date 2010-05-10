@@ -193,11 +193,12 @@ public class SendEmailFunction extends BasicFunction
 		} catch(TransformerException te) {
 			throw new XPathException(this, "Could not Transform XHTML Message Body: " + te.getMessage(), te);
         } catch(MessagingException smtpe) {
-		smtpe.printStackTrace();
         	throw new XPathException(this, "Could not send message(s): " + smtpe.getMessage(), smtpe);
         } catch(IOException ioe) {
         	throw new XPathException(this, "Attachment in some message could not be prepared: " + ioe.getMessage(), ioe);
-        }
+        } catch(Throwable t) {
+		throw new XPathException(this, "Unexpected error from JavaMail layer (Is your message well structured?): " + t.getMessage(), t);
+	}
 	}
     
     public Sequence deprecatedSendEmail(Sequence[] args, Sequence contextSequence) throws XPathException
@@ -859,9 +860,9 @@ public class SendEmailFunction extends BasicFunction
      * 	<bcc></bcc>
      * 	<subject></subject>
      * 	<message>
-     * 		<text charset=""></text>
-     * 		<xhtml charset=""></xhtml>
-     * 		<generic charset="" type=""></generic>
+     * 		<text charset="" encoding=""></text>
+     * 		<xhtml charset="" encoding=""></xhtml>
+     * 		<generic charset="" type="" encoding=""></generic>
      * 	</message>
      * 	<attachment mimetype="" filename=""></attachment>
      * </mail>
@@ -888,6 +889,7 @@ public class SendEmailFunction extends BasicFunction
 		String firstContent = null;
 		String firstContentType = null;
 		String firstCharset = null;
+		String firstEncoding = null;
         		
                 //Get the First Child
                 Node child = mailElement.getFirstChild();
@@ -951,6 +953,7 @@ public class SendEmailFunction extends BasicFunction
                                 // Now, time to store it
                                 if(content!=null && contentType!=null && contentType.length()>0) {
                                     String charset = elementBodyPart.getAttribute("charset");
+				    String encoding = elementBodyPart.getAttribute("encoding");
                                     
                                     if(body!=null && multibody==null) {
                                     	multibody=new MimeMultipart("alternative");
@@ -960,13 +963,22 @@ public class SendEmailFunction extends BasicFunction
                                 	if(charset==null || charset.length()==0) {
                                 		charset="UTF-8";
                                 	}
+					
+					if(encoding==null || encoding.length()==0) {
+						encoding="quoted-printable";
+					}
+					
 					if(body==null) {
 						firstContent = content;
 						firstCharset = charset;
 						firstContentType = contentType;
+						firstEncoding = encoding;
 					}
                                 	body= new MimeBodyPart();
                             		body.setText(content, charset, contentType);
+					if(encoding!=null) {
+						body.setHeader("Content-Transfer-Encoding",encoding);
+					}
                             		if(multibody!=null)
                             			multibody.addBodyPart(body);
                                 }
@@ -1027,6 +1039,9 @@ public class SendEmailFunction extends BasicFunction
                 	msg.setContent(multibody);
                 } else if(body!=null){
                 	msg.setText(firstContent,firstCharset,firstContentType);
+			if(firstEncoding!=null) {
+				msg.setHeader("Content-Transfer-Encoding",firstEncoding);
+			}
                 }
                 
 		msg.saveChanges();
