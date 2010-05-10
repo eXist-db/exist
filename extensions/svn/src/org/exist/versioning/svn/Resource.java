@@ -28,12 +28,16 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -48,8 +52,6 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * eXist's resource. It extend java.io.File
@@ -64,22 +66,21 @@ public class Resource extends File {
     public static final char separatorChar = '/';
 
     protected XmldbURI uri;
+    protected XmldbURI collectionPath = null;
     
     protected boolean initialized = false;
     
     private Collection collection = null;
     private DocumentImpl resource = null;
 	
-	public Resource(String uri) {
-		super(uri);
-		
-		this.uri = XmldbURI.create(uri);
-	}
-
     public Resource(XmldbURI uri) {
 		super(uri.toString());
 		
 		this.uri = uri;
+	}
+
+	public Resource(String uri) {
+		this(XmldbURI.create(uri));
 	}
 
 	public Resource(File file, String child) {
@@ -87,15 +88,11 @@ public class Resource extends File {
 	}
 
 	public Resource(Resource resource, String child) {
-		super(resource.uri.append(child).toString());
-
-		this.uri = resource.uri.append(child);
+		this(resource.uri.append(child));
 	}
 
 	public Resource(String parent, String child) {
-		super(XmldbURI.create(parent).append(child).toString());
-
-		this.uri = XmldbURI.create(parent).append(child);
+		this(XmldbURI.create(parent).append(child));
 	}
 
 	public Resource getParentFile() {
@@ -113,6 +110,41 @@ public class Resource extends File {
     	return uri.lastSegment().toString();
     }
     
+    public boolean mkdir() {
+    	DBBroker broker = null; 
+		BrokerPool db = null;
+		TransactionManager tm;
+
+		try {
+			db = BrokerPool.getInstance();
+			broker = db.get(null);
+		} catch (EXistException e) {
+			return false;
+		}
+
+        Collection collection = broker.getCollection(uri.toCollectionPathURI());
+        if (collection != null) return true;
+
+        Collection parent_collection = broker.getCollection(uri.toCollectionPathURI().removeLastSegment());
+        if (parent_collection == null) return false;
+
+        tm = db.getTransactionManager();
+		Txn transaction = tm.beginTransaction();
+		
+		try {
+			Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
+			broker.saveCollection(transaction, child);
+			tm.commit(transaction);
+		} catch (Exception e) {
+    		tm.abort(transaction);
+			return false;
+		} finally {
+			db.release(broker);
+		}
+    	
+    	return true;
+    }
+
     public boolean mkdirs() {
     	DBBroker broker = null; 
 		BrokerPool db = null;
@@ -549,4 +581,63 @@ public class Resource extends File {
 			return resource.getCollection();
 			
 	}
+
+    public File[] listFiles() {
+    	if (!isDirectory())
+    		return null;
+    	
+    	if (collection == null)
+    		return null;
+    	
+    	DBBroker broker = null; 
+		BrokerPool db = null;
+
+		try {
+			db = BrokerPool.getInstance();
+			broker = db.get(null);
+		} catch (EXistException e) {
+			return null;
+		}
+
+    	try {
+        	collection.getLock().acquire(Lock.READ_LOCK);
+
+        	File[] children = new File[collection.getChildCollectionCount() + 
+                                       collection.getDocumentCount()];
+            
+            //collections
+            int j = 0;
+            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); j++)
+            	children[j] = new Resource(i.next());
+
+            //collections
+            List<XmldbURI> allresources = new ArrayList<XmldbURI>();
+            DocumentImpl doc = null;
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                doc = i.next();
+                
+                // Include only when (1) locktoken is present or (2)
+                // locktoken indicates that it is not a null resource
+                LockToken lock = doc.getMetadata().getLockToken();
+                if(lock==null || (!lock.isNullResource()) ){
+                    allresources.add( doc.getURI() );
+                }
+                
+            }
+            
+            // Copy content of list into String array.
+            for(Iterator<XmldbURI> i = allresources.iterator(); i.hasNext(); j++){
+            	children[j] = new Resource(i.next());
+            }
+            
+            return children;
+        } catch (LockException e) {
+        	//throw new IOException("Failed to acquire lock on collection '" + uri + "'");
+    		return null;
+	    } finally {
+	    	db.release(broker);
+	        collection.release(Lock.READ_LOCK);
+	    }
+    }
+
 }

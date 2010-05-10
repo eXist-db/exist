@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.core.io.diff.SVNDeltaProcessor;
 import org.exist.versioning.svn.internal.wc.admin.ISVNCleanupHandler;
 import org.exist.versioning.svn.internal.wc.admin.ISVNEntryHandler;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
@@ -56,7 +57,6 @@ import org.tmatesoft.svn.core.internal.util.SVNHashMap;
 import org.tmatesoft.svn.core.internal.util.SVNPathUtil;
 import org.tmatesoft.svn.core.internal.wc.ISVNFileFetcher;
 import org.tmatesoft.svn.core.internal.wc.ISVNUpdateEditor;
-import org.tmatesoft.svn.core.io.diff.SVNDeltaProcessor;
 import org.tmatesoft.svn.core.io.diff.SVNDiffWindow;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.util.SVNLogType;
