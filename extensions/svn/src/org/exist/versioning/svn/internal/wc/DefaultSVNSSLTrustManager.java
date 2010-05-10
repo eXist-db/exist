@@ -18,6 +18,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.exist.versioning.svn.Resource;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNProperties;
 import org.tmatesoft.svn.core.SVNURL;
@@ -186,7 +187,7 @@ public class DefaultSVNSSLTrustManager implements X509TrustManager {
     }
 
     private String getStoredServerCertificate(String realm) {
-		File file = new File(myAuthDirectory, SVNFileUtil.computeChecksum(realm));
+		File file = new Resource(myAuthDirectory, SVNFileUtil.computeChecksum(realm));
 		if (!file.isFile()) {
 			return null;
 		}
@@ -206,7 +207,7 @@ public class DefaultSVNSSLTrustManager implements X509TrustManager {
 	private void storeServerCertificate(String realm, String data, int failures) throws SVNException {
 		myAuthDirectory.mkdirs();
 
-		File file = new File(myAuthDirectory, SVNFileUtil.computeChecksum(realm));
+		File file = new Resource(myAuthDirectory, SVNFileUtil.computeChecksum(realm));
 		SVNHashMap map = new SVNHashMap();
         map.put("ascii_cert", data);
         map.put("svn:realmstring", realm);

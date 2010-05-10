@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.wc.ISVNEventHandler;
 import org.exist.versioning.svn.wc.SVNEvent;
@@ -134,7 +135,7 @@ public class SVNRemoteDiffEditor implements ISVNReusableEditor {
     protected void addDeletedPath(String path, SVNNodeKind nodeKind, SVNStatusType type, SVNEventAction action, SVNEventAction expectedAction, 
             boolean isTreeConflicted) {
         if (myEventHandler != null) {
-            File deletedFile = new File(myTarget, path);
+            File deletedFile = new Resource(myTarget, path);
             KindActionState kas = new KindActionState();
             kas.myAction = action;
             kas.myKind = nodeKind;
@@ -422,7 +423,7 @@ public class SVNRemoteDiffEditor implements ISVNReusableEditor {
 
     public void absentDir(String path) throws SVNException {
         if (myCurrentDirectory.myWCFile != null) {
-            File dir = new File(myCurrentDirectory.myWCFile, SVNPathUtil.tail(path));
+            File dir = new Resource(myCurrentDirectory.myWCFile, SVNPathUtil.tail(path));
             SVNEvent event = SVNEventFactory.createSVNEvent(dir, SVNNodeKind.DIR,
                     null, SVNRepository.INVALID_REVISION, SVNStatusType.MISSING, SVNStatusType.MISSING, SVNStatusType.MISSING, SVNEventAction.SKIP, SVNEventAction.SKIP,
                     null, null);
@@ -432,7 +433,7 @@ public class SVNRemoteDiffEditor implements ISVNReusableEditor {
 
     public void absentFile(String path) throws SVNException {
         if (myCurrentDirectory.myWCFile != null) {
-            File file = new File(myCurrentDirectory.myWCFile, SVNPathUtil.tail(path));
+            File file = new Resource(myCurrentDirectory.myWCFile, SVNPathUtil.tail(path));
             SVNEvent event = SVNEventFactory.createSVNEvent(file, SVNNodeKind.FILE,
                     null, SVNRepository.INVALID_REVISION, SVNStatusType.MISSING, SVNStatusType.MISSING, SVNStatusType.MISSING, SVNEventAction.SKIP, SVNEventAction.SKIP,
                     null, null);
@@ -516,7 +517,7 @@ public class SVNRemoteDiffEditor implements ISVNReusableEditor {
         public SVNDirectoryInfo(SVNDirectoryInfo parent, String path, boolean added) {
             myParent = parent;
             myRepositoryPath = path;
-            myWCFile = myTarget != null ? new File(myTarget, path) : null;
+            myWCFile = myTarget != null ? new Resource(myTarget, path) : null;
             myIsAdded = added;
             myPropertyDiff = new SVNProperties();
         }
@@ -543,7 +544,7 @@ public class SVNRemoteDiffEditor implements ISVNReusableEditor {
         public SVNFileInfo(String path, boolean added) {
             myRepositoryPath = path;
             myIsAdded = added;
-            myWCFile = myTarget != null ? new File(myTarget, path) : null;
+            myWCFile = myTarget != null ? new Resource(myTarget, path) : null;
             myPropertyDiff = new SVNProperties();
         }
 

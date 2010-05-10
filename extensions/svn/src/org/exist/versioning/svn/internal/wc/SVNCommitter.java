@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNChecksumInputStream;
 import org.exist.versioning.svn.internal.wc.admin.SVNEntry;
@@ -86,7 +87,7 @@ public class SVNCommitter implements ISVNCommitPathHandler {
         if (item.getFile() != null) {
             file = item.getFile();
         } else if (item.getPath() != null) {
-            file = new File(wcAccess.getAnchor(), item.getPath());
+            file = new Resource(wcAccess.getAnchor(), item.getPath());
         }
 
         long rev = item.getRevision().getNumber();
@@ -215,7 +216,7 @@ public class SVNCommitter implements ISVNCommitPathHandler {
             SVNWCAccess wcAccess = item.getWCAccess();
             wcAccess.checkCancelled();
 
-            SVNEvent event = SVNEventFactory.createSVNEvent(new File(wcAccess.getAnchor(), item.getPath()),SVNNodeKind.FILE, null, SVNRepository.INVALID_REVISION, SVNEventAction.COMMIT_DELTA_SENT, null, null, null);
+            SVNEvent event = SVNEventFactory.createSVNEvent(new Resource(wcAccess.getAnchor(), item.getPath()),SVNNodeKind.FILE, null, SVNRepository.INVALID_REVISION, SVNEventAction.COMMIT_DELTA_SENT, null, null, null);
             wcAccess.handleEvent(event, ISVNEventHandler.UNKNOWN);
 
             SVNAdminArea dir = wcAccess.retrieve(item.getFile().getParentFile());

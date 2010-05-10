@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNFileUtil;
@@ -246,7 +247,7 @@ public class DefaultSVNDiffGenerator implements ISVNDiffGenerator {
         }
         // treat as file path.
         String basePath = myBasePath.getAbsolutePath().replace(File.separatorChar, '/');
-        path = new File(path).getAbsolutePath().replace(File.separatorChar, '/');
+        path = new Resource(path).getAbsolutePath().replace(File.separatorChar, '/');
         if (path.equals(basePath)) {
             return ".";
         }
@@ -487,7 +488,7 @@ public class DefaultSVNDiffGenerator implements ISVNDiffGenerator {
             }
 
             Collection args = new LinkedList();
-            File diffCommandFile = new File(diffCommand);
+            File diffCommandFile = new Resource(diffCommand);
             args.add(diffCommandFile.getAbsolutePath().replace(File.separatorChar, '/'));
             
             if (myRawDiffOptions != null) {

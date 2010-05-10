@@ -14,6 +14,7 @@ package org.exist.versioning.svn.wc;
 import java.io.File;
 import java.util.Collection;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.SVNCopyDriver;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNPath;
@@ -317,7 +318,7 @@ public class SVNCopyClient extends SVNCopyDriver {
                     baseName = SVNEncodingUtil.uriDecode(baseName);
                 }
                 try {
-                    setupCopy(sources, new SVNPath(new File(dst, baseName).getAbsolutePath()), isMove, 
+                    setupCopy(sources, new SVNPath(new Resource(dst, baseName).getAbsolutePath()), isMove, 
                             makeParents, null, null, getCommitHandler(), getCommitParameters(), getExternalsHandler());
                 } catch (SVNException second) {
                     throw second;
