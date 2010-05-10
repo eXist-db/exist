@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id: JFreeChartFactory.java 10490 2009-11-15 11:38:19Z dizzzz $
+ *  $Id$
  */
 package org.exist.xquery.modules.jfreechart;
 

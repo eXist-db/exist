@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     Sample data for JFreeChart. 
-    $Id: categorydata.xml 8835 2009-04-13 19:07:15Z dizzzz $ 
+    
+    $Id$ 
 -->
 <CategoryDataset>
     <Series name="Series 1">
