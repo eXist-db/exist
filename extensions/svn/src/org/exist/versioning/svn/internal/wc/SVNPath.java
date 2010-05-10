@@ -13,6 +13,7 @@ package org.exist.versioning.svn.internal.wc;
 
 import java.io.File;
 
+import org.exist.versioning.svn.Resource;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
@@ -67,7 +68,7 @@ public class SVNPath {
             return myFile;
         }
         if (isFile()) {            
-            return new File(myTarget).getAbsoluteFile();
+            return new Resource(myTarget).getAbsoluteFile();
         }
         return null;
     }

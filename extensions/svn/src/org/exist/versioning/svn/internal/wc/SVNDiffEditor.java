@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminAreaInfo;
 import org.exist.versioning.svn.internal.wc.admin.SVNEntry;
@@ -91,7 +92,7 @@ public class SVNDiffEditor implements ISVNEditor {
     }
 
     public void deleteEntry(String path, long revision) throws SVNException {
-        File fullPath = new File(myAdminInfo.getAnchor().getRoot(), path);
+        File fullPath = new Resource(myAdminInfo.getAnchor().getRoot(), path);
         SVNAdminArea dir = myWCAccess.probeRetrieve(fullPath);
         SVNEntry entry = myWCAccess.getEntry(fullPath, false);
         if (entry == null) {

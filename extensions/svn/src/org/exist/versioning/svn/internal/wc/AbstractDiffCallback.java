@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNWCAccess;
 import org.exist.versioning.svn.wc.SVNStatusType;
@@ -71,11 +72,11 @@ public abstract class AbstractDiffCallback {
     protected String getDisplayPath(String path) {
         if (myAdminArea == null) {
             if (myBasePath != null) {
-                return new File(myBasePath, path).getAbsolutePath().replace(File.separatorChar, '/');
+                return new Resource(myBasePath, path).getAbsolutePath().replace(Resource.separatorChar, '/');
             }
-            return path.replace(File.separatorChar, '/');
+            return path.replace(Resource.separatorChar, '/');
         }
-        return myAdminArea.getFile(path).getAbsolutePath().replace(File.separatorChar, '/');
+        return myAdminArea.getFile(path).getAbsolutePath().replace(Resource.separatorChar, '/');
     }
     
     protected void categorizeProperties(SVNProperties original, SVNProperties regular, SVNProperties entry, SVNProperties wc) {

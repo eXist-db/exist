@@ -14,6 +14,7 @@ package org.exist.versioning.svn.internal.wc;
 import java.io.File;
 import java.io.OutputStream;
 
+import org.exist.versioning.svn.Resource;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;
@@ -65,7 +66,7 @@ public class SVNDiffStatusEditor implements ISVNEditor {
     public void deleteEntry(String path, long revision) throws SVNException {
         SVNNodeKind kind = myRepository.checkPath(path, myRevision);
         String statusPath = getStatusPath(path);
-        SVNDiffStatus status = new SVNDiffStatus(myAnchor != null ? new File(myAnchor, path) : null, myRootURL.appendPath(path, false), statusPath, SVNStatusType.STATUS_DELETED, false, kind);
+        SVNDiffStatus status = new SVNDiffStatus(myAnchor != null ? new Resource(myAnchor, path) : null, myRootURL.appendPath(path, false), statusPath, SVNStatusType.STATUS_DELETED, false, kind);
         myHandler.handleDiffStatus(status);
     }
 
@@ -155,7 +156,7 @@ public class SVNDiffStatusEditor implements ISVNEditor {
             myKind = kind;
             myType = SVNStatusType.STATUS_NONE;
             myParent = parent;
-            myFile = myAnchor != null ? new File(myAnchor, path) : null;
+            myFile = myAnchor != null ? new Resource(myAnchor, path) : null;
             myPath = getStatusPath(path);
         }
         

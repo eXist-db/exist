@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.wc.SVNConflictAction;
 import org.exist.versioning.svn.wc.SVNConflictReason;
 import org.exist.versioning.svn.wc.SVNOperation;
@@ -93,7 +94,7 @@ public class SVNTreeConflictUtil {
         SVNConflictVersion srcLeftVersion = readConflictVersion(skel.getChild(6));
         SVNConflictVersion srcRightVersion = readConflictVersion(skel.getChild(7));
 
-        return new SVNTreeConflictDescription(new File(dirPath, victimBasename), kind, action, reason, operation, srcLeftVersion, srcRightVersion);
+        return new SVNTreeConflictDescription(new Resource(dirPath, victimBasename), kind, action, reason, operation, srcLeftVersion, srcRightVersion);
     }
 
     private static SVNConflictVersion readConflictVersion(SVNSkel skel) throws SVNException {
