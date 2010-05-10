@@ -3151,7 +3151,7 @@ public class XQueryTest extends XMLTestCase {
 
             XPathQueryService service = (XPathQueryService)
                     getTestCollection().getService("XPathQueryService", "1.0");
-            ResourceSet result = service.query(query);
+            service.query(query);
             
         } catch (XMLDBException ex) {
             ex.printStackTrace();

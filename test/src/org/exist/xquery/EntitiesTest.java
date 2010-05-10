@@ -54,7 +54,6 @@ public class EntitiesTest extends XMLTestCase {
         }
     }
     
-    @SuppressWarnings("unchecked")
 	private void initServer() {
         try {
             if (server == null) {
