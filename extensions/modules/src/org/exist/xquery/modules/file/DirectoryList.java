@@ -44,7 +44,7 @@ import org.exist.xquery.value.Type;
 
 
 /**
- * eXist File Module Extension DirectoryListFunction 
+ * eXist File Module Extension DirectoryList
  * 
  * Enumerate a list of files, including their size and modification time, found in a specified directory, using a pattern
  * 
@@ -56,9 +56,9 @@ import org.exist.xquery.value.Type;
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 
-public class DirectoryListFunction extends BasicFunction {	
+public class DirectoryList extends BasicFunction {
 	
-	private final static Logger logger = Logger.getLogger(DirectoryListFunction.class);
+	private final static Logger logger = Logger.getLogger(DirectoryList.class);
 	
 	final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
 	final static String PREFIX = FileModule.PREFIX;
@@ -84,12 +84,12 @@ public class DirectoryListFunction extends BasicFunction {
 	
 	
 	/**
-	 * DirectoryListFunction Constructor
+	 * DirectoryList Constructor
 	 * 
 	 * @param context	The Context of the calling XQuery
 	 */
 	
-	public DirectoryListFunction( XQueryContext context, FunctionSignature signature )
+	public DirectoryList( XQueryContext context, FunctionSignature signature )
 	{
 		super( context, signature );
 	}
@@ -130,19 +130,19 @@ public class DirectoryListFunction extends BasicFunction {
 		
 		for( SequenceIterator i = patterns.iterate(); i.hasNext(); ) {
 			String pattern 	= i.nextItem().getStringValue();
-			File[] files 	= DirectoryScanner.scanDir( baseDir, pattern );
+			File[] scannedFiles	= DirectoryScanner.scanDir( baseDir, pattern );
 			String relDir 	= null;
 			
 			if( logger.isDebugEnabled() ) {
-				logger.debug("Found: " + files.length);
+				logger.debug("Found: " + scannedFiles.length);
 			}
 			
-			for (int j = 0; j < files.length; j++) {
+			for (File file : scannedFiles) {
 				if( logger.isDebugEnabled() ) {
-					logger.debug("Found: " + files[j].getAbsolutePath());
+					logger.debug("Found: " + file.getAbsolutePath());
 				}
 				
-				String relPath = files[j].toString().substring(baseDir.toString().length() + 1);
+				String relPath = file.toString().substring(baseDir.toString().length() + 1);
 				
 				int p = relPath.lastIndexOf(File.separatorChar);
 				
@@ -153,15 +153,15 @@ public class DirectoryListFunction extends BasicFunction {
 				
 				builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
 				
-				builder.addAttribute(new QName("name", null, null), files[j].getName());
+				builder.addAttribute(new QName("name", null, null), file.getName());
 
-                Long sizeLong = files[j].length();
+                Long sizeLong = file.length();
                 String sizeString = Long.toString(sizeLong);
                 String humanSize = getHumanSize(sizeLong, sizeString);
                 
 				builder.addAttribute(new QName("size", null, null), sizeString);
                 builder.addAttribute(new QName("human-size", null, null), humanSize);
-                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(files[j].lastModified())).getStringValue());
+                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(file.lastModified())).getStringValue());
 
 				if (relDir != null && relDir.length() > 0) {
 					builder.addAttribute(new QName("subdir", null, null), relDir);
@@ -182,8 +182,10 @@ public class DirectoryListFunction extends BasicFunction {
     private String getHumanSize(final Long sizeLong, final String sizeString) {
         String humanSize = "n/a";
         int sizeDigits = sizeString.length();
+
         if (sizeDigits < 4) {
             humanSize = Long.toString(Math.abs(sizeLong));
+
         } else if (sizeDigits >= 4 && sizeDigits <= 6) {
             if (sizeLong < 1024) {
                 // We don't want 0KB för e.g. 1006 Bytes.
@@ -191,16 +193,20 @@ public class DirectoryListFunction extends BasicFunction {
             } else {
                 humanSize = Math.abs(sizeLong / 1024) + "KB";
             }
+
         } else if(sizeDigits >= 7 && sizeDigits <= 9) {
-            if (sizeLong < 1048576)
+            if (sizeLong < 1048576) {
                 humanSize = Math.abs(sizeLong / 1024) + "KB";
-            else
+            } else {
                 humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
+            }
+
         } else if (sizeDigits > 9) {
-            if (sizeLong < 1073741824)
+            if (sizeLong < 1073741824) {
                 humanSize = Math.abs((sizeLong / (1024 * 1024))) +"MB";
-            else
+            } else {
                 humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) +"GB";
+            }
         }
         return humanSize;
     }

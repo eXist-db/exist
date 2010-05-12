@@ -48,7 +48,8 @@ public class FileModule extends AbstractInternalModule
 
 	
 	private final static FunctionDef[] functions = {
-		new FunctionDef( DirectoryListFunction.signatures[0], 	DirectoryListFunction.class ),
+//        new FunctionDef( Directory.signatures[0],               Directory.class ),
+		new FunctionDef( DirectoryList.signatures[0],           DirectoryList.class ),
 		new FunctionDef( FileRead.signatures[0], 				FileRead.class ),
 		new FunctionDef( FileRead.signatures[1], 				FileRead.class ),
 		new FunctionDef( FileReadBinary.signatures[0], 			FileReadBinary.class ), 
