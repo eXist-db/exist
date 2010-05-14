@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id: DirectoryList.java 11581 2010-03-28 19:54:46Z dizzzz $
+ *  $Id$
  */
 package org.exist.xquery.modules.file;
 
@@ -25,9 +25,9 @@ import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.util.DirectoryScanner;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -39,7 +39,6 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -60,8 +59,10 @@ import org.exist.xquery.value.Type;
 public class Directory extends BasicFunction {
 
     private final static Logger logger = Logger.getLogger(Directory.class);
+
     final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
     final static String PREFIX = FileModule.PREFIX;
+    
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("list", NAMESPACE_URI, PREFIX),
@@ -69,7 +70,7 @@ public class Directory extends BasicFunction {
         new SequenceType[]{
             new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory path in the file system."),
         },
-        new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence of node fragment describing file and directory names and meta data."))
+        new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a node describing file and directory names and meta data."))
     };
 
     /**
