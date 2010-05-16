@@ -9,19 +9,17 @@
 
   <description>Subversion tasks</description>
 
-  <property name="svn.svnkit.jar" value="${tools.ant}/lib/svnkit.jar"/>
-  <property name="svn.svnkitcli.jar" value="${tools.ant}/lib/svnkit-cli.jar"/>
-  <property name="svn.download.zip" value="${tools.ant}/lib/download.zip"/>
+  <property name="svn.svnkit.jar" value="${lib.user}/svnkit.jar"/>
+  <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli.jar"/>
+  <property name="svn.download.zip" value="${lib.user}/download.zip"/>
 
   <property name="svn.patch.file" value="exist.patch"/>
 
   <property name="javasvn.jar" location="${svn.svnkit.jar}"/>
-  <available classname="org.tmatesoft.svn.cli.SVN" property="svn-present">
-     <classpath>
-        <pathelement location="${svn.svnkit.jar}"/>
-        <pathelement location="${svn.svnkitcli.jar}"/>
-      </classpath>
-  </available>
+  
+  <available classname="org.tmatesoft.svn.cli.SVN" property="svn-present"/>
+  
+  
 
   <!-- 
     Try to read SVN info from entries-file (if file exist).
@@ -29,9 +27,8 @@
   -->
   <target name="svn-prepare" if="svn-present">
     <echo>Determining local SVN revision</echo>
-    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
-      <classpath refid="classpath.core"/>
-    </taskdef>
+    
+    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask"/>
 
     <tstamp/>
 
@@ -51,17 +48,23 @@
     if the URL is updated in time. The download size is significantly larger.
   -->
   <target name="svn-download" description="Download latest SVN library.">
-    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.3.2.standalone.zip"
-        dest="${svn.download.zip}" verbose="true"/>
-
-    <unzip src="${svn.download.zip}" dest="${tools.ant}/lib">
+    
+    <delete>
+      <fileset dir="${tools.ant}/lib" includes="**/svnkit*.jar"/>
+    </delete>
+    
+    
+    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip"
+      dest="${svn.download.zip}" verbose="true"/>
+    
+    <unzip src="${svn.download.zip}" dest="${lib.user}">
       <patternset>
         <include name="**/svnkit.jar"/>
         <include name="**/svnkit-cli.jar"/>
       </patternset>
       <mapper type="flatten"/>
     </unzip>
-
+    
     <delete file="${svn.download.zip}"/>
   </target>
 
