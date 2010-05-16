@@ -138,7 +138,8 @@
     </target>
 
     <target name="clean" if="include.feature.xqdoc.config">
-		<delete dir="${xqdoc.classes}"/>
+		<delete dir="${xqdoc.classes}" failonerror="false"/>
+		<delete dir="${test.classes}" failonerror="false"/>
 		<delete file="${top.dir}/${lib.extensions}/exist-xqdoc.jar" failonerror="false"/>
 	</target>
 </project>

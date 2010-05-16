@@ -604,6 +604,7 @@
         <ant antfile="build.xml" dir="extensions/xslt" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
 
