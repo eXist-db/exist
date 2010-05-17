@@ -328,10 +328,10 @@ public class WorkingCopyTest {
 	
     private static String repositoryID = null;
 	
-	private String URL = "https://support.syntactica.com/exist_svn/";
-	//private String URL = "svn://localhost/";
+//	private String URL = "https://support.syntactica.com/exist_svn/";
+	private String URL = "svn://localhost/";
 
-	private static boolean local = false;
+	private static boolean local = true;
 
     @Test
     public void test() throws SVNException {
@@ -350,8 +350,10 @@ public class WorkingCopyTest {
         } catch (SVNException e) {
             //
         }
-        String username = "existtest";
-        String password = "existtest";
+//        String username = "existtest";
+//        String password = "existtest";
+        String username = "harry";
+        String password = "harryssecret";
 
         String importFile = importDir + "/importFile.txt";
         String importFileText = "This unversioned file is imported into a repository";
@@ -359,6 +361,8 @@ public class WorkingCopyTest {
         String newDir = "/newDir";
         String newFile = newDir + "/newFile.txt";
         String fileText = "This is a new file added to the working copy";
+        String newFileXml = newDir + "/newFile.xml";
+        String fileTextXml = "<test/>";
 
         /*
          * That's where a new directory will be created
@@ -452,11 +456,12 @@ public class WorkingCopyTest {
 
         Resource aNewDir = new Resource(wcDir, newDir);
         Resource aNewFile = new Resource(aNewDir, SVNPathUtil.tail(newFile));
+        Resource aNewFileXml = new Resource(aNewDir, SVNPathUtil.tail(newFileXml));
         /*
          * creates a new local directory - 'wcDir/newDir' and a new file - 
          * '/MyWorkspace/newDir/newFile.txt' 
          */
-        createLocalDir(aNewDir, new Resource[]{aNewFile}, new String[]{fileText});
+        createLocalDir(aNewDir, new Resource[]{aNewFile,aNewFileXml}, new String[]{fileText,fileTextXml});
         
         System.out.println("Recursively scheduling a new directory '" + aNewDir.getAbsolutePath() + "' for addition...");
         try {
@@ -646,8 +651,9 @@ public class WorkingCopyTest {
      * Displays error information and exits. 
      */
     private static void error(String message, Exception e){
-        System.err.println(message+(e!=null ? ": "+e.getMessage() : ""));
-        System.exit(1);
+//    	e.printStackTrace();
+    	throw new RuntimeException(message+(e!=null ? ": "+e.getMessage() : ""));
+//        Assert.assertTrue(message+(e!=null ? ": "+e.getMessage() : ""), false);
     }
     
     /*
