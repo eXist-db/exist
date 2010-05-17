@@ -3,6 +3,7 @@
     
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
+    <property name="test" value="./test"/>
     <property name="top.dir" value="../.."/>
     
     <property file="${top.dir}/build.properties"/>
@@ -38,14 +39,23 @@
         <pathelement path="${top.dir}/start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
+    <path id="classpath.test-libs">
+         <fileset dir="${top.dir}/${lib.test}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    <path id="classpath.test">
+        <pathelement path="${test}/classes"/>
+    </path>
     
     <target name="prepare">
         <mkdir dir="${classes}"/>
+        <mkdir dir="${test}/classes"/>
     </target>
     
     <target name="compile" depends="prepare" if="include.feature.svn.config">
         <echo message="---------------------------"/>
-        <echo message="Compiling SVN module"/>
+        <echo message="Compiling SVN extension"/>
         <echo message="---------------------------"/>
         
         <echo
@@ -57,6 +67,20 @@
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+
+        <echo message="----------------------"/>
+        <echo message="Compiling SVN extension tests"/>
+        <echo message="----------------------"/>
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+               destdir="${test}/classes" encoding="UTF-8"
+               optimize="${build.optimize}" srcdir="${test}/src"
+               source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.test-libs"/>
+                <pathelement path="${classes}"  />
             </classpath>
         </javac>
     </target>
@@ -75,6 +99,32 @@
     
     <target name="clean">
         <delete dir="${classes}"/>
+        <delete dir="${test}/classes"/>
         <delete file="${top.dir}/${lib.extensions}/exist-svn.jar" failonerror="false"/>
+    </target>
+
+    <target name="test" depends="compile" if="include.feature.svn.config">
+        <echo message="Running svn extension tests"/>
+
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
+               maxmemory="${junit.forked.VM.maxmemory}">
+            <sysproperty key="exist.home" value="${basedir}"/>
+
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.jar"/>
+                <path refid="classpath.test"/>
+                <path refid="classpath.test-libs"/>
+                <pathelement path="${classes}"  />
+            </classpath>
+
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <batchtest fork="yes" todir="${junit.index.reports}">
+                <fileset dir="${test}/classes">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
     </target>
 </project>
