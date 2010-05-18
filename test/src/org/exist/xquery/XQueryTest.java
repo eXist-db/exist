@@ -1513,7 +1513,7 @@ public class XQueryTest extends XMLTestCase {
         boolean hasInternetAccess = false;
         ResourceSet result;
         String query;
-        String message;
+		String message;
 
         //Checking that we have an Internet Aceess
         try {
@@ -1539,17 +1539,17 @@ public class XQueryTest extends XMLTestCase {
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
             System.out.println("testFunctionDocExternal 1: ========");
-            query = "if (doc-available(\"http://www.w3.org/RDF/\")) then doc(\"http://www.w3.org/RDF/\") else ()";
+            query = "if (doc-available(\"http://www.w3.org/XML/\")) then doc(\"http://www.w3.org/XML/\") else ()";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
 
             System.out.println("testFunctionDocExternal 2: ========");
-            query = "if (doc-available(\"http://www.w3.org/RDF/dummy\")) then doc(\"http://www.w3.org/RDF/dummy\") else ()";
+            query = "if (doc-available(\"http://www.w3.org/XML/dummy\")) then doc(\"http://www.w3.org/XML/dummy\") else ()";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
 
             System.out.println("testFunctionDocExternal 3: ========");
-            query = "doc-available(\"http://www.w3.org/RDF/\")";
+            query = "doc-available(\"http://www.w3.org/XML/\")";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
@@ -1579,6 +1579,7 @@ public class XQueryTest extends XMLTestCase {
 
         } catch (XMLDBException e) {
             System.out.println("testFunctionDoc : XMLDBException: " + e);
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
