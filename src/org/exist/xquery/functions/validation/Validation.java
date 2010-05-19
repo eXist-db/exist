@@ -153,7 +153,7 @@ public class Validation extends BasicFunction  {
         }
 
         InputStream is = null;
-        ValidationReport report = null;
+        ValidationReport report = new ValidationReport();
 
         try { // args[0]
             is = Shared.getInputStream(args[0].itemAt(0), context);
