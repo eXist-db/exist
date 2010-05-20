@@ -3,8 +3,10 @@
     xmlns:biblio="http:/exist-db.org/xquery/biblio">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
+        <!--XXX<graphic fileref="http://kjc-fs1.kjc.uni-heidelberg.de/refbase/img/logovjc.gif"/>-->
         <productname>Open Source Native XML Database</productname>
         <title>eXist - Bibliographic Demo</title>
+        <!--<title>Cluster Multimedia Search</title>-->
         <date>2010</date>
         <author>
             <firstname>Wolfgang M.</firstname>
@@ -17,7 +19,7 @@
         <script type="text/javascript" src="query.js"/>
         <link rel="stylesheet" type="text/css" href="biblio.css"/>
     </bookinfo>
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <!--XXX<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>-->
     <chapter>
         <jquery:tabset id="query-tabs" on-select="searchTabSelected">
             <jquery:tab id="simple" label="Simple Search">
@@ -97,7 +99,7 @@
         </jquery:tabset>
         <div id="results-head">
             <div id="messages">Found: <biblio:result-count/></div>
-            <a id="optimize-trigger" href="#">Create custom indexes</a>
+            <!--<a id="optimize-trigger" href="#">Create custom indexes</a>-->
             <div class="navbar"/>
         </div>
         <div id="result-container">
