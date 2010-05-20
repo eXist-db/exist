@@ -1,12 +1,16 @@
 xquery version "1.0";
 
 (:~
-    Handles the actual display of the search result. The pagination plugin
+    Handles the actual display of the search result. The pagination jQuery plugin in jquery-utils.js
     will call this query to retrieve the next page of search results.
     
-    The query returns a simple table with two rows: 1) the number of the current
-    record, 2) the data to display.
+    The query returns a simple table with four columns: 
+    1) the number of the current record, 
+    2) a link to save the current record in "My Lists", 
+    3) the type of resource (represented by an icon), and 
+    4) the data to display.
 :)
+
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 
 declare namespace bs="http://exist-db.org/xquery/biblio/session";
@@ -39,12 +43,16 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                 class="{if ($saved) then 'stored' else ''}"/>
                         </a>
                     </td>
-                    <td class="data">{
+                    <td>
+                        <img title="{$item/mods:typeOfResource/string()}" 
+                          src="img/{mods:return-type(string($currentPos), $item)}.png"/>
+                    </td>
+                    {
                         if ($count eq 1) then
-                            mods:format-full(string($currentPos), $item)
+                            <td class="detail-view">{mods:format-full(string($currentPos), $item)}</td>
                         else
-                            mods:format-short(string($currentPos), $item)
-                    }</td>
+                            <td class="pagination-toggle"><a>{mods:format-short(string($currentPos), $item)}</a></td>
+                    }
                 </tr>
         }
         </table>
