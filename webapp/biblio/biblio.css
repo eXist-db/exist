@@ -1,5 +1,5 @@
 p, td {
-    line-height:2em;
+    line-height:1.7em;
 }
 .search-form {
 }
@@ -88,9 +88,24 @@ p, td {
     margin-bottom: 8px;
 }
 
+a {
+color: black;
+text-decoration: none;
+font-weight: normal;
+    
+}
+a:hover {
+    text-decoration: none;
+    color: blue;
+    border-bottom: 0
+}
+
 .pagination-toggle {
     cursor: pointer;
-    text-decoration: underline;
+    text-decoration: none;
+    line-height:2em;
+    padding: .2em;
+    width:100%;
 }
 
 .pagination-link {
@@ -149,7 +164,7 @@ p, td {
     text-align: right;
     padding-right: 1em;
     vertical-align: top;
-    width: 10em;
+    width: 16em;
 }
 
 .biblio-full .record {
@@ -164,9 +179,21 @@ p, td {
 }
 
 .biblio-full .related td {
-    margin: 0;
-    padding: 0;
-    border-top: 1px solid black;
+    margin: 10em;
+    line-height:3.4em;
+    border-top: 1px solid gray;
+}
+
+.biblio-full .related hr {
+    color: blue;
+}
+
+.host {
+    margin: 10em;
+    text-align: right;
+    color: blue;
+    padding-right: 1em;
+    font-weight: bold;
 }
 
 .save {
