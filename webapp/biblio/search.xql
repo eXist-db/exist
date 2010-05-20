@@ -36,13 +36,52 @@ declare variable $biblio:COLLECTION := "collection('/db')//";
 :)
 declare variable $biblio:FIELDS :=
 	<fields>
-		<field name="Title">mods:mods[ft:query(mods:titleInfo, '$q', $options)]</field>
-		<field name="Author">mods:mods[ft:query(mods:name, '$q', $options)]</field>
-		<field name="Date">(mods:mods[ft:query(mods:originInfo/mods:dateCreated, '$q', $options)] union
-		  mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)])</field>
-		<field name="All">(mods:mods[ft:query(mods:titleInfo, '$q', $options)] union
-		  mods:mods[ft:query(mods:name, '$q', $options)])
-        </field>
+		<field name="Title">(
+		mods:mods[ft:query(mods:titleInfo, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:titleInfo, '$q', $options)]
+		)</field>
+		<field name="Name">(
+		mods:mods[ft:query(mods:name, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:name, '$q', $options)]		
+		)</field>
+		<field name="Date">(
+		mods:mods[ft:query(mods:originInfo/mods:dateCreated, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:originInfo/mods:dateCaptured, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:originInfo/mods:copyrightDate, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:dateCreated, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:dateIssued, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:dateCaptured, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:copyrightDate, '$q', $options)]
+		)</field>
+		<field name="Abstract">mods:mods[ft:query(mods:abstract, '$q', $options)]</field>
+        <field name="Note">mods:mods[ft:query(mods:note, '$q', $options)]</field>
+        <field name="Subject">mods:mods[ft:query(mods:subject, '$q', $options)]</field>
+        <field name="All Except Date">(
+        mods:mods[ft:query(mods:titleInfo, '$q', $options)]
+                union
+        mods:mods[ft:query(mods:relatedItem/mods:titleInfo, '$q', $options)]
+                union
+		mods:mods[ft:query(mods:name, '$q', $options)]
+                union
+		mods:mods[ft:query(mods:relatedItem/mods:name, '$q', $options)]
+		        union
+		mods:mods[ft:query(mods:abstract, '$q', $options)]
+		        union
+		mods:mods[ft:query(mods:note, '$q', $options)]
+		        union
+		mods:mods[ft:query(mods:subject, '$q', $options)]
+		)</field>
+        
 	</fields>;
 
 (:
