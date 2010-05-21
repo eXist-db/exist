@@ -99,7 +99,7 @@
         </jquery:tabset>
         <div id="results-head">
             <div id="messages">Found: <biblio:result-count/></div>
-            <!--<a id="optimize-trigger" href="#">Create custom indexes</a>-->
+            <a id="optimize-trigger" href="#">Create custom indexes for sorting</a>
             <div class="navbar"/>
         </div>
         <div id="result-container">
