@@ -405,6 +405,7 @@
     <library name="ant">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/" />
+        <root url="jar://$PROJECT_DIR$/tools/ant/lib/antlr3.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -412,9 +413,11 @@
     <library name="test">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/test/classes" />
+        <root url="file://$PROJECT_DIR$/lib/test" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/test" recursive="false" />
     </library>
     <library name="extensions">
       <CLASSES>
@@ -425,6 +428,7 @@
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
         <root url="file://$PROJECT_DIR$/extensions/debuggee/lib" />
+        <root url="file://$PROJECT_DIR$/extensions/security/openid/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -432,6 +436,7 @@
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/security/openid/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/xqdoc/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
