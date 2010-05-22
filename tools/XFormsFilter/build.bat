@@ -12,7 +12,7 @@ set EXIST_HOME=%CD%
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%ANT_HOME%\lib\junit-4.5.jar;%JAVA_HOME%\lib\tools.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\test\junit-4.8.2.jar;%JAVA_HOME%\lib\tools.jar
 
 set JAVA_OPTS=-Xms64M -Xmx512M -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%"
 

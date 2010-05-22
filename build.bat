@@ -14,7 +14,7 @@ set EXIST_HOME=%CD%
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\test\junit-4.6.jar;%JAVA_HOME%\lib\tools.jar;%EXIST_HOME%\lib\user\svnkit.jar:%EXIST_HOME%\lib\user\svnkit-cli.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\test\junit-4.8.2.jar;%JAVA_HOME%\lib\tools.jar;%EXIST_HOME%\lib\user\svnkit.jar:%EXIST_HOME%\lib\user\svnkit-cli.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
 set JAVA_OPTS=-Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%" -Dant.home="%ANT_HOME%" -Dexist.home="%EXIST_HOME%"

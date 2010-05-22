@@ -71,7 +71,7 @@
 	<classpathentry kind="lib" path="thirdparty/tomcat5/bin/jmx.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
-	<classpathentry kind="lib" path="lib/test/junit-4.6.jar"/>
+	<classpathentry kind="lib" path="lib/test/junit-4.8.2.jar.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
