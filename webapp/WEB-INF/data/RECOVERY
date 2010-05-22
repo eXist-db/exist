@@ -1,0 +1,11 @@
+RECOVERY
+========
+If the index got corrupted, this is how to recover:
+
+- stop database
+- remove all ".log" transaction log files
+- remove all ".lck" lock files
+- remove all ".dbx" files EXCEPT dom.dbx, collections.dbx and symbols.dbx
+- start database
+
+$Id$
