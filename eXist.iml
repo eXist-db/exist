@@ -15,7 +15,6 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/versioning/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/samples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/XFormsFilter/src" isTestSource="false" />
@@ -23,6 +22,17 @@
       <sourceFolder url="file://$MODULE_DIR$/tools/izpack/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tools/requestlog/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/wrapper/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/samples/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/cocoon/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/test/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/netedit/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/security/openid/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/svn/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/svn/test/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/xqdoc/test/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/xslt/test" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/xslt/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/test/benchmark" />
       <excludeFolder url="file://$MODULE_DIR$/test/junit" />
       <excludeFolder url="file://$MODULE_DIR$/test/temp" />
