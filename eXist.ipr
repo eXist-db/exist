@@ -285,7 +285,7 @@
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
@@ -301,6 +301,25 @@
         <entry key="$PROJECT_DIR$">
           <value>
             <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://exist.svn.sourceforge.net/svnroot/exist/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://exist.svn.sourceforge.net/svnroot/exist/releases">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://exist.svn.sourceforge.net/svnroot/exist/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://exist.svn.sourceforge.net/svnroot/exist/branches" />
@@ -372,18 +391,16 @@
         <root url="file://$PROJECT_DIR$/lib/endorsed" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../jimfuller/Source/Applications/xerces-2_9_1/src" />
-      </SOURCES>
+      <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
     </library>
     <library name="cocoon">
       <CLASSES>
-        <root url="file://$PROJECT_DIR$/lib/cocoon" />
+        <root url="file://$PROJECT_DIR$/extensions/cocoon/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/lib/cocoon" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/cocoon/lib" recursive="false" />
     </library>
     <library name="ant">
       <CLASSES>
@@ -407,9 +424,11 @@
         <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
+        <root url="file://$PROJECT_DIR$/extensions/debuggee/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/debuggee/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />

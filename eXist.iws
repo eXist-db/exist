@@ -80,23 +80,20 @@
     <option name="USE_USER_FILTER" value="false" />
     <option name="USER" value="" />
   </component>
-  <component name="ChangeListManager" verified="true">
-    <list default="true" id="70d0e2e9-b2fd-40bc-bd54-c5606ba92e40" name="Default" comment="[ignore] convert external variables of type byte[] to a base64 binary value within XQuery.">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/hash-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/hash-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/import-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/import-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/xslt-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/xslt-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-002.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-002.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/filter-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/filter-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/labelelements-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/labelelements-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/src/xquery/util.xqm" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/xsl-formatter-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/optional/xsl-formatter-001.xml" />
+  <component name="ChangeListManager">
+    <list default="true" readonly="true" id="70d0e2e9-b2fd-40bc-bd54-c5606ba92e40" name="Default" comment="[ignore] convert external variables of type byte[] to a base64 binary value within XQuery.">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/VERSION.txt" afterPath="$PROJECT_DIR$/VERSION.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLParserTokenTypes.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLParserTokenTypes.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLLexer.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLLexer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLParser.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLParser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf.xml.tmpl" afterPath="$PROJECT_DIR$/conf.xml.tmpl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/build.properties" afterPath="$PROJECT_DIR$/extensions/indexes/build.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLParserTokenTypes.txt" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/simpleql/SimpleQLParserTokenTypes.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/project.properties" afterPath="$PROJECT_DIR$/nbproject/project.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/private/private.xml" afterPath="$PROJECT_DIR$/nbproject/private/private.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/scheduler/quartz.properties" afterPath="$PROJECT_DIR$/src/org/exist/scheduler/quartz.properties" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/for-each-002.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/for-each-002.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/add-xml-base-001.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/add-xml-base-001.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-004.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-004.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-003.xml" afterPath="$PROJECT_DIR$/extensions/xprocxq/main/test/tests.xproc.org/required/load-003.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/xproc/xspec-v0.1/xspec.sh" afterPath="$PROJECT_DIR$/webapp/xproc/xspec-v0.1/xspec.sh" />
     </list>
     <list id="2c6b8e55-8351-488f-91fa-a6aaae08af6d" name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
     <option name="TRACKING_ENABLED" value="true" />
@@ -312,7 +309,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/test/src/org/exist/validation/DtdEntityTest.java" />
         <option value="$PROJECT_DIR$/src/org/exist/collections/Collection.java" />
         <option value="$PROJECT_DIR$/src/org/exist/util/XMLReaderObjectFactory.java" />
         <option value="$PROJECT_DIR$/extensions/xqdoc/src/org/exist/xqdoc/xquery/Scan.java" />
@@ -328,6 +324,7 @@
         <option value="$PROJECT_DIR$/src/org/exist/util/Configuration.java" />
         <option value="$PROJECT_DIR$/src/org/exist/xquery/XQuery.java" />
         <option value="$PROJECT_DIR$/extensions/security/openid/src/org/exist/security/openid/OpenIDUtility.java" />
+        <option value="$PROJECT_DIR$/extensions/indexes/ngram/test/src/org/exist/indexing/ngram/MatchListenerTest.java" />
       </list>
     </option>
   </component>
@@ -611,7 +608,7 @@
     </subPane>
   </component>
   <component name="ProjectReloadState">
-    <option name="STATE" value="0" />
+    <option name="STATE" value="2" />
   </component>
   <component name="ProjectRootConfigurable.UI">
     <option name="proportions">
@@ -638,7 +635,7 @@
       <sortByType PackagesPane="true" Favorites="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
+      <pane id="Favorites" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -653,14 +650,14 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="exist-trunk" />
+              <option name="myItemId" value="trunk-1.5" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Favorites" />
       <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -734,6 +731,146 @@
       <recent name="org.exist.xquery.functions.text" />
     </key>
   </component>
+  <component name="RestoreUpdateTree">
+    <UpdateInfo date="5/22/10 12:08 PM" ActionInfo="_Update">
+      <UpdatedFiles>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Updated from server" />
+          <option name="myStatusName" value="Changed on server" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="CHANGED_ON_SERVER" />
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Updated" />
+            <option name="myStatusName" value="Changed" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="UPDATED" />
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\mime-types.xml.tmpl</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\session.xql</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\biblio.css</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\retrieve-mods.xql</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\index.xml</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\search.xql</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\quickstart.xml</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\samples\mods\collection.xconf</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Created" />
+            <option name="myStatusName" value="Created" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="CREATED" />
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\img</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\img\moving_image.png</PATH>
+            <PATH vcs="svn" revision="11800">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\biblio\img\text.png</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Deleted" />
+            <option name="myStatusName" value="Deleted" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="true" />
+            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Restored" />
+            <option name="myStatusName" value="Will be restored" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="RESTORED" />
+          </FILE-GROUP>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Modified" />
+          <option name="myStatusName" value="Modified" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MODIFIED" />
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\WEB-INF\data\README</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\eXist.ipr</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\extensions\indexes\build.properties</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\extensions\modules\src\org\exist\xquery\modules\simpleql\SimpleQLLexer.java</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\extensions\modules\src\org\exist\xquery\modules\simpleql\SimpleQLParser.java</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\extensions\modules\src\org\exist\xquery\modules\simpleql\SimpleQLParserTokenTypes.java</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\extensions\modules\src\org\exist\xquery\modules\simpleql\SimpleQLParserTokenTypes.txt</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\src\org\exist\scheduler\quartz.properties</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\nbproject\private\private.xml</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\nbproject\project.properties</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\eXist.iws</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\conf.xml.tmpl</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\VERSION.txt</PATH>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Skipped" />
+          <option name="myStatusName" value="Skipped" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SKIPPED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with conflicts" />
+          <option name="myStatusName" value="Will be merged with conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_CONFLICTS" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged" />
+          <option name="myStatusName" value="Will be merged" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Not in repository" />
+          <option name="myStatusName" value="Not in repository" />
+          <option name="mySupportsDeletion" value="true" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="UNKNOWN" />
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\out.log</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\lib\user\slf4j-api-1.5.10.jar</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\lib\user\slf4j-log4j12-1.5.10.jar_</PATH>
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\lib\core\quartz-1.8.0.jar</PATH>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally added" />
+          <option name="myStatusName" value="Locally added" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_ADDED" />
+          <PATH vcs="svn" revision="">C:\LocalData\Sources\eXist-db\trunk-1.5\webapp\WEB-INF\data\RECOVERY</PATH>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally removed" />
+          <option name="myStatusName" value="Locally removed" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_REMOVED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Switched" />
+          <option name="myStatusName" value="Switched" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SWITCHED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with property conflicts" />
+          <option name="myStatusName" value="Will be merged with property conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with tree conflicts" />
+          <option name="myStatusName" value="Will be merged with tree conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
+        </FILE-GROUP>
+      </UpdatedFiles>
+    </UpdateInfo>
+  </component>
   <component name="RunManager" selected="JUnit.DtdEntityTest">
     <configuration default="true" type="Remote" factoryName="Remote">
       <option name="USE_SOCKET_TRANSPORT" value="true" />
@@ -744,26 +881,7 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-      </method>
-    </configuration>
-    <configuration default="true" type="XSLT" factoryName="XSLT">
-      <option name="myOutputFile" />
-      <option name="myOpenOutputFile" value="false" />
-      <option name="myOpenInBrowser" value="false" />
-      <option name="mySmartErrorHandling" value="true" />
-      <option name="myRunnerPort" value="34873" />
-      <option name="myVmArguments" />
-      <option name="myWorkingDirectory" />
-      <option name="myModule" />
-      <option name="myJdk" />
-      <parameters />
-      <OutputType value="CONSOLE" />
-      <FileType name="XML" />
-      <JdkChoice value="FROM_MODULE" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="false" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
@@ -781,9 +899,11 @@
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
+      <extension name="snapshooter" />
       <option name="MAIN_CLASS_NAME" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
@@ -799,9 +919,11 @@
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
+      <extension name="snapshooter" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -822,10 +944,12 @@
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
         <option name="Run ant target" value="true" />
       </method>
     </configuration>
     <configuration default="false" name="RetrieveChunked" type="Application" factoryName="Application">
+      <extension name="snapshooter" />
       <option name="MAIN_CLASS_NAME" value="org.exist.examples.xmlrpc.RetrieveChunked" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
@@ -842,6 +966,7 @@
       <method />
     </configuration>
     <configuration default="false" name="AllXmlRpcTests" type="JUnit" factoryName="JUnit">
+      <extension name="snapshooter" />
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -863,6 +988,7 @@
       <method />
     </configuration>
     <configuration default="false" name="EntitiesTest" type="JUnit" factoryName="JUnit">
+      <extension name="snapshooter" />
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -884,6 +1010,7 @@
       <method />
     </configuration>
     <configuration default="false" name="DtdEntityTest" type="JUnit" factoryName="JUnit">
+      <extension name="snapshooter" />
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -905,8 +1032,9 @@
       <method />
     </configuration>
     <configuration default="false" name="eXist Client" type="Application" factoryName="Application">
+      <extension name="snapshooter" />
       <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
-      <option name="VM_PARAMETERS" value="-Djava.endorsed.dirs=lib/endorsed -Dexist.home=$PROJECT_DIR$/../../../../jimfuller/Source/Thirdparty/eXist-1.3  -Xmx128m" />
+      <option name="VM_PARAMETERS" value="-Djava.endorsed.dirs=lib/endorsed -Dexist.home=C:/jimfuller/Source/Thirdparty/eXist-1.3  -Xmx128m" />
       <option name="PROGRAM_PARAMETERS" value="client -l" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -929,8 +1057,9 @@
       </method>
     </configuration>
     <configuration default="false" name="Server" type="Application" factoryName="Application">
+      <extension name="snapshooter" />
       <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
-      <option name="VM_PARAMETERS" value="-Dexist.home=$PROJECT_DIR$/../../../../jimfuller/Source/Thirdparty/eXist-1.3  -Xmx128m" />
+      <option name="VM_PARAMETERS" value="-Dexist.home=C:/jimfuller/Source/Thirdparty/eXist-1.3  -Xmx128m" />
       <option name="PROGRAM_PARAMETERS" value="jetty" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -951,6 +1080,7 @@
       <method />
     </configuration>
     <configuration default="false" name="AntUnitTestRunner" type="JUnit" factoryName="JUnit">
+      <extension name="snapshooter" />
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
@@ -978,6 +1108,7 @@
       <method />
     </configuration>
     <configuration default="false" name="ONVDLTest" type="JUnit" factoryName="JUnit">
+      <extension name="snapshooter" />
       <module name="eXist" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -1253,7 +1384,7 @@
     <option name="USE_PROJECT_SETTINGS" value="true" />
     <option name="USE_ALTERNATE_LOCATION" value="false" />
   </component>
-  <component name="SvnConfiguration">
+  <component name="SvnConfiguration" maxAnnotateRevisions="500">
     <option name="USER" value="" />
     <option name="PASSWORD" value="" />
     <option name="LAST_MERGED_REVISION" />
@@ -1262,7 +1393,10 @@
     <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
     <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
     <option name="IGNORE_SPACES_IN_MERGE" value="false" />
-    <configuration useDefault="true">$PROJECT_DIR$/../../../../jimfuller/.subversion</configuration>
+    <option name="DETECT_NESTED_COPIES" value="true" />
+    <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
+    <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
+    <configuration useDefault="true">C:\Documents and Settings\wessels\Application Data\Subversion</configuration>
     <remoteStatus />
     <myIsUseDefaultProxy>true</myIsUseDefaultProxy>
     <supportedVersion>125</supportedVersion>
@@ -1271,16 +1405,16 @@
     <option name="myMappingRoots">
       <list>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="$PROJECT_DIR$" />
-          <option name="myCopyRoot" value="$PROJECT_DIR$" />
+          <option name="myVcsRoot" value="C:\LocalData\Sources\eXist-db\trunk-1.5" />
+          <option name="myCopyRoot" value="C:\LocalData\Sources\eXist-db\trunk-1.5" />
         </SvnCopyRootSimple>
       </list>
     </option>
     <option name="myMoreRealMappingRoots">
       <list>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="$PROJECT_DIR$" />
-          <option name="myCopyRoot" value="$PROJECT_DIR$" />
+          <option name="myVcsRoot" value="C:\LocalData\Sources\eXist-db\trunk-1.5" />
+          <option name="myCopyRoot" value="C:\LocalData\Sources\eXist-db\trunk-1.5" />
         </SvnCopyRootSimple>
       </list>
     </option>
@@ -1314,20 +1448,22 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="151" width="1753" height="818" extended-state="0" />
+    <frame x="-4" y="-4" width="1288" height="1004" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4293405" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42923433" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35211268" sideWeight="0.0" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34738773" sideWeight="0.6883803" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23226704" sideWeight="0.72183096" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3313783" sideWeight="0.9971347" order="0" side_tool="false" content_ui="tabs" x="72" y="49" width="451" height="485" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4347241" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
-      <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5356662" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3549884" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29582366" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35211268" sideWeight="0.0" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23195459" sideWeight="0.72183096" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2562855" sideWeight="0.6960557" order="0" side_tool="false" content_ui="tabs" x="72" y="49" width="451" height="485" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3822342" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35531628" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -1342,10 +1478,9 @@
       <window_info id="SVN Properties" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33453238" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33860046" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2974428" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
+      <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5356662" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32570422" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1371,6 +1506,8 @@
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
     <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="true" />
+    <option name="ENABLE_BACKGROUND_PROCESSES" value="false" />
+    <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="LAST_COMMIT_MESSAGE" value="[bugfix] fixed deadlock issue when copying a resource or collection: the methods should first synchronize on the collection cache, then obtain a lock on the collection store. Not doing so may cause a deadlock if another thread tries to access the collection." />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
@@ -1599,11 +1736,6 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/DBBroker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="48" selection-start="2852" selection-end="2869" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/source/StringSource.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="38" column="13" selection-start="1257" selection-end="1257" vertical-scroll-proportion="0.0" />
@@ -1646,49 +1778,42 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/extensions/security/openid/src/org/exist/security/openid/OpenIDUtility.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="68" column="49" selection-start="2599" selection-end="2599" vertical-scroll-proportion="0.3761194">
-          <folding />
-        </state>
+        <state line="68" column="49" selection-start="2599" selection-end="2599" vertical-scroll-proportion="0.3761194" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/XQuery.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="37" selection-start="1156" selection-end="1156" vertical-scroll-proportion="0.01832061">
-          <folding />
-        </state>
+        <state line="28" column="37" selection-start="1156" selection-end="1156" vertical-scroll-proportion="0.01832061" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/CompiledXQuery.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="17" selection-start="1173" selection-end="1173" vertical-scroll-proportion="0.1402985">
-          <folding />
-        </state>
+        <state line="34" column="17" selection-start="1173" selection-end="1173" vertical-scroll-proportion="0.1402985" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/XQueryContext.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1542" column="35" selection-start="51493" selection-end="51508" vertical-scroll-proportion="0.01832061">
-          <folding />
-        </state>
+        <state line="1542" column="35" selection-start="51493" selection-end="51508" vertical-scroll-proportion="0.01832061" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/source/Source.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="17" selection-start="1323" selection-end="1323" vertical-scroll-proportion="0.017910447">
-          <folding />
-        </state>
+        <state line="38" column="17" selection-start="1323" selection-end="1323" vertical-scroll-proportion="0.017910447" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/source/DBSource.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="13" selection-start="1493" selection-end="1493" vertical-scroll-proportion="0.017910447">
-          <folding />
-        </state>
+        <state line="43" column="13" selection-start="1493" selection-end="1493" vertical-scroll-proportion="0.017910447" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/extensions/security/openid/src/org/exist/security/openid/servlet/AuthenticatorOpenId.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="328" column="48" selection-start="12292" selection-end="12292" vertical-scroll-proportion="0.319403">
+        <state line="328" column="48" selection-start="12292" selection-end="12292" vertical-scroll-proportion="0.319403" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/indexes/ngram/test/src/org/exist/indexing/ngram/MatchListenerTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="76" column="87" selection-start="2931" selection-end="2931" vertical-scroll-proportion="0.93520784">
           <folding />
         </state>
       </provider>
@@ -1699,7 +1824,13 @@
       <state key="ArtifactsStructureConfigurable.UI">
         <UIState>
           <splitter-proportions>
-            <SplitterProportionsDataImpl />
+            <SplitterProportionsDataImpl>
+              <option name="proportions">
+                <list>
+                  <option value="0.2" />
+                </list>
+              </option>
+            </SplitterProportionsDataImpl>
           </splitter-proportions>
           <settings />
         </UIState>
