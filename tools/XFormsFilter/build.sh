@@ -21,7 +21,7 @@ fi
 
 ANT_HOME="$EXIST_HOME/tools/ant"
 
-LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:$ANT_HOME/lib/junit-4.5.jar:.
+LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:$EXIST_HOME/lib/test/junit-4.8.2.jar:.
 
 JAVA_OPTS="-Dant.home=$ANT_HOME -Dexist.home=$EXIST_HOME"
 
