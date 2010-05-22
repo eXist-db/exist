@@ -20,7 +20,13 @@ declare function functx:capitalize-first( $arg as xs:string? ) as xs:string? {
              substring($arg,2))
 };
  
-declare function mods:space-before($node as node()?) as xs:string? {
+declare function functx:trim 
+  ( $arg as xs:string? )  as xs:string {
+       
+   replace(replace($arg,'\s+$',''),'^\s+','')
+ } ;
+ 
+ declare function mods:space-before($node as node()?) as xs:string? {
     if (exists($node)) then
         concat(' ', $node)
     else
@@ -203,10 +209,10 @@ declare function mods:get-related-part($entry as element()) {
  (: Application: <titleInfo> is repeated for each type attribute value. If multiple titles are recorded, repeat <titleInfo><title> for each. The language of the title may be indicated if desired using the xml:lang (RFC3066) or lang (3-character ISO 639-2 code) attributes. :)
     (: Problem:  :)
 (: Attributes: type [RECOMMENDED], authority [RECOMMENDED], xlink, ID, lang, xml:lang, script, transliteration. :)
-    (: Unaccounted for:  :)
+    (: Unaccounted for: authority, xlink, ID, (lang), xml:lang, script. :)
     (: @type :)
         (: Values: personal, corporate, conference. :)
-            (: Unaccounted for:  :)
+            (: Unaccounted for: none. :)
 (: Subelements: <namePart> [REQUIRED], <displayForm> [OPTIONAL], <affiliation> [OPTIONAL], <role> [RECOMMENDED], <description> [NOT RECOMMENDED]. :)
     (: Unaccounted for: <displayForm>, <affiliation>, <role>, <description>. :)
     (: <namePart> :)
@@ -229,17 +235,40 @@ declare function mods:get-related-part($entry as element()) {
 
 (: Both the name as given in the publication and the autority name should be rendered. :)
 
-declare function mods:name-transliteration($name as element()) as xs:string? {
-    if ($name/mods:namePart[@transliteration]) then
+declare function mods:eastern-name-transliteration($name as element()) as xs:string? {
+    if ($name/mods:namePart[@transliteration = ('pinyin', 'romaji')]) then
+    let $family := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'family'][1]
+    (: The [1] takes care of cases where several transliterations (both Japanese and Chinese) are used. Such transliterations are irregular and we will only treat the first one. :)
+    let $given := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'given'][1]
+    let $address := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'termsOfAddress'][1]
+    (: Should be moved to format-name. :)
+    return
         string-join((
-           $name/mods:namePart[@transliteration][@type = 'family'][1], (: The [1] takes care of cases where several transliterations (both Japanese and Chinese) are used. Such transliterations are irregular. :)
-           $name/mods:namePart[@transliteration][@type = 'given'][1],
-           $name/mods:namePart[@transliteration][not(@type)]
-        ), ' ')
+            $family, $given,
+            if ($address) then concat(' ,', $address) else (),
+            $name/mods:namePart[@transliteration][not(@type)]
+            (: NB: What does the last line do??? :)
+            ), ' ')
     else ()
 };
 
-(: Why is a special function needed for conference? It mixes together name and place. :)
+(: NB! Dummy function!!!! :)
+declare function mods:non-eastern-name-transliteration($name as element()) as xs:string? {
+    if ($name/mods:namePart[@transliteration = ('pinyin', 'romaji')]) then
+    let $family := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'family'][1]
+    (: The [1] takes care of cases where several transliterations (both Japanese and Chinese) are used. Such transliterations are irregular and we will only treat the first one. :)
+    let $given := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'given'][1]
+    let $address := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'termsOfAddress'][1]
+    return
+        string-join((
+            functx:trim($family), functx:trim($given),
+            if ($address) then concat(' ,', functx:trim($address)) else (),
+            $name/mods:namePart[@transliteration][not(@type)]
+            (: NB: What does the last line do??? :)
+            ), ' ')
+    else ()
+};
+
 declare function mods:get-conference-hitlist($entry as element(mods:mods)) {
     let $date := ($entry/mods:originInfo/mods:dateIssued/string()[1], $entry/mods:part/mods:date/string()[1],
             $entry/mods:originInfo/mods:dateCreated/string())[1]
@@ -271,30 +300,65 @@ declare function mods:get-conference-detail-view($entry as element()) {
 };
 
 declare function mods:format-name($name as element(mods:name), $pos as xs:integer) {
-	if ($name/@type = 'conference') then
-	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
-	()
-	else if ($name/@type = 'corporate') then
-        concat($name/mods:namePart[@transliteration][1]/string(), ' ',$name/mods:namePart[not(@transliteration)][1]/string())
-        (: Does not need manipulation, since it is never decomposed. :)
-	else	       
-		let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
-		let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
-		let $address := $name/mods:namePart[@type = 'termsOfAddress']
-		return
-		  string-join(
-			if ($family and $given) then
-				if ($family/@lang = ('ja', 'zh')) then
-				(: What if Westeners have Chinese names, as in Harrist2003? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? :)
-				(: This is actually a fault in MODS. <namePart>s that belong together should be grouped. Couldn't one require that the basic name was first and the transliterated and transcripted names follow? :)
-				    (mods:name-transliteration($name), ' ',
-    					($family/string(), string-join($given, ' ')))
-				else if ($pos eq 1) then
-				    ($family/string(), ', ', string-join($given, ' '))
-				else
-					(string-join($given, ' '), ' ', $family/string())
-            else 
-                string-join((mods:name-transliteration($name), ' ', ($name/mods:namePart, $name)[1]), ' '), '')
+    if ($name[not(@type)]) then
+    concat($name/mods:namePart[@transliteration][not(@type)], ' ', $name/mods:namePart[not(@transliteration)][not(@type)])
+    else
+    	if ($name/@type = 'conference') then
+    	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
+    	()
+    	else if ($name/@type = 'corporate') then
+            concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
+            (: Does not need manipulation, since it is never decomposed. :)
+    	else
+    	(: @type = 'personal'. :)
+    		let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
+    		let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
+    		let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
+    		let $date := string-join($name/mods:namePart[@type = 'date'], ' ') 
+    		(: Any type of date is represented here. :)
+    		return
+    		  concat(string-join(
+    			if ($family and $given) then
+    				if ($family/@transliteration = ('pinyin', 'romaji')) then
+    				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
+    				(: Problem: what if Westeners have Chinese names? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? This is actually a fault in MODS. <namePart>s that belong together should be grouped. :) 
+    				(: We assume that the name in native script occurs first, that the existence of a transliterated name implies the existence of a native-script name. :)
+    				    (mods:eastern-name-transliteration($name), ' ',
+        					(functx:trim(string-join($family[@lang = ('zh', 'ja')]/string(), ' ')), 
+        					functx:trim(string-join($given[@lang= ('zh', 'ja')]/string()
+        					, ' '))))
+        					(: NB: Something is wrong here. The [1] should not ne necessary. :)
+        					(: The string-joins are meant to capture multiple family and given names. :)
+    				else if ($family[@transliteration]) then
+    				(: Some other kind of transcription. :)
+    				(: NB: Must be filled out for each value. :) 
+    				    (mods:non-eastern-name-transliteration($name), ' ',
+        					(functx:trim(string-join($family/string(), ' ')), 
+        					functx:trim(string-join($given/string(), ' '))))
+        					(: NB: Something is wrong here. The [1] should not ne necessary. :)
+        					(: The string-joins are meant to capture multiple family and given names. :)
+    				else if ($pos eq 1) then
+    				(: If we have a non-Chinese, non-Japanese name occurring first. :)
+    				    (functx:trim(string-join($family/string(), ' ')), 
+    				    ', ', 
+    				    functx:trim(string-join($given, ' ')),
+    				    if ($address) then functx:trim(string-join($address, ', ')) else ()
+    				    )
+    				else
+    				(: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
+    					(functx:trim(string-join($given, ' ')), 
+    					' ', 
+    					functx:trim(string-join($family/string(), ' ')),
+    				    if ($address) then functx:trim(string-join($address, ', ')) else ()
+    				    )
+                else
+                    (: One could check for ($family or $given). :)
+                    (functx:trim(mods:eastern-name-transliteration($name)))
+                    (: If there is a transliteration, but no name in original script. :)
+              , ''), 
+              (: If there are any nameParts with @date, they are given last, without regard to transliteration or language. :)
+              (if ($date) then functx:trim(concat(' (', $date, ')')) else ()))
+              (: NB: Why is this part only shown in list-view? :)
 };
 
 declare function mods:get-authority($name as element(mads:name)?, $lang as xs:string?, $pos as xs:integer) {
@@ -308,7 +372,7 @@ declare function mods:get-authority($name as element(mads:name)?, $lang as xs:st
      			if ($family and $given) then
      				if ($family/@lang = ('ja', 'zh')) then 
      				    (
-         				    mods:name-transliteration($name), ' ',
+         				    mods:eastern-name-transliteration($name), ' ',
          					($family/string(), $given/string())
          				)
      				else if ($pos eq 1) then
@@ -316,7 +380,7 @@ declare function mods:get-authority($name as element(mads:name)?, $lang as xs:st
      				else
      					($given/string(), ' ', $family/string())
                  else string-join((
-                     mods:name-transliteration($name), ' ',
+                     mods:eastern-name-transliteration($name), ' ',
                      ($name/mads:namePart, $name)[1]
                  ), ' ')
             , '')
@@ -649,11 +713,20 @@ let $names := $entry/mods:name
         let $family := $name/mods:namePart[@type = 'family']
         let $given := $name/mods:namePart[@type = 'given']
         let $address := $name/mods:namePart[@type = 'termsOfAddress']
-        let $date := $name/mods:namePart[@type = 'date'] (: Not treated. :)
+        let $date := $name/mods:namePart[@type = 'date']
         return
             if ($family and $given) then (: If the namePart is split up into family and given. We assume that both will be present. :)
                 if ($family/@lang = ('ja', 'zh')) then
-                    (mods:name-transliteration($name), ' ', concat($family[not(@transliteration)][1]/string(), $given[not(@transliteration)][1]/string()))
+                    (mods:eastern-name-transliteration($name), 
+                    ' ', 
+                    concat(
+                    $family[not(@transliteration)][1]/string(),
+                    (: NB: check! :)                    
+                    $given[not(@transliteration)][1]/string()),
+                    (: NB: check! :)                    
+                    if ($address) then functx:trim(concat(', ', $address)) else (),
+                    if ($date) then functx:trim(concat(' (', $date, ')')) else ()
+                    )
                     (: Sometimes we have names in Chinese characters, in transliteration _and_ a Western name. :)
                 else
                     string-join(($family, string-join($given, ' '), $address),', ')
