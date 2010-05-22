@@ -1,4 +1,4 @@
-// $ANTLR 2.7.4: SimpleQLParser.g -> SimpleQLParserTokenTypes.txt$
+// $ANTLR 2.7.7 (2006-11-01): SimpleQLParser.g -> SimpleQLParserTokenTypes.txt$
 SimpleQLParser    // output token vocab name
 STRING_LITERAL("string literal")=4
 REGEXP("regular expression")=5

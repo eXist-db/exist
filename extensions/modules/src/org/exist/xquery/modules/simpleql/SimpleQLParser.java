@@ -1,14 +1,20 @@
-// $ANTLR 2.7.4: "SimpleQLParser.g" -> "SimpleQLParser.java"$
+// $ANTLR 2.7.7 (2006-11-01): "SimpleQLParser.g" -> "SimpleQLParser.java"$
 
 	package org.exist.xquery.modules.simpleql;
 
-import antlr.NoViableAltException;
-import antlr.ParserSharedInputState;
-import antlr.RecognitionException;
-import antlr.Token;
 import antlr.TokenBuffer;
-import antlr.TokenStream;
 import antlr.TokenStreamException;
+import antlr.TokenStreamIOException;
+import antlr.ANTLRException;
+import antlr.LLkParser;
+import antlr.Token;
+import antlr.TokenStream;
+import antlr.RecognitionException;
+import antlr.NoViableAltException;
+import antlr.MismatchedTokenException;
+import antlr.SemanticException;
+import antlr.ParserSharedInputState;
+import antlr.collections.impl.BitSet;
 
 public class SimpleQLParser extends antlr.LLkParser       implements SimpleQLParserTokenTypes
  {

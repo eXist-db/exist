@@ -1,4 +1,4 @@
-// $ANTLR 2.7.4: "SimpleQLParser.g" -> "SimpleQLParser.java"$
+// $ANTLR 2.7.7 (2006-11-01): "SimpleQLParser.g" -> "SimpleQLParser.java"$
 
 	package org.exist.xquery.modules.simpleql;
 
