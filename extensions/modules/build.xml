@@ -128,16 +128,6 @@
         </and>
     </condition>
 
-    <!--
-        Special targets for XMLCALABASH module
-    -->
-    <condition property="libs.available.xmlcalabash">
-        <and>
-            <available file="${top.dir}/${lib.user}/calabash.jar"/>
-            <available file="${top.dir}/${lib.user}/saxon9he.jar"/>
-        </and>
-    </condition>
-
     <target name="prepare-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
         <echo message="Load: ${include.module.xslfo}"/>
         <echo message="------------------------------------------------------"/>
@@ -179,33 +169,24 @@
         <delete file="avalon-framework-impl-4.3.zip"/>
 
     </target>
+ 
+    <available classname="com.xmlcalabash.drivers.Main" classpathref="classpath.core" property="xmlcalabash-present"/>
 
-
-    <target name="prepare-xmlcalabash" unless="libs.available.xmlcalabash" if="include.module.xmlcalabash.config">
+    <target name="prepare-xmlcalabash" unless="xmlcalabash-present" if="include.module.xmlcalabash.config">
         <echo message="Load: ${include.module.xmlcalabash}"/>
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xmlcalabash module"/>
         <echo message="------------------------------------------------------"/>
 
         <!-- XML Calabash -->
-        <get src="${include.module.xmlcalabash.url}" dest="calabash-0.9.21.zip" verbose="true" usetimestamp="true"/>
-        <unzip src="calabash-0.9.21.zip" dest="${top.dir}/${lib.user}">
+        <get src="${include.module.xmlcalabash.url}" dest="calabash.zip" verbose="true" usetimestamp="true"/>
+        <unzip src="calabash.zip" dest="${top.dir}/${lib.user}">
             <patternset>
                 <include name="calabash-0.9.21/lib/calabash.jar"/>
             </patternset>
             <mapper type="flatten"/>
         </unzip>
-        <delete file="calabash-0.9.21.zip"/>
-
-        <!-- Saxon -->
-        <get src="${include.module.xmlcalabash.saxon.url}" dest="saxonhe9-2-1-1j.zip" verbose="true" usetimestamp="true"/>
-        <unzip src="saxonhe9-2-1-1j.zip" dest="${top.dir}/${lib.user}">
-            <patternset>
-                <include name="saxon9he.jar"/>
-            </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-        <delete file="saxonhe9-2-1-1j.zip"/>
+        <delete file="calabash.zip"/>
 
     </target>
 
@@ -363,9 +344,8 @@
         <delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
     </target>
 
-    <target name="clean-xmlcalabash" if="include.module.xmlcalabash.config">
-        <delete file="${top.dir}/${lib.user}/calabash.jar"/>
-        <delete file="${top.dir}/${lib.user}/saxon9he.jar"/>
+    <target name="clean-xmlcalabash">
+        <delete file="${top.dir}/${lib.user}/calabash.jar" failonerror="false"/>
     </target>
 
 </project>
