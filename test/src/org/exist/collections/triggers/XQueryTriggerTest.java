@@ -178,7 +178,7 @@ public class XQueryTriggerTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection(URI, "admin", null);
+            Collection root = DatabaseManager.getCollection(URI, "admin", "");
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION);
@@ -199,7 +199,7 @@ public class XQueryTriggerTest {
     public static void shutdownDB() {
         TestUtils.cleanupDB();
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         } catch (XMLDBException e) {

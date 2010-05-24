@@ -67,7 +67,7 @@ public class TriggerConfigTest {
     @Test
     public void storeDocument() {
         try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
             iqs.configureCollection(COLLECTION_CONFIG);
             
@@ -88,7 +88,7 @@ public class TriggerConfigTest {
     @Test
     public void removeDocument() {
         try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
             iqs.configureCollection(COLLECTION_CONFIG);
 
@@ -111,7 +111,7 @@ public class TriggerConfigTest {
     @Test
     public void removeTriggers() {
         try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
             iqs.configureCollection(EMPTY_COLLECTION_CONFIG);
 
@@ -131,7 +131,7 @@ public class TriggerConfigTest {
     @Test
     public void updateTriggers() {
         try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             IndexQueryService iqs = (IndexQueryService) root.getService("IndexQueryService", "1.0");
             iqs.configureCollection(EMPTY_COLLECTION_CONFIG);
 
@@ -156,7 +156,7 @@ public class TriggerConfigTest {
 
     private void printMessages() {
         try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             XMLResource messages = (XMLResource) root.getResource("messages.xml");
             System.out.println(messages.getContent().toString());
         } catch (XMLDBException e) {
@@ -173,7 +173,7 @@ public class TriggerConfigTest {
                 CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
                 mgmt.removeCollection(".");
             }
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", null);
+            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
             Resource resource = root.getResource("messages.xml");
             if (resource != null) {
                 root.removeResource(resource);
@@ -197,7 +197,7 @@ public class TriggerConfigTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
             CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             Collection testCol = mgmt.createCollection("triggers");
 
@@ -216,7 +216,7 @@ public class TriggerConfigTest {
     public static void closeDB() {
         TestUtils.cleanupDB();
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         } catch (XMLDBException e) {
