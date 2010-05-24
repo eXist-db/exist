@@ -843,6 +843,8 @@ public class BrokerPool extends Observable {
                 broker.repair();
             } catch (PermissionDeniedException e) {
                 LOG.warn("Error during recovery: " + e.getMessage(), e);
+            } finally {
+                broker.setUser(SecurityManager.GUEST);
             }
             if (((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
                 ConsistencyCheckTask task = new ConsistencyCheckTask();
@@ -856,8 +858,13 @@ public class BrokerPool extends Observable {
 
         //OK : the DB is repaired; let's make a few RW operations
 		
-        // remove temporary docs
-		broker.cleanUpTempResources(true);
+        try {
+            broker.setUser(SecurityManager.SYSTEM_USER);
+            // remove temporary docs
+            broker.cleanUpTempResources(true);
+        } finally {
+            broker.setUser(SecurityManager.GUEST);
+        }
 
         sync(broker, Sync.MAJOR_SYNC);
         
@@ -1272,6 +1279,8 @@ public class BrokerPool extends Observable {
 			broker.incReferenceCount();
             if (user != null)
                 broker.setUser(user);
+            else
+                broker.setUser(SecurityManager.GUEST);
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
             this.notifyAll();
@@ -1335,6 +1344,7 @@ public class BrokerPool extends Observable {
                     inServiceMode = true;
                 }
             }
+			broker.setUser(SecurityManager.GUEST);
 			//Inform the other threads that someone is gone
 			this.notifyAll();
 		}
