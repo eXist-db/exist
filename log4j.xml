@@ -168,7 +168,13 @@
         <appender-ref ref="exist.urlrewrite"/>
     </category>
 
+    <!-- jetty old and new -->
     <category name="org.mortbay" additivity="false">
+        <priority value="info"/>
+        <appender-ref ref="console"/>
+    </category>
+    
+    <category name="org.eclipse.jetty" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
     </category>
