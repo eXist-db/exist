@@ -56,11 +56,11 @@ public class DBUtils {
         Database database = (Database)cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        return DatabaseManager.getCollection(uri, "admin", null);
+        return DatabaseManager.getCollection(uri, "admin", "");
     }
     
     public static void shutdownDB(String uri) throws XMLDBException {
-        Collection collection = DatabaseManager.getCollection(uri, "admin", null);
+        Collection collection = DatabaseManager.getCollection(uri, "admin", "");
         if (collection != null) {
             DatabaseInstanceManager manager = (DatabaseInstanceManager)
             collection.getService("DatabaseInstanceManager","1.0");

@@ -167,7 +167,7 @@ public class XPathQueryTest extends XMLTestCase {
                     DatabaseManager.getCollection(
                     uri,
                     "admin",
-                    null);
+                    "");
             CollectionManagementService service =
                     (CollectionManagementService) root.getService(
                     "CollectionManagementService",
