@@ -101,7 +101,12 @@ public class Database {
 		try {
 			pool.getConfigurationManager().addConfiguration(tx.tx, tx.broker, tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
 			tx.commit();
-			tx.broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
+			DBBroker broker = db.acquireBroker();
+			try {
+				broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
+			} finally {
+				db.releaseBroker(broker);
+			}
 		} catch (PermissionDeniedException e) {
 			throw new DatabaseException(e);
 		} catch (CollectionConfigurationException e) {
