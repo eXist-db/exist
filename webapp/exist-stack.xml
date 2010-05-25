@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: quickstart.xml 11644 2010-04-08 20:46:53Z ixitar $ -->
+<!-- $Id$ -->
 <book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>Steps to Create an eXist, Subversion, LDAP server with Apache2 w/SSL</title>
+        <title>Steps to Create an eXist Stack</title>
         <date>May 2010</date>
         <author>
             <firstname>Loren</firstname>
@@ -12,10 +12,16 @@
             <affiliation>
                 <address format="linespecific"><email>loren.cahlander at gmail.com</email></address>
             </affiliation></author>
+        <author>
+            <firstname>Dan</firstname>
+            <surname>McCreary</surname>
+            <affiliation>
+                <address format="linespecific"><email>dan.mccreary at gmail.com</email></address>
+            </affiliation></author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Steps to Create an eXist, Subversion, LDAP server with Apache2 w/SSL</title>
+        <title>Steps to Create an eXist Stack</title>
         <para>This article is to create a best practice for for a secure eXist server. This is all
             installed on a virtual image of Ubuntu Server 10.04 LTS.</para>
         <para>We find that our users frequently want to run eXist on a server that has many other
@@ -39,8 +45,8 @@
                 
             </itemizedlist></para>
         <para>This guide reviews all the steps necessary to install these functions on a standard
-            UNIX server. We specifically have used the Ubuntu 10.0.4 release but we also plan to
-            support RedHad and CentOS.</para>
+            GNU/Linux server. We specifically have used the Ubuntu 10.04 LTS release but we also
+            plan to support RedHat and CentOS.</para>
         <section id="apache">
             <title>Installing Apache2</title>
             <para>The Apache web server is the gateway for all of ther services that will be
@@ -855,11 +861,18 @@ Alias /websvn/ "/usr/share/websvn/"
             <synopsis>sudo java -jar eXist-setup-[version]-revXXXXX.jar -p /usr/local/eXist</synopsis>
             <section>
                 <title>Connect to the LDAP repository</title>
-                <para/>
+                <para>In /usr/local/eXist/bin/functions.d/eXist-settings.sh, change:</para>
+                <programlisting>JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";</programlisting>
+                <para>To:</para>
+                <programlisting>JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Dsecurity.ldap.connection.url=ldap://127.0.0.1:389/ -Dsecurity.ldap.dn.user=ou=Users,dc=exist-db,dc=org -Dsecurity.ldap.dn.group=ou=Groups,dc=exist-db,dc=org";</programlisting>
             </section>
             <section>
                 <title>Edit the conf.xml file</title>
-                <para/>
+                <para>To make use of the LDAP server for authentication, it requires a change to the
+                    configuration file conf.xml.  Uncomment the following from conf.xml:</para>
+                <programlisting>&lt;security class="org.exist.security.ldap.SecurityManagerImpl" /></programlisting>
+                <para>The default SecurityManager is:</para>
+                <synopsis>org.exist.security.internal.SecurityManagerImpl</synopsis>
             </section>
             <section>
                 <title>Configure Apache2 to map / in apache to eXist</title>
