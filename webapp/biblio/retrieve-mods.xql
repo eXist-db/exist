@@ -833,31 +833,34 @@ declare function mods:entry-full($entry as element()) {
     mods:simple-row($note, "Note"),
     
     for $subject in ($entry/mods:subject)
+    let $authority := if ($subject/@authority/string()) then concat('(', ($subject/@authority/string()), ')') else ()
     return
     <tr>
-    <td class="label subject">Subject</td>
+    <td class="label subject">Subject {$authority}</td>
     <td class="record">
     <table class="subject">
     {
     if ($subject/mods:*/mods:*) then 
     for $item in ($subject/mods:*)
     let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
+    let $encoding := if ($item/@encoding/string()) then concat('(', ($item/@encoding/string()), ')') else ()
     return
         <tr>
         <td class="sublabel">
             {functx:capitalize-first(functx:camel-case-to-words($item/name(), ' ')),
-            $authority}
+            $authority, $encoding}
         </td>
         <td class="subrecord">
             <table>
             {        
             for $subitem in ($item/mods:*)
             let $authority := if ($subitem/@authority/string()) then concat('(', ($subitem/@authority/string()), ')') else ()
+            let $encoding := if ($subitem/@encoding/string()) then concat('(', ($subitem/@encoding/string()), ')') else ()
             return
             <tr>
             <td class="sublabel">
                 {functx:capitalize-first(functx:camel-case-to-words($subitem/name(), ' ')),
-            $authority}
+            $authority, $encoding}
             </td>
             <td>
                 <td class="subrecord">                
@@ -870,11 +873,12 @@ declare function mods:entry-full($entry as element()) {
     else if ($subject/mods:*) then
     for $item in ($subject/mods:*)
     let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
+    let $encoding := if ($item/@encoding/string()) then concat('(', ($item/@encoding/string()), ')') else ()
     return
         <tr>
         <td class="sublabel">
             {functx:capitalize-first(functx:camel-case-to-words($item/name(), ' ')),
-            $authority}
+            $authority, $encoding}
         </td>
         <td class="subrecord">
                 {$item/string()}
