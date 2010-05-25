@@ -159,23 +159,43 @@ a:hover {
     margin: 0;
 }
 
+.subject td {
+    vertical-align: middle;
+    border: gray 1px;
+    1background-color: red;
+    padding: 0;    
+}
+
+
 .biblio-full .label {
     font-weight: bold;
     text-align: right;
     padding-right: 1em;
-    vertical-align: top;
+    vertical-align: middle;
     width: 16em;
+}
+
+.biblio-full .sublabel {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 1em;
+    vertical-align: middle;
+    color: gray;
+    width: 10em;
 }
 
 .biblio-full .record {
     font-weight: normal;
     text-align: left;
-    vertical-align: top;
-    width:30em;
+    vertical-align: middle;
+    width:40em;
 }
 
-.biblio-full .label:after {
-    content: ":"
+.biblio-full .subrecord {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: middle;
+    width:40em;
 }
 
 .biblio-full .related td {
