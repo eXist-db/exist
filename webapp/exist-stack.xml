@@ -18,7 +18,29 @@
         <title>Steps to Create an eXist, Subversion, LDAP server with Apache2 w/SSL</title>
         <para>This article is to create a best practice for for a secure eXist server. This is all
             installed on a virtual image of Ubuntu Server 10.04 LTS.</para>
-        <para/>
+        <para>We find that our users frequently want to run eXist on a server that has many other
+            functions enabled that are not part of the core eXist release.  These functions include:<itemizedlist>
+                <listitem>
+                    <para>An Apache web server that serves as a front-end for a web site</para>
+                </listitem>
+                <listitem>
+                    <para>A version control system (subversion)</para>
+                </listitem>
+                <listitem>
+                    <para>An e-mail server for notification</para>
+                </listitem>
+                <listitem>
+                    <para>An integrated authentication system (LDAP)</para>
+                </listitem>
+                <listitem>
+                    <para>A Secure sockets layer (SSL) for encripting all web pages</para>
+                    
+                </listitem>
+                
+            </itemizedlist></para>
+        <para>This guide reviews all the steps necessary to install these functions on a standard
+            UNIX server. We specifically have used the Ubuntu 10.0.4 release but we also plan to
+            support RedHad and CentOS.</para>
         <section id="sect1">
             <title>Installing Apache2</title>
             <para>The Apache web server is the gateway for all of ther services that will be
