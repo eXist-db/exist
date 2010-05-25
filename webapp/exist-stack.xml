@@ -23,7 +23,7 @@
     <chapter>
         <title>Steps to Create an eXist Stack</title>
         <para>This article is to create a best practice for for a secure eXist server. This is all
-            installed on a virtual image of Ubuntu Server 10.04 LTS.</para>
+            installed on a <ulink url="ubuntu-server.xml">virtual image of Ubuntu Server 10.04 LTS</ulink>.</para>
         <para>We find that our users frequently want to run eXist on a server that has many other
             functions enabled that are not part of the core eXist release.  These functions include:<itemizedlist>
                 <listitem>

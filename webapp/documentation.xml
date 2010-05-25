@@ -97,8 +97,13 @@
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="configuration.xml">Server
-                                        Configuration</ulink>:</td>
+                                    Configuration</ulink>:</td>
                                 <td>configuration options for the server.</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="exist-stack.xml">eXist
+                                    Stack</ulink>:</td>
+                                <td>steps to create an eXist stack.</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="tuning.xml">Tuning

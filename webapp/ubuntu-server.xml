@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Steps to Create an Ubuntu Server VMWare Image</title>
+        <date>May 2010</date>
+        <author>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific"><email>loren.cahlander at gmail.com</email></address>
+            </affiliation></author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>Steps to Create an Ubuntu Server VMWare Image</title>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-01.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-02.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-03.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-04.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-05.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-06.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-07.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-08.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-09.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-10.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-11.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-12.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-13.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-14.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-15.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-16.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-17.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-18.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-19.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-20.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-21.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-22.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-23.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-24.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-25.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-26.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-27.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-28.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-29.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-30.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-31.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-32.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-33.png"/>
+        </screenshot>
+        <para/>
+        <screenshot>
+            <graphic fileref="resources/stack/vm-34.png"/>
+        </screenshot>
+    </chapter>
+</book>
