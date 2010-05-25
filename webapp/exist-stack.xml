@@ -41,7 +41,7 @@
         <para>This guide reviews all the steps necessary to install these functions on a standard
             UNIX server. We specifically have used the Ubuntu 10.0.4 release but we also plan to
             support RedHad and CentOS.</para>
-        <section id="sect1">
+        <section id="apache">
             <title>Installing Apache2</title>
             <para>The Apache web server is the gateway for all of ther services that will be
                 installed.</para>
@@ -88,7 +88,7 @@ CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" 
                         >http://localhost/cgi-bin/</link>.</para>
             </section>
         </section>
-        <section id="sect2">
+        <section id="ssl">
             <title>Installing SSL</title>
             <para>The calls to the web server over port 80 are all through clear-text.  Installing
                 SSL enables encrypted calls over port 443.  This installation will generate a
@@ -372,7 +372,7 @@ cn: backup-access
             <para>The ldap-account-manager is now configured and access to it is also
                 secured.</para>
         </section> 
-        <section>
+        <section id="mailman">
             <title>Installing Mailman</title>
             <para>The mailman is a mailing list manager.  It will be used to to send out mailings to
                 the members of the list for all commits to the subversion repository.</para>
@@ -396,7 +396,7 @@ vm-commit-unsubscribe:  "|/var/lib/mailman/mail/mailman unsubscribe vm-commit"
             <synopsis>newaliases</synopsis>
             <synopsis>sudo /etc/init.d/mailman start</synopsis>
         </section> 
-        <section id="sect3">
+        <section id="subversion">
             <title>Installing Subversion</title>
             <para>Install the packages</para>
             <synopsis>sudo apt-get install subversion libapache2-svn subversion-tools</synopsis>
@@ -801,7 +801,7 @@ show_nonmatching_paths = yes
                 different groups.</para>
             <synopsis>/etc/init.d/apache2 restart</synopsis>
         </section>
-        <section id="sect3">
+        <section id="websvn">
             <title>Installing WebSVN</title>
             <para>WebSVN offers a view onto your subversion repositories that's been designed to
                 reflect the Subversion methodology. You can view the log of any file or directory
@@ -847,7 +847,7 @@ Alias /websvn/ "/usr/share/websvn/"
             <para>Browse the subversion repository through /websvn/</para>
             <screenshot><graphic fileref="resources/stack/websvn.png"/></screenshot>
         </section>
-        <section>
+        <section id="exist">
             <title>Installing eXist</title>
             <para>These are the steps to install and configure eXist to use the LDAP server for user
                 authentication.</para>
@@ -932,9 +932,10 @@ Alias /backup/ "/usr/share/backup/"
         </section>
         
         
-        <section>
+        <section id="assets">
             <title>Assets</title>
-            <para>The following are assets on the server.</para>
+            <para>The following are assets on the server.  We specifically list them here so that
+                you have a central location to configure your backup process.</para>
             <table frame="all">
                 <title>Assets</title>
                 <tgroup cols="2">
@@ -989,11 +990,11 @@ Alias /backup/ "/usr/share/backup/"
                         </row>
                         <row>
                             <entry>/usr/local/eXist/bin/functions.d/eXistsetup.sh</entry>
-                            <entry/>
+                            <entry>A UNIX shell script that will set properties in eXist</entry>
                         </row>
                         <row>
                             <entry>/usr/local/eXist/conf.xml</entry>
-                            <entry/>
+                            <entry>eXist configuration file</entry>
                         </row>
                     </tbody>
                 </tgroup>
