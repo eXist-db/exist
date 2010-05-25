@@ -777,11 +777,14 @@ public class BrokerPool extends Observable {
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
         // create a first broker to initialize the security manager
-		createBroker();
+		//createBroker();
 		//TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
-		DBBroker broker = inactiveBrokers.peek();
-        
+		//DBBroker broker = inactiveBrokers.peek();
+		// dmitriy: Security issue: better to use proper get()/release() way, because of subprocesses (SecurityManager as example)
+		DBBroker broker = get(SecurityManager.SYSTEM_USER);
+		try {
+       
         if (broker.isReadOnly()) {
             transactionManager.setEnabled(false);
             isReadOnly = true;
@@ -839,12 +842,9 @@ public class BrokerPool extends Observable {
         //TODO : merge this with the recovery process ?
         if (recovered) {
             try {
-                broker.setUser(SecurityManager.SYSTEM_USER);
                 broker.repair();
             } catch (PermissionDeniedException e) {
                 LOG.warn("Error during recovery: " + e.getMessage(), e);
-            } finally {
-                broker.setUser(SecurityManager.GUEST);
             }
             if (((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
                 ConsistencyCheckTask task = new ConsistencyCheckTask();
@@ -858,15 +858,14 @@ public class BrokerPool extends Observable {
 
         //OK : the DB is repaired; let's make a few RW operations
 		
-        try {
-            broker.setUser(SecurityManager.SYSTEM_USER);
-            // remove temporary docs
-            broker.cleanUpTempResources(true);
-        } finally {
-            broker.setUser(SecurityManager.GUEST);
-        }
+        // remove temporary docs
+        broker.cleanUpTempResources(true);
 
         sync(broker, Sync.MAJOR_SYNC);
+        
+		} finally {
+			release(broker);
+		}
         
 		//Create a default configuration file for the root collection
 		//TODO : why can't we call this from within CollectionConfigurationManager ?
@@ -902,7 +901,7 @@ public class BrokerPool extends Observable {
         
         //execute any startup jobs
         //scheduler.executeStartupJobs();
-        
+
         scheduler.run();
 	}
 	    
