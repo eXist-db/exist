@@ -153,6 +153,7 @@ declare function mods:get-part-and-origin($entry as element()) {
                 (: Unaccounted for: <total>, <list>. :)
 
 declare function mods:get-related-part($entry as element()) {
+
     let $part := $entry/mods:relatedItem/mods:part
     let $volume := $part/mods:detail[@type='volume']/mods:number
     let $issue := $part/mods:detail[@type='issue']/mods:number
@@ -160,22 +161,29 @@ declare function mods:get-related-part($entry as element()) {
     let $start := $part/mods:extent/mods:start
     let $end := $part/mods:extent/mods:end
     let $total := $part/mods:extent/mods:total
+    
     return
-            (
+    if ($part or $volume or $issue or $date or $start or $end or $total) then
+    (
+            <tr>
+                <td class="host">Place in Publication:</td>
+                <td class="related"><hr/></td>
+            </tr>
+            ,
             if ($volume and $issue) then
             <tr>
                 <td class="label">Volume/Issue</td>
-            <td class="record">{string-join(($volume/string(), $issue/string()), '/')}</td>
+                <td class="record">{string-join(($volume/string(), $issue/string()), '/')}</td>
             </tr>
             else if ($volume) then
             <tr>
                 <td class="label">Volume</td>
-            <td class="record">{$volume/string()}</td>
+                <td class="record">{$volume/string()}</td>
             </tr>
             else if ($issue) then
             <tr>
                 <td class="label">Issue</td>
-            <td class="record">{$issue/string()}</td>
+                <td class="record">{$issue/string()}</td>
             </tr>
             else
             ()
@@ -183,7 +191,7 @@ declare function mods:get-related-part($entry as element()) {
             if ($date) then
             <tr>
                 <td class="label">Date</td>
-            <td class="record">{$date/string()}</td>
+                <td class="record">{$date/string()}</td>
             </tr>
             else
             ()
@@ -191,16 +199,23 @@ declare function mods:get-related-part($entry as element()) {
             if ($start and $end) then
             <tr>
                 <td class="label">Pages</td>
-            <td class="record">{string-join(($start/string(), $end/string()), '-')}</td>
+                <td class="record">{string-join(($start/string(), $end/string()), '-')}</td>
             </tr>
             else if ($start) then
             <tr>
                 <td class="label">Pages</td>
-            <td class="record">{$start/string()}</td>
+                <td class="record">{$start/string()}</td>
+            </tr>
+            else if ($total) then
+            <tr>
+                <td class="label">Extent</td>
+                <td class="record">{$total/string()}</td>
             </tr>
             else
             ()
-            )
+    )
+    else
+    ()
 };
 
 (: ### <name> begins ### :)
@@ -301,7 +316,9 @@ declare function mods:get-conference-detail-view($entry as element()) {
 
 declare function mods:format-name($name as element(mods:name), $pos as xs:integer) {
     if ($name[not(@type)]) then
-    concat($name/mods:namePart[@transliteration][not(@type)], ' ', $name/mods:namePart[not(@transliteration)][not(@type)])
+    concat(
+    string-join($name/mods:namePart[@transliteration][not(@type)], ' '), ' ', string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
+    )
     else
     	if ($name/@type = 'conference') then
     	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
@@ -676,7 +693,7 @@ declare function mods:get-related($entry as element(mods:mods)) {
     return
     (: period before " In:" removed. :)
         if ($related) then
-            <span class="related"> In:
+            <span class="related"> In Publication:
             { 
                 mods:get-names($related), 
                 mods:get-short-title((), $related),
@@ -781,7 +798,7 @@ declare function mods:url($entry as element()) as element(tr)* {
 declare function mods:entry-full($entry as element()) {
     mods:names-full($entry),
     for $titleInfo in (
-        $entry/mods:titleInfo[empty(@type)],
+        $entry/mods:titleInfo[not(@type)],
         $entry/mods:titleInfo[@type = 'abbreviated'],
         $entry/mods:titleInfo[@type = 'translated'],
         $entry/mods:titleInfo[@type = 'alternative'],
@@ -806,24 +823,78 @@ declare function mods:entry-full($entry as element()) {
     return
     mods:simple-row($genre/string(), 
     concat('Genre (', $authority, ')')),
-    
-    mods:simple-row($entry/mods:abstract[1], "Abstract"),
+
+    for $abstract in ($entry/mods:abstract)
+    return
+    mods:simple-row($abstract, "Abstract"),
     
     for $note in ($entry/mods:note)
     return
     mods:simple-row($note, "Note"),
     
     for $subject in ($entry/mods:subject)
-    
     return
-    if ($subject/mods:*/mods:*) then
-    mods:simple-row(string-join($subject/mods:*/mods:*, ', '), functx:capitalize-first(functx:camel-case-to-words($subject/mods:*[1]/name(), ' ')))
+    <tr>
+    <td class="label subject">Subject</td>
+    <td class="record">
+    <table class="subject">
+    {
+    if ($subject/mods:*/mods:*) then 
+    for $item in ($subject/mods:*)
+    let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
+    return
+        <tr>
+        <td class="sublabel">
+            {functx:capitalize-first(functx:camel-case-to-words($item/name(), ' ')),
+            $authority}
+        </td>
+        <td class="subrecord">
+            <table>
+            {        
+            for $subitem in ($item/mods:*)
+            let $authority := if ($subitem/@authority/string()) then concat('(', ($subitem/@authority/string()), ')') else ()
+            return
+            <tr>
+            <td class="sublabel">
+                {functx:capitalize-first(functx:camel-case-to-words($subitem/name(), ' ')),
+            $authority}
+            </td>
+            <td>
+                <td class="subrecord">                
+                    {$subitem/string()}
+                </td>
+            </td>
+            </tr>
+            }
+            </table></td></tr>
     else if ($subject/mods:*) then
-    mods:simple-row(string-join($subject/mods:*, ', '), functx:capitalize-first(functx:camel-case-to-words($subject/mods:*[1]/name(), ' ')))
+    for $item in ($subject/mods:*)
+    let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
+    return
+        <tr>
+        <td class="sublabel">
+            {functx:capitalize-first(functx:camel-case-to-words($item/name(), ' ')),
+            $authority}
+        </td>
+        <td class="subrecord">
+                {$item/string()}
+            </td></tr>
     else
-    mods:simple-row(string-join($subject, ', '), functx:capitalize-first(functx:camel-case-to-words($subject/mods:*[1]/name(), ' ')))
+    ()
+    }
+    </table></td>
+    </tr>
+    (: cannot format subjects with varying depths, such as:
+    <subject authority="lctgm">
+        <topic>Gates</topic>
+        <hierarchicalGeographic>
+            <geographic>China</geographic>
+            <geographic>Beijing</geographic>
+        </hierarchicalGeographic>
+        <temporal>1900-1910</temporal>
+    </subject>
+:)
     , 
-    (: NB! Several subjects have subelements. They are run together here. :)    
     
     mods:simple-row($entry/mods:identifier[@type="isbn"][1], "ISBN"),
     mods:url($entry),
@@ -835,7 +906,7 @@ declare function mods:entry-full($entry as element()) {
     return
         if ($relatedItem) then (
             <tr>
-                <td class="host">In:</td><td class="related"><hr/></td>
+                <td class="host">In Publication:</td><td class="related"><hr/></td>
             </tr>,
             if (($relatedItem/@xlink:href) and (collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href])) then            
                 for $ref in collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href]
