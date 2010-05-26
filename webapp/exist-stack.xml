@@ -55,14 +55,23 @@
             <section>
                 <title>Logging</title>
                 <para>The default Apache2 access and error logging to non rotating log files is not
-                    adequate for any operational environment.  The solution is to place the following at
-                    the beginning of /etc/apache2/sites-available/default and remove the log entries
-                    inside the VirtualHost entries for both default and default-ssl. This will create a
-                    rotating access log file in the filename format /var/log/apache2/access.<emphasis
-                        role="italic">yyyy.mm.dd</emphasis>.log and adds extra fields into the log file
-                    that will be used by the awstats web statisctics application.  The rotating error
-                    log file in the filename style /var/log/apache2/error.<emphasis role="italic"
-                        >yyyy.mm.dd</emphasis>.log.</para>
+                    adequate for any operational environment. The solution is to place the following
+                    at the beginning of <emphasis role="italic"
+                        >/etc/apache2/sites-available/default</emphasis> and remove the <emphasis
+                        role="bold">ErrorLog</emphasis>, <emphasis role="bold">LogLevel</emphasis>,
+                    and <emphasis role="bold">CustomLog</emphasis> elements inside the VirtualHost
+                    entries for both <emphasis role="italic"
+                        >/etc/apache2/sites-available/default</emphasis> and <emphasis role="italic"
+                        >/etc/apache2/sites-available/default-ssl</emphasis>. This will create a
+                    rotating access log file in the filename format
+                        /var/log/apache2/access.<emphasis role="italic">yyyy.mm.dd</emphasis>.log
+                    and adds extra fields into the log file that will be used by the awstats web
+                    statisctics application. The rotating error log file in the filename style
+                        /var/log/apache2/error.<emphasis role="italic"
+                    >yyyy.mm.dd</emphasis>.log.</para>
+                <para><emphasis role="bold">Add the following code to beginning of
+                        /etc/apache2/sites-available/default before the &lt;VirtualHost *:80>
+                        element.</emphasis></para>
                 <programlisting language="xml"><![CDATA[ErrorLog "|/usr/sbin/rotatelogs -l /var/log/apache2/error.%Y.%m.%d.log 86400"
 
 # Possible values include: debug, info, notice, warn, error, crit,
@@ -70,12 +79,18 @@
 LogLevel warn
 
 CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" "%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""
-<VirtualHost *:80>
+
 ]]></programlisting>
                 <para>Restart Apache2 to enable the change to the log format:</para>
                 <synopsis>sudo /etc/init.d/apache2 stop</synopsis>
                 <synopsis>sudo rm /var/log/apache2/access.log</synopsis>
                 <synopsis>sudo /etc/init.d/apache2 start</synopsis>
+<para>
+You can now access the Apache manual by selecting the following link:
+</para>
+
+<programlisting><synopsis>http://vm.exist-db.org/doc/apache2-doc/manual/en/index.html</synopsis></programlisting>
+                <para>You should see a menu of all the Apache 2 documentation.</para>
             </section>
             <section>
                 <title>Backup</title>
@@ -86,12 +101,16 @@ CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" 
             </section>
             <section>
                 <title>Conclusion</title>
-                <para>The Apache web server is now installed and activated.  The <emphasis role="bold"
-                    >It Works!</emphasis> page can be seen by opening <link linkend=""
-                        >http://localhost/</link>.  Documents related to the services installed on the
-                    server can be viewed at <link linkend="">http://localhost/doc/</link>.  The cgi-bin
-                    scripts can be executed by the link <link linkend=""
-                        >http://localhost/cgi-bin/</link>.</para>
+                <para>The Apache web server is now installed and activated. The <emphasis
+                        role="bold">It Works!</emphasis> page can be seen by opening <link
+                        linkend="">http://localhost/</link>.</para>
+                <para>
+                    <para>
+                    <inlinegraphic fileref="resources/stack/apache-confirm.png" scale="75"/>
+                    </para>
+                    Documents related to the services installed on the server can be viewed at
+                        <link linkend="">http://localhost/doc/</link>. The cgi-bin scripts can be
+                    executed by the link <link linkend="">http://localhost/cgi-bin/</link>.</para>
             </section>
         </section>
         <section id="ssl">
@@ -107,7 +126,11 @@ CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" 
             <synopsis>sudo apt-get install ssl-cert</synopsis>
             <para>Create the directory to contain the certificates</para>
             <synopsis>sudo mkdir /etc/apache2/ssl</synopsis>
-            <para>Enable the SSL module in Apache.</para>
+            <para>Next we will enable the SSL module in Apache.  This is done using the Apache 2
+                Enable Module command called "<emphasis role="bold">a2enmod</emphasis>".  It takes a
+                single argument which is the name of the Apache module to be enabled.  In our case
+                the name of the module is just "<emphasis role="bold">ssl</emphasis>".  This command
+                is the following.</para>
             <synopsis>sudo a2enmod ssl</synopsis>
             <para>For these changes to take place, then Apache needs to be reloaded.</para>
             <synopsis>sudo /etc/init.d/apache2 force-reload</synopsis>
@@ -117,14 +140,28 @@ CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" 
             <synopsis>SSLCertificateFile /etc/apache2/ssl/exist-db.org.crt
 SSLCertificateKeyFile /etc/apache2/ssl/vm.exist-db.key
 SSLCertificateChainFile /etc/apache2/ssl/gd_bundle.crt</synopsis>
-            <para>Enable the SSL VirtualHost</para>
+            <para>Next we must enable the SSL VirtualHost.  This is done with the Apache "a2ensite"
+                command.  It takes a single argument wich is the default-ssl.</para>
             <synopsis>sudo a2ensite default-ssl</synopsis>
             <para>Reload Apache to make the enabling of the SSL VirtualHost.</para>
             <synopsis>sudo /etc/init.d/apache2 restart</synopsis>
-            <para>SSL is now enabled.</para>
+            <para>SSL is now enabled.  You should be able to test it by using "https" in the web
+            browser.  For example the following will bring up the Apache documentation.  Note that the "s" following the "http".</para>
+            
+            <programlisting><synopsis>https://vm.exist-db.org/doc/apache2-doc/manual/en/index.html</synopsis></programlisting>
+            
+            <para>If you did not get a SSL certificate from a commercial supplier you can use a self-signed certificate.
+            If you do your users will see a panel such as the following the first time they access the web site:</para>
+            <para><inlinegraphic fileref="resources/stack/untrused-confirm.png"/></para>
+            <para>You must instruct them to click the "I Understand the Risks" option so that the SSL is listed
+            in their list of trused sites.  After this them must click the "Add Exception" button.</para>
         </section>
         <section id="ldap">
             <title>Installing LDAP</title>
+            <para>LDAP is the Lightweight Directory Access Protocol.  This cental database of
+                accounts, logins and groups will be used by all the systems including the eXist
+                database, the subversion server and the e-mail system.  Note that the roles in the
+                role-based access control system are stored using the role manager</para>
             <para>These commands will install a local LDAP server and a web based administrative
                 application to manage groups and users within this virtual machine.</para>
             <synopsis>sudo apt-get install slapd ldap-utils ldap-account-manager</synopsis>
@@ -193,9 +230,15 @@ dn: olcDatabase={0}config,cn=config
 changetype: modify
 delete: olcAccess
 ]]></programlisting>
-            <para></para>
+            
+            <note><para>Note that this file has LDAP administration password in it with the defualt value of "1234".
+                If you want to change this put in your own password. </para></note>
+            
             <synopsis>sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /home/exist/db.ldif</synopsis>
             <synopsis>sudo vi /home/exist/base.ldif</synopsis>
+            
+
+            
             <para>and insert the following:</para>
             <programlisting language="ldif"><![CDATA[dn: dc=exist-db,dc=org
 objectClass: dcObject
@@ -275,9 +318,16 @@ gidNumber: 600
 cn: backup-access
 
 ]]></programlisting>
-            <para>...and apply it:</para>
+            
+            <note><para>Note that this file has database administration password in it with the defualt value of
+                    "admin123". If you want to change this put in your own password into the correct
+                    location.. </para></note>
+            
+            <para>You can now load this configuration file into the LDAP database with the <emphasis
+                    role="bold">ldapadd</emphasis> command.:</para>
             <synopsis>sudo ldapadd -x -D cn=admin,dc=exist-db,dc=org -W -f /home/exist/base.ldif</synopsis>
-            <para>Configuring ldap-account-manager</para>
+            <para>When prompted for the password use "1234"</para>
+            <para>You are now ready to configure the ldap-account-manager</para>
             <synopsis>sudo vi /etc/apache2/sites-available/default-ssl</synopsis>
             <para>Add the following to default-ssl.  It creates the alias of /lam/ to the PHP pages
                 that administer the groups and users within the LDAP server.</para>
