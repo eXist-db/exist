@@ -3157,6 +3157,26 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    public void testMatchRegexp_Orbeon() {
+        try {
+            String query = "declare namespace text=\"http://exist-db.org/xquery/text\"; "
+            + "let $count := count(for $resource in collection() let $resource-uri := document-uri($resource)"
+            +" where (text:match-any($resource, 'gaga')) return 1) return  <foobar/>";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            service.query(query);
+
+        } catch (XMLDBException ex) {
+            // should not yield into NPE
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+   
+
+
 
     // ======================================
     /**
