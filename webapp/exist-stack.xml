@@ -22,8 +22,9 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Steps to Create an eXist Stack</title>
-        <para>This article is to create a best practice for for a secure eXist server. This is all
-            installed on a <ulink url="ubuntu-server.xml">virtual image of Ubuntu Server 10.04 LTS</ulink>.</para>
+        <para>This article is to create a best practice for creating a secure eXist server. This is
+            all installed on a <ulink url="ubuntu-server.xml">virtual image of Ubuntu Server 10.04
+                LTS</ulink>.</para>
         <para>We find that our users frequently want to run eXist on a server that has many other
             functions enabled that are not part of the core eXist release.  These functions include:<itemizedlist>
                 <listitem>
@@ -39,7 +40,7 @@
                     <para>An integrated authentication system (LDAP)</para>
                 </listitem>
                 <listitem>
-                    <para>A Secure sockets layer (SSL) for encripting all web pages</para>
+                    <para>A Secure sockets layer (SSL) for encrypting all web pages</para>
                     
                 </listitem>
                 
@@ -81,9 +82,28 @@ LogLevel warn
 CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" "%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""
 
 ]]></programlisting>
+                <para>Change the following in <emphasis role="italic"
+                        >/etc/apache2/sites-available/default</emphasis> from:</para>
+                <programlisting>    Alias /doc/ "/usr/share/doc/"
+    &lt;Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    &lt;/Directory></programlisting>
+                <para>to:</para>
+                <programlisting>    Alias /doc "/usr/share/doc/"
+    Alias /doc/ "/usr/share/doc/"
+    &lt;Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    &lt;/Directory></programlisting>
                 <para>Restart Apache2 to enable the change to the log format:</para>
                 <synopsis>sudo /etc/init.d/apache2 stop</synopsis>
-                <synopsis>sudo rm /var/log/apache2/access.log</synopsis>
+                <synopsis>sudo rm /var/log/apache2/*.log</synopsis>
                 <synopsis>sudo /etc/init.d/apache2 start</synopsis>
 <para>
 You can now access the Apache manual by selecting the following link:
@@ -134,12 +154,14 @@ You can now access the Apache manual by selecting the following link:
             <synopsis>sudo a2enmod ssl</synopsis>
             <para>For these changes to take place, then Apache needs to be reloaded.</para>
             <synopsis>sudo /etc/init.d/apache2 force-reload</synopsis>
-            <para>The installing of ssl-cert will automatically generate a 
-                self-signed certificate.  If there is a signed certificate, 
-                then the following lines need to be added to default-ssl.</para>
-            <synopsis>SSLCertificateFile /etc/apache2/ssl/exist-db.org.crt
+            <note>
+                <para>The installing of <emphasis role="bold">ssl-cert</emphasis> will automatically
+                    generate a self-signed certificate. If there is a signed certificate that you
+                    wish to use, then the following lines need to be added to default-ssl.</para>
+                <synopsis>SSLCertificateFile /etc/apache2/ssl/exist-db.org.crt
 SSLCertificateKeyFile /etc/apache2/ssl/vm.exist-db.key
 SSLCertificateChainFile /etc/apache2/ssl/gd_bundle.crt</synopsis>
+            </note>
             <para>Next we must enable the SSL VirtualHost.  This is done with the Apache "a2ensite"
                 command.  It takes a single argument wich is the default-ssl.</para>
             <synopsis>sudo a2ensite default-ssl</synopsis>
@@ -231,8 +253,8 @@ changetype: modify
 delete: olcAccess
 ]]></programlisting>
             
-            <note><para>Note that this file has LDAP administration password in it with the defualt value of "1234".
-                If you want to change this put in your own password. </para></note>
+            <note><para>Note that this file has LDAP administration password (identified by olcRootPW) in it with the
+                    default value of "1234". If you want to change this put in your own password. </para></note>
             
             <synopsis>sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /home/exist/db.ldif</synopsis>
             <synopsis>sudo vi /home/exist/base.ldif</synopsis>
@@ -319,18 +341,20 @@ cn: backup-access
 
 ]]></programlisting>
             
-            <note><para>Note that this file has database administration password in it with the defualt value of
+            <note><para>Note that this file has database administration password in it with the default value of
                     "admin123". If you want to change this put in your own password into the correct
                     location.. </para></note>
             
             <para>You can now load this configuration file into the LDAP database with the <emphasis
                     role="bold">ldapadd</emphasis> command.:</para>
             <synopsis>sudo ldapadd -x -D cn=admin,dc=exist-db,dc=org -W -f /home/exist/base.ldif</synopsis>
-            <para>When prompted for the password use "1234"</para>
-            <para>You are now ready to configure the ldap-account-manager</para>
+            <para>When prompted for the password, use "1234" unless you changed the value in
+                    <emphasis role="italic">db.ldif</emphasis>.</para>
+            <para>You are now ready to configure the ldap-account-manager.</para>
             <synopsis>sudo vi /etc/apache2/sites-available/default-ssl</synopsis>
-            <para>Add the following to default-ssl.  It creates the alias of /lam/ to the PHP pages
-                that administer the groups and users within the LDAP server.</para>
+            <para>Add the following to <emphasis role="italic">default-ssl</emphasis>. It creates
+                the alias of <emphasis role="bold">https://vm.exist-db.org/lam/</emphasis> to the
+                PHP pages that administer the groups and users within the LDAP server.</para>
             <programlisting language="xml"><![CDATA[    Alias /lam/ "/usr/share/ldap-account-manager/"
     <Directory "/usr/share/ldap-account-manager/">
         Options Indexes MultiViews FollowSymLinks
@@ -345,7 +369,8 @@ cn: backup-access
             <synopsis>sudo a2enmod authnz_ldap</synopsis>
             <synopsis>sudo /etc/init.d/apache2 reload</synopsis>
             <para>The LDAP module is now enabled.</para>
-            <para>Configure ldap-account-manager.  Open the /lam/ website in this VM and then select
+            <para>Configure ldap-account-manager. Open the <emphasis role="bold"
+                    >https://vm.exist-db.org/lam/</emphasis> website in this VM and then select
                     <emphasis role="italic">LAM configuration</emphasis>.</para>
             <screenshot>
                 <graphic fileref="resources/stack/lam-01.png"/>
@@ -382,7 +407,8 @@ cn: backup-access
             <screenshot>
                 <graphic fileref="resources/stack/lam-07.png"/>
             </screenshot>
-            <para>Remove the Shadow and Samba 3 entries from Selected modules.</para>
+            <para>Remove the <emphasis role="italic">Shadow</emphasis> and <emphasis role="italic"
+                    >Samba 3</emphasis> entries from Selected modules.</para>
             <screenshot>
                 <graphic fileref="resources/stack/lam-08.png"/>
             </screenshot>
@@ -400,8 +426,8 @@ cn: backup-access
             <screenshot>
                 <graphic fileref="resources/stack/lam-11.png"/>
             </screenshot>
-            <para>Enter the password <emphasis role="italic">1234</emphasis> and selecting <emphasis
-                    role="italic">Login</emphasis>.</para>
+            <para>Enter the password <emphasis role="italic">1234</emphasis> and then select
+                    <emphasis role="italic">Login</emphasis>.</para>
             <screenshot>
                 <graphic fileref="resources/stack/lam-12.png"/>
             </screenshot>
@@ -463,7 +489,8 @@ vm-commit-unsubscribe:  "|/var/lib/mailman/mail/mailman unsubscribe vm-commit"
             <synopsis>adduser www-data svngroup</synopsis>
             <para>Now setup the permissions for your SVN site.</para>
             <synopsis>chmod 2770 /var/local/svn/vm.exist-db.org</synopsis>
-            <para>Now setup the repo as you normally would</para>
+            <para>Now setup the repository <emphasis role="italic">test-repos</emphasis> as you
+                normally would</para>
             <synopsis>svnadmin create --fs-type fsfs /var/local/svn/vm.exist-db.org/test-repos</synopsis>
             <synopsis>mkdir /var/local/svn/vm.exist-db.org/test-repos/scripts</synopsis>
             <synopsis>vi /var/local/svn/vm.exist-db.org/test-repos/scripts/mailer.conf</synopsis>
