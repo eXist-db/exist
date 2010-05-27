@@ -254,8 +254,10 @@ public class MatchRegexp extends Function implements Optimizable {
                 contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
                 result = path.eval(contextSequence).toNodeSet();
             }
-            if(canCache && contextSequence.isCacheable())
-				cached = new CachedResult(contextSequence, contextItem, result);
+
+            if(canCache && contextSequence != null && contextSequence.isCacheable()) {
+                cached = new CachedResult(contextSequence, contextItem, result);
+            }
 
 		// otherwise we have to walk through each item in the context
 		} else {
