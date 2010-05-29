@@ -44,6 +44,8 @@ Event.onDOMReady(function () {
     Event.addListener('query', 'change', checkQuery, false);
     Event.addListener('maximize', 'click', function () { resizeQueryBox(false); });
     Event.addListener('error-close', 'click', hideErrorPanel);
+    var ctrlEnter = new YAHOO.util.KeyListener(document, { ctrl:true, keys:13}, execQuery);
+    ctrlEnter.enable();
 
     YAHOO.widget.Logger.enableBrowserConsole();
     retrieveStored();
