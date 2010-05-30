@@ -46,9 +46,18 @@ public class GetLibFunction extends LibFunction {
 							SystemModule.PREFIX),
 					"Return a requested lib file from exist's libs",
 					new SequenceType[] {
-						new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "name of lib")
+						new FunctionParameterSequenceType(
+								"name", Type.STRING, Cardinality.EXACTLY_ONE, 
+								"The name of the lib (jar file) from '$EXIST_HOME', '$EXIST_HOME/lib/core', " +
+								"'$EXIST_HOME/lib/optional' and '$EXIST_HOME/lib/user' or " +
+								"'WEB-INF/lib' (if eXist is worrking in servlet container environment). " +
+								"The name can contain mask kind of 'name-%latest%.jar' for getting latest version of lib"
+								)
 					},
-					new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result"))
+					new FunctionParameterSequenceType(
+							"result", Type.NODE, Cardinality.ZERO_OR_ONE, 
+							"Binary content of the lib"
+							))
 			};
 
 
