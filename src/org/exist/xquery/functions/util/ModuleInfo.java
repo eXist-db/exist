@@ -23,6 +23,7 @@
 package org.exist.xquery.functions.util;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -47,6 +48,7 @@ import org.exist.xquery.value.ValueSequence;
 public class ModuleInfo extends BasicFunction {
 	
 	protected static final FunctionParameterSequenceType NAMESPACE_URI_PARAMETER = new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the module");
+	protected static final FunctionParameterSequenceType LOCATION_URI_PARAMETER = new FunctionParameterSequenceType("location-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The location URI of the module");
 
 	protected static final Logger logger = Logger.getLogger(ModuleInfo.class);
 
@@ -74,6 +76,20 @@ public class ModuleInfo extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"));
 
+	public final static FunctionSignature mappedModuleSig =
+		new FunctionSignature(
+			new QName("is-module-mapped", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Returns a Boolean value if the module statically mapped to a source location in the configuration file.",
+			new SequenceType[] { NAMESPACE_URI_PARAMETER },
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is mapped as an active function module"));
+
+	public final static FunctionSignature mapModuleSig =
+		new FunctionSignature(
+			new QName("map-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Map the module to a source location.",
+			new SequenceType[] { NAMESPACE_URI_PARAMETER, LOCATION_URI_PARAMETER },
+			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" ));
+
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -92,6 +108,7 @@ public class ModuleInfo extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
+	@SuppressWarnings("unchecked")
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
@@ -111,6 +128,15 @@ public class ModuleInfo extends BasicFunction {
                 resultSeq.add(new StringValue(i.next().toString()));
             }
             return resultSeq;
+		} else if ("is-module-mapped".equals(getSignature().getName().getLocalName())) {
+			String uri = args[0].getStringValue();
+			return new BooleanValue(((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
+		} else if ("map-module".equals(getSignature().getName().getLocalName())) {
+			String namespace = args[0].getStringValue();
+			String location = args[1].getStringValue();
+			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+			moduleMap.put(namespace, location);
+			return Sequence.EMPTY_SEQUENCE;
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
 			for(Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
