@@ -86,7 +86,7 @@ public class ModuleInfo extends BasicFunction {
 	public final static FunctionSignature mapModuleSig =
 		new FunctionSignature(
 			new QName("map-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Map the module to a source location.",
+			"Map the module to a source location. This function is only available to the DBA role.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER, LOCATION_URI_PARAMETER },
 			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" ));
 
@@ -132,6 +132,11 @@ public class ModuleInfo extends BasicFunction {
 			String uri = args[0].getStringValue();
 			return new BooleanValue(((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
 		} else if ("map-module".equals(getSignature().getName().getLocalName())) {
+			if (!context.getUser().hasDbaRole()) {
+				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+				logger.error("Invalid user", xPathException);
+				throw xPathException;
+			}			
 			String namespace = args[0].getStringValue();
 			String location = args[1].getStringValue();
 			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
