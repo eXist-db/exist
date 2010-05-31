@@ -51,6 +51,7 @@ public class UtilModule extends AbstractInternalModule
         new FunctionDef( ModuleInfo.registeredModuleSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.registeredModulesSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.mapModuleSig, ModuleInfo.class ),
+        new FunctionDef( ModuleInfo.unmapModuleSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.mappedModuleSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.mappedModulesSig, ModuleInfo.class ),
         new FunctionDef( Expand.signatures[0], Expand.class ),

@@ -90,6 +90,13 @@ public class ModuleInfo extends BasicFunction {
 			new SequenceType[] { NAMESPACE_URI_PARAMETER, LOCATION_URI_PARAMETER },
 			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" ));
 
+	public final static FunctionSignature unmapModuleSig =
+		new FunctionSignature(
+			new QName("unmap-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Remove relation between module namespace and source location. This function is only available to the DBA role.",
+			new SequenceType[] { NAMESPACE_URI_PARAMETER },
+			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" ));
+
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -141,6 +148,16 @@ public class ModuleInfo extends BasicFunction {
 			String location = args[1].getStringValue();
 			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
 			moduleMap.put(namespace, location);
+			return Sequence.EMPTY_SEQUENCE;
+		} else if ("unmap-module".equals(getSignature().getName().getLocalName())) {
+			if (!context.getUser().hasDbaRole()) {
+				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+				logger.error("Invalid user", xPathException);
+				throw xPathException;
+			}			
+			String namespace = args[0].getStringValue();
+			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+			moduleMap.remove(namespace);
 			return Sequence.EMPTY_SEQUENCE;
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
