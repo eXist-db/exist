@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
-import org.exist.validation.service.RemoteValidationService;
+
 import org.exist.xquery.util.URIUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -55,14 +55,14 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	public void testGetServices() {
 		try {
 		    Service[] services = getCollection().getServices();
-		    assertEquals(7, services.length);
+		    assertEquals(6, services.length);
 		    assertEquals(RemoteXPathQueryService.class, services[0].getClass());
 		    assertEquals(RemoteCollectionManagementService.class, services[1].getClass());
 		    assertEquals(RemoteUserManagementService.class, services[2].getClass());
 		    assertEquals(RemoteDatabaseInstanceManager.class, services[3].getClass());
 		    assertEquals(RemoteIndexQueryService.class, services[4].getClass());
 		    assertEquals(RemoteXUpdateQueryService.class, services[5].getClass());
-		    assertEquals(RemoteValidationService.class, services[6].getClass());
+
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }

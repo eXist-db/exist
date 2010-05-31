@@ -56,7 +56,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.validation.service.LocalValidationService;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.base.ErrorCodes;
@@ -481,21 +481,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
         if (name.equals("IndexQueryService"))
             return new LocalIndexQueryService(user, brokerPool, this);
         
-        if (name.equals("ValidationService"))
-            return new LocalValidationService(user, brokerPool, this);
-        
         throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
     }
     
     public Service[] getServices() throws XMLDBException {
-        Service[] services = new Service[7];
+        Service[] services = new Service[6];
         services[0] = new LocalXPathQueryService(user, brokerPool, this, accessCtx);
         services[1] = new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
         services[2] = new LocalUserManagementService(user, brokerPool, this);
         services[3] = new LocalDatabaseInstanceManager(user, brokerPool);
         services[4] = new LocalXUpdateQueryService(user, brokerPool, this);
         services[5] = new LocalIndexQueryService(user, brokerPool, this);
-        services[6] = new LocalValidationService(user, brokerPool, this);
         return services; // jmv null;
     }
     
