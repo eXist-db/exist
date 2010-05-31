@@ -28,7 +28,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
-import org.exist.validation.service.RemoteValidationService;
+
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -246,20 +246,17 @@ public class RemoteCollection implements CollectionImpl {
 			return new RemoteIndexQueryService(rpcClient, this);
 		if (name.equals("XUpdateQueryService"))
 			return new RemoteXUpdateQueryService(this);
-		if (name.equals("ValidationService"))
-			return new RemoteValidationService(this, rpcClient);
 		throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
 	}
 
 	public Service[] getServices() throws XMLDBException {
-		Service[] services = new Service[7];
+		Service[] services = new Service[6];
 		services[0] = new RemoteXPathQueryService(this);
 		services[1] = new RemoteCollectionManagementService(this, rpcClient);
 		services[2] = new RemoteUserManagementService(this);
 		services[3] = new RemoteDatabaseInstanceManager(rpcClient);
 		services[4] = new RemoteIndexQueryService(rpcClient, this);
 		services[5] = new RemoteXUpdateQueryService(this);
-                services[6] = new RemoteValidationService(this, rpcClient);
 		return services;
 	}
 

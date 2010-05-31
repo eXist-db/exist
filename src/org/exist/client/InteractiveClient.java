@@ -99,7 +99,7 @@ import org.exist.util.GZIPInputSource;
 import org.exist.util.ZipEntryInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.validation.service.ValidationService;
+
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
@@ -226,8 +226,6 @@ public class InteractiveClient {
         messageln("rmcol collection     remove collection");
         messageln("set [key=value]      set property. Calling set without ");
         messageln("                     argument shows current settings.");
-        messageln("validate [document]  validate xml document with system xml catalog.");
-        messageln("validate [document] [grammar]  validate xml document with ");
         messageln("                     specified grammar document.");
         messageln("\n--- search commands ---");
         messageln("find xpath-expr      execute the given XPath expression.");
@@ -1039,26 +1037,6 @@ public class InteractiveClient {
                 displayHelp();
             else if (args[0].equalsIgnoreCase("quit")) {
                 return false;
-                
-            }  else if (args[0].equalsIgnoreCase("validate")) {
-                if (args.length < 2)
-                    messageln("missing document name.");
-                else {
-                    ValidationService validationService = (ValidationService) current.getService("ValidationService", "1.0");
-                    
-                    boolean valid=false;
-                    if(args.length==2){
-                        valid=validationService.validateResource(args[1]);
-                    } else {
-                       valid=validationService.validateResource(args[1], args[2]);
-                    }
-                    
-                    if (valid){
-                        messageln("document is valid.");
-                    } else {
-                        messageln("document is not valid.");
-                    }
-                }
                 
             } else {
                 messageln("unknown command");

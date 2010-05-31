@@ -35,7 +35,7 @@ import org.apache.log4j.*;
 import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.validation.service.ValidationService;
+
 import org.exist.xmldb.DatabaseInstanceManager;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
@@ -65,7 +65,7 @@ public class EmbeddedExistTester {
     protected final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
     protected static Collection rootCollection = null;
-    protected static ValidationService validationService = null;
+
     protected static XPathQueryService xpxqService = null;
     protected static Database database = null;
     protected static CollectionManagementService cmService = null;
