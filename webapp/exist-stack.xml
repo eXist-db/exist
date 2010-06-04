@@ -4,7 +4,7 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>Steps to Create an eXist Stack</title>
+        <title>Steps to Create LEXA, the eXist Stack</title>
         <date>May 2010</date>
         <author>
             <firstname>Loren</firstname>
@@ -21,7 +21,7 @@
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Steps to Create an eXist Stack</title>
+        <title>Steps to Create LEXA, the eXist Stack</title>
         <para>This article is to create a best practice for creating a secure eXist server. This is
             all installed on a <ulink url="ubuntu-server.xml">virtual image of Ubuntu Server 10.04
                 LTS</ulink>.</para>
@@ -84,7 +84,7 @@ CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" 
 ]]></programlisting>
                 <para>Change the following in <emphasis role="italic"
                         >/etc/apache2/sites-available/default</emphasis> from:</para>
-                <programlisting>    Alias /doc/ "/usr/share/doc/"
+                <programlisting language="xml">    Alias /doc/ "/usr/share/doc/"
     &lt;Directory "/usr/share/doc/">
         Options Indexes MultiViews FollowSymLinks
         AllowOverride None
@@ -93,7 +93,7 @@ CustomLog "|/usr/sbin/rotatelogs -l /var/log/apache2/access.%Y.%m.%d.log 86400" 
         Allow from 127.0.0.0/255.0.0.0 ::1/128
     &lt;/Directory></programlisting>
                 <para>to:</para>
-                <programlisting>    Alias /doc "/usr/share/doc/"
+                <programlisting language="xml">    Alias /doc "/usr/share/doc/"
     Alias /doc/ "/usr/share/doc/"
     &lt;Directory "/usr/share/doc/">
         Options Indexes MultiViews FollowSymLinks
@@ -111,13 +111,6 @@ You can now access the Apache manual by selecting the following link:
 
 <programlisting><synopsis>http://vm.exist-db.org/doc/apache2-doc/manual/en/index.html</synopsis></programlisting>
                 <para>You should see a menu of all the Apache 2 documentation.</para>
-            </section>
-            <section>
-                <title>Backup</title>
-                <para>The custom backup cron script, that will be defined 
-                    in the section before the assets section, will include 
-                    all of the log files and will remove the ones more 
-                    than one month old.</para>
             </section>
             <section>
                 <title>Conclusion</title>
@@ -437,16 +430,18 @@ cn: backup-access
 <Directory "/usr/share/ldap-account-manager/">
     Options Indexes MultiViews FollowSymLinks
     AllowOverride None
-    AuthBasicProvider ldap 
     AuthType Basic 
     AuthName "LDAP Authorization Realm"  
     AuthBasicProvider ldap
-    AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid
+    # The distinguished name to bind to the directory server
+    AuthLDAPBindDN "cn=admin,dc=exist-db,dc=org"
+
+    # The password for the user above
+    AuthLDAPBindPassword "1234"
+    AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid?sub?(objectclass=posixAccount)
     AuthLDAPGroupAttribute memberUid
     AuthLDAPGroupAttributeIsDN off
     Require ldap-group cn=dba,ou=Groups,dc=exist-db,dc=org
-    Require ldap-attribute gidNumber=1
-    Satisfy any
 </Directory>
 ]]></programlisting>
             <para>Restart Apache2 to make these changes take effect.</para>
@@ -459,6 +454,22 @@ cn: backup-access
             <para>The mailman is a mailing list manager.  It will be used to to send out mailings to
                 the members of the list for all commits to the subversion repository.</para>
             <synopsis>sudo apt-get install mailman spamassassin listadmin</synopsis>
+            <synopsis>newlist mailman</synopsis>
+            <para>To finish creating your mailing list, you must edit your /etc/aliases (or
+                equivalent) file by adding the following lines, and possibly running the
+                `newaliases' program:</para>
+            <programlisting><![CDATA[## mailman mailing list
+mailman:              "|/var/lib/mailman/mail/mailman post mailman"
+mailman-admin:        "|/var/lib/mailman/mail/mailman admin mailman"
+mailman-bounces:      "|/var/lib/mailman/mail/mailman bounces mailman"
+mailman-confirm:      "|/var/lib/mailman/mail/mailman confirm mailman"
+mailman-join:         "|/var/lib/mailman/mail/mailman join mailman"
+mailman-leave:        "|/var/lib/mailman/mail/mailman leave mailman"
+mailman-owner:        "|/var/lib/mailman/mail/mailman owner mailman"
+mailman-request:      "|/var/lib/mailman/mail/mailman request mailman"
+mailman-subscribe:    "|/var/lib/mailman/mail/mailman subscribe mailman"
+mailman-unsubscribe:  "|/var/lib/mailman/mail/mailman unsubscribe mailman"
+]]></programlisting>
             <synopsis>newlist vm-commit</synopsis>
             <para>To finish creating your mailing list, you must edit your /etc/aliases (or
                 equivalent) file by adding the following lines, and possibly running the
@@ -860,21 +871,20 @@ show_nonmatching_paths = yes
    AuthBasicProvider ldap
    AuthType Basic
    AuthName "Subversion Authentication"
-   AuthBasicProvider ldap
-   AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid
-   AuthLDAPGroupAttribute memberUid
-   AuthLDAPGroupAttributeIsDN off
+    # The distinguished name to bind to the directory server
+    AuthLDAPBindDN "cn=admin,dc=exist-db,dc=org"
+
+    # The password for the user above
+    AuthLDAPBindPassword "1234"
+    AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid?sub?(objectclass=posixAccount)
+    AuthLDAPGroupAttribute memberUid
+    AuthLDAPGroupAttributeIsDN off
    <Limit GET HEAD OPTIONS CONNECT POST PROPFIND PUT DELETE PROPPATCH MKCOL COPY MOVE LOCK UNLOCK>
       Require ldap-group cn=dba,ou=Groups,dc=exist-db,dc=org
-      Require ldap-attribute gidNumber=1
       Require ldap-group cn=svn-update,ou=Groups,dc=exist-db,dc=org
-      Require ldap-attribute gidNumber=400
-      Satisfy any
    </Limit>
    <Limit GET HEAD OPTIONS CONNECT POST PROPFIND>
       Require ldap-group cn=svn-readonly,ou=Groups,dc=exist-db,dc=org
-      Require ldap-attribute gidNumber=500
-      Satisfy any
    </Limit>
 </Location>
 ]]></programlisting>
@@ -912,17 +922,17 @@ Alias /websvn/ "/usr/share/websvn/"
     AuthBasicProvider ldap 
     AuthType Basic 
     AuthName "LDAP Authorization Realm" 
-    AuthBasicProvider ldap
-    AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid
+    # The distinguished name to bind to the directory server
+    AuthLDAPBindDN "cn=admin,dc=exist-db,dc=org"
+
+    # The password for the user above
+    AuthLDAPBindPassword "1234"
+    AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid?sub?(objectclass=posixAccount)
     AuthLDAPGroupAttribute memberUid
     AuthLDAPGroupAttributeIsDN off
     Require ldap-group cn=dba,ou=Groups,dc=exist-db,dc=org
-    Require ldap-attribute gidNumber=1
     Require ldap-group cn=svn-update,ou=Groups,dc=exist-db,dc=org
-    Require ldap-attribute gidNumber=400
     Require ldap-group cn=svn-readonly,ou=Groups,dc=exist-db,dc=org
-    Require ldap-attribute gidNumber=500
-    Satisfy any
 </Directory>
 ]]></programlisting>
             <para>Restart the Apache2 server:</para>
@@ -968,60 +978,6 @@ Alias /websvn/ "/usr/share/websvn/"
             <para>Edit the /etc/awstats/awstats.conf</para>
             <para/>
         </section>
-        <section id="backup">
-            <title>Automated backup</title>
-            <para>The automated backup process will run weekly during off hours.  It will back up
-                all assets that are not part of a standard package shall be backed up into a single
-                zip file.  That zip file will be accessible to all members of the LDAP groups dba
-                and backup-access.  The access will be controlled through the backup webpage and the
-                last five backups will be accessible.</para>
-            <section>
-                <title>Apache logs</title>
-                <para/>
-            </section>
-            <section>
-                <title>Subversion</title>
-                <para/>
-            </section>
-            <section>
-                <title>eXist</title>
-                <para/>
-            </section>
-            <section>
-                <title>Mailing list</title>
-                <para/>
-            </section>
-            <section>
-                <title>Backup webpage</title>
-                <para/>
-                <para>Edit /etc/apache2/sites-available/default-ssl and add the following to give
-                    access to the members of the LDAP groups backup-access and dba:</para>
-                <programlisting language="xml"><![CDATA[
-Alias /backup/ "/usr/share/backup/"
-<Directory "/usr/share/backup/">
-    Options Indexes MultiViews FollowSymLinks
-    AllowOverride None
-    AuthBasicProvider ldap 
-    AuthType Basic 
-    AuthName "LDAP Authorization Realm" 
-    AuthBasicProvider ldap
-    AuthLDAPUrl ldap://127.0.0.1:389/ou=Users,dc=exist-db,dc=org?uid
-    AuthLDAPGroupAttribute memberUid
-    AuthLDAPGroupAttributeIsDN off
-    Require ldap-group cn=dba,ou=Groups,dc=exist-db,dc=org
-    Require ldap-attribute gidNumber=1
-    Require ldap-group cn=backup-access,ou=Groups,dc=exist-db,dc=org
-    Require ldap-attribute gidNumber=600
-    Satisfy any
-</Directory>
-]]></programlisting>
-                <para>Restart the Apache2 server:</para>
-                <synopsis>sudo /etc/init.d/apache2 restart</synopsis>
-            </section>
-            
-        </section>
-        
-        
         <section id="assets">
             <title>Assets</title>
             <para>The following are assets on the server.  We specifically list them here so that
