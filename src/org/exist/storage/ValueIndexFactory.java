@@ -300,7 +300,7 @@ public class ValueIndexFactory {
     else if(Type.subTypeOf(value.getType(), Type.DATE))    {
         XMLGregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize();
         final byte[] data = new byte[offset + 7];		//allocate an appropriately sized byte array for holding Type,long
-        data[offset] = (byte) Type.DATE_TIME;				//put the Type in the byte array
+        data[offset] = (byte) Type.DATE;				//put the Type in the byte array
         ByteConversion.intToByteH(utccal.getYear(), data, offset + 1);
         data[offset + 5] = (byte) utccal.getMonth();
         data[offset + 6] = (byte) utccal.getDay();
