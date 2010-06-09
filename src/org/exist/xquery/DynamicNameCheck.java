@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
@@ -81,8 +82,8 @@ public class DynamicNameCheck extends AbstractExpression {
 			Node node = ((NodeValue) item).getNode();
 			if(!test.matchesName(node))
 				throw new XPathException(expression, "Type error in expression: " +
-						"required node name is " + test.getName() + "; got: " +
-						node.getNodeName());
+						"required node name is " + getPrefixedNodeName(test.getName()) + "; got: " +
+						getPrefixedNodeName(node));
 		}
         
         if (context.getProfiler().isEnabled())           
@@ -90,6 +91,54 @@ public class DynamicNameCheck extends AbstractExpression {
         
 		return seq;
 	}
+
+    private String getPrefixedNodeName(Node node){
+
+        String prefix = node.getPrefix();
+        if(prefix==null){
+
+            String nameSpace = node.getNamespaceURI();
+            if(nameSpace==null){
+                return node.getNodeName();
+                
+            } else {
+                return "{'"+nameSpace+"'}:"+node.getNodeName();
+            }          
+
+        } else if(prefix.isEmpty()){
+            return "\"\":"+node.getNodeName();
+            
+        } else {
+            return prefix + ":"+ node.getNodeName();
+        }
+
+    }
+
+    // TODO should be moved to QName
+    private String getPrefixedNodeName(QName name){
+
+        String prefix=name.getPrefix();
+        String localName=name.getLocalName();
+
+        if(prefix==null){
+
+            String namespaceURI=name.getNamespaceURI();
+            if(namespaceURI==null){
+                return localName;
+
+            } else {
+                return "{'"+namespaceURI+"'}:"+localName;
+            }
+
+        } else if (prefix.isEmpty()){
+            return "\"\"" + ':' + localName;
+
+
+        } else {
+			return prefix + ':' + localName;
+        }
+
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
