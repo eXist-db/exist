@@ -92,52 +92,50 @@ public class DynamicNameCheck extends AbstractExpression {
 		return seq;
 	}
 
-    private String getPrefixedNodeName(Node node){
+    private String getPrefixedNodeName(Node node) {
 
         String prefix = node.getPrefix();
-        if(prefix==null){
+        if (prefix == null) {
 
             String nameSpace = node.getNamespaceURI();
-            if(nameSpace==null){
+            if (nameSpace == null) {
                 return node.getNodeName();
-                
+
             } else {
-                return "{'"+nameSpace+"'}:"+node.getNodeName();
-            }          
+                return "{'" + nameSpace + "'}:" + node.getNodeName();
+            }
 
-        } else if(prefix.isEmpty()){
-            return "\"\":"+node.getNodeName();
-            
+        } else if (prefix.isEmpty()) {
+            return "{''}:" + node.getNodeName();
+
         } else {
-            return prefix + ":"+ node.getNodeName();
+            return prefix + ":" + node.getNodeName();
         }
-
     }
 
     // TODO should be moved to QName
-    private String getPrefixedNodeName(QName name){
+    private String getPrefixedNodeName(QName name) {
 
-        String prefix=name.getPrefix();
-        String localName=name.getLocalName();
+        String prefix = name.getPrefix();
+        String localName = name.getLocalName();
 
-        if(prefix==null){
+        if (prefix == null) {
 
-            String namespaceURI=name.getNamespaceURI();
-            if(namespaceURI==null){
+            String namespaceURI = name.getNamespaceURI();
+            if (namespaceURI == null) {
                 return localName;
 
             } else {
-                return "{'"+namespaceURI+"'}:"+localName;
+                return "{'" + namespaceURI + "'}:" + localName;
             }
 
-        } else if (prefix.isEmpty()){
-            return "\"\"" + ':' + localName;
+        } else if (prefix.isEmpty()) {
+            return "{''}:" + localName;
 
 
         } else {
-			return prefix + ':' + localName;
+            return prefix + ":" + localName;
         }
-
     }
 
 	/* (non-Javadoc)
