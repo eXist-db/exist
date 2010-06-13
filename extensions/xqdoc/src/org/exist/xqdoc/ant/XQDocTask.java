@@ -1,5 +1,12 @@
 package org.exist.xqdoc.ant;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -10,17 +17,9 @@ import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.Constants;
-import org.exist.xquery.value.Base64Binary;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class XQDocTask extends AbstractXMLDBTask {
 

@@ -19,8 +19,6 @@
 package org.exist.xquery.modules.xmpp;
 
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
@@ -50,8 +48,8 @@ public class XMPPModule extends AbstractInternalModule
     public final static String INCLUSION_DATE = "2010-02-14";
     public final static String RELEASED_IN_VERSION = "eXist-1.5 (Smack-based in trunk)";
     
-    private static HashMap<Long, XMPPConnection> connections = new HashMap();
-    private static HashMap<Long, Chat> chats = new HashMap();
+    private static HashMap<Long, XMPPConnection> connections = new HashMap<Long, XMPPConnection>();
+    private static HashMap<Long, Chat> chats = new HashMap<Long, Chat>();
 	
 	private final static FunctionDef[] functions = {
 		

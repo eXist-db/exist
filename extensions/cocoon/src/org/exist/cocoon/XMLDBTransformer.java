@@ -86,7 +86,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	private String password = null;
 	private String xpath = null;
 	private Collection collection = null;
-	private Stack commandStack = new Stack();
+	private Stack<ForEach> commandStack = new Stack<ForEach>();
 	private boolean isRecording = false;
 	private int nesting = 0;
 	private int mode = 0;

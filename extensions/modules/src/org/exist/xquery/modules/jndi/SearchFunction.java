@@ -134,7 +134,7 @@ public class SearchFunction extends BasicFunction
 				if( ctx == null ) {
 					logger.error( "jndi:search() - Invalid JNDI context handle provided: " + ctxID );
 				} else {
-					NamingEnumeration results = null;
+					NamingEnumeration<SearchResult> results = null;
 					
 					if( args.length == 3 ) {                									// Attributes search			
 						BasicAttributes attributes = JNDIModule.parseAttributes( args[ 2 ] );

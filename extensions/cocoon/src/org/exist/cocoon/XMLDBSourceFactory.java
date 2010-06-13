@@ -71,7 +71,7 @@ public final class XMLDBSourceFactory extends AbstractLogEnabled
                                       implements SourceFactory, Configurable, ThreadSafe {
 
     /** A Map containing the authentication credentials */
-    protected HashMap credentialMap;
+    protected HashMap<String, SourceCredential> credentialMap;
     
     /** An optional base collection for each of the drivers */
     protected HashMap baseMap;
@@ -82,7 +82,7 @@ public final class XMLDBSourceFactory extends AbstractLogEnabled
     public void configure(final Configuration conf)
     throws ConfigurationException {
 
-        credentialMap = new HashMap();
+        credentialMap = new HashMap<String, SourceCredential>();
         baseMap = new HashMap();
 
         Configuration[] drivers = conf.getChildren("driver");

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.ParseException;
 import org.exist.dom.DocumentSet;
@@ -13,14 +16,29 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
-import org.exist.xquery.*;
-import org.exist.xquery.modules.lucene.LuceneModule;
-import org.exist.xquery.value.*;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.BasicExpressionVisitor;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.DynamicTypeCheck;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LocationStep;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.Optimizable;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 public class Query extends Function implements Optimizable {
 	
