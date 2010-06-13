@@ -56,7 +56,7 @@ public class IRCProxy extends HttpServlet {
 			return;
 		}
 
-        Map<String, IRCSession> channels = (Map) getServletContext().getAttribute(SESSION_ATTR);
+        Map<String, IRCSession> channels = (Map<String, IRCSession>) getServletContext().getAttribute(SESSION_ATTR);
         IRCSession session = channels.get(sessionId);
 		if (session == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Session " + sessionId + " not found");
@@ -83,7 +83,7 @@ public class IRCProxy extends HttpServlet {
 		String send = request.getParameter("send");
 		String pong = request.getParameter("pong");
 		String reconnect = request.getParameter("refresh");
-        Map<String, IRCSession> channels = (Map) getServletContext().getAttribute(SESSION_ATTR);
+        Map<String, IRCSession> channels = (Map<String, IRCSession>) getServletContext().getAttribute(SESSION_ATTR);
         if (sessionId == null) {
 			// No session yet: connect and create a new one
 			if (channelParam != null && channelParam.length() > 0)
@@ -138,7 +138,7 @@ public class IRCProxy extends HttpServlet {
 	}
 	
 	public void destroy() {
-        Map<String, IRCSession> channels = (Map) getServletContext().getAttribute(SESSION_ATTR);
+        Map<String, IRCSession> channels = (Map<String, IRCSession>) getServletContext().getAttribute(SESSION_ATTR);
         for (IRCSession session : channels.values()) {
 			session.quit();
 		}
