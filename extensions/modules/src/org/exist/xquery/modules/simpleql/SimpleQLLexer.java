@@ -41,7 +41,7 @@ public SimpleQLLexer(LexerSharedInputState state) {
 	super(state);
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
-	literals = new Hashtable();
+	literals = new Hashtable<ANTLRHashString, Integer>();
 	literals.put(new ANTLRHashString("NOT", this), new Integer(11));
 	literals.put(new ANTLRHashString("OR", this), new Integer(9));
 	literals.put(new ANTLRHashString("NICHT", this), new Integer(12));

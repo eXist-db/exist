@@ -444,7 +444,7 @@ public class Configuration {
                         }
                         
                     } else if (child.getLocalName().equals("rangeLowerBound")) {
-                        Double value = value = parseDouble(getValue(child));
+                        Double value = parseDouble(getValue(child));
                         if (value == null) {
                             throw new XPathException("Value for 'rangeLowerBound' cannot be parsed");
                         } else {
@@ -452,7 +452,7 @@ public class Configuration {
                         }
                         
                     } else if (child.getLocalName().equals("rangeUpperBound")) {
-                        Double value = value = parseDouble(getValue(child));
+                        Double value = parseDouble(getValue(child));
                         if (value == null) {
                             throw new XPathException("Value for 'rangeUpperBound' cannot be parsed");
                         } else {
