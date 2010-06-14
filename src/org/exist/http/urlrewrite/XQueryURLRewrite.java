@@ -142,6 +142,7 @@ public class XQueryURLRewrite implements Filter {
 
     private RewriteConfig rewriteConfig;
     
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // save FilterConfig for later use
         this.config = filterConfig;
@@ -153,6 +154,7 @@ public class XQueryURLRewrite implements Filter {
             checkModified = opt != null && opt.equalsIgnoreCase("true");
     }
 
+    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (rewriteConfig == null) {
             configure();
@@ -513,6 +515,7 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
+    @Override
     public void destroy() {
         config = null;
     }
@@ -844,6 +847,7 @@ public class XQueryURLRewrite implements Filter {
             contentType = request.getContentType();
         }
 
+        @Override
         public String getRequestURI() {
             return inContextPath == null ? super.getRequestURI() : getContextPath() + inContextPath;
         }
@@ -858,6 +862,7 @@ public class XQueryURLRewrite implements Filter {
             inContextPath = path;
         }
 
+        @Override
         public String getMethod() {
             if (method == null)
                 return super.getMethod();
@@ -901,10 +906,12 @@ public class XQueryURLRewrite implements Filter {
                 servletPath != null ? servletPath.substring(base.length()) : null);
         }
 
+        @Override
         public String getServletPath() {
             return servletPath == null ? super.getServletPath() : servletPath;
         }
 
+        @Override
         public String getPathInfo() {
             String path = getInContextPath();
             String sp = getServletPath();
@@ -928,6 +935,7 @@ public class XQueryURLRewrite implements Filter {
             addedParams.put(name, new String[] { value });
         }
 
+        @Override
         public String getParameter(String name) {
             String[] param = addedParams.get(name);
             if (param != null && param.length > 0)
@@ -935,10 +943,12 @@ public class XQueryURLRewrite implements Filter {
             return null;
         }
 
+        @Override
         public Map<String, String[]> getParameterMap() {
             return addedParams;
         }
 
+        @Override
         public Enumeration<String> getParameterNames() {
             Vector<String> v = new Vector<String>();
             for (String key : addedParams.keySet()) {
@@ -947,16 +957,19 @@ public class XQueryURLRewrite implements Filter {
             return v.elements();
         }
 
+        @Override
         public String[] getParameterValues(String s) {
             return addedParams.get(s);
         }
 
+        @Override
         public ServletInputStream getInputStream() throws IOException {
             if (sis == null)
                 return super.getInputStream();
             return sis;
         }
 
+        @Override
         public BufferedReader getReader() throws IOException {
             if (sis == null)
                 return super.getReader();
@@ -965,6 +978,7 @@ public class XQueryURLRewrite implements Filter {
             return reader;
         }
 
+        @Override
         public String getContentType() {
             if (contentType == null)
                 return super.getContentType();
@@ -975,28 +989,33 @@ public class XQueryURLRewrite implements Filter {
             this.contentType = contentType;
         }
 
+        @Override
         public int getContentLength() {
             if (sis == null)
                 return super.getContentLength();
             return contentLength;
         }
 
+        @Override
         public void setCharacterEncoding(String encoding) throws UnsupportedEncodingException {
             this.characterEncoding = encoding;
         }
 
+        @Override
         public String getCharacterEncoding() {
             if (characterEncoding == null)
                 return super.getCharacterEncoding();
             return characterEncoding;
         }
 
+        @Override
         public String getHeader(String s) {
             if (s.equals("If-Modified-Since"))
                 return null;
             return super.getHeader(s);
         }
 
+        @Override
         public long getDateHeader(String s) {
             if (s.equals("If-Modified-Since"))
                 return -1;
@@ -1041,6 +1060,7 @@ public class XQueryURLRewrite implements Filter {
             this.origResponse = servletResponse;
         }
 
+        @Override
         public PrintWriter getWriter() throws IOException {
             if (!cache)
                 return super.getWriter();
@@ -1052,6 +1072,7 @@ public class XQueryURLRewrite implements Filter {
             return writer;
         }
 
+        @Override
         public ServletOutputStream getOutputStream() throws IOException {
             if (!cache)
                 return super.getOutputStream();
@@ -1070,31 +1091,37 @@ public class XQueryURLRewrite implements Filter {
             return status;
         }
         
+        @Override
         public void setStatus(int i) {
             this.status = i;
             super.setStatus(i);
         }
 
+        @Override
         public void setStatus(int i, String msg) {
             this.status = i;
             super.setStatus(i, msg);
         }
 
+        @Override
         public void sendError(int i, String msg) throws IOException {
             this.status = i;
             super.sendError(i, msg);
         }
 
+        @Override
         public void sendError(int i) throws IOException {
             this.status = i;
             super.sendError(i);
         }
 
+        @Override
         public void setContentLength(int i) {
             if (!cache)
                 super.setContentLength(i);
         }
 
+        @Override
         public void flushBuffer() throws IOException {
             if (!cache)
                 super.flushBuffer();
@@ -1109,14 +1136,17 @@ public class XQueryURLRewrite implements Filter {
             return ostream.toByteArray();
         }
 
+        @Override
         public void write(int b) throws IOException {
             ostream.write(b);
         }
 
+        @Override
         public void write(byte b[]) throws IOException {
             ostream.write(b);
         }
 
+        @Override
         public void write(byte b[], int off, int len) throws IOException {
             ostream.write(b, off, len);
         }
@@ -1133,18 +1163,22 @@ public class XQueryURLRewrite implements Filter {
                 istream = new ByteArrayInputStream(data);
         }
         
+        @Override
         public int read() throws IOException {
            return istream.read();
         }
 
+        @Override
         public int read(byte b[]) throws IOException {
             return istream.read(b);
         }
 
+        @Override
         public int read(byte b[], int off, int len) throws IOException {
             return istream.read(b, off, len);
         }
 
+        @Override
         public int available() throws IOException {
             return istream.available(); 
         }
