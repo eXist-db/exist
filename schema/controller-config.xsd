@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist.sourceforge.net/NS/exist" xmlns:exist="http://exist.sourceforge.net/NS/exist">
+  <xs:element name="configuration">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="exist:forward"/>
+        <xs:element ref="exist:root"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="forward">
+    <xs:complexType>
+      <xs:attribute name="pattern" use="required" type="xs:string"/>
+      <xs:attribute name="servlet" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:attribute name="server-name" use="optional" type="xs:string"/>
+      <xs:attribute name="path" use="required" type="xs:anyURI"/>
+      <xs:attribute name="pattern" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
