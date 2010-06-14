@@ -44,7 +44,7 @@ import java.io.StringReader;
 
 public class Parse extends BasicFunction {
 	
-	protected static final FunctionReturnSequenceType RESULT_TYPE = new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_MORE, "the XML fragment parsed from the string" );
+	protected static final FunctionReturnSequenceType RESULT_TYPE = new FunctionReturnSequenceType( Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "the XML fragment parsed from the string" );
 
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed" );
 
