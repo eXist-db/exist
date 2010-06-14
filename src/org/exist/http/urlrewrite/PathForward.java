@@ -47,6 +47,7 @@ public class PathForward extends Forward {
         }
     }
 
+    @Override
     protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
         if (servletName != null)
             return filterConfig.getServletContext().getNamedDispatcher(servletName);

@@ -36,6 +36,7 @@ public abstract class Forward extends URLRewrite {
         super(config, uri);
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         RequestDispatcher dispatcher = getRequestDispatcher(request);
         if (dispatcher == null)

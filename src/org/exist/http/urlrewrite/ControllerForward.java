@@ -54,13 +54,16 @@ public class ControllerForward extends URLRewrite {
         this.target = config.getAttribute("path");
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
     }
 
+    @Override
     public boolean isControllerForward() {
         return true;
     }
 
+    @Override
     protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
         super.updateRequest(request);
         if (!(target.length() == 0 || target.equals("/") ||target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
@@ -70,6 +73,7 @@ public class ControllerForward extends URLRewrite {
         }
     }
 
+    @Override
     protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
         if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             XmldbURI dbURI = XmldbURI.create(target);

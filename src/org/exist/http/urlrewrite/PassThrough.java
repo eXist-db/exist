@@ -41,6 +41,7 @@ public class PassThrough extends URLRewrite {
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         setHeaders(response);
         chain.doFilter(request, response);
