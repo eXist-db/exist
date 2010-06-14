@@ -3,7 +3,8 @@
   ++ all basic path mappings. A path can be mapped to a servlet or
   ++ the root of a directory or collection hierarchy.
 -->
-<configuration xmlns="http://exist.sourceforge.net/NS/exist">
+<configuration xmlns="http://exist.sourceforge.net/NS/exist" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://exist.sourceforge.net/NS/exist file:../../schema/controller-config.xsd">
     <!-- Webstart servlet -->
     <forward pattern="/webstart" servlet="jnlp"/>
     <!-- XMLRPC servlet -->
