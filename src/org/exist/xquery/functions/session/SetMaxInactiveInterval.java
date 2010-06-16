@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2010 The eXist Project
- *  ixitar@exist-db.org
  *  http://exist.sourceforge.net
  *  
  *  This program is free software; you can redistribute it and/or
@@ -26,40 +25,44 @@ package org.exist.xquery.functions.session;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * Returns an attribute stored in the current session or an empty sequence
- * if the attribute does not exist.
+ * Set the max inactive interval for the current session
  * 
- * @author Loren Cahlander
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  */
-public class GetMaxInactiveInterval extends Function 
+public class SetMaxInactiveInterval extends Function 
 {
 //	private static final Logger logger = Logger.getLogger(GetAttribute.class);
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName( "get-max-inactive-interval", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
-			"Returns the maximum time interval, in seconds, that the servlet container " +
+			new QName( "set-max-inactive-interval", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
+			"Sets the maximum time interval, in seconds, that the servlet container " +
 			"will keep this session open between client accesses. After this interval, " +
-			"the servlet container will invalidate the session. The maximum time interval " +
-			"can be set with the session:set-max-inactive-interval function. A negative time indicates " +
+			"the servlet container will invalidate the session. A negative time indicates " +
 			"the session should never timeout. ",
-			null,
-			new FunctionReturnSequenceType( Type.INT, Cardinality.EXACTLY_ONE, "the maximum time interval, in seconds" ) );
+			new SequenceType[] {
+				new FunctionParameterSequenceType("interval", Type.INT, Cardinality.EXACTLY_ONE, "The maximum inactive interval (in seconds) before closing the session")
+			},
+			new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 	
-	public GetMaxInactiveInterval( XQueryContext context ) 
+	public SetMaxInactiveInterval( XQueryContext context ) 
 	{
 		super( context, signature );
 	}
@@ -69,33 +72,44 @@ public class GetMaxInactiveInterval extends Function
 	 */
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
+		JavaObjectValue session;
 		
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
-		
+		if( context.getProfiler().isEnabled() ) {
+			context.getProfiler().start( this );	    
+			context.getProfiler().message( this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName( this.getDependencies() ) );
+			
+			if( contextSequence != null ) {
+				context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence );
+			}
+
+			if( contextItem != null ) {
+				context.getProfiler().message( this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence() );
+			}
+		}
+        
+		SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+
 		// session object is read from global variable $session
 		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
-			// throw( new XPathException( this, "Session not set" ) );
-			return( XPathUtil.javaObjectToXPath( Integer.valueOf(-1), context ) );
+			// No saved session, so create one
+			session = SessionModule.createSession( context, this );
+		} else if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
+			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
+		} else {
+			session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		}
 		
-		if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
-			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
-		}
-
-		JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
+		// get attribute name parameter
+		int interval = ((IntegerValue)getArgument(0).eval( contextSequence, contextItem ).convertTo(Type.INT)).getInt();
 		
 		if( session.getObject() instanceof SessionWrapper ) {
-			try {
-				int interval = ( (SessionWrapper)session.getObject() ).getMaxInactiveInterval();
-				return( XPathUtil.javaObjectToXPath( Integer.valueOf(interval), context ) );
-			}
-			catch( IllegalStateException ise ) {
-				return( XPathUtil.javaObjectToXPath( Integer.valueOf(-1), context ) );
-			}
+			((SessionWrapper)session.getObject()).setMaxInactiveInterval(interval);
 		} else {
 			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
 		}
+
+		return( Sequence.EMPTY_SEQUENCE );
 	}
 }

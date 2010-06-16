@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2010 The eXist Project
- *  ixitar@exist-db.org
  *  http://exist.sourceforge.net
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,16 +21,21 @@
  */
 package org.exist.xquery.functions.session;
 
+import java.util.Date;
+
 //import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -39,27 +43,25 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 /**
- * Returns an attribute stored in the current session or an empty sequence
- * if the attribute does not exist.
+ * Returns the time when this session was created, or 
+ * January 1, 1970 GMT if it is an invalidated session
  * 
- * @author Loren Cahlander
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  */
-public class GetMaxInactiveInterval extends Function 
+public class GetCreationTime extends Function 
 {
 //	private static final Logger logger = Logger.getLogger(GetAttribute.class);
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName( "get-max-inactive-interval", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
-			"Returns the maximum time interval, in seconds, that the servlet container " +
-			"will keep this session open between client accesses. After this interval, " +
-			"the servlet container will invalidate the session. The maximum time interval " +
-			"can be set with the session:set-max-inactive-interval function. A negative time indicates " +
-			"the session should never timeout. ",
+			new QName( "get-creation-time", SessionModule.NAMESPACE_URI, SessionModule.PREFIX ),
+			"Returns the time when this session was created. If a session does not " +
+			"exist, a new one is created. If the session is already invalidated, it " +
+			"returns January 1, 1970 GMT",
 			null,
-			new FunctionReturnSequenceType( Type.INT, Cardinality.EXACTLY_ONE, "the maximum time interval, in seconds" ) );
+			new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the date-time when the session was created" ) );
 	
-	public GetMaxInactiveInterval( XQueryContext context ) 
+	public GetCreationTime( XQueryContext context ) 
 	{
 		super( context, signature );
 	}
@@ -69,6 +71,14 @@ public class GetMaxInactiveInterval extends Function
 	 */
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
+		if (context.getProfiler().isEnabled()) {
+			context.getProfiler().start(this);       
+			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+			if (contextSequence != null)
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+			if (contextItem != null)
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+		}        
 		
 		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
@@ -88,11 +98,11 @@ public class GetMaxInactiveInterval extends Function
 		
 		if( session.getObject() instanceof SessionWrapper ) {
 			try {
-				int interval = ( (SessionWrapper)session.getObject() ).getMaxInactiveInterval();
-				return( XPathUtil.javaObjectToXPath( Integer.valueOf(interval), context ) );
+				long creationTime = ( (SessionWrapper)session.getObject() ).getCreationTime();
+				return new DateTimeValue(new Date(creationTime));
 			}
 			catch( IllegalStateException ise ) {
-				return( XPathUtil.javaObjectToXPath( Integer.valueOf(-1), context ) );
+				return new DateTimeValue(new Date(0));
 			}
 		} else {
 			throw( new XPathException( this, "Type error: variable $session is not bound to a session object" ) );
