@@ -25,7 +25,7 @@
 	<classpathentry kind="src" path="extensions/xqdoc/src"/>
 	<classpathentry kind="src" path="extensions/cocoon/src"/>
 	<classpathentry kind="src" path="extensions/svn/src"/>
-	<classpathentry kind="src" path="extensions/svn/test"/>
+	<classpathentry kind="src" path="extensions/svn/test/src"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/core/jEdit-syntax.jar" sourcepath="/jEdit-syntax"/>
@@ -71,14 +71,14 @@
 	<classpathentry kind="lib" path="thirdparty/tomcat5/bin/jmx.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
-	<classpathentry kind="lib" path="lib/test/junit-4.8.2.jar.jar"/>
+	<classpathentry kind="lib" path="lib/test/junit-4.8.2.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-1.8.0.jar"/>
-    <classpathentry kind="lib" path="lib/core/slf4j-api-1.6.0.jar"/>
-    <classpathentry kind="lib" path="lib/core/slf4j-log4j12-1.6.0.jar"/>
-    <classpathentry kind="lib" path="lib/core/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/slf4j-api-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/core/slf4j-log4j12-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
@@ -87,11 +87,9 @@
 	<classpathentry kind="lib" path="lib/user/mail-1.4.2.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20091111.jar"/>
-	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/user/commons-compress-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jsp-api-2.1.jar"/>
-	<classpathentry kind="lib" path="extensions/debuggee/lib/slf4j-simple-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-api-4.3.jar"/>
@@ -151,5 +149,11 @@
 	<classpathentry kind="lib" path="lib/user/jfreechart-1.0.13.jar"/>
 	<classpathentry kind="lib" path="lib/user/jcommon-1.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/user/svnkit.jar"/>
+	<classpathentry kind="lib" path="lib/test/easymock-2.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/test/easymockclassextension-2.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/user/calabash.jar"/>
+	<classpathentry kind="lib" path="lib/user/icu4j-4.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/user/saxon9he.jar"/>
+	<classpathentry kind="lib" path="lib/user/svnkit-cli.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
