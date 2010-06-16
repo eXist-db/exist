@@ -1,59 +1,34 @@
 package org.exist.xquery.modules.xmlcalabash;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringReader;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.SAXAdapter;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.*;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.SAXAdapter;
-import org.exist.memtree.DocumentImpl;
-import org.exist.Namespaces;
-
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import com.xmlcalabash.core.XProcException;
-import com.xmlcalabash.core.XProcRuntime;
-import com.xmlcalabash.core.XProcConstants;
-import com.xmlcalabash.core.XProcConfiguration;
-import com.xmlcalabash.model.RuntimeValue;
-import com.xmlcalabash.io.ReadablePipe;
-import com.xmlcalabash.util.S9apiUtils;
-import com.xmlcalabash.util.RelevantNodes;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
-import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.DocumentBuilder;
-import net.sf.saxon.s9api.XdmNode;
-import net.sf.saxon.s9api.XdmSequenceIterator;
-import net.sf.saxon.s9api.Axis;
-import net.sf.saxon.s9api.XdmNodeKind;
-import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XPathExecutable;
-import net.sf.saxon.s9api.XPathSelector;
-import net.sf.saxon.s9api.XdmItem;
-import net.sf.saxon.s9api.XdmAtomicValue;
-import net.sf.saxon.s9api.XdmDestination;
-import net.sf.saxon.s9api.XdmValue;
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XQueryCompiler;
-import net.sf.saxon.s9api.XQueryExecutable;
-import net.sf.saxon.s9api.XQueryEvaluator;
-import net.sf.saxon.s9api.Serializer;
+import org.xml.sax.XMLReader;
 
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.ParserConfigurationException;
-
-import com.xmlcalabash.runtime.XPipeline;
+import com.xmlcalabash.core.XProcRuntime;
 
 public class ProcessFunction extends BasicFunction {
 
