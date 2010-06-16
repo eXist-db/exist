@@ -31,6 +31,7 @@ import org.exist.xquery.XPathException;
  *
  * @author Adam Retter (adam.retter@devon.gov.uk)
  * @author ljo
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  */
 public class ResponseModule extends AbstractInternalModule {
 
@@ -45,6 +46,7 @@ public class ResponseModule extends AbstractInternalModule {
 		new FunctionDef(RedirectTo.signature, RedirectTo.class),
 		new FunctionDef(SetCookie.signatures[0], SetCookie.class),
 		new FunctionDef(SetCookie.signatures[1], SetCookie.class),
+		new FunctionDef(SetCookie.signatures[2], SetCookie.class),
 		new FunctionDef(SetDateHeader.signature, SetDateHeader.class),
 		new FunctionDef(SetHeader.signature, SetHeader.class),
 		new FunctionDef(SetStatusCode.signature, SetStatusCode.class),

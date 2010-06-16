@@ -85,6 +85,28 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/**
+	 * The method <code>addCookie</code>
+	 *
+	 * @param name Name of the Cookie
+	 * @param value Value of the Cookie
+	 * @param maxAge an <code>int</code> value
+	 * @param secure security of the Cookie
+	 * @param domain domain of the cookie
+	 * @param path path scope of the cookie
+	 */
+	public void addCookie(final String name, final String value, final int maxAge, boolean secure, final String domain, final String path)
+	{
+		Cookie cookie = new Cookie(name, value);
+		cookie.setMaxAge(maxAge);
+		cookie.setSecure( secure );
+		if(domain!=null)
+			cookie.setDomain(domain);
+		if(path!=null)
+			cookie.setPath(path);
+		response.addCookie(cookie);
+	}
+	
+	/**
 	 * @param contentType Content Type of the response
 	 */
 	public void setContentType(String contentType)
