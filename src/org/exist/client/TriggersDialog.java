@@ -129,11 +129,11 @@ class TriggersDialog extends JFrame {
 		getContentPane().add(label);
 		
 		//get the collections but not system collections
-		ArrayList alCollections = new ArrayList();
+		ArrayList<PrettyXmldbURI> alCollections = new ArrayList<PrettyXmldbURI>();
         try
         {
             Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            ArrayList alAllCollections = getCollections(root, new ArrayList());
+            ArrayList<PrettyXmldbURI> alAllCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             for(int i = 0; i < alAllCollections.size(); i++)
             {
             	//TODO : use XmldbURIs !
@@ -284,7 +284,7 @@ class TriggersDialog extends JFrame {
 	
 	//THIS IS A COPY FROM ClientFrame
 	//TODO: share this code between the two classes
-	private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
+	private ArrayList<PrettyXmldbURI> getCollections(Collection root, ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException
     {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         String[] childCollections= root.listChildCollections();

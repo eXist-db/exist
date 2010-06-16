@@ -130,7 +130,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     private Permission permissions = PermissionFactory.getPermission(0775);
     
     // stores child-collections with their storage address
-    private ObjectHashSet subcollections = new ObjectHashSet(19);
+    private ObjectHashSet<XmldbURI> subcollections = new ObjectHashSet(19);
     
     // Storage address of the collection in the BFile
     private long address = BFile.UNKNOWN_ADDRESS;
