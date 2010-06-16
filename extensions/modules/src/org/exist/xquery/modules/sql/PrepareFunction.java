@@ -55,7 +55,6 @@ import org.exist.xquery.value.Type;
  */
 public class PrepareFunction extends BasicFunction
 {
-    @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(PrepareFunction.class);
 
     public final static FunctionSignature[] signatures = { new FunctionSignature(

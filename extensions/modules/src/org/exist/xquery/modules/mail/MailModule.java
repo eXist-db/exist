@@ -138,7 +138,7 @@ public class MailModule extends AbstractInternalModule
 		
 		// get the existing sessions map from the context
 		
-		HashMap<Long, Session> sessions = (HashMap)context.getXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR );
+		HashMap<Long, Session> sessions = (HashMap<Long, Session>)context.getXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR );
 		
 		if( sessions != null ) {
 			session = sessions.get( new Long( sessionHandle ) );
@@ -160,7 +160,7 @@ public class MailModule extends AbstractInternalModule
 	{
 		// get the existing sessions map from the context
 		
-		HashMap<Long, Session> sessions = (HashMap)context.getXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR );
+		HashMap<Long, Session> sessions = (HashMap<Long, Session>)context.getXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR );
 		
 		if( sessions == null ) {
 			// if there is no sessions map, create a new one
@@ -198,7 +198,7 @@ public class MailModule extends AbstractInternalModule
 		
 		// get the existing stores map from the context
 		
-		HashMap<Long, Store> stores = (HashMap)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
+		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
 		
 		if( stores != null ) {
 			store = stores.get( new Long( storeHandle ) );
@@ -220,7 +220,7 @@ public class MailModule extends AbstractInternalModule
 	{
 		// get the existing stores map from the context
 		
-		HashMap<Long, Store> stores = (HashMap)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
+		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
 		
 		if( stores == null ) {
 			// if there is no stores map, create a new one
@@ -248,7 +248,7 @@ public class MailModule extends AbstractInternalModule
 	final static synchronized  void removeStore( XQueryContext context, long storeHandle ) 
 	{
 		// get the existing stores map from the context
-		HashMap<Long, Store> stores = (HashMap)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
+		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
 		
 		if( stores != null ) {
 			stores.remove( new Long( storeHandle ) ) ;
@@ -267,7 +267,7 @@ public class MailModule extends AbstractInternalModule
 	private final static synchronized void closeAllStores( XQueryContext context ) 
 	{
 		// get the existing stores map from the context
-		HashMap<Long, Store> stores = (HashMap)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
+		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
 		
 		if( stores != null ) {
 			// iterate over each store
@@ -313,7 +313,7 @@ public class MailModule extends AbstractInternalModule
 		
 		// get the existing folders map from the context
 		
-		HashMap<Long, Folder> folders = (HashMap)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
+		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
 		
 		if( folders != null ) {
 			folder = folders.get( new Long( folderHandle ) );
@@ -335,7 +335,7 @@ public class MailModule extends AbstractInternalModule
 	{
 		// get the existing stores map from the context
 		
-		HashMap<Long, Folder> folders = (HashMap)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
+		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
 		
 		if( folders == null ) {
 			// if there is no folders map, create a new one
@@ -363,7 +363,7 @@ public class MailModule extends AbstractInternalModule
 	final static synchronized void removeFolder( XQueryContext context, long folderHandle ) 
 	{
 		// get the existing folders map from the context
-		HashMap<Long, Folder> folders = (HashMap)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
+		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
 		
 		if( folders != null ) {
 			folders.remove( new Long( folderHandle ) ) ;
@@ -373,12 +373,12 @@ public class MailModule extends AbstractInternalModule
 			
 			// get the existing folderMsgLists map from the context and remove all the folder's message lists
 		
-			HashMap<Long, HashMap<Long, Object>> folderMsgLists = (HashMap)context.getXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR );
+			HashMap<Long, HashMap<Long, Object>> folderMsgLists = (HashMap<Long, HashMap<Long, Object>>)context.getXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR );
 			HashMap msgLists = (HashMap)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
 		
 			if( folderMsgLists != null ) {
 				// get the folders message list
-				HashMap<Long, Object> folderMsgList = (HashMap)folderMsgLists.get( new Long( folderHandle ) );
+				HashMap<Long, Object> folderMsgList = (HashMap<Long, Object>)folderMsgLists.get( new Long( folderHandle ) );
 				
 				if( folderMsgList != null ) {
 					// iterate over each message list in this folder
@@ -408,7 +408,7 @@ public class MailModule extends AbstractInternalModule
 	private final static synchronized void closeAllFolders( XQueryContext context ) 
 	{
 		// get the existing folders map from the context
-		HashMap<Long, Folder> folders = (HashMap)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
+		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
 		
 		if( folders != null ) {
 			// iterate over each folder
@@ -454,7 +454,7 @@ public class MailModule extends AbstractInternalModule
 		
 		// get the existing msgLists map from the context
 		
-		HashMap<Long, Message[]> msgLists = (HashMap)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
+		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
 		
 		if( msgLists != null ) {
 			msgList = msgLists.get( new Long( msgListHandle ) );
@@ -476,7 +476,7 @@ public class MailModule extends AbstractInternalModule
 	{
 		// get the existing msgLists map from the context
 		
-		HashMap<Long, Message[]> msgLists = (HashMap)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
+		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
 		
 		if( msgLists == null ) {
 			// if there is no msgLists map, create a new one
@@ -494,7 +494,7 @@ public class MailModule extends AbstractInternalModule
 		
 		// get the existing folderMsgLists map from the context
 		
-		HashMap<Long, HashMap<Long, Message[]>> folderMsgLists = (HashMap)context.getXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR );
+		HashMap<Long, HashMap<Long, Message[]>> folderMsgLists = (HashMap<Long, HashMap<Long, Message[]>>)context.getXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR );
 		
 		if( folderMsgLists == null ) {
 			// if there is no folderMsgLists map, create a new one
@@ -502,7 +502,7 @@ public class MailModule extends AbstractInternalModule
 		}	
 		
 		// get the folders message list
-		HashMap<Long, Message[]> folderMsgList = (HashMap)folderMsgLists.get( new Long( folderHandle ) );
+		HashMap<Long, Message[]> folderMsgList = (HashMap<Long, Message[]>)folderMsgLists.get( new Long( folderHandle ) );
 		
 		if( folderMsgList == null ) {
 			folderMsgList = new HashMap<Long, Message[]>();
@@ -527,7 +527,7 @@ public class MailModule extends AbstractInternalModule
 	final static synchronized void removeMessageList( XQueryContext context, long msgListHandle ) 
 	{
 		// get the existing msgLists map from the context
-		HashMap<Long, Message[]> msgLists = (HashMap)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
+		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
 		
 		if( msgLists != null ) {
 			msgLists.remove( new Long( msgListHandle ) ) ;
@@ -546,7 +546,7 @@ public class MailModule extends AbstractInternalModule
 	private final static synchronized void closeAllMessageLists( XQueryContext context ) 
 	{
 		// get the existing msgLists map from the context
-		HashMap<Long, Message[]> msgLists = (HashMap)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
+		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
 		
 		if( msgLists != null ) {
 			// iterate over each msgList
