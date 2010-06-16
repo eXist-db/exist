@@ -55,7 +55,7 @@ public class SamplesUtility {
     private static final String OMEGA = "omega";
     private static final String PSI = "psi";
         
-    private static final Map ourGreekTreeFiles = new HashMap();
+    private static final Map<String, String> ourGreekTreeFiles = new HashMap<String, String>();
     
     static {
         ourGreekTreeFiles.put(IOTA, "This is the file 'iota'.\n");
