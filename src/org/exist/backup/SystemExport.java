@@ -348,8 +348,8 @@ public class SystemExport {
 
             int docsCount = current.getDocumentCountNoLock();
             int count = 0;
-            for (Iterator i = current.iteratorNoLock(broker); i.hasNext(); count++) {
-                DocumentImpl doc = (DocumentImpl) i.next();
+            for (Iterator<DocumentImpl> i = current.iteratorNoLock(broker); i.hasNext(); count++) {
+                DocumentImpl doc = i.next();
                 if (isDamaged(doc, errorList)) {
                     reportError("Skipping damaged document " + doc.getFileURI(), null);
                     continue;
@@ -360,8 +360,8 @@ public class SystemExport {
                 docs.add(doc, false);
             }
 
-            for (Iterator i = current.collectionIteratorNoLock(); i.hasNext(); ) {
-                XmldbURI childUri = (XmldbURI) i.next();
+            for (Iterator<XmldbURI> i = current.collectionIteratorNoLock(); i.hasNext(); ) {
+                XmldbURI childUri = i.next();
                 if (childUri.equalsInternal(TEMP_COLLECTION))
                     continue;
                 if (isDamagedChild(childUri, errorList)) {

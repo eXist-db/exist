@@ -616,11 +616,11 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     /* END methods of MemoryNodeSet */
     
-    public Iterator getCollectionIterator() {
+    public Iterator<Collection> getCollectionIterator() {
         return new CollectionIterator();
     }
 
-    private class CollectionIterator implements Iterator {
+    private class CollectionIterator implements Iterator<Collection> {
 
         Collection nextCollection = null;
         int pos = 0;
@@ -633,7 +633,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             return nextCollection != null;
         }
 
-        public Object next() {
+        public Collection next() {
             Collection oldCollection = nextCollection;
             nextCollection = null;
             while (pos <= size) {

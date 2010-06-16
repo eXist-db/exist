@@ -204,7 +204,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private class FTStreamListener extends AbstractStreamListener {
 
-        private Stack contentStack = new Stack();
+        private Stack<ElementContent> contentStack = new Stack<ElementContent>();
 
         public FTStreamListener() {
         }

@@ -23,23 +23,20 @@
 package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
+import org.exist.util.Base64Decoder;
+import org.exist.util.Base64Encoder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.util.Base64Decoder;
-import org.exist.util.Base64Encoder;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Base64 String conversion functions.

@@ -355,12 +355,12 @@ public class RpcConnection implements RpcAPI {
     	String base = (String) parameters.get(RpcAPI.BASE_URI);
     	if(base!=null)
     		context.setBaseURI(new AnyURIValue(base));
-        HashMap<String, String> namespaces = (HashMap)parameters.get(RpcAPI.NAMESPACES);
+        HashMap<String, String> namespaces = (HashMap<String, String>)parameters.get(RpcAPI.NAMESPACES);
         if(namespaces != null && namespaces.size() > 0) {
             context.declareNamespaces(namespaces);
         }
         //  declare static variables
-        HashMap<String, Object> variableDecls = (HashMap)parameters.get(RpcAPI.VARIABLES);
+        HashMap<String, Object> variableDecls = (HashMap<String, Object>)parameters.get(RpcAPI.VARIABLES);
         if(variableDecls != null) {
             for (Map.Entry<String, Object> entry : variableDecls.entrySet()) {
             	if (LOG.isDebugEnabled())
