@@ -169,17 +169,17 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    	if (idxConf != null) {
 	            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
 	            if (collectionConfig != null) {
-	            	isDocumentGMLAware = true;
+	                isDocumentGMLAware = true;
                 	if (collectionConfig.get(AbstractGMLJDBCIndex.ID) != null)
                 		flushAfter = ((GMLIndexConfig)collectionConfig.get(AbstractGMLJDBCIndex.ID)).getFlushAfter();
 	            }
 	    	}
     	}
     	if (isDocumentGMLAware) {
-	        currentDoc = document;	        
-    	} else {
+	        currentDoc = document;
+	    } else {
 	        currentDoc = null;
-	        currentMode = StreamListener.UNKNOWN;    		
+	        currentMode = StreamListener.UNKNOWN;
     	}
     } 
     
@@ -225,18 +225,17 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	if (!isDocumentGMLAware)
     		//Not concerned
     		return null;
-    	StoredNode topMost = node;
+    	StoredNode relevantNode = null;
     	StoredNode currentNode = node;
     	for (int i = path.length() ; i > 0; i--) {
+    		if (GML_NS.equals(currentNode.getNamespaceURI()))
+    			relevantNode = currentNode;
     		//Stop below root
     		if (currentNode.getParentNode() instanceof DocumentImpl)
-    			break;    			
+    			break;
     		currentNode = (StoredNode)currentNode.getParentNode();
-    		if (GML_NS.equals(currentNode.getNamespaceURI()))
-    			//TODO : retain only geometries
-    			topMost = currentNode;
     	}
-    	return topMost;    	
+    	return relevantNode;	
     }    
 
     public void flush() {
