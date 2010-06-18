@@ -109,6 +109,10 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 			ExceptionTimeout {
 		LOG.info("Debugger is listening at port " + eventPort);
 
+		if (this.session != null) new IOException("Another debugging session is active.");
+
+		responseCode = 0;
+		
 		Thread session = new Thread(new HttpSession(this, url));
 		session.start();
 
@@ -210,7 +214,10 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	}
 
 	public void sessionClosed() {
-		// TODO Auto-generated method stub
+		if (!session.isClosing())
+			session.close(true);
+		
+		session = null;
 	}
 
 	// weak map???

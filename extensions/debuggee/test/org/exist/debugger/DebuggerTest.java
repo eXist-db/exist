@@ -40,6 +40,25 @@ import org.junit.Test;
  */
 public class DebuggerTest implements ResponseListener {
 	
+	@Test
+	public void testConntection() throws IOException {
+		assertNotNull("Database wasn't initilised.", database);
+		
+		Debugger debugger = DebuggerImpl.getDebugger();
+		
+		try {
+			debugger.init("http://127.0.0.1:8080/xquery/fibo.xql");
+		} catch (Exception e) {
+		}
+
+		try {
+			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+			assertNotNull("Debugging source can't be NULL.", source);
+		} catch (Exception e) {
+			assertNotNull("exception: "+e.getMessage(), null);
+		}
+	}
+	
 	//@Test
 	public void testDebugger() {
 		assertNotNull("Database wasn't initilised.", database);
@@ -195,7 +214,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testEvaluation() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
