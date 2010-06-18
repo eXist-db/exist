@@ -5,8 +5,8 @@
     <property name="resources.dir" value="./test/resources"/>
     <property name="lib.dir" value="./lib"/>
 
-	  <condition property="libs.available">
-	    <and>
+    <condition property="libs.available">
+        <and>
 			<available file="${lib.dir}/geoapi-nogenerics-2.1-M3.jar"/>
 			<available file="${lib.dir}/gt2-api-2.4-M1.jar"/>
 		    <available file="${lib.dir}/gt2-epsg-extension-2.4-M3.jar"/>
@@ -87,7 +87,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
 
-            <test name="org.exist.indexing.spatial.AllIndexTests"
+            <test name="org.exist.indexing.spatial.AllSpatialTests"
                 todir="${junit.index.reports}" />
         </junit>
     </target>
