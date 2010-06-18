@@ -146,4 +146,14 @@ public class Atomize extends AbstractExpression {
     public int getColumn() {
         return expression.getColumn();
     }
+
+    public int getSubExpressionCount() {
+    	return 1;
+    }
+    
+    public Expression getSubExpression(int index) {
+    	if (index == 0) return expression;
+    	
+	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
+    }
 }
