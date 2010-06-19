@@ -44,7 +44,7 @@ public class XmlLibraryChecker {
      * Possible XML Parsers, at least one must be valid
      */
     private final static ClassVersion[] validParsers = {
-        new ClassVersion("Xerces", "Xerces-J 2.10.0", 
+        new ClassVersion("Xerces", "Xerces-J 2.9.1", 
                 "org.apache.xerces.impl.Version.getVersion()")
     };
     
