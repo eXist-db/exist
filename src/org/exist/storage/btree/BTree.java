@@ -1335,7 +1335,7 @@ public class BTree extends Paged {
                     System.arraycopy(keys, leftVals.length, rightVals, 0, rightVals.length);
                     System.arraycopy(ptrs, leftPtrs.length, rightPtrs, 0, rightPtrs.length);
 
-                    separator = leftVals[leftVals.length - 1].getSeparator(rightVals[0]);
+					separator = keys[leftVals.length]; //.getSeparator(rightVals[0]);
                     break;
                 default :
                     throw new BTreeException("Invalid Page Type In split");
