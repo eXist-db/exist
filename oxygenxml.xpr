@@ -3452,6 +3452,7 @@
             <file name="webapp/download.xml"/>
             <file name="webapp/eclipse.xml"/>
             <file name="webapp/examples.xml"/>
+            <file name="webapp/exist-stack.xml"/>
             <file name="webapp/extensions.xml"/>
             <file name="webapp/facts.xml"/>
             <file name="webapp/feed.xql"/>
