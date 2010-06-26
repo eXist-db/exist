@@ -101,9 +101,9 @@
                                 <td>configuration options for the server.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="exist-stack.xml">eXist
+                                <td class="doclink"><ulink url="exist-stack.xml">LEXA, the eXist
                                     Stack</ulink>:</td>
-                                <td>steps to create an eXist stack.</td>
+                                <td>steps to create an implementation of LEXA, the eXist stack.</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="tuning.xml">Tuning
