@@ -164,12 +164,13 @@ SSLCertificateChainFile /etc/apache2/ssl/gd_bundle.crt</synopsis>
             browser.  For example the following will bring up the Apache documentation.  Note that the "s" following the "http".</para>
             
             <programlisting><synopsis>https://vm.exist-db.org/doc/apache2-doc/manual/en/index.html</synopsis></programlisting>
-            
+            <note>
             <para>If you did not get a SSL certificate from a commercial supplier you can use a self-signed certificate.
             If you do your users will see a panel such as the following the first time they access the web site:</para>
             <para><inlinegraphic fileref="resources/stack/untrused-confirm.png"/></para>
             <para>You must instruct them to click the "I Understand the Risks" option so that the SSL is listed
             in their list of trused sites.  After this them must click the "Add Exception" button.</para>
+            </note>
         </section>
         <section id="ldap">
             <title>Installing LDAP</title>
@@ -180,7 +181,11 @@ SSLCertificateChainFile /etc/apache2/ssl/gd_bundle.crt</synopsis>
             <para>These commands will install a local LDAP server and a web based administrative
                 application to manage groups and users within this virtual machine.</para>
             <synopsis>sudo apt-get install slapd ldap-utils ldap-account-manager</synopsis>
-            <para></para>
+            <para>The installation process will prompt you for the LDAP directory admin password and
+                confirmation.</para>
+            <para>After installing <emphasis role="bold">slapd</emphasis> the directory can be
+                configured using <emphasis role="bold">dpkg-reconfigure</emphasis>:</para>
+            <synopsis>sudo dpkg-reconfigure slapd</synopsis>
             <synopsis>ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/cosine.ldif
 ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/inetorgperson.ldif
 ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/nis.ldif</synopsis>
@@ -943,11 +948,13 @@ Alias /websvn/ "/usr/share/websvn/"
         <section id="exist">
             <title>Installing eXist</title>
             <para>These are the steps to install and configure eXist to use the LDAP server for user
-                authentication.</para>
-            <synopsis>sudo apt-get install openjdk-6-*</synopsis>
+            authentication.</para>
+            <synopsis>sudo apt-get install sun-java6-jdk</synopsis>
             <synopsis>sudo java -jar eXist-setup-[version]-revXXXXX.jar -p /usr/local/eXist</synopsis>
             <section>
                 <title>Connect to the LDAP repository</title>
+                <note><para>eXist currently does not work well with LDAP.  This is in process of being rectified.  Please
+                    stay tuned for further updates.</para></note>
                 <para>In /usr/local/eXist/bin/functions.d/eXist-settings.sh, change:</para>
                 <programlisting>JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";</programlisting>
                 <para>To:</para>
@@ -974,7 +981,7 @@ Alias /websvn/ "/usr/share/websvn/"
                 visually presented within reports by tables and bar graphs. Static reports can be
                 created through a command line interface, and on-demand reporting is supported
                 through a web browser CGI program.</para>
-            <synopsis>sudo apt-get install awstats libnet-dns-perl libnet-ip-perl libgeo-ipfree-perl</synopsis>
+            <synopsis>sudo apt-get install libnet-dns-perl libnet-ip-perl libgeo-ipfree-perl</synopsis>
             <para>Edit the /etc/awstats/awstats.conf</para>
             <para/>
         </section>
