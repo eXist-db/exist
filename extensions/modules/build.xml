@@ -162,7 +162,7 @@
     <!-- 
         Special targets for xmlcalabash module 
     -->
-		<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
  
     <!-- 
         Special targets for xmlcalabash module 
@@ -181,7 +181,7 @@
         
         <!-- fetch dependency saxon TODO: make generic download function -->
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.xmlcalabash.saxon.url}" classname="net.sf.saxon.s9api.SaxonApiException">
+            url="${include.module.xmlcalabash.saxon.url}" classname="net.sf.saxon.Version">
             <patternset>
                 <include name="**/saxon9he.jar"/>
             </patternset>
