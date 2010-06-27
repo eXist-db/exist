@@ -11,15 +11,10 @@
 
   <property name="svn.svnkit.jar" value="${lib.user}/svnkit.jar"/>
   <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli.jar"/>
-  <property name="svn.download.zip" value="${lib.user}/download.zip"/>
-
   <property name="svn.patch.file" value="exist.patch"/>
-
-  <property name="javasvn.jar" location="${svn.svnkit.jar}"/>
-  
+ 
   <available classname="org.tmatesoft.svn.cli.SVN" property="svn-present"/>
-  
-  
+   
 
   <!-- 
     Try to read SVN info from entries-file (if file exist).
@@ -48,24 +43,17 @@
     if the URL is updated in time. The download size is significantly larger.
   -->
   <target name="svn-download" description="Download latest SVN library.">
+
+		<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
     
-    <delete>
-      <fileset dir="${tools.ant}/lib" includes="**/svnkit*.jar"/>
-    </delete>
-    
-    
-    <get src="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip"
-      dest="${svn.download.zip}" verbose="true"/>
-    
-    <unzip src="${svn.download.zip}" dest="${lib.user}">
-      <patternset>
-        <include name="**/svnkit.jar"/>
-        <include name="**/svnkit-cli.jar"/>
-      </patternset>
-      <mapper type="flatten"/>
-    </unzip>
-    
-    <delete file="${svn.download.zip}"/>
+		<fetch classpathref="classpath.core" dest="${lib.user}" 
+					 url="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
+	 		 <patternset>
+			    <include name="**/svnkit.jar"/>
+			    <include name="**/svnkit-cli.jar"/>
+	     </patternset>
+    </fetch>
+
   </target>
 
   <!-- 
@@ -74,7 +62,7 @@
   <target name="svn-diff" description="Make patch.">
 
     <echo>Generating patch file '${svn.patch.file}'....</echo>
-    <java classname="org.tmatesoft.svn.cli.SVN" dir="." fork="true" output="eXist.patch">
+    <java classname="org.tmatesoft.svn.cli.SVN" dir="." fork="true" output="${svn.patch.file}">
       <arg value="diff"/>
       <arg value="."/>
       <classpath>
