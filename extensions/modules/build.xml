@@ -169,24 +169,34 @@
         <delete file="avalon-framework-impl-4.3.zip"/>
 
     </target>
- 
-    <available classname="com.xmlcalabash.drivers.Main" classpathref="classpath.core" property="xmlcalabash-present"/>
 
-    <target name="prepare-xmlcalabash" unless="xmlcalabash-present" if="include.module.xmlcalabash.config">
-        <echo message="Load: ${include.module.xmlcalabash}"/>
+    <!-- 
+        Special targets for xmlcalabash module 
+    -->
+		<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
+ 
+    <!-- 
+        Special targets for xmlcalabash module 
+    -->
+    <target name="prepare-xmlcalabash" if="include.module.xmlcalabash.config">
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xmlcalabash module"/>
         <echo message="------------------------------------------------------"/>
 
-        <!-- XML Calabash -->
-        <get src="${include.module.xmlcalabash.url}" dest="calabash.zip" verbose="true" usetimestamp="true"/>
-        <unzip src="calabash.zip" dest="${top.dir}/${lib.user}">
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+               url="${include.module.xmlcalabash.url}" classname="com.xmlcalabash.drivers.Main">
             <patternset>
-                <include name="calabash-0.9.21/lib/calabash.jar"/>
+              <include name="**/calabash.jar"/>
             </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-        <delete file="calabash.zip"/>
+        </fetch>
+        
+        <!-- fetch dependency saxon TODO: make generic download function -->
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+            url="${include.module.xmlcalabash.saxon.url}" classname="net.sf.saxon.s9api.SaxonApiException">
+            <patternset>
+                <include name="**/saxon9he.jar"/>
+            </patternset>
+        </fetch>
 
     </target>
 
@@ -221,52 +231,39 @@
     </target>
 
     <!-- 
-        Special targets for jfreechart module 
+        Special targets for jfreechart module unless="jfreechart-present"
     -->
-    <property name="chart.jfreechart.zip" value="${top.dir}/${lib.user}/jfreechart.zip"/>
-    <available classname="org.jfree.chart.JFreeChart" classpathref="classpath.core" property="jfreechart-present"/>
-
-    <target name="prepare-jfreechart" if="include.module.jfreechart.config" unless="jfreechart-present">
+    <target name="prepare-jfreechart" if="include.module.jfreechart.config">
         <echo message="-------------------------------------------------------"/>
         <echo message="Downloading libraries required by the jfreechart module"/>
         <echo message="-------------------------------------------------------"/>
 
-        <get src="${include.module.jfreechart.url}" dest="${chart.jfreechart.zip}" verbose="true"/>
-
-        <unzip src="${chart.jfreechart.zip}" dest="${top.dir}/${lib.user}">
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+							 url="${include.module.jfreechart.url}" classname="org.jfree.chart.JFreeChart">
             <patternset>
                 <include name="**/lib/jfreechart-*.jar"/>
                 <include name="**/lib/jcommon-*.jar"/>
                 <exclude name="**/lib/jfreechart-*-*.jar"/>
             </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-
-        <delete file="${chart.jfreechart.zip}"/>
+        </fetch>
     </target>
 
     <!-- 
         Special targets for xmpp module 
     -->
-    <property name="xmpp.smack.zip" value="${top.dir}/${lib.user}/smack.zip"/>
-    <available classname="org.jivesoftware.smack.XMPPConnection" classpathref="classpath.core" property="smack-present"/>
-
-    <target name="prepare-xmpp" if="include.module.xmpp.config" unless="smack-present">
+    <target name="prepare-xmpp" if="include.module.xmpp.config">
         <echo message="--------------------------------------------------"/>
         <echo message="Downloading libraries required by the smack module"/>
         <echo message="--------------------------------------------------"/>
 
-        <get src="${include.module.xmpp.url}" dest="${xmpp.smack.zip}" verbose="true"/>
-
-        <unzip src="${xmpp.smack.zip}" dest="${top.dir}/${lib.user}">
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+							 url="${include.module.xmpp.url}" classname="org.jivesoftware.smack.XMPPConnection">
             <patternset>
                 <include name="**/smack.jar"/>
                 <include name="**/smackx.jar"/>
             </patternset>
-            <mapper type="flatten"/>
-        </unzip>
+        </fetch>
 
-        <delete file="${xmpp.smack.zip}"/>
     </target>
 
     <!-- 
