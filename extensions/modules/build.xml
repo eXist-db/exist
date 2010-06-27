@@ -134,39 +134,28 @@
         <echo message="Downloading libraries required by the xsl-fo module"/>
         <echo message="------------------------------------------------------"/>
 
-        <!-- Apache FOP -->
-        <get src="${include.module.xslfo.url}" dest="fop-0.95-bin.zip" verbose="true" usetimestamp="true"/>
-        <unzip src="fop-0.95-bin.zip" dest="${top.dir}/${lib.user}">
+        <!-- Apache FOP -->       
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" url="${include.module.xslfo.url}">
             <patternset>
-                <include name="fop-0.95/build/fop.jar"/>
-                <include name="fop-0.95/lib/batik-all-1.7.jar"/>
-                <include name="fop-0.95/lib/xmlgraphics-commons-1.3.1.jar"/>
+                <include name="**/fop.jar"/>
+                <include name="**/batik-all-*.jar"/>
+                <include name="**/xmlgraphics-commons-*.jar"/>
             </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-        <delete file="fop-0.95-bin.zip"/>
+        </fetch>        
 
-        <!-- Avalon API -->
-        <get src="${include.module.xslfo.avalon.api.url}" dest="avalon-framework-api-4.3.zip" verbose="true"
-            usetimestamp="true"/>
-        <unzip src="avalon-framework-api-4.3.zip" dest="${top.dir}/${lib.user}">
+        <!-- Avalon API -->      
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" url="${include.module.xslfo.avalon.api.url}">
             <patternset>
-                <include name="avalon-framework-api-4.3/avalon-framework-api-4.3.jar"/>
+                <include name="**/avalon-framework-api-*.jar"/>
             </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-        <delete file="avalon-framework-api-4.3.zip"/>
+        </fetch>
 
         <!-- Avalon Impl -->
-        <get src="${include.module.xslfo.avalon.impl.url}" dest="avalon-framework-impl-4.3.zip" verbose="true"
-            usetimestamp="true"/>
-        <unzip src="avalon-framework-impl-4.3.zip" dest="${top.dir}/${lib.user}">
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" url="${include.module.xslfo.avalon.impl.url}">
             <patternset>
-                <include name="avalon-framework-impl-4.3/avalon-framework-impl-4.3.jar"/>
+                <include name="**/avalon-framework-impl-*.jar"/>
             </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-        <delete file="avalon-framework-impl-4.3.zip"/>
+        </fetch>
 
     </target>
 
