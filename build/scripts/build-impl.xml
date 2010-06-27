@@ -766,19 +766,17 @@
 
     <target name="download-saxon" description="Download optional third-party jar files.">
         <!-- Saxon XSLT2 Processor http://sourceforge.net/projects/saxon -->
-        <property name="saxon.zip" value="${lib.user}/saxon.zip"/>
         <property name="saxon.url" value="http://sourceforge.net/projects/saxon/files/Saxon-HE/9.2/saxonhe9-2-1-1j.zip/download"/>
-
-        <get src="${saxon.url}"       dest="${saxon.zip}" verbose="true"/>
-
-
-        <unzip src="${saxon.zip}" dest="${lib.user}">
+        
+        <!-- fetch dependency saxon TODO: make generic download function -->
+        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
+        <fetch classpathref="classpath.core" dest="${lib.user}" 
+            url="${saxon.url}" classname="net.sf.saxon.Version">
             <patternset>
                 <include name="**/saxon9he.jar"/>
             </patternset>
-        </unzip>
-
-        <delete failonerror="no" file="${saxon.zip}"/>
+        </fetch>
+        
     </target>
 
 </project>
