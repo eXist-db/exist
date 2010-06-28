@@ -21,6 +21,10 @@
  */
 package org.exist.dom;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
+import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -36,9 +40,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-
-import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
@@ -733,13 +734,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @return an <code>Iterator</code> value
      */
-    public Iterator getCollectionIterator() {
+    public Iterator<Collection> getCollectionIterator() {
         return new CollectionIterator();
     }
 
     // DocumentSet methods
 
-    public Iterator getDocumentIterator() {
+    public Iterator<DocumentImpl> getDocumentIterator() {
         return new DocumentIterator();
     }
 
@@ -838,7 +839,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         }
     }
 
-    private class DocumentIterator implements Iterator {
+    private class DocumentIterator implements Iterator<DocumentImpl> {
 
         int currentDoc = 0;
 
@@ -846,7 +847,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             return currentDoc < partCount;
         }
 
-        public Object next() {
+        public DocumentImpl next() {
             if (currentDoc == partCount)
                 return null;
             else
@@ -861,9 +862,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * The class <code>CollectionIterator</code>
      *
      */
-    private class CollectionIterator implements Iterator {
+    private class CollectionIterator implements Iterator<Collection> {
 
-        Iterator iterator = null;
+        Iterator<Collection> iterator = null;
 
         CollectionIterator() {
             if (partCount > 0) {
@@ -892,7 +893,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          *
          * @return an <code>Object</code> value
          */
-        public Object next() {
+        public Collection next() {
             return iterator.next();
         }
 
