@@ -1346,7 +1346,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * The class <code>CollectionIterator</code>
      *
      */
-    private class CollectionIterator implements Iterator {
+    private class CollectionIterator implements Iterator<Collection> {
 
         Collection nextCollection = null;
         int currentDoc = 0;
@@ -1381,7 +1381,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
          *
          * @return an <code>Object</code> value
          */
-        public Object next() {
+        public Collection next() {
             Collection current = nextCollection;
             findNext();
             return current;
