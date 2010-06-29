@@ -162,7 +162,7 @@
     <!-- 
         Special targets for xmlcalabash module 
     -->
-    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
  
     <!-- 
         Special targets for xmlcalabash module 
