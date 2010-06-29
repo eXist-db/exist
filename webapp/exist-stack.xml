@@ -984,7 +984,9 @@ Alias /websvn/ "/usr/share/websvn/"
 		    ServerName	    host1.example.com
 		    ProxyPass	    /	http://localhost:8080/
 		    ProxyPassReverse	/	http://localhost:8080/
-		    
+	            ProxyPassReverseCookieDomain localhost host1.example.com
+		    ProxyPassReverseCookiePath / /exist
+
 		    RewriteEngine       on
 		    RewriteRule         ^/exist     -           [PT] 
 		    RewriteRule         ^/(.*)$     /exist/$1   [PT]
