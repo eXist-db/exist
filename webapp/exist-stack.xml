@@ -18,6 +18,13 @@
             <affiliation>
                 <address format="linespecific"><email>dan.mccreary at gmail.com</email></address>
             </affiliation></author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation></author>
+
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
@@ -970,7 +977,20 @@ Alias /websvn/ "/usr/share/websvn/"
             </section>
             <section>
                 <title>Configure Apache2 to map / in apache to eXist</title>
-                <para/>
+                <para>Depending on your mode for running eXist-db choose the same ports and context in the configuration here:
+		  <programlisting language="xml">
+		  &lt;VirtualHost *:80&gt;
+		    ProxyRequests	    off
+		    ServerName	    host1.example.com
+		    ProxyPass	    /	http://localhost:8080/
+		    ProxyPassReverse	/	http://localhost:8080/
+		    
+		    RewriteEngine       on
+		    RewriteRule         ^/exist     -           [PT] 
+		    RewriteRule         ^/(.*)$     /exist/$1   [PT]
+		  &lt;/VirtualHost&gt;
+		  </programlisting>
+		</para>
             </section>            
         </section>
         <section id="awstats">
