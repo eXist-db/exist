@@ -67,7 +67,12 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
         }
         
         String attributeName = args[0].getStringValue();
-		StringValue stringValue = new StringValue((String)context.getUser().getAttribute(attributeName));
-		return stringValue;
+        Object value = context.getUser().getAttribute(attributeName);
+        if (value != null) {
+            StringValue stringValue = new StringValue((String) value);
+            return stringValue;
+        } else {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 	}
 }
