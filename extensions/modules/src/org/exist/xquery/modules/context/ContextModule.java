@@ -51,10 +51,6 @@ public class ContextModule extends AbstractInternalModule {
 
 	public ContextModule() {
 		super( signatures );
-		
-		if( logger.isDebugEnabled() ) {
-			logger.debug("Instantiating Context module");
-		}
 	}
 
 	public String getNamespaceURI() 
