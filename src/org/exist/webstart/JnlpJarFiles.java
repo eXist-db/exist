@@ -44,7 +44,7 @@ public class JnlpJarFiles {
     
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
-    private String jars[] = new String[]{
+    private String allJarNames[] = new String[]{
         "xmldb",
         "xmlrpc-common-%latest%",
         "xmlrpc-client-%latest%",
@@ -67,7 +67,7 @@ public class JnlpJarFiles {
      * necessary sans .jar file extension.
      * @return File object of jar file, null if not found.
      */
-    private File getJar(File folder, String jarFileBaseName){
+    private File getJarFromLocation(File folder, String jarFileBaseName){
         String fileToFind = folder.getAbsolutePath() + File.separatorChar
                 + jarFileBaseName + ".jar";
         String resolvedFile = jarFileResolver.getResolvedFileName(
@@ -86,25 +86,11 @@ public class JnlpJarFiles {
         }
     }
 
-    private File getJarPackGz(File jarName){
-        String path = jarName.getAbsolutePath()+".pack.gz";
-        File pkgz = new File(path);
 
-        if(pkgz.exists()){
-            return pkgz;
-        }
-
-        return null;
-    }
-
-    private void fillJarSet(File jar) {
-        if (jar != null) {
+    // Copy jars from map to list
+    private void addToJars(File jar) {
+        if (jar != null && jar.getName().endsWith(".jar")) {
             allFiles.put(jar.getName(), jar);
-
-            File pkgz = getJarPackGz(jar);
-            if (pkgz != null) {
-                allFiles.put(pkgz.getName(), pkgz);
-            }
         }
     }
     
@@ -116,47 +102,42 @@ public class JnlpJarFiles {
     public JnlpJarFiles(JnlpHelper jnlpHelper) {
         logger.info("Initializing jar files Webstart");
 
-        logger.debug("Number of webstart jars="+jars.length);
+        logger.debug("Number of webstart jars="+allJarNames.length);
         
         // Setup CORE jars
-        for(String jarname : jars){
-            File jar = getJar(jnlpHelper.getCoreJarsFolder(), jarname);
-            fillJarSet(jar);
+        for(String jarname : allJarNames){
+            File jar = getJarFromLocation(jnlpHelper.getCoreJarsFolder(), jarname);
+            addToJars(jar);
          }
         
         // Setup exist.jar
         File mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
-        fillJarSet(mainJar);
+        addToJars(mainJar);
     }
     
 
-//    public List<String> getCoreJarNames(){
-//        List<String> corejars = new ArrayList<String>();
-//        for(String key : allFiles.keySet()){
-//            if(key.endsWith(".jar") && !key.equals("exist.jar")){
-//                corejars.add(key);
-//            }
-//        }
-//        return corejars;
-//    }
-
-    public List<File> getCoreJarFiles(){
+    /**
+     *  Get All jar file as list.
+     *
+     * @return list of jar files.
+     */
+    public List<File> getAllWebstartJars(){
         List<File> corejars = new ArrayList<File>();
 
         for(File file: allFiles.values()){
-            if(file.getName().endsWith(".jar") && !file.getName().equals("exist.jar")){
                 corejars.add(file);
-            }
         }
 
         return corejars;
     }
     
-    public File getMainJar(){
-        return allFiles.get("exist.jar");
-    }
 
-    public File getFile(String key){
+    /**
+     * Get file reference for JAR file.
+     * @param key
+     * @return
+     */
+    public File getJarFile(String key){
         File retVal = allFiles.get(key);
         return retVal;
     }

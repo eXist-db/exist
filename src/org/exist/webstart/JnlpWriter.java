@@ -70,16 +70,8 @@ public class JnlpWriter {
         String codeBase = existBaseUrl + "/webstart/";
 
         // Perfom sanity checks
-        File mainJar = jnlpFiles.getMainJar();
-        if (mainJar == null || !mainJar.exists()) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Missing exist.jar !");
-            return;
-        }
-
-
         int counter = 0;
-        for (File jar : jnlpFiles.getCoreJarFiles()) {
+        for (File jar : jnlpFiles.getAllWebstartJars()) {
             counter++; // debugging
             if (jar == null || !jar.exists()) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -92,7 +84,7 @@ public class JnlpWriter {
         // Find URL to connect to with client
         String startUrl = existBaseUrl.replaceFirst("http:", "xmldb:exist:").replaceAll("-", "%2D") + "/xmlrpc";
 
-        response.setDateHeader("Last-Modified", mainJar.lastModified());
+//        response.setDateHeader("Last-Modified", mainJar.lastModified());
         response.setContentType("application/x-java-jnlp-file");
         try {
             XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(response.getOutputStream());
@@ -171,13 +163,7 @@ public class JnlpWriter {
             writer.writeAttribute("version", "1.6+");
             writer.writeEndElement();
 
-            writer.writeStartElement("jar");
-            writer.writeAttribute("href", jnlpFiles.getMainJar().getName());
-            writer.writeAttribute("size", "" + jnlpFiles.getMainJar().length());
-            writer.writeAttribute("main", "true");
-            writer.writeEndElement();
-
-            for (File jar : jnlpFiles.getCoreJarFiles()) {
+            for (File jar : jnlpFiles.getAllWebstartJars()) {
                 writer.writeStartElement("jar");
                 writer.writeAttribute("href", jar.getName());
                 writer.writeAttribute("size", "" + jar.length());
@@ -224,7 +210,7 @@ public class JnlpWriter {
 
         logger.debug("Send jar file " + filename);
 
-        File localFile = jnlpFiles.getFile(filename);
+        File localFile = jnlpFiles.getJarFile(filename);
         if (localFile == null || !localFile.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Jar file '" + filename + "' not found.");
             return;
