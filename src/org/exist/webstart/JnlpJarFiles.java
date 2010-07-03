@@ -70,16 +70,12 @@ public class JnlpJarFiles {
     private File getJarFromLocation(File folder, String jarFileBaseName){
         String fileToFind = folder.getAbsolutePath() + File.separatorChar
                 + jarFileBaseName + ".jar";
-        String resolvedFile = jarFileResolver.getResolvedFileName(
-                fileToFind
-                );
+        String resolvedFile = jarFileResolver.getResolvedFileName( fileToFind );
         File jar = new File(resolvedFile);
         if (jar.exists()) {
-            logger.debug(
-                    "Found match: " + resolvedFile
-                    + " for file pattern: " + fileToFind
-                    );
+            logger.debug( "Found match: " + resolvedFile + " for file pattern: " + fileToFind );
             return jar;
+            
         } else {
             logger.warn("Could not resolve file pattern: " + fileToFind);
             return null;
@@ -91,6 +87,13 @@ public class JnlpJarFiles {
     private void addToJars(File jar) {
         if (jar != null && jar.getName().endsWith(".jar")) {
             allFiles.put(jar.getName(), jar);
+
+            // Add jar.pack.gz if existent
+            File pkgz = getJarPackGz(jar);
+            if (pkgz != null) {
+                allFiles.put(pkgz.getName(), pkgz);
+            }
+            
         }
     }
     
@@ -125,7 +128,9 @@ public class JnlpJarFiles {
         List<File> corejars = new ArrayList<File>();
 
         for(File file: allFiles.values()){
+            if(file.getName().endsWith(".jar")){
                 corejars.add(file);
+            }
         }
 
         return corejars;
@@ -140,6 +145,17 @@ public class JnlpJarFiles {
     public File getJarFile(String key){
         File retVal = allFiles.get(key);
         return retVal;
+    }
+
+    private File getJarPackGz(File jarName){
+        String path = jarName.getAbsolutePath()+".pack.gz";
+        File pkgz = new File(path);
+
+        if(pkgz.exists()){
+            return pkgz;
+        }
+
+        return null;
     }
     
 }
