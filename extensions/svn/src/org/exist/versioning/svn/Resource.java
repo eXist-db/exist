@@ -22,12 +22,19 @@
 package org.exist.versioning.svn;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -35,13 +42,11 @@ import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.source.DBSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -469,73 +474,42 @@ public class Resource extends File {
     }
     
     public Reader getReader() throws IOException {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
+    	InputStream is = getConnection().getInputStream();
+        BufferedInputStream bis = new BufferedInputStream(is);
+        return new InputStreamReader(bis);
+    }
 
-		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			throw new IOException(e);
-		}
-
-		try {
-    	
-			//UNDERSTAND: read as dba ???
-			BinaryDocument resource = (BinaryDocument) broker.getXMLResource(uri, Lock.READ_LOCK);
-			
-			if (resource == null)
-				throw new IOException("Can't find resource.");
-			
-			DBSource source = new DBSource(broker, resource, false);
-			return source.getReader();
-
-		} catch (PermissionDeniedException e) {
-			throw new IOException(e);
-		} finally {
-			db.release(broker);
-		}
+    private URLConnection connection = null;
+    
+    private URLConnection getConnection() throws IOException {
+    	if (connection == null) {
+			try {
+				URL url = new URL("xmldb:exist://" + uri.toString());
+				connection = url.openConnection();
+			} catch (IllegalArgumentException e) {
+				throw new IOException(e); 
+			} catch (MalformedURLException e) {
+				throw new IOException(e); 
+			}
+    	}
+    	return connection;
     }
 
     public InputStream getInputStream() throws IOException {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
-
-		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			throw new IOException(e);
-		}
-
-		try {
-    	
-			//UNDERSTAND: read as dba ???
-			BinaryDocument resource = (BinaryDocument) broker.getXMLResource(uri, Lock.READ_LOCK);
-			
-			if (resource == null)
-				throw new IOException("Can't find resource.");
-			
-			InputStream is = broker.getBinaryResource(resource);
-	        return new BufferedInputStream(is);
-		} catch (PermissionDeniedException e) {
-			throw new IOException(e);
-		} finally {
-			db.release(broker);
-		}
+    	return getConnection().getInputStream();
     }
 
     public Writer getWriter() throws IOException {
-    	return new ResourceWriter(this, File.createTempFile("eXist", "resource"));
+    	return new BufferedWriter(new OutputStreamWriter(getOutputStream(false)));
     }
 
-    public ResourceOutputStream getOutputStream() throws IOException {
+    public OutputStream getOutputStream() throws IOException {
     	return getOutputStream(false);
     }
-    
-    public ResourceOutputStream getOutputStream(boolean append) throws IOException {
+
+    public OutputStream getOutputStream(boolean append) throws IOException {
     	//XXX: code append
-    	return new ResourceOutputStream(this, File.createTempFile("eXist", "resource"));
+    	return getConnection().getOutputStream();
     }
 
     public DocumentImpl getDocument() throws IOException {
