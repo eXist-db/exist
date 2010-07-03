@@ -46,10 +46,11 @@ public class JnlpWriter {
     public static final String CONTENT_TYPE = "content-type";
     public static final String CONTENT_ENCODING = "content-encoding";
     public static final String PACK200_GZIP_ENCODING = "pack200-gzip";
+    
     private static Logger logger = Logger.getLogger(JnlpWriter.class);
 
     /**
-     *  Write JNLP files (jnlp, jar, gif/jpg) to browser.
+     *  Write JNLP xml file to browser.
      * @param response  Object for writing to end user.
      * @throws java.io.IOException
      */
@@ -86,7 +87,6 @@ public class JnlpWriter {
                 return;
             }
         }
-
 
 
         // Find URL to connect to with client
