@@ -31,7 +31,7 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     return (
         <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"/>,
         <script type="text/javascript" src="{$base}/jquery-ui-1.8.custom.min.js"/>,
-        <script type="text/javascript" src="jquery-utils.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-utils.js"/>,
         <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery.ui.all.css"/>
     )
 };
@@ -164,12 +164,16 @@ declare function jquery:form-repeat($config as element(jquery:form-repeat)) as e
     </ul>
 :)
 declare function jquery:toggle($config as element(jquery:toggle)) as element()+ {
-    let $id := util:uuid()
+    let $id0 := $config/@id/string()
+    let $id := if ($id0) then $id0 else util:uuid()
     let $trigger := $config/@trigger/string()
     let $href := $config/@href/string()
     let $callback := $config/@callback/string()
+    let $beforeCallback := $config/@beforeCallback/string()
     return (
-        <div id="{$id}" class="include-target"></div>,
+        if (empty($id0)) then
+            <div id="{$id}" class="include-target"></div>
+        else (),
         <script type="text/javascript">
         $(document).ready(function(ev) {{
             $('#{$id}').css('display', 'none');
@@ -178,14 +182,29 @@ declare function jquery:toggle($config as element(jquery:toggle)) as element()+ 
                     $('#{$id}').css('display', 'none');
                 }} else {{
                     var trigger = this;
-                    $('#{$id}').css('display', 'block').load('{$href}', null, function() {{
-                        {
-                            if ($callback) then
-                                concat($callback, ".call(trigger, '", $id, "');")
-                            else
-                                ()
-                        }
-                    }});
+                    {
+                        if ($beforeCallback) then
+                            jquery:script(<s>
+                                var r = {$beforeCallback}.call(trigger, '{$id}');
+                                if (!r) return false;
+                            </s>)
+                        else
+                            ()
+                    }
+                    $('#{$id}').css('display', 'block');
+                    {
+                        if ($href) then
+                            jquery:script(<s>$('#{$id}').load('{$href}', null, function() {{
+                                {
+                                    if ($callback) then
+                                        concat($callback, ".call(trigger, '", $id, "');")
+                                    else
+                                        ()
+                                }
+                            }});</s>)
+                        else
+                            ()
+                    }
                 }}
                 $(this).toggleClass('expanded');
                 ev.preventDefault();
@@ -251,6 +270,7 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
             let $width := if ($auto/@width) then $auto/@width/string() else 200
             let $multiple := if ($auto/@multiple) then $auto/@multiple/string() else "false"
             let $matchContains := if ($auto/@matchContains) then $auto/@matchContains/string() else "false"
+            let $minLength := if ($auto/@minLength) then $auto/@minLength/string() else "3"
             return
                 <script type="text/javascript">
                     $(function() {{
@@ -271,7 +291,7 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
                                     }}
                                 }});
                             }},
-                            minLength: 3,
+                            minLength: { $minLength },
                             delay: 700
                         }});
                     }});
@@ -322,11 +342,22 @@ declare function jquery:select-field($node as element(jquery:select)) as element
             for $option in $node/jquery:option
             return
                 <option>
+                { $option/@value }
                 { if ($option/@value eq $value) then attribute selected { "selected" } else () }
                 { if ($option/text()) then $option/text() else $option/@value/string() }
                 </option>
         }
         </select>
+};
+
+declare function jquery:button($node as element(jquery:button)) as element()+ {
+    let $id := if ($node/@id) then $node/@id/string() else util:uuid()
+    return (
+        <button id="{$id}">{$node/@*[not(local-name(.) = 'id')], $node/node()}</button>,
+        <script type="text/javascript">
+        $(document).ready(function(ev) {{ $('#{$id}').button(); }});
+        </script>
+    )
 };
 
 declare function jquery:accordion($config as element(jquery:ajax-accordion)) as element()+ {
@@ -446,6 +477,8 @@ declare function jquery:process-templates($node as node()) as node()* {
             jquery:input-field($node)
         case element(jquery:select) return
             jquery:select-field($node)
+        case element(jquery:button) return
+            jquery:button($node)
         case element(jquery:ajax-accordion) return
             jquery:accordion($node)
         case element(jquery:dialog) return
