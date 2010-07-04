@@ -267,4 +267,11 @@ public class DateTest extends AbstractTimeRelatedTestCase {
 		assertEquals((double) 1*24*60*60, r.getValue(), 0);
 		assertEquals(1, r.getPart(DurationValue.DAY));
 	}
+	public void testEqual() {
+		try {
+			assertEquals(new DateValue("2010-06-01+05:00"), new DateValue("2010-06-01+05:00"));
+		} catch (XPathException e) {
+			fail();
+		}
+	}
 }

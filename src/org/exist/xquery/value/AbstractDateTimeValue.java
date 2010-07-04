@@ -335,6 +335,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      */
     public int compareTo(Object o)
     {
+        if (o instanceof AbstractDateTimeValue) {
+			AbstractDateTimeValue dt = (AbstractDateTimeValue) o;
+    		return calendar.compare(dt.calendar);
+		}
+
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.DATE_TIME))
         	try {
@@ -615,4 +620,16 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		return result;
     }
 
+    public boolean equals(Object obj) {
+    	if (obj instanceof AbstractDateTimeValue) {
+    		AbstractDateTimeValue dt = (AbstractDateTimeValue) obj;
+			return calendar.equals(dt.calendar);
+		}
+    	
+    	return false;
+	}
+    
+    public int hashCode() {
+    	return calendar.hashCode();
+    }
 }
