@@ -6,7 +6,7 @@ YAHOO.util.Event.onDOMReady(function () {
 function loadTwitter() {
     if (document.getElementById('news_content')) {
     	var script = document.createElement("script");
-    	script.setAttribute('src', 'xquery/twitter.xql?mode=json&user=existdb&max=3');
+    	script.setAttribute('src', 'xquery/twitter.xql?mode=json&user=existdb&max=5');
         document.getElementsByTagName('head')[0].appendChild(script);
     }
 }

@@ -17,7 +17,7 @@ xquery version "1.0";
     To apply a filter to an existing query, we just extend the XML representation
     of the query.
 :)
-import module namespace jquery="http://exist-db.org/xquery/jquery" at "jquery.xql";
+import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
 
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
 
