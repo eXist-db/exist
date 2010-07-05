@@ -241,7 +241,7 @@ public class NativeBroker extends DBBroker {
         
         indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
-        setUser( SecurityManager.SYSTEM_USER );            
+        setUser( pool.getSecurityManager().getSystemAccount() );            
         
         readOnly = pool.isReadOnly();
         try {
@@ -2285,7 +2285,8 @@ public class NativeBroker extends DBBroker {
     {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        LOG.info("removing binary resource " + blob.getDocId() + "...");
+        if (LOG.isDebugEnabled())
+        	LOG.debug("removing binary resource " + blob.getDocId() + "...");
         File binFile = getCollectionFile(fsDir,blob.getURI(),false);
         if (binFile.exists()) {
             File binBackupFile = getCollectionFile(fsBackupDir, transaction, blob.getURI(), true);
