@@ -121,7 +121,7 @@ public class GMLIndexTest extends TestCase {
             
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker)broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
@@ -173,7 +173,7 @@ public class GMLIndexTest extends TestCase {
         try {	
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex)pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
             //Unplugged
             if (index == null)
@@ -193,7 +193,7 @@ public class GMLIndexTest extends TestCase {
         DBBroker broker = null;
         try {
             pool = BrokerPool.getInstance();
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(
@@ -228,7 +228,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
@@ -281,7 +281,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -380,7 +380,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -736,7 +736,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -1003,7 +1003,7 @@ public class GMLIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +

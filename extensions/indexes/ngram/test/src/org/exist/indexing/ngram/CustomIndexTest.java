@@ -81,7 +81,7 @@ public class CustomIndexTest extends TestCase {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
             
@@ -172,7 +172,7 @@ public class CustomIndexTest extends TestCase {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -297,7 +297,7 @@ public class CustomIndexTest extends TestCase {
     public void testXUpdateUpdate() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
@@ -365,7 +365,7 @@ public class CustomIndexTest extends TestCase {
     public void testXUpdateReplace() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
@@ -425,7 +425,7 @@ public class CustomIndexTest extends TestCase {
     public void testXUpdateRename() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
@@ -467,7 +467,7 @@ public class CustomIndexTest extends TestCase {
     public void testReindex() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
@@ -503,7 +503,7 @@ public class CustomIndexTest extends TestCase {
     public void testDropIndex() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
@@ -539,7 +539,7 @@ public class CustomIndexTest extends TestCase {
     public void testQuery() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -570,7 +570,7 @@ public class CustomIndexTest extends TestCase {
     public void testIndexKeys() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -656,7 +656,7 @@ public class CustomIndexTest extends TestCase {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -704,7 +704,7 @@ public class CustomIndexTest extends TestCase {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);

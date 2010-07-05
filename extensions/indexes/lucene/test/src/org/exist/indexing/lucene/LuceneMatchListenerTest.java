@@ -130,7 +130,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF2, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -192,7 +192,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF1, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -223,7 +223,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF3, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -254,7 +254,7 @@ public class LuceneMatchListenerTest {
         try {
             configureAndStore(CONF4, XML1);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -316,7 +316,7 @@ public class LuceneMatchListenerTest {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -356,7 +356,7 @@ public class LuceneMatchListenerTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
