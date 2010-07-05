@@ -90,4 +90,8 @@ public interface SecurityManager {
 
    public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException;
 
+   public User getSystemAccount();
+
+   public User getGuestAccount();
+
 }

@@ -497,4 +497,14 @@ public class SecurityManagerImpl implements SecurityManager {
 		}
 		throw new AuthenticationException("User [" + username + "] not found");
 	}
+	
+	@Override
+	public User getSystemAccount() {
+		return SecurityManager.SYSTEM_USER;
+	}
+	
+	@Override
+	public User getGuestAccount() {
+		return SecurityManager.GUEST;
+	}
 }

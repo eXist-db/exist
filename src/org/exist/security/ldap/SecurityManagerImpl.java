@@ -549,4 +549,14 @@ public class SecurityManagerImpl implements SecurityManager
    public User authenticate(String username, Object credentials) throws AuthenticationException {
 	   return authenticate(realm, username, credentials);
    }
+
+	@Override
+	public User getSystemAccount() {
+		return SecurityManager.SYSTEM_USER;
+	}
+	
+	@Override
+	public User getGuestAccount() {
+		return SecurityManager.GUEST;
+	}
 }
