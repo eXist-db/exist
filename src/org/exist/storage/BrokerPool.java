@@ -782,7 +782,7 @@ public class BrokerPool extends Observable {
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
 		//DBBroker broker = inactiveBrokers.peek();
 		// dmitriy: Security issue: better to use proper get()/release() way, because of subprocesses (SecurityManager as example)
-		DBBroker broker = get(SecurityManager.SYSTEM_USER);
+		DBBroker broker = get(securityManager.getSystemAccount());
 		try {
        
         if (broker.isReadOnly()) {
@@ -1279,7 +1279,7 @@ public class BrokerPool extends Observable {
             if (user != null)
                 broker.setUser(user);
             else
-                broker.setUser(SecurityManager.GUEST);
+                broker.setUser(securityManager.getGuestAccount());
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
             this.notifyAll();
@@ -1343,7 +1343,7 @@ public class BrokerPool extends Observable {
                     inServiceMode = true;
                 }
             }
-			broker.setUser(SecurityManager.GUEST);
+			broker.setUser(securityManager.getGuestAccount());
 			//Inform the other threads that someone is gone
 			this.notifyAll();
 		}
@@ -1425,7 +1425,7 @@ public class BrokerPool extends Observable {
 		broker.sync(syncEvent);
 		User user = broker.getUser();
 		//TODO : strange that it is set *after* the sunc method has been called.
-		broker.setUser(SecurityManager.SYSTEM_USER);
+		broker.setUser(securityManager.getSystemAccount());
         if (status != SHUTDOWN)
             broker.cleanUpTempResources();
         if (syncEvent == Sync.MAJOR_SYNC){
@@ -1611,7 +1611,7 @@ public class BrokerPool extends Observable {
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
                 // WM: yes, the database files are shared, so only one broker is needed to close them for all
                 if (broker != null) {
-                    broker.setUser(SecurityManager.SYSTEM_USER);
+                    broker.setUser(securityManager.getSystemAccount());
                     broker.shutdown();
                 }
                 collectionCacheMgr.deregisterCache(collectionCache);
