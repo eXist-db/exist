@@ -114,7 +114,7 @@ public class VersioningTrigger extends FilteringTrigger {
         User activeUser = broker.getUser();
 
         try {
-            broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemAccount());
 
             if(event == UPDATE_DOCUMENT_EVENT || event == REMOVE_DOCUMENT_EVENT)
             {
@@ -179,7 +179,7 @@ public class VersioningTrigger extends FilteringTrigger {
         User activeUser = broker.getUser();
 
         try {
-            broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemAccount());
 
             if (vDoc != null && !removeLast) {
                 if(!(vDoc instanceof BinaryDocument))

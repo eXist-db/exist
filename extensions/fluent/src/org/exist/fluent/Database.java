@@ -11,7 +11,6 @@ import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.security.*;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
@@ -74,7 +73,7 @@ public class Database {
 	}
 
 	static void configureRootCollection(File configFile) {
-		Database db = new Database(SecurityManager.SYSTEM_USER);
+		Database db = new Database(pool.getSecurityManager().getSystemAccount());
 		StringBuilder configXml = new StringBuilder();
 		configXml.append("<collection xmlns='http://exist-db.org/collection-config/1.0'>");
 		configXml.append(ListenerManager.getTriggerConfigXml());
@@ -165,7 +164,7 @@ public class Database {
 	public static void flush() {
 		if (!BrokerPool.isConfigured(dbName)) throw new IllegalStateException("database not started");
 		try {
-			DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
+			DBBroker broker = pool.get(pool.getSecurityManager().getSystemAccount());
 			try {
 				broker.flush();
 				broker.sync(Sync.MAJOR_SYNC);
@@ -189,7 +188,7 @@ public class Database {
 	public static boolean checkConsistency() {
 		synchronized(pool) {
 			try {
-				DBBroker broker = pool.enterServiceMode(SecurityManager.SYSTEM_USER);
+				DBBroker broker = pool.enterServiceMode(pool.getSecurityManager().getSystemAccount());
 				try {
 					List<ErrorReport> errors = new ConsistencyCheck(broker, false).checkAll(NULL_PROGRESS_CALLBACK);
 					if (errors.isEmpty()) return true;
@@ -197,7 +196,7 @@ public class Database {
 					for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));
 					return false;
 				} finally {
-					pool.exitServiceMode(SecurityManager.SYSTEM_USER);
+					pool.exitServiceMode(pool.getSecurityManager().getSystemAccount());
 				}
             } catch (TerminatedException e) {
                 throw new DatabaseException(e);
@@ -563,7 +562,7 @@ public class Database {
 					
 				int count = 0;
 				try {
-					DBBroker broker = pool.get(SecurityManager.SYSTEM_USER);
+					DBBroker broker = pool.get(pool.getSecurityManager().getSystemAccount());
 					try {
 						Integer fragmentationLimitObject = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
 						int fragmentationLimit = fragmentationLimitObject == null ? 0 : fragmentationLimitObject;

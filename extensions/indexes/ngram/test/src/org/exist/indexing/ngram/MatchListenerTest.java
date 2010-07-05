@@ -92,7 +92,7 @@ public class MatchListenerTest {
         try {
             configureAndStore(CONF1, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -141,7 +141,7 @@ public class MatchListenerTest {
         try {
             configureAndStore(CONF1, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -166,7 +166,7 @@ public class MatchListenerTest {
         try {
             configureAndStore(CONF1, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -197,7 +197,7 @@ public class MatchListenerTest {
         try {
             configureAndStore(CONF1, XML);
 
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -234,7 +234,7 @@ public class MatchListenerTest {
         DBBroker broker = null;
         try {
             configureAndStore(CONF1, XML);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -284,7 +284,7 @@ public class MatchListenerTest {
         DBBroker broker = null;
         try {
             configureAndStore(CONF2, XML);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -316,7 +316,7 @@ public class MatchListenerTest {
         DBBroker broker = null;
         try {
             configureAndStore(CONF1, XML);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -340,7 +340,7 @@ public class MatchListenerTest {
         DBBroker broker = null;
         try {
             configureAndStore(CONF3, XML2);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -373,7 +373,7 @@ public class MatchListenerTest {
         DBBroker broker = null;
         try {
             configureAndStore(CONF3, XML2);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -414,7 +414,7 @@ public class MatchListenerTest {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -452,7 +452,7 @@ public class MatchListenerTest {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -485,7 +485,7 @@ public class MatchListenerTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
