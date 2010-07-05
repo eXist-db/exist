@@ -30,7 +30,7 @@ public class TestUtils {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);

@@ -29,7 +29,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.storage.BrokerPool;
@@ -109,7 +108,7 @@ public class XSLTServlet extends HttpServlet {
 
     private BrokerPool pool;
     
-    private User defaultUser = SecurityManager.GUEST;
+    private User defaultUser = null;
 
     private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
@@ -168,7 +167,13 @@ public class XSLTServlet extends HttpServlet {
             }
         }
 
-        User user = defaultUser;
+		try {
+			pool = BrokerPool.getInstance();
+		} catch (EXistException e) {
+			throw new ServletException(e.getMessage(), e);
+		}
+
+		User user = pool.getSecurityManager().getGuestAccount();
 
         User requestUser = UserImpl.getUserFromServletRequest(request);
         if (requestUser != null)
@@ -177,133 +182,127 @@ public class XSLTServlet extends HttpServlet {
         // Retrieve username / password from HTTP request attributes
         String userParam = (String) request.getAttribute("xslt.user");
         String passwd = (String) request.getAttribute("xslt.password");
+
+		if (userParam != null) {
+    		try {
+    			user = pool.getSecurityManager().authenticate(userParam, passwd);
+    		} catch (AuthenticationException e1) {
+    			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
+    			return;
+    		}
+    	}
+
+        SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
+        Templates templates = getSource(user, request, response, factory, stylesheet);
+        if (templates == null){
+            return;
+        }
+        
+        //do the transformation
+        DBBroker broker = null;
         try {
-    		pool = BrokerPool.getInstance();
+            broker = pool.get(user);
 
-    		if (userParam != null) {
-        		try {
-        			user = pool.getSecurityManager().authenticate(userParam, passwd);
-        		} catch (AuthenticationException e1) {
-        			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong password or user");
-        			return;
-        		}
-        	}
-
-            SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(pool);
-            Templates templates = getSource(user, request, response, factory, stylesheet);
-            if (templates == null){
-                return;
-            }
+            TransformerHandler handler = factory.newTransformerHandler(templates);
+            setTransformerParameters(request, handler.getTransformer());
             
-            //do the transformation
-            DBBroker broker = null;
+            Properties properties = handler.getTransformer().getOutputProperties();
+            setOutputProperties(request, properties);
+
+            String encoding = properties.getProperty("encoding");
+            if (encoding == null){
+                encoding = "UTF-8";
+            }
+            response.setCharacterEncoding(encoding);
+
+            String mediaType = properties.getProperty("media-type");
+            if (mediaType != null) {
+                if (encoding == null)
+                    response.setContentType(mediaType);
+                
+                //check, do mediaType have "charset"
+                else if (mediaType.indexOf("charset") == -1)
+                    response.setContentType(mediaType + "; charset=" + encoding);
+                
+                else 
+                    response.setContentType(mediaType);
+            }
+
+            SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            Writer writer = new BufferedWriter(response.getWriter());
+            sax.setOutput(writer, properties);
+
+            SAXResult result = new SAXResult(sax);
+            handler.setResult(result);
+            
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            
+            Receiver receiver = new ReceiverToSAX(handler);
             try {
-                broker = pool.get(user);
+                XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
+                receiver = xinclude;
+                String moduleLoadPath;
 
-                TransformerHandler handler = factory.newTransformerHandler(templates);
-                setTransformerParameters(request, handler.getTransformer());
-                
-                Properties properties = handler.getTransformer().getOutputProperties();
-                setOutputProperties(request, properties);
-
-                String encoding = properties.getProperty("encoding");
-                if (encoding == null){
-                    encoding = "UTF-8";
+                String base = (String) request.getAttribute(REQ_ATTRIBUTE_BASE);
+                if (base != null){
+                    moduleLoadPath = getServletContext().getRealPath(base);
+                } else {
+                    moduleLoadPath = getCurrentDir(request).getAbsolutePath();
                 }
-                response.setCharacterEncoding(encoding);
 
-                String mediaType = properties.getProperty("media-type");
-                if (mediaType != null) {
-                    if (encoding == null)
-                        response.setContentType(mediaType);
+                xinclude.setModuleLoadPath(moduleLoadPath);
+
+                serializer.setReceiver(receiver);
+                if (inputNode != null){
+                    serializer.toSAX((NodeValue)inputNode);
+
+                } else {
+                    SAXToReceiver saxreceiver = new SAXToReceiver(receiver);
+                    XMLReader reader = pool.getParserPool().borrowXMLReader();
+                    reader.setContentHandler(saxreceiver);
+
+                	//Handle gziped input stream
+                	InputStream stream;
                     
-                    //check, do mediaType have "charset"
-                    else if (mediaType.indexOf("charset") == -1)
-                        response.setContentType(mediaType + "; charset=" + encoding);
-                    
-                    else 
-                        response.setContentType(mediaType);
+                	InputStream inStream = new BufferedInputStream(request.getInputStream());
+                	inStream.mark(10);
+                    try {
+                    	stream = new GZIPInputStream(inStream);
+                    } catch (IOException e) {
+                    	inStream.reset();
+                    	stream = inStream;
+					}
+
+                    reader.parse(new InputSource(stream));
                 }
 
-                SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                Writer writer = new BufferedWriter(response.getWriter());
-                sax.setOutput(writer, properties);
+            } catch (SAXParseException e) {
+                LOG.error(e.getMessage());
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 
-                SAXResult result = new SAXResult(sax);
-                handler.setResult(result);
-                
-                Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                
-                Receiver receiver = new ReceiverToSAX(handler);
-                try {
-                    XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                    receiver = xinclude;
-                    String moduleLoadPath;
-
-                    String base = (String) request.getAttribute(REQ_ATTRIBUTE_BASE);
-                    if (base != null){
-                        moduleLoadPath = getServletContext().getRealPath(base);
-                    } else {
-                        moduleLoadPath = getCurrentDir(request).getAbsolutePath();
-                    }
-
-                    xinclude.setModuleLoadPath(moduleLoadPath);
-
-                    serializer.setReceiver(receiver);
-                    if (inputNode != null){
-                        serializer.toSAX((NodeValue)inputNode);
-
-                    } else {
-                        SAXToReceiver saxreceiver = new SAXToReceiver(receiver);
-                        XMLReader reader = pool.getParserPool().borrowXMLReader();
-                        reader.setContentHandler(saxreceiver);
-
-                    	//Handle gziped input stream
-                    	InputStream stream;
-                        
-                    	InputStream inStream = new BufferedInputStream(request.getInputStream());
-                    	inStream.mark(10);
-                        try {
-                        	stream = new GZIPInputStream(inStream);
-                        } catch (IOException e) {
-                        	inStream.reset();
-                        	stream = inStream;
-						}
-
-                        reader.parse(new InputSource(stream));
-                    }
-
-                } catch (SAXParseException e) {
-                    LOG.error(e.getMessage());
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-
-                } catch (SAXException e) {
-                    throw new ServletException("SAX exception while transforming node: " + e.getMessage(), e);
-
-                } finally {
-                    SerializerPool.getInstance().returnObject(sax);
-                }
-                
-                writer.flush();
-                response.flushBuffer();
-
-            } catch (IOException e) {
-                throw new ServletException("IO exception while transforming node: " + e.getMessage(), e);
-
-            } catch (TransformerException e) {
-                throw new ServletException("Exception while transforming node: " + e.getMessage(), e);
-                
-            } catch (Throwable e){
-                LOG.error(e);
-                throw new ServletException("An error occurred: " + e.getMessage(), e);
+            } catch (SAXException e) {
+                throw new ServletException("SAX exception while transforming node: " + e.getMessage(), e);
 
             } finally {
-                pool.release(broker);
+                SerializerPool.getInstance().returnObject(sax);
             }
             
-        } catch (EXistException e) {
-            throw new ServletException(e.getMessage(), e);
+            writer.flush();
+            response.flushBuffer();
+
+        } catch (IOException e) {
+            throw new ServletException("IO exception while transforming node: " + e.getMessage(), e);
+
+        } catch (TransformerException e) {
+            throw new ServletException("Exception while transforming node: " + e.getMessage(), e);
+            
+        } catch (Throwable e){
+            LOG.error(e);
+            throw new ServletException("An error occurred: " + e.getMessage(), e);
+
+        } finally {
+            pool.release(broker);
         }
     }
 

@@ -119,7 +119,7 @@ public class CollectionRemovalTest {
         DBBroker broker = null;
         Collection test = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
             assertNotNull(test);
             DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
@@ -180,7 +180,7 @@ public class CollectionRemovalTest {
 			BrokerPool.configure(1, 40, config);
 			pool = BrokerPool.getInstance();
 
-			broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+			broker = pool.get(pool.getSecurityManager().getSystemAccount());
 			transact = pool.getTransactionManager();
 			assertNotNull(transact);
 			transaction = transact.beginTransaction();

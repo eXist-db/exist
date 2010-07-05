@@ -30,7 +30,6 @@ import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -81,7 +80,7 @@ public class ConcurrentStoreTest extends TestCase {
         
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
             assertNotNull(test);
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
@@ -103,7 +102,7 @@ public class ConcurrentStoreTest extends TestCase {
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             
             System.out.println("Transaction started ...");
             
@@ -145,7 +144,7 @@ public class ConcurrentStoreTest extends TestCase {
         public void run() {
             DBBroker broker = null;
             try {
-                broker = pool.get(SecurityManager.SYSTEM_USER);
+                broker = pool.get(pool.getSecurityManager().getSystemAccount());
                 
                 TransactionManager transact = pool.getTransactionManager();
                 Txn transaction = transact.beginTransaction();
@@ -188,7 +187,7 @@ public class ConcurrentStoreTest extends TestCase {
         public void run() {
             DBBroker broker = null;
             try {
-                broker = pool.get(SecurityManager.SYSTEM_USER);
+                broker = pool.get(pool.getSecurityManager().getSystemAccount());
                 
                 TransactionManager transact = pool.getTransactionManager();
                 Txn transaction = transact.beginTransaction();

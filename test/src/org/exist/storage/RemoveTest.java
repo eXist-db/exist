@@ -26,7 +26,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -52,7 +51,7 @@ public class RemoveTest extends AbstractUpdateTest {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             TransactionManager mgr = pool.getTransactionManager();
             assertNotNull(mgr);

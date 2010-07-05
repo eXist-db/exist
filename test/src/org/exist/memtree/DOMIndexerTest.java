@@ -119,7 +119,7 @@ public class DOMIndexerTest extends TestCase {
     	DBBroker broker = null;  
         try {
         	pool = BrokerPool.getInstance();	         
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
             System.out.println("Found: " + result.getItemCount());

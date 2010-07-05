@@ -3,7 +3,6 @@ package org.exist.dom;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -46,7 +45,7 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -69,7 +68,7 @@ public class NodeTest extends XMLTestCase {
 		DocumentImpl doc = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -116,7 +115,7 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             System.out.println("testSiblingAxis() ...");
@@ -164,7 +163,7 @@ public class NodeTest extends XMLTestCase {
 		DocumentImpl doc = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -219,7 +218,7 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             System.out.println("testVisitor() ...");
@@ -249,7 +248,7 @@ public class NodeTest extends XMLTestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -296,7 +295,7 @@ public class NodeTest extends XMLTestCase {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);

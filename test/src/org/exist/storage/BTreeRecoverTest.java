@@ -29,7 +29,6 @@ import junit.textui.TestRunner;
 
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
-import org.exist.security.SecurityManager;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
@@ -61,7 +60,7 @@ public class BTreeRecoverTest extends TestCase {
         NodeIdFactory idFact = pool.getNodeFactory();
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             broker.flush();
             Txn txn = mgr.beginTransaction();
             System.out.println("Transaction started ...");
@@ -117,7 +116,7 @@ public class BTreeRecoverTest extends TestCase {
         NodeIdFactory idFact = pool.getNodeFactory();
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);

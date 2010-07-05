@@ -2,7 +2,6 @@ package org.exist.storage;
 
 import junit.framework.TestCase;
 
-import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.util.Configuration;
@@ -39,7 +38,7 @@ public class LowLevelText extends TestCase {
 		BrokerPool brokerPool = BrokerPool.getInstance(MY_TEST_INSTANCE);
 
 		//BUG: need to be released!
-		broker = brokerPool.get(SecurityManagerImpl.SYSTEM_USER);
+		broker = brokerPool.get(brokerPool.getSecurityManager().getSystemAccount());
 		pool = new XQueryPool(configuration);
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 

@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 
 import org.exist.collections.*;
-import org.exist.security.SecurityManager;
 import org.exist.storage.txn.*;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
@@ -51,7 +50,7 @@ public class RemoveRootCollectionTest {
 		Configuration config = new Configuration();
 		BrokerPool.configure(1, 1, config);
 		pool = BrokerPool.getInstance();  assertNotNull(pool);
-		broker = pool.get(SecurityManager.SYSTEM_USER);  assertNotNull(broker);
+		broker = pool.get(pool.getSecurityManager().getSystemAccount());  assertNotNull(broker);
 		transact = pool.getTransactionManager();  assertNotNull(transact);
 		root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);  assertNotNull(root);
 	}

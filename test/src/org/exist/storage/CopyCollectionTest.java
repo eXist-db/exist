@@ -29,7 +29,6 @@ import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
@@ -55,7 +54,7 @@ public class CopyCollectionTest extends TestCase {
         DBBroker broker = null;
         
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
 
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
@@ -98,7 +97,7 @@ public class CopyCollectionTest extends TestCase {
         	System.out.println("testRead() ...\n");  
         	pool = startDB();
         	assertNotNull(pool);
-        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -125,7 +124,7 @@ public class CopyCollectionTest extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -179,7 +178,7 @@ public class CopyCollectionTest extends TestCase {
         	System.out.println("testReadAborted() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
-        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
         	assertNotNull(broker);
         	
             Serializer serializer = broker.getSerializer();

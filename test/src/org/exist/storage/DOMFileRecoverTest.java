@@ -32,7 +32,6 @@ import junit.textui.TestRunner;
 
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
-import org.exist.security.SecurityManager;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
@@ -60,7 +59,7 @@ public class DOMFileRecoverTest extends TestCase {
 		NodeIdFactory idFact = pool.getNodeFactory();
 		try {
 			System.out.println("Add some random data and force db corruption ...\n");
-			broker = pool.get(SecurityManager.SYSTEM_USER);
+			broker = pool.get(pool.getSecurityManager().getSystemAccount());
 			assertNotNull(broker);
 			//TODO : is this necessary ?
             broker.flush();
@@ -156,7 +155,7 @@ public class DOMFileRecoverTest extends TestCase {
         DBBroker broker = null;
         try {
         	System.out.println("Recover and read the data ...\n");        	
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             TransactionManager mgr = pool.getTransactionManager();
             assertNotNull(mgr);

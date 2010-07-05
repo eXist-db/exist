@@ -30,7 +30,6 @@ import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -67,7 +66,7 @@ public class CollectionTest extends TestCase {
         Txn transaction = null;
         TransactionManager transact = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);            
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());            
             transact = pool.getTransactionManager();
             
             transaction = transact.beginTransaction();            
@@ -97,7 +96,7 @@ public class CollectionTest extends TestCase {
         
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             BTree btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             btree.dump(writer);

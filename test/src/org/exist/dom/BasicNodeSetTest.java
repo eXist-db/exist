@@ -25,7 +25,6 @@ import org.apache.log4j.BasicConfigurator;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -113,7 +112,7 @@ public class BasicNodeSetTest extends TestCase {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             @SuppressWarnings("unused")
@@ -174,7 +173,7 @@ public class BasicNodeSetTest extends TestCase {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -281,7 +280,7 @@ public class BasicNodeSetTest extends TestCase {
         DBBroker broker = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -362,7 +361,7 @@ public class BasicNodeSetTest extends TestCase {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -423,7 +422,7 @@ public class BasicNodeSetTest extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -492,7 +491,7 @@ public class BasicNodeSetTest extends TestCase {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);

@@ -53,7 +53,7 @@ public class DatabaseCollectionTest {
             /* Database */ database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            rootCollection = DatabaseManager.getCollection(URI, "admin", null);
+            rootCollection = DatabaseManager.getCollection(URI, "admin", "");
             
             assertNotNull("Could not connect to database.");
             System.out.println("<<<\n");

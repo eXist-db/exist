@@ -37,7 +37,6 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
@@ -86,7 +85,7 @@ public class ValidationFunctions_DTD_Test {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
 
-            broker = pool.get(SecurityManager.GUEST);
+            broker = pool.get(pool.getSecurityManager().getGuestAccount());
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 

@@ -31,7 +31,6 @@ import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -71,7 +70,7 @@ public class RecoveryTest2 extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -128,7 +127,7 @@ public class RecoveryTest2 extends TestCase {
         	System.out.println("testRead() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             Serializer serializer = broker.getSerializer();
             serializer.reset();

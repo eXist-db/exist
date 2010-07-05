@@ -3,7 +3,6 @@ package org.exist.xquery;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
@@ -192,7 +191,7 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	    {
 	    	pool = startDB();
 	    	assertNotNull(pool);
-	        broker = pool.get(SecurityManager.SYSTEM_USER);
+	        broker = pool.get(pool.getSecurityManager().getSystemAccount());
 	        
 	        TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);

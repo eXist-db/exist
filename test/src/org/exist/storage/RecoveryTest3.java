@@ -28,7 +28,6 @@ import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.SecurityManager;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -68,7 +67,7 @@ public class RecoveryTest3 extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -125,7 +124,7 @@ public class RecoveryTest3 extends TestCase {
         	pool = startDB();
         	assertNotNull(pool);
             
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             
             BrokerPool.FORCE_CORRUPTION = true;
@@ -193,7 +192,7 @@ public class RecoveryTest3 extends TestCase {
         	System.out.println("testRead2() ...\n");
         	pool = startDB();
         	assertNotNull(pool);        
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
 
             //TODO : do something ?

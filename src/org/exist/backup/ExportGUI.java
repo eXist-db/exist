@@ -37,7 +37,6 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.exist.EXistException;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -384,7 +383,7 @@ public class ExportGUI extends javax.swing.JFrame {
             return;
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection(String path) {
                     progress.setString(path);
@@ -433,7 +432,7 @@ public class ExportGUI extends javax.swing.JFrame {
             return null;
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             Object[] selected = directAccessBtn.getSelectedObjects();
             boolean directAccess = selected != null && selected[0] != null;
             ConsistencyCheck checker = new ConsistencyCheck(broker, directAccess);

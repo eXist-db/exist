@@ -51,7 +51,7 @@ public class DirtyShutdownTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
 
             transaction = transact.beginTransaction();
@@ -84,7 +84,7 @@ public class DirtyShutdownTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
