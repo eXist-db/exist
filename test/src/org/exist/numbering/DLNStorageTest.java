@@ -36,7 +36,7 @@ public class DLNStorageTest extends TestCase {
         BrokerPool pool = BrokerPool.getInstance();
         DBBroker broker = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             // test element ids
@@ -110,7 +110,7 @@ public class DLNStorageTest extends TestCase {
         TransactionManager transact = null;
         Txn transaction = null;       
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");

@@ -43,7 +43,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.security.AuthenticationException;
-import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.security.xacml.AccessContext;
@@ -123,7 +122,7 @@ public class XQueryServlet extends HttpServlet {
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private User defaultUser = SecurityManager.GUEST;
+    private User defaultUser = null;
     private XmldbURI collectionURI = null;
     
     private String containerEncoding = null;
@@ -156,6 +155,8 @@ public class XQueryServlet extends HttpServlet {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
 		}
         
+		defaultUser = pool.getSecurityManager().getGuestAccount();
+		
         String username = config.getInitParameter("user");
         if(username != null) {
         	String password = config.getInitParameter("password");

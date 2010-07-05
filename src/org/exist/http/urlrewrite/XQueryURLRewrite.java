@@ -52,7 +52,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
 import org.exist.security.*;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -130,7 +129,7 @@ public class XQueryURLRewrite implements Filter {
 
     private final Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
 
-    protected User defaultUser = SecurityManager.GUEST;
+    protected User defaultUser = null;
     protected BrokerPool pool;
 
     // path to the query
@@ -490,6 +489,8 @@ public class XQueryURLRewrite implements Filter {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
 		}
         
+		defaultUser = pool.getSecurityManager().getGuestAccount();
+		
 		String username = config.getInitParameter("user");
 		if(username != null) {
 			String password = config.getInitParameter("password");

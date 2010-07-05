@@ -25,7 +25,6 @@ import junit.textui.TestRunner;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.MutableDocumentSet;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
@@ -49,7 +48,7 @@ public class ReplaceTest extends AbstractUpdateTest {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             TransactionManager mgr = pool.getTransactionManager();
             assertNotNull(mgr);

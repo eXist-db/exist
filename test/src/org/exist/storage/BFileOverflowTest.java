@@ -24,7 +24,6 @@ package org.exist.storage;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.security.SecurityManager;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
 import org.exist.storage.sync.Sync;
@@ -49,7 +48,7 @@ public class BFileOverflowTest extends TestCase {
         TransactionManager mgr = pool.getTransactionManager();
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             broker.flush();
             broker.sync(Sync.MAJOR_SYNC);
             
@@ -96,7 +95,7 @@ public class BFileOverflowTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             
             Value key = new Value("test".getBytes());

@@ -32,7 +32,6 @@ import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
-import org.exist.security.SecurityManager;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -56,7 +55,7 @@ public class RecoverBinaryTest extends TestCase {
         DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -104,7 +103,7 @@ public class RecoverBinaryTest extends TestCase {
         try {
         	System.out.println("testRead() ...\n");
         	assertNotNull(pool);
-        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
         	assertNotNull(broker);
             BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);

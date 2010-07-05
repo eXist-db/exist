@@ -9,7 +9,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -107,7 +106,7 @@ public class FTIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML, "mixedIndexes.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
 
             Occurrences[] occur = checkIndex(docs, broker, null, "hydraulic", 1);
@@ -140,7 +139,7 @@ public class FTIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML, "mixedIndexes.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
 
             Occurrences[] occur = checkIndex(docs, broker, null, "aircraft", 1);
@@ -191,7 +190,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -227,7 +226,7 @@ public class FTIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML, "dropDocument.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
@@ -262,7 +261,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -380,7 +379,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(SecurityManager.SYSTEM_USER);
+        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -558,7 +557,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -653,7 +652,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -737,7 +736,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -813,7 +812,7 @@ public class FTIndexTest {
         Txn transaction = null;
         MutableDocumentSet docs = new DefaultDocumentSet();
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -847,7 +846,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -879,7 +878,7 @@ public class FTIndexTest {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);

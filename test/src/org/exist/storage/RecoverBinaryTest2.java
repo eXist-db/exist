@@ -34,7 +34,6 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -61,7 +60,7 @@ public class RecoverBinaryTest2 extends TestCase {
         try {
             pool = startDB();
             assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -96,7 +95,7 @@ public class RecoverBinaryTest2 extends TestCase {
             System.out.println("testRead2() ...\n");
             pool = startDB();
             assertNotNull(pool);        
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
 
             Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
@@ -133,7 +132,7 @@ public class RecoverBinaryTest2 extends TestCase {
             System.out.println("testRead2() ...\n");
             pool = startDB();
             assertNotNull(pool);        
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
 
             Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);

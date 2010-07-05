@@ -29,7 +29,6 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.EXistException;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -123,7 +122,7 @@ public class ExportMain {
         int retval = 0; // return value
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             ConsistencyCheck checker = new ConsistencyCheck(broker, direct);
             List<ErrorReport> errors = checker.checkAll(new CheckCallback());
             if (errors.size() > 0) {

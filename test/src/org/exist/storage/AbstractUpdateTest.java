@@ -26,7 +26,6 @@ import junit.framework.TestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -56,7 +55,7 @@ public abstract class AbstractUpdateTest extends TestCase {
         	System.out.println("testRead() ...\n");  
         	
         	pool = startDB();
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             

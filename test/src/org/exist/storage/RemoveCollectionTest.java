@@ -26,7 +26,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -89,7 +88,7 @@ public class RemoveCollectionTest {
         BrokerPool pool = startDB();
         assertNotNull(pool);
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);                       
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -119,7 +118,7 @@ public class RemoveCollectionTest {
         BrokerPool pool = startDB();
         assertNotNull(pool);
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -152,7 +151,7 @@ public class RemoveCollectionTest {
         BrokerPool pool = startDB();
         assertNotNull(pool);
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -235,7 +234,7 @@ public class RemoveCollectionTest {
         try {
         	System.out.println("testRead() ...\n");
         	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             if (checkResource) {
                 doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), Lock.READ_LOCK);
                 assertNull("Resource should have been removed", doc);

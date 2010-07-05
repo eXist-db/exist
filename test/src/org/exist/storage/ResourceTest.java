@@ -28,7 +28,6 @@ import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
-import org.exist.security.SecurityManager;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -76,7 +75,7 @@ public class ResourceTest extends TestCase {
         BrokerPool pool = startDB();
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             TransactionManager transact = pool.getTransactionManager();
             
             Txn transaction = transact.beginTransaction();
@@ -114,7 +113,7 @@ public class ResourceTest extends TestCase {
         byte[] data = null;
         
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             
             TransactionManager transact = pool.getTransactionManager();            
             Txn transaction = transact.beginTransaction();
@@ -171,7 +170,7 @@ public class ResourceTest extends TestCase {
         byte[] data = null;
         
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(pool.getSecurityManager().getSystemAccount());
             
             TransactionManager transact = pool.getTransactionManager();            
             Txn transaction = transact.beginTransaction();
