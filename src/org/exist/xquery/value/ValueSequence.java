@@ -78,6 +78,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     private int state = 0;
 
+    private NodeSet cachedSet = null;
+    
     public ValueSequence() {
 		this(false);
 	}
@@ -121,6 +123,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             hasOne = false;
         if (isEmpty)
             hasOne = true;
+        cachedSet = null;
         isEmpty = false;
         ++size;
         ensureCapacity();
@@ -440,6 +443,33 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     * @see org.exist.xquery.value.Sequence#getDocumentSet()
     */
     public DocumentSet getDocumentSet() {
+        if (cachedSet != null)
+            return cachedSet.getDocumentSet();
+        try {
+            boolean isPersistentSet = true;
+            NodeValue node;
+            for (int i = 0; i <= size; i++) {
+                if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
+                    node = (NodeValue) values[i];
+                    if (node.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                        isPersistentSet = false;
+                        break;
+                    }
+                } else {
+                    isPersistentSet = false;
+                    break;
+                }
+            }
+            if (isPersistentSet) {
+                cachedSet = toNodeSet();
+                return cachedSet.getDocumentSet();
+            }
+        } catch (XPathException e) {
+        }
+        return extractDocumentSet();
+    }
+
+    private DocumentSet extractDocumentSet() {
         MutableDocumentSet docs = new DefaultDocumentSet();
         NodeValue node;
         for (int i = 0; i <= size; i++) {
