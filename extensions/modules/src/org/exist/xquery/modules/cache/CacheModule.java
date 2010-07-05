@@ -53,7 +53,6 @@ public class CacheModule extends AbstractInternalModule {
 
 	public CacheModule() {
 		super(functions);
-		logger.info("Instantiating Cache module");
 	}
 
 	public String getNamespaceURI() {
