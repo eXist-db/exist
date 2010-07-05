@@ -57,7 +57,6 @@ public class CompressionModule extends AbstractInternalModule {
 
     public CompressionModule() {
         super(functions);
-		logger.info("Instantiating Compression module");
     }
 
     @Override
