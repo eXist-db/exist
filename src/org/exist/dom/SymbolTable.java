@@ -60,16 +60,16 @@ public class SymbolTable {
 	public static int LENGTH_NS_URI = 2; //sizeof short	
 
     /** Maps local node names to an integer id */
-	protected Object2IntHashMap nameSymbols = new Object2IntHashMap(200);
+	protected Object2IntHashMap<String> nameSymbols = new Object2IntHashMap<String>(200);
     
     /** Maps int ids to local node names */
-	protected Int2ObjectHashMap names = new Int2ObjectHashMap(200);
+	protected Int2ObjectHashMap<String> names = new Int2ObjectHashMap<String>(200);
     
     /** Maps namespace URIs to an integer id */
-	protected Object2IntHashMap nsSymbols = new Object2IntHashMap(200);
+	protected Object2IntHashMap<String> nsSymbols = new Object2IntHashMap<String>(200);
     
     /** Maps int ids to namespace URIs */
-	protected Int2ObjectHashMap namespaces = new Int2ObjectHashMap(200);
+	protected Int2ObjectHashMap<String> namespaces = new Int2ObjectHashMap<String>(200);
 
     /**
      * Contains default prefix-to-namespace mappings. For convenience, eXist tracks
@@ -77,15 +77,15 @@ public class SymbolTable {
      * is found in a query, the query engine will first look up the prefix in this table before
      * throwing an error.
      */
-	protected Object2IntHashMap defaultMappings = new Object2IntHashMap(200);
+	protected Object2IntHashMap<String> defaultMappings = new Object2IntHashMap<String>(200);
 
     /**
      * Temporary name pool to share QName instances during indexing.
      */
 	protected QNamePool namePool = new QNamePool();
 
-    protected Object2IntHashMap mimeTypeByName = new Object2IntHashMap(32);
-    protected Int2ObjectHashMap mimeTypeById = new Int2ObjectHashMap(32);
+    protected Object2IntHashMap<String> mimeTypeByName = new Object2IntHashMap<String>(32);
+    protected Int2ObjectHashMap<String> mimeTypeById = new Int2ObjectHashMap<String>(32);
 
     /** contains the next local name id to be used */
 	protected short max = 0;
@@ -99,14 +99,16 @@ public class SymbolTable {
     /** the underlying symbols.dbx file */
 	protected File file;
 	
-	public SymbolTable(BrokerPool pool, Configuration config) 
-		throws EXistException {
-        String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        file = new File(dataDir + File.separatorChar + getFileName());
+	public SymbolTable(BrokerPool pool, File dataDir) throws EXistException {
+	    file = new File(dataDir, getFileName());
 		if (!file.canRead()) {
 			saveSymbols();
 		} else
 			loadSymbols();
+	}
+
+	public SymbolTable(BrokerPool pool, Configuration config) throws EXistException {
+		this(pool, new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR)));
 	}
 	
     public static String getFileName() {
@@ -226,7 +228,7 @@ public class SymbolTable {
      * @param id
      */
 	public synchronized String getNamespace(short id) {
-		return id == 0 ? "" : (String) namespaces.get(id);
+		return id == 0 ? "" : namespaces.get(id);
 	}
 
     /**
@@ -245,7 +247,7 @@ public class SymbolTable {
      * @param id
      */
 	public synchronized String getName(short id) {
-		return (String) names.get(id);
+		return names.get(id);
 	}
 
     /**
@@ -267,8 +269,8 @@ public class SymbolTable {
 	public synchronized String[] defaultPrefixList() {
 		String[] prefixes = new String[defaultMappings.size()];
 		int i = 0;
-		for (Iterator j = defaultMappings.iterator(); j.hasNext(); i++)
-			prefixes[i] = (String) j.next();
+		for (Iterator<String> j = defaultMappings.iterator(); j.hasNext(); i++)
+			prefixes[i] = j.next();
 		return prefixes;
 	}
 
@@ -289,7 +291,7 @@ public class SymbolTable {
     }
 
     public synchronized String getMimeType(int id) {
-        return (String) mimeTypeById.get(id);
+        return mimeTypeById.get(id);
     }
 
     /**
@@ -304,8 +306,8 @@ public class SymbolTable {
         ostream.writeShort(max);
 		ostream.writeShort(nsMax);
 		ostream.writeInt(nameSymbols.size());
-		for (Iterator i = nameSymbols.iterator(); i.hasNext();) {
-			final String entry = (String) i.next();
+		for (Iterator<String> i = nameSymbols.iterator(); i.hasNext();) {
+			final String entry = i.next();
 			ostream.writeUTF(entry);
 			short id = (short) nameSymbols.get(entry);
 			if(id < 0)
@@ -313,8 +315,8 @@ public class SymbolTable {
 			ostream.writeShort(id);
 		}
 		ostream.writeInt(nsSymbols.size());
-		for (Iterator i = nsSymbols.iterator(); i.hasNext();) {
-			final String entry = (String) i.next();
+		for (Iterator<String> i = nsSymbols.iterator(); i.hasNext();) {
+			final String entry = i.next();
 			ostream.writeUTF(entry);
 			short id = (short) nsSymbols.get(entry);
 			if(id < 0)
