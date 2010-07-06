@@ -241,7 +241,8 @@ public class NativeBroker extends DBBroker {
         
         indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
-        setUser( pool.getSecurityManager().getSystemAccount() );            
+		setUser(SecurityManager.SYSTEM_USER);
+//        setUser( pool.getSecurityManager().getSystemAccount() );            
         
         readOnly = pool.isReadOnly();
         try {
