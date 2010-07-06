@@ -67,6 +67,7 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -85,183 +86,209 @@ import org.xml.sax.XMLReader;
  *
  */
 public class Eval extends BasicFunction {
+
+    protected static final FunctionParameterSequenceType EVAL_CONTEXT_ITEM = new FunctionParameterSequenceType("eval-context-item", Type.ITEM, Cardinality.ZERO_OR_ONE, "the context item against which the expression will be evaluated");
+
+    private static final String evalArgumentText = "The expression to be evaluated.  If it is of type xs:string, the function " +
+        "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
+        "the function will try to load the query from the resource to which the URI resolves. " +
+        "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
+        "URI is interpreted as a database path. This is the same as calling " +
+        "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). " +
+        //TODO : to be discussed ; until now, it's been used with a null context
+        "The query inherits the current execution context, i.e. all " +
+        "namespace declarations and variable declarations are visible from within the " +
+        "inner expression. " +
+        "The function returns an empty sequence if a whitespace string is passed.";
+
+    private static final String contextArgumentText = "The query inherits the context described by the XML fragment in this parameter. " +
+        "It should have the format:\n" +
+        "<static-context>\n" +
+        "\t<output-size-limit value=\"-1\">\n" +
+        "\t<unbind-namespace uri=\"http://exist.sourceforge.net/NS/exist\"/>\n" +
+        "\t<current-dateTime value=\"dateTime\"/>\n" +
+        "\t<implicit-timezone value=\"duration\"/>\n" +
+        "\t<variable name=\"qname\">variable value</variable>\n" +
+        "\t<default-context>explicitly provide default context here</default-context>\n" +
+        "\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
+        "</static-context>.\n";
+
+    protected static final FunctionParameterSequenceType EVAL_ARGUMENT = new FunctionParameterSequenceType("expression", Type.ITEM, Cardinality.EXACTLY_ONE, evalArgumentText);
+    protected static final FunctionParameterSequenceType INLINE_CONTEXT = new FunctionParameterSequenceType("inline-context", Type.ITEM, Cardinality.ZERO_OR_MORE, "The inline context");
+
+    protected static final FunctionParameterSequenceType CONTEXT_ARGUMENT = new FunctionParameterSequenceType("context", Type.NODE, Cardinality.ZERO_OR_ONE, contextArgumentText);
+    protected static final FunctionParameterSequenceType CACHE_FLAG = new FunctionParameterSequenceType("cache-flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag for whether the compiled query should be cached.  The cached query will be globally available within the db instance.");
+    protected static final FunctionParameterSequenceType EXTERNAL_VARIABLE = new FunctionParameterSequenceType("external-variable", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "External variables to be bound for the query that is being evaluated. Should be alternating variable QName and value.");
+
+    protected static final FunctionReturnSequenceType RETURN_NODE_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
+    protected static final FunctionReturnSequenceType RETURN_ITEM_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
+
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression. ",
+            new SequenceType[] { EVAL_ARGUMENT },
+            RETURN_NODE_TYPE),
+        new FunctionSignature(
+            new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression. ",
+            new SequenceType[] { EVAL_ARGUMENT, CACHE_FLAG },
+            RETURN_NODE_TYPE),
+        new FunctionSignature(
+            new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression. ",
+            new SequenceType[] { EVAL_ARGUMENT, CACHE_FLAG, EXTERNAL_VARIABLE },
+            RETURN_NODE_TYPE),
+        new FunctionSignature(
+            new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression. " +
+            "",
+            new SequenceType[] { EVAL_ARGUMENT, CONTEXT_ARGUMENT, CACHE_FLAG },
+            RETURN_NODE_TYPE),
+        new FunctionSignature(
+            new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression.",
+            new SequenceType[] {  EVAL_ARGUMENT, CONTEXT_ARGUMENT, CACHE_FLAG, EVAL_CONTEXT_ITEM },
+            RETURN_NODE_TYPE),
+        new FunctionSignature(
+            new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression.",
+            new SequenceType[] { INLINE_CONTEXT, EVAL_ARGUMENT },
+            RETURN_ITEM_TYPE),
+        new FunctionSignature(
+            new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Dynamically evaluates an XPath/XQuery expression.",
+            new SequenceType[] { INLINE_CONTEXT, EVAL_ARGUMENT, CACHE_FLAG },
+            RETURN_ITEM_TYPE)
+    };
 	
+    /**
+     * @param context
+     * @param signature
+     */
+    public Eval(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
 
-
-	protected static final FunctionParameterSequenceType EVAL_CONTEXT_ITEM = new FunctionParameterSequenceType("eval-context-item", Type.ITEM, Cardinality.ZERO_OR_ONE, "the context item against which the expression will be evaluated");
-
-	private static final String evalArgumentText = "The expression to be evaluated.  If it is of type xs:string, the function " +
-                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
-                "the function will try to load the query from the resource to which the URI resolves. " +
-                "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
-                "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval(xs:anyURI('xmldb:exist:///db/test/test.xq')). " +
-                //TODO : to be discussed ; until now, it's been used with a null context
-				"The query inherits the current execution context, i.e. all " +
-				"namespace declarations and variable declarations are visible from within the " +
-				"inner expression. " +
-                "The function returns an empty sequence if a whitespace string is passed.";
-	
-	private static final String contextArgumentText = "The query inherits the context described by the XML fragment in this parameter. " +
-				"It should have the format:\n" +
-				"<static-context>\n" +
-				"\t<output-size-limit value=\"-1\">\n" +
-				"\t<unbind-namespace uri=\"http://exist.sourceforge.net/NS/exist\"/>\n" +
-				"\t<current-dateTime value=\"dateTime\"/>\n" +
-				"\t<implicit-timezone value=\"duration\"/>\n" +
-				"\t<variable name=\"qname\">variable value</variable>\n" +
-				"\t<default-context>explicitly provide default context here</default-context>\n" +
-                                "\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
-				"</static-context>.\n";
-	
-	protected static final FunctionParameterSequenceType EVAL_ARGUMENT = new FunctionParameterSequenceType("expression", Type.ITEM, Cardinality.EXACTLY_ONE, evalArgumentText); 
-	protected static final FunctionParameterSequenceType INLINE_CONTEXT = new FunctionParameterSequenceType("inline-context", Type.ITEM, Cardinality.ZERO_OR_MORE, "The inline context");
-
-	protected static final FunctionParameterSequenceType CONTEXT_ARGUMENT = new FunctionParameterSequenceType("context", Type.NODE, Cardinality.ZERO_OR_ONE, contextArgumentText);
-	protected static final FunctionParameterSequenceType CACHE_FLAG = new FunctionParameterSequenceType("cache-flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag for whether the compiled query should be cached.  The cached query will be globally available within the db instance.");
-
-	protected static final FunctionReturnSequenceType RETURN_NODE_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
-	protected static final FunctionReturnSequenceType RETURN_ITEM_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
-
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates an XPath/XQuery expression. ",
-				new SequenceType[] { EVAL_ARGUMENT },
-				RETURN_NODE_TYPE),
-		new FunctionSignature(
-				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates an XPath/XQuery expression. ",
-				new SequenceType[] { EVAL_ARGUMENT, CACHE_FLAG },
-				RETURN_NODE_TYPE),
-		new FunctionSignature(
-				new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates an XPath/XQuery expression. " +
-				"",
-				new SequenceType[] { EVAL_ARGUMENT, CONTEXT_ARGUMENT, CACHE_FLAG },
-				RETURN_NODE_TYPE),
-		new FunctionSignature(
-				new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates an XPath/XQuery expression.",
-				new SequenceType[] {  EVAL_ARGUMENT, CONTEXT_ARGUMENT, CACHE_FLAG, EVAL_CONTEXT_ITEM },
-				RETURN_NODE_TYPE),
-		new FunctionSignature(
-				new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates an XPath/XQuery expression.",
-				new SequenceType[] { INLINE_CONTEXT, EVAL_ARGUMENT },
-				RETURN_ITEM_TYPE),
-		new FunctionSignature(
-				new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates an XPath/XQuery expression.",
-				new SequenceType[] { INLINE_CONTEXT, EVAL_ARGUMENT, CACHE_FLAG },
-				RETURN_ITEM_TYPE)
-	};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public Eval(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+        if(context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
+            if(contextSequence != null) {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
         }
 
-		int argCount = 0;
-		Sequence exprContext = null;
-                Sequence initContextSequence = null;
+        int argCount = 0;
+        Sequence exprContext = null;
+        Sequence initContextSequence = null;
 
-		if (isCalledAs("eval-inline")) {
-			// the current expression context
-			exprContext = args[argCount++];
-		}
-		// get the query expression
+        if(isCalledAs("eval-inline")) {
+                // the current expression context
+                exprContext = args[argCount++];
+        }
+
+        // get the query expression
         Item expr = args[argCount++].itemAt(0);
         Source querySource;
         if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             querySource = loadQueryFromURI(expr);
         } else {
-        	String queryStr = expr.getStringValue();
-            if ("".equals(queryStr.trim()))
+            String queryStr = expr.getStringValue();
+            if("".equals(queryStr.trim())) {
               return new EmptySequence();
+            }
             querySource = new StringSource(queryStr);
         }
 		
-		NodeValue contextInit = null;
-		if (isCalledAs("eval-with-context")) {
-			// set the context initialization param for later use
-			contextInit = (NodeValue) args[argCount++].itemAt(0);
-		}
+        NodeValue contextInit = null;
+        if(isCalledAs("eval-with-context")) {
+            // set the context initialization param for later use
+            contextInit = (NodeValue) args[argCount++].itemAt(0);
+        }
 		
-		// should the compiled query be cached?
-		boolean cache = false;
-		if (argCount < getArgumentCount())
-			cache = ((BooleanValue)args[argCount].itemAt(0)).effectiveBooleanValue();
+        // should the compiled query be cached?
+        boolean cache = false;
+        if(argCount < getArgumentCount()) {
+            cache = ((BooleanValue)args[argCount].itemAt(0)).effectiveBooleanValue();
+        }
 		
-		// save some context properties
+        // save some context properties
         context.pushNamespaceContext();
 
         LocalVariable mark = context.markLocalVariables(false);
 
         DocumentSet oldDocs = context.getStaticallyKnownDocuments();
-		if (exprContext != null)
-			context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
+        if(exprContext != null) {
+            context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
+        }
 		
-		if (context.isProfilingEnabled(2))
-			context.getProfiler().start(this, "eval: " + expr);
+        if(context.isProfilingEnabled(2)) {
+            context.getProfiler().start(this, "eval: " + expr);
+        }
 
         // fixme! - hook for debugger here /ljo
 		
-		Sequence sequence = null;
+        Sequence sequence = null;
 
-		XQuery xquery = context.getBroker().getXQueryService();
-		XQueryPool pool = xquery.getXQueryPool();
-		CompiledXQuery compiled = cache ? pool.borrowCompiledXQuery(context.getBroker(), querySource) : null;
-		XQueryContext innerContext;
-		if (contextInit != null) {
-			// eval-with-context: initialize a new context
-			innerContext = xquery.newContext(context.getAccessContext());
-			initContextSequence = initContext(contextInit.getNode(), innerContext);
-		} else {
-			// use the existing outer context
+        XQuery xquery = context.getBroker().getXQueryService();
+        XQueryPool pool = xquery.getXQueryPool();
+        CompiledXQuery compiled = cache ? pool.borrowCompiledXQuery(context.getBroker(), querySource) : null;
+        XQueryContext innerContext;
+        if (contextInit != null) {
+            // eval-with-context: initialize a new context
+            innerContext = xquery.newContext(context.getAccessContext());
+            initContextSequence = initContext(contextInit.getNode(), innerContext);
+        } else {
+            // use the existing outer context
             // TODO: check if copying the static context would be sufficient???                    
-			innerContext = context.copyContext();
+            innerContext = context.copyContext();
             innerContext.setShared(true);
             //innerContext = context;
         }
+
+        //bind external vars?
+        if(isCalledAs("eval") && getArgumentCount() == 3) {
+            if(!args[2].isEmpty()) {
+                Sequence externalVars = args[2];
+                for(int i = 0; i < externalVars.getItemCount(); i++) {
+                    Item varName = externalVars.itemAt(i);
+                    if(varName.getType() == Type.QNAME) {
+                        Item varValue = externalVars.itemAt(++i);
+                        innerContext.declareVariable(((QNameValue)varName).getQName(), varValue);
+                    }
+                }
+            }
+        }
+
+
         // fixme! - hook for debugger here /ljo
         try {
-			if(compiled == null) {
+            if(compiled == null) {
                 compiled = xquery.compile(innerContext, querySource);
-			} else {
+            } else {
                 compiled.getContext().updateContext(innerContext);
-			}
+            }
 			
-			if (this.getArgumentCount() == 4) {
-				NodeValue contextItem = (NodeValue)args[3].itemAt(0);
-				if (contextItem != null) {
-					//TODO : sort this out
-					if (exprContext != null)
-						LOG.warn("exprContext and contextItem are not null");
-					exprContext = contextItem.toSequence();
-
-				}
-			}	
+            if(this.getArgumentCount() == 4) {
+                NodeValue contextItem = (NodeValue)args[3].itemAt(0);
+                if (contextItem != null) {
+                    //TODO : sort this out
+                    if (exprContext != null) {
+                        LOG.warn("exprContext and contextItem are not null");
+                    }
+                    exprContext = contextItem.toSequence();
+                }
+            }
 				
             if (initContextSequence != null) {
                 LOG.info("there now");
-                exprContext=initContextSequence;                
+                exprContext=initContextSequence;
             }
 
             sequence = xquery.execute(compiled, exprContext, false);
@@ -276,37 +303,45 @@ public class Eval extends BasicFunction {
                     newSeq.add(sequence.itemAt(i));
                 }
             }
-            if (hasSupplements) {
+
+            if(hasSupplements) {
                 sequence = newSeq;
             }
-			return sequence;
 
+            return sequence;
+        } catch(XPathException e) {
+            try {
+                e.prependMessage("Error while evaluating expression: " + querySource.getContent() + ". ");
+            } catch (IOException e1) {
+            }
 
-		} catch (XPathException e) {
-			try {
-				e.prependMessage("Error while evaluating expression: " + querySource.getContent() + ". ");
-			} catch (IOException e1) {
-			}
             e.setLocation(line, column);
-			throw e;
-		} catch (IOException e) {
-			throw new XPathException(this, e.getMessage(), e);
-		} finally {
-            if (innerContext != this.context)
-                innerContext.reset();
-            if (compiled != null) {
-				if (cache)
-					pool.returnCompiledXQuery(querySource, compiled);
-				else
-					compiled.reset();
-			}
-			if (oldDocs != null)
-				context.setStaticallyKnownDocuments(oldDocs);
+            throw e;
+        } catch(IOException e) {
+            throw new XPathException(this, e.getMessage(), e);
+        } finally {
+            if(innerContext != this.context) {
+               innerContext.reset();
+            }
+
+            if(compiled != null) {
+                if(cache) {
+                    pool.returnCompiledXQuery(querySource, compiled);
+                } else {
+                    compiled.reset();
+                }
+            }
+            
+            if(oldDocs != null) {
+                context.setStaticallyKnownDocuments(oldDocs);
+            }
+
             context.popLocalVariables(mark);
             context.popNamespaceContext();
-			if (context.isProfilingEnabled(2))
-				context.getProfiler().end(this, "eval: " + expr, sequence);
-		}
+
+            if(context.isProfilingEnabled(2))
+                context.getProfiler().end(this, "eval: " + expr, sequence);
+            }
 	}
 
     /**
