@@ -67,6 +67,7 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -119,6 +120,7 @@ public class Eval extends BasicFunction {
 	protected static final FunctionParameterSequenceType INLINE_CONTEXT = new FunctionParameterSequenceType("inline-context", Type.ITEM, Cardinality.ZERO_OR_MORE, "The inline context");
 	protected static final FunctionParameterSequenceType CONTEXT_ARGUMENT = new FunctionParameterSequenceType("context", Type.NODE, Cardinality.ZERO_OR_ONE, contextArgumentText); 
 	protected static final FunctionParameterSequenceType CACHE_FLAG = new FunctionParameterSequenceType("cache-flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag for whether the compiled query should be cached.  The cached query will be globally available within the db instance.");
+        protected static final FunctionParameterSequenceType EXTERNAL_VARIABLE = new FunctionParameterSequenceType("external-variable", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "External variables to be bound for the query that is being evaluated. Should be alternating variable QName and value.");
 
 	protected static final FunctionReturnSequenceType RETURN_NODE_TYPE = new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
 	protected static final FunctionReturnSequenceType RETURN_ITEM_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the evaluated XPath/XQuery expression");
@@ -134,6 +136,11 @@ public class Eval extends BasicFunction {
 				"Dynamically evaluates an XPath/XQuery expression. ",
 				new SequenceType[] { EVAL_ARGUMENT, CACHE_FLAG },
 				RETURN_NODE_TYPE),
+                new FunctionSignature(
+                                new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                                "Dynamically evaluates an XPath/XQuery expression. ",
+                                new SequenceType[] { EVAL_ARGUMENT, CACHE_FLAG, EXTERNAL_VARIABLE },
+                                RETURN_NODE_TYPE),
 		new FunctionSignature(
 				new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 				"Dynamically evaluates an XPath/XQuery expression. " +
@@ -238,6 +245,22 @@ public class Eval extends BasicFunction {
             innerContext.setShared(true);
             //innerContext = context;
         }
+
+        //bind external vars?
+        if(isCalledAs("eval") && getArgumentCount() == 3) {
+            if(!args[2].isEmpty()) {
+                Sequence externalVars = args[2];
+                for(int i = 0; i < externalVars.getItemCount(); i++) {
+                    Item varName = externalVars.itemAt(i);
+                    if(varName.getType() == Type.QNAME) {
+                        Item varValue = externalVars.itemAt(++i);
+                        innerContext.declareVariable(((QNameValue)varName).getQName(), varValue);
+                    }
+                }
+            }
+        }
+
+
         // fixme! - hook for debugger here /ljo
         try {
 			if(compiled == null) {
