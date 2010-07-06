@@ -1,6 +1,5 @@
 package org.exist.xquery.functions.util;
 
-import org.exist.dom.NodeSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,13 +7,16 @@ import static org.junit.Assert.*;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.LocalXMLResource;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -28,6 +30,10 @@ public class EvalTest {
     private XPathQueryService service;
     private Collection root = null;
     private Database database = null;
+    private Resource invokableQuery;
+
+    private final static String INVOKABLE_QUERY_FILENAME = "invokable.xql";
+    private final static String INVOKABLE_QUERY_EXTERNAL_VAR_NAME = "some-value";
 
     public EvalTest() {
     }
@@ -41,10 +47,20 @@ public class EvalTest {
         DatabaseManager.registerDatabase(database);
         root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
         service = (XPathQueryService) root.getService("XQueryService", "1.0");
+        
+        invokableQuery = root.createResource(INVOKABLE_QUERY_FILENAME, "BinaryResource");
+        invokableQuery.setContent(
+            "declare variable $" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + " external;\n" + "<hello>{$" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "}</hello>"
+        );
+        ((EXistResource) invokableQuery).setMimeType("application/xquery");
+        root.storeResource(invokableQuery);
     }
 
     @After
     public void tearDown() throws Exception {
+
+        root.removeResource(invokableQuery);
+
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
@@ -73,6 +89,25 @@ public class EvalTest {
             fail(e.getMessage());
         }
 
+    }
+
+    @Test
+    public void testEvalWithExternalVars() throws XPathException {
+        ResourceSet result = null;
+        String r = "";
+        try {
+            String query = "let $value := 'world' return\n" +
+                    "\tutil:eval(xs:anyURI('/db/" + INVOKABLE_QUERY_FILENAME + "'), false(), (xs:QName('" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "'), $value))";
+            result = service.query(query);
+
+            LocalXMLResource res = (LocalXMLResource)result.getResource(0);
+            Node n = res.getContentAsDOM();
+            assertEquals(n.getLocalName(), "hello");
+            assertEquals("world", n.getFirstChild().getNodeValue());
+        } catch (XMLDBException e) {
+            System.out.println("testEval(): " + e);
+            fail(e.getMessage());
+        }
     }
 
     @Test
