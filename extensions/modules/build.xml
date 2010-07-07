@@ -209,14 +209,18 @@
     <!-- 
         Special targets for svn module 
     -->
-    <property name="svn.svnkit.jar" value="${top.dir}/${lib.user}/svnkit.jar"/>
-    <available file="${svn.svnkit.jar}" property="svn-present"/>
-
-    <target name="prepare-svn" if="include.module.svn.config" unless="svn-present">
+    <target name="prepare-svn" if="include.module.svn.config">
         <echo message="-------------------------------------------------------"/>
         <echo message="Downloading libraries required by the subversion module"/>
         <echo message="-------------------------------------------------------"/>
-        <get src="${include.module.svn.url}" dest="${svn.svnkit.jar}" verbose="true"/>
+        
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+                     url="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
+             <patternset>
+                <include name="**/svnkit.jar"/>
+                <include name="**/svnkit-cli.jar"/>
+         </patternset>
+       </fetch>
     </target>
 
     <!-- 
@@ -228,7 +232,7 @@
         <echo message="-------------------------------------------------------"/>
 
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-							 url="${include.module.jfreechart.url}" classname="org.jfree.chart.JFreeChart">
+                             url="${include.module.jfreechart.url}" classname="org.jfree.chart.JFreeChart">
             <patternset>
                 <include name="**/lib/jfreechart-*.jar"/>
                 <include name="**/lib/jcommon-*.jar"/>
@@ -246,7 +250,7 @@
         <echo message="--------------------------------------------------"/>
 
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-							 url="${include.module.xmpp.url}" classname="org.jivesoftware.smack.XMPPConnection">
+                             url="${include.module.xmpp.url}" classname="org.jivesoftware.smack.XMPPConnection">
             <patternset>
                 <include name="**/smack.jar"/>
                 <include name="**/smackx.jar"/>
@@ -280,7 +284,7 @@
                 <path refid="classpath.core"/>
             </classpath>
 
-	    <exclude name="org/exist/xquery/modules/cache/**" unless="include.module.cache.config"/>
+        <exclude name="org/exist/xquery/modules/cache/**" unless="include.module.cache.config"/>
             <exclude name="org/exist/xquery/modules/compression/**" unless="include.module.compression.config"/>
             <exclude name="org/exist/xquery/modules/context/**" unless="include.module.context.config"/>
             <exclude name="org/exist/xquery/modules/counter/**" unless="include.module.counter.config"/>
