@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -130,7 +130,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     private Permission permissions = PermissionFactory.getPermission(0775);
     
     // stores child-collections with their storage address
-    private ObjectHashSet<XmldbURI> subcollections = new ObjectHashSet(19);
+    private ObjectHashSet<XmldbURI> subcollections = new ObjectHashSet<XmldbURI>(19);
     
     // Storage address of the collection in the BFile
     private long address = BFile.UNKNOWN_ADDRESS;
@@ -231,9 +231,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
     /**
-     *  Add a document to the collection.
+     * Add a document to the collection.
      *
-     *@param  doc
+     * @param  doc
      */
     public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
@@ -257,7 +257,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      * The list of subcollections is copied first, so modifications
      * via the iterator have no affect.
      *
-     *@return    Description of the Return Value
+     * @return    Description of the Return Value
      */
     public Iterator<XmldbURI> collectionIterator() {
         try {
@@ -287,8 +287,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             getLock().acquire(Lock.READ_LOCK);
             Collection child;
             XmldbURI childName;
-            for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
-                childName = (XmldbURI) i.next();
+            for (Iterator<XmldbURI> i = subcollections.iterator(); i.hasNext(); ) {
+                childName = i.next();
                 //TODO : resolve URI !
                 child = broker.getCollection(path.append(childName));
                 if (permissions.validate(user, Permission.READ)) {
@@ -325,7 +325,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     public MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
                                     boolean checkPermissions, LockedDocumentMap protectedDocs) {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
-            List subColls = null;
+            List<XmldbURI> subColls = null;
             try {
                 // acquire a lock on the collection
                 getLock().acquire(Lock.READ_LOCK);
@@ -341,8 +341,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             }
             if (recursive && subColls != null) {
                 // process the child collections
-                for (int i = 0; i < subColls.size(); i++) {
-                    XmldbURI childName = (XmldbURI) subColls.get(i);
+                for (XmldbURI childName : subColls) {
                     //TODO : resolve URI !
                     Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
                     // a collection may have been removed in the meantime, so check first
@@ -356,7 +355,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
 
     public DocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive, LockedDocumentMap lockMap, int lockType) throws LockException {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
-            List subColls = null;
+            List<XmldbURI> subColls = null;
             XmldbURI uris[] = null;
             try {
                 // acquire a lock on the collection
@@ -369,8 +368,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
                 if (subColls != null) {
                     uris = new XmldbURI[subColls.size()];
                     for (int i = 0; i < subColls.size(); i++) {
-                        XmldbURI childName = (XmldbURI) subColls.get(i);
-                        uris[i] = path.appendInternal(childName);
+                        uris[i] = path.appendInternal(subColls.get(i));
                     }
                 }
             } catch (LockException e) {
@@ -434,8 +432,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     private String[] getDocumentPaths() {
         String paths[] = new String[documents.size()];
         int i = 0;
-        for (Iterator iter = documents.keySet().iterator(); iter.hasNext(); i++) {
-            paths[i] = (String) iter.next();
+        for (Iterator<String> iter = documents.keySet().iterator(); iter.hasNext(); i++) {
+            paths[i] = iter.next();
         }
         return paths;
     }
@@ -498,10 +496,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
 
     /**
-     *  Return the number of child-collections managed by this
-     * collection.
+     * Return the number of child-collections managed by this collection.
      *
-     *@return    The childCollectionCount value
+     * @return The childCollectionCount value
      */
     public int getChildCollectionCount() {
         try {
@@ -516,18 +513,18 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
    /**
-     *  Get a child resource as identified by path. This method doesn't put
+     * Get a child resource as identified by path. This method doesn't put
      * a lock on the document nor does it recognize locks held by other threads.
      * There's no guarantee that the document still exists when accessing it.
      *
-     *@param  broker
-     *@param  path  The name of the document (without collection path)
-     *@return   the document
+     * @param  broker
+     * @param  path  The name of the document (without collection path)
+     * @return the document
      */
     public DocumentImpl getDocument(DBBroker broker, XmldbURI path) {
         try {
             getLock().acquire(Lock.READ_LOCK);
-            DocumentImpl doc = (DocumentImpl) documents.get(path.getRawCollectionPath());
+            DocumentImpl doc = documents.get(path.getRawCollectionPath());
             if(doc == null)
             	LOG.debug("Document " + path + " not found!");
             return doc;
@@ -543,7 +540,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      * Retrieve a child resource after putting a read lock on it. With this method,
      * access to the received document object is safe.
      *
-     * @deprecated Use other method
+     * @deprecated Use getDocumentWithLock(DBBroker broker, XmldbURI uri, int lockMode)
      * @param broker
      * @param name
      * @return The document that was locked.
@@ -567,7 +564,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     throws LockException {
         try {
             getLock().acquire(Lock.READ_LOCK);
-            DocumentImpl doc = (DocumentImpl) documents.get(uri.getRawCollectionPath());
+            DocumentImpl doc = documents.get(uri.getRawCollectionPath());
             if(doc != null)
             	doc.getUpdateLock().acquire(lockMode);
             return doc;
@@ -577,12 +574,12 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
 
     public DocumentImpl getDocumentNoLock(String rawPath) {
-        return (DocumentImpl) documents.get(rawPath);
+        return documents.get(rawPath);
     }
 
     /**
      * Release any locks held on the document.
-     * @deprecated Use other method
+     * @deprecated Use releaseDocument(DocumentImpl doc, int mode)
      * @param doc
      */
     public void releaseDocument(DocumentImpl doc) {
@@ -604,9 +601,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
     /**
-     *  Returns the number of documents in this collection.
+     * Returns the number of documents in this collection.
      *
-     *@return    The documentCount value
+     * @return The documentCount value
      */
     public int getDocumentCount() {
         try {
@@ -625,28 +622,27 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
     /**
-     *  Get the internal id.
+     * Get the internal id.
      *
-     *@return    The id value
+     * @return    The id value
      */
     public int getId() {
         return collectionId;
     }
     
     /**
-     *  Get the name of this collection.
+     * Get the name of this collection.
      *
-     *@return    The name value
+     * @return    The name value
      */
     public XmldbURI getURI() {
         return path;
     }
     
     /**
-     *  Returns the parent-collection.
+     * Returns the parent-collection.
      *
-     *@return    The parent-collection or null if this
-     *is the root collection.
+     * @return The parent-collection or null if this is the root collection.
      */
     public XmldbURI getParentURI() {
         if (path.equals(XmldbURI.ROOT_COLLECTION_URI))
@@ -656,9 +652,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
     /**
-     *  Gets the permissions attribute of the Collection object
+     * Gets the permissions attribute of the Collection object
      *
-     *@return    The permissions value
+     * @return The permissions value
      */
     public Permission getPermissions() {
         try {
@@ -677,20 +673,20 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
 
     /**
-     *  Check if the collection has a child document.
+     * Check if the collection has a child document.
      *
-     *@param  uri  the name (without path) of the document
-     *@return A value of true when the collection has the document identified.
+     * @param  uri  the name (without path) of the document
+     * @return A value of true when the collection has the document identified.
      */
     public boolean hasDocument(XmldbURI uri) {
         return documents.containsKey(uri.getRawCollectionPath());
     }
     
     /**
-     *  Check if the collection has a sub-collection.
+     * Check if the collection has a sub-collection.
      *
-     *@param  name  the name of the subcollection (without path).
-     *@return A value of true when the subcollection exists.
+     * @param  name  the name of the subcollection (without path).
+     * @return A value of true when the subcollection exists.
      */
     public boolean hasSubcollection(XmldbURI name) {
         try {
@@ -710,9 +706,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
 
     /**
-     *  Returns an iterator on the child-documents in this collection.
+     * Returns an iterator on the child-documents in this collection.
      *
-     *@return A iterator of all the documents in the collection.
+     * @return A iterator of all the documents in the collection.
      */
     public Iterator<DocumentImpl> iterator(DBBroker broker) {
         return getDocuments(broker, new DefaultDocumentSet(), false).getDocumentIterator();
@@ -756,9 +752,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
     /**
-     *  Remove the specified sub-collection.
+     * Remove the specified sub-collection.
      *
-     *@param  name  Description of the Parameter
+     * @param  name  Description of the Parameter
      */
     public void removeCollection(XmldbURI name) throws LockException {
         try {
@@ -770,11 +766,11 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     }
     
     /**
-     *  Remove the specified document from the collection.
+     * Remove the specified document from the collection.
      *
-     *@param  transaction
-     *@param  broker
-     *@param  docUri
+     * @param  transaction
+     * @param  broker
+     * @param  docUri
      */
     public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri)
     throws PermissionDeniedException, TriggerException, LockException {
@@ -914,11 +910,13 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
      * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * 
      * @param transaction
      * @param broker
      * @param info
      * @param source
      * @param privileged
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -956,14 +954,17 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         });
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+    /** 
+     * Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
      * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * 
      * @param transaction
      * @param broker
      * @param info
      * @param data
      * @param privileged
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -991,14 +992,17 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         });
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+    /** 
+     * Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
      * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * 
      * @param transaction
      * @param broker
      * @param info
      * @param node
      * @param privileged
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -1018,20 +1022,26 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         public void run() throws EXistException, SAXException;
     }
     
-    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
+    /** 
+     * Stores an XML document in the database. {@link #validateXMLResourceInternal(org.exist.storage.txn.Txn,
      * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * 
      * @param transaction
      * @param broker
      * @param info
      * @param privileged
      * @param doParse
+     * 
      * @throws EXistException
      * @throws SAXException
      */
     private void storeXMLInternal(Txn transaction, DBBroker broker, IndexInfo info, boolean privileged, StoreBlock doParse) throws EXistException, SAXException {
         DocumentImpl document = info.getIndexer().getDocument();
-        LOG.debug("storing document " + document.getDocId() + " ...");
+        
+        if (LOG.isDebugEnabled())
+        	LOG.debug("storing document " + document.getDocId() + " ...");
+
         //Sanity check
     	if (!document.getUpdateLock().isLockedForWrite()) {
     		LOG.warn("document is not locked for write !");
@@ -1091,13 +1101,17 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         public void run(IndexInfo info) throws SAXException, EXistException;
     }
 
-    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+    /** 
+     * Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
      * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * 
      * @param transaction
      * @param broker
      * @param docUri   
      * @param data  
+     * 
      * @return An {@link IndexInfo} with a write lock on the document. 
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -1110,13 +1124,17 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         return validateXMLResource(transaction, broker, docUri, new InputSource(new StringReader(data)));
     }
     
-    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+    /** 
+     * Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
      * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * 
      * @param transaction
      * @param broker
      * @param docUri
      * @param source
+     * 
      * @return An {@link IndexInfo} with a write lock on the document. 
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -1145,13 +1163,17 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         });
     }
     
-    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+    /** 
+     * Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
      * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * 
      * @param transaction
      * @param broker
      * @param docUri
      * @param node
+     * 
      * @return An {@link IndexInfo} with a write lock on the document. 
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -1169,13 +1191,17 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         });
     }
     
-    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+    /** 
+     * Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
      * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * 
      * @param transaction
      * @param broker
      * @param docUri
      * @param doValidate
+     * 
      * @return An {@link IndexInfo} with a write lock on the document. 
+     * 
      * @throws EXistException
      * @throws PermissionDeniedException
      * @throws TriggerException
@@ -1195,7 +1221,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             getLock().acquire(Lock.WRITE_LOCK);   
             DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
             
-            oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
+            oldDoc = documents.get(docUri.getRawCollectionPath());
             
             checkPermissions(transaction, broker, oldDoc);
             manageDocumentInformation(broker, oldDoc, document );
@@ -1213,12 +1239,16 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             
             info.prepareTrigger(broker, transaction, getURI().append(docUri), oldDoc);
             
-            LOG.debug("Scanning document " + getURI().append(docUri));
+            if (LOG.isDebugEnabled())
+            	LOG.debug("Scanning document " + getURI().append(docUri));
+            
             doValidate.run(info);
             
             // new document is valid: remove old document
             if (oldDoc != null) {
-                LOG.debug("removing old document " + oldDoc.getFileURI());
+            	if (LOG.isDebugEnabled())
+            		LOG.debug("removing old document " + oldDoc.getFileURI());
+            	
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 oldDocLocked = true;
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1239,7 +1269,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
                     document = oldDoc;
                     oldDocLocked = false;		
                 }
-                LOG.debug("removed old document " + oldDoc.getFileURI());
+                if (LOG.isDebugEnabled())
+                	LOG.debug("removed old document " + oldDoc.getFileURI());
             } else {
             	//This lock is released in storeXMLInternal()
             	//TODO : check that we go until there to ensure the lock is released
@@ -1259,8 +1290,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         }
     }
     
-    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException,
-    	IOException {
+    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException, IOException {
     	//Is it a collection configuration file ?
     	//TODO : use XmldbURI.resolve() !
         if (!getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI))
@@ -1465,7 +1495,8 @@ public  class Collection extends Observable implements Comparable<Collection>, C
 	        metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
 	        
 	        if (oldDoc != null) {
-	            LOG.debug("removing old document " + oldDoc.getFileURI());
+	        	if (LOG.isDebugEnabled())
+	        		LOG.debug("removing old document " + oldDoc.getFileURI());
 	            if (oldDoc instanceof BinaryDocument)
 	                broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
 	            else
@@ -1779,41 +1810,40 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         return ++refCount;
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.storage.cache.Cacheable#decReferenceCount()
-         */
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cacheable#decReferenceCount()
+     */
     public int decReferenceCount() {
         return refCount > 0 ? --refCount : 0;
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
-         */
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
+     */
     public void setReferenceCount(int count) {
         refCount = count;
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
-         */
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
+     */
     public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.storage.cache.Cacheable#getTimestamp()
-         */
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cacheable#getTimestamp()
+     */
     public int getTimestamp() {
         return timestamp;
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.storage.cache.Cacheable#release()
-         */
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cacheable#release()
+     */
     public boolean sync(boolean syncJournal) {
         return false;
     }
-    
     
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#isDirty()
