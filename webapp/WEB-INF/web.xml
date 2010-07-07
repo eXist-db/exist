@@ -478,10 +478,12 @@
     <!--
         Needed to overwrite the Cocoon default 
     -->
+    <!--
     <servlet>
         <servlet-name>Jasper</servlet-name>
         <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
     </servlet>
+    -->
     
     <!--
         Register Webstart servlet
@@ -568,10 +570,12 @@
 		<url-pattern>/cocoon/*</url-pattern>
 	</servlet-mapping>
 
+    <!--
     <servlet-mapping>
         <servlet-name>Jasper</servlet-name>
         <url-pattern>*.jsp</url-pattern>
     </servlet-mapping>
+    -->
 
     <!--
         Some servlet engines (WebLogic) have defaults which are not overriden
@@ -619,20 +623,22 @@
         <mime-type>text/plain</mime-type>
     </mime-mapping>
 
+    <!--
     <jsp-config>
         <taglib>
             <taglib-uri>http://exist-db.org/exist</taglib-uri>
             <taglib-location>/WEB-INF/exist.tld</taglib-location>
         </taglib>
     </jsp-config>
+    -->
     
-	<login-config>
-  		<auth-method>FORM</auth-method>
-  		<realm-name>JAASLoginService</realm-name>
-  		<form-login-config>
-    		<form-login-page>/login/login</form-login-page>
-    		<form-error-page>/login/error</form-error-page>
-  		</form-login-config>
+    <login-config>
+	<auth-method>FORM</auth-method>
+	<realm-name>JAASLoginService</realm-name>
+		<form-login-config>
+		<form-login-page>/login/login</form-login-page>
+		<form-error-page>/login/error</form-error-page>
+		</form-login-config>
 	</login-config>
 
 <!-- 
