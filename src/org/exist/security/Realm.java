@@ -21,10 +21,24 @@
  */
 package org.exist.security;
 
+import java.util.Collection;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public interface Realm {
+	
+	public String getId();
+	
+	public User getAccount(String name);
+	public Collection<User> getAccounts();
+	public boolean hasAccount(String accountName);
+	
+	public Collection<Group> getRoles();
 
+	public Group getRole(String name);
+	public boolean hasRole(String name);
+
+	User authenticate(String username, Object credentials) throws AuthenticationException;
 }

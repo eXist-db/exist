@@ -526,8 +526,7 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // TODO: this should be addUser
-   public void setUser(User user)
-   {
+   public void setUser(User user) {
    }
 
    @Override
@@ -543,7 +542,7 @@ public class SecurityManagerImpl implements SecurityManager
 		throw new AuthenticationException("User [" + username + "] not found");
    }
 
-   Realm realm = new RealmImpl();
+   Realm realm = null;
    
    @Override
    public User authenticate(String username, Object credentials) throws AuthenticationException {
@@ -558,5 +557,11 @@ public class SecurityManagerImpl implements SecurityManager
 	@Override
 	public User getGuestAccount() {
 		return SecurityManager.GUEST;
+	}
+
+	@Override
+	public BrokerPool getDatabase() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

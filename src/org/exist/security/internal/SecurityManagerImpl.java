@@ -482,7 +482,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		throw new AuthenticationException("User " + username + " not found");
 	}
 
-	Realm realm = new RealmImpl();
+	Realm realm = new RealmImpl(this);
 	public synchronized User authenticate(String username, Object credentials) throws AuthenticationException {
 		User user;
 		for (Iterator i = users.valueIterator(); i.hasNext();) {
@@ -506,5 +506,10 @@ public class SecurityManagerImpl implements SecurityManager {
 	@Override
 	public User getGuestAccount() {
 		return SecurityManager.GUEST;
+	}
+	
+	@Override
+	public BrokerPool getDatabase() {
+		return pool;
 	}
 }

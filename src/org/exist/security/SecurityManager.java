@@ -51,6 +51,8 @@ public interface SecurityManager {
    public final static User GUEST = new UserImpl(GUEST_USER, null, GUEST_GROUP); //TODO: add uid = 1 ?
    
    void attach(BrokerPool pool, DBBroker sysBroker);
+   
+   public BrokerPool getDatabase();
 
    boolean isXACMLEnabled();
    
