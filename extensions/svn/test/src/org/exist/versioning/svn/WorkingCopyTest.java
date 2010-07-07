@@ -385,7 +385,7 @@ public class WorkingCopyTest {
         System.out.println("Making a new directory at '" + url + "'...");
         try{
             /*
-             * creates a new version comtrolled directory in a repository and 
+             * creates a new version controlled directory in a repository and 
              * displays what revision the repository was committed to
              */
             committedRevision = wc.makeDirectory(url, "making a new directory at '" + url + "'").getNewRevision();

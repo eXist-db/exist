@@ -27,6 +27,6 @@ import org.exist.security.Realm;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class RealmImpl implements Realm {
+public class RealmImpl {
 
 }
