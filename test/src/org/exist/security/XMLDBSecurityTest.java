@@ -207,7 +207,7 @@ public class XMLDBSecurityTest {
     @Before
     public void setup() {
         try {
-            Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", null);
+            Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
             UserImpl user = new UserImpl("test1", "test1", "users");
@@ -242,7 +242,7 @@ public class XMLDBSecurityTest {
     @After
     public void cleanup() {
         try {
-            Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", null);
+            Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             CollectionManagementService cms =
                     (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             if (root.getChildCollection("securityTest1") != null)
@@ -265,7 +265,7 @@ public class XMLDBSecurityTest {
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
             assertNotNull(root);
             
             server = new JettyStart();
@@ -280,7 +280,7 @@ public class XMLDBSecurityTest {
     @AfterClass
     public static void stopServer() {
         try {
-         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", null);
+         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
             DatabaseInstanceManager mgr =
                 (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
