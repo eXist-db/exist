@@ -91,7 +91,8 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private ExistPDP pdp;
 
-    public SecurityManagerImpl() {
+    public SecurityManagerImpl(BrokerPool pool) {
+    	this.pool = pool;
        
     }
 	/**
@@ -104,7 +105,10 @@ public class SecurityManagerImpl implements SecurityManager {
 	 * @param sysBroker
 	 */
     public void attach(BrokerPool pool, DBBroker sysBroker) {
-       this.pool = pool;
+    	groups = new Int2ObjectHashMap<Group>(65);
+    	users = new Int2ObjectHashMap<User>(65);
+
+    	this.pool = pool;
        
        TransactionManager transact = pool.getTransactionManager();
        Txn txn = null;

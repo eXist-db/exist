@@ -53,6 +53,7 @@ import org.exist.scheduler.Scheduler;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
@@ -710,17 +711,6 @@ public class BrokerPool extends Observable {
         return true;
     }
     
-    protected SecurityManager newSecurityManager() 
-    {
-       try {
-          Class<?> smClass = (Class<?>)conf.getProperty(PROPERTY_SECURITY_CLASS);
-          return (SecurityManager)smClass.newInstance();
-       } catch (Throwable ex) {
-          LOG.warn("Exception while instantiating security manager class.", ex);
-       }
-       return null;
-    }
-
     /**Initializes the database instance.
 	 * @throws EXistException
 	 */
@@ -733,7 +723,10 @@ public class BrokerPool extends Observable {
 
         signalSystemStatus(SIGNAL_STARTUP);
 
-		//REFACTOR : construct then configure
+        //create the security manager
+        securityManager = new SecurityManagerImpl(this);
+
+        //REFACTOR : construct then configure
         cacheManager = new DefaultCacheManager(this);
 
         //REFACTOR : construct then configure
@@ -820,15 +813,11 @@ public class BrokerPool extends Observable {
         // WM: attention: a small change in the sequence of calls can break
         // either normal startup or recovery.
         
-        //create the security manager
-		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?
-        // WM: there's only one security manager per BrokerPool, but it needs a DBBroker instance to read
-        // the system collection.
-		SecurityManager localSecurityManager = newSecurityManager();
-		securityManager = null;
-		localSecurityManager.attach(this, broker);
-		securityManager = localSecurityManager;
 		status = OPERATING;
+
+		//wake-up the security manager
+        securityManager.attach(this, broker);
+
 		//have to do this after initializing = false
 		// so that the policies collection is saved
 		if(securityManager.isXACMLEnabled())
@@ -1396,8 +1385,7 @@ public class BrokerPool extends Observable {
          *  A broker is already available in these methods, so we use it here.
          */
 	public void reloadSecurityManager(DBBroker broker) {
-		securityManager = newSecurityManager();
-		securityManager.attach(this, broker);
+		securityManager.attach(this, broker); //XXX: reload
 		LOG.debug("Security manager reloaded");
 	}
 
