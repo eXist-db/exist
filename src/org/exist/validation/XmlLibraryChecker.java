@@ -21,8 +21,8 @@
  */
 package org.exist.validation;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ServiceLoader;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerFactory;
 import org.apache.log4j.Logger;
 
 import org.exist.util.ExistSAXParserFactory;
+
 import org.xml.sax.XMLReader;
 
 /**
@@ -44,26 +45,22 @@ public class XmlLibraryChecker {
      * Possible XML Parsers, at least one must be valid
      */
     private final static ClassVersion[] validParsers = {
-        new ClassVersion("Xerces", "Xerces-J 2.10.0",
-                "org.apache.xerces.impl.Version.getVersion()")
+        new ClassVersion("Xerces", "Xerces-J 2.10.0", "org.apache.xerces.impl.Version.getVersion()")
     };
     
     /**
      * Possible XML Transformers, at least one must be valid
      */
     private final static ClassVersion[] validTransformers = {
-        new ClassVersion("Saxon", "8.9.0", 
-                "net.sf.saxon.Version.getProductVersion()"),
-        new ClassVersion("Xalan", "Xalan Java 2.7.1", 
-                "org.apache.xalan.Version.getVersion()"),
+        new ClassVersion("Saxon", "8.9.0", "net.sf.saxon.Version.getProductVersion()"),
+        new ClassVersion("Xalan", "Xalan Java 2.7.1", "org.apache.xalan.Version.getVersion()"),
     };
     
     /**
      * Possible XML resolvers, at least one must be valid
      */
     private final static ClassVersion[] validResolvers = {
-        new ClassVersion("Resolver", "XmlResolver 1.2", 
-                "org.apache.xml.resolver.Version.getVersion()"),
+        new ClassVersion("Resolver", "XmlResolver 1.2", "org.apache.xml.resolver.Version.getVersion()"),
     };
 	
 	
@@ -100,7 +97,7 @@ public class XmlLibraryChecker {
             parserClass = getClassName(classId);
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ex.getMessage());
         }
         return parserClass;
     }
@@ -118,8 +115,9 @@ public class XmlLibraryChecker {
             Transformer transformer = factory.newTransformer();
             String classId = transformer.toString();
             transformerClass = getClassName(classId);
+
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ex.getMessage());
         }
         return transformerClass;    
     }
@@ -128,8 +126,24 @@ public class XmlLibraryChecker {
      *  Perform checks on parsers, transformers and resolvers.
      */
     public static void check() {
-        StringBuilder message 				= new StringBuilder();
-		boolean		 invalidVersionFound	= false;
+
+        StringBuilder message = new StringBuilder();
+
+        /*
+         * Parser
+         */
+        message = new StringBuilder();
+        ServiceLoader<SAXParserFactory> allSax = ServiceLoader.load(SAXParserFactory.class);
+        for(SAXParserFactory sax : allSax){
+            message.append(getClassName(sax.toString()));
+            message.append(" ");
+        }
+        logger.debug("Detected SAXParserFactory classes: " + message.toString());
+
+        
+        message = new StringBuilder();
+
+		boolean	invalidVersionFound	= false;
 
         if( hasValidClassVersion( "Parser", validParsers, message ) ) {
 			logger.info( message.toString() );
@@ -139,7 +153,21 @@ public class XmlLibraryChecker {
 			invalidVersionFound	= true;
         }
 
+        /*
+         * Transformer
+         */
         message = new StringBuilder();
+
+        ServiceLoader<TransformerFactory> allXsl = ServiceLoader.load(TransformerFactory.class);
+        for(TransformerFactory xsl : allXsl){
+            message.append(getClassName(xsl.toString()));
+            message.append(" ");
+        }
+        logger.debug("Detected TransformerFactory classes: " + message.toString());
+
+        
+        message = new StringBuilder();
+
         if( hasValidClassVersion( "Transformer", validTransformers, message ) ) {
             logger.info( message.toString() );
         } else {
@@ -148,6 +176,9 @@ public class XmlLibraryChecker {
 			invalidVersionFound	= true;
         }
 
+        /*
+         * Resolver
+         */
         message = new StringBuilder();
         if( hasValidClassVersion( "Resolver", validResolvers, message ) ) {
             logger.info( message.toString() );
@@ -169,7 +200,7 @@ public class XmlLibraryChecker {
 
     /**
      *  Check if for the specified service object one of the required
-     * classes is availabe.
+     * classes is available.
      * 
      * @param type  Parser, Transformer or Resolver, used for reporting only.
      * @param validClasses Array of valid classes. 
@@ -181,34 +212,34 @@ public class XmlLibraryChecker {
 
         String sep = System.getProperty("line.separator");
 
-        message.append("Looking for a valid " + type + "..." + sep);
+        message.append("Looking for a valid ").append(type).append("...").append(sep);
 
-        for (int i = 0; i < validClasses.length; i++) {
-            String actualVersion = validClasses[i].getActualVersion();
+        for (ClassVersion validClass : validClasses) {
+            String actualVersion = validClass.getActualVersion();
 
-            message.append("Checking for " + validClasses[i].getSimpleName());
+            message.append("Checking for ").append(validClass.getSimpleName());
 
             if (actualVersion != null) {
-                message.append(", found version " + actualVersion);
+                message.append(", found version ").append(actualVersion);
 
                 if (actualVersion.compareToIgnoreCase(
-                                validClasses[i].getRequiredVersion()) >= 0) {
-                    message.append(sep + "OK!" + sep);
+                                validClass.getRequiredVersion()) >= 0) {
+                    message.append(sep).append("OK!").append(sep);
                     return true;
                 } else {
-                    message.append(" needed version " + 
-                                validClasses[i].getRequiredVersion() + sep);
+                    message.append(" needed version ").append(validClass.getRequiredVersion()).append(sep);
                 }
+                
             } else {
-                message.append(", not found!" + sep);
+                message.append(", not found!").append(sep);
             }
         }
 
-        message.append("Warning: Failed find a valid " + type + "!" + sep);
-        message.append(sep + "Please add an appropriate " + type 
-                + " to the " + "class-path, e.g. in the 'endorsed' folder of " 
-                + "the servlet container or in the 'endorsed' folder " 
-                + "of the JRE." + sep);
+        message.append("Warning: Failed find a valid ").append(type).append("!").append(sep);
+        message.append(sep).append("Please add an appropriate ").append(type)
+               .append(" to the " + "class-path, e.g. in the 'endorsed' folder of "
+                + "the servlet container or in the 'endorsed' folder of the JRE.")
+                .append(sep);
 
         return false;
     }
@@ -326,10 +357,8 @@ public class XmlLibraryChecker {
                 actualVersion = (String) getVersionMethod
                         .invoke(versionClass, (Object[]) null);
                 
-            } catch (ClassNotFoundException cfe) {
-            } catch (NoSuchMethodException nsme) {
-            } catch (InvocationTargetException ite) {
-            } catch (IllegalAccessException iae) {
+            } catch (Exception ex) {
+                logger.debug(ex.getMessage());
             }
 
             //return the actual version
