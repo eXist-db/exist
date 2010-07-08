@@ -34,6 +34,15 @@
         </address>
       </affiliation>
     </author>
+    <author>
+      <firstname>James</firstname>
+      <surname>Fuller</surname>
+      <affiliation>
+        <address format="linespecific">
+          <email>jim dot fuller at webcomposite.com</email>
+        </address>
+      </affiliation>
+    </author>
   </bookinfo>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
   <chapter>
@@ -288,6 +297,20 @@
       <para>
         <command>Class:</command>&#160;static xquery module via extensions/xprocxq.jar
           <command>Namespace:</command>&#160;http://xproc.net/xproc </para>
+    </section>
+
+    <section id="module_xmlcalabash">
+      <title>XML Calabash Module</title>
+      <para>This module provides simple integration with XML Calabash XProc engine.</para>
+      <para>
+        <command>Creator:</command>&#160;<dc:creator>
+          <ulink url="http://www.webcomposite.com">James R. Fuller</ulink>
+        </dc:creator>
+        <command>Licence:</command>&#160;MPL v1.1
+      </para>
+      <para>
+        <command>Class:</command>&#160;org.exist.xquery.modules.xmlcalabash 
+          <command>Namespace:</command>&#160; http://xmlcalabash.com </para>
     </section>
   </chapter>
 </book>
