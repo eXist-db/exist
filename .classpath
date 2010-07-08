@@ -90,7 +90,6 @@
 	<classpathentry kind="lib" path="lib/optional/jing-20091111.jar"/>
 	<classpathentry kind="lib" path="lib/user/commons-compress-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/servlet-api-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jsp-api-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-api-4.3.jar"/>
@@ -125,21 +124,7 @@
 	<classpathentry kind="lib" path="extensions/cocoon/lib/util.concurrent-1.3.4.jar"/>
 	<classpathentry kind="lib" path="extensions/security/openid/lib/openid4java-0.9.5.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.0-RC1.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-continuation-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-io-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-security-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-server-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlet-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlets-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jsp/jetty-jsp-2.1-7.0.1.v20091125.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jsp/jsp-2.1-glassfish-9.1.1.B60.25.p2.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jsp/jsp-api-2.1-glassfish-9.1.1.B60.25.p2.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.3.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-7.0.1.v20091125.jar"/>
 	<classpathentry kind="lib" path="lib/user/activation-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/batik-all-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/user/nekohtml-1.9.11.jar"/>
@@ -156,5 +141,17 @@
 	<classpathentry kind="lib" path="lib/user/icu4j-4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/saxon9he.jar"/>
 	<classpathentry kind="lib" path="lib/user/svnkit-cli.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-continuation-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-io-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-security-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-server-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlet-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlets-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-websocket-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-7.1.5.v20100705.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
