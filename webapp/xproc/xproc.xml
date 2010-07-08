@@ -30,6 +30,9 @@
             <important>
                 <para>At the moment eXist XProc support is very incomplete,updates will be posted to eXist mailing list on current status.</para>
             </important>
+            <important>
+                <para>There is also a nascent XMLCalabash extension which you can use to process xproc pipelines.</para>
+            </important>
     </section>
 
     <section>
