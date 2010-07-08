@@ -75,7 +75,7 @@ public class DateRangeFunctions extends BasicFunction {
             "Generates a range of xs:time values, incremented cumulatively by a fixed duration from a start xs:time",
             new SequenceType[] {
                 new FunctionParameterSequenceType("start-time", Type.TIME, Cardinality.EXACTLY_ONE, "The time to start at."),
-                new FunctionParameterSequenceType("increment", Type.DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
+                new FunctionParameterSequenceType("increment", Type.DAY_TIME_DURATION, Cardinality.EXACTLY_ONE, "The duration increment."),
                 new FunctionParameterSequenceType("iterations", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of increments to generate.")
             },
             new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_MORE, "the range(s)")

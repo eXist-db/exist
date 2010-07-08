@@ -53,7 +53,7 @@ public class DurationValue extends ComputableValue {
 		SIXTY = BigInteger.valueOf(60);
 	protected static final BigDecimal
 		SIXTY_DECIMAL = BigDecimal.valueOf(60),
-		ZERO_DECIMAL = BigDecimal.valueOf(0);	// TODO: replace with BigDecimal.ZERO in JDK 1.5
+		ZERO_DECIMAL = BigDecimal.ZERO;
 	
 	protected static final Duration CANONICAL_ZERO_DURATION =
 		TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
