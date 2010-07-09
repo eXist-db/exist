@@ -65,7 +65,7 @@ public class FunctionFactory {
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function near() requires two arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function near() requires two arguments");
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
 					throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to near is empty");
@@ -97,7 +97,7 @@ public class FunctionFactory {
 			// phrase(node-set, string)
             if (local.equals("phrase")) {
                 if (params.size() < 2)
-                    throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function phrase() requires two arguments");
+                    throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function phrase() requires two arguments");
                 PathExpr p1 = (PathExpr) params.get(1);
                 if (p1.getLength() == 0)
                     throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to phrase is empty");
@@ -112,9 +112,9 @@ public class FunctionFactory {
 			// starts-with(node-set, string)
 			if (local.equals("starts-with")) {
 				if (params.size() < 2)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function starts-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function starts-with() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function starts-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function starts-with() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
@@ -134,9 +134,9 @@ public class FunctionFactory {
 			// ends-with(node-set, string)
 			if (local.equals("ends-with")) {
 				if (params.size() < 2)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017 : Function ends-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017 : Function ends-with() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017 : Function ends-with() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017 : Function ends-with() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
@@ -156,9 +156,9 @@ public class FunctionFactory {
 			// contains(node-set, string)
 			if (local.equals("contains")) {
 				if (params.size() < 2)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function contains() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function contains() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function contains() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function contains() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
@@ -178,9 +178,9 @@ public class FunctionFactory {
 			// equals(node-set, string)
 			if (local.equals("equals")) {
 				if (params.size() < 2)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function equals() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function equals() requires two or three arguments");
 				if (params.size() > 3)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "XPST0017: Function equals() requires two or three arguments");
+					throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function equals() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
@@ -203,7 +203,7 @@ public class FunctionFactory {
 		// If yes, the function is a constructor function
 		} else if(uri.equals(Namespaces.SCHEMA_NS) || uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
 			if(params.size() != 1)
-				throw new XPathException(ast.getLine(), ast.getColumn(), "Wrong number of arguments for constructor function");
+				throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);
 			int code= Type.getType(qname);
 			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
@@ -248,7 +248,7 @@ public class FunctionFactory {
 					if (def == null) {
 						List<FunctionSignature> funcs = ((InternalModule)module).getFunctionsByName(qname);
 						if (funcs.size() == 0)
-							throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() + "() " +
+							throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function " + qname.getStringValue() + "() " +
 								" is not defined in module namespace: " + qname.getNamespaceURI());
 						else {
 							StringBuilder buf = new StringBuilder();
@@ -275,7 +275,7 @@ public class FunctionFactory {
                     // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());
 					if(func == null)
-						throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() +
+						throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function " + qname.getStringValue() +
                                 "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
 					FunctionCall call = new FunctionCall(context, func);
 					call.setArguments(params);
