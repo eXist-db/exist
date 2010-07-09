@@ -52,7 +52,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				//Always set !
 				//!duration.getField(DatatypeConstants.SECONDS).equals(BigInteger.ZERO))
 				duration.isSet(DatatypeConstants.SECONDS))
-				throw new XPathException("The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
+				throw new XPathException("err:XPTY0004: The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
 						" since it specifies days, hours, minutes or seconds values");
 		}		
 	}
@@ -65,7 +65,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		try {
 			return TimeUtils.getInstance().newDurationYearMonth(StringValue.trimWhitespace(str));
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(Type.YEAR_MONTH_DURATION) +
+			throw new XPathException("err:FORG0001: cannot construct " + Type.getTypeName(Type.YEAR_MONTH_DURATION) +
 					" from \"" + str + "\"");            
 		}
 	}
@@ -123,7 +123,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				return new UntypedAtomicValue(getStringValue());				
 			default :
 				throw new XPathException(
-					"XPTY0004: cannot cast 'xs:yearMonthDuration(\"" + getStringValue() + 
+					"err:XPTY0004: cannot cast 'xs:yearMonthDuration(\"" + getStringValue() + 
 					"\")' to " + Type.getTypeName(requiredType));
 		}
 	}
@@ -148,11 +148,11 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		if (other instanceof NumericValue) {
 			//If $arg2 is NaN an error is raised [err:FOCA0005]
 			if (((NumericValue)other).isNaN()) {
-				throw new XPathException("FOCA0005: Operand is not a number");				
+				throw new XPathException("err:FOCA0005: Operand is not a number");				
 			}		
 			//If $arg2 is positive or negative infinity, the result overflows
 			if (((NumericValue)other).isInfinite()) {
-				throw new XPathException("FODT0002: Multiplication by infinity overflow");		
+				throw new XPathException("err:FODT0002: Multiplication by infinity overflow");		
 			}		
 		}
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
@@ -173,14 +173,14 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		}
 		if (other instanceof NumericValue) {
 			if (((NumericValue)other).isNaN()) {
-				throw new XPathException("FOCA0005: Operand is not a number");				
+				throw new XPathException("err:FOCA0005: Operand is not a number");				
 			}
 			if (((NumericValue)other).isInfinite()) {
 				return new YearMonthDurationValue("P0M");
 			}
 			//If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
 			if (((NumericValue)other).isZero()) { 
-				throw new XPathException("FODT0002: Division by zero overflow");
+				throw new XPathException("err:FODT0002: Division by zero overflow");
 			}			
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
@@ -199,7 +199,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	}
 	
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+        throw new XPathException("err:FORG0006: value of type " + Type.getTypeName(getType()) +
             " has no boolean value.");
     }
 }

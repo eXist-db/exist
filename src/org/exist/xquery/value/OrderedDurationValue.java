@@ -26,15 +26,15 @@ abstract class OrderedDurationValue extends DurationValue {
 		if (operator != Constants.EQ && operator != Constants.NEQ){
 			if (getType() == Type.DURATION)
 				throw new XPathException(
-						"XPTY0004: cannot compare unordered " + Type.getTypeName(getType()) + " to "
+						"err:XPTY0004: cannot compare unordered " + Type.getTypeName(getType()) + " to "
 						+ Type.getTypeName(other.getType()));
 			if (other.getType()== Type.DURATION) 
 				throw new XPathException(
-					"XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to unordered "
+					"err:XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to unordered "
 					+ Type.getTypeName(other.getType()));
 			if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) 
 				throw new XPathException(
-					"XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to "
+					"err:XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to "
 					+ Type.getTypeName(other.getType()));
 		}
 		switch (operator) {
@@ -124,7 +124,7 @@ abstract class OrderedDurationValue extends DurationValue {
 					gc.setYear(gc.getYear() - 1);
 				return date.createSameKind(gc); 
 			default:
-				throw new XPathException("XPTY0004: cannot add " + 
+				throw new XPathException("err:XPTY0004: cannot add " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "')");		}
 	}
@@ -159,7 +159,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			return date.createSameKind(gc);
 		*/
 		default:
-			throw new XPathException("XPTY0004: cannot substract " + 
+			throw new XPathException("err:XPTY0004: cannot substract " + 
 					Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 					Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 		}

@@ -160,7 +160,7 @@ public abstract class AbstractSequence implements Sequence {
 				return true;
 			else
 				throw new XPathException(
-					"error FORG0006: effectiveBooleanValue: first item of '" + 
+					"err:FORG0006: effectiveBooleanValue: first item of '" + 
 	                (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
 	                "' is not a node, and sequence length > 1");
 		}
@@ -196,7 +196,7 @@ public abstract class AbstractSequence implements Sequence {
 				return true;
 			// In all other cases, fn:boolean raises a type error [err:FORG0006].
 			throw new XPathException(
-				"error FORG0006: effectiveBooleanValue: sequence of length 1, " +
+				"err:FORG0006: effectiveBooleanValue: sequence of length 1, " +
 				"but not castable to a number or Boolean");
 		}
 		

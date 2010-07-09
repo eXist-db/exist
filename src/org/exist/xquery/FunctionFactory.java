@@ -252,6 +252,7 @@ public class FunctionFactory {
 								" is not defined in module namespace: " + qname.getNamespaceURI());
 						else {
 							StringBuilder buf = new StringBuilder();
+                            buf.append("err:XPST0017: ");
                             buf.append("Unexpectedly received ");
                             buf.append(params.size() + " parameter(s) in call to function ");
                             buf.append("'" + qname.getStringValue() +  "()'. ");

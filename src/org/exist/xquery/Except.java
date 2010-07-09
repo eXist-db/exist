@@ -64,11 +64,11 @@ public class Except extends CombiningExpression {
             result = Sequence.EMPTY_SEQUENCE;
         } else if (rval.isEmpty()) {
             if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
-                throw new XPathException(this, "Error XPTY0004 : except operand is not a node sequence");
+                throw new XPathException(this, "Err:XPTY0004 : except operand is not a node sequence");
             result = lval;                  
         } else {
             if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-                throw new XPathException(this, "Error XPTY0004 : except operand is not a node sequence");
+                throw new XPathException(this, "Err:XPTY0004 : except operand is not a node sequence");
             if (lval.isPersistentSet() && rval.isPersistentSet())
                 result = lval.toNodeSet().except(rval.toNodeSet());
             else { 
