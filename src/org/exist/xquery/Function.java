@@ -174,7 +174,7 @@ public abstract class Function extends PathExpr {
 	public void setArguments(List<Expression> arguments) throws XPathException {
 		if ((!mySignature.isOverloaded())
 			&& arguments.size() != mySignature.getArgumentCount())
-			throw new XPathException(this,
+			throw new XPathException(this, "err:XPST0017: "+
 				"number of arguments to function "
 					+ getName()
 					+ " doesn't match function signature (expected "

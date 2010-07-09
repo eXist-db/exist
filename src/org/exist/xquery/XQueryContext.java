@@ -2853,7 +2853,7 @@ public class XQueryContext
             UserDefinedFunction func = resolveFunction( call.getQName(), call.getArgumentCount() );
 
             if( func == null ) {
-                throw( new XPathException( call, "Call to undeclared function: " + call.getQName().getStringValue() ) );
+                throw( new XPathException( call, "err:XPST0017: Call to undeclared function: " + call.getQName().getStringValue() ) );
             }
             call.resolveForwardReference( func );
         }

@@ -44,7 +44,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	DayTimeDurationValue(Duration duration) throws XPathException {
 		super(duration);
 		if (duration.isSet(DatatypeConstants.YEARS) || duration.isSet(DatatypeConstants.MONTHS))
-			throw new XPathException("the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
+			throw new XPathException("err:XPTY0004: the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
 	}
 
 	public DayTimeDurationValue(long millis) throws XPathException {
