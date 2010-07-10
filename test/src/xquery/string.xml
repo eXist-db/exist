@@ -18,50 +18,93 @@
     </tearDown>
     <test output="text">
         <task>fn:substring1</task>
-        <code>substring('query', 1)</code>
+        <code>fn:substring('query', 1)</code>
         <expected>query</expected>
     </test>
 
     <test output="text">
         <task>fn:substring2</task>
-        <code>substring('query', 1, 1)</code>
+        <code>fn:substring('query', 1, 1)</code>
         <expected>q</expected>
     </test>
 
     <test output="text">
         <task>fn:substring3</task>
-        <code>substring('query', 3)</code>
+        <code>fn:substring('query', 3)</code>
         <expected>ery</expected>
     </test>
 
     <test output="text">
         <task>fn:substring4</task>
-        <code>substring('', 1)</code>
+        <code>fn:substring('', 1)</code>
         <expected></expected>
     </test>
 
     <test output="text">
         <task>fn:substring5</task>
-        <code>substring((), 1)</code>
+        <code>fn:substring((), 1)</code>
         <expected></expected>
     </test>
 
     <test output="text">
         <task>fn:substring6</task>
-        <code>substring('query', -2, 5)</code>
+        <code>fn:substring('query', -2, 5)</code>
         <expected>qu</expected>
     </test>
 
     <test output="text">
         <task>fn:substring-after1</task>
-        <code>substring-after('query', 'u')</code>
+        <code>fn:substring-after('query', 'u')</code>
         <expected>ery</expected>
     </test>
 
     <test output="text">
         <task>fn:substring-before1</task>
-        <code>substring-before('query', 'r')</code>
+        <code>fn:substring-before('query', 'r')</code>
         <expected>que</expected>
     </test>    
+
+
+    <test output="text">
+        <task>fn:concat1</task>
+        <code>fn:concat('a', 'b')</code>
+        <expected>ab</expected>
+    </test>
+
+    <!--test output="text">
+        <task>fn:concat2</task>
+        <code>fn:concat('a', <x>b</x>, 'c')</code>
+        <expected>abc</expected>
+    </test-->
+
+    <test output="text">
+        <task>fn:string-join1</task>
+        <code>fn:string-join( ('a', 'b', 'c'), '=')</code>
+        <expected>a=b=c</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:lower-case</task>
+        <code>fn:lower-case('aaaAaaBaaaCaaa')</code>
+        <expected>aaaaaabaaacaaa</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:upper-case</task>
+        <code>fn:upper-case('aaaAaaBaaaCaaa')</code>
+        <expected>AAAAAABAAACAAA</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:normalize-space</task>
+        <code>normalize-space('existdb       rocks')</code>
+        <expected>existdb rocks</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:string-length</task>
+        <code>fn:string-length('existdb')</code>
+        <expected>7</expected>
+    </test>
 
 </TestSet>
