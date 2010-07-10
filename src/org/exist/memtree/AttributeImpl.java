@@ -109,7 +109,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	}
 
 	public String getBaseURI() {
-		Element e = getOwnerElement();
+		Node e = document.getNode(document.attrParent[nodeNumber]);
 		if (e != null)
 			return e.getBaseURI();
 		
