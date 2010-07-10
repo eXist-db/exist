@@ -6,6 +6,6 @@ public class XMLCalabashTests extends TestRunner {
 
     @Override
     protected String getDirectory() {
-        return "test/src/xquery/xmlcalabash";
+        return "extensions/modules/src/org.exist.xquery/modules/xmlcalabash";
     }
 }
