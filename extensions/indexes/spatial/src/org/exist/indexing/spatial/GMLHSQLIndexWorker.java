@@ -57,69 +57,70 @@ import com.vividsolutions.jts.io.ParseException;
 
 public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 
-	private static final Logger LOG = Logger.getLogger(GMLHSQLIndexWorker.class);
-	
+    private static final Logger LOG = Logger.getLogger(GMLHSQLIndexWorker.class);
+
     public GMLHSQLIndexWorker(GMLHSQLIndex index, DBBroker broker) {
-    	super(index, broker);
-    	//TODO : evaluate one connection per worker
+        super(index, broker);
+        //TODO : evaluate one connection per worker
         /*
         try {
-	         conn = DriverManager.getConnection("jdbc:hsqldb:" + index.getDataDir() + "/" + 
-					index.db_file_name_prefix + ";shutdown=true", "sa", "");
+            conn = DriverManager.getConnection("jdbc:hsqldb:" + index.getDataDir() + "/" + 
+                index.db_file_name_prefix + ";shutdown=true", "sa", "");
         } catch (SQLException e) {
         	LOG.error(e);
         }
         */
     }
     
+    @Override
     protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
-    	PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
-        		/*1*/ "DOCUMENT_URI, " +            		
-        		/*2*/ "NODE_ID_UNITS, " + 
-        		/*3*/ "NODE_ID, " +        			
-        		/*4*/ "GEOMETRY_TYPE, " +
-        		/*5*/ "SRS_NAME, " +
-        		/*6*/ "WKT, " +
-        		/*7*/ "WKB, " +
-    			/*8*/ "MINX, " +
-    			/*9*/ "MAXX, " +
-    			/*10*/ "MINY, " +
-    			/*11*/ "MAXY, " +
-    			/*12*/ "CENTROID_X, " +
-    			/*13*/ "CENTROID_Y, " +
-    			/*14*/ "AREA, " +
-    			//Boundary ?        		
-        		/*15*/ "EPSG4326_WKT, " +
-        		/*16*/ "EPSG4326_WKB, " +
-        		/*17*/ "EPSG4326_MINX, " +
-    			/*18*/ "EPSG4326_MAXX, " +
-    			/*19*/ "EPSG4326_MINY, " +
-    			/*20*/ "EPSG4326_MAXY, " +
-    			/*21*/ "EPSG4326_CENTROID_X, " +
-    			/*22*/ "EPSG4326_CENTROID_Y, " +
-    			/*23*/ "EPSG4326_AREA," +
-    			//Boundary ?
-    			/*24*/ "IS_CLOSED, " +
-    			/*25*/ "IS_SIMPLE, " +
-    			/*26*/ "IS_VALID" +    			
-        		") VALUES (" +
-        			"?, ?, ?, ?, ?, " +
-        			"?, ?, ?, ?, ?, " +
-        			"?, ?, ?, ?, ?, " +
-        			"?, ?, ?, ?, ?, " +
-        			"?, ?, ?, ?, ?, " +
-        			"?"
-        		+ ")"
-            );       
-    	try {
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
+                /*1*/ "DOCUMENT_URI, " +
+                /*2*/ "NODE_ID_UNITS, " +
+                /*3*/ "NODE_ID, " +
+                /*4*/ "GEOMETRY_TYPE, " +
+                /*5*/ "SRS_NAME, " +
+                /*6*/ "WKT, " +
+                /*7*/ "WKB, " +
+                /*8*/ "MINX, " +
+                /*9*/ "MAXX, " +
+                /*10*/ "MINY, " +
+                /*11*/ "MAXY, " +
+                /*12*/ "CENTROID_X, " +
+                /*13*/ "CENTROID_Y, " +
+                /*14*/ "AREA, " +
+                //Boundary ?
+                /*15*/ "EPSG4326_WKT, " +
+                /*16*/ "EPSG4326_WKB, " +
+                /*17*/ "EPSG4326_MINX, " +
+                /*18*/ "EPSG4326_MAXX, " +
+                /*19*/ "EPSG4326_MINY, " +
+                /*20*/ "EPSG4326_MAXY, " +
+                /*21*/ "EPSG4326_CENTROID_X, " +
+                /*22*/ "EPSG4326_CENTROID_Y, " +
+                /*23*/ "EPSG4326_AREA," +
+                //Boundary ?
+                /*24*/ "IS_CLOSED, " +
+                /*25*/ "IS_SIMPLE, " +
+                /*26*/ "IS_VALID" +
+                ") VALUES (" +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?"
+                + ")"
+            );
+        try {
             Geometry EPSG4326_geometry = null;
             try {
-            	EPSG4326_geometry = transformGeometry(geometry, srsName, "EPSG:4326");
+                EPSG4326_geometry = transformGeometry(geometry, srsName, "EPSG:4326");
             } catch (SpatialIndexException e) {
-	        	//Transforms the exception into an SQLException.
-	        	SQLException ee = new SQLException(e.getMessage());
-	        	ee.initCause(e);
-	        	throw ee;
+                //Transforms the exception into an SQLException.
+                SQLException ee = new SQLException(e.getMessage());
+                ee.initCause(e);
+                throw ee;
             }
             /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());	
             /*NODE_ID_UNITS*/ ps.setInt(2, nodeId.units());
@@ -131,72 +132,75 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             /*WKT*/ ps.setString(6, wktWriter.write(geometry));
             /*WKB*/ ps.setBytes(7, wkbWriter.write(geometry));
             /*MINX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMinX());
-        	/*MAXX*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
-        	/*MINY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
-        	/*MAXY*/ ps.setDouble(11, geometry.getEnvelopeInternal().getMaxY());
-        	/*CENTROID_X*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().x);   
-        	/*CENTROID_Y*/ ps.setDouble(13, geometry.getCentroid().getCoordinate().y);  
+            /*MAXX*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
+            /*MINY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
+            /*MAXY*/ ps.setDouble(11, geometry.getEnvelopeInternal().getMaxY());
+            /*CENTROID_X*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().x);
+            /*CENTROID_Y*/ ps.setDouble(13, geometry.getCentroid().getCoordinate().y);
             //geometry.getRepresentativePoint()
-        	/*AREA*/ ps.setDouble(14, geometry.getArea());
-        	//Boundary ?
+            /*AREA*/ ps.setDouble(14, geometry.getArea());
+            //Boundary ?
             /*EPSG4326_WKT*/ ps.setString(15, wktWriter.write(EPSG4326_geometry));
-            /*EPSG4326_WKB*/ ps.setBytes(16, wkbWriter.write(EPSG4326_geometry));		
-        	/*EPSG4326_MINX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
-        	/*EPSG4326_MAXX*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
-        	/*EPSG4326_MINY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
-        	/*EPSG4326_MAXY*/ ps.setDouble(20, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
-        	/*EPSG4326_CENTROID_X*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().x);   
-        	/*EPSG4326_CENTROID_Y*/ ps.setDouble(22, EPSG4326_geometry.getCentroid().getCoordinate().y);  
+            /*EPSG4326_WKB*/ ps.setBytes(16, wkbWriter.write(EPSG4326_geometry));
+            /*EPSG4326_MINX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+            /*EPSG4326_MAXX*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+            /*EPSG4326_MINY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+            /*EPSG4326_MAXY*/ ps.setDouble(20, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
+            /*EPSG4326_CENTROID_X*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().x);
+            /*EPSG4326_CENTROID_Y*/ ps.setDouble(22, EPSG4326_geometry.getCentroid().getCoordinate().y);
             //EPSG4326_geometry.getRepresentativePoint()
-        	/*EPSG4326_AREA*/ ps.setDouble(23, EPSG4326_geometry.getArea());
-			//Boundary ?
-        	//As discussed earlier, all instances of SFS geometry classes
-        	//are topologically closed by definition.
-        	//For empty Curves, isClosed is defined to have the value false.
-        	/*IS_CLOSED*/ ps.setBoolean(24, !geometry.isEmpty());
-			/*IS_SIMPLE*/ ps.setBoolean(25, geometry.isSimple());
-			//Should always be true (the GML SAX parser makes a too severe check)
-			/*IS_VALID*/ ps.setBoolean(26, geometry.isValid());
-        	return (ps.executeUpdate() == 1);
-    	} finally {
-        	if (ps != null)
-        		ps.close();
+            /*EPSG4326_AREA*/ ps.setDouble(23, EPSG4326_geometry.getArea());
+            //Boundary ?
+            //As discussed earlier, all instances of SFS geometry classes
+            //are topologically closed by definition.
+            //For empty Curves, isClosed is defined to have the value false.
+            /*IS_CLOSED*/ ps.setBoolean(24, !geometry.isEmpty());
+            /*IS_SIMPLE*/ ps.setBoolean(25, geometry.isSimple());
+            //Should always be true (the GML SAX parser makes a too severe check)
+            /*IS_VALID*/ ps.setBoolean(26, geometry.isValid());
+            return (ps.executeUpdate() == 1);
+        } finally {
+            if (ps != null)
+                ps.close();
             //Let's help the garbage collector...
-        	geometry = null;
-    	}    	
+            geometry = null;
+        }
     }
    
+    @Override
     protected boolean removeDocumentNode(DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-        		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + 
-        		" WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
+                "DELETE FROM " + GMLHSQLIndex.TABLE_NAME + 
+                " WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
         	); 
         ps.setString(1, doc.getURI().toString());
         ps.setInt(2, nodeId.units());
         byte[] bytes = new byte[nodeId.size()];
-        nodeId.serialize(bytes, 0);        
+        nodeId.serialize(bytes, 0);
         ps.setBytes(3, bytes);
-        try {	 
-	        return (ps.executeUpdate() == 1);
-    	} finally {
-    		if (ps != null)
-    			ps.close();
-    	}       
+        try {
+            return (ps.executeUpdate() == 1);
+        } finally {
+            if (ps != null)
+                ps.close();
+        }
     }
     
-    protected int removeDocument(DocumentImpl doc, Connection conn) throws SQLException {    	
-    	PreparedStatement ps = conn.prepareStatement(
-    		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
-    	); 
+    @Override
+    protected int removeDocument(DocumentImpl doc, Connection conn) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+            "DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+        ); 
         ps.setString(1, doc.getURI().toString());
         try {
-	        return ps.executeUpdate();	 
-    	} finally {
-    		if (ps != null)
-    			ps.close();
-    	}       
-    }    
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null)
+                ps.close();
+        }
+    }
 
+    @Override
     protected int removeCollection(Collection collection, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
     		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE SUBSTRING(DOCUMENT_URI, 1, ?) = ?;"
@@ -206,47 +210,50 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         try {
         	return ps.executeUpdate();
     	} finally {
-    		if (ps != null)
-    			ps.close();
+    	    if (ps != null)
+    	        ps.close();
     	}
     }
     
     //Since an embedded HSQL has only one connection available (unless I'm totally dumb)
     //acquire and release the connection from the index, which is *the* connection's owner 
     
-    protected Connection acquireConnection() throws SQLException {   
-    	return index.acquireConnection(this.broker);
+    @Override
+    protected Connection acquireConnection() throws SQLException {
+        return index.acquireConnection(this.broker);
     }
     
-    protected void releaseConnection(Connection conn) throws SQLException {   
-    	index.releaseConnection(this.broker);
+    @Override
+    protected void releaseConnection(Connection conn) throws SQLException {
+        index.releaseConnection(this.broker);
     }
     
+    @Override
     protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException {
     	String extraSelection = null;
-    	String bboxConstraint = null;    	
-    	
+    	String bboxConstraint = null;
+
     	//TODO : generate it in AbstractGMLJDBCIndexWorker
     	String docConstraint = "";
     	boolean refine_query_on_doc = false;
     	if (contextSet != null) {
-        	if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
-        		refine_query_on_doc = true;
+    	    if(contextSet.getDocumentSet().getDocumentCount() <= index.getMaxDocsInContextToRefineQuery()) {
+        	    refine_query_on_doc = true;
         		DocumentImpl doc;
         		Iterator<DocumentImpl> it = contextSet.getDocumentSet().getDocumentIterator();
         		doc  = it.next();
         		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		while(it.hasNext()) {
-        			doc  = (DocumentImpl)it.next();
-        			docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
+        		    doc  = it.next();
+        		    docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		}
-            	if (LOG.isDebugEnabled()) {
-            		LOG.debug("Refine query on documents is enabled.");        		
+        		if (LOG.isDebugEnabled()) {
+            	    LOG.debug("Refine query on documents is enabled.");
             	}
-        	} else {
-            	if (LOG.isDebugEnabled()) {
-            		LOG.debug("Refine query on documents is disabled.");
-            	}        		
+    	    } else {
+        	    if (LOG.isDebugEnabled()) {
+            	    LOG.debug("Refine query on documents is disabled.");
+            	}
         	}
     	}   	
 
@@ -313,17 +320,17 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		//contextSet == null should be use to scan the whole index
         		if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
 	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);		
+	        		NodeProxy p = new NodeProxy(doc, nodeId);		
 	        		//Node is in the context : check if it is accurate
 	        		//contextSet.contains(p) would have made more sense but there is a problem with
 	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
-	        		if (contextSet == null || contextSet.get(p) != null) {        			
+	        		if (contextSet == null || contextSet.get(p) != null) {
 			        	boolean geometryMatches = false;
 			        	if (spatialOp == SpatialOperator.DISJOINT) {
 			        		//No BBox intersection : obviously disjoint
-			        		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||	        			
-				        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||	        			
-				        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||	        			
+			        		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||
+				        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||
+				        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||
 				        		rs.getDouble("EPSG4326_MINY") > EPSG4326_geometry.getEnvelopeInternal().getMaxY()) {
 				        			geometryMatches = true;
 						        		disjointPostFiltered++;	
@@ -331,27 +338,27 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 			        	}
 			        	//Possible match : check the geometry
 			        	if (!geometryMatches) {	
-			        		try {			        	
-					        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));			        	
+			        		try {
+					        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
 					        	switch (spatialOp) {
-					        	case SpatialOperator.EQUALS:	        		        		
+					        	case SpatialOperator.EQUALS:
 					        		geometryMatches = geometry.equals(EPSG4326_geometry);
 					        		break;
-					        	case SpatialOperator.DISJOINT:        		
+					        	case SpatialOperator.DISJOINT:
 					        		geometryMatches = geometry.disjoint(EPSG4326_geometry);
-					        		break;	        		
-					        	case SpatialOperator.INTERSECTS:        		
+					        		break;
+					        	case SpatialOperator.INTERSECTS:
 					        		geometryMatches = geometry.intersects(EPSG4326_geometry);
-					        		break;	        		
+					        		break;
 					        	case SpatialOperator.TOUCHES:
 						        	geometryMatches = geometry.touches(EPSG4326_geometry);
-					        		break;	        		
+					        		break;
 					        	case SpatialOperator.CROSSES:
 						        	geometryMatches = geometry.crosses(EPSG4326_geometry);
-					        		break;	        		
-					        	case SpatialOperator.WITHIN:        		
+					        		break;
+					        	case SpatialOperator.WITHIN:
 					        		geometryMatches = geometry.within(EPSG4326_geometry);
-					        		break;	        		
+					        		break;
 					        	case SpatialOperator.CONTAINS:	        		
 					        		geometryMatches = geometry.contains(EPSG4326_geometry);
 					        		break;	        		
@@ -360,23 +367,23 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 					        		break;	        		
 					        	}
 			    	        } catch (ParseException e) {
-			    	        	//Transforms the exception into an SQLException.
-			    	        	//Very unlikely to happen though...
-			    	        	SQLException ee = new SQLException(e.getMessage());
-			    	        	ee.initCause(e);
-			    	        	throw ee;
+			    	            //Transforms the exception into an SQLException.
+			    	            //Very unlikely to happen though...
+			    	            SQLException ee = new SQLException(e.getMessage());
+			    	            ee.initCause(e);
+			    	            throw ee;
 			    	        }
 			        	}
-			        	if (geometryMatches)        	
-				        	result.add(p);
+			        	if (geometryMatches)
+			        	    result.add(p);
 	        		}
         		}
     		}
     		if (LOG.isDebugEnabled()) {
-    			LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected" +
-    				(spatialOp == SpatialOperator.DISJOINT ? "(" + disjointPostFiltered + " post filtered)" : ""));
+    		    LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected" +
+    		        (spatialOp == SpatialOperator.DISJOINT ? "(" + disjointPostFiltered + " post filtered)" : ""));
     		}
-    		return result;	    	
+    		return result;
     	} finally {   
     		if (rs != null)
     			rs.close();
@@ -385,6 +392,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
+    @Override
     protected Map<Geometry, String> getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
@@ -414,6 +422,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
+    @Override
     protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
         	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
@@ -451,6 +460,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }
     
+    @Override
     protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326, Connection conn) throws SQLException {
     	//TODO : generate it in AbstractGMLJDBCIndexWorker
     	String docConstraint = "";
@@ -462,7 +472,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		doc  = it.next();
         		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		while(it.hasNext()) {
-        			doc  = (DocumentImpl)it.next();
+        			doc  = it.next();
         			docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		}
         	}
@@ -476,7 +486,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
     	);
-    	ResultSet rs = null;    	
+    	ResultSet rs = null;
     	try {
     		rs = ps.executeQuery();
     		Geometry[] result = new Geometry[contextSet.getLength()];
@@ -493,12 +503,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		}        
         		if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
 	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		NodeProxy p = new NodeProxy(doc, nodeId);
 	        		//Node is in the context : check if it is accurate
 	        		//contextSet.contains(p) would have made more sense but there is a problem with
 	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
 	        		if (contextSet.get(p) != null) {
-			        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
+			        	Geometry geometry = wkbReader.read(rs.getBytes(1));
 			        	result[index++] = geometry;
 	        		}
         		}
@@ -518,6 +528,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }      
     
+    @Override
     protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT " + propertyName + 
@@ -550,8 +561,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     			//Should be impossible    		
     			throw new SQLException("More than one geometry for node " + p);
     		}
-        	return result;    
-    	} finally {   
+        	return result;
+    	} finally {
     		if (rs != null)
     			rs.close();
     		if (ps != null)
@@ -559,6 +570,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }      
     
+    @Override
     protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
     	//TODO : generate it in AbstractGMLJDBCIndexWorker
     	String docConstraint = "";
@@ -570,7 +582,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		doc  = it.next();
         		docConstraint = "(DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		while(it.hasNext()) {
-        			doc  = (DocumentImpl)it.next();
+        			doc  = it.next();
         			docConstraint = docConstraint + " OR (DOCUMENT_URI = '" + doc.getURI().toString() + "')";
         		}
             	if (LOG.isDebugEnabled()) {
@@ -600,13 +612,13 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         			LOG.debug(e);
         			//Untested, but that is roughly what should be returned.
 	        		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-	        			result.add(BooleanValue.EMPTY_VALUE);
+	        			result.add(AtomicValue.EMPTY_VALUE);
 	        		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-	        			result.add(DoubleValue.EMPTY_VALUE);
+	        			result.add(AtomicValue.EMPTY_VALUE);
 	        		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-	        			result.add(StringValue.EMPTY_VALUE);
+	        			result.add(AtomicValue.EMPTY_VALUE);
 	        		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-	        			result.add(Base64Binary.EMPTY_VALUE);
+	        			result.add(AtomicValue.EMPTY_VALUE);
 	        		} else 
 	        			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
         			//Ignore since the broker has no right on the document
@@ -614,7 +626,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		}        		
         		if (contextSet.getDocumentSet().contains(doc.getDocId())) {
 	    			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-	        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+	        		NodeProxy p = new NodeProxy(doc, nodeId);
 	        		//Node is in the context : check if it is accurate
 	        		//contextSet.contains(p) would have made more sense but there is a problem with
 	        		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -641,22 +653,23 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }
     
+    @Override
     protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement(
 	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
 	    	);
     	ResultSet rs = null;
     	try {
-    		rs = ps.executeQuery();
-	        while (rs.next()) {	        	
-	        	Geometry original_geometry = wkbReader.read(rs.getBytes("WKB"));		        	
-	            if (!original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
-	            	LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
-	    			return false;
-	        	}		            	
-	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));		        	
-	            if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
-	            	LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
+    	    rs = ps.executeQuery();
+    	    while (rs.next()) {
+    	        Geometry original_geometry = wkbReader.read(rs.getBytes("WKB"));
+    	        if (!original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
+    	            LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
+    	            return false;
+    	        }
+    	        Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
+    	        if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
+    	            LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
 	    			return false;
 	        	}
 	            
@@ -758,29 +771,29 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	            	return false;
 	            }
 	            NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 	    		
-	            StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
+	            StoredNode node = broker.objectWith(new NodeProxy(doc, nodeId));
 	            if (node == null) {
 	            	LOG.info("Node " + nodeId + "doesn't exist");
 	            	return false;
 	            }	            	
-	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
+	        	if (!AbstractGMLJDBCIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
 	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
-	        				node.getNamespaceURI() + "' namespace. '" + 
-	        				GMLHSQLIndexWorker.GML_NS + "' was expected !");
+	        		        node.getNamespaceURI() + "' namespace. '" + 
+	        		        AbstractGMLJDBCIndexWorker.GML_NS + "' was expected !");
 	        		return false;
 	        	}
 	        	if (!original_geometry.getGeometryType().equals(node.getLocalName())) {
 	        		if ("Box".equals(node.getLocalName()) && "Polygon".equals(original_geometry.getGeometryType())) {
-	        			LOG.debug("GML indexed node (" + node.getNodeId() + ") is a gml:Box indexed as a polygon");
+	        		    LOG.debug("GML indexed node (" + node.getNodeId() + ") is a gml:Box indexed as a polygon");
 	        		} else {
-	        			LOG.info("GML indexed node (" + node.getNodeId() + ") has '" + 
-	        					node.getLocalName() + "' as its local name. '" + 
-	        					original_geometry.getGeometryType() + "' was expected !");
-	        			return false;
+	        		    LOG.info("GML indexed node (" + node.getNodeId() + ") has '" + 
+	        		        node.getLocalName() + "' as its local name. '" + 
+	        		        original_geometry.getGeometryType() + "' was expected !");
+	        		    return false;
 	        		}
 	        	}
 	        	
-	    		LOG.info(node);	        		
+	        	LOG.info(node);
 	        }
 	        return true;
 	        
@@ -790,11 +803,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         	SQLException ee = new SQLException(e.getMessage());
         	ee.initCause(e);
         	throw ee;
-		} finally {   
-			if (rs != null)
-				rs.close();
-			if (ps != null)
-				ps.close();	
+		} finally {
+		    if (rs != null)
+		        rs.close();
+		    if (ps != null)
+			    ps.close();
 	    }
-    }    
+    }
 }
