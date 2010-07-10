@@ -12,6 +12,11 @@
                 <para>a paragraph with text</para>
             </test>
         ]]></store>
+        <store collection="/db/util-test" type="application/xquery" name="test.xqm">xquery version "1.0";
+module namespace testmodule='http://example.com/test-a';
+declare function testmodule:test() {
+    1
+};</store>
     </setup>
     <tearDown>
         <remove-collection collection="/db/util-test"/>
@@ -21,4 +26,242 @@
         <code>util:eval('let $a:=1 return $a')</code>
         <expected>1</expected>
     </test>
+    <test output="text">
+        <task>util:base-to-integer</task>
+        <code>util:base-to-integer(0755, 8)</code>
+        <expected>493</expected>
+    </test>       
+    <test output="text">
+        <task>util:base64-encode</task>
+        <code>util:base64-encode('existdb XML database rocks')</code>
+        <expected>ZXhpc3RkYiBYTUwgZGF0YWJhc2Ugcm9ja3M=</expected>
+    </test>
+    <!--test output="text">
+        <task>util:base64-encode</task>
+        <code>util:base64-encode('existdb XML database rocks &#10;', fn:true())</code>
+        <expected>ZXhpc3RkYiBYTUwgZGF0YWJhc2Ugcm9ja3M=</expected>
+    </test-->
+    <test output="text">
+        <task>util:base64-encode</task>
+        <code>util:base64-encode('existdb XML database rocks &#10;', fn:false())</code>
+        <expected>ZXhpc3RkYiBYTUwgZGF0YWJhc2Ugcm9ja3MgCg==</expected>
+    </test>
+    <test output="text">
+        <task>util:base64-decode</task>
+        <code>util:base64-decode('ZXhpc3RkYiBYTUwgZGF0YWJhc2Ugcm9ja3M=')</code>
+        <expected>existdb XML database rocks</expected>
+    </test>
+    <!-- require util:binary tests//-->
+    <test output="text">
+        <task>util:call</task>
+        <code>util:eval('
+            declare namespace  f="urn:my-functions";
+            declare  function f:plus($a as xs:integer, $b as xs:integer) {
+              $a + $b
+            };
+            util:call(util:function(xs:QName("f:plus"), 2), 2,2)
+            ')</code>
+        <expected>4</expected>
+    </test>
+
+    <!--test output="text">
+        <task>util:catch 1</task>
+        <code>util:eval(util:catch('*',
+            1+1
+            ,
+            <div class="error">
+                An error occurred while processing the action:<br/>
+            </div>
+        ))</code>
+        <expected>2</expected>
+    </test>
+
+    <test output="text">
+        <task>util:catch 2</task>
+        <code>util:eval(util:catch('*',
+            1+'a'
+            ,
+            <div class="error">
+                An error occurred while processing the action:<br/>
+            </div>
+        ))</code>
+        <expected>2</expected>
+    </test-->
+
+    <test output="text">
+        <task>util:collation</task>
+        <code>util:collations()</code>
+        <expected>ja-JP es-PE en ja-JP es-PA sr-BA mk es-GT ar-AE no-NO sq-AL bg ar-IQ ar-YE hu pt-PT el-CY ar-QA mk-MK sv de-CH en-US fi-FI is cs en-MT sl-SI sk-SK it tr-TR zh th ar-SA no en-GB sr-CS lt ro en-NZ no-NO lt-LT es-NI nl ga-IE fr-BE es-ES ar-LB ko fr-CA et-EE ar-KW sr-RS es-US es-MX ar-SD in-ID ru lv es-UY lv-LV iw pt-BR ar-SY hr et es-DO fr-CH hi-IN es-VE ar-BH en-PH ar-TN fi de-AT es nl-NL es-EC zh-TW ar-JO be is-IS es-CO es-CR es-CL ar-EG en-ZA th-TH el-GR it-IT ca hu-HU fr en-IE uk-UA pl-PL fr-LU nl-BE en-IN ca-ES ar-MA es-BO en-AU sr zh-SG pt uk es-SV ru-RU ko-KR vi ar-DZ vi-VN sr-ME sq ar-LY ar zh-CN be-BY zh-HK ja iw-IL bg-BG in mt-MT es-PY sl fr-FR cs-CZ it-CH ro-RO es-PR en-CA de-DE ga de-LU de es-AR sk ms-MY hr-HR en-SG da mt pl ar-OM tr th-TH el ms sv-SE da-DK es-HN</expected>
+    </test>
+
+    <test output="text">
+        <task>util:collection-name</task>
+        <code>let $a := collection('/db/util-test')//test/para
+return
+ util:collection-name($a)
+</code>
+        <expected>/db/util-test</expected>
+    </test>
+
+     <!--test output="text">
+        <task>util:compile</task>
+        <code></code>
+         <expected></expected>
+     </test-->
+
+     <test output="text">
+        <task>util:declare-namespace</task>
+        <code>util:declare-namespace( "testingns", xs:anyURI( "http://exist-db.org/test") ),
+let $a := xs:QName('testingns:test')
+return
+fn:prefix-from-QName($a)
+         </code>
+         <expected>testingns</expected>
+     </test>
+
+
+     <!--test output="text">
+        <task>util:declare-option</task>
+        <code>
+(util:declare-option("exist:serialize", "method=text media-type=text/plain")
+,<test/>)
+        </code>
+         <expected></expected>
+     </test-->
+
+     <!--test output="text">
+        <task>util:deep-copy</task>
+        <code>
+           util:eval(' let $a := <test/>
+            return
+            util:deep-copy($a)
+            ')
+        </code>
+         <expected></expected>
+     </test-->
+
+
+     <test output="text">
+        <task>util:document-name</task>
+        <code>util:document-name(collection('/db/util-test')//para)</code>
+        <expected>test.xml</expected>
+    </test>
+
+    <test output="text">
+        <task>util:get-sequence-type</task>
+        <code>let $a:= 'string'
+return
+util:get-sequence-type($a)</code>
+        <expected>xs:string</expected>
+    </test>
+
+
+    <test output="text">
+        <task>util:hash</task>
+        <code>util:hash('existdb rocks', 'md5')</code>
+        <expected>e778d1a76fd4a5d6bf26b5391dbdb853</expected>
+    </test>
+
+
+    <test output="text">
+        <task>check import is working in general </task>
+        <code>
+import module namespace testmodule='http://example.com/test-a' at 'xmldb:exist:///db/util-test/test.xqm';
+testmodule:test()
+</code>
+        <expected>1</expected>
+    </test>
+
+    <test output="text">
+        <task>util:import-module</task>
+        <code>
+util:eval("
+let $null := util:import-module(xs:anyURI('http://example.com/test-a'), 'testmodule', xs:anyURI('xmldb:exist:///db/util-test/test.xqm'))
+return util:eval('testmodule:test()')            
+")
+</code>
+        <expected>1</expected>
+    </test>    
+
+    <test output="text">
+        <task>util:import-module</task>
+        <code>util:index-type(collection('/db/util-test')//para)</code>
+        <expected>item()</expected>
+    </test>
+
+    <test output="text">
+        <task>util:integer-to-base</task>
+        <code>util:integer-to-base(15, 2)</code>
+        <expected>1111</expected>
+    </test>
+
+    <test output="text">
+        <task>util:node-xpath</task>
+        <code>let $a := collection('/db/util-test')//para
+return
+util:node-xpath($a)</code>
+        <expected>/test/para</expected>
+    </test>
+
+    <test output="text">
+        <task>util:parse</task>
+        <code>util:parse('&lt;test attr="aaa"/&gt;')</code>
+        <expected><test attr="aaa"/></expected>
+    </test>
+
+    <test output="text">
+        <task>util:random</task>
+        <code>let $a := util:random() return if ($a eq 0 or $a gt 0 or $a lt 1 or $a eq 1) then 1 else 0</code>
+        <expected>1</expected>
+    </test>
+
+    <test output="text">
+        <task>util:random</task>
+        <code>let $a := util:random(10) return if ($a eq 0 or $a gt 0 or $a lt 10 or $a eq 10) then 1 else 0</code>
+        <expected>1</expected>
+    </test>
+
+    <test output="text">
+        <task>util:registered-functions</task>
+        <code>let $a := util:registered-functions()
+return
+if (contains($a,'t:run-test')) then 1 else 0
+</code>
+        <expected>1</expected>
+    </test>
+
+    <test output="text">
+        <task>util:string-to-binary</task>
+        <code>util:string-to-binary('existdb rocks', 'utf8')</code>
+        <expected>ZXhpc3RkYiByb2Nrcw==</expected>
+    </test>
+
+    <test output="text">
+        <task>util:system-property</task>
+        <code>util:system-property("product-name")</code>
+        <expected>eXist</expected>
+    </test>
+
+    <test output="text">
+        <task>util:unescape-uri</task>
+        <code>let $text:= util:unescape-uri('http%3A%2F%2Fwww.example.com%2F~user%2F%3Ftest%3D1%26test1%3D2',"UTF-8")
+return
+$text</code>
+        <expected>http://www.example.com/~user/?test=1&amp;test1=2</expected>
+    </test>
+
+
+
+    <test output="text">
+        <task>util:uuid</task>
+        <code>let $input := util:uuid(<test/>)
+return
+  fn:matches($input, '(.*)-(.*)-(.*)-(.*)')</code>
+        <expected>true</expected>
+    </test>
+
+
+
+
+
 </TestSet>
