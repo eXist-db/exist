@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>fn contains related tests</testName>
+    <description>
+        <p>Test the contains related functions</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="contains-test"/>
+        <store collection="/db/contains-test" name="test.xml"><![CDATA[
+            <test>
+                <para>a paragraph with text</para>
+            </test>
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/contains-test"/>
+    </tearDown>
+    <test output="text">
+        <task>fn:contains1</task>
+        <code>fn:contains('exist', 'e')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:starts-with1</task>
+        <code>fn:starts-with('exist', 'e')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:starts-with2</task>
+        <code>fn:starts-with(' exist', 'e')</code>
+        <expected>false</expected>
+    </test>
+    <test output="text">
+        <task>fn:ends-with1</task>
+        <code>fn:ends-with('exist', 't')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:ends-with2</task>
+        <code>fn:ends-with('exist ', 't')</code>
+        <expected>false</expected>
+    </test>
+
+    
+</TestSet>

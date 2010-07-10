@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>fn regex related tests</testName>
+    <description>
+        <p>Test the regex related functions</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="regex-test"/>
+        <store collection="/db/regex-test" name="test.xml"><![CDATA[
+            <test>
+                <para>a paragraph with text</para>
+            </test>
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/regex-test"/>
+    </tearDown>
+    <test output="text">
+        <task>fn:matches1</task>
+        <code>fn:matches('exist', 'e')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches2</task>
+        <code>fn:matches('exist', '[a-z]{5}')</code>
+        <expected>true</expected>
+    </test>
+</TestSet>
