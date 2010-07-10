@@ -214,13 +214,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		Duration tz = offset.duration;
 		Number secs = tz.getField(DatatypeConstants.SECONDS);
 		if (secs != null && ((BigDecimal) secs).compareTo(BigDecimal.valueOf(0)) != 0)
-			throw new XPathException("duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
+			throw new XPathException("err:FODT0003: duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
 		if (! (
 				tz.equals(tzLowerBound) ||
 				tz.equals(tzUpperBound) ||
 				(tz.isLongerThan(tzLowerBound) && tz.isShorterThan(tzUpperBound))
 			))
-			throw new XPathException("duration " + offset + " outside valid timezone offset range");
+			throw new XPathException("err:FODT0003: duration " + offset + " outside valid timezone offset range");
 	}
 
 	public AbstractDateTimeValue adjustedToTimezone(DayTimeDurationValue offset) throws XPathException {

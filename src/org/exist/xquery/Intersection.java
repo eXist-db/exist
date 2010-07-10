@@ -67,7 +67,7 @@ public class Intersection extends CombiningExpression {
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-    			throw new XPathException(this, "Err:XPTY0004 : intersect operand is not a node sequence");                  
+    			throw new XPathException(this, "err:XPTY0004 : intersect operand is not a node sequence");                  
             if (lval.isPersistentSet() && rval.isPersistentSet()) 
                 result = lval.toNodeSet().intersection(rval.toNodeSet());
             else {

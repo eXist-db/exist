@@ -84,7 +84,7 @@ public class FunLast extends Function {
         
         Sequence result;
 		if (inSequence == null)
-			throw new XPathException(this, "FONC0001: undefined context item");
+			throw new XPathException(this, "err:XPDY0002: undefined context item");
         else if (inSequence.isEmpty())
         	result = Sequence.EMPTY_SEQUENCE;
         else
