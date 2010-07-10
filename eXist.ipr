@@ -5,7 +5,7 @@
     <buildFile url="file://$PROJECT_DIR$/build.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
-      <customJdkName value="1.5" />
+      <customJdkName value="1.6" />
       <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
       <properties />
@@ -120,6 +120,20 @@
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
+  <component name="FacetAutodetectingManager">
+    <autodetection-disabled>
+      <facet-type id="web">
+        <modules>
+          <module name="eXist">
+            <files>
+              <file url="file://$PROJECT_DIR$/tools/jetty/etc/standalone/WEB-INF/web.xml" />
+              <file url="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
+            </files>
+          </module>
+        </modules>
+      </facet-type>
+    </autodetection-disabled>
+  </component>
   <component name="IdProvider" IDEtalkID="EDCB317F9C51C9BBC9F54E158B17D480" />
   <component name="JavacSettings">
     <option name="DEPRECATION" value="false" />
@@ -148,8 +162,8 @@
     <option name="CUSTOM_FILTER" />
   </component>
   <component name="Monitor.Log4jWindowPlugin">
-    <option name="tree.default.font.size" value="10" />
     <option name="table.default.font.family" value="#GungSeo" />
+    <option name="tree.default.font.size" value="10" />
     <option name="tree.default.font.family" value="#GungSeo" />
     <option name="table.default.font.size" value="10" />
   </component>
@@ -285,7 +299,7 @@
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
@@ -391,21 +405,22 @@
         <root url="file://$PROJECT_DIR$/lib/endorsed" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../Applications/xerces-2_9_1/src" />
+      </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
     </library>
     <library name="cocoon">
       <CLASSES>
-        <root url="file://$PROJECT_DIR$/extensions/cocoon/lib" />
+        <root url="file://$PROJECT_DIR$/lib/cocoon" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/extensions/cocoon/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/cocoon" recursive="false" />
     </library>
     <library name="ant">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/" />
-        <root url="jar://$PROJECT_DIR$/tools/ant/lib/antlr3.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -413,11 +428,9 @@
     <library name="test">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/test/classes" />
-        <root url="file://$PROJECT_DIR$/lib/test" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/lib/test" recursive="false" />
     </library>
     <library name="extensions">
       <CLASSES>
@@ -427,16 +440,12 @@
         <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
-        <root url="file://$PROJECT_DIR$/extensions/debuggee/lib" />
-        <root url="file://$PROJECT_DIR$/extensions/security/openid/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/extensions/debuggee/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
-      <jarDirectory url="file://$PROJECT_DIR$/extensions/security/openid/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/xqdoc/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
