@@ -2,7 +2,7 @@
 <TestSet>
     <testName>Util tests</testName>
     <description>
-        <p>Testing eval statements</p>
+        <p>Testing util module</p>
         <author>James Fuller</author>
     </description>
     <setup>

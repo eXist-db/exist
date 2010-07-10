@@ -1,6 +1,6 @@
 package xquery;
 
-public class AxesTests extends TestRunner {
+public class CoreTests extends TestRunner {
 
     protected String getDirectory() {
         return "test/src/xquery";
