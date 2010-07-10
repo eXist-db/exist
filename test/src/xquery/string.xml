@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>fn string related tests</testName>
+    <description>
+        <p>Test the fn: string related functions</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="string-test"/>
+        <store collection="/db/string-test" name="test.xml"><![CDATA[
+            <test>
+                <para>a paragraph with text</para>
+            </test>
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/string-test"/>
+    </tearDown>
+    <test output="text">
+        <task>fn:substring1</task>
+        <code>substring('query', 1)</code>
+        <expected>query</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring2</task>
+        <code>substring('query', 1, 1)</code>
+        <expected>q</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring3</task>
+        <code>substring('query', 3)</code>
+        <expected>ery</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring4</task>
+        <code>substring('', 1)</code>
+        <expected></expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring5</task>
+        <code>substring((), 1)</code>
+        <expected></expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring6</task>
+        <code>substring('query', -2, 5)</code>
+        <expected>qu</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring-after1</task>
+        <code>substring-after('query', 'u')</code>
+        <expected>ery</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:substring-before1</task>
+        <code>substring-before('query', 'r')</code>
+        <expected>que</expected>
+    </test>    
+
+</TestSet>
