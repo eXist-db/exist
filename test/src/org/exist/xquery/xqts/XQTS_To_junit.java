@@ -92,10 +92,10 @@ public class XQTS_To_junit {
    			throw new IOException("XQTS junit tests folder unreadable.");
    		}
 
-		collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", null);
+		collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
 		if (collection == null) {
 			loadXQTS();
-			collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", null);
+			collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
 			if (collection == null) {
 				throw new IOException("There is no XQTS data at database");
 			}
