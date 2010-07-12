@@ -120,7 +120,7 @@ public class FunDoc extends Function {
     		}
     		catch (Exception e) {
                 logger.error(e.getMessage());
-    			throw new XPathException(this, e.getMessage(), e);
+    			throw new XPathException(this, "err:FODC0005: "+e.getMessage(), e);
     		}
         }
             

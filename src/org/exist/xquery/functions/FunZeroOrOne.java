@@ -77,7 +77,7 @@ public class FunZeroOrOne extends Function {
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
         
 		if(result.hasMany())
-			throw new XPathException(this, "fn:zero-or-one called with a sequence containing " + result.getItemCount() + " items");
+			throw new XPathException(this, "err:FORG0003: fn:zero-or-one called with a sequence containing " + result.getItemCount() + " items");
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        

@@ -93,8 +93,8 @@ public class FunAvg extends Function {
             if (value.getType() == Type.UNTYPED_ATOMIC) 
             	value = value.convertTo(Type.DOUBLE);
     		if (!(value instanceof ComputableValue)) {
-                logger.error("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-				throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+                logger.error("err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+				throw new XPathException(this, "err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
             }
     		//Set the first value
     		ComputableValue sum = (ComputableValue) value;
@@ -105,8 +105,8 @@ public class FunAvg extends Function {
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
                 	value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue)) {
-                    logger.error("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-    				throw new XPathException(this, "XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+                    logger.error("err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    				throw new XPathException(this, "err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
                 }
     			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
@@ -122,7 +122,7 @@ public class FunAvg extends Function {
     				sum = sum.plus((ComputableValue) value);
 				} catch(XPathException e) {
                     logger.error("FORG0006: " + e.getMessage());
-					throw new XPathException(this, "FORG0006: " + e.getMessage(), e);    					
+					throw new XPathException(this, "err:FORG0006: " + e.getMessage(), e);    					
 				}
     		}
     		result = sum.div(new IntegerValue(inner.getItemCount()));

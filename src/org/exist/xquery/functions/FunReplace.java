@@ -206,12 +206,12 @@ public class FunReplace extends FunMatches {
                 String r = matcher.replaceAll(replace);
     			result = new StringValue(r);
     		} catch (PatternSyntaxException e) {
-    			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
+    			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
     		} catch (IndexOutOfBoundsException e) {
-    		    throw new XPathException(this, e.getMessage(), e);
+    		    throw new XPathException(this, "FORX0001/FORX0003/FORX0004:"+e.getMessage(), e);
        		//Some JVMs seem to raise this one
     		} catch (IllegalArgumentException e) {
-    			throw new XPathException(this, "Invalid replace expression: " + e.getMessage(), e);
+    			throw new XPathException(this, "err:FORX0004: Invalid replace expression: " + e.getMessage(), e);
             }
         }
         

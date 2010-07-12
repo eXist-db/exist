@@ -514,7 +514,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 			return matcher.find();
 			
 		} catch (PatternSyntaxException e) {
-			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
 		}
     }
 
@@ -536,7 +536,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     flags |= Pattern.DOTALL;
                     break;
 				default:
-					throw new XPathException("Invalid regular expression flag: " + ch);
+					throw new XPathException("err:FORX0001: Invalid regular expression flag: " + ch);
 			}
 		}
 		return flags;

@@ -113,7 +113,7 @@ public class FunConcat extends Function {
            
 		if(getArgumentCount() < 2) {
             logger.error("fn:concat() requires at least two arguments");
-			throw new XPathException (this, "concat requires at least two arguments");
+			throw new XPathException (this, "err:XPST0017: concat requires at least two arguments");
 		}
         
 		StringBuilder concat = new StringBuilder();     
