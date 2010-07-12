@@ -177,7 +177,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             Sequence currentContext = contextSequence;
             
             DocumentSet contextDocs = null;
-            Expression expr = (Expression) steps.get(0);
+            Expression expr = steps.get(0);
             if (expr instanceof VariableReference) {
                 Variable var = ((VariableReference) expr).getVariable();
                 //TOUNDERSTAND : how null could be possible here ? -pb
@@ -194,7 +194,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
             for (Iterator<Expression> iter = steps.iterator(); iter.hasNext();) {
                 
-                expr = (Expression) iter.next();
+                expr = iter.next();
                 
                 //TODO : maybe this could be detected by the parser ? -pb    
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
