@@ -271,7 +271,7 @@ public class RegexpFilter extends BasicFunction {
 				return seq;
 			}
 		} catch (PatternSyntaxException e) {
-			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
 		}
     }
 
@@ -293,7 +293,7 @@ public class RegexpFilter extends BasicFunction {
                     flags |= Pattern.DOTALL;
                     break;
 				default:
-					throw new XPathException("Invalid regular expression flag: " + ch);
+					throw new XPathException("err:FORX0001: Invalid regular expression flag: " + ch);
 			}
 		}
 		return flags;

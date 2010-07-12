@@ -112,7 +112,7 @@ public class FunNamespaceURI extends Function {
             result = AnyURIValue.EMPTY_URI;
         else {        	
             if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(this, "XPDY0004: Context item is not a node; got: " +
+                throw new XPathException(this, "XPTY0004: Context item is not a node; got: " +
                         Type.getTypeName(item.getType()));
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();

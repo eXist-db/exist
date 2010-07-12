@@ -120,7 +120,7 @@ public class FunTokenize extends FunMatches {
         			for (int i = 0; i < tokens.length; i++)
                         result.add(new StringValue(tokens[i]));        			
         		} catch (PatternSyntaxException e) {
-        			throw new XPathException(this, "Invalid regular expression: " + e.getMessage(), e);
+        			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
         		}
             }
         }

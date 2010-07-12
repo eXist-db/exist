@@ -116,11 +116,11 @@ public class FunLang extends Function {
             contextSequence = getArgument(1).eval(contextSequence);
 		
 		if (contextSequence == null)
-			throw new XPathException(this, "XPDY0002: Undefined context item");
+			throw new XPathException(this, "XPTY0002: Undefined context item");
 		
         Sequence result; 
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
-			throw new XPathException(this, "XPDY0004: Context item is not a node");
+			throw new XPathException(this, "XPTY0004: Context item is not a node");
         else {
 			String lang = getArgument(0).eval(contextSequence).getStringValue();
 			Sequence seq = query.eval(contextSequence);

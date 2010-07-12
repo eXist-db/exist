@@ -78,7 +78,7 @@ public class FunExactlyOne extends Function {
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
 		if (!result.hasOne()) {
             logger.error("fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
-			throw new XPathException(this, "fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
+			throw new XPathException(this, "err:FORG0005: fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
         }
 
         if (context.getProfiler().isEnabled()) 
