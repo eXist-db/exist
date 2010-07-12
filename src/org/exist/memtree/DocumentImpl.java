@@ -21,11 +21,14 @@
  */
 package org.exist.memtree;
 
+import org.exist.EXistException;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
+import org.exist.numbering.NodeIdFactory;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.ElementValue;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
@@ -744,9 +747,16 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     *
     * @see org.w3c.dom.Document#createElement(java.lang.String)
     */
-    public Element createElement(String arg0) throws DOMException {
-        // TODO Auto-generated method stub
-        return null;
+    public Element createElement(String tagName) throws DOMException {
+    	QName qn;
+		try {
+			qn = QName.parse(getContext(), tagName);
+		} catch (XPathException e) {
+			throw new DOMException(DOMException.NAMESPACE_ERR, e.getMessage());
+		} 
+        int nodeNr = addNode(Node.ELEMENT_NODE, (short)1, qn);
+
+        return new ElementImpl(this, nodeNr);
     }
 
     /*
@@ -1061,9 +1071,20 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     private void computeNodeIds() {
         if (nodeId[0] != null)
             return;
-        nodeId[0] = context.getBroker().getBrokerPool().getNodeFactory().documentNodeId();
+        
+        NodeIdFactory nodeFactory;
+        if (context == null)
+			try {
+				nodeFactory = BrokerPool.getInstance().getNodeFactory();
+			} catch (EXistException e) {
+				nodeFactory = null; //TODO: fix NPE, raise error???
+			}
+		else
+        	nodeFactory = context.getBroker().getBrokerPool().getNodeFactory();
+        
+        nodeId[0] = nodeFactory.documentNodeId();
         if (size == 1) return;
-        NodeId nextId = context.getBroker().getBrokerPool().getNodeFactory().createInstance();
+        NodeId nextId = nodeFactory.createInstance();
         NodeImpl next = (NodeImpl) getFirstChild();
         while (next != null) {
             computeNodeIds(nextId, next.nodeNumber);
