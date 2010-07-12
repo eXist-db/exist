@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,8 +21,6 @@
  */
 package org.exist.xslt;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,84 +31,110 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.StringTokenizer;
 
+import junit.framework.Assert;
+
+import org.exist.memtree.DocumentImpl;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.junit.After;
-import org.junit.Before;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XPathQueryService;
+import org.exist.w3c.tests.TestCase;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Sequence;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class XSLTS_case {
+public class XSLTS_case extends TestCase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
-	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-	private final static String XSLT_COLLECTION = "xslt_tests";
+	private final static String XSLT_COLLECTION = "XSLTS";
 
-	private Collection col = null;
-
-	@Before
-	public void setUp() throws Exception {
-		try {
-			Class<?> cl = Class.forName(DRIVER);
-			Database database = (Database) cl.newInstance();
-			database.setProperty("create-database", "true");
-			DatabaseManager.registerDatabase(database);
-			col = DatabaseManager.getCollection(URI + "/" + XSLT_COLLECTION);
-			if (col == null) {
-				Collection root = DatabaseManager.getCollection(URI);
-				CollectionManagementService mgtService =
-					(CollectionManagementService) root.getService(
-						"CollectionManagementService",
-						"1.0");
-				col = mgtService.createCollection(XSLT_COLLECTION);
-				System.out.println("collection created.");
-			}
-			
-			BrokerPool.getInstance().getConfiguration().setProperty(
-					TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, 
-					"org.exist.xslt.TransformerFactoryImpl");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private static final String XSLTS_folder = "XSLTS_1_1_0/";
+	
+	@Override
+	public void loadTS() throws Exception {
+		BrokerPool.getInstance().getConfiguration().setProperty(
+				TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, 
+				"org.exist.xslt.TransformerFactoryImpl");
 	}
 	
-	@After
-	public void shutdown() throws Exception {
-		DatabaseInstanceManager dim =
-		    (DatabaseInstanceManager) col.getService(
-		        "DatabaseInstanceManager", "1.0");
-		dim.shutdown();
-	}
-	
-
 	protected void testCase(String inputURL, String xslURL, String outputURL) throws Exception {
-		String input = loadFile("test/external/XSLTS_1_1_0/TestInputs/"+inputURL, false);
-		String stylesheet = loadFile("test/external/XSLTS_1_1_0/TestInputs/"+xslURL, true);
+		loadTS();
+		
+//		String input = loadFile(XSLTS_folder+"TestInputs/"+inputURL, false);
+//		String stylesheet = loadFile(XSLTS_folder+"TestInputs/"+xslURL, true);
 
-		XPathQueryService service = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+		String expectedError = "";
 
         String query = "xquery version \"1.0\";\n" +
                 "declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
-                "declare variable $xml {"+input+"};\n" +
-                "declare variable $xslt {"+stylesheet+"};\n" +
+                "declare variable $xml external;\n" +
+                "declare variable $xslt external;\n" +
                 "transform:transform($xml, $xslt, ())\n";
+        
+		try {
+			XQueryContext context;
+			XQuery xquery;
+			
+			DBBroker broker = null;
+			try {	
+				broker = pool.get(pool.getSecurityManager().getSystemAccount());
+				xquery = broker.getXQueryService();
 
-        ResourceSet result = service.query(query);
+				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+				
+				context = xquery.newContext(AccessContext.TEST);
+		        
+			} catch (Exception e) {
+				Assert.fail(e.getMessage());
+				return;
+			} finally {
+				pool.release(broker);
+			}
 
-        StringBuilder content = new StringBuilder();
-    	for (int i = 0; i < result.getSize(); i++)
-    		content.append((String) result.getResource(i).getContent());
+			//workaround
+	        Document doc = new DocumentImpl(context, false);
+	        Element outputFile = doc.createElement("outputFile");
+	        outputFile.setTextContent(outputURL);
 
-        assertTrue(checkResult(outputURL, content.toString()));
+			//declare variable
+			context.declareVariable("xml", loadVarFromURI(context, testLocation+XSLTS_folder+"TestInputs/"+inputURL));
+			context.declareVariable("xslt", loadVarFromURI(context, testLocation+XSLTS_folder+"TestInputs/"+xslURL));
+			
+			//compile
+			CompiledXQuery compiled = xquery.compile(context, query);
+			
+			//execute
+			Sequence result = xquery.execute(compiled, null);
+			
+			//compare result with one provided by test case
+			boolean ok = false;
+			if (compareResult(XSLTS_folder+"ExpectedTestResults/", outputFile, result)) {
+				ok = true;
+			}
+			
+			if (!ok)
+				Assert.fail("expected \n" +
+						"["+readFileAsString(new File(testLocation+XSLTS_folder+"ExpectedTestResults/", outputFile.getNodeValue()))+"]\n" +
+						", get \n["+sequenceToString(result)+"]");
+		} catch (XPathException e) {
+			String error = e.getMessage();
+
+			if (!expectedError.isEmpty())
+				;
+			else Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+		}
+
+//        StringBuilder content = new StringBuilder();
+//    	for (int i = 0; i < result.getSize(); i++)
+//    		content.append((String) result.getResource(i).getContent());
+//
+//        assertTrue(checkResult(outputURL, content.toString()));
 	}
 
 	private boolean checkResult(String file, String result) throws Exception {
@@ -129,7 +153,9 @@ public class XSLTS_case {
 			tokenCount++;
 			String refToken = refTokenizer.nextToken();
 			if (!resTokenizer.hasMoreTokens()) {
+				System.out.println("expected:");
 				System.out.println(ref);
+				System.out.println("get:");
 				System.out.println(result);
 				throw new Exception("result should have: "+refToken+", but get EOF (at "+tokenCount+")");
 			}
@@ -188,4 +214,5 @@ public class XSLTS_case {
 		}
 		return result;
 	}
+
 }
