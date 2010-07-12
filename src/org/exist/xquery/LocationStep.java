@@ -1671,6 +1671,8 @@ public class LocationStep extends Step {
 	private Boolean matchPredicate(Sequence contextSequence, Node contextItem,
 			Boolean result) throws XPathException {
 
+		if (result == null) return false;
+		
 		if (!result)
 			return result;
 
