@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,12 +22,20 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
+import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.exist.xslt.XSLContext;
+import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
+import org.xml.sax.SAXException;
 
 /**
  * <!-- Category: instruction -->
@@ -42,17 +50,23 @@ import org.w3c.dom.Attr;
  */
 public class CopyOf extends Declaration {
 
-    private String select = null;
-    private Boolean copy_namespaces = null;
+    private String attr_select = null;
+	private PathExpr select = null;
+
+	private Boolean copy_namespaces = null;
     private String type = null;
     private String validation = null;
 
-    public CopyOf(XSLContext context) {
+	protected boolean sequenceItSelf = false;
+
+	public CopyOf(XSLContext context) {
 		super(context);
 	}
 
 	public void setToDefaults() {
+		attr_select = null;
 		select = null;
+		
 		copy_namespaces = null;
 	    type = null;
 	    validation = null;
@@ -62,7 +76,7 @@ public class CopyOf extends Declaration {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(SELECT)) {
-			select = attr.getValue();
+			attr_select = attr.getValue();
 		} else if (attr_name.equals(COPY_NAMESPACES)) {
 			copy_namespaces = getBoolean(attr.getValue());
 		} else if (attr_name.equals(TYPE)) {
@@ -72,8 +86,94 @@ public class CopyOf extends Declaration {
 		}
 	}
 	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	throw new RuntimeException("eval(Sequence contextSequence, Item contextItem) at "+this.getClass());
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	boolean atRootCall = false;//XXX: rewrite
+
+    	if (attr_select != null) {
+    		select = new PathExpr(getContext());
+    		Pattern.parse(contextInfo.getContext(), attr_select, select);
+
+			//UNDERSTAND: <node>text<node>  step = "." -> SELF:node(), but need CHILD:node()
+			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
+				atRootCall = true;
+				_check_(select);
+				contextInfo.removeFlag(DOT_TEST);
+			}
+
+			_check_childNodes_(select);
+    	}
+
+    	super.analyze(contextInfo);
+
+    	if (atRootCall)
+    		contextInfo.addFlag(DOT_TEST);
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		context.pushDocumentContext();
+        Sequence result;
+        try {
+//        	System.out.println("=================================================================");
+//        	System.out.println("select = "+select);
+//        	System.out.println("contextSequence = "+contextSequence);
+//        	System.out.println("contextItem     = "+contextItem);
+            result = select.eval(contextSequence, contextItem);
+            if (sequenceItSelf)
+            	return result; 
+        } finally {
+            context.popDocumentContext();
+        }
+        
+		// create the output
+		MemTreeBuilder builder = context.getDocumentBuilder();
+		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);		
+		try {
+			SequenceIterator i = result.iterate();
+			Item next = i.nextItem();		
+			StringBuilder buf = null;
+            boolean allowAttribs = true;
+            while (next != null) {
+			    context.proceed(this, builder);
+				// if item is an atomic value, collect the string values of all
+				// following atomic values and seperate them by a space. 
+				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+				    if(buf == null)
+				        buf = new StringBuilder();
+					else if (buf.length() > 0)
+						buf.append(' ');
+					buf.append(next.getStringValue());
+                    allowAttribs = false;
+                    next = i.nextItem();            // if item is a node, flush any collected character data and
+				//	copy the node to the target doc. 
+				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                    if (buf != null && buf.length() > 0) {
+						receiver.characters(buf);
+						buf.setLength(0);
+					}
+                    if (next.getType() == Type.ATTRIBUTE && !allowAttribs)
+                        throw new XPathException(this, "XQTY0024: An attribute may not appear after " +
+                            "another child node.");
+                    next.copyTo(context.getBroker(), receiver);
+                    allowAttribs = next.getType() == Type.ATTRIBUTE;
+                    next = i.nextItem();
+				}
+            }
+			// flush remaining character data
+			if (buf != null && buf.length() > 0)
+				receiver.characters(buf);
+		} catch (SAXException e) {
+		    LOG.warn("SAXException during serialization: " + e.getMessage(), e);
+            throw new XPathException(this, e.getMessage());
+			//throw new XPathException(getASTNode(),
+			//	"Encountered SAX exception while serializing enclosed expression: "
+			//		+ ExpressionDumper.dump(this));
+		}
+        
+       if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);              
+           
+       return result;
+
 	}
 
 	/* (non-Javadoc)
@@ -82,9 +182,9 @@ public class CopyOf extends Declaration {
     public void dump(ExpressionDumper dumper) {
         dumper.display("<xsl:copy-of");
 
-        if (select != null) {
+        if (attr_select != null) {
         	dumper.display(" select = ");
-        	dumper.display(select);
+        	dumper.display(attr_select);
         }
         if (copy_namespaces != null) {
         	dumper.display(" copy_namespaces = ");
@@ -108,8 +208,8 @@ public class CopyOf extends Declaration {
     	StringBuilder result = new StringBuilder();
     	result.append("<xsl:copy-of");
         
-    	if (select != null)
-        	result.append(" select = "+select.toString());    
+    	if (attr_select != null)
+        	result.append(" select = "+attr_select.toString());    
     	if (copy_namespaces != null)
         	result.append(" copy_namespaces = "+copy_namespaces.toString());    
     	if (type != null)

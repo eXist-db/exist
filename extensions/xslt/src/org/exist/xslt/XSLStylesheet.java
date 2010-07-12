@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,7 +22,9 @@
 package org.exist.xslt;
 
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -94,6 +96,12 @@ public class XSLStylesheet extends Declaration
 	private Map<String, AttributeSet> attributeSets = new HashMap<String, AttributeSet>();
     
     private Map<QName, org.exist.xquery.Variable> params = null; 
+
+    private List<org.exist.xslt.expression.Variable> variables = 
+    	new ArrayList<org.exist.xslt.expression.Variable>(); 
+    
+    private List<org.exist.xslt.expression.Function> functions = 
+    	new ArrayList<org.exist.xslt.expression.Function>(); 
 
 	public XSLStylesheet(XSLContext context) {
 		super(context);
@@ -212,6 +220,12 @@ public class XSLStylesheet extends Declaration
 			} else if (expr instanceof AttributeSet) {
 				AttributeSet attributeSet = (AttributeSet) expr;
 				attributeSets.put(attributeSet.getName(), attributeSet);
+			} else if (expr instanceof org.exist.xslt.expression.Variable) {
+				org.exist.xslt.expression.Variable variable = (org.exist.xslt.expression.Variable) expr;
+				variables.add(variable);
+			} else if (expr instanceof org.exist.xslt.expression.Function) {
+				org.exist.xslt.expression.Function function = (org.exist.xslt.expression.Function) expr;
+				functions.add(function);
 			} 
 		}
 	}
@@ -224,14 +238,31 @@ public class XSLStylesheet extends Declaration
     	Sequence result;
     	if (simplified)
     		result = super.eval(contextSequence, null);
-    	else
+    	else {
+    		variableDeclaration(contextSequence, contextItem);
+    		functionDeclaration(contextSequence, contextItem);
+    		
     		result = templates(contextSequence, null);
+    	}
 		
 		if (result == null)
 			result = Sequence.EMPTY_SEQUENCE;
 		
 		return result;
     }
+
+    private void variableDeclaration(Sequence contextSequence, Item contextItem) throws XPathException {
+    	for (org.exist.xslt.expression.Variable variable : variables) {
+    		variable.eval(contextSequence, contextItem);
+    	}
+	}
+
+    private void functionDeclaration(Sequence contextSequence, Item contextItem) throws XPathException {
+    	for (org.exist.xslt.expression.Function function : functions) {
+    		//TODO: need interface for functions
+    		//context.declareFunction(function);
+    	}
+	}
 
     public Sequence attributeSet(String name, Sequence contextSequence, Item contextItem) throws XPathException {
     	Sequence result = new ValueSequence();

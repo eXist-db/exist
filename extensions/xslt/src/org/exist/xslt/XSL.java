@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -23,6 +23,7 @@ package org.exist.xslt;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.text.NumberFormat;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -113,7 +114,7 @@ public class XSL {
             }
         }
 
-//        System.out.println(ExpressionDumper.dump(expr));
+        System.out.println(ExpressionDumper.dump(expr));
         // Log the query if it is not too large, but avoid
         // dumping huge queries to the log
         if (context.getExpressionCount() < 150) {
@@ -121,6 +122,8 @@ public class XSL {
         } else {
             LOG.debug("XSL diagnostics:\n" + "[skipped: more than 150 expressions]");
         }
+		
+
         if (LOG.isDebugEnabled()) {
         	NumberFormat nf = NumberFormat.getNumberInstance();
         	LOG.debug("Compilation took "  +  nf.format(System.currentTimeMillis() - start) + " ms");

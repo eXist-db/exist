@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -237,7 +237,7 @@ public class XSLElement implements ElementAtExist, Names {
 
     	NamedNodeMap attrs = getAttributes();
     	for (int i = 0; i < attrs.getLength(); i++)
-    		exec.prepareAttribute(null, (Attr)attrs.item(i));
+    		exec.prepareAttribute(context, (Attr)attrs.item(i));
     }
     
 	protected void preprocess(ContextAtExist context) throws XPathException {
