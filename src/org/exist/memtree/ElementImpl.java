@@ -35,6 +35,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 
 import java.util.HashMap;
@@ -570,6 +571,11 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
 		
 	}
 	
+	public void setTextContent(String textContent) throws DOMException {
+        int nodeNr = document.addNode(Node.TEXT_NODE, (short) (document.getTreeLevel(nodeNumber)+1), null);
+		document.addChars(nodeNr, textContent.toCharArray(), 0, textContent.length());
+	}
+	
 	public String toString() {
     		StringBuilder result = new StringBuilder();
     		result.append("in-memory#");
@@ -597,5 +603,18 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         	}        
         	result.append("} ");        
         	return result.toString();
+	}
+	
+	public String getNodeValue() throws DOMException {
+		StringBuilder result = new StringBuilder();
+    	for(int i = 0; i < this.getChildCount(); i++ ) {  
+			Node child = getChildNodes().item(i);
+			if (child instanceof Text) {
+	    		if(i > 0)
+	        		result.append(" ");
+	    	    result.append(((Text) child).getData());           
+			}
+    	}        
+    	return result.toString();
 	}
 }
