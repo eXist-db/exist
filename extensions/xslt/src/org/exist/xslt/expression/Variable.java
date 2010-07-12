@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -24,7 +24,9 @@ package org.exist.xslt.expression;
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -96,7 +98,42 @@ public class Variable extends XSLPathExpr {
     }
 	
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	throw new RuntimeException("eval(Sequence contextSequence, Item contextItem) at "+this.getClass());
+    	if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+
+    	Sequence in = null;
+    	
+        // evaluate the expression
+		context.pushDocumentContext();
+        try {
+//        	System.out.println("=================================================================");
+//        	System.out.println("select = "+select);
+//        	System.out.println("contextSequence = "+contextSequence);
+//        	System.out.println("contextItem     = "+contextItem);
+        	if (select != null)
+        		in = select.eval(contextSequence, contextItem);
+        	else {
+        		in = super.eval(contextSequence, contextItem);
+        	}
+
+        	variable.setValue(in);
+        	variable.checkType();
+
+        } finally {
+            context.popDocumentContext();
+        }
+        
+        
+		if (context.getProfiler().isEnabled())           
+			context.getProfiler().end(this, "", in);              
+           
+		return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

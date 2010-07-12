@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -19,13 +19,10 @@
  *  
  *  $Id$
  */
-
 package org.exist.xslt.functions;
 
 import java.io.IOException;
 import java.util.Properties;
-
-import javax.xml.transform.Transformer;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -38,7 +35,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xslt.XSLContext;
 
 /**
  * system-property($property-name as xs:string) as xs:string

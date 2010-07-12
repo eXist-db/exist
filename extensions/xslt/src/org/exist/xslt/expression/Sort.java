@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -26,13 +26,11 @@ import org.exist.util.FastQSort;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
 import org.exist.xquery.LocationStep;
-import org.exist.xquery.OrderSpec;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.PreorderedValueSequence;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
