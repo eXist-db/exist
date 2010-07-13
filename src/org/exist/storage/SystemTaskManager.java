@@ -39,7 +39,8 @@ public class SystemTaskManager {
     	    try {
                 broker = pool.get(null);
                 oldUser = broker.getUser();
-                broker.setUser(pool.getSecurityManager().getSystemAccount());
+//                broker.setUser(pool.getSecurityManager().getSystemAccount());
+                broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
                 while (!waitingSystemTasks.isEmpty()) {
                     pool.sync(broker, Sync.MAJOR_SYNC);
                     SystemTask task = waitingSystemTasks.pop();
