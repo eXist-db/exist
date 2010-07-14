@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Range indexing tests</testName>
+    <description>
+        <p>Range index tests</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <store collection="/db/system/config/db" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <!-- Disable the standard full text index -->
+                    <fulltext default="none" attributes="false">
+                    </fulltext>
+                    <create qname="a" type="xs:string"/>
+                    <create qname="b" type="xs:integer"/>
+                    <create qname="c" type="xs:double"/>
+                    <create path="/item/d" type="xs:integer"/>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="text1.xml">
+            <test>
+                <item>
+                    <a>A1</a>
+                    <b>1</b>
+                    <c>C1</c>
+                    <d/>
+                </item>
+                <item>
+                    <a></a>
+                    <b>B</b>
+                    <c>22.5</c>
+                    <d>50</d>
+                </item>
+                <item>
+                    <a/>
+                    <b>2.0</b>
+                    <c>99.9</c>
+                    <d>20.0</d>
+                </item>
+            </test>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+        <remove-document collection="/db/system/config/db" name="collection.xconf"/>
+    </tearDown>
+    <test output="xml" trace="yes">
+        <task>Test empty element content</task>
+        <code>doc("/db/test/text1.xml")//a[. = 'A1']</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <test output="xml" trace="yes">
+        <task>Test empty element content</task>
+        <code>doc("/db/test/text1.xml")//a[. = '']</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <test output="xml" trace="yes">
+        <task>Simple query on xs:integer</task>
+        <code>doc("/db/test/text1.xml")//b[. = 1]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <test output="xml" trace="yes">
+        <task>Greater than on xs:integer</task>
+        <code>doc("/db/test/text1.xml")//b[. > 1]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <test output="xml" trace="yes">
+        <task>Greater than on xs:string</task>
+        <code>doc("/db/test/text1.xml")//b[. > "1"]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <!-- Will fail: -->
+    <!--test output="xml" trace="no">
+        <task>Lookup xs:integer</task>
+        <code>doc("/db/test/text1.xml")//b[. = "2.0"]</code>
+        <expected><b>2.0</b></expected>
+    </test-->
+    <test output="xml" trace="yes">
+        <task>Greater than on xs:double</task>
+        <code>doc("/db/test/text1.xml")//c[. > xs:integer(1)]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <test output="xml" trace="yes">
+        <task>Greater than on xs:double</task>
+        <code>doc("/db/test/text1.xml")//c[. > 1.0]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>
+    <test output="xml" trace="yes">
+        <task>Lookup xs:integer</task>
+        <code>doc("/db/test/text1.xml")//d[. = 20]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            (: Not optimized :)
+            count($output//prof:index[@type = 'range']) = 0
+        </xpath>
+    </test>
+</TestSet>
