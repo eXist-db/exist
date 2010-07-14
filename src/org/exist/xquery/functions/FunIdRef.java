@@ -170,6 +170,8 @@ public class FunIdRef extends Function {
                 }
     		}
         }
+		
+		result.removeDuplicates();
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
