@@ -482,7 +482,7 @@ public class XQueryContext
         }
 
         ctx.watchdog          = this.watchdog;
-        ctx.profiler          = this.profiler;
+        ctx.profiler          = getProfiler();
         ctx.lastVar           = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack      = this.contextStack;
