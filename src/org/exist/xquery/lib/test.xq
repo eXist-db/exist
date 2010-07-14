@@ -63,20 +63,32 @@ declare function t:init-prolog($test as element(test)) {
 		string-join(($imports, $vars, $test/../functions), '')
 };
 
+declare function t:test($result as item()*) {
+    if ($result instance of xs:boolean) then
+        $result
+    else
+        exists($result)
+};
+
 declare function t:run-test($test as element(test), $count as xs:integer) {
 	let $context := t:init-prolog($test)
-    let $output :=
+	let $null := 
+	   if ($test/@trace eq 'yes') then 
+	       (system:clear-trace(), system:enable-tracing(true(), false()))
+       else ()
+    let $queryOutput :=
 		util:catch("*",
 			util:eval(concat($context, $test/code/string())),
 			<error>Compilation error: {$util:exception-message}</error>
 		)
+	let $output := if ($test/@trace eq 'yes') then system:trace() else $queryOutput
     let $expected :=
         if ($test/@output eq 'text') then
             data($test/expected)
         else $test/expected/node()
     let $OK :=
         if ($test/xpath) then
-            exists(t:xpath($output, $test/xpath))
+            t:test(t:xpath($output, $test/xpath))
         else if ($test/@output eq 'text') then
             normalize-space(string-join(for $x in $output return string($x),' ')) eq normalize-space($expected)
         else
@@ -101,9 +113,14 @@ declare function t:xpath($output as item()*, $xpath as element()) {
     let $nsuri := namespace-uri-for-prefix($prefix, $xpath)
     return
         if ($prefix != 'xml') then
-        util:declare-namespace($prefix, $nsuri)
+            util:declare-namespace($prefix, $nsuri)
         else (),
-    util:eval(concat("$output", $xpath))
+    let $expr := $xpath/string()
+    return
+        if (matches($expr, "^\s*/")) then
+            util:eval(concat("$output", $expr))
+        else
+            util:eval($expr)
 };
 
 declare function t:run-testSet($set as element(TestSet)) {
