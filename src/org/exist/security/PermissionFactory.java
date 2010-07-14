@@ -32,12 +32,14 @@ public class PermissionFactory
 {
 	private final static Logger LOG = Logger.getLogger(PermissionFactory.class);
 	
+	public static SecurityManager sm = null;
+	
 	public static final Permission getPermission()
 	{
 		try
 		{
 			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission();
+	        return (Permission)new UnixStylePermission(sm);
 		}
 		catch(Throwable ex)
 		{
@@ -51,7 +53,7 @@ public class PermissionFactory
 		try
 		{
 			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission(perm);
+	        return (Permission)new UnixStylePermission(sm, perm);
 		}
 		catch(Throwable ex)
 		{
@@ -65,7 +67,7 @@ public class PermissionFactory
 		try
 		{
 			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission(user, group, permissions);
+	        return (Permission)new UnixStylePermission(sm, user, group, permissions);
 		}
 		catch(Throwable ex)
 		{

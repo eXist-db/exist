@@ -30,7 +30,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.exist.security.Permission;
-import org.exist.security.UnixStylePermission;
+import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.UserManagementService;

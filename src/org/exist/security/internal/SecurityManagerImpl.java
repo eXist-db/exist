@@ -37,6 +37,7 @@ import org.exist.security.Group;
 import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.security.Realm;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -93,6 +94,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     public SecurityManagerImpl(BrokerPool pool) {
     	this.pool = pool;
+    	
+    	PermissionFactory.sm = this;
        
     }
 	/**

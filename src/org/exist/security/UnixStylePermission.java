@@ -41,7 +41,7 @@ public class UnixStylePermission implements Permission {
 	public final static int DEFAULT_PERM = 0755;
 	
 	//default UnixStylePermission
-    public final static Permission SYSTEM_DEFAULT = new UnixStylePermission(DEFAULT_PERM);
+    public final static Permission SYSTEM_DEFAULT = new UnixStylePermission(null, DEFAULT_PERM);
     
     //owner, default to DBA
     private String owner = SecurityManager.DBA_USER;
@@ -50,32 +50,37 @@ public class UnixStylePermission implements Permission {
     //permissions
     private int permissions = DEFAULT_PERM;
 
+    private SecurityManager sm;
 
-    public UnixStylePermission() { }
+    public UnixStylePermission(SecurityManager sm) {
+    	this.sm = sm;
+    }
 
 
     /**
-     *  Construct a Permission with given permissions 
+     * Construct a Permission with given permissions 
      *
-     *@param  permissions  Description of the Parameter
+     * @param  sm           Description of the Parameter
+     * @param  permissions  Description of the Parameter
      */
-    public UnixStylePermission(int permissions) {
+    public UnixStylePermission(SecurityManager sm, int permissions) {
+    	this(sm);
         this.permissions = permissions;
     }
 
     
     /**
-     *  Construct a permission with given user, group and
-     *  permissions
+     * Construct a permission with given user, group and permissions
      *
-     *@param  user         Description of the Parameter
-     *@param  group        Description of the Parameter
-     *@param  permissions  Description of the Parameter
+     * @param  sm           Description of the Parameter
+     * @param  user         Description of the Parameter
+     * @param  group        Description of the Parameter
+     * @param  permissions  Description of the Parameter
      */
-    public UnixStylePermission(String user, String group, int permissions) {
+    public UnixStylePermission(SecurityManager sm, String user, String group, int permissions) {
+    	this(sm, permissions);
         this.owner = user;
         this.ownerGroup = group;
-        this.permissions = permissions;
     }
     
 
