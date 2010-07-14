@@ -2,9 +2,9 @@ package org.exist.xmldb;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
-import org.exist.security.UnixStylePermission;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
+import org.exist.security.internal.aider.UnixStylePermission;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
