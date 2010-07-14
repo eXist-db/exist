@@ -63,7 +63,7 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
 	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
 	{
         if( args[0].isEmpty() ) {
-            return BooleanValue.FALSE;
+            return Sequence.EMPTY_SEQUENCE;
         }
         
         String attributeName = args[0].getStringValue();
