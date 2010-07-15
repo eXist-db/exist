@@ -40,6 +40,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.Realm;
 import org.exist.security.SecurityManager;
+import org.exist.security.UnixStylePermission;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.security.xacml.ExistPDP;
@@ -91,14 +92,41 @@ public class SecurityManagerImpl implements SecurityManager {
     private int defResourcePermissions = Permission.DEFAULT_PERM;
     
     private ExistPDP pdp;
+    
+    private final User ACCOUNT_SYSTEM;
+    private final User ACCOUNT_GUEST;
+    private final Group GROUP_DBA;
+    private final Group GROUP_GUEST;
 
+	//default UnixStylePermission
+    public final Permission DEFAULT_PERMISSION;
+    
     public SecurityManagerImpl(BrokerPool pool) {
     	this.pool = pool;
     	
     	PermissionFactory.sm = this;
        
+    	groups = new Int2ObjectHashMap<Group>(65);
+    	users = new Int2ObjectHashMap<User>(65);
+    	
+    	GROUP_DBA = new GroupImpl(DBA_GROUP, 1);
+    	groups.put(GROUP_DBA.getId(), GROUP_DBA);
+
+    	ACCOUNT_SYSTEM = new UserImpl(1, DBA_USER, null);
+    	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
+    	users.put(ACCOUNT_SYSTEM.getUID(), ACCOUNT_SYSTEM);
+
+    	GROUP_GUEST = new GroupImpl(GUEST_GROUP, 2);
+    	groups.put(GROUP_GUEST.getId(), GROUP_GUEST);
+
+    	ACCOUNT_GUEST = new UserImpl(2, GUEST_USER, null);
+    	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
+    	users.put(ACCOUNT_GUEST.getUID(), ACCOUNT_GUEST);
+    	
+    	DEFAULT_PERMISSION = new UnixStylePermission(this);
     }
-	/**
+
+    /**
 	 * Initialize the security manager.
 	 * 
 	 * Checks if the file users.xml exists in the system collection of the database.
@@ -303,7 +331,11 @@ public class SecurityManagerImpl implements SecurityManager {
         }
     }
     
-	public synchronized boolean hasGroup(String name) {
+    public synchronized void addGroup(Group name) {
+    	//TODO: code
+    }
+
+    public synchronized boolean hasGroup(String name) {
 		Group group;
 		for (Iterator i = groups.valueIterator(); i.hasNext();) {
 			group = (Group) i.next();
@@ -313,7 +345,11 @@ public class SecurityManagerImpl implements SecurityManager {
 		return false;
 	}
 
-	public synchronized Group getGroup(String name) {
+    public boolean hasGroup(Group group) {
+    	return hasGroup(group.getName());
+    }
+
+    public synchronized Group getGroup(String name) {
 		Group group;
 		for (Iterator i = groups.valueIterator(); i.hasNext();) {
 			group = (Group) i.next();
@@ -507,14 +543,19 @@ public class SecurityManagerImpl implements SecurityManager {
 	
 	@Override
 	public User getSystemAccount() {
-		return SecurityManager.SYSTEM_USER;
+		return ACCOUNT_SYSTEM;
 	}
 	
 	@Override
 	public User getGuestAccount() {
-		return SecurityManager.GUEST;
+		return ACCOUNT_GUEST;
 	}
 	
+	@Override
+	public Group getDBAGroup() {
+		return GROUP_DBA;
+	}
+
 	@Override
 	public BrokerPool getDatabase() {
 		return pool;

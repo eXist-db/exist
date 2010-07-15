@@ -503,8 +503,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
                 ostream.writeInt(1);
                 ostream.writeInt(1);
             } else {
-                User user = secman.getUser(permissions.getOwner());
-                Group group = secman.getGroup(permissions.getOwnerGroup());
+                User user = permissions.getOwner();
+                Group group = permissions.getOwnerGroup();
                 if (group == null)
                     group = secman.getGroup(SecurityManager.GUEST_GROUP);
                 ostream.writeInt(user.getUID());

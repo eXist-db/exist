@@ -19,194 +19,222 @@
  *  
  *  $Id$
  */
-package org.exist.security.openid;
+package org.exist.security.internal.aider;
 
-import java.lang.Override;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.exist.security.Group;
-import org.exist.security.UserAttributes;
 import org.exist.security.Realm;
 import org.exist.security.User;
 import org.exist.xmldb.XmldbURI;
-import org.openid4java.discovery.Identifier;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class UserImpl implements User {
+public class UserAider implements User {
 
-	Identifier  _identifier = null;
+	String name;
 	
-	public UserImpl(Identifier identifier) {
-		_identifier = identifier;
+	public UserAider(String name) {
+		this.name = name;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.security.Principal#getName()
+	 */
+	@Override
+	public String getName() {
+		return name;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#addGroup(java.lang.String)
+	 */
 	@Override
 	public void addGroup(String name) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
+	 */
 	@Override
 	public void addGroup(Group group) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#remGroup(java.lang.String)
+	 */
 	@Override
 	public void remGroup(String group) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#setGroups(java.lang.String[])
+	 */
 	@Override
 	public void setGroups(String[] groups) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getGroups()
+	 */
 	@Override
 	public String[] getGroups() {
-		return new String[0];
+		// TODO Auto-generated method stub
+		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#hasDbaRole()
+	 */
 	@Override
 	public boolean hasDbaRole() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getUID()
+	 */
 	@Override
 	public int getUID() {
-		return -1;
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getPrimaryGroup()
+	 */
 	@Override
 	public String getPrimaryGroup() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#hasGroup(java.lang.String)
+	 */
 	@Override
 	public boolean hasGroup(String group) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#setPassword(java.lang.String)
+	 */
 	@Override
 	public void setPassword(String passwd) {
+		// TODO Auto-generated method stub
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
+	 */
 	@Override
 	public void setHome(XmldbURI homeCollection) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getHome()
+	 */
 	@Override
 	public XmldbURI getHome() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#authenticate(java.lang.Object)
+	 */
 	@Override
 	public boolean authenticate(Object credentials) {
+		// TODO Auto-generated method stub
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#isAuthenticated()
+	 */
 	@Override
 	public boolean isAuthenticated() {
-		return (_identifier != null);
+		// TODO Auto-generated method stub
+		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getRealm()
+	 */
 	@Override
 	public Realm getRealm() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#setUID(int)
+	 */
 	@Override
 	public void setUID(int uid) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getPassword()
+	 */
 	@Override
 	public String getPassword() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getDigestPassword()
+	 */
 	@Override
 	public String getDigestPassword() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public String getName() {
-		String name = "";
-		if (attributes.containsKey(UserAttributes.FIRTSNAME)) 
-			name += attributes.get(UserAttributes.FIRTSNAME); 
-		
-		if (attributes.containsKey(UserAttributes.LASTNAME)) {
-			if (name != "") name += " ";
-			name += attributes.get(UserAttributes.LASTNAME);
-		}
-		
-		if (name.equals("")) 
-			name += attributes.get(UserAttributes.FULLNAME);
-		
-		if (name.equals("")) 
-			return _identifier.getIdentifier();
-
-		return name;
-	}
-
-	private Map<String, Object> attributes = new HashMap<String, Object>();
-	
-    /**
-     * Add a named attribute.
-     *
-     * @param name
-     * @param value
-     */
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#setAttribute(java.lang.String, java.lang.Object)
+	 */
 	@Override
 	public void setAttribute(String name, Object value) {
-		String id = UserAttributes.alias.get(name);
-		if (id == null)
-			attributes.put(name, value);
-		else
-			attributes.put(id, value);
+		// TODO Auto-generated method stub
+
 	}
 
-    /**
-     * Get the named attribute value.
-     *
-     * @param name The String that is the name of the attribute.
-     * @return The value associated with the name or null if no value is associated with the name.
-     */
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getAttribute(java.lang.String)
+	 */
 	@Override
 	public Object getAttribute(String name) {
-		String id = UserAttributes.alias.get(name);
-		if (id != null)
-			return attributes.get(id);
-
-		if (name.equalsIgnoreCase("id"))
-			return _identifier.getIdentifier();
-		
-		return attributes.get(name);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-    /**
-     * Returns the set of attributes names.
-     *
-     * @return the Set of attribute names.
-     */
-    @Override
-    public Set<String> getAttributeNames() {
-        return attributes.keySet();
-    }
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getAttributeNames()
+	 */
+	@Override
+	public Set<String> getAttributeNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

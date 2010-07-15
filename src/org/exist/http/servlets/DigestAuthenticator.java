@@ -57,7 +57,7 @@ public class DigestAuthenticator implements Authenticator {
 		Digest digest = new Digest(request.getMethod());
 		parseCredentials(digest, credentials);
 		SecurityManager secman = pool.getSecurityManager();
-		UserImpl user = secman.getUser(digest.username);
+		UserImpl user = (UserImpl)secman.getUser(digest.username);
 		if (user == null) {
 			// If user does not exist then send a challenge request again
 			sendChallenge(request, response);

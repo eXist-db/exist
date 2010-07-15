@@ -98,8 +98,8 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(1);
 			ostream.writeInt(1);
 		} else {
-			User user = secman.getUser(permissions.getOwner());
-			Group group = secman.getGroup(permissions.getOwnerGroup());
+			User user = permissions.getOwner();
+			Group group = permissions.getOwnerGroup();
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
