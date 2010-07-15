@@ -550,8 +550,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         Txn transaction = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            org.exist.security.SecurityManager manager = pool
-                    .getSecurityManager();
+            org.exist.security.SecurityManager manager = pool.getSecurityManager();
             collection = broker.openCollection(resource, Lock.WRITE_LOCK);
             if (collection == null) {
 // TODO check XML/Binary resource
@@ -562,7 +561,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                             + resource + " not found");
                 LOG.debug("changing permissions on document " + resource);
                 Permission perm = doc.getPermissions();
-                if (perm.getOwner().equals(session.getUser().getName())
+                if (perm.getOwner().equals(session.getUser())
                 || manager.hasAdminPrivileges(session.getUser())) {
                     if (owner != null) {
                         perm.setOwner(owner);
@@ -582,7 +581,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             }
             LOG.debug("changing permissions on collection " + resource);
             Permission perm = collection.getPermissions();
-            if (perm.getOwner().equals(session.getUser().getName())
+            if (perm.getOwner().equals(session.getUser())
             || manager.hasAdminPrivileges(session.getUser())) {
                 perm.setPermissions(permissions);
                 if (owner != null) {

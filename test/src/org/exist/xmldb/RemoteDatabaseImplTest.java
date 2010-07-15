@@ -61,7 +61,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 	        Database database = (Database) cl.newInstance();
 	        DatabaseManager.registerDatabase(database);
 	
-	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", "");
 	
 	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
 	                "CollectionManagementService", "1.0");
