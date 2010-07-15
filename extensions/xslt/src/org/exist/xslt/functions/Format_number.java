@@ -27,9 +27,16 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.NumericValue;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import java.lang.String;
+import java.text.DecimalFormat;
 
 /**
  * format-number($value as numeric?, $picture as xs:string) as xs:string 
@@ -40,23 +47,36 @@ import org.exist.xquery.value.Type;
  */
 public class Format_number extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+    private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.EXACTLY_ONE, "The number to format");
+    private static final SequenceType FORMAT_PARAMETER = new FunctionParameterSequenceType("format", Type.STRING, Cardinality.EXACTLY_ONE, "The format pattern string.  Please see the JavaDoc for java.text.DecimalFormat to get the specifics of this format string.");
+    private static final SequenceType DECIMAL_FORMAT_PARAMETER = new FunctionParameterSequenceType("decimalformat", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
+    private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
+    private static final String FORMAT_NUMBER_DESCRIPTION = "The format-number function converts its first argument to a string using the format pattern" +
+            " string specified by the second argument and the decimal-format named by the third argument, or the default decimal-format, if there is no" +
+            " third argument. The format pattern string is in the syntax specified by the JDK 1.1 DecimalFormat class. The format pattern string is in a" +
+            " localized notation: the decimal-format determines what characters have a special meaning in the pattern (with the exception of the quote character," +
+            " which is not localized). The format pattern must not contain the currency sign (#x00A4); support for this feature was added after the initial release" +
+            " of JDK 1.1. The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does" +
+            " not contain a declaration of the decimal-format with the specified expanded-name.";
+    private static final String FORMAT_DECIMAL_NUMBER_DESCRIPTION = "The format-number function converts its first argument to a string using the format pattern" +
+            " string specified by the second argument and the decimal-format named by the third argument, or the default decimal-format, if there is no" +
+            " third argument. The format pattern string is in the syntax specified by the JDK 1.1 DecimalFormat class. The format pattern string is in a" +
+            " localized notation: the decimal-format determines what characters have a special meaning in the pattern (with the exception of the quote character," +
+            " which is not localized). The format pattern must not contain the currency sign (#x00A4); support for this feature was added after the initial release" +
+            " of JDK 1.1. The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does" +
+            " not contain a declaration of the decimal-format with the specified expanded-name. NOTE: The decimalformat parameter is currently not implemented and is ignored.";
+    public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("format-number", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
-				"The function formats $value as a string using the picture string specified by the $picture argument and the decimal-format named by the $decimal-format-name argument, or the default decimal-format, if there is no $decimal-format-name argument.",
-				new SequenceType[] {
-					new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ONE)},
-				new SequenceType(Type.STRING, Cardinality.ONE)
+                FORMAT_NUMBER_DESCRIPTION,
+				new SequenceType[] {NUMBER_PARAMETER, FORMAT_PARAMETER},
+                FUNCTION_RETURN_TYPE
 		),
 		new FunctionSignature(
 				new QName("format-number", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
-				"The function formats $value as a string using the picture string specified by the $picture argument and the decimal-format named by the $decimal-format-name argument, or the default decimal-format, if there is no $decimal-format-name argument.",
-				new SequenceType[] {
-					new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ONE),
-					new SequenceType(Type.STRING, Cardinality.ONE)},
-				new SequenceType(Type.STRING, Cardinality.ONE)
+                FORMAT_DECIMAL_NUMBER_DESCRIPTION,
+				new SequenceType[] {NUMBER_PARAMETER, FORMAT_PARAMETER, DECIMAL_FORMAT_PARAMETER},
+                FUNCTION_RETURN_TYPE
 		)
 	};
 	
@@ -70,8 +90,14 @@ public class Format_number extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Method is not implemented");
+        NumericValue numericValue = (NumericValue)args[0].itemAt(0);
+
+        try {
+            String value = new DecimalFormat(args[1].getStringValue()).format(numericValue.getDouble());
+            return new StringValue(value);
+        } catch (java.lang.IllegalArgumentException e) {
+            throw new XPathException(e.getMessage());
+        }
 	}
 
 }
