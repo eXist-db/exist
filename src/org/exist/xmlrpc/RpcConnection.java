@@ -560,8 +560,8 @@ public class RpcConnection implements RpcAPI {
                 	Permission perms = doc.getPermissions();
                 	HashMap<String, Object> hash = new HashMap<String, Object>(4);
                     hash.put("name", doc.getFileURI().toString());
-                    hash.put("owner", perms.getOwner());
-                    hash.put("group", perms.getOwnerGroup());
+                    hash.put("owner", perms.getOwner().getName());
+                    hash.put("group", perms.getOwnerGroup().getName());
                     hash.put("permissions", new Integer(perms.getPermissions()));
                     hash.put("type",
                             doc.getResourceType() == DocumentImpl.BINARY_FILE
@@ -577,8 +577,8 @@ public class RpcConnection implements RpcAPI {
             desc.put("documents", docs);
             desc.put("name", collection.getURI().toString());
             desc.put("created", Long.toString(collection.getCreationTime()));
-            desc.put("owner", perms.getOwner());
-            desc.put("group", perms.getOwnerGroup());
+            desc.put("owner", perms.getOwner().getName());
+            desc.put("group", perms.getOwnerGroup().getName());
             desc.put("permissions", new Integer(perms.getPermissions()));
             return desc;
         } finally {
@@ -631,8 +631,8 @@ public class RpcConnection implements RpcAPI {
             }
             Permission perms = doc.getPermissions();
             hash.put("name", resourceUri.toString());
-            hash.put("owner", perms.getOwner());
-            hash.put("group", perms.getOwnerGroup());
+            hash.put("owner", perms.getOwner().getName());
+            hash.put("group", perms.getOwnerGroup().getName());
             hash.put("permissions", new Integer(perms.getPermissions()));
             hash.put("type",
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
@@ -692,8 +692,8 @@ public class RpcConnection implements RpcAPI {
             desc.put("collections", collections);
             desc.put("name", collection.getURI().toString());
             desc.put("created", Long.toString(collection.getCreationTime()));
-            desc.put("owner", perms.getOwner());
-            desc.put("group", perms.getOwnerGroup());
+            desc.put("owner", perms.getOwner().getName());
+            desc.put("group", perms.getOwnerGroup().getName());
             desc.put("permissions", new Integer(perms.getPermissions()));
             return desc;
         } finally {
@@ -1450,8 +1450,8 @@ public class RpcConnection implements RpcAPI {
             	DocumentImpl doc = i.next();
             	Permission perm = doc.getPermissions();
             	List<Object> tmp = new ArrayList<Object>(3);
-                tmp.add(perm.getOwner());
-                tmp.add(perm.getOwnerGroup());
+                tmp.add(perm.getOwner().getName());
+                tmp.add(perm.getOwnerGroup().getName());
                 tmp.add(new Integer(perm.getPermissions()));
                 result.put(doc.getFileURI().toString(), tmp);
             }
@@ -1503,8 +1503,8 @@ public class RpcConnection implements RpcAPI {
                 Collection childColl = broker.getCollection(path);
                 Permission perm = childColl.getPermissions();
                 List<Object> tmp = new ArrayList<Object>(3);
-                tmp.add(perm.getOwner());
-                tmp.add(perm.getOwnerGroup());
+                tmp.add(perm.getOwner().getName());
+                tmp.add(perm.getOwnerGroup().getName());
                 tmp.add(new Integer(perm.getPermissions()));
                 result.put(child, tmp);
             }
@@ -1578,8 +1578,8 @@ public class RpcConnection implements RpcAPI {
                 perm = collection.getPermissions();
             }
             HashMap<String, Object> result = new HashMap<String, Object>();
-            result.put("owner", perm.getOwner());
-            result.put("group", perm.getOwnerGroup());
+            result.put("owner", perm.getOwner().getName());
+            result.put("group", perm.getOwnerGroup().getName());
             result.put("permissions", new Integer(perm.getPermissions()));
             return result;
         } finally {
@@ -3313,7 +3313,7 @@ public class RpcConnection implements RpcAPI {
                 if (perm.validate(user, Permission.WRITE)
                 || manager.hasAdminPrivileges(user)) {
                     if (owner != null) {
-                        if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                        if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
                             throw new PermissionDeniedException("not allowed to change permissions");
                         perm.setOwner(owner);
                         if (!manager.hasGroup(ownerGroup))
@@ -3339,7 +3339,7 @@ public class RpcConnection implements RpcAPI {
                     if (permissions != null)
                         perm.setPermissions(permissions);
                     if (owner != null) {
-                        if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                        if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
                             throw new PermissionDeniedException("not allowed to change permissions");
                         perm.setOwner(owner);
                         if (!manager.hasGroup(ownerGroup))
@@ -3426,7 +3426,7 @@ public class RpcConnection implements RpcAPI {
                 if (perm.validate(user, Permission.WRITE)
                 || manager.hasAdminPrivileges(user)) {
                     if (owner != null) {
-                        if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                        if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
                             throw new PermissionDeniedException("not allowed to change permissions");
                         perm.setOwner(owner);
                         if (!manager.hasGroup(ownerGroup))
@@ -3450,7 +3450,7 @@ public class RpcConnection implements RpcAPI {
             || manager.hasAdminPrivileges(user)) {
                 perm.setPermissions(permissions);
                 if (owner != null) {
-                    if (!(perm.getOwner().equals(user.getName()) || manager.hasAdminPrivileges(user)))
+                    if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
                         throw new PermissionDeniedException("not allowed to change permissions");
                     perm.setOwner(owner);
                     if (!manager.hasGroup(ownerGroup))
@@ -3508,7 +3508,7 @@ public class RpcConnection implements RpcAPI {
             u.setEncodedPassword(passwd);
             u.setPasswordDigest(passwdDigest);
         } else {
-            u = manager.getUser(name);
+            u = (UserImpl) manager.getUser(name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new PermissionDeniedException(
@@ -3551,7 +3551,7 @@ public class RpcConnection implements RpcAPI {
                 	"not allowed to create user");
     		u = new UserImpl(name);
     	} else {
-    		u = manager.getUser(name);
+    		u = (UserImpl) manager.getUser(name);
     		if (!(u.getName().equals(user.getName()) || manager
     			.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(
@@ -3566,6 +3566,7 @@ public class RpcConnection implements RpcAPI {
     			u.addGroup(g);
     		}
     	}
+    	
     	manager.setUser(u);
     	return true;
     }
@@ -3585,7 +3586,7 @@ public class RpcConnection implements RpcAPI {
                 	"not allowed to create user");
     		u = new UserImpl(name);
     	} else {
-    		u = manager.getUser(name);
+    		u = (UserImpl) manager.getUser(name);
     		if (!(u.getName().equals(user.getName()) || manager
     				.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(

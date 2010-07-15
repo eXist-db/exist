@@ -37,15 +37,9 @@ import org.exist.util.SyntaxException;
  */
 public class UnixStylePermission implements Permission {
 
-    //default Unix style permissions for a resource
-	public final static int DEFAULT_PERM = 0755;
-	
-	//default UnixStylePermission
-    public final static Permission SYSTEM_DEFAULT = new UnixStylePermission(null, DEFAULT_PERM);
-    
     //owner, default to DBA
-    private String owner = SecurityManager.DBA_USER;
-    private String ownerGroup = SecurityManager.DBA_GROUP;
+    private User owner;
+    private Group ownerGroup;
 
     //permissions
     private int permissions = DEFAULT_PERM;
@@ -53,7 +47,12 @@ public class UnixStylePermission implements Permission {
     private SecurityManager sm;
 
     public UnixStylePermission(SecurityManager sm) {
+    	if (sm == null)
+    		throw new IllegalArgumentException("Security manager can't be null");
+    	
     	this.sm = sm;
+    	owner = sm.getSystemAccount();
+    	ownerGroup = sm.getDBAGroup();
     }
 
 
@@ -79,8 +78,10 @@ public class UnixStylePermission implements Permission {
      */
     public UnixStylePermission(SecurityManager sm, String user, String group, int permissions) {
     	this(sm, permissions);
-        this.owner = user;
-        this.ownerGroup = group;
+        owner = sm.getUser(user);
+        ownerGroup = sm.getGroup(group);
+        
+        check(user, group);
     }
     
 
@@ -98,9 +99,9 @@ public class UnixStylePermission implements Permission {
     /**
      *  Gets the user who owns this resource
      *
-     *@return    The owner value
+     * @return The owner value
      */
-    public String getOwner() {
+    public User getOwner() {
         return owner;
     }
 
@@ -110,7 +111,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    The ownerGroup value
      */
-    public String getOwnerGroup() {
+    public Group getOwnerGroup() {
         return ownerGroup;
     }
 
@@ -152,18 +153,24 @@ public class UnixStylePermission implements Permission {
      *@exception  IOException  Description of the Exception
      */
     public void read( DataInput istream ) throws IOException {
-        owner = istream.readUTF();
-        ownerGroup = istream.readUTF();
+        owner = sm.getUser(istream.readUTF());
+        ownerGroup = sm.getGroup(istream.readUTF());
         permissions = istream.readByte();
+        
+        check(null, null);
     }
     
-    /**
+	/**
      *  Set the owner group
      *
      *@param  group  The new group value
      */
     public void setGroup( String group ) {
-        this.ownerGroup = group;
+        ownerGroup = sm.getGroup(group);
+    }
+
+    public void setGroup( Group group ) {
+        ownerGroup = group;
     }
 
     /**
@@ -184,9 +191,9 @@ public class UnixStylePermission implements Permission {
     public void setOwner( User user ) {
     	// FIXME: assume guest identity if user gets lost due to a database corruption
     	if(user == null) {
-    		this.owner = SecurityManager.GUEST_USER;
+    		this.owner = sm.getSystemAccount();
     	} else
-    		this.owner = user.getName();
+    		this.owner = user;
         //this.ownerGroup = user.getPrimaryGroup();
     }
 
@@ -194,10 +201,10 @@ public class UnixStylePermission implements Permission {
     /**
      *  Set the owner
      *
-     *@param  user  The new owner value
+     *@param  name  The new owner value
      */
-    public void setOwner( String user ) {
-        this.owner = user;
+    public void setOwner( String name ) {
+        owner = sm.getUser( name );
     }
 
     /**
@@ -346,5 +353,20 @@ public class UnixStylePermission implements Permission {
         perm = perm << 6;
         return ( permissions & perm ) == perm;
     }
+
+    private void check(String user, String group) {
+        if (owner == null) {
+        	String s = "";
+        	if (user != null) s = " ["+user+"]";
+        		
+        	throw new IllegalArgumentException("User was not found."+s);
+        }
+        if (ownerGroup == null) {
+        	String s = "";
+        	if (group != null) s = " ["+group+"]";
+        		
+        	throw new IllegalArgumentException("Group was not found."+s);
+        }
+	}
 }
 

@@ -334,8 +334,8 @@ public class SystemExport {
             AttributesImpl attr = new AttributesImpl();
             attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", uri.toString());
             attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(currVersion));
-            attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", current.getPermissions().getOwner());
-            attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", current.getPermissions().getOwnerGroup());
+            attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", current.getPermissions().getOwner().getName());
+            attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", current.getPermissions().getOwnerGroup().getName());
             attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(current.getPermissions()
                     .getPermissions()));
             try {
@@ -439,8 +439,8 @@ public class SystemExport {
                 doc.getResourceType() == DocumentImpl.BINARY_FILE ? "BinaryResource" : "XMLResource");
         attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", doc.getFileURI().toString());
         attr.addAttribute(Namespaces.EXIST_NS, "skip", "skip", "CDATA", (needsBackup ? "no" : "yes"));
-        attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", doc.getPermissions().getOwner());
-        attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", doc.getPermissions().getOwnerGroup());
+        attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", doc.getPermissions().getOwner().getName());
+        attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", doc.getPermissions().getOwnerGroup().getName());
         attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer
                 .toOctalString(doc.getPermissions().getPermissions()));
 

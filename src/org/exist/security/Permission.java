@@ -30,7 +30,6 @@ import org.exist.util.SyntaxException;
 public interface Permission {
 	
 	public final static int DEFAULT_PERM = 0755;
-	public final static Permission SYSTEM_DEFAULT = null;
 	
 	public final static int READ = 4;
 	public final static int WRITE = 2;
@@ -43,73 +42,81 @@ public interface Permission {
 	public int getGroupPermissions();
 
     /**
-     *  Gets the user who owns this resource
+     * Gets the user who owns this resource
      *
-     *@return    The owner value
+     * @return The owner value
      */
-    public String getOwner();
+    public User getOwner();
 
     /**
-     *  Gets the group 
+     * Gets the group 
      *
-     *@return    The ownerGroup value
+     * @return The ownerGroup value
      */
-    public String getOwnerGroup();
+    public Group getOwnerGroup();
 
     /**
-     *  Get the permissions
+     * Get the permissions
      *
-     *@return    The permissions value
+     * @return The permissions value
      */
     public int getPermissions();
 
     /**
-     *  Get the active permissions for others
+     * Get the active permissions for others
      *
-     *@return    The publicPermissions value
+     * @return The publicPermissions value
      */
     public int getPublicPermissions();
 
     /**
-     *  Get the active permissions for the owner
+     * Get the active permissions for the owner
      *
-     *@return    The userPermissions value
+     * @return The userPermissions value
      */
     public int getUserPermissions();
 
     /**
-     *  Read the Permission from an input stream
+     * Read the Permission from an input stream
      *
-     *@param  istream          Description of the Parameter
-     *@exception  IOException  Description of the Exception
+     * @param  istream          Description of the Parameter
+     * @exception  IOException  Description of the Exception
+     * @deprecated use one on implementation level
      */
     public void read(DataInput istream) throws IOException;
     
     /**
-     *  Set the owner group
+     * Set the owner group
      *
-     *@param  group  The new group value
+     * @param  group  The group value
      */
-    public void setGroup(String group);
+    public void setGroup(Group group);
 
     /**
-     *  Sets permissions for group
+     * Set the owner group
      *
-     *@param  perm  The new groupPermissions value
+     * @param  name The group's name
+     */
+    public void setGroup(String name);
+
+    /**
+     * Sets permissions for group
+     *
+     * @param  perm  The new groupPermissions value
      */
     public void setGroupPermissions(int perm);
 
     /**
-     *  Set the owner passed as User object
+     * Set the owner passed as User object
      *
-     *@param  user  The new owner value
+     * @param  user  The new owner value
      */
     public void setOwner(User user);
 
     /**
-     *  Set the owner
+     * Set the owner
      *
-     *@param  user  The new owner value
+     * @param  user  The new owner value
      */
     public void setOwner(String user);
 

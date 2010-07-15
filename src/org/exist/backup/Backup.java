@@ -236,8 +236,8 @@ public class Backup {
 		AttributesImpl attr = new AttributesImpl();
 		//The name should have come from an XmldbURI.toString() call
 		attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
-		attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", currentPerms.getOwner());
-		attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", currentPerms.getOwnerGroup());
+		attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", currentPerms.getOwner().getName());
+		attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", currentPerms.getOwnerGroup().getName());
 		attr.addAttribute(
 				Namespaces.EXIST_NS,
 			"mode",
@@ -299,8 +299,8 @@ public class Backup {
                 attr.clear();
                 attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType());
                 attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", resources[i]);
-                attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", perms[i].getOwner());
-                attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getOwnerGroup());
+                attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", perms[i].getOwner().getName());
+                attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getOwnerGroup().getName());
                 attr.addAttribute(
                 		Namespaces.EXIST_NS,
                         "mode",

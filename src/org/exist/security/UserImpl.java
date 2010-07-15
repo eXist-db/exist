@@ -268,21 +268,24 @@ public class UserImpl implements User {
 	 * 
 	 * @see org.exist.security.User#addGroup(java.lang.String)
 	 */
-	public final void addGroup(String group) {
+	public final void addGroup(String name) {
 		if (groups == null) {
 			groups = new String[1];
-			groups[0] = group;
+			groups[0] = name;
 		} else {
 			int len = groups.length;
 			String[] ngroups = new String[len + 1];
 			System.arraycopy(groups, 0, ngroups, 0, len);
-			ngroups[len] = group;
+			ngroups[len] = name;
 			groups = ngroups;
 		}
-		if (SecurityManager.DBA_GROUP.equals(group))
+		if (SecurityManager.DBA_GROUP.equals(name))
 			hasDbaRole = true;
 	}
 
+	public final void addGroup(Group group) {
+		addGroup(group.getName());
+	}
 	/*
 	 * (non-Javadoc)
 	 * 

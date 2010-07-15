@@ -357,8 +357,11 @@ public class SecurityManagerImpl implements SecurityManager
    }
    
    
-   public void addGroup(String name)
-   {
+   public void addGroup(String name) {
+      
+   }
+
+   public void addGroup(Group group) {
       
    }
 
@@ -525,6 +528,10 @@ public class SecurityManagerImpl implements SecurityManager
       return false;
    }
 
+   public boolean hasGroup(Group group) {
+      return hasGroup(group.getName());
+   }
+
    // TODO: this should be addUser
    public void setUser(User user) {
    }
@@ -557,6 +564,11 @@ public class SecurityManagerImpl implements SecurityManager
 	@Override
 	public User getGuestAccount() {
 		return SecurityManager.GUEST;
+	}
+
+	@Override
+	public Group getDBAGroup() {
+		return getGroup(SecurityManager.DBA_GROUP);
 	}
 
 	@Override

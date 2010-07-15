@@ -61,15 +61,20 @@ public interface SecurityManager {
    void deleteUser(String name) throws PermissionDeniedException;
    void deleteUser(User user) throws PermissionDeniedException;
 
-   UserImpl getUser(String name);
+   User getUser(String name);
 
    User getUser(int uid);
 
    User[] getUsers();
 
+   @Deprecated
    void addGroup(String name);
 
+   void addGroup(Group group);
+
    boolean hasGroup(String name);
+
+   boolean hasGroup(Group group);
 
    Group getGroup(String name);
 
@@ -95,5 +100,7 @@ public interface SecurityManager {
    public User getSystemAccount();
 
    public User getGuestAccount();
+
+   public Group getDBAGroup();
 
 }

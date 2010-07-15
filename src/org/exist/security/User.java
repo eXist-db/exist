@@ -33,11 +33,18 @@ public interface User extends Principal {
 	public final static int MD5_ENCODING = 2;
 
 	/**
-	 *  Add the user to a group
+	 * Add the user to a group
 	 *
-	 *@param  group  The feature to be added to the Group attribute
+	 * @param  group  The feature to be added to the Group attribute
 	 */
-	public void addGroup(String group);
+	public void addGroup(String name);
+
+	/**
+	 * Add the user to a group
+	 *
+	 * @param  group  The feature to be added to the Group attribute
+	 */
+	public void addGroup(Group group);
 
 	/**
 	 *  Remove the user to a group

@@ -25,6 +25,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -32,17 +33,16 @@ import org.exist.util.SyntaxException;
 
 public class UnixStylePermission implements Permission {
 
-    //default Unix style permissions for a resource
-	public final static int DEFAULT_PERM = 0755;
-	
     //owner, default to DBA
-    private String owner = SecurityManager.DBA_USER;
-    private String ownerGroup = SecurityManager.DBA_GROUP;
+    private User owner;
+    private Group ownerGroup;
 
     //permissions
     private int permissions = DEFAULT_PERM;
 
-    public UnixStylePermission() { }
+    public UnixStylePermission() {
+    	owner = new UserAider(SecurityManager.DBA_USER);
+    }
 
 
     /**
@@ -51,6 +51,7 @@ public class UnixStylePermission implements Permission {
      * @param  permissions  Description of the Parameter
      */
     public UnixStylePermission(int permissions) {
+    	this();
         this.permissions = permissions;
     }
 
@@ -63,8 +64,8 @@ public class UnixStylePermission implements Permission {
      * @param  permissions
      */
     public UnixStylePermission(String user, String group, int permissions) {
-        this.owner = user;
-        this.ownerGroup = group;
+        this.owner = new UserAider(user);
+        this.ownerGroup = new GroupAider(group);
         this.permissions = permissions;
     }
     
@@ -85,7 +86,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The owner value
      */
-    public String getOwner() {
+    public User getOwner() {
         return owner;
     }
 
@@ -95,7 +96,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The ownerGroup value
      */
-    public String getOwnerGroup() {
+    public Group getOwnerGroup() {
         return ownerGroup;
     }
 
@@ -131,12 +132,21 @@ public class UnixStylePermission implements Permission {
 
 
     /**
-     *  Set the owner group
+     * Set the owner group
      *
-     *@param  group  The new group value
+     * @param  group  The group value
+     */
+    public void setGroup( Group group ) {
+        this.ownerGroup = group;
+    }
+
+    /**
+     * Set the owner group
+     *
+     * @param  group  The group name
      */
     public void setGroup( String group ) {
-        this.ownerGroup = group;
+        this.ownerGroup = new GroupAider(group);
     }
 
     /**
@@ -155,12 +165,7 @@ public class UnixStylePermission implements Permission {
      *@param  user  The new owner value
      */
     public void setOwner( User user ) {
-    	// FIXME: assume guest identity if user gets lost due to a database corruption
-    	if(user == null) {
-    		this.owner = SecurityManager.GUEST_USER;
-    	} else
-    		this.owner = user.getName();
-        //this.ownerGroup = user.getPrimaryGroup();
+   		this.owner = user;
     }
 
 
@@ -170,7 +175,7 @@ public class UnixStylePermission implements Permission {
      *@param  user  The new owner value
      */
     public void setOwner( String user ) {
-        this.owner = user;
+        this.owner = new UserAider(user);
     }
 
     /**

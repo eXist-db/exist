@@ -41,7 +41,7 @@ public abstract class NamedResource extends Resource {
 		 * 
 		 * @return the owner of this resource
 		 */
-		public String owner() {return permissions.getOwner();}
+		public String owner() {return permissions.getOwner().getName();}
 		
 		/**
 		 * Set the owner of this resource for purposes of permission management.
@@ -55,7 +55,7 @@ public abstract class NamedResource extends Resource {
 		 * 
 		 * @return the owning group of this resource
 		 */
-		public String group() {return permissions.getOwnerGroup();}
+		public String group() {return permissions.getOwnerGroup().getName();}
 		
 		/**
 		 * Set the group that will have privileged access to this resource for purposes of permission management.

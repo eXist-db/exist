@@ -724,7 +724,7 @@ public class BrokerPool extends Observable {
         signalSystemStatus(SIGNAL_STARTUP);
 
         //create the security manager
-//        securityManager = new SecurityManagerImpl(this);
+        securityManager = new SecurityManagerImpl(this);
 
         //REFACTOR : construct then configure
         cacheManager = new DefaultCacheManager(this);
@@ -816,7 +816,7 @@ public class BrokerPool extends Observable {
 		status = OPERATING;
 
 		//wake-up the security manager
-		securityManager = new SecurityManagerImpl(this);
+//		securityManager = new SecurityManagerImpl(this);
         securityManager.attach(this, broker);
 
 		//have to do this after initializing = false
