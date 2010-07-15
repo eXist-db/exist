@@ -41,7 +41,7 @@ public class Unparsed_entity_uri extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("unparsed-entity-uri", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("unparsed-entity-uri", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function returns the URI of the unparsed entity whose name is given by the value of the $entity-name argument, in the document containing the context node.",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ONE)},

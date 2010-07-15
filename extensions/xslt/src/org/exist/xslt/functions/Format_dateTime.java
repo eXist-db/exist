@@ -45,7 +45,7 @@ public class Format_dateTime extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("format-dateTime", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("format-dateTime", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The functions format $value as a string using the picture string specified by the $picture argument, the calendar specified by the $calendar argument, the language specified by the $language argument, and the country specified by the $country argument.",
 				new SequenceType[] {
 					new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE),
@@ -56,7 +56,7 @@ public class Format_dateTime extends BasicFunction {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 		),
 		new FunctionSignature(
-				new QName("format-dateTime", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("format-dateTime", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The functions format $value as a string using the picture string specified by the $picture argument, the calendar specified by the $calendar argument, the language specified by the $language argument, and the country specified by the $country argument.",
 				new SequenceType[] {
 					new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE),

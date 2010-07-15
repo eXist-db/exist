@@ -42,7 +42,7 @@ public class Format_number extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("format-number", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("format-number", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function formats $value as a string using the picture string specified by the $picture argument and the decimal-format named by the $decimal-format-name argument, or the default decimal-format, if there is no $decimal-format-name argument.",
 				new SequenceType[] {
 					new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE),
@@ -50,7 +50,7 @@ public class Format_number extends BasicFunction {
 				new SequenceType(Type.STRING, Cardinality.ONE)
 		),
 		new FunctionSignature(
-				new QName("format-number", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("format-number", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function formats $value as a string using the picture string specified by the $picture argument and the decimal-format named by the $decimal-format-name argument, or the default decimal-format, if there is no $decimal-format-name argument.",
 				new SequenceType[] {
 					new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE),

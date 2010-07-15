@@ -41,7 +41,7 @@ public class Current extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("current", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("current", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function, used within an XPath expression, " +
 				"returns the item that was the context item at the point where the " +
 				"expression was invoked from the XSLT stylesheet.",

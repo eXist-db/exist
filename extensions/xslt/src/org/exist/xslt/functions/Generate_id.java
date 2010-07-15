@@ -43,7 +43,7 @@ public class Generate_id extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("generate-id", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("generate-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function returns a string that uniquely identifies a given node.",
 				FunctionSignature.NO_ARGS,
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)

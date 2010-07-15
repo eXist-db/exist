@@ -42,14 +42,14 @@ public class Unparsed_text extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("unparsed-text", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("unparsed-text", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function reads an external resource (for example, a file) and returns its contents as a string.",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 		),
 		new FunctionSignature(
-				new QName("unparsed-text", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("unparsed-text", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function reads an external resource (for example, a file) and returns its contents as a string.",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),

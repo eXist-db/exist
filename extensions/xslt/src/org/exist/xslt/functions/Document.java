@@ -42,14 +42,14 @@ public class Document extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("document", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("document", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function allows access to XML documents identified by a URI.",
 				new SequenceType[] {
 						new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)},
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
 		),
 		new FunctionSignature(
-				new QName("document", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("document", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function allows access to XML documents identified by a URI.",
 				new SequenceType[] {
 						new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),

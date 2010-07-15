@@ -41,7 +41,7 @@ public class Unparsed_entity_public_id extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("unparsed-entity-public-id", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("unparsed-entity-public-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function returns the public identifier of the unparsed entity whose name is given by the value of the $entity-name argument, in the document containing the context node.",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ONE)},
