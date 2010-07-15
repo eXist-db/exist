@@ -736,6 +736,10 @@
             <module src="resource:org/exist/xquery/lib/test.xq"
                 uri="http://exist-db.org/xquery/testing"/>
 
+			<!-- XSL functions -->
+            <module class="org.exist.xslt.functions.XSLModule"
+                uri="http://www.w3.org/1999/XSL/Transform" />
+
             <!-- expath module imports (for p:http-request)//-->
             <module class="org.exist.xquery.modules.httpclient.HTTPClientModule" 
                 uri="http://exist-db.org/xquery/httpclient" />

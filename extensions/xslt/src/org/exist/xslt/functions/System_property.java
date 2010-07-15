@@ -46,7 +46,7 @@ public class System_property extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("system-property", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("system-property", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function returns a string representing the value of the system property identified by the name.",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ONE)},

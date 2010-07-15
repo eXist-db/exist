@@ -28,10 +28,10 @@ import org.exist.xquery.FunctionDef;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class XSLTModule extends AbstractInternalModule {
+public class XSLModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslt";
-	public final static String PREFIX = "xslt";
+	public final static String NAMESPACE_URI = "http://www.w3.org/1999/XSL/Transform";
+	public final static String PREFIX = "xsl";
 
     public final static String RELEASED_IN_VERSION = "eXist-1.5.0";
 
@@ -62,7 +62,7 @@ public class XSLTModule extends AbstractInternalModule {
 	/**
 	 * @param functions
 	 */
-	public XSLTModule() {
+	public XSLModule() {
 		super(functions);
 	}
 

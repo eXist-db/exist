@@ -42,7 +42,7 @@ public class Key extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-				new QName("key", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("key", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function does for keys what the id FO function does for IDs",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ONE),
@@ -50,7 +50,7 @@ public class Key extends BasicFunction {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
 		),
 		new FunctionSignature(
-				new QName("key", XSLTModule.NAMESPACE_URI, XSLTModule.PREFIX),
+				new QName("key", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
 				"The function does for keys what the id FO function does for IDs",
 				new SequenceType[] {
 						new SequenceType(Type.STRING, Cardinality.ONE),
