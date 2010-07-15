@@ -327,12 +327,12 @@ public class UnixStylePermission implements Permission {
         if ( user.hasDbaRole() )
             return true;
         // check if the user owns this resource
-        if ( user.getName().equals( owner ) )
+        if ( user.equals( owner ) )
             return validateUser( perm );
         // check groups
         String[] groups = user.getGroups();
         for (int i = 0; i < groups.length; i++) {
-        	if ( groups[i].equals( ownerGroup ) )
+        	if ( groups[i].equals( ownerGroup.getName() ) )
                 return validateGroup( perm );
 		}
 
