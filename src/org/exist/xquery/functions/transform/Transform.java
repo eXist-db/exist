@@ -640,6 +640,10 @@ public class Transform extends BasicFunction {
 		public Source resolve(String href, String base)
 			throws TransformerException {
 			String path;
+			
+			if (href.isEmpty()) {
+				path = base;
+			} else
             //TODO : use dedicated function in XmldbURI
 			if (href.startsWith("/"))
 				path = href;
