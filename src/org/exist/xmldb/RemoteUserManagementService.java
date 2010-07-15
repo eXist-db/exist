@@ -75,8 +75,8 @@ public class RemoteUserManagementService implements UserManagementService {
 		try {
             List<Object> params = new ArrayList<Object>(4);
 			params.add(path);
-			params.add(perms.getOwner());
-			params.add(perms.getOwnerGroup());
+			params.add(perms.getOwner().getName());
+			params.add(perms.getOwnerGroup().getName());
 			params.add(new Integer(perms.getPermissions()));
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
