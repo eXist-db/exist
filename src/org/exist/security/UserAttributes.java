@@ -36,13 +36,16 @@ public class UserAttributes {
 	public static String _EMAIL = "Email";
 	public static String _COUNTRY = "Country"; 
 	public static String _LANGUAGE = "Language"; 
+	public static String _TIMEZONE = "Timezone"; 
 
 	public static String FIRTSNAME = "http://axschema.org/namePerson/first";
 	public static String LASTNAME = "http://axschema.org/namePerson/last";
 	public static String FULLNAME = "http://axschema.org/namePerson";
 	public static String EMAIL = "http://axschema.org/contact/email";
 	public static String COUNTRY = "http://axschema.org/contact/country/home"; 
-	public static String LANGUAGE = "http://axschema.org/pref/language"; 
+	public static String LANGUAGE = "http://axschema.org/pref/language";
+	public static String TIMEZONE = "http://axschema.org/pref/timezone";
+	
 		
 	//alias -> axschema url
     public static Map<String, String> alias = new HashMap<String, String>();
@@ -54,6 +57,7 @@ public class UserAttributes {
     	addAlias(_EMAIL, EMAIL);
     	addAlias(_COUNTRY, COUNTRY);
     	addAlias(_LANGUAGE, LANGUAGE);
+    	addAlias(_TIMEZONE, TIMEZONE);
     };
     
     private static void addAlias(String key, String value) {
