@@ -58,6 +58,7 @@ import org.exist.source.FileSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XQueryService;
@@ -91,238 +92,81 @@ import org.xmldb.api.modules.XMLResource;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-public class XQTS_case {
+public class XQTS_case extends TestCase {
 
 	private static final String XQTS_folder = "test/external/XQTS_1_0_2/";
-	
-	public static org.exist.start.Main database = null;
-	private static int inUse = 0;
-	protected static Collection testCollection = null;
 	
 	private static Map<String, String> sources = null;
 	private static Map<String, String> moduleSources = null;
 	
-	private static BrokerPool pool = null;
+	public void loadTS() throws Exception {
+		testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
+		if (testCollection == null) {
+			File buildFile = new File("webapp/xqts/build.xml");
+			Project p = new Project();
+			p.setUserProperty("ant.file", buildFile.getAbsolutePath());
+			p.setUserProperty("config.basedir", "../../test/external/XQTS_1_0_2");
+			DefaultLogger consoleLogger = new DefaultLogger();
+			consoleLogger.setErrorPrintStream(System.err);
+			consoleLogger.setOutputPrintStream(System.out);
+			consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
+			p.addBuildListener(consoleLogger);
 	
-	private static Thread shutdowner = null;
-
-	static class Shutdowner implements Runnable {
-
-		public void run() {
 			try {
-				Thread.sleep(2 * 60 * 1000);
-
-				if (inUse == 0) {
-					database.shutdown();
-
-					System.out.println("database was shutdown");
-					database = null;
-				}
+				p.fireBuildStarted();
+				p.init();
+				ProjectHelper helper = ProjectHelper.getProjectHelper();
+				p.addReference("ant.projectHelper", helper);
+				helper.parse(p, buildFile);
+				p.executeTarget("store");
+				p.fireBuildFinished(null);
+				Thread.sleep(60 * 1000);
+			} catch (BuildException e) {
+				p.fireBuildFinished(e);
 			} catch (InterruptedException e) {
 			}
 		}
 		
-	}
-	
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		try {
-			if (database == null) {
-				database = new org.exist.start.Main("jetty");
-				database.run(new String[] { "jetty" });
+		testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
+		if (testCollection == null) throw new Exception("XQTS collection wasn't found");
 
-				testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-				if (testCollection == null) {
-					loadXQTS();
-					testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-					if (testCollection == null) {
-						Assert.fail("There is no XQTS data at database");
-					}
-				}
-				if (shutdowner == null) {
-					shutdowner = new Thread(new Shutdowner());
-					shutdowner.start();
-				}
-				
-				pool = BrokerPool.getInstance();
-			}
-			if (sources == null) {
-		       	sources = new HashMap<String, String>();
+		if (sources == null) {
+	       	sources = new HashMap<String, String>();
 
-		       	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+	       	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
-		       	String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
-		   		"let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
-		   		"return $XQTSCatalog//catalog:sources//catalog:source";
+	       	String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
+	   		"let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
+	   		"return $XQTSCatalog//catalog:sources//catalog:source";
 
-		       	ResourceSet results = service.query(query);
-		       	
-		       	for (int i = 0; i < results.getSize(); i++) {
-		       		ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
-		       		
-	       			sources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_2/"+source.getAttribute("FileName"));
-		       	}
-		       	
-			}
-			if (moduleSources == null) {
-				moduleSources = new HashMap<String, String>();
-
-		       	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-
-		       	String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
-		   		"let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
-		   		"return $XQTSCatalog//catalog:sources//catalog:module";
-
-		       	ResourceSet results = service.query(query);
-		       	
-		       	for (int i = 0; i < results.getSize(); i++) {
-		       		ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
-		       		
-		       		moduleSources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_2/"+source.getAttribute("FileName")+".xq");
-		       	}
-			}
-			inUse++;
-		} catch (Exception e) {
-			e.printStackTrace();
+	       	ResourceSet results = service.query(query);
+	       	
+	       	for (int i = 0; i < results.getSize(); i++) {
+	       		ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
+	       		
+       			sources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_2/"+source.getAttribute("FileName"));
+	       	}
+	       	
 		}
-//		System.out.println("setUpBeforeClass PASSED");
-	}
+		if (moduleSources == null) {
+			moduleSources = new HashMap<String, String>();
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		inUse--;
-//		System.out.println("tearDownAfterClass PASSED");
-	}
+	       	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		// System.out.println("setUp PASSED");
-	}
+	       	String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
+	   		"let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
+	   		"return $XQTSCatalog//catalog:sources//catalog:module";
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		// System.out.println("tearDown PASSED");
-	}
-
-	private static void loadXQTS() {
-		File buildFile = new File("webapp/xqts/build.xml");
-		Project p = new Project();
-		p.setUserProperty("ant.file", buildFile.getAbsolutePath());
-		p.setUserProperty("config.basedir", "../../test/external/XQTS_1_0_2");
-		DefaultLogger consoleLogger = new DefaultLogger();
-		consoleLogger.setErrorPrintStream(System.err);
-		consoleLogger.setOutputPrintStream(System.out);
-		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
-		p.addBuildListener(consoleLogger);
-
-		try {
-			p.fireBuildStarted();
-			p.init();
-			ProjectHelper helper = ProjectHelper.getProjectHelper();
-			p.addReference("ant.projectHelper", helper);
-			helper.parse(p, buildFile);
-			p.executeTarget("store");
-			p.fireBuildFinished(null);
-			Thread.sleep(60 * 1000);
-		} catch (BuildException e) {
-			p.fireBuildFinished(e);
-		} catch (InterruptedException e) {
+	       	ResourceSet results = service.query(query);
+	       	
+	       	for (int i = 0; i < results.getSize(); i++) {
+	       		ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
+	       		
+	       		moduleSources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_2/"+source.getAttribute("FileName")+".xq");
+	       	}
 		}
 	}
 	
-	private boolean compareResult(String folder, ElementImpl outputFile, Sequence result) {
-		if (outputFile == null)
-			Assert.fail("no result expected");
-
-		File expectedResult = new File("test/external/XQTS_1_0_2/ExpectedTestResults/"+folder, outputFile.getNodeValue());
-		if (!expectedResult.canRead()) Assert.fail("can't read expected result");
-		
-		String compare = outputFile.getAttribute("compare");
-		
-		try {
-			Reader reader = new BufferedReader(new FileReader(expectedResult));
-
-			int pos = 0;
-			for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
-				Resource xmldbResource = getResource(i.nextItem());
-				String res = xmldbResource.getContent().toString();
-				
-				int l;
-				if (result.getItemCount() == 1)
-					l = (int) expectedResult.length();
-				else
-					l = res.length();
-				
-				char[] chars = new char[l];
-				for (int x = 0; x < l; x++) {
-					
-					if (!reader.ready())
-						break;
-					
-					chars[x] = (char)reader.read();
-					
-					if (chars[x] == '\r')
-						chars[x] = (char)reader.read();
-					
-					pos++;
-				}
-				
-	//			System.out.println(res);
-	//			System.out.println(String.copyValueOf(chars));
-	
-				String expResult = String.copyValueOf(chars);
-				if (compare.equals("XML")) {
-					return diffXML(expResult, res);
-				} else {
-				
-					if (!expResult.equals(res))
-						if (compare.equals("Fragment"))
-							return diffXML(expResult, res);
-						else
-							return false;
-						
-					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
-						reader.mark(2);
-						if (' ' != (char)reader.read())
-							if (compare.equals("Fragment"))
-								reader.reset();
-							else
-								return false;
-					}
-				}
-			}
-		} catch (Exception e) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private boolean diffXML(String expResult, String res) throws SAXException, IOException {
-		res = res.replaceAll("\n", "");
-		res = res.replaceAll("\t", "");
-		expResult = expResult.replaceAll("\n", "");
-		expResult = expResult.replaceAll("\t", "");
-		
-		Diff diff = new Diff(expResult.trim(), res);
-        if (!diff.identical()) {
-        	System.out.println("expected:");
-        	System.out.println(expResult);
-        	System.out.println("get:");
-        	System.out.println(res);
-        	System.out.println(diff.toString());
-            return false;
-        }
-        
-        return true;
-	}
-
 	private static final String catalogNS = "http://www.w3.org/2005/02/query-test-XQTSCatalog";
 	
 	protected void groupCase(String testGroup, String testCase) {
@@ -445,7 +289,7 @@ public class XQTS_case {
 				for (int i = 0; i < outputFiles.getLength(); i++) {
 					ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
 					
-					if (compareResult(folder, outputFile, result)) {
+					if (compareResult("XQTS_1_0_2/ExpectedTestResults/"+folder, outputFile, result)) {
 						ok = true;
 						break;
 					}
@@ -479,15 +323,7 @@ public class XQTS_case {
 					}
 
 
-					String res = "";
-					try {
-						for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
-							Resource xmldbResource = getResource(i.nextItem());
-							res += xmldbResource.getContent().toString();
-						}
-					} catch (Exception e) {
-						res += e.getMessage();
-					}
+					String res = sequenceToString(result);
 					if (exp.isEmpty())
 						exp += "error "+expectedError;
 					
@@ -579,71 +415,6 @@ public class XQTS_case {
 		}
 	}
 
-	private static String readFileAsString(File file) throws java.io.IOException{
-	    byte[] buffer = new byte[(int) file.length()];
-	    FileInputStream f = new FileInputStream(file);
-	    f.read(buffer);
-	    return new String(buffer);
-	}
-	
-    private NodeImpl loadVarFromURI(XQueryContext context, String uri) throws IOException {
-		try {
-//			URL url = new URL(uri);
-//			InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
-			InputStreamReader isr = new InputStreamReader(new FileInputStream(uri), "UTF-8");
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            InputSource src = new InputSource(isr);
-            SAXParser parser = factory.newSAXParser();
-            XMLReader xr = parser.getXMLReader();
-            SAXAdapter adapter = new SAXAdapter(context);
-            xr.setContentHandler(adapter);
-            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-            xr.parse(src);
-            isr.close();
-            return (NodeImpl) adapter.getDocument();
-		} catch (Exception e) {
-			throw new IOException(e);
-        }
-    }
-
-    public final static String NORMALIZE_HTML = "normalize-html";
-
-    protected final static Properties defaultProperties = new Properties();
-    static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-        defaultProperties.setProperty(OutputKeys.INDENT, "no");
-        defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
-        defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-        defaultProperties.setProperty(NORMALIZE_HTML, "yes");
-    }
-
-	public Resource getResource(Object r) throws XMLDBException {
-		LocalCollection collection = null;
-		User user = null;
-		
-		LocalXMLResource res = null;
-		if (r instanceof NodeProxy) {
-			NodeProxy p = (NodeProxy) r;
-			res = new LocalXMLResource(user, pool, collection, p);
-		} else if (r instanceof Node) {
-			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
-			res.setContentAsDOM((Node)r);
-		} else if (r instanceof AtomicValue) {
-			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
-			res.setContent(r);
-		} else if (r instanceof Resource)
-			return (Resource) r;
-		
-		try {
-			Field field = res.getClass().getDeclaredField("outputProperties");
-			field.setAccessible(true);
-			field.set(res, new Properties(defaultProperties));
-		} catch (Exception e) {
-		}
-		return res;
-	}
-    
 	
 	private void fixBrokenTests(XQueryContext context, String group, String test) {
 		try {

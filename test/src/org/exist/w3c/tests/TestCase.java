@@ -107,7 +107,7 @@ public abstract class TestCase {
 				database = new org.exist.start.Main("jetty");
 				database.run(new String[] { "jetty" });
 
-				testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
+//				testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
 
 				if (shutdowner == null) {
 					shutdowner = new Thread(new Shutdowner());
@@ -178,6 +178,7 @@ public abstract class TestCase {
 				else
 					l = res.length();
 				
+				int skipped = 0;
 				char[] chars = new char[l];
 				for (int x = 0; x < l; x++) {
 					
@@ -186,10 +187,18 @@ public abstract class TestCase {
 					
 					chars[x] = (char)reader.read();
 					
-					if (chars[x] == '\r')
+					if (chars[x] == '\r') {
 						chars[x] = (char)reader.read();
+						skipped++;
+					}
 					
 					pos++;
+				}
+				
+				if (skipped != 0) {
+					char[] oldChars = chars; 
+					chars = new char[l-skipped];
+					System.arraycopy(oldChars, 0, chars, 0, l-skipped);
 				}
 				
 	//			System.out.println(res);
@@ -207,7 +216,7 @@ public abstract class TestCase {
 							return false;
 						
 					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
-						reader.mark(2);
+						reader.mark(1);
 						if (' ' != (char)reader.read())
 							if (compare.equals("Fragment"))
 								reader.reset();
