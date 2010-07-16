@@ -329,10 +329,14 @@ public class MemTreeBuilder
      *
      * @param   s  DOCUMENT ME!
      *
-     * @return  the node number of the created node
+     * @return  the node number of the created node, -1 if no node was created
      */
     public int characters( CharSequence s )
     {
+    	if( s == null ) {
+    		return( -1 );
+    	}
+    	
         int lastNode = doc.getLastNode();
 
         if( ( 0 < lastNode ) && ( level == doc.getTreeLevel( lastNode ) ) ) {
