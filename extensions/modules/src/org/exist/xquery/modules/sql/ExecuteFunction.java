@@ -285,7 +285,13 @@ public class ExecuteFunction extends BasicFunction
             builder.endElement();
 
             builder.startElement( new QName( "message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-            builder.characters( sqle.getMessage() );
+            
+            String state = sqle.getMessage();
+            
+            if( state != null ) {
+            	builder.characters( state );
+            }
+            
             builder.endElement();
 
             builder.startElement( new QName( "stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );

@@ -249,7 +249,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
         if( nodeKind == null ) {
             init();
         }
-        int len = s.length();
+        
+        int len = ( s == null ? 0 : s.length() );
 
         if( characters == null ) {
             characters = new char[( len > CHAR_BUF_SIZE ) ? len : CHAR_BUF_SIZE];
