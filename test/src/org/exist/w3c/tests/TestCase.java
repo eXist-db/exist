@@ -155,7 +155,7 @@ public abstract class TestCase {
 		// System.out.println("tearDown PASSED");
 	}
 
-	public boolean compareResult(String folder, Element outputFile, Sequence result) {
+	public boolean compareResult(String testCase, String folder, Element outputFile, Sequence result) {
 		if (outputFile == null)
 			Assert.fail("no expected result information");
 
@@ -178,6 +178,8 @@ public abstract class TestCase {
 				else
 					l = res.length();
 				
+				l += fixResultLength(testCase);
+				
 				int skipped = 0;
 				char[] chars = new char[l];
 				for (int x = 0; x < l; x++) {
@@ -191,7 +193,6 @@ public abstract class TestCase {
 					
 					if (chars[x] == '\r') {
 						chars[x] = (char)reader.read();
-						skipped++;
 					}
 					
 					pos++;
@@ -233,8 +234,8 @@ public abstract class TestCase {
 								;
 							else if (expResult.equals("&lt;") && res.equals("<"))
 								;
-							
-							return false;
+							else
+								return false;
 						}
 						
 					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
@@ -252,6 +253,10 @@ public abstract class TestCase {
 		}
 
 		return true;
+	}
+
+	public int fixResultLength(String testCase) {
+		return 0;
 	}
 
 	private boolean diffXML(String expResult, String res) throws SAXException, IOException {
