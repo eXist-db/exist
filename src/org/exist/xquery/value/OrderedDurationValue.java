@@ -133,7 +133,7 @@ abstract class OrderedDurationValue extends DurationValue {
 		switch(other.getType()) {
 		case Type.DAY_TIME_DURATION: {
 			if (getType() != other.getType()) 
-				throw new IllegalArgumentException("Tried to substract " + 
+				throw new XPathException("err:XPTY0004: Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 			Duration a = getCanonicalDuration();
@@ -142,7 +142,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			return new DayTimeDurationValue(result); }				
 		case Type.YEAR_MONTH_DURATION: {
 			if (getType() != other.getType()) 
-				throw new IllegalArgumentException("Tried to substract " + 
+				throw new XPathException("err:XPTY0004: Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 			Duration a = getCanonicalDuration();
@@ -186,7 +186,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
 		}	
 		if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN())
-			throw new XPathException("Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
+			throw new XPathException("err:XPTY0004: Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
 		if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE)
 			return (BigDecimal) x.toJavaObject(BigDecimal.class);
 		else 
