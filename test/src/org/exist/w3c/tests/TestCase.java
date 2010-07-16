@@ -218,10 +218,10 @@ public abstract class TestCase {
 					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
 						reader.mark(1);
 						if (' ' != (char)reader.read())
-							if (compare.equals("Fragment"))
+//							if (compare.equals("Fragment"))
 								reader.reset();
-							else
-								return false;
+//							else
+//								return false;
 					}
 				}
 			}
