@@ -33,6 +33,7 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -122,12 +123,16 @@ public class EXistServlet extends HttpServlet {
 			}
 			if (useDefaultUser) {
 				option = config.getInitParameter("user");
-				if (option != null)
+				if (option != null) {
 					defaultUsername = option;
-				option = config.getInitParameter("password");
-				if (option != null)
-					defaultPassword = option;
-				defaultUser = getDefaultUser();
+
+					option = config.getInitParameter("password");
+					if (option != null)
+						defaultPassword = option;
+					defaultUser = getDefaultUser();
+				} else {
+					defaultUser = pool.getSecurityManager().getGuestAccount();
+				}
 				if (defaultUser != null) {
 					LOG.info("Using default user " + defaultUsername + " for all unauthorized requests.");
 				} else {
@@ -592,8 +597,11 @@ public class EXistServlet extends HttpServlet {
 	}
 
 	private User authenticate(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
-		// First try to validate the principal if passed from the Servlet engine
-		Principal principal = request.getUserPrincipal();
+		Principal principal = UserImpl.getUserFromServletRequest(request);
+		if (principal != null) return (User) principal;
+		
+		// Try to validate the principal if passed from the Servlet engine
+		principal = request.getUserPrincipal();
 
 		if (principal instanceof XmldbPrincipal) {
 			String username = ((XmldbPrincipal) principal).getName();
