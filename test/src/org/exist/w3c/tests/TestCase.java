@@ -195,7 +195,7 @@ public abstract class TestCase {
 					pos++;
 				}
 				
-				if (skipped != 0) {
+				if (result.getItemCount() == 1 && skipped != 0) {
 					char[] oldChars = chars; 
 					chars = new char[l-skipped];
 					System.arraycopy(oldChars, 0, chars, 0, l-skipped);
