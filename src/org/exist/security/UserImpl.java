@@ -625,7 +625,7 @@ public class UserImpl implements User {
 		return _realm;
 	}
 
-	protected boolean authenticated = false;
+	private boolean authenticated = false;
 	
 	@Override
 	public boolean isAuthenticated() {
