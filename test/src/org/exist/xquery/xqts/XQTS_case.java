@@ -289,7 +289,7 @@ public class XQTS_case extends TestCase {
 				for (int i = 0; i < outputFiles.getLength(); i++) {
 					ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
 					
-					if (compareResult("XQTS_1_0_2/ExpectedTestResults/"+folder, outputFile, result)) {
+					if (compareResult(script, "XQTS_1_0_2/ExpectedTestResults/"+folder, outputFile, result)) {
 						ok = true;
 						break;
 					}

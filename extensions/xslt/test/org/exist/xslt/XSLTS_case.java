@@ -114,7 +114,7 @@ public class XSLTS_case extends TestCase {
 			
 			//compare result with one provided by test case
 			boolean ok = false;
-			if (compareResult(XSLTS_folder+"ExpectedTestResults/", outputFile, result)) {
+			if (compareResult("", XSLTS_folder+"ExpectedTestResults/", outputFile, result)) {
 				ok = true;
 			}
 			
