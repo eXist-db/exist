@@ -7,19 +7,21 @@
 package org.exist.memtree;
 
 /**
- * @author wolf
+ * DOCUMENT ME!
  *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * @author  wolf
+ *
+ *          <p>To change the template for this generated type comment go to Window - Preferences - Java - Code Generation - Code and Comments</p>
  */
-public class NodeFactory {
-
-	/**
-	 * 
-	 */
-	public NodeFactory() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+public class NodeFactory
+{
+    /**
+     * Creates a new NodeFactory object.
+     */
+    public NodeFactory()
+    {
+        super();
+        // TODO Auto-generated constructor stub
+    }
 
 }
