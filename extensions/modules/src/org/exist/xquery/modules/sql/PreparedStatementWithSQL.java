@@ -23,25 +23,31 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.PreparedStatement;
 
+
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * DOCUMENT ME!
+ *
+ * @author  Adam Retter <adam@exist-db.org>
  */
 public class PreparedStatementWithSQL
 {
-    private String sql = null;
+    private String            sql  = null;
     private PreparedStatement stmt = null;
 
-    public PreparedStatementWithSQL(String sql, PreparedStatement stmt)
+    public PreparedStatementWithSQL( String sql, PreparedStatement stmt )
     {
-        this.sql = sql;
+        this.sql  = sql;
         this.stmt = stmt;
     }
 
-    public String getSql() {
-        return sql;
+    public String getSql()
+    {
+        return( sql );
     }
 
-    public PreparedStatement getStmt() {
-        return stmt;
+
+    public PreparedStatement getStmt()
+    {
+        return( stmt );
     }
 }

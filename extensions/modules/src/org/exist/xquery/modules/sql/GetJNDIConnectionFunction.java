@@ -2,33 +2,28 @@
  *  eXist SQL Module Extension GetJNDIConnectionFunction
  *  Copyright (C) 2008-09 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
  *  $Id$
  */
 
 package org.exist.xquery.modules.sql;
 
-import java.sql.Connection;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -41,96 +36,97 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.sql.Connection;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
+import javax.sql.DataSource;
+
+
 /**
- * eXist SQL Module Extension GetJNDIConnectionFunction
- * 
- * Get a connection to a SQL Database via JNDI
- * 
- * @author Adam Retter <adam@exist-db.org>
- * @author Loren Cahlander
- * @serial 2008-05-19
- * @version 1.2
- * 
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
- *      org.exist.xquery.FunctionSignature)
+ * eXist SQL Module Extension GetJNDIConnectionFunction.
+ *
+ * <p>Get a connection to a SQL Database via JNDI</p>
+ *
+ * @author   Adam Retter <adam@exist-db.org>
+ * @author   Loren Cahlander
+ * @version  1.2
+ * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
+ * @serial   2008-05-19
  */
-public class GetJNDIConnectionFunction extends BasicFunction {
+public class GetJNDIConnectionFunction extends BasicFunction
+{
+    @SuppressWarnings( "unused" )
+    private static final Logger             logger     = Logger.getLogger( GetJNDIConnectionFunction.class );
 
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(GetJNDIConnectionFunction.class);
-	
-	public final static FunctionSignature[] signatures = {
-			new FunctionSignature(
-					new QName("get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-					"Opens a connection to a SQL Database.",
-					new SequenceType[] { 
-						new FunctionParameterSequenceType("jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "The JNDI name")
-					},
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle")),
+    public final static FunctionSignature[] signatures = {
+        new FunctionSignature( new QName( "get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Opens a connection to a SQL Database.", new SequenceType[] {
+                new FunctionParameterSequenceType( "jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "The JNDI name" )
+            }, new FunctionParameterSequenceType( "handle", Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle" ) ),
 
-			new FunctionSignature(
-					new QName("get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-					"Opens a connection to a SQL Database.",
-					new SequenceType[] { 
-						new FunctionParameterSequenceType("jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "The JNDI name"),
-						new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username"),
-						new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password") 
-					}, 
-					new FunctionParameterSequenceType("handle", Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle")) };
+        new FunctionSignature( new QName( "get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Opens a connection to a SQL Database.", new SequenceType[] {
+                new FunctionParameterSequenceType( "jndi-name", Type.STRING, Cardinality.EXACTLY_ONE, "The JNDI name" ),
+                new FunctionParameterSequenceType( "username", Type.STRING, Cardinality.EXACTLY_ONE, "The username" ),
+                new FunctionParameterSequenceType( "password", Type.STRING, Cardinality.EXACTLY_ONE, "The password" )
+            }, new FunctionParameterSequenceType( "handle", Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the connection handle" ) )
+    };
 
-	/**
-	 * GetJNDIConnectionFunction Constructor
-	 * 
-	 * @param context
-	 *            The Context of the calling XQuery
-	 */
-	public GetJNDIConnectionFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    /**
+     * GetJNDIConnectionFunction Constructor.
+     *
+     * @param  context    The Context of the calling XQuery
+     * @param  signature  DOCUMENT ME!
+     */
+    public GetJNDIConnectionFunction( XQueryContext context, FunctionSignature signature )
+    {
+        super( context, signature );
+    }
 
-	/**
-	 * evaluate the call to the xquery get-jndi-connection() function, it is
-	 * really the main entry point of this class
-	 * 
-	 * @param args
-	 *            arguments from the get-jndi-connection() function call
-	 * @param contextSequence
-	 *            the Context Sequence to operate on (not used here internally!)
-	 * @return A xs:long representing a handle to the connection
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
-	 *      org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		
-		// was a JNDI name specified?
-		if (args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
+    /**
+     * evaluate the call to the xquery get-jndi-connection() function, it is really the main entry point of this class.
+     *
+     * @param   args             arguments from the get-jndi-connection() function call
+     * @param   contextSequence  the Context Sequence to operate on (not used here internally!)
+     *
+     * @return  A xs:long representing a handle to the connection
+     *
+     * @throws  XPathException  DOCUMENT ME!
+     *
+     * @see     org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+    {
+        // was a JNDI name specified?
+        if( args[0].isEmpty() ) {
+            return( Sequence.EMPTY_SEQUENCE );
+        }
 
-		try {
-			Connection con = null;
+        try {
+            Connection con      = null;
 
-			// get the JNDI source
-			String jndiName = args[0].getStringValue();
-			Context ctx = new InitialContext();
-			DataSource ds = (DataSource) ctx.lookup(jndiName);
+            // get the JNDI source
+            String     jndiName = args[0].getStringValue();
+            Context    ctx      = new InitialContext();
+            DataSource ds       = (DataSource)ctx.lookup( jndiName );
 
-			// try and get the connection
-			if (args.length == 1) {
-				con = ds.getConnection();
-			}
-			if (args.length == 3) {
-				String jndiUser = args[1].getStringValue();
-				String jndiPassword = args[2].getStringValue();
+            // try and get the connection
+            if( args.length == 1 ) {
+                con = ds.getConnection();
+            }
 
-				con = ds.getConnection(jndiUser, jndiPassword);
-			}
+            if( args.length == 3 ) {
+                String jndiUser     = args[1].getStringValue();
+                String jndiPassword = args[2].getStringValue();
 
-			// store the connection and return the uid handle of the connection
-			return new IntegerValue(SQLModule.storeConnection(context, con));
-		} catch (Exception e) {
-			throw new XPathException(this, e.getMessage());
-		}
-	}
+                con = ds.getConnection( jndiUser, jndiPassword );
+            }
+
+            // store the connection and return the uid handle of the connection
+            return( new IntegerValue( SQLModule.storeConnection( context, con ) ) );
+        }
+        catch( Exception e ) {
+            throw( new XPathException( this, e.getMessage() ) );
+        }
+    }
 }
