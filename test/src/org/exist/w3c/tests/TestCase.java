@@ -207,14 +207,28 @@ public abstract class TestCase {
 	//			System.out.println(String.copyValueOf(chars));
 	
 				String expResult = String.copyValueOf(chars);
-				if (compare.equals("XML")) {
-					return diffXML(expResult, res);
-				} else {
 				
+				boolean ok = false;
+				
+				if (compare.equals("XML")) {
+					try {
+						ok = diffXML(expResult, res);
+					} catch (Exception e) {
+					}
+				}
+
+				if (!ok) {
 					if (!expResult.equals(res))
-						if (compare.equals("Fragment"))
-							return diffXML(expResult, res);
-						else {
+						if (compare.equals("Fragment")) {
+							
+							try {
+								ok = diffXML(expResult, res);
+							} catch (Exception e) {
+							}
+							
+							if (!ok) return false;
+							
+						} else {
 							if (expResult.equals("&amp;") && res.equals("&"))
 								;
 							else if (expResult.equals("&lt;") && res.equals("<"))
