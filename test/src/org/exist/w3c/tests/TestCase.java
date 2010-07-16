@@ -182,8 +182,10 @@ public abstract class TestCase {
 				char[] chars = new char[l];
 				for (int x = 0; x < l; x++) {
 					
-					if (!reader.ready())
+					if (!reader.ready()) {
+						skipped += l - x;
 						break;
+					}
 					
 					chars[x] = (char)reader.read();
 					
@@ -212,8 +214,14 @@ public abstract class TestCase {
 					if (!expResult.equals(res))
 						if (compare.equals("Fragment"))
 							return diffXML(expResult, res);
-						else
+						else {
+							if (expResult.equals("&amp;") && res.equals("&"))
+								;
+							else if (expResult.equals("&lt;") && res.equals("<"))
+								;
+							
 							return false;
+						}
 						
 					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
 						reader.mark(1);
