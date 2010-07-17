@@ -73,19 +73,25 @@ public class GetConnectionFunction extends BasicFunction
 
     private static final Logger                          logger                      = Logger.getLogger( GetConnectionFunction.class );
 
-    public final static FunctionSignature[]              signatures                  = {
-        new FunctionSignature( new QName( "get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Opens a connection to a SQL Database", new SequenceType[] {
-                JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM
-            }, RETURN_TYPE ),
+    public final static FunctionSignature[] signatures = {
+			new FunctionSignature(
+					new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+					"Opens a connection to a SQL Database",
+					new SequenceType[] { JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM },
+					RETURN_TYPE),
 
-        new FunctionSignature( new QName( "get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Opens a connection to a SQL Database", new SequenceType[] {
-                JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM, JDBC_PROPERTIES_PARAM
-            }, RETURN_TYPE ),
+			new FunctionSignature(
+					new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+					"Opens a connection to a SQL Database",
+					new SequenceType[] { JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM, JDBC_PROPERTIES_PARAM },
+					RETURN_TYPE),
 
-        new FunctionSignature( new QName( "get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Opens a connection to a SQL Database", new SequenceType[] {
-                JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM, JDBC_USERNAME_PARAM, JDBC_PASSWORD_PARAM
-            }, RETURN_TYPE )
-    };
+			new FunctionSignature(
+					new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
+					"Opens a connection to a SQL Database",
+					new SequenceType[] { JDBC_DRIVER_CLASSNAME_PARAM, JDBC_URL_PARAM, JDBC_USERNAME_PARAM, JDBC_PASSWORD_PARAM },
+					RETURN_TYPE) 
+	};
 
     /**
      * GetConnectionFunction Constructor.
