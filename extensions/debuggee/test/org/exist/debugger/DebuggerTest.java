@@ -45,11 +45,6 @@ public class DebuggerTest implements ResponseListener {
 		assertNotNull("Database wasn't initilised.", database);
 		
 		Debugger debugger = DebuggerImpl.getDebugger();
-		
-		try {
-			debugger.init("http://127.0.0.1:8080/xquery/fibo.xql");
-		} catch (Exception e) {
-		}
 
 		try {
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
@@ -59,7 +54,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void testDebugger() {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -181,7 +176,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 
-	//@Test
+//	@Test
 	public void testBreakpoints() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -214,7 +209,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testEvaluation() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -256,8 +251,45 @@ public class DebuggerTest implements ResponseListener {
 			assertNotNull("Timeout exception: "+e.getMessage(), null);
 		}
 	}
-	
-	//@Test
+
+    @Test
+	public void testEvaluation2() throws IOException {
+		assertNotNull("Database wasn't initilised.", database);
+
+		Debugger debugger = DebuggerImpl.getDebugger();
+
+		try {
+			System.out.println("sending init request");
+			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/debug-test.xql");
+
+			assertNotNull("Debugging source can't be NULL.", source);
+
+			Breakpoint breakpoint = source.newBreakpoint();
+			breakpoint.setLineno(19);
+			breakpoint.sync();
+
+			source.run();
+
+			List<Location> stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(19, stack.get(0).getLineBegin());
+
+            String res = source.evaluate("$t:XML");
+			assertNotNull(res);
+            System.out.println("$t:XML: " + res);
+            assertEquals("<root><a id=\"a1\"/><b id=\"b1\" type=\"t\"/><c id=\"c1\">text</c><d id=\"d1\"><e>text</e></d></root>", res);
+			breakpoint.remove();
+
+			source.stop();
+
+		} catch (IOException e) {
+			assertNotNull("IO exception: "+e.getMessage(), null);
+		} catch (ExceptionTimeout e) {
+			assertNotNull("Timeout exception: "+e.getMessage(), null);
+		}
+	}
+
+	@Test
 	public void testResourceNotExistOrNotRunnable() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
