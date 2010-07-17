@@ -72,18 +72,28 @@ public class ExecuteFunction extends BasicFunction
 {
     private static final Logger             LOG                     = Logger.getLogger( ExecuteFunction.class );
 
-    public final static FunctionSignature[] signatures              = {
-        new FunctionSignature( new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Executes a SQL statement against a SQL db using the connection indicated by the connection handle.", new SequenceType[] {
+    public final static FunctionSignature[] signatures = {
+        new FunctionSignature(
+            new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ),
+            "Executes a SQL statement against a SQL db using the connection indicated by the connection handle.",
+            new SequenceType[] {
                 new FunctionParameterSequenceType( "connection-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The connection handle" ),
                 new FunctionParameterSequenceType( "sql-statement", Type.STRING, Cardinality.EXACTLY_ONE, "The SQL statement" ),
                 new FunctionParameterSequenceType( "make-node-from-column-name", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag that indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)" )
-            }, new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the results" ) ),
-        new FunctionSignature( new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "Executes a prepared SQL statement against a SQL db.", new SequenceType[] {
+            },
+            new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the results" )
+        ),
+        new FunctionSignature(
+            new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ),
+            "Executes a prepared SQL statement against a SQL db.",
+            new SequenceType[] {
                 new FunctionParameterSequenceType( "connection-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The connection handle" ),
-                new FunctionParameterSequenceType( "statement-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The prepared statement handle" ),
-                new FunctionParameterSequenceType( "parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"varchar\">value</sql:param></sql:parameters>" ),
+                new FunctionParameterSequenceType( "statement-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The prepared statement handle"),
+                new FunctionParameterSequenceType( "parameters", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"varchar\">value</sql:param></sql:parameters>"),
                 new FunctionParameterSequenceType( "make-node-from-column-name", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag that indicates whether the xml nodes should be formed from the column names (in this mode a space in a Column Name will be replaced by an underscore!)" )
-            }, new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the results" ) )
+            },
+            new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "the results" )
+        )
     };
 
     private final static String             PARAMETERS_ELEMENT_NAME = "parameters";
