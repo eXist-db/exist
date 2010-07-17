@@ -49,6 +49,7 @@ public class DebuggerTest implements ResponseListener {
 		try {
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
 			assertNotNull("Debugging source can't be NULL.", source);
+            source.stop();
 		} catch (Exception e) {
 			assertNotNull("exception: "+e.getMessage(), null);
 		}
