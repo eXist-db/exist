@@ -107,6 +107,7 @@ public class VariableDeclaration extends AbstractExpression {
         
 		Module myModule = context.getRootModule(qn.getNamespaceURI());		
         context.pushDocumentContext();
+        context.prologEnter(this);
 		// declare the variable
 		Sequence seq = expression.eval(null, null);
         Variable var;

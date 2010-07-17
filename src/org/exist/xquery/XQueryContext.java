@@ -2167,6 +2167,11 @@ public class XQueryContext
         return( null );
     }
 
+    public void prologEnter(Expression expr) {
+        if (debuggeeJoint != null) {
+            debuggeeJoint.prologEnter(expr);
+        }
+    }
 
     public void expressionStart( Expression expr ) throws TerminatedException
     {

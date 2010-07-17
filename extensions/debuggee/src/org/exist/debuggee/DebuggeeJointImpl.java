@@ -70,7 +70,9 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
 
 	private CompiledXQuery compiledXQuery;
-	
+
+    private boolean inProlog = false;
+
 	public DebuggeeJointImpl() {
 	}
 	
@@ -102,7 +104,11 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		}
 	}
 
-	/* (non-Javadoc)
+    public void prologEnter(Expression expr) {
+        inProlog = true;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.debuggee.DebuggeeJoint#expressionStart(org.exist.xquery.Expression)
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
@@ -203,19 +209,21 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 		if (firstExpression == expr) {
 			firstExpression = null;
-			
-			command.setStatus(BREAK);
-			command.setStatus(STOPPED);
-			
-			sessionClosed(true);
 
-			//TODO: check this values
-			stackDepth = 0;
-			stack = new ArrayList<Expression>();
-			
-			command = null;
-			commands = new Stack<CommandContinuation>();
-			
+            if (!inProlog) {
+                command.setStatus(BREAK);
+                command.setStatus(STOPPED);
+
+                sessionClosed(true);
+
+                //TODO: check this values
+                stackDepth = 0;
+                stack = new ArrayList<Expression>();
+
+                command = null;
+                commands = new Stack<CommandContinuation>();
+            }
+            inProlog = false;
 		}
 		
 	}

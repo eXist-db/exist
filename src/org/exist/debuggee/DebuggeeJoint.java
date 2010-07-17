@@ -46,6 +46,8 @@ public interface DebuggeeJoint {
 	public void stackEnter(Expression expr) throws TerminatedException;
 	public void stackLeave(Expression expr);
 
+    public void prologEnter(Expression expr);
+    
 	public void reset();
 
 	public boolean featureSet(String name, String value);
