@@ -707,6 +707,17 @@ public class Configuration implements ErrorHandler
                 LOG.warn( nfe );
             }
         }
+        
+        // Process the Check Max Cache value
+        
+        String checkMaxCache = con.getAttribute( DefaultCacheManager.CACHE_CHECK_MAX_SIZE_ATTRIBUTE );
+        
+        if( checkMaxCache == null ) {
+            checkMaxCache = DefaultCacheManager.DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
+        }
+        
+        config.put( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE, parseBoolean( checkMaxCache, true ) );
+        LOG.debug( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE + ": " + config.get( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE ) );
 
         String cacheShrinkThreshold = con.getAttribute( DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE );
 

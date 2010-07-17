@@ -60,15 +60,19 @@ public class DefaultCacheManager implements CacheManager
      * The minimum number of pages that must be read from a cache between check intervals to be not considered for shrinking. This is a measure for
      * the "load" of the cache. Caches with high load will never be shrinked. A negative value means that shrinkage will not be performed.
      */
-    public final static int     DEFAULT_SHRINK_THRESHOLD        = 10000;
-    public final static String  DEFAULT_SHRINK_THRESHOLD_STRING = "10000";
+    public final static int     DEFAULT_SHRINK_THRESHOLD        			= 10000;
+    public final static String  DEFAULT_SHRINK_THRESHOLD_STRING 			= "10000";
 
-    public static int           DEFAULT_CACHE_SIZE              = 64;
-    public static final String  CACHE_SIZE_ATTRIBUTE            = "cacheSize";
-    public static final String  PROPERTY_CACHE_SIZE             = "db-connection.cache-size";
+    public static int           DEFAULT_CACHE_SIZE              			= 64;
+    public static final String  CACHE_SIZE_ATTRIBUTE           			= "cacheSize";
+    public static final String  PROPERTY_CACHE_SIZE             			= "db-connection.cache-size";
+    
+    public static String         DEFAULT_CACHE_CHECK_MAX_SIZE_STRING		= "true";
+    public static final String  CACHE_CHECK_MAX_SIZE_ATTRIBUTE 			= "checkMaxCacheSize";
+    public static final String  PROPERTY_CACHE_CHECK_MAX_SIZE				= "db-connection.check-max-cache-size";
 
-    public static final String  SHRINK_THRESHOLD_ATTRIBUTE      = "cacheShrinkThreshold";
-    public static final String  SHRINK_THRESHOLD_PROPERTY       = "db-connection.cache-shrink-threshold";
+    public static final String  SHRINK_THRESHOLD_ATTRIBUTE     		 	= "cacheShrinkThreshold";
+    public static final String  SHRINK_THRESHOLD_PROPERTY      			= "db-connection.cache-shrink-threshold";
 
     /** Caches maintained by this class. */
     private List<Cache>         caches                          = new ArrayList<Cache>();
@@ -119,17 +123,25 @@ public class DefaultCacheManager implements CacheManager
         shrinkThreshold = pool.getConfiguration().getInteger( SHRINK_THRESHOLD_PROPERTY );
 
         totalMem        = cacheSize * 1024 * 1024;
-        long max        = Runtime.getRuntime().maxMemory();
-        long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
-
-        if( totalMem > maxCache ) {
-            totalMem = maxCache;
-            
-            LOG.warn( "The cacheSize=\"" + cacheSize + 
-            		  "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024 ) + "k " + 
-            		  "to avoid memory issues which may lead to database corruptions." 
-            );
-        }
+        
+        Boolean checkMaxCache = (Boolean)pool.getConfiguration().getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
+        
+        if( checkMaxCache == null || checkMaxCache.booleanValue() ) {
+			long max        = Runtime.getRuntime().maxMemory();
+			long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
+	
+			if( totalMem > maxCache ) {
+				totalMem = maxCache;
+				
+				LOG.warn( "The cacheSize=\"" + cacheSize + 
+						  "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024 ) + "k " + 
+						  "to avoid memory issues which may lead to database corruptions." 
+				);
+			}
+		} else {
+			LOG.warn( "Checking of Max Cache Size disabled by user, this could cause memory issues which may lead to database corruptions if you don't have enough memory allocated to your JVM!" );
+		}
+        
         int buffers = (int)( totalMem / pageSize );
 
         this.totalPageCount = buffers;
