@@ -79,9 +79,23 @@
             between all page buffers. It represents an absolute maximum, which
             would be occupied if all page buffers were completely full.
             
-            The cacheSize should not be more than half of the size of the JVM 
-            heap size (set by the JVM -Xmx parameter).
+            The cacheSize should typically not be more than half of the size of the JVM 
+            heap size (set by the JVM -Xmx parameter). It can be larger if you have a large-memory JVM (usually a 64bit JVM)
         
+        - checkMaxCacheSize:
+        	specifies whether eXist should check the max cache size on startup and reduce it if it is too large.
+        	
+        	This value should normally be set to true.
+        	
+        	Only set this value to false if:
+        	
+        		a) You know what you are doing!
+        		b) You have a JVM with tons of memory (typically using a 64-bit JVM, which is the scenario this setting is intended for).
+        		c) You are really sure you've complied with a) and b) above.
+        		
+        	Setting this value to false may cause memory issues which may lead to database corruptions, since it disables
+        	the automated max cache size checks! You have been warned! ;-)
+        	
         - collectionCache:
             maximum amount of memory (in megabytes) to use for collection caches.
             Memory calculation is just approximate. If your collections are very 
@@ -128,7 +142,7 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
+    <db-connection cacheSize="48M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="-1" cacheShrinkThreshold="10000">
 
         <!--
