@@ -214,7 +214,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	}
 
 	public void sessionClosed() {
-		if (!session.isClosing())
+		if (session != null && !session.isClosing())
 			session.close(true);
 		
 		session = null;
