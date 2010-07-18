@@ -41,11 +41,23 @@ import org.junit.Test;
 public class DebuggerTest implements ResponseListener {
 	
 	@Test
-	public void testConntection() throws IOException {
+	public void testConnection() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
 		Debugger debugger = DebuggerImpl.getDebugger();
 
+		Exception exception = null;
+		
+		//if resource don't exist throw exception
+		try {
+			debugger.init("http://127.0.0.1:8080/xquery/fibo.xql");
+			assertNotNull("The resource don't exist, but debugger din't throw exception.", null);
+		} catch (Exception e) {
+			exception = e;
+		}
+		
+		assertEquals(exception.getClass().toString(), "class java.io.IOException");
+		
 		try {
 			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
 			assertNotNull("Debugging source can't be NULL.", source);
@@ -177,7 +189,7 @@ public class DebuggerTest implements ResponseListener {
 		}
 	}
 
-//	@Test
+	@Test
 	public void testBreakpoints() throws IOException {
 		assertNotNull("Database wasn't initilised.", database);
 		
@@ -202,6 +214,43 @@ public class DebuggerTest implements ResponseListener {
 			breakpoint.remove();
 
 			source.run();
+			
+		} catch (IOException e) {
+			assertNotNull("IO exception: "+e.getMessage(), null);
+		} catch (ExceptionTimeout e) {
+			assertNotNull("Timeout exception: "+e.getMessage(), null);
+		}
+	}
+
+	@Test
+	public void testLineBreakpoint() throws IOException {
+		assertNotNull("Database wasn't initilised.", database);
+		
+		Debugger debugger = DebuggerImpl.getDebugger();
+		
+		try {
+			System.out.println("sending init request");
+			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+
+			assertNotNull("Debugging source can't be NULL.", source);
+			
+			Breakpoint breakpoint = source.newBreakpoint();
+			breakpoint.setLineno(24);
+			breakpoint.sync();
+			
+			source.run();
+			
+			List<Location> stack = source.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(24, stack.get(0).getLineBegin());
+			
+			source.stepInto();
+
+			stack = source.getStackFrames();
+			assertEquals(3, stack.size());
+			assertEquals(8, stack.get(0).getLineBegin());
+
+			source.stop();
 			
 		} catch (IOException e) {
 			assertNotNull("IO exception: "+e.getMessage(), null);

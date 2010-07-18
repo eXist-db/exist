@@ -23,6 +23,7 @@ package org.exist.debuggee;
 
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.log4j.Logger;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
@@ -65,6 +66,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private Map<String, Map<Integer, Breakpoint>> filesBreakpoints = 
 		new HashMap<String, Map<Integer, Breakpoint>>();
 	
+	private Set<Breakpoint> activeBreakpoints =  new CopyOnWriteArraySet<Breakpoint>();
+
 	//id, breakpoint
 	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
 
@@ -125,6 +128,16 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		String fileName = Command.getFileuri(expr.getSource());
 		Integer lineNo = expr.getLine();
 
+		//check breakpoint
+		for (Breakpoint breakpoint : activeBreakpoints) {
+			if (breakpoint.getFilename().equals(fileName)
+					&& breakpoint.getType().equals(Breakpoint.TYPE_LINE) ) {
+				if (breakpoint.getLineno() != lineNo) {
+					activeBreakpoints.remove(breakpoint);
+				}
+			}
+		}
+		
 		Map<Integer, Breakpoint> fileBreakpoints = null;
 
 		while (true) {
@@ -176,7 +189,11 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 					if (fileBreakpoints.containsKey(lineNo)) {
 						Breakpoint breakpoint = fileBreakpoints.get(lineNo);
 						
-						if (breakpoint.getState() && breakpoint.getType().equals(Breakpoint.TYPE_LINE)) {
+						if (!activeBreakpoints.contains(breakpoint) 
+								&& breakpoint.getState() 
+								&& breakpoint.getType().equals(Breakpoint.TYPE_LINE)) {
+							
+							activeBreakpoints.add(breakpoint);
 							command.setStatus(BREAK);
 							//waitCommand();
 							//break;
@@ -398,6 +415,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			}
 			
 			breakpoints.remove(breakpointID);
+			
+			activeBreakpoints.remove(breakpoint);
 		}
 		
 		return breakpoint;
