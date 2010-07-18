@@ -4,7 +4,7 @@ declare option exist:serialize "method=xhtml media-type=text/html";
 
 <html>
     <head>
-        <title>eXist-db Open Source Native XML Database</title>m
+        <title>eXist-db Open Source Native XML Database</title>
         <link href="resources/exist_icon_16x16.ico" rel="shortcut icon" />
         <link type="image/png" href="resources/exist_icon_16x16.png" rel="icon"/>
         <script type="text/javascript" src="scripts/syntax/shCore.js"></script>
