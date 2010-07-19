@@ -47,7 +47,7 @@ import java.text.DecimalFormat;
  */
 public class Format_number extends BasicFunction {
 
-    private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.EXACTLY_ONE, "The number to format");
+    private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number to format");
     private static final SequenceType FORMAT_PARAMETER = new FunctionParameterSequenceType("format", Type.STRING, Cardinality.EXACTLY_ONE, "The format pattern string.  Please see the JavaDoc for java.text.DecimalFormat to get the specifics of this format string.");
     private static final SequenceType DECIMAL_FORMAT_PARAMETER = new FunctionParameterSequenceType("decimalformat", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
     private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
@@ -90,6 +90,10 @@ public class Format_number extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+
+        if (args[0].isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
+        
         NumericValue numericValue = (NumericValue)args[0].itemAt(0);
 
         try {

@@ -30,6 +30,12 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.StringValue;
+import org.exist.xslt.functions.FormatFunctionConstants;
+
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 /**
  * format-dateTime($value as xs:dateTime?, $picture  as xs:string, 
@@ -46,22 +52,16 @@ public class Format_dateTime extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("format-dateTime", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
-				"The functions format $value as a string using the picture string specified by the $picture argument, the calendar specified by the $calendar argument, the language specified by the $language argument, and the country specified by the $country argument.",
-				new SequenceType[] {
-					new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                FormatFunctionConstants.DATE_TIME_FUNCTION_DESCRIPTION,
+				new SequenceType[] { FormatFunctionConstants.DATE_TIME_PARAMETER, FormatFunctionConstants.PICTURE_PARAMETER, FormatFunctionConstants.LANGUAGE_PARAMETER, FormatFunctionConstants.CALENDAR_PARAMETER, FormatFunctionConstants.COUNTRY_PARAMETER},
+                FormatFunctionConstants.RETURN_TYPE
 		),
 		new FunctionSignature(
 				new QName("format-dateTime", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
-				"The functions format $value as a string using the picture string specified by the $picture argument, the calendar specified by the $calendar argument, the language specified by the $language argument, and the country specified by the $country argument.",
-				new SequenceType[] {
-					new SequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ONE)},
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+                FormatFunctionConstants.DATE_TIME_FUNCTION_DESCRIPTION,
+				new SequenceType[] { FormatFunctionConstants.DATE_TIME_PARAMETER, FormatFunctionConstants.PICTURE_PARAMETER},
+                FormatFunctionConstants.RETURN_TYPE
+
 		)
 	};
 	
@@ -75,8 +75,28 @@ public class Format_dateTime extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Method is not implemented");
+
+        if (args[0].isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
+
+        try {
+            DateTimeValue value = (DateTimeValue)args[0].itemAt(0);
+            String picture = FormatFunctionConstants.translate(args[1].itemAt(0).getStringValue());
+            String language = (args.length <= 2 || args[2].isEmpty()) ? null : args[2].itemAt(0).getStringValue();
+            String calendar = (args.length <= 2 || args[3].isEmpty()) ? null : args[3].itemAt(0).getStringValue();
+            String country = (args.length <= 2 || args[4].isEmpty()) ? null : args[4].itemAt(0).getStringValue();
+            SimpleDateFormat format = null;
+
+            if (language != null || country != null) {
+                Locale locale = (country == null) ? new Locale(language) : new Locale(language, country);
+                format = new SimpleDateFormat(picture, locale);
+            } else {
+                format = new SimpleDateFormat(picture);
+            }
+            return new StringValue(format.format(value.toJavaObject(java.util.Date.class)));
+        } catch (java.lang.IllegalArgumentException e) {
+            throw new XPathException(e.getMessage());
+        }
 	}
 
 }
