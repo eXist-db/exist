@@ -29,7 +29,7 @@ declare option exist:serialize "media-type=text/xml omit-xml-declaration=no";
 
 declare variable $biblio:CREDENTIALS := ("biblio", "mods");
 
-declare variable $biblio:COLLECTION := "collection('/db')//";
+declare variable $biblio:COLLECTION := "/db/mods";
 
 (:~
     Simple mapping from field names to an XPath expression
@@ -90,6 +90,7 @@ declare variable $biblio:FIELDS :=
 :)
 declare variable $biblio:TEMPLATE_QUERY :=
     <query>
+        <collection>{$biblio:COLLECTION}</collection>
         <and>
             <field m="1" name="All"></field>
         </and>
@@ -100,7 +101,6 @@ declare variable $biblio:TEMPLATE_QUERY :=
     clauses.
 :)
 declare function biblio:form-from-query($query as element()) as element()+ {
-    let $log := util:log("DEBUG", ("Query: ", $query))
     for $field at $pos in $query//field
     return
         <tr class="repeat">
@@ -161,7 +161,9 @@ declare function biblio:form-from-query($query as element()) as element()+ {
 declare function biblio:generate-query($xml as element()) as xs:string* {
     typeswitch ($xml)
         case element(query) return
-            biblio:generate-query($xml/*[1])
+            for $child in $xml/*
+            return
+                biblio:generate-query($child)
         case element(and) return
             (
                 biblio:generate-query($xml/*[1]), 
@@ -183,8 +185,14 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
         case element(field) return
             let $expr0 := $biblio:FIELDS/field[@name = $xml/@name]
             let $expr := if ($expr0) then $expr0 else $biblio:FIELDS/field[last()]
+            let $collection := concat("collection('", $xml/ancestor::query/collection/string(), "')//")
             return
-                ($biblio:COLLECTION, replace($expr, '\$q', $xml/string()))
+                ($collection, replace($expr, '\$q', $xml/string()))
+        case element(collection) return
+            if (not($xml/..//field)) then
+                ('collection("', $xml/string(), '")//mods:mods')
+            else
+                ()
         default return
             ()
 };
@@ -245,6 +253,7 @@ declare function biblio:process-form-parameters($params as xs:string*) as elemen
     the query. Filter out empty parameters and take care of boolean operators.
 :)
 declare function biblio:process-form() as element(query)? {
+    let $collection := request:get-parameter("collection", $biblio:COLLECTION)
     let $fields :=
         (:  Get a list of all input parameters which are not empty,
             ordered by input name. :)
@@ -259,10 +268,13 @@ declare function biblio:process-form() as element(query)? {
             (:  process-form recursively calls itself for every parameter and
                 generates and XML representation of the query. :)
             <query>
-            { biblio:process-form-parameters($fields) }
+                <collection>{$collection}</collection>
+                { biblio:process-form-parameters($fields) }
             </query>
         else
-            ()
+            <query>
+                <collection>{$collection}</collection>
+            </query>
 };
 
 (:~
@@ -277,7 +289,7 @@ declare function biblio:orderByName($m as element()) as xs:string?
 };
     
 (: Map order parameter to xpath for order by clause :)
-declare function biblio:orderExpr($field as xs:string) as xs:string
+declare function biblio:orderExpr($field as xs:string?) as xs:string
 {
     if (sort:has-index('mods:name')) then
         if ($field eq "Score") then
@@ -302,7 +314,7 @@ declare function biblio:orderExpr($field as xs:string) as xs:string
 (:~
     Evaluate the actual XPath query and order the results
 :)
-declare function biblio:evaluate-query($query as xs:string, $sort as xs:string) {
+declare function biblio:evaluate-query($query as xs:string, $sort as xs:string?) {
     let $sortExpr := biblio:orderExpr($sort)
     let $orderedQuery :=
             concat("for $hit in ", $query, " order by ", $sortExpr, " return $hit")
@@ -364,7 +376,7 @@ declare function biblio:query-history() {
 declare function biblio:eval-query($queryAsXML as element()?) {
     if ($queryAsXML) then
         let $query := string-join(biblio:generate-query($queryAsXML), '')
-        let $log := util:log("DEBUG", ("Query: ", $queryAsXML))
+        let $log := util:log("DEBUG", ("QUERY: ", $query))
         let $sort0 := request:get-parameter("sort", ())
         let $sort := if ($sort0) then $sort0 else session:get-attribute("sort")
         let $results := biblio:evaluate-query($query, $sort)
@@ -396,12 +408,26 @@ declare function biblio:clear() {
 :)
 declare function biblio:process-templates($query as element(), $hitCount as xs:integer, $node as node()) {
     typeswitch ($node)
+        case element(biblio:login) return
+            let $user := request:get-attribute("xquery.user")
+            return (
+                if ($user eq 'guest') then
+                    <div id="login"><a href="#" id="login-link">Login</a></div>
+                else
+                    <div id="login">Logged in as <span class="username">{$user}</span>. <a href="?logout=1">Logout</a></div>
+            )
         case element(biblio:form-from-query) return
             biblio:form-from-query($query)
         case element(biblio:result-count) return
             text { $hitCount }
         case element(biblio:query-history) return
             biblio:query-history()
+        case element(biblio:collection-path) return
+            let $collection := request:get-parameter("collection", $biblio:COLLECTION)
+            return (
+                <span class="collection-path">{$collection}</span>,
+                <input type="hidden" name="collection" value="{$collection}"/>
+            )
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -444,6 +470,7 @@ let $filter := request:get-parameter("filter", ())
 let $history := request:get-parameter("history", ())
 let $clear := request:get-parameter("clear", ())
 let $mylist := request:get-parameter("mylist", ())
+let $collection := request:get-parameter("collection", ())
 
 (: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML :=
@@ -457,6 +484,7 @@ let $queryAsXML :=
         ()
     else 
         biblio:process-form()
+let $log := util:log("DEBUG", ("$queryAsXML: ", $queryAsXML))
 (: Evaluate the query :)
 let $results :=
     if ($mylist) then (
@@ -477,7 +505,7 @@ let $results :=
 (:  Process the HTML template received as input :)
 let $output :=
     jquery:process-templates(
-        biblio:process-templates(if ($queryAsXML) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input)
+        biblio:process-templates(if ($queryAsXML//field) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input)
     )
 return
     $output

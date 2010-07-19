@@ -1,13 +1,35 @@
 xquery version "1.0";
 
-declare variable $local:CREDENTIALS := ("biblio", "mods");
+declare variable $local:CREDENTIALS := ("guest", "guest");
+
+declare function local:logout() {
+    let $logout := request:get-parameter("logout", ())
+    return
+        if ($logout) then
+            session:clear()
+        else
+            ()
+};
 
 declare function local:set-user() {
-    if (exists($local:CREDENTIALS)) then (
-        <set-attribute name="xquery.user" value="{$local:CREDENTIALS[1]}"/>,
-        <set-attribute name="xquery.password" value="{$local:CREDENTIALS[2]}"/>
-    ) else
-        ()
+    session:create(),
+    local:logout(),
+    let $user := request:get-parameter("user", ())
+    let $password := request:get-parameter("password", ())
+    let $sessionUser := session:get-attribute("biblio.user")
+    return
+        if ($user) then (
+            session:set-attribute("biblio.user", $user),
+            session:set-attribute("biblio.password", $password),
+            <set-attribute name="xquery.user" value="{$user}"/>,
+            <set-attribute name="xquery.password" value="{$password}"/>
+        ) else if ($sessionUser != '') then (
+            <set-attribute name="xquery.user" value="{$sessionUser}"/>,
+            <set-attribute name="xquery.password" value="{session:get-attribute('biblio.password')}"/>
+        ) else (
+            <set-attribute name="xquery.user" value="{$local:CREDENTIALS[1]}"/>,
+            <set-attribute name="xquery.password" value="{$local:CREDENTIALS[2]}"/>
+        )
 };
 
 if ($exist:path eq '/') then
