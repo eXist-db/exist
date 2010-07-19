@@ -16,31 +16,32 @@
             </affiliation>
         </author>
         <jquery:header base="scripts/jquery" cssbase="scripts/jquery/css"/>
+        <script type="text/javascript" src="scripts/jquery/jquery.dynatree.min.js"/>
+        <script type="text/javascript" src="scripts/jquery/jquery.cookie.js"/>
         <script type="text/javascript" src="query.js"/>
+        <link rel="stylesheet" type="text/css" href="scripts/jquery/css/dynatree/ui.dynatree.css"/>
         <link rel="stylesheet" type="text/css" href="biblio.css"/>
     </bookinfo>
     <!--XXX<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>-->
     <chapter>
+        <biblio:login/>
         <jquery:tabset id="query-tabs" on-select="searchTabSelected">
             <jquery:tab id="simple" label="Simple Search">
-                <form class="search-form" action="index.xml" name="simple-search" method="POST">
+                <form id="simple-search-form" class="search-form" action="index.xml" name="simple-search" method="POST">
                     <table>
                         <tr>
                             <td>Search:</td>
                             <td>
                                 <jquery:input name="input1">
-                                    <jquery:autocomplete url="autocomplete.xql"
-                                        width="300" multiple="false"
-                                        matchContains="false"
-                                        paramsCallback="autocompleteCallback">
-                                    </jquery:autocomplete>
+                                    <jquery:autocomplete url="autocomplete.xql" width="300"
+                                        multiple="false" matchContains="false"
+                                        paramsCallback="autocompleteCallback"
+                                    > </jquery:autocomplete>
                                 </jquery:input>
                             </td>
                         </tr>
                         <tr>
-                            <td class="buttons" colspan="2">
-                                Sort by
-                                <jquery:select name="sort">
+                            <td class="buttons" colspan="2"> Sort by <jquery:select name="sort">
                                     <jquery:option value="Score"/>
                                     <jquery:option value="Author"/>
                                     <jquery:option value="Title"/>
@@ -48,6 +49,13 @@
                                 </jquery:select>
                                 <button name="action" id="form-submit" type="submit">Search</button>
                                 <input type="hidden" name="field1" value="All"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Collection:</td>
+                            <td>
+                                <biblio:collection-path/>
+                                <button name="clear-collection">Clear</button>
                             </td>
                         </tr>
                     </table>
@@ -67,9 +75,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="buttons" colspan="3">
-                                Sort by
-                                <jquery:select name="sort">
+                            <td class="buttons" colspan="3"> Sort by <jquery:select name="sort">
                                     <jquery:option value="Score"/>
                                     <jquery:option value="Author"/>
                                     <jquery:option value="Title"/>
@@ -97,57 +103,95 @@
                 </form>
             </jquery:tab>
         </jquery:tabset>
-        <div id="results-head">
-            <div id="messages">Found: <biblio:result-count/></div>
-            <a id="optimize-trigger" href="#">Create custom indexes for sorting</a>
-            <div class="navbar"/>
-        </div>
-        <div id="result-container">
-            <div id="filters" style="display: none;">
-                <jquery:ajax-accordion id="facets">
-                    <jquery:panel id="keywords" title="Index Terms" on-select="loadIndexTerms">
-                        <div class="keyword-prefix">
-                            <form id="keyword-form">
-                                <input type="text" name="input-keyword-prefix" size="8" 
-                                    value="a" title="Change prefix to view more terms."/>
-                                <input type="submit" value="Show"/>
-                            </form>
-                        </div>
-                        <div id="keywords-result"></div>
-                    </jquery:panel>
-                    <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
-                    <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
-                </jquery:ajax-accordion>
+        <div id="collection-tree">
+            <div class="collection-tree-head">
+                <img id="toggle-collection-tree" src="img/tree.gif"/>
             </div>
-            <jquery:paginate id="results" attribute="mods:cached"
-                href="retrieve" navcontainer="#results-head .navbar"
-                on-ready="resultsLoaded"/>
+            <div id="collection-tree-main">
+              <ul class="collection-tree-toolbar">
+                  <li><a href="#" id="collection-expand-all"><img src="img/arrow_out.png" title="Expand All"/></a></li>
+                  <li><a href="#" id="collection-collapse-all"><img src="img/arrow_in.png" title="Collapse All"/></a></li>
+                  <li><a href="#" id="collection-reload"><img src="img/arrow_refresh.png" title="Reload"/></a></li>
+                  <li><a href="#" id="collection-create-folder"><img src="img/folder_add.png" title="Create Folder"/></a></li>
+              </ul>
+              <div id="collection-tree-tree">
+              </div>
+            </div>
+        </div>
+        <div id="main-content">
+            <div id="results-head">
+                <div id="messages">Found: <biblio:result-count/></div>
+                <a id="optimize-trigger" href="#">Create custom indexes for sorting</a>
+                <div class="navbar"/>
+            </div>
+            <div id="result-container">
+                <div id="filters" style="display: none;">
+                    <jquery:ajax-accordion id="facets">
+                        <jquery:panel id="keywords" title="Index Terms" on-select="loadIndexTerms">
+                            <div class="keyword-prefix">
+                                <form id="keyword-form">
+                                    <input type="text" name="input-keyword-prefix" size="8"
+                                        value="a" title="Change prefix to view more terms."/>
+                                    <input type="submit" value="Show"/>
+                                </form>
+                            </div>
+                            <div id="keywords-result"/>
+                        </jquery:panel>
+                        <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
+                        <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
+                    </jquery:ajax-accordion>
+                </div>
+                <jquery:paginate id="results" attribute="mods:cached" href="retrieve"
+                    navcontainer="#results-head .navbar" on-ready="resultsLoaded"/>
+            </div>
         </div>
         <jquery:dialog id="optimize-dialog" modal="true" title="Create Indexes"
             trigger="#optimize-trigger" width="450">
-            <jquery:button label="Start">
-                var pass = $('input[name = password]');
-                $('#optimize-message').text('Running ...');
-                $.get('optimize.xql?pass=' + pass.val(), function (data, status) {
-                    if (status != "success")
-                        $('#optimize-message').text('Error during optimize!');
-                    else
-                        $('#optimize-dialog').dialog("close");
-                });
-            </jquery:button>
-            <p>Use this dialog to trigger an optimization run on your data set. 
-                This will create custom indexes to speed up sorting and other
-                functions.</p>
-            <p>The process may take some time, depending on the size of the data set.
-                To start, please enter the admin password for your db below:</p>
+            <jquery:button label="Start"> var pass = $('#optimize-dialog input[name = password]');
+                $('#optimize-message').text('Running ...'); $.get('optimize.xql?pass=' + pass.val(),
+                function (data, status) { if (status != "success")
+                $('#optimize-message').text('Error during optimize!'); else
+                $('#optimize-dialog').dialog("close"); }); </jquery:button>
+            <p>Use this dialog to trigger an optimization run on your data set. This will create
+                custom indexes to speed up sorting and other functions.</p>
+            <p>The process may take some time, depending on the size of the data set. To start,
+                please enter the admin password for your db below:</p>
             <form action="optimize.xql">
                 <ul>
                     <li>
                         <label for="password">Admin password: </label>
                         <input type="password" size="30" name="password"/>
                     </li>
-                    <li id="optimize-message"></li>
+                    <li id="optimize-message"/>
                 </ul>
+            </form>
+        </jquery:dialog>
+        <jquery:dialog id="login-dialog" modal="true" title="Login" trigger="#login-link"
+            width="450">
+            <jquery:button label="Login"> var user = $('#login-dialog input[name = user]'); var
+                password = $('#login-dialog input[name = password]');
+                $('#login-message').text('Checking ...'); $.ajax({ url: "checkuser.xql", data:
+                "user=" + user.val() + "&amp;password=" + password.val(), type: 'POST', success:
+                function(data, message) { $('#login-form').submit(); }, error: function (response,
+                message) { $('#login-message').html('Login failed: ' + response.responseText); } }); </jquery:button>
+            <form id="login-form" action="#" method="POST">
+                <table>
+                    <tr>
+                        <td id="login-message" colspan="2"/>
+                    </tr>
+                    <tr>
+                        <td>User:</td>
+                        <td>
+                            <input name="user" type="text"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Password:</td>
+                        <td>
+                            <input name="password" type="password"/>
+                        </td>
+                    </tr>
+                </table>
             </form>
         </jquery:dialog>
     </chapter>

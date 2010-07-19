@@ -3,6 +3,7 @@ $(function() {
         loadIndexTerms();
         return false; 
     });
+    initCollectionTree();
 });
 
 function loadIndexTerms() {
@@ -70,4 +71,47 @@ function searchTabSelected(ev, ui) {
     if (ui.index == 3) {
         $('#personal-list-size').load('user.xql', { action: 'count' });
     }
+}
+
+function initCollectionTree() {
+    var dynaTree = $('#collection-tree-tree');
+    var treeDiv = $('#collection-tree-main').css('display', 'none');
+    dynaTree.dynatree({
+        persist: true,
+        rootVisible: false,
+        initAjax: {url: "collections.xql" },
+        onActivate: function (dtnode) {
+            var key = dtnode.data.key;
+            var form = $('#simple-search-form');
+            $('input[name = collection]', form).val(key);
+            form.submit();
+        }
+    });
+    $('#toggle-collection-tree').click(function () {
+        if (treeDiv.css('display') == 'none') {
+            $('#collection-tree').css({width: '300px', height: 'auto', 'background-color': 'transparent'});
+            $('#main-content').css('margin-left', '310px');
+            treeDiv.css('display', '');
+        } else {
+            $('#collection-tree').css({width: '40px', height: '400px', 'background-color': '#CCC'});
+            $('#main-content').css('margin-left', '50px');
+            treeDiv.css('display', 'none');
+        }
+    });
+    $('#collection-expand-all').click(function () {
+        $("#collection-tree-tree").dynatree("getRoot").visit(function(dtnode){
+            dtnode.expand(true);
+        });
+        return false;
+    });
+    $('#collection-collapse-all').click(function () {
+        $("#collection-tree-tree").dynatree("getRoot").visit(function(dtnode){
+            dtnode.expand(false);
+        });
+        return false;
+    });
+    $('#collection-reload').click(function () {
+        $("#collection-tree-tree").dynatree("getRoot").reload();
+        return false;
+    });
 }
