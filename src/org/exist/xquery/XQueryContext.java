@@ -1140,45 +1140,49 @@ public class XQueryContext {
      * called when adding an XQuery to the cache.
 	 */
 	public void reset(boolean keepGlobals) {
-        if (modifiedDocuments != null) {
-            try {
-                Modification.checkFragmentation(this, modifiedDocuments);
-            } catch (EXistException e) {
-                LOG.warn("Error while checking modified documents: " + e.getMessage(), e);
+            if (modifiedDocuments != null) {
+                try {
+                    Modification.checkFragmentation(this, modifiedDocuments);
+                } catch (EXistException e) {
+                    LOG.warn("Error while checking modified documents: " + e.getMessage(), e);
+                }
+                modifiedDocuments = null;
             }
-            modifiedDocuments = null;
-        }
-        calendar = null;
-        implicitTimeZone = null;
-        builder = new MemTreeBuilder(this);
-        builder.startDocument();
+            calendar = null;
+            implicitTimeZone = null;
+            builder = new MemTreeBuilder(this);
+            builder.startDocument();
 
-        if (!keepGlobals) {
-            // do not reset the statically known documents
-            staticDocumentPaths = null;
-            staticDocuments = null;
-        }
-        if (!isShared)
-            lastVar = null;
-        fragmentStack = new Stack();
-        callStack.clear();
-        protectedDocuments = null;
-        if (!keepGlobals)
-            globalVariables.clear();
+            if (!keepGlobals) {
+                // do not reset the statically known documents
+                staticDocumentPaths = null;
+                staticDocuments = null;
+            }
+            if (!isShared) {
+                lastVar = null;
+            }
+            fragmentStack = new Stack();
+            callStack.clear();
+            protectedDocuments = null;
+            if (!keepGlobals) {
+                globalVariables.clear();
+            }
 
-        //remove the context-vars, subsequent execution of the query
-        //may generate different values for the vars based on the
-        //content of the db
-        XQueryContextVars.clear();
+            if (!isShared) {
+                watchdog.reset();
+            }
+            profiler.reset();
+            for (Iterator i = modules.values().iterator(); i.hasNext();) {
+                Module module = (Module) i.next();
+                module.reset(this);
+            }
 
-        if (!isShared)
-            watchdog.reset();
-        profiler.reset();
-        for (Iterator i = modules.values().iterator(); i.hasNext();) {
-            Module module = (Module) i.next();
-            module.reset(this);
-        }
-		clearUpdateListeners();
+             //remove the context-vars, subsequent execution of the query
+            //may generate different values for the vars based on the
+            //content of the db
+            XQueryContextVars.clear();
+
+            clearUpdateListeners();
 	}
 
 	/**
