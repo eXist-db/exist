@@ -1374,11 +1374,6 @@ public class XQueryContext
             dynamicOptions.clear(); //clear any dynamic options
         }
 
-        //remove the context-vars, subsequent execution of the query
-        //may generate different values for the vars based on the
-        //content of the db
-        XQueryContextVars.clear();
-
         if( !isShared ) {
             watchdog.reset();
         }
@@ -1390,6 +1385,11 @@ public class XQueryContext
         if( !keepGlobals ) {
             mappedModules.clear();
         }
+
+        //remove the context-vars, subsequent execution of the query
+        //may generate different values for the vars based on the
+        //content of the db
+        XQueryContextVars.clear();
 
         clearUpdateListeners();
 
