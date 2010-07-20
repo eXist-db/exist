@@ -633,6 +633,10 @@ public class Transform extends BasicFunction {
 			throws TransformerException {
 			Collection collection = doc.getCollection();
 			String path;
+			
+			if (href.isEmpty()) {
+				path = base;
+			} else
             //TODO : use dedicated function in XmldbURI
 			if (href.startsWith("/"))
 				path = href;
