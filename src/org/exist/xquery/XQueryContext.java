@@ -1177,35 +1177,43 @@ public class XQueryContext {
         builder = new MemTreeBuilder(this);
         builder.startDocument();
 
-        if (!keepGlobals) {
+        if(!keepGlobals) {
             // do not reset the statically known documents
             staticDocumentPaths = null;
             staticDocuments = null;
         }
-        if (!isShared)
+        if(!isShared) {
             lastVar = null;
+        }
+
         fragmentStack = new Stack();
         callStack.clear();
         protectedDocuments = null;
-        if (!keepGlobals)
+        if(!keepGlobals) {
             globalVariables.clear();
+        }
 
-        if (dynamicOptions != null)
+        if(dynamicOptions != null) {
             dynamicOptions.clear(); //clear any dynamic options
+        }
+
+        if(!isShared) {
+            watchdog.reset();
+        }
+
+        for(Iterator i = modules.values().iterator(); i.hasNext();) {
+            Module module = (Module) i.next();
+            module.reset(this);
+        }
+        
+        if(!keepGlobals) {
+            mappedModules.clear();
+        }
 
         //remove the context-vars, subsequent execution of the query
         //may generate different values for the vars based on the
         //content of the db
         XQueryContextVars.clear();
-
-        if (!isShared)
-            watchdog.reset();
-        for (Iterator i = modules.values().iterator(); i.hasNext();) {
-            Module module = (Module) i.next();
-            module.reset(this);
-        }
-        if (!keepGlobals)
-            mappedModules.clear();
 
         clearUpdateListeners();
         
