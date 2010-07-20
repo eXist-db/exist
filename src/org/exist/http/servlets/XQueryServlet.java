@@ -522,13 +522,15 @@ public class XQueryServlet extends HttpServlet {
             	SerializerPool serializerPool = SerializerPool.getInstance();
 
             	SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
-            	sax.setOutput(output, outputProperties);
-            	serializer.setProperties(outputProperties);
-            	serializer.setSAXHandlers(sax, sax);
-            	
-            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
-
-            	serializerPool.returnObject(sax);
+            	try {
+	            	sax.setOutput(output, outputProperties);
+	            	serializer.setProperties(outputProperties);
+	            	serializer.setSAXHandlers(sax, sax);
+	            	
+	            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
+            	} finally {
+            		serializerPool.returnObject(sax);
+            	}
             }
         } catch (Throwable e){
             LOG.error(e.getMessage(), e);
