@@ -308,6 +308,60 @@ public class StoredModuleTest {
         }
     }
 
+    @Test
+    public void testCircularImports() throws XMLDBException {
+        
+        final String index_module = 
+                "import module namespace module1 = \"http://test/module1\" at \"xmldb:exist:///db/testCircular/module1.xqy\";" +
+                "module1:func()";
+
+        final String module1_module =
+            "module namespace module1 = \"http://test/module1\";" +
+            "import module namespace processor = \"http://test/processor\" at \"processor.xqy\";" +
+            "declare function module1:func()" +
+            "{" +
+            "   processor:execute()" +
+            "};" +
+            "declare function module1:hello($name as xs:string)" +
+            "{" +
+            "    <hello>{$name}</hello>" +
+            "};";
+
+        final String processor_module =
+            "module namespace processor = \"http://test/processor\";" +
+            "import module namespace impl = \"http://test/processor/impl/exist-db\" at \"impl.xqy\";" +
+            "declare function processor:execute()" +
+            "{" +
+            "    impl:execute()" +
+            "};";
+
+        final String impl_module =
+            "module namespace impl = \"http://test/processor/impl/exist-db\";" +
+            "import module namespace controller = \"http://test/controller\" at \"controller.xqy\";" +
+            "declare function impl:execute()" +
+            "{" +
+            "    controller:index()" +
+            "};";
+
+        final String controller_module =
+            "module namespace controller = \"http://test/controller\";" +
+            "import module namespace module1 = \"http://test/module1\" at \"module1.xqy\";" +
+            "declare function controller:index() as item()*" +
+            "{" +
+            "    module1:hello(\"world\")" +
+            "};";
+
+        Collection testHome = createCollection("testCircular");
+        //writeModule(testHome, "index.xqy", index_module);
+        writeModule(testHome, "module1.xqy", module1_module);
+        writeModule(testHome, "processor.xqy", processor_module);
+        writeModule(testHome, "impl.xqy", impl_module);
+        writeModule(testHome, "controller.xqy", controller_module);
+        
+        CompiledExpression query = xqService.compile(index_module);
+        ResourceSet execute = xqService.execute(query);
+    }
+
     private void writeFile(String path, String module) throws IOException {
         path = path.replace("/", File.separator);
         File f = new File (path);
