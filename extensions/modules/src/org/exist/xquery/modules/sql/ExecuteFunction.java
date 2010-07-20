@@ -547,7 +547,7 @@ public class ExecuteFunction extends BasicFunction
                 String  value = param.getFirstChild().getNodeValue();
                 String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
 
-                ( (PreparedStatement)stmt ).setObject( i, value, sqlTypeFromString( type ) );
+                ( (PreparedStatement)stmt ).setObject( i+1, value, sqlTypeFromString( type ) );
             }
         }
     }
