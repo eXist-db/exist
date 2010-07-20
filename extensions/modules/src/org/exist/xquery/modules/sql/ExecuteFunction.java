@@ -145,6 +145,7 @@ public class ExecuteFunction extends BasicFunction
         ResultSet rs            = null;
 
         try {
+            boolean makeNodeFromColumnName = false;
             MemTreeBuilder builder = context.getDocumentBuilder();
             int            iRow    = 0;
 
@@ -154,6 +155,7 @@ public class ExecuteFunction extends BasicFunction
                 // get the SQL statement
                 sql           = args[1].getStringValue();
                 stmt          = con.createStatement();
+                makeNodeFromColumnName = ((BooleanValue)args[2].itemAt(0)).effectiveBooleanValue();
 
                 //execute the statement
                 executeResult = stmt.execute( sql );
@@ -164,6 +166,7 @@ public class ExecuteFunction extends BasicFunction
                 PreparedStatementWithSQL stmtWithSQL  = SQLModule.retrievePreparedStatement( context, statementUID );
                 sql  = stmtWithSQL.getSql();
                 stmt = stmtWithSQL.getStmt();
+                makeNodeFromColumnName = ((BooleanValue)args[3].itemAt(0)).effectiveBooleanValue();
 
                 if( !args[2].isEmpty() ) {
                     setParametersOnPreparedStatement( stmt, (Element)args[2].itemAt( 0 ) );
@@ -203,7 +206,7 @@ public class ExecuteFunction extends BasicFunction
 
                             String colElement = "field";
 
-                            if( ( (BooleanValue)args[2].itemAt( 0 ) ).effectiveBooleanValue() && ( columnName.length() > 0 ) ) {
+                            if(makeNodeFromColumnName && columnName.length() > 0 ) {
                                 // use column names as the XML node
 
                                 /**
@@ -215,7 +218,7 @@ public class ExecuteFunction extends BasicFunction
 
                             builder.startElement( new QName( colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
 
-                            if( !( (BooleanValue)args[2].itemAt( 0 ) ).effectiveBooleanValue() || ( columnName.length() <= 0 ) ) {
+                            if(!makeNodeFromColumnName || columnName.length() <= 0) {
                                 String name;
 
                                 if( columnName.length() > 0 ) {
