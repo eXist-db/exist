@@ -26,6 +26,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
+import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
 
@@ -384,7 +385,7 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
 		}
         Object[] collections = (Object[]) collection.get("collections");
-		permissions = PermissionFactory.getPermission(
+		permissions = new UnixStylePermission(
 				(String) collection.get("owner"),
 				(String) collection.get("group"),
 				((Integer) collection.get("permissions")).intValue());
