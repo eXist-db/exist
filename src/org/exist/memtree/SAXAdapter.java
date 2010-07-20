@@ -46,15 +46,17 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     private MemTreeBuilder          builder;
     private HashMap<String, String> namespaces = null;
 
-    public SAXAdapter()
-    {
-        builder = new MemTreeBuilder();
+    public SAXAdapter() {
+        setBuilder(new MemTreeBuilder());
     }
 
 
-    public SAXAdapter( XQueryContext context )
-    {
-        builder = new MemTreeBuilder( context );
+    public SAXAdapter(XQueryContext context) {
+        setBuilder(new MemTreeBuilder(context));
+    }
+
+    protected final void setBuilder(MemTreeBuilder builder) {
+        this.builder = builder;
     }
 
     public Document getDocument()

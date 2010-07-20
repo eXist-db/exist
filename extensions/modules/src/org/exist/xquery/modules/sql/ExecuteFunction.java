@@ -54,8 +54,16 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLRecoverableException;
+import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Types;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.exist.memtree.AppendingSAXAdapter;
+import org.exist.memtree.SAXAdapter;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -202,7 +210,6 @@ public class ExecuteFunction extends BasicFunction
                         String columnName = rsmd.getColumnLabel( i + 1 );
 
                         if( columnName != null ) {
-                            String colValue   = rs.getString( i + 1 );
 
                             String colElement = "field";
 
@@ -233,14 +240,37 @@ public class ExecuteFunction extends BasicFunction
                             builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), rsmd.getColumnTypeName( i + 1 ) );
                             builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs" ), Type.getTypeName( sqlTypeToXMLType( rsmd.getColumnType( i + 1 ) ) ) );
 
-                            if( rs.wasNull() ) {
+                            if(rs.wasNull()) {
 
                                 // Add a null indicator attribute if the value was SQL Null
                                 builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
                             }
 
-                            if( colValue != null ) {
-                                builder.characters( escapeXmlText( colValue ) );
+                            //get the content
+                            if(rsmd.getColumnType(i+1) == Types.SQLXML) {
+                                //parse sqlxml value
+                                try {
+                                    SQLXML sqlXml = rs.getSQLXML(i+1);
+
+                                    SAXParserFactory factory = SAXParserFactory.newInstance();
+                                    factory.setNamespaceAware(true);
+                                    InputSource src = new InputSource(sqlXml.getCharacterStream());
+                                    SAXParser parser = factory.newSAXParser();
+                                    XMLReader xr = parser.getXMLReader();
+
+                                    SAXAdapter adapter = new AppendingSAXAdapter(builder);
+                                    xr.setContentHandler(adapter);
+                                    xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                                    xr.parse(src);
+                                } catch(Exception e) {
+                                    throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);
+                                }
+                            } else {
+                                //otherwise assume string value
+                                String colValue = rs.getString(i + 1);
+                                if(colValue != null) {
+                                    builder.characters(escapeXmlText( colValue ));
+                                }
                             }
 
                             builder.endElement();
@@ -420,6 +450,8 @@ public class ExecuteFunction extends BasicFunction
             return( Types.INTEGER );
         } else if( sqlType.equals( "VARCHAR" ) ) {
             return( Types.VARCHAR );
+        } else if(sqlType.equals("SQLXML")) {
+            return Types.SQLXML;
         } else {
             return( Types.VARCHAR ); //default
         }
@@ -503,6 +535,10 @@ public class ExecuteFunction extends BasicFunction
 
             case Types.VARCHAR: {
                 return( Type.STRING );
+            }
+
+            case Types.SQLXML: {
+                return(Type.NODE);
             }
 
             default: {
