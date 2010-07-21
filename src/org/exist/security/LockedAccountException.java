@@ -21,33 +21,22 @@
  */
 package org.exist.security;
 
-import java.util.Collection;
-
-import org.exist.EXistException;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-
 /**
+ * This exception is thrown when attempting to authenticate and 
+ * the corresponding account has been locked.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Realm {
-	
-	public String getId();
-	
-	public User getAccount(String name);
-	public Collection<User> getAccounts();
-	public boolean hasAccount(String accountName);
-	
-	public Collection<Group> getRoles();
+public class LockedAccountException extends Exception {
 
-	public Group getRole(String name);
-	public boolean hasRole(String name);
+	private static final long serialVersionUID = 8297252750188055005L;
 
-	User authenticate(String username, Object credentials) throws AuthenticationException;
+	public LockedAccountException(String message) {
+		super(message);
+	}
 
-	public User getAccount(int id);
-	public Group getRole(int id);
-
-	public void startUp(DBBroker broker) throws EXistException;
+	public LockedAccountException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

@@ -31,7 +31,7 @@ public class GroupAider implements Group {
 
 	String name;
 	
-	GroupAider(String name) {
+	public GroupAider(String name) {
 		this.name = name;
 	}
 	

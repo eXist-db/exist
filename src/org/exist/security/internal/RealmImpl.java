@@ -47,6 +47,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -66,33 +67,44 @@ public class RealmImpl implements Realm {
 	protected final static String ACL_FILE = "users.xml";
 	protected final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
 	   
-	private Map<String, Group> groups = new HashMap<String, Group>(65);
-	private Map<String, User> users = new HashMap<String, User>(65);
+	private Map<String, Group> groupsByName = new HashMap<String, Group>(65);
+	private Map<String, User> usersByName = new HashMap<String, User>(65);
 
-	SecurityManagerImpl sm;
+	private Int2ObjectHashMap<Group> groupsById = new Int2ObjectHashMap<Group>(65);
+	private Int2ObjectHashMap<User> usersById = new Int2ObjectHashMap<User>(65);
+
+	private SecurityManagerImpl sm;
 //	Configuration configuration;
 
-	RealmImpl(SecurityManagerImpl sm) { //, Configuration conf
+    protected final User ACCOUNT_SYSTEM;
+    protected final User ACCOUNT_GUEST;
+    protected final Group GROUP_DBA;
+    protected final Group GROUP_GUEST;
+
+	protected RealmImpl(SecurityManagerImpl sm) { //, Configuration conf
 
 //		configuration = Configurator.configure(this, conf);
 
 		this.sm = sm;
 
-//		// LOG.debug("creating system users");
 //		//Build-in accounts
-//		sm.DBA_ROLE = _addGroup(0, SecurityManager.DBA_GROUP);
-//		sm.SYSTEM_ACCOUNT = _addAccount(0, SecurityManager.DBA_USER, sm.DBA_ROLE);
-//
-//		//TODO: add if not exist
-//		sm.GUEST_ROLE = _addGroup(1, SecurityManager.GUEST_GROUP);
-//		sm.GUEST_ACCOUNT = _addAccount(1, SecurityManager.GUEST_USER, sm.GUEST_ROLE);
-//		sm.GUEST_ACCOUNT.setPassword(SecurityManager.GUEST_USER);
-//
-//		//TODO: add if not exist
-//		//UNDERSTAND: can it be without admin user?
-//		Account account = _addAccount(2, "admin", sm.DBA_ROLE);
-//		account.setDefaultRole(sm.DBA_ROLE);
-//		account.setPassword("");
+    	GROUP_DBA = new GroupImpl(SecurityManager.DBA_GROUP, 1);
+    	groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
+    	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
+
+    	ACCOUNT_SYSTEM = new UserImpl(1, SecurityManager.DBA_USER, null);
+    	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
+    	usersById.put(ACCOUNT_SYSTEM.getUID(), ACCOUNT_SYSTEM);
+    	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
+
+    	GROUP_GUEST = new GroupImpl(SecurityManager.GUEST_GROUP, 2);
+    	groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
+    	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
+
+    	ACCOUNT_GUEST = new UserImpl(2, SecurityManager.GUEST_USER, null);
+    	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
+    	usersById.put(ACCOUNT_GUEST.getUID(), ACCOUNT_GUEST);
+    	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
 	}
 
 //	@Override
@@ -110,11 +122,9 @@ public class RealmImpl implements Realm {
 		return ID;
 	}
 
-	public void attach(BrokerPool db) throws EXistException {
+	public void startUp(DBBroker broker) throws EXistException {
 
-		BrokerPool pool = db;
-		DBBroker broker = pool.get(pool.getSecurityManager().getSystemAccount());
-
+		BrokerPool pool = broker.getBrokerPool();
 		TransactionManager transact = pool.getTransactionManager();
 		Txn txn = null;
 		try {
@@ -169,7 +179,8 @@ public class RealmImpl implements Realm {
 							if (node.getNodeType() == Node.ELEMENT_NODE
 									&& node.getLocalName().equals("user")) {
 								account = new UserImpl(major, minor, (Element) node);
-								users.put(account.getName(), account);
+								usersById.put(account.getUID(), account);
+								usersByName.put(account.getName(), account);
 							}
 						}
 					} else if (next.getTagName().equals("groups")) {
@@ -179,7 +190,8 @@ public class RealmImpl implements Realm {
 							if (node.getNodeType() == Node.ELEMENT_NODE
 									&& node.getLocalName().equals("group")) {
 								group = new GroupImpl((Element) node);
-								groups.put(group.getName(), group);
+								groupsById.put(group.getId(), group);
+								groupsByName.put(group.getName(), group);
 							}
 						}
 					}
@@ -193,21 +205,26 @@ public class RealmImpl implements Realm {
 	}
 
 	private Group _addGroup(String name) {
-		if (groups.containsKey(name))
+		if (groupsByName.containsKey(name))
 			throw new IllegalArgumentException("Group "+name+" exist.");
 		
-		Group group = new GroupImpl(name, -1);//XXX: next id
-		groups.put(name, group);
+		Group group = new GroupImpl(name, sm.getNextGroupId());
+		groupsById.put(group.getId(), group);
+		groupsByName.put(name, group);
 		
 		return group;
 	}
 
 	private Group _addGroup(int id, String name) {
-		if (groups.containsKey(name))
+		if (groupsByName.containsKey(name))
 			throw new IllegalArgumentException("Group "+name+" exist.");
 		
+		if (groupsById.containsKey(id))
+			throw new IllegalArgumentException("Group id "+id+" allready used.");
+
 		Group group = new GroupImpl(name, id);
-		groups.put(name, group);
+		groupsById.put(id, group);
+		groupsByName.put(name, group);
 		
 		return group;
 	}
@@ -221,42 +238,48 @@ public class RealmImpl implements Realm {
 	}
 
 	public synchronized boolean hasRole(String name) {
-		return groups.containsKey(name);
+		return groupsByName.containsKey(name);
 	}
 
 	public synchronized Group getRole(String name) {
-		return groups.get(name);
+		return groupsByName.get(name);
 	}
 	
 	public synchronized java.util.Collection<Group> getRoles() {
-		return groups.values();
+		return groupsByName.values();
 	}
 
 	private User _addAccount(int id, String name, Group defaultRole) {
-		if (users.containsKey(name))
+		if (usersByName.containsKey(name))
 			throw new IllegalArgumentException("User "+name+" exist.");
 		
+		if (usersById.containsKey(id))
+			throw new IllegalArgumentException("User's id "+id+" allready used.");
+
 		User account = new UserImpl(id, name, defaultRole.getName()); //XXX: this as first arg
-		users.put(name, account);
+		usersById.put(id, account);
+		usersByName.put(name, account);
 		
 		return account;
 	}
 
 	@Override
-	public User getAccount(String name) {
-		return users.get(name);
+	public synchronized User getAccount(String name) {
+		return usersByName.get(name);
 	}
 
 	@Override
-	public java.util.Collection<User> getAccounts() {
-		return users.values();
+	public synchronized java.util.Collection<User> getAccounts() {
+		return usersByName.values();
 	}
 
 	public synchronized void deleteAccount(User user) throws PermissionDeniedException {
 		if(user == null)
 			return;
 		
-		user = users.remove(user.getName());
+		usersById.remove(user.getUID());
+		usersByName.remove(user.getName());
+
 //		if(user != null)
 //			LOG.debug("user " + user.getName() + " removed");
 //		else
@@ -266,7 +289,7 @@ public class RealmImpl implements Realm {
 	}
 
 	@Override
-	public User authenticate(String accountName, Object credentials) throws AuthenticationException {
+	public synchronized User authenticate(String accountName, Object credentials) throws AuthenticationException {
 		User user = getAccount(accountName);
 		if (user == null)
 			throw new AuthenticationException("Acount " + accountName + " not found");
@@ -305,14 +328,14 @@ public class RealmImpl implements Realm {
 		// save groups
         buf.append("<!-- Please do not remove the guest and admin groups -->");
 		buf.append("<groups>");
-		for (Group group : groups.values())
+		for (Group group : groupsByName.values())
 			buf.append(group.toString());
 		buf.append("</groups>");
 
 		//save users
         buf.append("<!-- Please do not remove the admin user. -->");
 		buf.append("<users>");
-		for (User account : users.values())
+		for (User account : usersByName.values())
 			buf.append(account.toString());
 		buf.append("</users>");
 		buf.append("</auth>");
@@ -375,5 +398,15 @@ public class RealmImpl implements Realm {
 	public boolean hasAccount(String accountName) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public synchronized User getAccount(int id) {
+		return usersById.get(id);
+	}
+
+	@Override
+	public synchronized Group getRole(int id) {
+		return groupsById.get(id);
 	}
 }

@@ -1707,19 +1707,19 @@ public class RpcConnection implements RpcAPI {
      */
     public Vector<HashMap<String, Object>> getUsers() throws EXistException,
             PermissionDeniedException {
-        User users[] = factory.getBrokerPool().getSecurityManager().getUsers();
+    	java.util.Collection<User> users = factory.getBrokerPool().getSecurityManager().getUsers();
         Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
-        for (int i = 0; i < users.length; i++) {
+        for (User user : users) {
             final HashMap<String, Object> tab = new HashMap<String, Object>();
-            tab.put("uid", users[i].getUID());
-            tab.put("name", users[i].getName());
+            tab.put("uid", user.getUID());
+            tab.put("name", user.getName());
             Vector<String> groups = new Vector<String>();
-            String[] gl = users[i].getGroups();
+            String[] gl = user.getGroups();
     		for (int j = 0; j < gl.length; j++)
                 groups.addElement(gl[j]);
             tab.put("groups", groups);
-            if (users[i].getHome() != null)
-                tab.put("home", users[i].getHome().toString());
+            if (user.getHome() != null)
+                tab.put("home", user.getHome().toString());
             r.addElement(tab);
         }
         return r;
@@ -1734,10 +1734,10 @@ public class RpcConnection implements RpcAPI {
      */
     public Vector<String> getGroups() throws EXistException,
             PermissionDeniedException {
-        String[] groups = factory.getBrokerPool().getSecurityManager().getGroups();
-        Vector<String> v = new Vector<String>(groups.length);
-        for (int i = 0; i < groups.length; i++) {
-            v.addElement(groups[i]);
+    	java.util.Collection<Group> roles = factory.getBrokerPool().getSecurityManager().getGroups();
+        Vector<String> v = new Vector<String>(roles.size());
+        for (Group role : roles) {
+            v.addElement(role.getName());
         }
         return v;
     }

@@ -21,6 +21,7 @@
  */
 package org.exist.security;
 
+import org.exist.EXistException;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -50,7 +51,7 @@ public interface SecurityManager {
    public final static User SYSTEM_USER = new UserImpl(DBA_USER, null, DBA_GROUP); //TODO: add uid = 0 ?
    public final static User GUEST = new UserImpl(GUEST_USER, null, GUEST_GROUP); //TODO: add uid = 1 ?
    
-   void attach(BrokerPool pool, DBBroker sysBroker);
+   void attach(BrokerPool pool, DBBroker sysBroker) throws EXistException;
    
    public BrokerPool getDatabase();
 
@@ -65,11 +66,6 @@ public interface SecurityManager {
 
    User getUser(int uid);
 
-   User[] getUsers();
-
-   @Deprecated
-   void addGroup(String name);
-
    void addGroup(Group group);
 
    boolean hasGroup(String name);
@@ -79,8 +75,6 @@ public interface SecurityManager {
    Group getGroup(String name);
 
    Group getGroup(int gid);
-
-   String[] getGroups();
 
    boolean hasAdminPrivileges(User user);
 
@@ -95,12 +89,18 @@ public interface SecurityManager {
 	
    public User authenticate(String username, Object credentials) throws AuthenticationException;
 
-   public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException;
-
    public User getSystemAccount();
 
    public User getGuestAccount();
 
    public Group getDBAGroup();
 
+   @Deprecated
+   java.util.Collection<User> getUsers();
+
+   @Deprecated
+   java.util.Collection<Group> getGroups();
+
+   @Deprecated
+   void addGroup(String group);
 }

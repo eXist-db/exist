@@ -37,6 +37,7 @@ import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.security.Realm;
 import org.exist.security.internal.RealmImpl;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -412,21 +413,19 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // This needs to be an enumeration
-   public String[] getGroups()
+   public java.util.Collection<Group> getGroups()
    {
       try {
          SearchControls constraints = new SearchControls();
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
          NamingEnumeration<SearchResult> groups = context.search(groupBase,"(objectClass="+groupClassName+")",constraints);
-         List<String> groupList = new ArrayList<String>();
+         List<Group> groupList = new ArrayList<Group>();
          while (groups.hasMore()) {
             SearchResult result = groups.next();
-            groupList.add(getAttributeValue(groupNameAttr, result.getAttributes()));
+            groupList.add(new GroupAider( getAttributeValue(groupNameAttr, result.getAttributes()) ) );
          }
-         String [] retval = new String[groupList.size()];
-         System.arraycopy(groupList.toArray(), 0, retval,0, retval.length);
-         return retval;
+         return groupList;
       } catch (NamingException ex) {
          LOG.warn("Cannot get a list of all groups due to exception.",ex);
       }
@@ -482,21 +481,19 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // This needs to be an enumeration
-   public User[] getUsers()
+   public java.util.Collection<User> getUsers()
    {
       try {
          SearchControls constraints = new SearchControls();
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
          NamingEnumeration<SearchResult> users = context.search(userBase,"(objectClass="+userClassName+")",constraints);
-         List<UserImpl> userList = new ArrayList<UserImpl>();
+         List<User> userList = new ArrayList<User>();
          while (users.hasMore()) {
             SearchResult result = users.next();
             userList.add(newUserFromAttributes(context,result.getAttributes()));
          }
-         User [] retval = new User[userList.size()];
-         System.arraycopy(userList.toArray(), 0, retval,0, retval.length);
-         return retval;
+         return userList;
       } catch (NamingException ex) {
          LOG.warn("Cannot get the list of users due to exception.",ex);
       }
@@ -537,23 +534,16 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    @Override
-   public User authenticate(Realm realm, String username, Object credentials) throws AuthenticationException {
+   public User authenticate(String username, Object credentials) throws AuthenticationException {
 		User user = getUser(username);
 		if (user != null) {
-			User newUser = new UserImpl(realm, (UserImpl)user, credentials);
+			User newUser = new UserImpl(null, (UserImpl)user, credentials);
 			if (newUser.isAuthenticated())
 				return newUser;
 
 			throw new AuthenticationException("Wrong password for user [" + username + "] ");
 		}
 		throw new AuthenticationException("User [" + username + "] not found");
-   }
-
-   Realm realm = null;
-   
-   @Override
-   public User authenticate(String username, Object credentials) throws AuthenticationException {
-	   return authenticate(realm, username, credentials);
    }
 
 	@Override
