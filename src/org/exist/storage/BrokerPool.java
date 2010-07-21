@@ -525,6 +525,7 @@ public class BrokerPool extends Observable {
 	/**
      * The cache in which the database instance's collections are stored.
      */
+    //TODO : rename as collectionsCache ?
 	protected CollectionCache collectionCache;
 	
 	/**
@@ -816,7 +817,6 @@ public class BrokerPool extends Observable {
 		status = OPERATING;
 
 		//wake-up the security manager
-//		securityManager = new SecurityManagerImpl(this);
         securityManager.attach(this, broker);
 
 		//have to do this after initializing = false
@@ -1116,7 +1116,6 @@ public class BrokerPool extends Observable {
      * 
      * @return The cache
 	 */
-    //TODO : rename as getCollectionCache ?
 	public CollectionCache getCollectionsCache() {		
 		return collectionCache;
 	}
@@ -1386,7 +1385,12 @@ public class BrokerPool extends Observable {
          *  A broker is already available in these methods, so we use it here.
          */
 	public void reloadSecurityManager(DBBroker broker) {
-		securityManager.attach(this, broker); //XXX: reload
+		 //XXX: reload
+		try {
+			securityManager.attach(this, broker);
+		} catch (EXistException e) {
+			LOG.debug("Security manager reloaded failed: "+e.getMessage());
+		}
 		LOG.debug("Security manager reloaded");
 	}
 

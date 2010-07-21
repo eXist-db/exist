@@ -10,6 +10,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -844,29 +845,32 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     }
     
     public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException {
-        User users[] = pool.getSecurityManager().getUsers();
-        UserDesc[] r = new UserDesc[users.length];
-        for (int i = 0; i < users.length; i++) {
+    	java.util.Collection<User> users = pool.getSecurityManager().getUsers();
+        UserDesc[] r = new UserDesc[users.size()];
+        int i = 0;
+        for (User user : users) {
             r[i] = new UserDesc();
-            r[i].setName(users[i].getName());
+            r[i].setName(user.getName());
 /*
             Vector groups = new Vector();
             for (Iterator j = users[i].getGroups(); j.hasNext(); )
                 groups.addElement(j.next());
             r[i].setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
  */
-            r[i].setGroups(new Strings(users[i].getGroups()));
-            if (users[i].getHome() != null)
-                r[i].setHome(users[i].getHome().toString());
+            r[i].setGroups(new Strings(user.getGroups()));
+            if (user.getHome() != null)
+                r[i].setHome(user.getHome().toString());
+            
+            i++;
         }
         return new UserDescs(r);
     }
     
     public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException {
-        String[] groups = pool.getSecurityManager().getGroups();
-        Vector<String> v = new Vector<String>(groups.length);
-        for (int i = 0; i < groups.length; i++) {
-            v.addElement(groups[i]);
+    	java.util.Collection<Group> roles = pool.getSecurityManager().getGroups();
+        Vector<String> v = new Vector<String>(roles.size());
+        for (Group role : roles) {
+            v.addElement(role.getName());
         }
         return new Strings(v.toArray(new String[v.size()]));
     }

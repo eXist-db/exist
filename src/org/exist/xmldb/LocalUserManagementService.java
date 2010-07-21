@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -597,12 +598,20 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public User[] getUsers() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		return manager.getUsers();
+		java.util.Collection<User> users = manager.getUsers();
+		return users.toArray(new User[users.size()]);
 	}
 
 	public String[] getGroups() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		return manager.getGroups();
+		java.util.Collection<Group> roles = manager.getGroups();
+		String[] res = new String[roles.size()];
+		int i = 0;
+		for (Group role : roles) {
+			res[i] = role.getName();
+			i++;
+		}
+		return res;
 	}
 
 	public String getVersion() {

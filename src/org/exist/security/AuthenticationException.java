@@ -22,6 +22,8 @@
 package org.exist.security;
 
 /**
+ * Authentication process error.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
