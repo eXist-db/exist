@@ -92,7 +92,7 @@ public class RealmImpl implements Realm {
     	groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
 
-    	ACCOUNT_SYSTEM = new UserImpl(1, SecurityManager.DBA_USER, null);
+    	ACCOUNT_SYSTEM = new UserImpl(1, SecurityManager.DBA_USER, "");
     	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
     	usersById.put(ACCOUNT_SYSTEM.getUID(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
@@ -101,7 +101,7 @@ public class RealmImpl implements Realm {
     	groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
 
-    	ACCOUNT_GUEST = new UserImpl(2, SecurityManager.GUEST_USER, null);
+    	ACCOUNT_GUEST = new UserImpl(2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
     	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
     	usersById.put(ACCOUNT_GUEST.getUID(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
