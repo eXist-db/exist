@@ -117,7 +117,7 @@ public class ExportEditor implements ISVNEditor {
 		try {
 			pool = BrokerPool.getInstance();
 			//BUG: need to be released!!! where???
-			broker = pool.get(SecurityManager.SYSTEM_USER);
+			broker = pool.get(pool.getSecurityManager().getSystemAccount());
 			transact = pool.getTransactionManager();
 
 			myRootDirectory = broker.getCollection(rootPath);
