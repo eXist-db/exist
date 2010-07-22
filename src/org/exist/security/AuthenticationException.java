@@ -30,12 +30,26 @@ package org.exist.security;
 public class AuthenticationException extends Exception {
 
 	private static final long serialVersionUID = 8966739840703820248L;
+	
+	public static final int ACCOUNT_NOT_FOUND = 0; 
+	public static final int WRONG_PASSWORD = 1; 
+	public static final int ACCOUNT_LOCKED = 2;
+	
+	private int type;
 
-	public AuthenticationException(String message) {
+	public AuthenticationException(int type, String message) {
 		super(message);
+		
+		this.type = type;
 	}
 
-	public AuthenticationException(String message, Throwable cause) {
+	public AuthenticationException(int type, String message, Throwable cause) {
 		super(message, cause);
+
+		this.type = type;
+	}
+	
+	public int getType() {
+		return type;
 	}
 }
