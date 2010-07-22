@@ -214,13 +214,11 @@ public class XQueryTriggerTest {
     @Before
     public void storePreliminaryDocuments() {
     	try {
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
+			XMLResource doc = (XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
 			doc.setContent(EMPTY_LOG);
 			testCollection.storeResource(doc);
 	
-			BinaryResource module =
-				(BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
+			BinaryResource module = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
 			((EXistResource)module).setMimeType("application/xquery");
 			module.setContent(MODULE.getBytes());
 			testCollection.storeResource(module);
