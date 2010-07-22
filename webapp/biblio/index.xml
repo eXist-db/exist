@@ -194,5 +194,20 @@
                 </table>
             </form>
         </jquery:dialog>
+        <jquery:dialog id="new-collection-dialog" modal="true" title="Create New Folder" trigger="#collection-create-folder"
+            width="450">
+            <jquery:button label="Create" function="createCollection"/>
+            <jquery:button id="cancel" label="Cancel"/>
+            <form id="create-collection-form" action="operations.xql">
+                <table>
+                    <tr>
+                        <td>New collection:</td>
+                        <td>
+                            <input name="name" type="text"/>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </jquery:dialog>
     </chapter>
 </book>
