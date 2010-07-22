@@ -348,7 +348,7 @@ public class XMLToQuery {
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.TEXT_NODE)
-                buf.append(child.getNodeValue().toLowerCase());
+                buf.append(child.getNodeValue());
             child = child.getNextSibling();
         }
         return buf.toString();
