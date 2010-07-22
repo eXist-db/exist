@@ -115,3 +115,17 @@ function initCollectionTree() {
         return false;
     });
 }
+
+function createCollection() {
+    var name = $('#create-collection-form input[name = name]').val();
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var data = { action: 'create-collection', name: name, collection: collection };
+    $.ajax({
+        url: "operations.xql",
+        dataType: "xml",
+        data: data,
+        success: function(data) {
+            $("#collection-tree-tree").dynatree("getRoot").reload();
+        }
+    });
+}
