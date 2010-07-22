@@ -1,6 +1,8 @@
 package org.exist.security;
 
 import org.exist.jetty.JettyStart;
+import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
 import org.junit.*;
@@ -210,10 +212,15 @@ public class XMLDBSecurityTest {
             Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
-            UserImpl user = new UserImpl("test1", "test1", "users");
+            GroupAider group = new GroupAider("users");
+            ums.addRole(group);
+
+            UserAider user = new UserAider("test1", group);
+            user.setPassword("test1");
             ums.addUser(user);
 
-            user = new UserImpl("test2", "test2", "users");
+            user = new UserAider("test2", group);
+            user.setPassword("test2");
             ums.addUser(user);
 
             // create a collection /db/securityTest as user "test1"

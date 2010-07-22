@@ -96,7 +96,7 @@ public class RealmImpl implements Realm {
     	groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
 
-    	ACCOUNT_SYSTEM = new UserImpl(1, SecurityManager.DBA_USER, "");
+    	ACCOUNT_SYSTEM = new UserImpl(this, 1, SecurityManager.DBA_USER, "");
     	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
     	usersById.put(ACCOUNT_SYSTEM.getUID(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
@@ -105,7 +105,7 @@ public class RealmImpl implements Realm {
     	groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
 
-    	ACCOUNT_GUEST = new UserImpl(2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
+    	ACCOUNT_GUEST = new UserImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
     	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
     	usersById.put(ACCOUNT_GUEST.getUID(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
@@ -182,7 +182,7 @@ public class RealmImpl implements Realm {
 							node = ul.item(j);
 							if (node.getNodeType() == Node.ELEMENT_NODE
 									&& node.getLocalName().equals("user")) {
-								account = new UserImpl(major, minor, (Element) node);
+								account = new UserImpl(this, major, minor, (Element) node);
 								usersById.put(account.getUID(), account);
 								usersByName.put(account.getName(), account);
 							}
@@ -270,7 +270,7 @@ public class RealmImpl implements Realm {
 	}
 
 	public synchronized User addAccount(String name) {
-		return _addAccount(sm.getNextAccoutId(), new UserImpl(name));
+		return _addAccount(sm.getNextAccoutId(), new UserImpl(this, name));
 	}
 
 	public synchronized User addAccount(User account) {

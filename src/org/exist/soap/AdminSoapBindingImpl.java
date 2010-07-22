@@ -15,6 +15,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -777,20 +778,20 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 (!manager.hasAdminPrivileges(user)))
             throw new RemoteException(
                     "guest user cannot be modified");
-        UserImpl u;
+        User u;
         if (!manager.hasUser(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new RemoteException(
                         "not allowed to create user");
-            u = new UserImpl(name);
-            u.setPasswordDigest(password);
+            u = new UserAider(name);
+            ((UserAider)u).setPasswordDigest(password);
         } else {
-            u = (UserImpl) manager.getUser(name);
+            u = manager.getUser(name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new RemoteException(
                         "you are not allowed to change this user");
-            u.setPasswordDigest(password);
+            ((UserImpl)u).setPasswordDigest(password);
         }
         for (int i = 0; i < groups.getElements().length; i++ ) {
             if (!u.hasGroup(groups.getElements()[i])) {

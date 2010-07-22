@@ -1,10 +1,11 @@
 package org.exist.xmldb;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.security.internal.aider.UnixStylePermission;
+import org.exist.security.internal.aider.UserAider;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -44,6 +45,16 @@ public class RemoteUserManagementService implements UserManagementService {
 			if (user.getHome() != null)
 				params.add(user.getHome().toString());
 			parent.getClient().execute("setUser", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+    }
+
+	public void addRole(Group role) throws XMLDBException {
+		try {
+            List<Object> params = new ArrayList<Object>(12);
+			params.add(role.getName());
+			parent.getClient().execute("addGroup", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
@@ -371,7 +382,7 @@ public class RemoteUserManagementService implements UserManagementService {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(name);
 			HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getUser", params);
-			UserImpl u = new UserImpl((String) tab.get("name"), null);
+			User u = new UserAider((String) tab.get("name"));
 			Object[] groups = (Object[]) tab.get("groups");
             for (int i = 0; i < groups.length; i++) {
 				u.addGroup((String) groups[i]);
@@ -403,7 +414,7 @@ public class RemoteUserManagementService implements UserManagementService {
 				} catch (java.lang.NumberFormatException e) {
 				}
 					
-				u[i] = new UserImpl(uid, (String) tab.get("name"), null);
+				u[i] = new UserAider(uid, (String) tab.get("name"));
 				Object[] groups = (Object[]) tab.get("groups");
                 for (int j = 0; j < groups.length; j++)
 					u[i].addGroup((String) groups[j]);

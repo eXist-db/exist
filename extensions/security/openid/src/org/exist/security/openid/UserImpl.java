@@ -46,15 +46,15 @@ public class UserImpl implements User {
 	}
 
 	@Override
-	public void addGroup(String name) {
+	public Group addGroup(String name) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 	@Override
-	public void addGroup(Group group) {
+	public Group addGroup(Group group) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 	@Override
@@ -209,4 +209,10 @@ public class UserImpl implements User {
     public Set<String> getAttributeNames() {
         return attributes.keySet();
     }
+
+	@Override
+	public Group getDefaultGroup() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

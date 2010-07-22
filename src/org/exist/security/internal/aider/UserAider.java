@@ -34,12 +34,25 @@ import org.exist.xmldb.XmldbURI;
  */
 public class UserAider implements User {
 
-	String name;
+	private String name;
+	private int id = -1;
+	
+	private Group defaultRole = null;
 	
 	public UserAider(String name) {
 		this.name = name;
 	}
 	
+	public UserAider(int id, String name) {
+		this(name);
+		this.id = id;
+	}
+
+	public UserAider(String name, Group group) {
+		this(name);
+		defaultRole = group;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.security.Principal#getName()
 	 */
@@ -193,24 +206,6 @@ public class UserAider implements User {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.security.User#getPassword()
-	 */
-	@Override
-	public String getPassword() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getDigestPassword()
-	 */
-	@Override
-	public String getDigestPassword() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.security.User#setAttribute(java.lang.String, java.lang.Object)
 	 */
 	@Override
@@ -239,8 +234,36 @@ public class UserAider implements User {
 
 	@Override
 	public Group getDefaultGroup() {
-		// TODO Auto-generated method stub
-		return null;
+		return defaultRole;
 	}
 
+	private String password = null;
+	
+	public void setEncodedPassword(String passwd) {
+		password = passwd;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getPassword()
+	 */
+	@Override
+	public String getPassword() {
+		return password;
+	}
+
+	private String passwordDigest = null;
+	
+	public void setPasswordDigest(String password) {
+		passwordDigest = password;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#getDigestPassword()
+	 */
+	@Override
+	public String getDigestPassword() {
+		return passwordDigest;
+	}
+
+	
 }

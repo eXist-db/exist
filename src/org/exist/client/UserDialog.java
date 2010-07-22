@@ -38,6 +38,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.exist.security.User;
 import org.exist.security.UserImpl;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.XMLDBException;
@@ -338,7 +339,7 @@ class UserDialog extends JFrame {
 		String name = username.getText();
 		if (name.length() == 0)
 			return;
-		UserImpl user = new UserImpl(name);
+		UserAider user = new UserAider(name);
 		String pass1 = new String(password1.getPassword());
 		String pass2 = new String(password2.getPassword());
 		if (!pass1.equals(pass2)) {
@@ -371,7 +372,7 @@ class UserDialog extends JFrame {
 		String name = username.getText();
 		if (name.length() == 0)
 			return;
-		UserImpl user = new UserImpl(name);
+		UserAider user = new UserAider(name);
 		String pass1 = new String(password1.getPassword());
 		String pass2 = new String(password2.getPassword());
 		if(pass1.length() == 0 &&

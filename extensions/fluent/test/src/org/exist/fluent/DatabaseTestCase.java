@@ -9,7 +9,6 @@ import org.exist.dom.*;
 import org.exist.fluent.Database;
 import org.exist.fluent.DatabaseException;
 import org.exist.fluent.Transaction;
-import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -47,7 +46,7 @@ public abstract class DatabaseTestCase {
 			Database.startup(configFile);
 			db = null;
 		}
-		if (db == null) db = new Database(SecurityManager.SYSTEM_USER);
+		if (db == null) db = Database.login("admin", "");
 		wipeDatabase();
 		Database.configureRootCollection(configFile);	// config file gets erased by wipeDatabase()
 	}
