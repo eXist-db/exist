@@ -21,10 +21,10 @@
  */
 package org.exist.security;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.internal.Password;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.security.ldap.LDAPbindSecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
@@ -203,7 +203,7 @@ public class UserImpl implements User {
 		this.realm = realm;
 		
 		name = node.getAttribute(NAME);
-		if (name == null || name.length() == 0)
+		if (name == null ) //|| name.length() == 0
 			throw new DatabaseConfigurationException("user needs a name");
 		Attr attr;
 		if (majorVersion == 0) {
@@ -238,8 +238,7 @@ public class UserImpl implements User {
 					+ userId + " for user " + name);
 		}
 		Attr homeAttr = node.getAttributeNode(HOME);
-		this.home = homeAttr == null ? null : XmldbURI.create(homeAttr
-				.getValue());
+		this.home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
 		NodeList gl = node.getChildNodes();
 		Node group;
 		for (int i = 0; i < gl.getLength(); i++) {
@@ -254,7 +253,44 @@ public class UserImpl implements User {
 		
 	}
 	
-    public UserImpl(Realm realm, UserImpl from_user, Object credentials) {
+    public UserImpl(Realm realm, int id, User from_user) {
+        
+    	this.realm = realm;
+
+        uid = id;
+
+        name = from_user.getName();
+        home = from_user.getHome();
+        
+        defaultRole = from_user.getDefaultGroup();
+
+        if (from_user instanceof UserImpl) {
+			UserImpl user = (UserImpl) from_user;
+
+	        defaultRole = user.defaultRole;
+	        roles = user.roles;
+
+	        password = user.password;
+	        digestPassword = user.digestPassword;
+	        
+	        hasDbaRole = user.hasDbaRole;
+
+	        _cred = user._cred;
+		} else if (from_user instanceof UserAider) {
+			UserAider user = (UserAider) from_user;
+			
+			String[] gl = user.getGroups();
+			for (int i = 0; i < gl.length; i++) {
+				addGroup(gl[i]);
+			}
+
+	        setPassword(user.getPassword());
+	        digestPassword = user.getDigestPassword();
+		}
+
+    }
+
+	public UserImpl(Realm realm, UserImpl from_user, Object credentials) {
         uid = from_user.uid;
         name = from_user.name;
         home = from_user.home;
@@ -395,7 +431,7 @@ public class UserImpl implements User {
 	 */
 	public final String getPrimaryGroup() {
 		if (defaultRole == null) {
-			if (roles.size() == 0)
+			if (roles == null || roles.size() == 0)
 				return null;
 			
 			return ((Group) roles.toArray()[0]).getName();

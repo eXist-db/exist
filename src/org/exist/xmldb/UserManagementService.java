@@ -184,7 +184,9 @@ public interface UserManagementService extends Service {
      */
     public User[] getUsers() throws XMLDBException;
 
-	/**
+    public Group getRole( String name ) throws XMLDBException;
+
+    /**
 	 * Retrieve a list of all existing groups.
 	 * 
 	 * Please note: new groups are created automatically if a new group
@@ -270,6 +272,8 @@ public interface UserManagementService extends Service {
      */
     public void removeUser( User user ) throws XMLDBException;
     
+    public void removeRole( Group role ) throws XMLDBException;
+
     /**
 	 *  Update the specified user without update user's password
 	 *  Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it

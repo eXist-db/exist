@@ -615,6 +615,11 @@ public class LocalUserManagementService implements UserManagementService {
 		return users.toArray(new User[users.size()]);
 	}
 
+	public Group getRole(String name) throws XMLDBException {
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		return manager.getGroup(name);
+	}
+
 	public String[] getGroups() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		java.util.Collection<Group> roles = manager.getGroups();
@@ -643,6 +648,22 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"unable to remove user " + u.getName(),
+				e);
+		}
+	}
+
+	public void removeRole(Group role) throws XMLDBException {
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		if (!manager.hasAdminPrivileges(user))
+			throw new XMLDBException(
+				ErrorCodes.PERMISSION_DENIED,
+				"you are not allowed to remove users");
+		try {
+			manager.deleteRole(role.getName());
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(
+				ErrorCodes.PERMISSION_DENIED,
+				"unable to remove role " + role.getName(),
 				e);
 		}
 	}

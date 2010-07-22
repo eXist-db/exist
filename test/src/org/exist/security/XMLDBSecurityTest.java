@@ -256,9 +256,11 @@ public class XMLDBSecurityTest {
                 cms.removeCollection("securityTest1");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
             User test1 = ums.getUser("test1");
-            ums.removeUser(test1);
+            if (test1 != null) ums.removeUser(test1);
             User test2 = ums.getUser("test2");
-            ums.removeUser(test2);
+            if (test2 != null) ums.removeUser(test2);
+            Group role = ums.getRole("users");
+            if (role != null) ums.removeRole(role);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());

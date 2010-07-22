@@ -4,6 +4,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.User;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.security.internal.aider.UserAider;
 import org.xmldb.api.base.Collection;
@@ -54,7 +55,7 @@ public class RemoteUserManagementService implements UserManagementService {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(role.getName());
-			parent.getClient().execute("addGroup", params);
+			parent.getClient().execute("addRole", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
@@ -427,6 +428,18 @@ public class RemoteUserManagementService implements UserManagementService {
 		}
     }
 
+	public Group getRole(String name) throws XMLDBException {
+		try {
+            List<Object> params = new ArrayList<Object>(1);
+			params.add(name);
+			HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getRole", params);
+			Group role = new GroupAider((String) tab.get("name"));
+			return role;
+		} catch (XmlRpcException e) {
+			return null;
+		}
+    }
+
 	/**
 	 *  Gets the version attribute of the UserManagementServiceImpl object
 	 *
@@ -447,6 +460,16 @@ public class RemoteUserManagementService implements UserManagementService {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(u.getName());
 			parent.getClient().execute("removeUser", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+    }
+
+	public void removeRole(Group role) throws XMLDBException {
+		try {
+            List<Object> params = new ArrayList<Object>(1);
+			params.add(role.getName());
+			parent.getClient().execute("removeRole", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
