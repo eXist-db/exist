@@ -52,18 +52,18 @@ public class UserAider implements User {
 	 * @see org.exist.security.User#addGroup(java.lang.String)
 	 */
 	@Override
-	public void addGroup(String name) {
+	public Group addGroup(String name) {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
 	 */
 	@Override
-	public void addGroup(Group group) {
+	public Group addGroup(Group group) {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -233,6 +233,12 @@ public class UserAider implements User {
 	 */
 	@Override
 	public Set<String> getAttributeNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Group getDefaultGroup() {
 		// TODO Auto-generated method stub
 		return null;
 	}

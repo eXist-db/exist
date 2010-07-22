@@ -38,6 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -60,7 +61,6 @@ public class UserImpl implements User {
 	private final static String DIGEST_PASS = "digest-password";
 	private final static String USER_ID = "uid";
 	private final static String HOME = "home";
-	private static String realm = "exist";
 
 	public static int PASSWORD_ENCODING;
 	public static boolean CHECK_PASSWORDS = true;
@@ -96,10 +96,6 @@ public class UserImpl implements User {
 		}
 	}
 
-	static public void setPasswordRealm(String value) {
-		realm = value;
-	}
-	
 	static public User getUserFromServletRequest(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
         if (principal instanceof User) {
@@ -128,13 +124,19 @@ public class UserImpl implements User {
         
         return null;
 	}
+	
+	private Realm realm;
 
-	private String[] groups = null;
-	private String password = null;
-	private String digestPassword = null;
-	private String user;
+	private String name;
+	
 	private int uid = -1;
 	private XmldbURI home = null;
+
+	private Group defaultRole= null;
+	private Set<Group> roles = null;
+	
+	private String password = null;
+	private String digestPassword = null;
 
 	/**
 	 * Indicates if the user belongs to the dba group, i.e. is a superuser.
@@ -149,24 +151,24 @@ public class UserImpl implements User {
 	 *@param password
 	 *            Description of the Parameter
 	 */
-	public UserImpl(String user, String password) {
-		this.user = user;
+	public UserImpl(String name, String password) {
+		this.name = name;
 		setPassword(password);
 	}
 
-	public UserImpl(int uid, String user, String password) {
-		this(user, password);
-		this.uid = uid;
+	public UserImpl(int id, String name, String password) {
+		this(name, password);
+		this.uid = id;
 	}
 
 	/**
 	 * Create a new user with name
 	 * 
-	 *@param user
+	 * @param user
 	 *            Description of the Parameter
 	 */
-	public UserImpl(String user) {
-		this.user = user;
+	public UserImpl(String name) {
+		this.name = name;
 	}
 
 	/**
@@ -179,9 +181,9 @@ public class UserImpl implements User {
 	 *@param primaryGroup
 	 *            Description of the Parameter
 	 */
-	public UserImpl(String user, String password, String primaryGroup) {
-		this(user, password);
-		addGroup(primaryGroup);
+	public UserImpl(String name, String password, String primaryGroup) {
+		this(name, password);
+		defaultRole = addGroup(primaryGroup);
 	}
 
 	/**
@@ -194,8 +196,8 @@ public class UserImpl implements User {
 	 */
 	public UserImpl(int majorVersion, int minorVersion, Element node)
 			throws DatabaseConfigurationException {
-		this.user = node.getAttribute(NAME);
-		if (user == null || user.length() == 0)
+		name = node.getAttribute(NAME);
+		if (name == null || name.length() == 0)
 			throw new DatabaseConfigurationException("user needs a name");
 		Attr attr;
 		if (majorVersion == 0) {
@@ -214,7 +216,7 @@ public class UserImpl implements User {
 				if (this.password.charAt(0) == '{') {
 					throw new DatabaseConfigurationException(
 							"Unrecognized password encoding " + password
-									+ " for user " + user);
+									+ " for user " + name);
 				}
 			}
 			attr = node.getAttributeNode(DIGEST_PASS);
@@ -227,7 +229,7 @@ public class UserImpl implements User {
 			uid = Integer.parseInt(userId.getValue());
 		} catch (NumberFormatException e) {
 			throw new DatabaseConfigurationException("illegal user id: "
-					+ userId + " for user " + user);
+					+ userId + " for user " + name);
 		}
 		Attr homeAttr = node.getAttributeNode(HOME);
 		this.home = homeAttr == null ? null : XmldbURI.create(homeAttr
@@ -247,44 +249,49 @@ public class UserImpl implements User {
 	}
 	
     public UserImpl(Realm realm, UserImpl from_user, Object credentials) {
-        groups = from_user.groups;
+        uid = from_user.uid;
+        name = from_user.name;
+        home = from_user.home;
+        
+        defaultRole = from_user.defaultRole;
+        roles = from_user.roles;
+
         password = from_user.password;
         digestPassword = from_user.digestPassword;
-        user = from_user.user;
-        uid = from_user.uid;
-        home = from_user.home;
         
         hasDbaRole = from_user.hasDbaRole;
 
         _cred = from_user._cred;
 
-        _realm = realm;
+        this.realm = realm;
         
         authenticate(credentials);
     }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.exist.security.User#addGroup(java.lang.String)
 	 */
-	public final void addGroup(String name) {
-		if (groups == null) {
-			groups = new String[1];
-			groups[0] = name;
-		} else {
-			int len = groups.length;
-			String[] ngroups = new String[len + 1];
-			System.arraycopy(groups, 0, ngroups, 0, len);
-			ngroups[len] = name;
-			groups = ngroups;
+	public final Group addGroup(String name) {
+		Group role = realm.getRole(name);
+		if (role == null)
+			return null;
+		
+		if (roles == null) {
+			roles = new HashSet<Group>();
 		}
+		
+		roles.add(role);
+		
 		if (SecurityManager.DBA_GROUP.equals(name))
 			hasDbaRole = true;
+		
+		return role;
 	}
 
-	public final void addGroup(Group group) {
-		addGroup(group.getName());
+	public final Group addGroup(Group group) {
+		return addGroup(group.getName());
 	}
 	/*
 	 * (non-Javadoc)
@@ -292,35 +299,13 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#remGroup(java.lang.String)
 	 */
 	public final void remGroup(String group) {
-		if (groups == null) {
-			groups = new String[1];
-			groups[0] = SecurityManager.GUEST_GROUP;
-		} else {
-			int len = groups.length;
-
-			String[] rgroup = null;
-			if (len > 1)
-				rgroup = new String[len - 1];
-			else {
-				rgroup = new String[1];
-				len = 1;
+		for (Group role : roles) {
+			if (role.getName().equals(group)) {
+				roles.remove(role);
+				break;
 			}
-
-			boolean found = false;
-			for (int i = 0; i < len; i++) {
-				if (!groups[i].equals(group)) {
-					if (found == true)
-						rgroup[i - 1] = groups[i];
-					else
-						rgroup[i] = groups[i];
-				} else {
-					found = true;
-				}
-			}
-			if (found == true && len == 1)
-				rgroup[0] = SecurityManager.GUEST_GROUP;
-			groups = rgroup;
 		}
+
 		if (SecurityManager.DBA_GROUP.equals(group))
 			hasDbaRole = false;
 	}
@@ -331,10 +316,10 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#setGroups(java.lang.String[])
 	 */
 	public final void setGroups(String[] groups) {
-		this.groups = groups;
-		for (int i = 0; i < groups.length; i++)
-			if (SecurityManager.DBA_GROUP.equals(groups[i]))
-				hasDbaRole = true;
+//		this.groups = groups;
+//		for (int i = 0; i < groups.length; i++)
+//			if (SecurityManager.DBA_GROUP.equals(groups[i]))
+//				hasDbaRole = true;
 	}
 
 	/*
@@ -343,7 +328,16 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#getGroups()
 	 */
 	public final String[] getGroups() {
-		return groups == null ? new String[0] : groups;
+		if (roles == null) return new String[0];
+		
+		int i = 0;
+		String[] names = new String[roles.size()];
+		for (Group role : roles) {
+			names[i] = role.getName();
+			i++;
+		}
+		
+		return names;
 	}
 
 	/*
@@ -361,7 +355,7 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#getName()
 	 */
 	public final String getName() {
-		return user;
+		return name;
 	}
 
 	/*
@@ -394,9 +388,9 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#getPrimaryGroup()
 	 */
 	public final String getPrimaryGroup() {
-		if (groups == null || groups.length == 0)
+		if (defaultRole == null)
 			return null;
-		return groups[0];
+		return defaultRole.getName();
 	}
 
 	/*
@@ -405,12 +399,14 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#hasGroup(java.lang.String)
 	 */
 	public final boolean hasGroup(String group) {
-		if (groups == null)
+		if (roles == null)
 			return false;
-		for (int i = 0; i < groups.length; i++) {
-			if (groups[i].equals(group))
+		
+		for (Group role : roles) {
+			if (role.getName().equals(group))
 				return true;
 		}
+		
 		return false;
 	}
 
@@ -461,7 +457,7 @@ public class UserImpl implements User {
 			return passwd;
 		case MD5_ENCODING:
 			return MessageDigester
-					.md5(user + ":" + realm + ":" + passwd, false);
+					.md5(name + ":" + realm.getId() + ":" + passwd, false);
 		default:
 			return MessageDigester.md5(passwd, true);
 		}
@@ -471,7 +467,7 @@ public class UserImpl implements User {
 	public final String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<user name=\"");
-		buf.append(user);
+		buf.append(name);
 		buf.append("\" ");
 		buf.append("uid=\"");
 		buf.append(Integer.toString(uid));
@@ -492,10 +488,10 @@ public class UserImpl implements User {
 			buf.append("\">");
 		} else
 			buf.append(">");
-		if (groups != null) {
-			for (int i = 0; i < groups.length; i++) {
+		if (roles != null) {
+			for (Group role : roles) {
 				buf.append("<group>");
-				buf.append(groups[i]);
+				buf.append(role.getName());
 				buf.append("</group>");
 			}
 		}
@@ -543,7 +539,7 @@ public class UserImpl implements User {
 		// Try to authenticate using LDAP
 		if (sm != null) {
 			if (sm instanceof LDAPbindSecurityManager) {
-				if (((LDAPbindSecurityManager) sm).bind(user, passwd))
+				if (((LDAPbindSecurityManager) sm).bind(name, passwd))
 					return true;
 				else
 					return false;
@@ -618,11 +614,9 @@ public class UserImpl implements User {
 		return authenticated;
 	}
 
-    protected Realm _realm = null;
-    
 	@Override
 	public Realm getRealm() {
-		return _realm;
+		return realm;
 	}
 
 	private boolean authenticated = false;
@@ -665,4 +659,9 @@ public class UserImpl implements User {
     public Set<String> getAttributeNames() {
         return attributes.keySet();
     }
+
+	@Override
+	public Group getDefaultGroup() {
+		return defaultRole;
+	}
 }

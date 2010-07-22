@@ -461,6 +461,8 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized void setUser(User user) {
+		defaultRealm.addAccount(user);
+		
 //		if (user.getUID() < 0)
 //			user.setUID(++nextUserId);
 //		users.put(user.getUID(), user);
@@ -524,9 +526,16 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	public synchronized User authenticate(String username, Object credentials) throws AuthenticationException {
 		for (Realm realm : realms) {
-			return realm.authenticate(username, credentials);
+			try {
+				return realm.authenticate(username, credentials);
+			} catch (AuthenticationException e) {
+				if (e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND)
+					throw e;
+			}
 		}
-		throw new AuthenticationException("User [" + username + "] not found");
+		throw new AuthenticationException(
+				AuthenticationException.ACCOUNT_NOT_FOUND,
+				"User [" + username + "] not found");
 	}
 	
 	@Override
