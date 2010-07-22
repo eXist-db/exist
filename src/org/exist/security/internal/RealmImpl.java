@@ -85,13 +85,26 @@ public class RealmImpl implements Realm {
     protected final Group GROUP_DBA;
     protected final Group GROUP_GUEST;
 
-	protected RealmImpl(SecurityManagerImpl sm) { //, Configuration conf
+    protected final User ACCOUNT_UNKNOW;
+    protected final Group GROUP_UNKNOW;
+
+    protected RealmImpl(SecurityManagerImpl sm) { //, Configuration conf
 
 //		configuration = Configurator.configure(this, conf);
 
 		this.sm = sm;
 
-//		//Build-in accounts
+		//Build-in accounts
+		GROUP_UNKNOW = new GroupImpl("", 0);
+    	groupsById.put(GROUP_UNKNOW.getId(), GROUP_UNKNOW);
+    	groupsByName.put(GROUP_UNKNOW.getName(), GROUP_UNKNOW);
+
+    	ACCOUNT_UNKNOW = new UserImpl(this, 0, "", null);
+    	ACCOUNT_UNKNOW.addGroup(GROUP_UNKNOW);
+    	usersById.put(ACCOUNT_UNKNOW.getUID(), ACCOUNT_UNKNOW);
+    	usersByName.put(ACCOUNT_UNKNOW.getName(), ACCOUNT_UNKNOW);
+
+    	//DBA group & account
     	GROUP_DBA = new GroupImpl(SecurityManager.DBA_GROUP, 1);
     	groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
@@ -101,6 +114,7 @@ public class RealmImpl implements Realm {
     	usersById.put(ACCOUNT_SYSTEM.getUID(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
+    	//Guest group & account
     	GROUP_GUEST = new GroupImpl(SecurityManager.GUEST_GROUP, 2);
     	groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);

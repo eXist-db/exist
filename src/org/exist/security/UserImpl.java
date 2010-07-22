@@ -21,6 +21,7 @@
  */
 package org.exist.security;
 
+import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.internal.Password;
@@ -132,7 +133,7 @@ public class UserImpl implements User {
 	private int uid = -1;
 	private XmldbURI home = null;
 
-	private Group defaultRole= null;
+	private Group defaultRole = null;
 	private Set<Group> roles = null;
 	
 	private String password = null;
@@ -393,8 +394,13 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#getPrimaryGroup()
 	 */
 	public final String getPrimaryGroup() {
-		if (defaultRole == null)
-			return null;
+		if (defaultRole == null) {
+			if (roles.size() == 0)
+				return null;
+			
+			return ((Group) roles.toArray()[0]).getName();
+		}
+			
 		return defaultRole.getName();
 	}
 
