@@ -41,7 +41,7 @@ public class UserAider implements User {
 	private int id = -1;
 	
 	private Group defaultRole = null;
-	private Set<Group> roles = new HashSet<Group>();
+	private Map<String, Group> roles = new HashMap<String, Group>();
 	
 	public UserAider(String name) {
 		this.name = name;
@@ -72,7 +72,7 @@ public class UserAider implements User {
 	public Group addGroup(String name) {
 		Group role = new GroupAider(name);
 		
-		roles.add(role);
+		roles.put(name, role);
 		
 		return role;
 	}
@@ -89,9 +89,8 @@ public class UserAider implements User {
 	 * @see org.exist.security.User#remGroup(java.lang.String)
 	 */
 	@Override
-	public void remGroup(String group) {
-		// TODO Auto-generated method stub
-
+	public void remGroup(String role) {
+		roles.remove(role);
 	}
 
 	/* (non-Javadoc)
@@ -99,7 +98,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public void setGroups(String[] names) {
-		roles = new HashSet<Group>();
+		roles = new HashMap<String, Group>();
 		
 		for (int i = 0; i < names.length; i++) {
 			addGroup(names[i]);
@@ -111,12 +110,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public String[] getGroups() {
-		int i = 0;
-		String[] names = new String[roles.size()];
-		for (Group role : roles) {
-			names[i++] = role.getName();
-		}
-		return names;
+		return roles.keySet().toArray(new String[0]);
 	}
 
 	/* (non-Javadoc)
@@ -151,8 +145,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public boolean hasGroup(String group) {
-		// TODO Auto-generated method stub
-		return false;
+		return roles.containsKey(group);
 	}
 
 	private XmldbURI homeCollection = null;

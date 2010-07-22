@@ -58,6 +58,7 @@ public class UsersAndPermissionsTest extends TestCase {
         } catch (RemoteException rex) {
             
         }
+        admin.getUser(sessionId,testUser);
         String[] testGroups = {testGroup};
         System.out.println("==> Creating user " + testUser);
         admin.setUser(sessionId,testUser,testPassword,new Strings(testGroups),testHome);
