@@ -417,9 +417,15 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
         string-join(
             for $button in $config/jquery:button
             return
-                string-join(('"', $button/@label, '": function() {', $button/node(), '}'), ""),
-            ", "
-        )
+                if ($button/@id eq 'cancel') then
+                    string-join(('"', $button/@label, '": function() { $("#', $id/string(), '").dialog("close"); }'), "")
+                else if ($button/@id eq 'submit') then
+                    string-join(('"', $button/@label, '": function() { $("#', $id/string(), ' form").submit(); }'), "")
+                else if ($button/@function) then
+                    string-join(('"', $button/@label, '": ', $button/@function), "")
+                else
+                    string-join(('"', $button/@label, '": function() {', $button/node(), '}'), "")
+            , ", ")
     return
         <div>
             { $id, for $child in $config/node()[not(self::jquery:*)] return jquery:process-templates($child) }
