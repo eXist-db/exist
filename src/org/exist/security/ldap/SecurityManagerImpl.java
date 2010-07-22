@@ -36,7 +36,6 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
 import org.exist.security.Realm;
-import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
@@ -364,6 +363,10 @@ public class SecurityManagerImpl implements SecurityManager
 
    public void addGroup(Group group) {
       
+   }
+
+   public void deleteRole(String name) throws PermissionDeniedException
+   {
    }
 
    public void deleteUser(String name) throws PermissionDeniedException

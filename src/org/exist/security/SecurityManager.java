@@ -56,6 +56,8 @@ public interface SecurityManager {
    
    ExistPDP getPDP();
 
+   void deleteRole(String name) throws PermissionDeniedException;
+
    void deleteUser(String name) throws PermissionDeniedException;
    void deleteUser(User user) throws PermissionDeniedException;
 

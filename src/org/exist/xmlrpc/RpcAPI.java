@@ -719,6 +719,8 @@ public interface RpcAPI {
 	boolean setUser(String name, String passwd, String digestPassword,Vector<String> groups)
 		throws EXistException, PermissionDeniedException;
 
+	boolean addRole(String name) throws EXistException, PermissionDeniedException;
+
 	boolean setPermissions(String resource, String permissions)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
@@ -726,7 +728,6 @@ public interface RpcAPI {
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	boolean setPermissions(
-
 		String resource,
 		String owner,
 		String ownerGroup,
@@ -734,7 +735,6 @@ public interface RpcAPI {
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	boolean setPermissions(
-
 		String resource,
 		String owner,
 		String ownerGroup,

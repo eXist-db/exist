@@ -93,8 +93,8 @@ public class SecurityManagerImpl implements SecurityManager {
 	private BrokerPool pool;
 //	private Int2ObjectHashMap<Group> groups = new Int2ObjectHashMap<Group>(65);
 //	private Int2ObjectHashMap<User> users = new Int2ObjectHashMap<User>(65);
-	private int nextUserId = 0;
-	private int nextGroupId = 0;
+	protected int nextUserId = 0;
+	protected int nextGroupId = 0;
 
 	private int defCollectionPermissions = Permission.DEFAULT_PERM;
     private int defResourcePermissions = Permission.DEFAULT_PERM;
@@ -170,10 +170,49 @@ public class SecurityManagerImpl implements SecurityManager {
 			LOG.debug("loading acl failed: " + e.getMessage());
 		}
 
+		Document config = collection.getDocument(broker, ACL_FILE_URI);
+		if (config != null) {
+			Element element = config.getDocumentElement();
+
+			Attr version = element.getAttributeNode("version");
+			int major = 0;
+			int minor = 0;
+			if (version!=null) {
+				String [] numbers = version.getValue().split("\\.");
+				major = Integer.parseInt(numbers[0]);
+				minor = Integer.parseInt(numbers[1]);
+			}
+			//check version
+			
+			//load last account & role id
+			NodeList nl = element.getChildNodes();
+			Element next;
+			String lastId;
+			for (int i = 0; i < nl.getLength(); i++) {
+				if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
+					continue;
+				next = (Element) nl.item(i);
+				if (next.getTagName().equals("users")) {
+					lastId = next.getAttribute("last-id");
+					try {
+						nextUserId = Integer.parseInt(lastId);
+					} catch (NumberFormatException e) {
+					}
+				} else if (next.getTagName().equals("groups")) {
+					lastId = next.getAttribute("last-id");
+					try {
+						nextGroupId = Integer.parseInt(lastId);
+					} catch (NumberFormatException e) {
+					}
+				}
+			}
+		}
+
         for (Realm realm : realms) {
     		realm.startUp(broker);
     	}
-       
+
+        
 //       TransactionManager transact = pool.getTransactionManager();
 //       Txn txn = null;
 //       DBBroker broker = sysBroker;
@@ -266,22 +305,22 @@ public class SecurityManagerImpl implements SecurityManager {
 //          e.printStackTrace();
 //          LOG.debug("loading acl failed: " + e.getMessage());
 //       }
-//       // read default collection and resource permissions
-//       Integer defOpt = (Integer)
-//       broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
-//       if (defOpt != null)
-//          defCollectionPermissions = defOpt.intValue();
-//       defOpt = (Integer)
-//       broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
-//       if (defOpt != null)
-//          defResourcePermissions = defOpt.intValue();
-//       
-//       Boolean enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
-//       if(enableXACML != null && enableXACML.booleanValue()) {
-//          pdp = new ExistPDP(pool);
-//          LOG.debug("XACML enabled");
-//       }
+		// read default collection and resource permissions
+		Integer defOpt = (Integer) broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
+		if (defOpt != null)
+			defCollectionPermissions = defOpt.intValue();
+		
+		defOpt = (Integer)broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
+		if (defOpt != null)
+			defResourcePermissions = defOpt.intValue();
+		   
+		Boolean enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
+		if(enableXACML != null && enableXACML.booleanValue()) {
+			pdp = new ExistPDP(pool);
+			LOG.debug("XACML enabled");
+		}
     }
+    
 	public boolean isXACMLEnabled() {
 		return pdp != null;
 	}
@@ -289,13 +328,20 @@ public class SecurityManagerImpl implements SecurityManager {
 		return pdp;
 	}
 	
+	public synchronized void deleteRole(String name) throws PermissionDeniedException {
+		defaultRealm.deleteRole(name);
+	}
+
 	public synchronized void deleteUser(String name) throws PermissionDeniedException {
 		deleteUser(getUser(name));
 	}
 	
 	public synchronized void deleteUser(User user) throws PermissionDeniedException {
-//		if(user == null)
-//			return;
+		if(user == null)
+			return;
+		
+		defaultRealm.deleteAccount(user);
+
 //		user = (User)users.remove(user.getUID());
 //		if(user != null)
 //			LOG.debug("user " + user.getName() + " removed");
@@ -361,7 +407,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
     public synchronized void addGroup(Group name) {
-    	//TODO: code
+    	defaultRealm.addGroup(name.getName());
     }
 
     public synchronized boolean hasGroup(String name) {
@@ -397,7 +443,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	public synchronized boolean hasUser(String name) {
     	for (Realm realm : realms) {
-    		if (realm.hasRole(name)) return true;
+    		if (realm.hasAccount(name)) return true;
     	}
     	return false;
 	}

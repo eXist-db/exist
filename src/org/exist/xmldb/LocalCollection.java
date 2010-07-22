@@ -755,6 +755,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.commit(txn);
             collection.deleteObservers();
         } catch (Exception e) {
+        	e.printStackTrace();
             transact.abort(txn);
             LOG.error(e);            
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

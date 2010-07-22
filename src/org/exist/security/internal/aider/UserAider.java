@@ -21,6 +21,9 @@
  */
 package org.exist.security.internal.aider;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.exist.security.Group;
@@ -38,6 +41,7 @@ public class UserAider implements User {
 	private int id = -1;
 	
 	private Group defaultRole = null;
+	private Set<Group> roles = new HashSet<Group>();
 	
 	public UserAider(String name) {
 		this.name = name;
@@ -50,7 +54,7 @@ public class UserAider implements User {
 
 	public UserAider(String name, Group group) {
 		this(name);
-		defaultRole = group;
+		defaultRole = addGroup(group);
 	}
 
 	/* (non-Javadoc)
@@ -66,17 +70,19 @@ public class UserAider implements User {
 	 */
 	@Override
 	public Group addGroup(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		Group role = new GroupAider(name);
+		
+		roles.add(role);
+		
+		return role;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
 	 */
 	@Override
-	public Group addGroup(Group group) {
-		// TODO Auto-generated method stub
-		return null;
+	public Group addGroup(Group role) {
+		return addGroup(role.getName());
 	}
 
 	/* (non-Javadoc)
@@ -92,9 +98,12 @@ public class UserAider implements User {
 	 * @see org.exist.security.User#setGroups(java.lang.String[])
 	 */
 	@Override
-	public void setGroups(String[] groups) {
-		// TODO Auto-generated method stub
-
+	public void setGroups(String[] names) {
+		roles = new HashSet<Group>();
+		
+		for (int i = 0; i < names.length; i++) {
+			addGroup(names[i]);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -102,8 +111,12 @@ public class UserAider implements User {
 	 */
 	@Override
 	public String[] getGroups() {
-		// TODO Auto-generated method stub
-		return null;
+		int i = 0;
+		String[] names = new String[roles.size()];
+		for (Group role : roles) {
+			names[i++] = role.getName();
+		}
+		return names;
 	}
 
 	/* (non-Javadoc)
@@ -111,7 +124,6 @@ public class UserAider implements User {
 	 */
 	@Override
 	public boolean hasDbaRole() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -120,8 +132,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public int getUID() {
-		// TODO Auto-generated method stub
-		return 0;
+		return id;
 	}
 
 	/* (non-Javadoc)
@@ -129,8 +140,10 @@ public class UserAider implements User {
 	 */
 	@Override
 	public String getPrimaryGroup() {
-		// TODO Auto-generated method stub
-		return null;
+		if (defaultRole == null)
+			return null;
+
+		return defaultRole.getName();
 	}
 
 	/* (non-Javadoc)
@@ -142,22 +155,14 @@ public class UserAider implements User {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setPassword(java.lang.String)
-	 */
-	@Override
-	public void setPassword(String passwd) {
-		// TODO Auto-generated method stub
-
-	}
+	private XmldbURI homeCollection = null;
 
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
 	 */
 	@Override
 	public void setHome(XmldbURI homeCollection) {
-		// TODO Auto-generated method stub
-
+		this.homeCollection = homeCollection;
 	}
 
 	/* (non-Javadoc)
@@ -165,8 +170,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public XmldbURI getHome() {
-		// TODO Auto-generated method stub
-		return null;
+		return homeCollection;
 	}
 
 	/* (non-Javadoc)
@@ -174,7 +178,6 @@ public class UserAider implements User {
 	 */
 	@Override
 	public boolean authenticate(Object credentials) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -183,7 +186,6 @@ public class UserAider implements User {
 	 */
 	@Override
 	public boolean isAuthenticated() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -192,7 +194,6 @@ public class UserAider implements User {
 	 */
 	@Override
 	public Realm getRealm() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -204,13 +205,15 @@ public class UserAider implements User {
 		// TODO Auto-generated method stub
 
 	}
+	
+	private Map<String, Object> attributes = new HashMap<String, Object>();
 
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#setAttribute(java.lang.String, java.lang.Object)
 	 */
 	@Override
 	public void setAttribute(String name, Object value) {
-		// TODO Auto-generated method stub
+		attributes.put(name, value);
 
 	}
 
@@ -219,8 +222,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public Object getAttribute(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return attributes.get(name);
 	}
 
 	/* (non-Javadoc)
@@ -228,8 +230,7 @@ public class UserAider implements User {
 	 */
 	@Override
 	public Set<String> getAttributeNames() {
-		// TODO Auto-generated method stub
-		return null;
+		return attributes.keySet();
 	}
 
 	@Override
@@ -241,6 +242,15 @@ public class UserAider implements User {
 	
 	public void setEncodedPassword(String passwd) {
 		password = passwd;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.security.User#setPassword(java.lang.String)
+	 */
+	@Override
+	public void setPassword(String passwd) {
+		password = passwd;
+
 	}
 
 	/* (non-Javadoc)

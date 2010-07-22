@@ -96,13 +96,8 @@ public class RealmImpl implements Realm {
 
 		//Build-in accounts
 		GROUP_UNKNOW = new GroupImpl("", 0);
-    	groupsById.put(GROUP_UNKNOW.getId(), GROUP_UNKNOW);
-    	groupsByName.put(GROUP_UNKNOW.getName(), GROUP_UNKNOW);
-
     	ACCOUNT_UNKNOW = new UserImpl(this, 0, "", null);
     	ACCOUNT_UNKNOW.addGroup(GROUP_UNKNOW);
-    	usersById.put(ACCOUNT_UNKNOW.getUID(), ACCOUNT_UNKNOW);
-    	usersByName.put(ACCOUNT_UNKNOW.getName(), ACCOUNT_UNKNOW);
 
     	//DBA group & account
     	GROUP_DBA = new GroupImpl(SecurityManager.DBA_GROUP, 1);
@@ -123,6 +118,9 @@ public class RealmImpl implements Realm {
     	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
     	usersById.put(ACCOUNT_GUEST.getUID(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
+    	
+    	sm.nextUserId = 3;
+    	sm.nextGroupId = 3;
 	}
 
 //	@Override
@@ -274,7 +272,7 @@ public class RealmImpl implements Realm {
 		if (usersById.containsKey(id))
 			throw new IllegalArgumentException("User's id "+id+" allready used.");
 
-		User new_account = new UserImpl(this, (UserImpl)account, (Object)null);
+		User new_account = new UserImpl(this, id, account);
 		usersById.put(id, new_account);
 		usersByName.put(new_account.getName(), new_account);
 		
@@ -315,6 +313,20 @@ public class RealmImpl implements Realm {
 //		else
 //			LOG.debug("user not found");
 		
+		_save();
+	}
+
+	public synchronized void deleteRole(String name) throws PermissionDeniedException {
+		if(name == null)
+			return;
+		
+		Group role = groupsByName.get(name);
+		if (role == null)
+			return;
+		
+		groupsById.remove(role.getId());
+		groupsByName.remove(role.getName());
+
 		_save();
 	}
 
@@ -361,14 +373,14 @@ public class RealmImpl implements Realm {
 		
 		// save groups
         buf.append("<!-- Please do not remove the guest and admin groups -->");
-		buf.append("<groups>");
+		buf.append("<groups last-id='"+sm.nextGroupId+"'>");
 		for (Group group : groupsByName.values())
 			buf.append(group.toString());
 		buf.append("</groups>");
 
 		//save users
         buf.append("<!-- Please do not remove the admin user. -->");
-		buf.append("<users>");
+		buf.append("<users last-id='"+sm.nextUserId+"'>");
 		for (User account : usersByName.values())
 			buf.append(account.toString());
 		buf.append("</users>");
@@ -378,9 +390,9 @@ public class RealmImpl implements Realm {
 		//broker.flush();
 		//broker.sync(Sync.MAJOR_SYNC);
 		
-		//User currentUser = broker.getUser();
+		User currentUser = broker.getUser();
 		try {
-			//broker.setUser(getUser(DBA_USER));
+			broker.setUser(ACCOUNT_SYSTEM);
 			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             String data = buf.toString();
             IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
@@ -401,7 +413,7 @@ public class RealmImpl implements Realm {
 		} catch (LockException e) {
 			throw new EXistException(e.getMessage());
 		} finally {
-			//broker.setUser(currentUser);
+			broker.setUser(currentUser);
 		}
 		
 		broker.flush();
@@ -430,8 +442,7 @@ public class RealmImpl implements Realm {
 
 	@Override
 	public boolean hasAccount(String accountName) {
-		// TODO Auto-generated method stub
-		return false;
+		return usersByName.containsKey(accountName);
 	}
 
 	@Override

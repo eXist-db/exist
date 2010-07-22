@@ -36,6 +36,7 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
@@ -3537,6 +3538,22 @@ public class RpcConnection implements RpcAPI {
         return true;
     }
     
+    public boolean addRole(String name) throws EXistException, PermissionDeniedException {
+        
+    	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+
+    	if (!manager.hasGroup(name)) {
+            if (!manager.hasAdminPrivileges(user))
+                throw new PermissionDeniedException(
+                        "not allowed to create group");
+            Group role = new GroupAider(name);
+            manager.addGroup(role);
+            return true;
+        }
+        
+    	return false;
+    }
+
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
      */
