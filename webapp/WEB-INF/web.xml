@@ -142,6 +142,11 @@
 			<param-name>config</param-name>
 			<param-value>xmldb:exist:///db/controller-config.xml</param-value>
 		</init-param-->
+
+		<!--init-param>
+			<param-name>compiled-cache</param-name>
+			<param-value>false</param-value>
+		</init-param-->
     </filter>
     
     <servlet>
