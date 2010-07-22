@@ -298,7 +298,7 @@ public class SecurityManagerImpl implements SecurityManager
 
       int uid = Integer.parseInt(getAttributeValue(uidNumberAttr, attrs));
       LOG.info("Constructing user "+username+"/"+uid+" in group "+(mainGroup==null ? "<none>" : mainGroup));
-      UserImpl user = new UserImpl(username, null, mainGroup);
+      UserImpl user = new UserImpl((Realm)null, username, null, mainGroup);
       user.setUID(uid);
       if (password!=null) {
          if (password.charAt(0)=='{') {
@@ -552,17 +552,17 @@ public class SecurityManagerImpl implements SecurityManager
 
 	@Override
 	public User getSystemAccount() {
-		return SecurityManager.SYSTEM_USER;
+		return null;
 	}
 	
 	@Override
 	public User getGuestAccount() {
-		return SecurityManager.GUEST;
+		return null;
 	}
 
 	@Override
 	public Group getDBAGroup() {
-		return getGroup(SecurityManager.DBA_GROUP);
+		return null;
 	}
 
 	@Override

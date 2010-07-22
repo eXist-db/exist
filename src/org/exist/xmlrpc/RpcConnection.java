@@ -36,6 +36,7 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -3499,22 +3500,22 @@ public class RpcConnection implements RpcAPI {
             passwd = null;
         SecurityManager manager = factory.getBrokerPool()
                 .getSecurityManager();
-        UserImpl u;
+        User u;
         if (!manager.hasUser(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new PermissionDeniedException(
                         "not allowed to create user");
-            u = new UserImpl(name);
-            u.setEncodedPassword(passwd);
-            u.setPasswordDigest(passwdDigest);
+            u = new UserAider(name);
+            ((UserAider)u).setEncodedPassword(passwd);
+            ((UserAider)u).setPasswordDigest(passwdDigest);
         } else {
-            u = (UserImpl) manager.getUser(name);
+            u = manager.getUser(name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new PermissionDeniedException(
                         "you are not allowed to change this user");
-            u.setEncodedPassword(passwd);
-            u.setPasswordDigest(passwdDigest);
+            ((UserImpl)u).setEncodedPassword(passwd);
+            ((UserImpl)u).setPasswordDigest(passwdDigest);
         }
 
         for (String g : groups) {
@@ -3542,16 +3543,16 @@ public class RpcConnection implements RpcAPI {
     public boolean setUser(String name, Vector<String> groups) throws EXistException,
     PermissionDeniedException {
 
-    	SecurityManager manager = factory.getBrokerPool()
-        	.getSecurityManager();
-    	UserImpl u;
+    	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+    	
+    	User u;
     	if (!manager.hasUser(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
                 	"not allowed to create user");
-    		u = new UserImpl(name);
+    		u = new UserAider(name);
     	} else {
-    		u = (UserImpl) manager.getUser(name);
+    		u = manager.getUser(name);
     		if (!(u.getName().equals(user.getName()) || manager
     			.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(
@@ -3577,16 +3578,16 @@ public class RpcConnection implements RpcAPI {
     public boolean setUser(String name, Vector<String> groups, String rgroup) throws EXistException,
     PermissionDeniedException {
 
-    	SecurityManager manager = factory.getBrokerPool()
-        	.getSecurityManager();
-    	UserImpl u;
+    	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+    	
+    	User u;
     	if (!manager.hasUser(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
                 	"not allowed to create user");
-    		u = new UserImpl(name);
+    		u = new UserAider(name);
     	} else {
-    		u = (UserImpl) manager.getUser(name);
+    		u = manager.getUser(name);
     		if (!(u.getName().equals(user.getName()) || manager
     				.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(
@@ -3690,10 +3691,10 @@ public class RpcConnection implements RpcAPI {
         try {
             broker = factory.getBrokerPool().get(user);
             doc = broker.getXMLResource(docURI, Lock.READ_LOCK);
-            if(!doc.getPermissions().validate(user, Permission.READ))
-                throw new PermissionDeniedException("Insufficient privileges to read resource");
             if (doc == null)
                 throw new EXistException("Resource " + docURI + " not found");
+            if(!doc.getPermissions().validate(user, Permission.READ))
+                throw new PermissionDeniedException("Insufficient privileges to read resource");
             User u = doc.getUserLock();
             return u == null ? "" : u.getName();
 
@@ -3734,8 +3735,7 @@ public class RpcConnection implements RpcAPI {
             broker = factory.getBrokerPool().get(user);
             doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);
             if (doc == null)
-                throw new EXistException("Resource "
-                        + docURI + " not found");
+                throw new EXistException("Resource " + docURI + " not found");
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
             SecurityManager manager = factory.getBrokerPool().getSecurityManager();

@@ -85,6 +85,7 @@ import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.CollectionScanner;
@@ -769,7 +770,8 @@ public class InteractiveClient {
                         
                     }
                     String home = console.readLine("home collection [none]: ");
-                    UserImpl user = new UserImpl(args[1], p1);
+                    UserAider user = new UserAider(args[1]);
+                    user.setPassword(p1);
                     if (home != null && home.length() > 0) {
                         user.setHome(URIUtils.encodeXmldbUriFor(home));
                     }

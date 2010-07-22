@@ -143,7 +143,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new NullAccessContextException();
         this.accessCtx = accessCtx;
         if (user == null)
-            user = new UserImpl("guest", "guest", "guest");
+            user = brokerPool.getSecurityManager().getGuestAccount();
         this.user = user;
         this.parent = parent;
         this.brokerPool = brokerPool;

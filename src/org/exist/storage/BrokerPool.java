@@ -776,8 +776,7 @@ public class BrokerPool extends Observable {
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
 		//DBBroker broker = inactiveBrokers.peek();
 		// dmitriy: Security issue: better to use proper get()/release() way, because of subprocesses (SecurityManager as example)
-		DBBroker broker = get(SecurityManager.SYSTEM_USER);
-//		DBBroker broker = get(securityManager.getSystemAccount());
+		DBBroker broker = get(securityManager.getSystemAccount());
 		try {
        
         if (broker.isReadOnly()) {

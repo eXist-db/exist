@@ -329,7 +329,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (collection != null) {
 			DBBroker broker = null;
 			try {
-				broker = pool.get(SYSTEM_USER);
+				broker = pool.get(getSystemAccount());
 				MutableDocumentSet docs = new DefaultDocumentSet();
 				
 				DocumentImpl acl = collection.getDocument(broker, ACL_FILE_URI);

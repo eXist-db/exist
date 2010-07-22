@@ -1,5 +1,6 @@
-
 package org.exist.xmldb;
+
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.xmldb.api.base.Collection;
@@ -8,10 +9,10 @@ import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- *  An eXist-specific service which provides methods to manage users and
- *  permissions.
+ * An eXist-specific service which provides methods to manage users and
+ * permissions.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
 public interface UserManagementService extends Service {
@@ -195,26 +196,22 @@ public interface UserManagementService extends Service {
 	public String[] getGroups() throws XMLDBException;
 	
     /**
-     *  Get a property defined by this service.
+     * Get a property defined by this service.
      *
-     *@param  property            Description of the Parameter
-     *@return                     The property value
-     *@exception  XMLDBException  Description of the Exception
+     * @param  property            Description of the Parameter
+     * @return                     The property value
+     * @exception  XMLDBException  Description of the Exception
      */
-    public String getProperty( String property )
-         throws XMLDBException;
-
+    public String getProperty( String property ) throws XMLDBException;
 
     /**
      *  Set a property for this service.
      *
-     *@param  property            The new property value
-     *@param  value               The new property value
-     *@exception  XMLDBException  Description of the Exception
+     * @param  property            The new property value
+     * @param  value               The new property value
+     * @exception  XMLDBException  Description of the Exception
      */
-    public void setProperty( String property, String value )
-         throws XMLDBException;
-
+    public void setProperty( String property, String value ) throws XMLDBException;
 
     /**
      *  Set the current collection for this service
@@ -291,6 +288,9 @@ public interface UserManagementService extends Service {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
     public void removeGroup(User user, String rmgroup) throws XMLDBException;
+
+
+	public void addRole(Group role) throws XMLDBException;
 }
 
 

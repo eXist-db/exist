@@ -52,6 +52,19 @@ public class LocalUserManagementService implements UserManagementService {
 		manager.setUser(u);
 	}
 
+	public void addRole(Group role) throws XMLDBException {
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		if (!manager.hasAdminPrivileges(user))
+			throw new XMLDBException(
+				ErrorCodes.PERMISSION_DENIED,
+				" you are not allowed to add role");
+		if (manager.hasGroup(role.getName()))
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				"role " + role.getName() + " exists");
+		manager.addGroup(role);
+	}
+
 	public void setPermissions(Resource resource, Permission perm)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();

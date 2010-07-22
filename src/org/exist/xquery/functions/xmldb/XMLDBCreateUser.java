@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.UserImpl;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -84,18 +85,20 @@ public class XMLDBCreateUser extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 		
-        String user = args[0].getStringValue();
-        String pass = args[1].getStringValue();
-        UserImpl userObj = new UserImpl(user, pass);
-        
-        logger.info("Attempting to create user " + user);
-        
 		if (!context.getUser().hasDbaRole()) {
 			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
 		}
 
+        String user = args[0].getStringValue();
+        String pass = args[1].getStringValue();
+
+        logger.info("Attempting to create user " + user);
+        
+        UserAider userObj = new UserAider(user);
+        userObj.setPassword(pass);
+        
         // changed by wolf: the first group is always the primary group, so we don't need
         // an additional argument
         Sequence groups = args[2];

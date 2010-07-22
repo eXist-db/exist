@@ -151,13 +151,14 @@ public class UserImpl implements User {
 	 *@param password
 	 *            Description of the Parameter
 	 */
-	public UserImpl(String name, String password) {
+	public UserImpl(Realm realm, String name, String password) {
+		this.realm = realm;
 		this.name = name;
 		setPassword(password);
 	}
 
-	public UserImpl(int id, String name, String password) {
-		this(name, password);
+	public UserImpl(Realm realm, int id, String name, String password) {
+		this(realm, name, password);
 		this.uid = id;
 	}
 
@@ -167,7 +168,8 @@ public class UserImpl implements User {
 	 * @param user
 	 *            Description of the Parameter
 	 */
-	public UserImpl(String name) {
+	public UserImpl(Realm realm, String name) {
+		this.realm = realm;
 		this.name = name;
 	}
 
@@ -181,8 +183,8 @@ public class UserImpl implements User {
 	 *@param primaryGroup
 	 *            Description of the Parameter
 	 */
-	public UserImpl(String name, String password, String primaryGroup) {
-		this(name, password);
+	public UserImpl(Realm realm, String name, String password, String primaryGroup) {
+		this(realm, name, password);
 		defaultRole = addGroup(primaryGroup);
 	}
 
@@ -194,8 +196,11 @@ public class UserImpl implements User {
 	 *@exception DatabaseConfigurationException
 	 *                Description of the Exception
 	 */
-	public UserImpl(int majorVersion, int minorVersion, Element node)
+	public UserImpl(Realm realm, int majorVersion, int minorVersion, Element node)
 			throws DatabaseConfigurationException {
+		
+		this.realm = realm;
+		
 		name = node.getAttribute(NAME);
 		if (name == null || name.length() == 0)
 			throw new DatabaseConfigurationException("user needs a name");
