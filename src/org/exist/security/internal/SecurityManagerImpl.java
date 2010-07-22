@@ -23,7 +23,6 @@ package org.exist.security.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -31,14 +30,11 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
-import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
@@ -46,27 +42,21 @@ import org.exist.security.Realm;
 import org.exist.security.SecurityManager;
 import org.exist.security.UnixStylePermission;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Indexable;
-import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
-import org.exist.util.MimeType;
 import org.exist.util.ValueOccurrences;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -623,8 +613,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	@Override
-	public void addGroup(String group) {
-		// TODO Auto-generated method stub
-		
+	public void addGroup(String name) {
+		addGroup(new GroupAider(name));
 	}
 }

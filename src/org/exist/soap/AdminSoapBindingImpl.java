@@ -798,7 +798,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 if(!manager.hasAdminPrivileges(user))
                     throw new RemoteException(
                             "User is not allowed to add groups");
-                u.addGroup(groups.getElements()[i]);
+                
+                String roleName = groups.getElements()[i];
+                if (!manager.hasGroup(roleName))
+                	manager.addGroup(roleName);
+                
+                u.addGroup(roleName);
             }
         }
         if (home != null) {
