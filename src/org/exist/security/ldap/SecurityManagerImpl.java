@@ -541,9 +541,13 @@ public class SecurityManagerImpl implements SecurityManager
 			if (newUser.isAuthenticated())
 				return newUser;
 
-			throw new AuthenticationException("Wrong password for user [" + username + "] ");
+			throw new AuthenticationException(
+					AuthenticationException.WRONG_PASSWORD,
+					"Wrong password for user [" + username + "] ");
 		}
-		throw new AuthenticationException("User [" + username + "] not found");
+		throw new AuthenticationException(
+				AuthenticationException.ACCOUNT_NOT_FOUND,
+				"User [" + username + "] not found");
    }
 
 	@Override

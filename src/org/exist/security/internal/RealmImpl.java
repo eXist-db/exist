@@ -62,7 +62,11 @@ import org.xml.sax.SAXException;
  */
 public class RealmImpl implements Realm {
 	
-	public final static String ID = "eXist-db";
+	public static String ID = "exist"; //TODO: final "eXist-db";
+
+	static public void setPasswordRealm(String value) {
+		ID = value;
+	}
 
 	protected final static String ACL_FILE = "users.xml";
 	protected final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
@@ -249,18 +253,30 @@ public class RealmImpl implements Realm {
 		return groupsByName.values();
 	}
 
-	private User _addAccount(int id, String name, Group defaultRole) {
-		if (usersByName.containsKey(name))
-			throw new IllegalArgumentException("User "+name+" exist.");
+	private User _addAccount(int id, User account) {
+		if (usersByName.containsKey(account.getName()))
+			throw new IllegalArgumentException("User "+account.getName()+" exist.");
 		
 		if (usersById.containsKey(id))
 			throw new IllegalArgumentException("User's id "+id+" allready used.");
 
-		User account = new UserImpl(id, name, defaultRole.getName()); //XXX: this as first arg
-		usersById.put(id, account);
-		usersByName.put(name, account);
+		User new_account = new UserImpl(this, (UserImpl)account, (Object)null);
+		usersById.put(id, new_account);
+		usersByName.put(new_account.getName(), new_account);
 		
+		_save();
+
 		return account;
+	}
+
+	public synchronized User addAccount(String name) {
+		return _addAccount(sm.getNextAccoutId(), new UserImpl(name));
+	}
+
+	public synchronized User addAccount(User account) {
+		User added = _addAccount(sm.getNextAccoutId(), account);
+		
+		return added;
 	}
 
 	@Override
@@ -292,14 +308,18 @@ public class RealmImpl implements Realm {
 	public synchronized User authenticate(String accountName, Object credentials) throws AuthenticationException {
 		User user = getAccount(accountName);
 		if (user == null)
-			throw new AuthenticationException("Acount " + accountName + " not found");
+			throw new AuthenticationException(
+					AuthenticationException.ACCOUNT_NOT_FOUND,
+					"Acount " + accountName + " not found");
 			
 		User newUser = new UserImpl(this, (UserImpl)user, credentials);
 			
 		if (newUser.isAuthenticated())
 			return newUser;
 
-		throw new AuthenticationException("Wrong password for user [" + accountName + "] ");
+		throw new AuthenticationException(
+				AuthenticationException.WRONG_PASSWORD,
+				"Wrong password for user [" + accountName + "] ");
 	}
 	
 	private void _save() {

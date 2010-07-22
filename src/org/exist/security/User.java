@@ -37,14 +37,14 @@ public interface User extends Principal {
 	 *
 	 * @param  group  The feature to be added to the Group attribute
 	 */
-	public void addGroup(String name);
+	public Group addGroup(String name);
 
 	/**
 	 * Add the user to a group
 	 *
 	 * @param  group  The feature to be added to the Group attribute
 	 */
-	public void addGroup(Group group);
+	public Group addGroup(Group group);
 
 	/**
 	 *  Remove the user to a group
@@ -53,8 +53,6 @@ public interface User extends Principal {
 	 *@param  group  The feature to be removed to the Group attribute
 	 */
 	public void remGroup(String group);
-
-	public void setGroups(String[] groups);
 
 	/**
 	 *  Get all groups this user belongs to
@@ -73,6 +71,7 @@ public interface User extends Principal {
 	 *@return    The primaryGroup value
 	 */
 	public String getPrimaryGroup();
+	public Group getDefaultGroup();
 
 	/**
 	 *  Is the user a member of group?
@@ -113,6 +112,9 @@ public interface User extends Principal {
 	@Deprecated
 	public String getDigestPassword();
 
+	@Deprecated
+	public void setGroups(String[] groups);
+	
     /**
      * Add a named attribute.
      *

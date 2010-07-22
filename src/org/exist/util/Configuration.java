@@ -44,6 +44,7 @@ import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.UserImpl;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
@@ -879,7 +880,7 @@ public class Configuration implements ErrorHandler
 
             if( realm != null ) {
                 LOG.info( "db-connection.security.password-realm: " + config.get( "db-connection.security.password-realm" ) );
-                UserImpl.setPasswordRealm( realm );
+                RealmImpl.setPasswordRealm( realm );
 
             } else {
                 LOG.info( "No password realm set, defaulting." );
