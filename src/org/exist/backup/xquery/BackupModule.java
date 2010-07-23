@@ -24,45 +24,52 @@ package org.exist.backup.xquery;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+
 /**
  * Module function definitions for backup module.
  *
- * @author wolf
- * @author ljo
- *
+ * @author  wolf
+ * @author  ljo
  */
-public class BackupModule extends AbstractInternalModule {
+public class BackupModule extends AbstractInternalModule
+{
+    public static final String        NAMESPACE_URI       = "http://exist-db.org/xquery/backups";
 
+    public static final String        PREFIX              = "backups";
+    public final static String        INCLUSION_DATE      = "2009-02-02";
+    public final static String        RELEASED_IN_VERSION = "eXist-1.2.6";
 
-    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/backups";
-
-    public static final String PREFIX = "backups";
-    public final static String INCLUSION_DATE = "2009-02-02";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2.6";
-
-    public static final FunctionDef[] functions = {
-        new FunctionDef(ListBackups.signature, ListBackups.class),
-        new FunctionDef(RetrieveBackup.signature, RetrieveBackup.class)
+    public static final FunctionDef[] functions           = {
+        new FunctionDef( ListBackups.signature, ListBackups.class ),
+        new FunctionDef( RetrieveBackup.signature, RetrieveBackup.class )
     };
 
-    public BackupModule() {
-        super(functions, true);
+    public BackupModule()
+    {
+        super( functions, true );
     }
 
-    public String getNamespaceURI() {
-        return NAMESPACE_URI;
+    public String getNamespaceURI()
+    {
+        return( NAMESPACE_URI );
     }
 
-    public String getDefaultPrefix() {
-        return PREFIX;
+
+    public String getDefaultPrefix()
+    {
+        return( PREFIX );
     }
 
-    public String getDescription() {
-        return "A module for access to database backups available on the server file system";
+
+    public String getDescription()
+    {
+        return( "A module for access to database backups available on the server file system" );
     }
 
-    public String getReleaseVersion() {
-        return RELEASED_IN_VERSION;
+
+    public String getReleaseVersion()
+    {
+        return( RELEASED_IN_VERSION );
     }
 
 }

@@ -22,53 +22,69 @@
 
 package org.exist.backup;
 
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.XPathException;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.Date;
-import java.util.Properties;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
+
 import java.io.IOException;
 
-public abstract class AbstractBackupDescriptor implements BackupDescriptor {
+import java.util.Date;
+import java.util.Properties;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+
+public abstract class AbstractBackupDescriptor implements BackupDescriptor
+{
     protected Date date;
 
-    public Date getDate() {
-        if (date == null) {
+    public Date getDate()
+    {
+        if( date == null ) {
+
             try {
                 Properties properties = getProperties();
-                String dateStr = properties.getProperty("date");
-                if (dateStr != null) {
-                    DateTimeValue dtv = new DateTimeValue(dateStr);
+                String     dateStr    = properties.getProperty( "date" );
+
+                if( dateStr != null ) {
+                    DateTimeValue dtv = new DateTimeValue( dateStr );
                     date = dtv.getDate();
                 }
-            } catch (IOException e) {
-            } catch (XPathException e) {
             }
-            if (date == null)
+            catch( IOException e ) {
+            }
+            catch( XPathException e ) {
+            }
+
+            if( date == null ) {
+
                 // catch unexpected issues by setting the backup time as early as possible
-                date = new Date(0);
+                date = new Date( 0 );
+            }
         }
-        return date;
+        return( date );
     }
 
-    public boolean before(long timestamp) {
-        return timestamp > getDate().getTime();
+
+    public boolean before( long timestamp )
+    {
+        return( timestamp > getDate().getTime() );
     }
 
-    public void parse(ContentHandler handler) throws IOException, SAXException, ParserConfigurationException {
+
+    public void parse( ContentHandler handler ) throws IOException, SAXException, ParserConfigurationException
+    {
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-        saxFactory.setNamespaceAware(true);
-        saxFactory.setValidating(false);
-        SAXParser sax = saxFactory.newSAXParser();
+        saxFactory.setNamespaceAware( true );
+        saxFactory.setValidating( false );
+        SAXParser sax    = saxFactory.newSAXParser();
         XMLReader reader = sax.getXMLReader();
-        reader.setContentHandler(handler);
-        reader.parse(getInputSource());
+        reader.setContentHandler( handler );
+        reader.parse( getInputSource() );
     }
 }

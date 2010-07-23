@@ -24,13 +24,14 @@ package org.exist.backup;
 import java.io.IOException;
 import java.io.OutputStream;
 
+
 /**
- * Callback interface, mainly used by the {@link org.exist.storage.DataBackup}
- * system task to write the raw data files to an archive..
+ * Callback interface, mainly used by the {@link org.exist.storage.DataBackup} system task to write the raw data files to an archive..
  */
-public interface RawDataBackup {
+public interface RawDataBackup
+{
+    OutputStream newEntry( String name ) throws IOException;
 
-    public OutputStream newEntry(String name) throws IOException;
 
-    public void closeEntry() throws IOException;
+    void closeEntry() throws IOException;
 }
