@@ -22,43 +22,60 @@
 package org.exist.backup;
 
 import java.io.File;
-import java.util.Date;
+
 import java.text.ParseException;
 
-public class BackupFile {
+import java.util.Date;
 
+
+public class BackupFile
+{
     private File file;
     private Date date;
 
-    public BackupFile(File file, String dateTime) {
+    public BackupFile( File file, String dateTime )
+    {
         this.file = file;
+
         try {
-            date = BackupDirectory.DATE_FORMAT.parse(dateTime);
-        } catch (ParseException e) {
+            date = BackupDirectory.DATE_FORMAT.parse( dateTime );
+        }
+        catch( ParseException e ) {
         }
     }
 
-    public boolean after(BackupFile other) {
-       return date.after(other.date);
+    public boolean after( BackupFile other )
+    {
+        return( date.after( other.date ) );
     }
 
-    public boolean after(long time) {
-        return date.getTime() > time;
+
+    public boolean after( long time )
+    {
+        return( date.getTime() > time );
     }
 
-    public boolean before(BackupFile other) {
-        return date.before(other.date);
+
+    public boolean before( BackupFile other )
+    {
+        return( date.before( other.date ) );
     }
 
-    public boolean before(long time) {
-        return time > date.getTime();
+
+    public boolean before( long time )
+    {
+        return( time > date.getTime() );
     }
 
-    public File getFile() {
-        return file;
+
+    public File getFile()
+    {
+        return( file );
     }
 
-    public Date getDate() {
-        return date;
+
+    public Date getDate()
+    {
+        return( date );
     }
 }
