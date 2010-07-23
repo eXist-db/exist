@@ -374,7 +374,10 @@ public class Restore extends DefaultHandler
                     EXistInputSource is = contents.getInputSource( filename );
 
                     if( is == null ) {
-                        listener.warn( "Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource" );
+                    	String msg = "Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
+                    	
+                        listener.warn( msg );
+                        throw( new RuntimeException( msg ) );
                     }
 
                     try {
@@ -438,7 +441,7 @@ public class Restore extends DefaultHandler
                         }
 
                         UserManagementService service = (UserManagementService)current.getService( "UserManagementService", "1.0" );
-                        User                  u       = new UserAider( owner, new GroupAider( group ) );
+                        User  u    = new UserAider( owner, new GroupAider( group ) );
 
                         try {
                             service.chown( res, u, group );
