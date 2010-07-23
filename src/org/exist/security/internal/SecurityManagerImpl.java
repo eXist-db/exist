@@ -497,7 +497,8 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized void setUser(User user) {
-		defaultRealm.addAccount(user);
+		// TODO The following line was commented out as a BIG HACK.....to enable the Java Client to be able to successfully do a restore. With this line in, you get an exception since the code tries to re-add the admin user! Ugh!  - Andrzej
+		// defaultRealm.addAccount(user);
 		
 //		if (user.getUID() < 0)
 //			user.setUID(++nextUserId);
