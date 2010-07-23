@@ -147,11 +147,7 @@
         </div>
         <jquery:dialog id="optimize-dialog" modal="true" title="Create Indexes"
             trigger="#optimize-trigger" width="450">
-            <jquery:button label="Start"> var pass = $('#optimize-dialog input[name = password]');
-                $('#optimize-message').text('Running ...'); $.get('optimize.xql?pass=' + pass.val(),
-                function (data, status) { if (status != "success")
-                $('#optimize-message').text('Error during optimize!'); else
-                $('#optimize-dialog').dialog("close"); }); </jquery:button>
+            <jquery:button label="Start" function="createIndexes"/>  
             <p>Use this dialog to trigger an optimization run on your data set. This will create
                 custom indexes to speed up sorting and other functions.</p>
             <p>The process may take some time, depending on the size of the data set. To start,
@@ -168,12 +164,7 @@
         </jquery:dialog>
         <jquery:dialog id="login-dialog" modal="true" title="Login" trigger="#login-link"
             width="450">
-            <jquery:button label="Login"> var user = $('#login-dialog input[name = user]'); var
-                password = $('#login-dialog input[name = password]');
-                $('#login-message').text('Checking ...'); $.ajax({ url: "checkuser.xql", data:
-                "user=" + user.val() + "&amp;password=" + password.val(), type: 'POST', success:
-                function(data, message) { $('#login-form').submit(); }, error: function (response,
-                message) { $('#login-message').html('Login failed: ' + response.responseText); } }); </jquery:button>
+            <jquery:button label="Login" function="login"/>  
             <form id="login-form" action="#" method="POST">
                 <table>
                     <tr>
