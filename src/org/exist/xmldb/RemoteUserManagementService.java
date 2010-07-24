@@ -511,7 +511,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			params.add(gl);
 			if (user.getHome() != null)
 				params.add(user.getHome().toString());
-			parent.getClient().execute("setUser", params);
+			parent.getClient().execute("updateAccount", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}

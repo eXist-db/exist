@@ -377,6 +377,10 @@ public class SecurityManagerImpl implements SecurityManager
    {
    }
 
+   public boolean updateAccount(User account) throws PermissionDeniedException {
+	   return false;
+   }
+
    public int getCollectionDefaultPerms()
    {
       return Permission.DEFAULT_PERM;

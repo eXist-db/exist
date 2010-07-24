@@ -66,7 +66,7 @@ public interface SecurityManager {
    void deleteUser(String name) throws PermissionDeniedException;
    void deleteUser(User user) throws PermissionDeniedException;
 
-   void updateAccount(User account) throws PermissionDeniedException, EXistException;
+   boolean updateAccount(User account) throws PermissionDeniedException, EXistException;
 
    User getUser(String name);
 

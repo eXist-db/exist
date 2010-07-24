@@ -320,8 +320,8 @@ public class SecurityManagerImpl implements SecurityManager {
 		return pdp;
 	}
 	
-	public synchronized void updateAccount(User account) throws PermissionDeniedException, EXistException {
-		defaultRealm.updateAccount(account);
+	public synchronized boolean updateAccount(User account) throws PermissionDeniedException, EXistException {
+		return defaultRealm.updateAccount(account);
 	}
 
 	public synchronized void deleteRole(String name) throws PermissionDeniedException {
