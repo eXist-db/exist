@@ -50,7 +50,7 @@ public class BTreeCache extends LRUCache {
     protected void removeNext(BTreeCacheable item) {
         boolean removed = false;
         boolean mustRemoveInner = false;
-		SequencedLongHashMap.Entry next = map.getFirstEntry();
+		SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
 		do {
 			BTreeCacheable cached = (BTreeCacheable)next.getValue();
 			if(cached.allowUnload() && cached.getKey() != item.getKey() &&
