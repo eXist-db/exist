@@ -24,7 +24,6 @@ package org.exist.security;
 import java.util.Collection;
 
 import org.exist.EXistException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -35,10 +34,14 @@ public interface Realm {
 	
 	public String getId();
 	
+	//accounts manipulation methods
 	public User getAccount(String name);
 	public Collection<User> getAccounts();
 	public boolean hasAccount(String accountName);
 	
+	public boolean updateAccount(User account) throws PermissionDeniedException, EXistException;
+	
+	//roles manipulation methods
 	public Collection<Group> getRoles();
 
 	public Group getRole(String name);
@@ -46,6 +49,7 @@ public interface Realm {
 
 	User authenticate(String username, Object credentials) throws AuthenticationException;
 
+	//possible, internal methods
 	public User getAccount(int id);
 	public Group getRole(int id);
 

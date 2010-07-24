@@ -678,25 +678,13 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public void updateUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		if (!(u.getName().equals(user.getName())
-			|| manager.hasAdminPrivileges(user)))
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				" you are not allowed to change this user");
-		User old = manager.getUser(u.getName());
-		if (old == null)
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"user " + u.getName() + " does not exist");
-		String[] groups = u.getGroups();
-		for (int i = 0; i < groups.length; i++) {
-			if(!(old.hasGroup(groups[i]) || manager.hasAdminPrivileges(user)))
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"not allowed to change group memberships");
+		try {
+			manager.updateAccount(u);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
+		} catch (EXistException e) {
+			new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
 		}
-		u.setUID(old.getUID());
-		manager.setUser(u);
 	}
 	
 	public void addUserGroup(User user) throws XMLDBException {
