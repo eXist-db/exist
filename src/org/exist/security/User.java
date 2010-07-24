@@ -24,6 +24,7 @@ package org.exist.security;
 import java.security.Principal;
 import java.util.Set;
 
+import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
 public interface User extends Principal {
