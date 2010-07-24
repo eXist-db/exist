@@ -324,6 +324,8 @@ public class RealmImpl implements Realm {
 				
 			updatingAccount.setPassword(account.getPassword());
 	
+			_save();
+			
 			return true;
 		} finally {
 			sm.getDatabase().release(broker);
