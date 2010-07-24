@@ -19,11 +19,15 @@
  *  
  *  $Id$
  */
-package org.exist.security;
+package org.exist.security.realm;
 
 import java.util.Collection;
 
 import org.exist.EXistException;
+import org.exist.security.AuthenticationException;
+import org.exist.security.Group;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.storage.DBBroker;
 
 /**

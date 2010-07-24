@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.exist.security.Group;
-import org.exist.security.Realm;
 import org.exist.security.User;
+import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
 /**

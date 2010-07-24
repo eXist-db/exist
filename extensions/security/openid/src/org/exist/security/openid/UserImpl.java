@@ -28,8 +28,8 @@ import java.util.Set;
 
 import org.exist.security.Group;
 import org.exist.security.UserAttributes;
-import org.exist.security.Realm;
 import org.exist.security.User;
+import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 import org.openid4java.discovery.Identifier;
 

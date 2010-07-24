@@ -26,6 +26,7 @@ import org.exist.EXistException;
 import org.exist.security.internal.Password;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.ldap.LDAPbindSecurityManager;
+import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
