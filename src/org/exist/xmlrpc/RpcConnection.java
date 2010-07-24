@@ -3538,6 +3538,43 @@ public class RpcConnection implements RpcAPI {
         return true;
     }
     
+    public boolean updateAccount(String name, String passwd, String passwdDigest,
+            Vector<String> groups) throws EXistException, PermissionDeniedException {
+    	return updateAccount(name, passwd, passwdDigest, groups, null);
+    }
+
+    public boolean updateAccount(String name, String passwd, String passwdDigest,
+            Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
+        if (passwd.length() == 0)
+            passwd = null;
+        
+        UserAider account = new UserAider(name);
+        account.setEncodedPassword(passwd);
+        account.setPasswordDigest(passwdDigest);
+
+        for (String g : groups) {
+        	account.addGroup(g);
+        }
+        if (home != null) {
+        	try {
+        		account.setHome(XmldbURI.xmldbUriFor(home));
+        	} catch(URISyntaxException e) {
+        		throw new EXistException("Invalid home URI",e);
+        	}
+        }
+
+        SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+        
+        DBBroker broker = null;
+        try {
+        	broker = factory.getBrokerPool().get(user);
+
+        	return manager.updateAccount(account);
+        } finally {
+        	factory.getBrokerPool().release(broker);
+        }
+    }
+
     public boolean addRole(String name) throws EXistException, PermissionDeniedException {
         
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
