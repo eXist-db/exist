@@ -216,7 +216,7 @@ declare function browse:display-collection($colName as xs:string) as element()
         <tr>
             <td/>
             <td><a href="?panel=browse&amp;collection={browse:get-parent-collection(xdb:encode-uri($colName))}">Up</a></td>
-            <td/>
+            <td><a href="?panel=browse&amp;collection={xdb:encode-uri($colName)}">Refresh</a></td>
             <td/>
             <td/>
             <td/>
