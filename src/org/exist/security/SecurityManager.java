@@ -56,42 +56,41 @@ public interface SecurityManager {
    
    ExistPDP getPDP();
 
-   void deleteRole(String name) throws PermissionDeniedException;
-
-   void deleteUser(String name) throws PermissionDeniedException;
-   void deleteUser(User user) throws PermissionDeniedException;
-
-   User getUser(String name);
-
    User getUser(int uid);
-
-   void addGroup(Group group);
-
-   boolean hasGroup(String name);
-
-   boolean hasGroup(Group group);
-
-   Group getGroup(String name);
-
-   Group getGroup(int gid);
-
-   boolean hasAdminPrivileges(User user);
 
    boolean hasUser(String name);
 
    // TODO: this should be addUser
    void setUser(User user);
 
-   int getResourceDefaultPerms();
+   void deleteUser(String name) throws PermissionDeniedException;
+   void deleteUser(User user) throws PermissionDeniedException;
 
+   void updateAccount(User account) throws PermissionDeniedException, EXistException;
+
+   User getUser(String name);
+
+   void addGroup(Group group);
+   @Deprecated
+   void addGroup(String group);
+
+   boolean hasGroup(String name);
+   boolean hasGroup(Group group);
+
+   Group getGroup(String name);
+   Group getGroup(int gid);
+
+   void deleteRole(String name) throws PermissionDeniedException;
+
+   boolean hasAdminPrivileges(User user);
+
+   int getResourceDefaultPerms();
    int getCollectionDefaultPerms();
 	
    public User authenticate(String username, Object credentials) throws AuthenticationException;
 
    public User getSystemAccount();
-
    public User getGuestAccount();
-
    public Group getDBAGroup();
 
    @Deprecated
@@ -100,6 +99,4 @@ public interface SecurityManager {
    @Deprecated
    java.util.Collection<Group> getGroups();
 
-   @Deprecated
-   void addGroup(String group);
 }

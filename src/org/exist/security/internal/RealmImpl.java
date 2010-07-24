@@ -55,6 +55,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -289,6 +291,43 @@ public class RealmImpl implements Realm {
 		User added = _addAccount(sm.getNextAccoutId(), account);
 		
 		return added;
+	}
+
+	public synchronized boolean updateAccount(User account) throws PermissionDeniedException, EXistException {
+		DBBroker broker = null;
+		try {
+			broker = sm.getDatabase().get(null);
+			User user = broker.getUser();
+			
+			if ( ! (account.getName().equals(user.getName()) 
+					|| user.hasDbaRole()) )
+					throw new PermissionDeniedException(
+						" you are not allowed to change '"+account.getName()+"' user");
+	
+	
+			User updatingAccount = getAccount(account.getName());
+			if (updatingAccount == null)
+				throw new PermissionDeniedException( //XXX: different exception
+					"user " + account.getName() + " does not exist");
+				
+			String[] groups = account.getGroups();
+			for (int i = 0; i < groups.length; i++) {
+				if (!(updatingAccount.hasGroup(groups[i]))) {
+						if ( !user.hasDbaRole() )
+							throw new PermissionDeniedException(
+								"not allowed to change group memberships");
+						
+						updatingAccount.addGroup(groups[i]);
+					}
+			}
+			//XXX: delete account's group
+				
+			updatingAccount.setPassword(account.getPassword());
+	
+			return true;
+		} finally {
+			sm.getDatabase().release(broker);
+		}
 	}
 
 	@Override

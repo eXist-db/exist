@@ -57,6 +57,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -318,6 +320,10 @@ public class SecurityManagerImpl implements SecurityManager {
 		return pdp;
 	}
 	
+	public synchronized void updateAccount(User account) throws PermissionDeniedException, EXistException {
+		defaultRealm.updateAccount(account);
+	}
+
 	public synchronized void deleteRole(String name) throws PermissionDeniedException {
 		defaultRealm.deleteRole(name);
 	}
@@ -497,8 +503,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized void setUser(User user) {
-		// TODO The following line was commented out as a BIG HACK.....to enable the Java Client to be able to successfully do a restore. With this line in, you get an exception since the code tries to re-add the admin user! Ugh!  - Andrzej
-		// defaultRealm.addAccount(user);
+		 defaultRealm.addAccount(user);
 		
 //		if (user.getUID() < 0)
 //			user.setUID(++nextUserId);
