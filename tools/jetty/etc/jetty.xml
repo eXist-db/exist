@@ -20,6 +20,7 @@
       <!-- Default queued blocking threadpool 
       -->
       <New class="org.eclipse.jetty.util.thread.QueuedThreadPool">
+        <Set name="name">eXistThread</Set>
         <Set name="minThreads">10</Set>
         <Set name="maxThreads">200</Set>
       </New>
