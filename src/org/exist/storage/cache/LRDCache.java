@@ -57,7 +57,7 @@ public class LRDCache extends GClockCache {
 	 * @see org.exist.storage.cache.LFUCache#add(org.exist.storage.cache.Cacheable, int)
 	 */
 	public void add(Cacheable item, int initialRefCount) {
-		Cacheable old = (Cacheable) map.get(item.getKey());
+		Cacheable old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			totalReferences++;

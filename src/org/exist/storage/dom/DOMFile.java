@@ -184,8 +184,7 @@ public class DOMFile extends BTree implements Lockable {
 
     private Lock lock = null;
 
-    private final Object2LongIdentityHashMap pages = new Object2LongIdentityHashMap(
-										    64);
+    private final Object2LongIdentityHashMap<Object> pages = new Object2LongIdentityHashMap<Object>(64);
 
     private DocumentImpl currentDocument = null;
 

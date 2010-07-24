@@ -45,7 +45,7 @@ public class GClockCache implements Cache {
 	protected Cacheable[] items;
 	protected int count = 0;
 	protected int size;
-	protected Long2ObjectHashMap map;
+	protected Long2ObjectHashMap<Cacheable> map;
 	protected int used = 0;
 
     protected int hitsOld = 0;
@@ -62,7 +62,7 @@ public class GClockCache implements Cache {
 		this.size = size;
         this.growthFactor = growthFactor;
 		this.items = new Cacheable[size];
-		this.map = new Long2ObjectHashMap(size * 2);
+		this.map = new Long2ObjectHashMap<Cacheable>(size * 2);
         accounting = new Accounting(growthThreshold);
         accounting.setTotalSize(size);
         this.type = type;
@@ -77,7 +77,7 @@ public class GClockCache implements Cache {
 	}
 
 	public void add(Cacheable item, int initialRefCount) {
-		Cacheable old = (Cacheable) map.get(item.getKey());
+		Cacheable old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			return;
@@ -97,7 +97,7 @@ public class GClockCache implements Cache {
 	}
 
 	public Cacheable get(long key) {
-		Cacheable item = (Cacheable) map.get(key);
+		Cacheable item = map.get(key);
 		if (item == null) {
 			accounting.missesIncrement();
 		} else
@@ -107,7 +107,7 @@ public class GClockCache implements Cache {
 
 	public void remove(Cacheable item) {
 		long key = item.getKey();
-		Cacheable cacheable = (Cacheable) map.remove(key);
+		Cacheable cacheable = map.remove(key);
 		if (cacheable == null)
 			return;
 		for (int i = 0; i < count; i++) {
@@ -214,7 +214,7 @@ public class GClockCache implements Cache {
             shrink(newSize);
         } else {
             Cacheable[] newItems = new Cacheable[newSize];
-            Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize * 2);
+            Long2ObjectHashMap<Cacheable> newMap = new Long2ObjectHashMap<Cacheable>(newSize * 2);
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
@@ -230,7 +230,7 @@ public class GClockCache implements Cache {
     protected void shrink(int newSize) {
         flush();
         items = new Cacheable[newSize];
-        map = new Long2ObjectHashMap(newSize * 2);
+        map = new Long2ObjectHashMap<Cacheable>(newSize * 2);
         size = newSize;
         count = 0;
         used = 0;
