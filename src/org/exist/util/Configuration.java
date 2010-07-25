@@ -27,6 +27,7 @@ import org.quartz.SimpleTrigger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.xml.sax.ErrorHandler;
@@ -284,31 +285,31 @@ public class Configuration implements ErrorHandler
 
     private void configureCluster( Element cluster )
     {
-        String protocol = cluster.getAttribute( ClusterComunication.CLUSTER_PROTOCOL_ATTRIBUTE );
+        String protocol = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_PROTOCOL_ATTRIBUTE );
 
         if( protocol != null ) {
             config.put( ClusterComunication.PROPERTY_CLUSTER_PROTOCOL, protocol );
             LOG.debug( ClusterComunication.PROPERTY_CLUSTER_PROTOCOL + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_PROTOCOL ) );
         }
-        String user = cluster.getAttribute( ClusterComunication.CLUSTER_USER_ATTRIBUTE );
+        String user = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_USER_ATTRIBUTE );
 
         if( user != null ) {
             config.put( ClusterComunication.PROPERTY_CLUSTER_USER, user );
             LOG.debug( ClusterComunication.PROPERTY_CLUSTER_USER + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_USER ) );
         }
-        String pwd = cluster.getAttribute( ClusterComunication.CLUSTER_PWD_ATTRIBUTE );
+        String pwd = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_PWD_ATTRIBUTE );
 
         if( pwd != null ) {
             config.put( ClusterComunication.PROPERTY_CLUSTER_PWD, pwd );
             LOG.debug( ClusterComunication.PROPERTY_CLUSTER_PWD + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_PWD ) );
         }
-        String dir = cluster.getAttribute( JournalManager.JOURNAL_DIR_ATTRIBUTE );
+        String dir = getConfigAttributeValue( cluster, JournalManager.JOURNAL_DIR_ATTRIBUTE );
 
         if( dir != null ) {
             config.put( JournalManager.PROPERTY_JOURNAL_DIR, dir );
             LOG.debug( JournalManager.PROPERTY_JOURNAL_DIR + ": " + config.get( JournalManager.PROPERTY_JOURNAL_DIR ) );
         }
-        String            excludedColl = cluster.getAttribute( ClusterComunication.CLUSTER_EXCLUDED_COLLECTIONS_ATTRIBUTE );
+        String            excludedColl = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_EXCLUDED_COLLECTIONS_ATTRIBUTE );
         ArrayList<String> list         = new ArrayList<String>();
 
         if( excludedColl != null ) {
@@ -326,7 +327,7 @@ public class Configuration implements ErrorHandler
         LOG.debug( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS ) );
 
         /*Cluster parameters for test*/
-        String maxStore = cluster.getAttribute( JournalManager.CLUSTER_JOURNAL_MAXSTORE_ATTRIBUTE );
+        String maxStore = getConfigAttributeValue( cluster, JournalManager.CLUSTER_JOURNAL_MAXSTORE_ATTRIBUTE );
 
         if( ( maxStore == null ) || ( maxStore.trim().length() == 0 ) ) {
             maxStore = "65000";
@@ -334,7 +335,7 @@ public class Configuration implements ErrorHandler
         config.put( JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE, Integer.valueOf( maxStore ) );
         LOG.debug( JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE + ": " + config.get( JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE ) );
 
-        String shift = cluster.getAttribute( JournalManager.CLUSTER_JOURNAL_SHIFT_ATTRIBUTE );
+        String shift = getConfigAttributeValue( cluster, JournalManager.CLUSTER_JOURNAL_SHIFT_ATTRIBUTE );
 
         if( ( shift == null ) || ( shift.trim().length() == 0 ) ) {
             shift = "100";
@@ -347,36 +348,36 @@ public class Configuration implements ErrorHandler
     private void configureXQuery( Element xquery ) throws DatabaseConfigurationException
     {
         //java binding
-        String javabinding = xquery.getAttribute( FunctionFactory.ENABLE_JAVA_BINDING_ATTRIBUTE );
+        String javabinding = getConfigAttributeValue( xquery, FunctionFactory.ENABLE_JAVA_BINDING_ATTRIBUTE );
 
         if( javabinding != null ) {
             config.put( FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING, javabinding );
             LOG.debug( FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING + ": " + config.get( FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING ) );
         }
 
-        String disableDeprecated = xquery.getAttribute( FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE );
+        String disableDeprecated = getConfigAttributeValue( xquery, FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE );
         config.put( FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Configuration.parseBoolean( disableDeprecated, FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT ) );
         LOG.debug( FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS + ": " + config.get( FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS ) );
 
-        String optimize = xquery.getAttribute( XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE );
+        String optimize = getConfigAttributeValue( xquery, XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE );
 
         if( ( optimize != null ) && ( optimize.length() > 0 ) ) {
             config.put( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING, optimize );
             LOG.debug( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING + ": " + config.get( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING ) );
         }
 
-        String backwardCompatible = xquery.getAttribute( XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE );
+        String backwardCompatible = getConfigAttributeValue( xquery, XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE );
 
         if( ( backwardCompatible != null ) && ( backwardCompatible.length() > 0 ) ) {
             config.put( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible );
             LOG.debug( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE ) );
         }
 
-        String raiseErrorOnFailedRetrieval = xquery.getAttribute( XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE );
+        String raiseErrorOnFailedRetrieval = getConfigAttributeValue( xquery, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE );
         config.put( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration.parseBoolean( raiseErrorOnFailedRetrieval, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT ) );
         LOG.debug( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": " + config.get( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL ) );
 
-        String trace = xquery.getAttribute( PerformanceStats.CONFIG_ATTR_TRACE );
+        String trace = getConfigAttributeValue( xquery, PerformanceStats.CONFIG_ATTR_TRACE );
         config.put( PerformanceStats.CONFIG_PROPERTY_TRACE, trace );
 
         // built-in-modules
@@ -390,11 +391,11 @@ public class Configuration implements ErrorHandler
 
     public void configureXACML( Element xacml )
     {
-        String enable = xacml.getAttribute( XACMLConstants.ENABLE_XACML_ATTRIBUTE );
+        String enable = getConfigAttributeValue( xacml, XACMLConstants.ENABLE_XACML_ATTRIBUTE );
         config.put( XACMLConstants.ENABLE_XACML_PROPERTY, Configuration.parseBoolean( enable, XACMLConstants.ENABLE_XACML_BY_DEFAULT ) );
         LOG.debug( XACMLConstants.ENABLE_XACML_PROPERTY + ": " + config.get( XACMLConstants.ENABLE_XACML_PROPERTY ) );
 
-        String loadDefaults = xacml.getAttribute( XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE );
+        String loadDefaults = getConfigAttributeValue( xacml, XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE );
         config.put( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, Configuration.parseBoolean( loadDefaults, true ) );
         LOG.debug( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get( XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY ) );
     }
@@ -409,14 +410,14 @@ public class Configuration implements ErrorHandler
      */
     private void configureXUpdate( Element xupdate ) throws NumberFormatException
     {
-        String fragmentation = xupdate.getAttribute( DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE );
+        String fragmentation = getConfigAttributeValue( xupdate, DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE );
 
         if( fragmentation != null ) {
             config.put( DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, new Integer( fragmentation ) );
             LOG.debug( DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": " + config.get( DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR ) );
         }
 
-        String consistencyCheck = xupdate.getAttribute( DBBroker.XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE );
+        String consistencyCheck = getConfigAttributeValue( xupdate, DBBroker.XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE );
 
         if( consistencyCheck != null ) {
             config.put( DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, parseBoolean( consistencyCheck, false ) );
@@ -427,7 +428,7 @@ public class Configuration implements ErrorHandler
 
     private void configureTransformer( Element transformer )
     {
-        String className = transformer.getAttribute( TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE );
+        String className = getConfigAttributeValue( transformer, TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE );
 
         if( className != null ) {
             config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className );
@@ -473,7 +474,7 @@ public class Configuration implements ErrorHandler
             config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTES, attributes );
         }
 
-        String cachingValue = transformer.getAttribute( TransformerFactoryAllocator.TRANSFORMER_CACHING_ATTRIBUTE );
+        String cachingValue = getConfigAttributeValue( transformer, TransformerFactoryAllocator.TRANSFORMER_CACHING_ATTRIBUTE );
 
         if( cachingValue != null ) {
             config.put( TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE, parseBoolean( cachingValue, false ) );
@@ -489,49 +490,49 @@ public class Configuration implements ErrorHandler
      */
     private void configureSerializer( Element serializer )
     {
-        String xinclude = serializer.getAttribute( Serializer.ENABLE_XINCLUDE_ATTRIBUTE );
+        String xinclude = getConfigAttributeValue( serializer, Serializer.ENABLE_XINCLUDE_ATTRIBUTE );
 
         if( xinclude != null ) {
             config.put( Serializer.PROPERTY_ENABLE_XINCLUDE, xinclude );
             LOG.debug( Serializer.PROPERTY_ENABLE_XINCLUDE + ": " + config.get( Serializer.PROPERTY_ENABLE_XINCLUDE ) );
         }
 
-        String xsl = serializer.getAttribute( Serializer.ENABLE_XSL_ATTRIBUTE );
+        String xsl = getConfigAttributeValue( serializer, Serializer.ENABLE_XSL_ATTRIBUTE );
 
         if( xsl != null ) {
             config.put( Serializer.PROPERTY_ENABLE_XSL, xsl );
             LOG.debug( Serializer.PROPERTY_ENABLE_XSL + ": " + config.get( Serializer.PROPERTY_ENABLE_XSL ) );
         }
 
-        String indent = serializer.getAttribute( Serializer.INDENT_ATTRIBUTE );
+        String indent = getConfigAttributeValue( serializer, Serializer.INDENT_ATTRIBUTE );
 
         if( indent != null ) {
             config.put( Serializer.PROPERTY_INDENT, indent );
             LOG.debug( Serializer.PROPERTY_INDENT + ": " + config.get( Serializer.PROPERTY_INDENT ) );
         }
 
-        String compress = serializer.getAttribute( Serializer.COMPRESS_OUTPUT_ATTRIBUTE );
+        String compress = getConfigAttributeValue( serializer, Serializer.COMPRESS_OUTPUT_ATTRIBUTE );
 
         if( compress != null ) {
             config.put( Serializer.PROPERTY_COMPRESS_OUTPUT, compress );
             LOG.debug( Serializer.PROPERTY_COMPRESS_OUTPUT + ": " + config.get( Serializer.PROPERTY_COMPRESS_OUTPUT ) );
         }
 
-        String internalId = serializer.getAttribute( Serializer.ADD_EXIST_ID_ATTRIBUTE );
+        String internalId = getConfigAttributeValue( serializer, Serializer.ADD_EXIST_ID_ATTRIBUTE );
 
         if( internalId != null ) {
             config.put( Serializer.PROPERTY_ADD_EXIST_ID, internalId );
             LOG.debug( Serializer.PROPERTY_ADD_EXIST_ID + ": " + config.get( Serializer.PROPERTY_ADD_EXIST_ID ) );
         }
 
-        String tagElementMatches = serializer.getAttribute( Serializer.TAG_MATCHING_ELEMENTS_ATTRIBUTE );
+        String tagElementMatches = getConfigAttributeValue( serializer, Serializer.TAG_MATCHING_ELEMENTS_ATTRIBUTE );
 
         if( tagElementMatches != null ) {
             config.put( Serializer.PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches );
             LOG.debug( Serializer.PROPERTY_TAG_MATCHING_ELEMENTS + ": " + config.get( Serializer.PROPERTY_TAG_MATCHING_ELEMENTS ) );
         }
 
-        String tagAttributeMatches = serializer.getAttribute( Serializer.TAG_MATCHING_ATTRIBUTES_ATTRIBUTE );
+        String tagAttributeMatches = getConfigAttributeValue( serializer, Serializer.TAG_MATCHING_ATTRIBUTES_ATTRIBUTE );
 
         if( tagAttributeMatches != null ) {
             config.put( Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches );
@@ -587,26 +588,26 @@ public class Configuration implements ErrorHandler
             Element job = (Element)nlJobs.item( i );
 
             //get the job type
-            jobType = job.getAttribute( Scheduler.JOB_TYPE_ATTRIBUTE );
+            jobType = getConfigAttributeValue( job, Scheduler.JOB_TYPE_ATTRIBUTE );
 
             if( jobType == null ) {
                 jobType = Scheduler.JOB_TYPE_USER; //default to user if unspecified
             }
 
-            jobName     = job.getAttribute( Scheduler.JOB_NAME_ATTRIBUTE );
+            jobName     = getConfigAttributeValue( job, Scheduler.JOB_NAME_ATTRIBUTE );
 
             //get the job resource
-            jobResource = job.getAttribute( Scheduler.JOB_CLASS_ATTRIBUTE );
+            jobResource = getConfigAttributeValue( job, Scheduler.JOB_CLASS_ATTRIBUTE );
 
             if( jobResource == null ) {
-                jobResource = job.getAttribute( Scheduler.JOB_XQUERY_ATTRIBUTE );
+                jobResource = getConfigAttributeValue( job, Scheduler.JOB_XQUERY_ATTRIBUTE );
             }
 
             //get the job schedule
-            jobSchedule = job.getAttribute( Scheduler.JOB_CRON_TRIGGER_ATTRIBUTE );
+            jobSchedule = getConfigAttributeValue( job, Scheduler.JOB_CRON_TRIGGER_ATTRIBUTE );
 
             if( jobSchedule == null ) {
-                jobSchedule = job.getAttribute( Scheduler.JOB_PERIOD_ATTRIBUTE );
+                jobSchedule = getConfigAttributeValue( job, Scheduler.JOB_PERIOD_ATTRIBUTE );
             }
 
             //create the job config
@@ -614,14 +615,14 @@ public class Configuration implements ErrorHandler
                 JobConfig jobConfig = new JobConfig( jobType, jobName, jobResource, jobSchedule );
 
                 //get and set the job delay
-                jobDelay = job.getAttribute( Scheduler.JOB_DELAY_ATTRIBUTE );
+                jobDelay = getConfigAttributeValue( job, Scheduler.JOB_DELAY_ATTRIBUTE );
 
                 if( ( jobDelay != null ) && ( jobDelay.length() > 0 ) ) {
                     jobConfig.setDelay( Long.parseLong( jobDelay ) );
                 }
 
                 //get and set the job repeat
-                jobRepeat = job.getAttribute( Scheduler.JOB_REPEAT_ATTRIBUTE );
+                jobRepeat = getConfigAttributeValue( job, Scheduler.JOB_REPEAT_ATTRIBUTE );
 
                 if( ( jobRepeat != null ) && ( jobRepeat.length() > 0 ) ) {
                     jobConfig.setRepeat( Integer.parseInt( jobRepeat ) );
@@ -672,7 +673,7 @@ public class Configuration implements ErrorHandler
      */
     private void configureBackend( String dbHome, Element con ) throws DatabaseConfigurationException
     {
-        String mysql = con.getAttribute( BrokerFactory.PROPERTY_DATABASE );
+        String mysql = getConfigAttributeValue( con, BrokerFactory.PROPERTY_DATABASE );
 
         if( mysql != null ) {
             config.put( BrokerFactory.PROPERTY_DATABASE, mysql );
@@ -680,7 +681,7 @@ public class Configuration implements ErrorHandler
         }
 
         // directory for database files
-        String dataFiles = con.getAttribute( BrokerPool.DATA_DIR_ATTRIBUTE );
+        String dataFiles = getConfigAttributeValue( con, BrokerPool.DATA_DIR_ATTRIBUTE );
 
         if( dataFiles != null ) {
             File df = ConfigurationHelper.lookup( dataFiles, dbHome );
@@ -692,7 +693,7 @@ public class Configuration implements ErrorHandler
             LOG.debug( BrokerPool.PROPERTY_DATA_DIR + ": " + config.get( BrokerPool.PROPERTY_DATA_DIR ) );
         }
 
-        String cacheMem = con.getAttribute( DefaultCacheManager.CACHE_SIZE_ATTRIBUTE );
+        String cacheMem = getConfigAttributeValue( con, DefaultCacheManager.CACHE_SIZE_ATTRIBUTE );
 
         if( cacheMem != null ) {
 
@@ -711,7 +712,7 @@ public class Configuration implements ErrorHandler
         
         // Process the Check Max Cache value
         
-        String checkMaxCache = con.getAttribute( DefaultCacheManager.CACHE_CHECK_MAX_SIZE_ATTRIBUTE );
+        String checkMaxCache = getConfigAttributeValue( con, DefaultCacheManager.CACHE_CHECK_MAX_SIZE_ATTRIBUTE );
         
         if( checkMaxCache == null ) {
             checkMaxCache = DefaultCacheManager.DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
@@ -720,7 +721,7 @@ public class Configuration implements ErrorHandler
         config.put( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE, parseBoolean( checkMaxCache, true ) );
         LOG.debug( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE + ": " + config.get( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE ) );
 
-        String cacheShrinkThreshold = con.getAttribute( DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE );
+        String cacheShrinkThreshold = getConfigAttributeValue( con, DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE );
 
         if( cacheShrinkThreshold == null ) {
             cacheShrinkThreshold = DefaultCacheManager.DEFAULT_SHRINK_THRESHOLD_STRING;
@@ -737,7 +738,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String collectionCache = con.getAttribute( CollectionCacheManager.CACHE_SIZE_ATTRIBUTE );
+        String collectionCache = getConfigAttributeValue( con, CollectionCacheManager.CACHE_SIZE_ATTRIBUTE );
 
         if( collectionCache != null ) {
 
@@ -754,7 +755,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String pageSize = con.getAttribute( NativeBroker.PAGE_SIZE_ATTRIBUTE );
+        String pageSize = getConfigAttributeValue( con, NativeBroker.PAGE_SIZE_ATTRIBUTE );
 
         if( pageSize != null ) {
 
@@ -768,7 +769,7 @@ public class Configuration implements ErrorHandler
         }
 
         //Not clear : rather looks like a buffers count
-        String collCacheSize = con.getAttribute( BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE );
+        String collCacheSize = getConfigAttributeValue( con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE );
 
         if( collCacheSize != null ) {
 
@@ -781,7 +782,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String nodesBuffer = con.getAttribute( BrokerPool.NODES_BUFFER_ATTRIBUTE );
+        String nodesBuffer = getConfigAttributeValue( con, BrokerPool.NODES_BUFFER_ATTRIBUTE );
 
         if( nodesBuffer != null ) {
 
@@ -796,7 +797,7 @@ public class Configuration implements ErrorHandler
         }
 
         //Unused !
-        String buffers = con.getAttribute( "buffers" );
+        String buffers = getConfigAttributeValue( con, "buffers" );
 
         if( buffers != null ) {
 
@@ -811,7 +812,7 @@ public class Configuration implements ErrorHandler
         }
 
         //Unused !
-        String collBuffers = con.getAttribute( "collection_buffers" );
+        String collBuffers = getConfigAttributeValue( con, "collection_buffers" );
 
         if( collBuffers != null ) {
 
@@ -826,7 +827,7 @@ public class Configuration implements ErrorHandler
         }
 
         //Unused !
-        String wordBuffers = con.getAttribute( "words_buffers" );
+        String wordBuffers = getConfigAttributeValue( con, "words_buffers" );
 
         if( wordBuffers != null ) {
 
@@ -841,7 +842,7 @@ public class Configuration implements ErrorHandler
         }
 
         //Unused !
-        String elementBuffers = con.getAttribute( "elements_buffers" );
+        String elementBuffers = getConfigAttributeValue( con, "elements_buffers" );
 
         if( elementBuffers != null ) {
 
@@ -860,10 +861,10 @@ public class Configuration implements ErrorHandler
 
         if( securityConf.getLength() > 0 ) {
             Element security = (Element)securityConf.item( 0 );
-            securityManagerClassName = security.getAttribute( "class" );
+            securityManagerClassName = getConfigAttributeValue( security, "class" );
 
             //Unused
-            String encoding = security.getAttribute( "password-encoding" );
+            String encoding = getConfigAttributeValue( security, "password-encoding" );
             config.put( "db-connection.security.password-encoding", encoding );
 
             if( encoding != null ) {
@@ -875,7 +876,7 @@ public class Configuration implements ErrorHandler
             }
 
             //Unused
-            String realm = security.getAttribute( "password-realm" );
+            String realm = getConfigAttributeValue( security, "password-realm" );
             config.put( "db-connection.security.password-realm", realm );
 
             if( realm != null ) {
@@ -935,19 +936,19 @@ public class Configuration implements ErrorHandler
 
     private void configureRecovery( String dbHome, Element recovery ) throws DatabaseConfigurationException
     {
-        String option = recovery.getAttribute( BrokerPool.RECOVERY_ENABLED_ATTRIBUTE );
+        String option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_ENABLED_ATTRIBUTE );
         setProperty( BrokerPool.PROPERTY_RECOVERY_ENABLED, parseBoolean( option, true ) );
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_ENABLED + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_ENABLED ) );
 
-        option = recovery.getAttribute( Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE );
         setProperty( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean( option, true ) );
         LOG.debug( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT ) );
 
-        option = recovery.getAttribute( TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
         setProperty( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
         LOG.debug( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT ) );
 
-        option = recovery.getAttribute( Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE );
 
         if( option != null ) {
 
@@ -961,7 +962,7 @@ public class Configuration implements ErrorHandler
             LOG.debug( Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": " + config.get( Journal.PROPERTY_RECOVERY_JOURNAL_DIR ) );
         }
 
-        option = recovery.getAttribute( Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE );
 
         if( option != null ) {
 
@@ -979,7 +980,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        option = recovery.getAttribute( TransactionManager.RECOVERY_FORCE_RESTART_ATTRIBUTE );
+        option = getConfigAttributeValue( recovery, TransactionManager.RECOVERY_FORCE_RESTART_ATTRIBUTE );
         boolean value = false;
 
         if( option != null ) {
@@ -988,7 +989,7 @@ public class Configuration implements ErrorHandler
         setProperty( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART, new Boolean( value ) );
         LOG.debug( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( TransactionManager.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
-        option = recovery.getAttribute( BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
+        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
         value  = false;
 
         if( option != null ) {
@@ -1001,7 +1002,7 @@ public class Configuration implements ErrorHandler
 
     private void configurePermissions( Element defaultPermission ) throws DatabaseConfigurationException
     {
-        String option = defaultPermission.getAttribute( SecurityManagerImpl.COLLECTION_ATTRIBUTE );
+        String option = getConfigAttributeValue( defaultPermission, SecurityManagerImpl.COLLECTION_ATTRIBUTE );
 
         if( ( option != null ) && ( option.length() > 0 ) ) {
 
@@ -1015,7 +1016,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        option = defaultPermission.getAttribute( SecurityManagerImpl.RESOURCE_ATTRIBUTE );
+        option = getConfigAttributeValue( defaultPermission, SecurityManagerImpl.RESOURCE_ATTRIBUTE );
 
         if( ( option != null ) && ( option.length() > 0 ) ) {
 
@@ -1038,7 +1039,7 @@ public class Configuration implements ErrorHandler
      */
     private void configureWatchdog( Element watchDog )
     {
-        String timeout = watchDog.getAttribute( "query-timeout" );
+        String timeout = getConfigAttributeValue( watchDog, "query-timeout" );
 
         if( timeout != null ) {
 
@@ -1051,7 +1052,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String maxOutput = watchDog.getAttribute( "output-size-limit" );
+        String maxOutput = getConfigAttributeValue( watchDog, "output-size-limit" );
 
         if( maxOutput != null ) {
 
@@ -1073,7 +1074,7 @@ public class Configuration implements ErrorHandler
      */
     private void configureXQueryPool( Element queryPool )
     {
-        String maxStackSize = queryPool.getAttribute( XQueryPool.MAX_STACK_SIZE_ATTRIBUTE );
+        String maxStackSize = getConfigAttributeValue( queryPool, XQueryPool.MAX_STACK_SIZE_ATTRIBUTE );
 
         if( maxStackSize != null ) {
 
@@ -1086,7 +1087,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String maxPoolSize = queryPool.getAttribute( XQueryPool.POOL_SIZE_ATTTRIBUTE );
+        String maxPoolSize = getConfigAttributeValue( queryPool, XQueryPool.POOL_SIZE_ATTTRIBUTE );
 
         if( maxPoolSize != null ) {
 
@@ -1099,7 +1100,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String timeout = queryPool.getAttribute( XQueryPool.TIMEOUT_ATTRIBUTE );
+        String timeout = getConfigAttributeValue( queryPool, XQueryPool.TIMEOUT_ATTRIBUTE );
 
         if( timeout != null ) {
 
@@ -1112,7 +1113,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String timeoutCheckInterval = queryPool.getAttribute( XQueryPool.TIMEOUT_CHECK_INTERVAL_ATTRIBUTE );
+        String timeoutCheckInterval = getConfigAttributeValue( queryPool, XQueryPool.TIMEOUT_CHECK_INTERVAL_ATTRIBUTE );
 
         if( timeoutCheckInterval != null ) {
 
@@ -1134,7 +1135,7 @@ public class Configuration implements ErrorHandler
      */
     private void configurePool( Element pool )
     {
-        String min = pool.getAttribute( BrokerPool.MIN_CONNECTIONS_ATTRIBUTE );
+        String min = getConfigAttributeValue( pool, BrokerPool.MIN_CONNECTIONS_ATTRIBUTE );
 
         if( min != null ) {
 
@@ -1147,7 +1148,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String max = pool.getAttribute( BrokerPool.MAX_CONNECTIONS_ATTRIBUTE );
+        String max = getConfigAttributeValue( pool, BrokerPool.MAX_CONNECTIONS_ATTRIBUTE );
 
         if( max != null ) {
 
@@ -1160,7 +1161,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String sync = pool.getAttribute( BrokerPool.SYNC_PERIOD_ATTRIBUTE );
+        String sync = getConfigAttributeValue( pool, BrokerPool.SYNC_PERIOD_ATTRIBUTE );
 
         if( sync != null ) {
 
@@ -1173,7 +1174,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String maxShutdownWait = pool.getAttribute( BrokerPool.SHUTDOWN_DELAY_ATTRIBUTE );
+        String maxShutdownWait = getConfigAttributeValue( pool, BrokerPool.SHUTDOWN_DELAY_ATTRIBUTE );
 
         if( maxShutdownWait != null ) {
 
@@ -1190,35 +1191,35 @@ public class Configuration implements ErrorHandler
 
     private void configureIndexer( String dbHome, Document doc, Element indexer ) throws DatabaseConfigurationException, MalformedURLException
     {
-        String parseNum = indexer.getAttribute( TextSearchEngine.INDEX_NUMBERS_ATTRIBUTE );
+        String parseNum = getConfigAttributeValue( indexer, TextSearchEngine.INDEX_NUMBERS_ATTRIBUTE );
 
         if( parseNum != null ) {
             config.put( TextSearchEngine.PROPERTY_INDEX_NUMBERS, parseBoolean( parseNum, false ) );
             LOG.debug( TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get( TextSearchEngine.PROPERTY_INDEX_NUMBERS ) );
         }
 
-        String stemming = indexer.getAttribute( TextSearchEngine.STEM_ATTRIBUTE );
+        String stemming = getConfigAttributeValue( indexer, TextSearchEngine.STEM_ATTRIBUTE );
 
         if( stemming != null ) {
             config.put( TextSearchEngine.PROPERTY_STEM, parseBoolean( stemming, false ) );
             LOG.debug( TextSearchEngine.PROPERTY_STEM + ": " + config.get( TextSearchEngine.PROPERTY_STEM ) );
         }
 
-        String termFreq = indexer.getAttribute( TextSearchEngine.STORE_TERM_FREQUENCY_ATTRIBUTE );
+        String termFreq = getConfigAttributeValue( indexer, TextSearchEngine.STORE_TERM_FREQUENCY_ATTRIBUTE );
 
         if( termFreq != null ) {
             config.put( TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, parseBoolean( termFreq, false ) );
             LOG.debug( TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get( TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY ) );
         }
 
-        String tokenizer = indexer.getAttribute( TextSearchEngine.TOKENIZER_ATTRIBUTE );
+        String tokenizer = getConfigAttributeValue( indexer, TextSearchEngine.TOKENIZER_ATTRIBUTE );
 
         if( tokenizer != null ) {
             config.put( TextSearchEngine.PROPERTY_TOKENIZER, tokenizer );
             LOG.debug( TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get( TextSearchEngine.PROPERTY_TOKENIZER ) );
         }
 
-        String caseSensitive = indexer.getAttribute( NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE );
+        String caseSensitive = getConfigAttributeValue( indexer, NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE );
 
         if( caseSensitive != null ) {
             config.put( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean( caseSensitive, false ) );
@@ -1239,7 +1240,7 @@ public class Configuration implements ErrorHandler
         }
 
         int    depth      = 3;
-        String indexDepth = indexer.getAttribute( NativeBroker.INDEX_DEPTH_ATTRIBUTE );
+        String indexDepth = getConfigAttributeValue( indexer, NativeBroker.INDEX_DEPTH_ATTRIBUTE );
 
         if( indexDepth != null ) {
 
@@ -1258,14 +1259,14 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        String suppressWS = indexer.getAttribute( Indexer.SUPPRESS_WHITESPACE_ATTRIBUTE );
+        String suppressWS = getConfigAttributeValue( indexer, Indexer.SUPPRESS_WHITESPACE_ATTRIBUTE );
 
         if( suppressWS != null ) {
             config.put( Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS );
             LOG.debug( Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get( Indexer.PROPERTY_SUPPRESS_WHITESPACE ) );
         }
 
-        String suppressWSmixed = indexer.getAttribute( Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE );
+        String suppressWSmixed = getConfigAttributeValue( indexer, Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE );
 
         if( suppressWSmixed != null ) {
             config.put( Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, parseBoolean( suppressWSmixed, false ) );
@@ -1315,7 +1316,7 @@ public class Configuration implements ErrorHandler
         eXistURLStreamHandlerFactory.init();
 
         // Determine validation mode
-        String mode = validation.getAttribute( XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE );
+        String mode = getConfigAttributeValue( validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE );
 
         if( mode != null ) {
             config.put( XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, mode );
@@ -1385,6 +1386,70 @@ public class Configuration implements ErrorHandler
         GrammarPool gp = new GrammarPool();
         config.put( XMLReaderObjectFactory.GRAMMER_POOL, gp );
 
+    }
+    
+     /**
+     * Gets the value of a configuration attribute
+     *
+     * The value typically is specified in the conf.xml file, but can be overriden with using a System Property
+     *
+     * @param   element        The attribute's parent element
+     * @param   attributeName  The name of the attribute
+     *
+     * @return  The value of the attribute
+     */
+    private String getConfigAttributeValue( Element element, String attributeName )
+    {
+    	String value = null;
+    	
+    	if( element != null && attributeName != null ) {
+    		String property = getAttributeSystemPropertyName( element, attributeName );
+    		
+    		value = System.getProperty( property );
+    		
+    		// If the value has not been overriden in a system property, then get it from the configuration
+    		
+    		if( value != null ) {
+    			LOG.warn( "Configuration value overriden by system property: " + property + ", with value: " + value );
+    		} else {
+    			value = element.getAttribute( attributeName );
+    		}
+    	}
+    	
+    	return( value );
+    }
+    
+    /**
+     * Generates a suitable system property name from the given config attribute and parent element.
+     *
+     * values are of the form org.element.element.....attribute and follow the heirarchical structure of the conf.xml file. 
+     * For example, the db-connection cacheSize property name would be org.exist.db-connection.cacheSize
+     *
+     * @param   element        The attribute's parent element
+     * @param   attributeName  The name of the attribute
+     *
+     * @return  The generated system property name
+     */
+    private String getAttributeSystemPropertyName( Element element, String attributeName )
+    {
+    	StringBuilder  	property 	= new StringBuilder( attributeName );
+    	Node			parent		= element.getParentNode();
+    	
+    	property.insert( 0, "." );
+    	property.insert( 0,  element.getLocalName() );
+    	
+    	while( parent != null && parent instanceof Element ) {
+    		String parentName = ((Element)parent).getLocalName();
+    		
+    		property.insert( 0, "." );
+    		property.insert( 0, parentName );
+    		
+    		parent   = parent.getParentNode();
+    	}
+    	
+    	property.insert( 0, "org." );
+    	
+    	return( property.toString() );
     }
 
 

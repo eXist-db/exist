@@ -26,6 +26,18 @@
                     module
             xupdate
     
+    Any unique attributes specified can also be overriden using a Java system property, typically specified on the command line, of the form:
+    
+    	org.element.element....attribute
+    	
+    where the nesting of the element names follows the structure of the XML configuration document, as was shown above.
+    	
+    For example, to override the value of the cache size to be 128MB you could specify:
+    
+    	-Dorg.exist.db-connection.cacheSize="128M"
+    	
+    on your JVM startup command line or options.  Note that this only works for unique, non-repeating elements, so you can't override things like the transformer attribute element values or the XQuery module builtin definitions,
+    since they are not unique.
     
     For detailed and latest information please consult the eXist documentation:
     
