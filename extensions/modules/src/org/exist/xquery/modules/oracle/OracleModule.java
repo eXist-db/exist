@@ -1,0 +1,60 @@
+package org.exist.xquery.modules.oracle;
+
+import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDef;
+
+/**
+ * eXist Oracle Module Extension
+ * 
+ * An extension module for the eXist Native XML Database that allows execution of
+ * PL/SQL Stored Procedures within an Oracle RDBMS, returning an XML representation
+ * of the result set. In particular, this module gives access to a <code>ResultSet</code>
+ * returned in an <code>OracleType.CURSOR</code>, functionality which is not provided by
+ * the more generic SQL extension module.<p><b>Please note</b> that this module is
+ * dependent on functionality contained within the SQL extension module and both modules
+ * must be enabled in <code>conf.xml</code> for this module to function correctly.
+ * 
+ * @author Robert Walpole <robert.walpole@metoffice.gov.uk>
+ * @serial 2010-03-23
+ * @version 1.0
+ * 
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ */
+public class OracleModule extends AbstractInternalModule{
+	
+	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/oracle";
+	
+	public final static String PREFIX = "oracle";
+	
+	public final static String RELEASED_IN_VERSION = "eXist-1.5";
+	
+	private final static FunctionDef[] functions = {
+        new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
+        new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class)
+    };
+	
+	public OracleModule() {
+        super(functions);
+    }
+
+	@Override
+	public String getDefaultPrefix() {
+		return PREFIX;
+	}
+
+	@Override
+	public String getDescription() {
+		return "A module for executing PL/SQL stored procedures against an Oracle Database where data is given in an Oracle cursor, returning an XML representations of the result set.";
+	}
+
+	@Override
+	public String getNamespaceURI() {
+		return NAMESPACE_URI;
+	}
+
+	@Override
+	public String getReleaseVersion() {
+		return RELEASED_IN_VERSION;
+	}
+
+}
