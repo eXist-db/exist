@@ -220,7 +220,7 @@ public class ExecuteFunction extends BasicFunction
                                  * Spaces in column names are replaced with
                                  * underscore's
                                  */
-                                colElement = escapeXmlAttr( columnName.replace( ' ', '_' ) );
+                                colElement = SQLUtils.escapeXmlAttr( columnName.replace( ' ', '_' ) );
                             }
 
                             builder.startElement( new QName( colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
@@ -229,7 +229,7 @@ public class ExecuteFunction extends BasicFunction
                                 String name;
 
                                 if( columnName.length() > 0 ) {
-                                    name = escapeXmlAttr( columnName );
+                                    name = SQLUtils.escapeXmlAttr( columnName );
                                 } else {
                                     name = "Column: " + String.valueOf( i + 1 );
                                 }
@@ -238,7 +238,7 @@ public class ExecuteFunction extends BasicFunction
                             }
 
                             builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), rsmd.getColumnTypeName( i + 1 ) );
-                            builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs" ), Type.getTypeName( sqlTypeToXMLType( rsmd.getColumnType( i + 1 ) ) ) );
+                            builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs" ), Type.getTypeName( SQLUtils.sqlTypeToXMLType( rsmd.getColumnType( i + 1 ) ) ) );
 
                             if(rs.wasNull()) {
 
@@ -269,7 +269,7 @@ public class ExecuteFunction extends BasicFunction
                                 //otherwise assume string value
                                 String colValue = rs.getString(i + 1);
                                 if(colValue != null) {
-                                    builder.characters(escapeXmlText( colValue ));
+                                    builder.characters(SQLUtils.escapeXmlText( colValue ));
                                 }
                             }
 
@@ -344,7 +344,7 @@ public class ExecuteFunction extends BasicFunction
             builder.endElement();
 
             builder.startElement( new QName( "sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
-            builder.characters( escapeXmlText( sql ) );
+            builder.characters( SQLUtils.escapeXmlText( sql ) );
             builder.endElement();
 
             if( stmt instanceof PreparedStatement ) {
@@ -363,7 +363,7 @@ public class ExecuteFunction extends BasicFunction
                         builder.startElement( new QName( PARAM_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), null );
 
                         builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), type );
-                        builder.characters( escapeXmlText( value ) );
+                        builder.characters( SQLUtils.escapeXmlText( value ) );
 
                         builder.endElement();
                     }
@@ -410,172 +410,7 @@ public class ExecuteFunction extends BasicFunction
             stmt = null;
         }
     }
-
-
-    private int sqlTypeFromString( String sqlType )
-    {
-        sqlType = sqlType.toUpperCase();
-
-        if( sqlType.equals( "ARRAY" ) ) {
-            return( Types.ARRAY );
-        } else if( sqlType.equals( "BIGINT" ) ) {
-            return( Types.BIGINT );
-        } else if( sqlType.equals( "BINARY" ) ) {
-            return( Types.BINARY );
-        } else if( sqlType.equals( "BIT" ) ) {
-            return( Types.BIT );
-        } else if( sqlType.equals( "BLOB" ) ) {
-            return( Types.BLOB );
-        } else if( sqlType.equals( "BOOLEAN" ) ) {
-            return( Types.BOOLEAN );
-        } else if( sqlType.equals( "CHAR" ) ) {
-            return( Types.CHAR );
-        } else if( sqlType.equals( "CLOB" ) ) {
-            return( Types.CLOB );
-        } else if( sqlType.equals( "DECIMAL" ) ) {
-            return( Types.DECIMAL );
-        } else if( sqlType.equals( "DOUBLE" ) ) {
-            return( Types.DOUBLE );
-        } else if( sqlType.equals( "FLOAT" ) ) {
-            return( Types.FLOAT );
-        } else if( sqlType.equals( "LONGVARCHAR" ) ) {
-            return( Types.LONGVARCHAR );
-        } else if( sqlType.equals( "NUMERIC" ) ) {
-            return( Types.NUMERIC );
-        } else if( sqlType.equals( "SMALLINT" ) ) {
-            return( Types.SMALLINT );
-        } else if( sqlType.equals( "TINYINT" ) ) {
-            return( Types.TINYINT );
-        } else if( sqlType.equals( "INTEGER" ) ) {
-            return( Types.INTEGER );
-        } else if( sqlType.equals( "VARCHAR" ) ) {
-            return( Types.VARCHAR );
-        } else if(sqlType.equals("SQLXML")) {
-            return Types.SQLXML;
-        } else {
-            return( Types.VARCHAR ); //default
-        }
-    }
-
-
-    /**
-     * Converts a SQL data type to an XML data type.
-     *
-     * @param   sqlType  The SQL data type as specified by JDBC
-     *
-     * @return  The XML Type as specified by eXist
-     */
-    private int sqlTypeToXMLType( int sqlType )
-    {
-        switch( sqlType ) {
-
-            case Types.ARRAY: {
-                return( Type.NODE );
-            }
-
-            case Types.BIGINT: {
-                return( Type.INT );
-            }
-
-            case Types.BINARY: {
-                return( Type.BASE64_BINARY );
-            }
-
-            case Types.BIT: {
-                return( Type.INT );
-            }
-
-            case Types.BLOB: {
-                return( Type.BASE64_BINARY );
-            }
-
-            case Types.BOOLEAN: {
-                return( Type.BOOLEAN );
-            }
-
-            case Types.CHAR: {
-                return( Type.STRING );
-            }
-
-            case Types.CLOB: {
-                return( Type.STRING );
-            }
-
-            case Types.DECIMAL: {
-                return( Type.DECIMAL );
-            }
-
-            case Types.DOUBLE: {
-                return( Type.DOUBLE );
-            }
-
-            case Types.FLOAT: {
-                return( Type.FLOAT );
-            }
-
-            case Types.LONGVARCHAR: {
-                return( Type.STRING );
-            }
-
-            case Types.NUMERIC: {
-                return( Type.NUMBER );
-            }
-
-            case Types.SMALLINT: {
-                return( Type.INT );
-            }
-
-            case Types.TINYINT: {
-                return( Type.INT );
-            }
-
-            case Types.INTEGER: {
-                return( Type.INTEGER );
-            }
-
-            case Types.VARCHAR: {
-                return( Type.STRING );
-            }
-
-            case Types.SQLXML: {
-                return(Type.NODE);
-            }
-
-            default: {
-                return( Type.ANY_TYPE );
-            }
-        }
-    }
-
-
-    private static String escapeXmlText( String text )
-    {
-        String work = null;
-
-        if( text != null ) {
-            work = text.replaceAll( "\\&", "\\&amp;" );
-            work = work.replaceAll( "<", "\\&lt;" );
-            work = work.replaceAll( ">", "\\&gt;" );
-        }
-
-        return( work );
-    }
-
-
-    private static String escapeXmlAttr( String attr )
-    {
-        String work = null;
-
-        if( attr != null ) {
-            work = escapeXmlText( attr );
-            work = work.replaceAll( "'", "\\&apos;" );
-            work = work.replaceAll( "\"", "\\&quot;" );
-        }
-
-        return( work );
-    }
-
-
+    
     private void setParametersOnPreparedStatement( Statement stmt, Element parametersElement ) throws SQLException
     {
         if( parametersElement.getNamespaceURI().equals( SQLModule.NAMESPACE_URI ) && parametersElement.getLocalName().equals( PARAMETERS_ELEMENT_NAME ) ) {
@@ -586,7 +421,7 @@ public class ExecuteFunction extends BasicFunction
                 String  value = param.getFirstChild().getNodeValue();
                 String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
 
-                ( (PreparedStatement)stmt ).setObject( i+1, value, sqlTypeFromString( type ) );
+                ( (PreparedStatement)stmt ).setObject( i+1, value, SQLUtils.sqlTypeFromString( type ) );
             }
         }
     }
