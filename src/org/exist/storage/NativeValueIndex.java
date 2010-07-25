@@ -627,7 +627,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
-    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
+    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, boolean mixedIndex)
             throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null)
@@ -635,9 +635,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
         else {
             List qnames = new LinkedList();
             qnames.add(qname);
-            return findAll(relation, docs, contextSet, axis, qnames, value, result);
+            findAll(relation, docs, contextSet, axis, qnames, value, result);
+            if (mixedIndex)
+                findAll(relation, docs, contextSet, axis, null, value, result);
         }
         return result;
+    }
+
+    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
+            throws TerminatedException {
+        return find(relation, docs, contextSet, axis, qname, value, false);
     }
 
     public NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value) throws TerminatedException {
