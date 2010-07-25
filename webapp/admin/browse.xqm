@@ -258,7 +258,7 @@ declare function browse:display-child-resources($colName as xs:string) as elemen
 	return
         <tr>
             <td><input type="checkbox" name="resource" value="{$colName}/{$child}"/></td>
-            <td><a target="_new" href="{$restUri}/{xdb:encode-uri($colName)}/{xdb:encode-uri($child)}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
+            <td><a target="_new" href="{$restUri}/{xdb:encode-uri($colName)}/{browse:get-child-resource-name( $child )}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($colName, $child))}</td>
             <td>{xdb:get-owner($colName, $child)}</td>
             <td>{xdb:get-group($colName, $child)}</td>
@@ -271,6 +271,17 @@ declare function browse:display-child-resources($colName as xs:string) as elemen
 				</a>
 			</td>
         </tr>
+};
+
+declare function browse:get-child-resource-name( $child ) as xs:string
+{
+	(: This function will properly encode resource names "." and ".." so that the generated href url will work correctly :)
+	
+	let $name := xdb:encode-uri( $child )
+	
+	return if( $name = "." ) then "%2E"
+		    else if( $name = ".." ) then "%2E%2E"
+		    else $name
 };
 
 declare function browse:last-revision($collection as xs:string, $resource as xs:string) {

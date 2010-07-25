@@ -100,7 +100,12 @@ public class XmldbURI implements Comparable<Object>
      */
     protected XmldbURI( URI xmldbURI ) throws URISyntaxException
     {
-        xmldbURI = xmldbURI.normalize();
+    	String uriStr = xmldbURI.toString().trim();
+    	
+    	if( !uriStr.equals( "." ) && !uriStr.equals( ".." ) && !uriStr.endsWith( "/." ) && !uriStr.endsWith( "/.." ) ) {
+    		// Only normalize if uri is not "." or ".." or doesn't end with "/." or "/.." .  If it's a dot uri, then the final segment is assumed to be a document name
+    		xmldbURI = xmldbURI.normalize();
+    	}
 
         boolean hadXmldbPrefix = false;
 
