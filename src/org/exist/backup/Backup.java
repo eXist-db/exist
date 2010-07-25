@@ -65,7 +65,10 @@ import javax.xml.transform.OutputKeys;
 
 public class Backup
 {
-    private static final int currVersion             = 1;
+	private static final String	EXIST_GENERATED_FILENAME_DOT_FILENAME	 = "_eXist_generated_backup_filename_dot_file_";
+	private static final String	EXIST_GENERATED_FILENAME_DOTDOT_FILENAME = "_eXist_generated_backup_filename_dotdot_file_";
+	
+    private static final int 	currVersion             = 1;
 
     private String           target;
     private XmldbURI         rootCollection;
@@ -302,8 +305,19 @@ public class Backup
                     dialog.setResource( resources[i] );
                     dialog.setProgress( i );
                 }
+                
+                String name 	= resources[i];
+                String filename = encode( URIUtils.urlDecodeUtf8( resources[i] ) );
+                
+                // Check for special resource names which cause problems as filenames, and if so, replace the filename with a generated filename
+                
+                if( name.trim().equals( "." ) ) {
+                	filename = EXIST_GENERATED_FILENAME_DOT_FILENAME + i;
+                } else if( name.trim().equals( ".." ) ) {
+                	filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
+                }
 
-                os = output.newEntry( encode( URIUtils.urlDecodeUtf8( resources[i] ) ) );
+                os = output.newEntry( filename );
 
                 if( resource instanceof ExtendedResource ) {
                     ( (ExtendedResource)resource ).getContentIntoAStream( os );
@@ -332,7 +346,7 @@ public class Backup
                 //store permissions
                 attr.clear();
                 attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType() );
-                attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", resources[i] );
+                attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
                 attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", perms[i].getOwner().getName() );
                 attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getOwnerGroup().getName() );
                 attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( perms[i].getPermissions() ) );
@@ -347,7 +361,7 @@ public class Backup
                     attr.addAttribute( Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue( date ) );
                 }
 
-                attr.addAttribute( Namespaces.EXIST_NS, "filename", "filename", "CDATA", encode( URIUtils.urlDecodeUtf8( resources[i] ) ) );
+                attr.addAttribute( Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename );
                 attr.addAttribute( Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode( ( (EXistResource)resource ).getMimeType() ) );
 
                 if( !resource.getResourceType().equals( "BinaryResource" ) ) {
