@@ -577,6 +577,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 	    		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
 
             boolean indexScan = false;
+            boolean indexMixed = false;
             if (contextSequence != null) {
                 IndexFlags iflags = checkForQNameIndex(idxflags, context, contextSequence, contextQName);
                 boolean indexFound = false;
@@ -585,9 +586,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     // contextQName, we don't need to scan other QName indexes
                     // and can just use the generic range index
                     indexFound = contextQName != null;
-                    // set contextQName to null so the index lookup below is not
-                    // restricted to that QName
-                    contextQName = null;
+                    // if there's a qname index on some collection, scan them as well
+                    if (iflags.partialIndexOnQName) {
+                        indexMixed = true;
+                    } else {
+                        // set contextQName to null so the index lookup below is not
+                        // restricted to that QName
+                        contextQName = null;
+                    }
                 }
                 if (!indexFound && contextQName == null) {
                     // if there are some indexes defined on a qname,
@@ -655,8 +661,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             NodeSet ns;
                             if (indexScan)
                                 ns = context.getBroker().getValueIndex().findAll(relation, docs, nodes, NodeSet.ANCESTOR, (Indexable)key);
-                            else
-                                ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key);
+                            else {
+                                ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key, indexMixed);
+                            }
                             hasUsedIndex = true;
 
 		                    if (result == null)
@@ -928,15 +935,17 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 		this.collationArg = collationArg;
 	}
 
-    public final static IndexFlags checkForQNameIndex(IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName) {
+    public static IndexFlags checkForQNameIndex(IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName) {
         idxflags.reset(contextQName != null);
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
             if (collection.getURI().equalsInternal(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             IndexSpec idxcfg = collection.getIndexConfiguration(context.getBroker());
-            if (idxflags.indexOnQName &&
-                    idxcfg.getIndexByQName(contextQName) == null) {
+            boolean hasIndex = contextQName != null && idxcfg.getIndexByQName(contextQName) != null;
+            if (!idxflags.partialIndexOnQName && hasIndex)
+                idxflags.partialIndexOnQName = true;
+            if (idxflags.indexOnQName && !hasIndex) {
                 idxflags.indexOnQName = false;
                 if (LOG.isTraceEnabled())
                     LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
@@ -971,6 +980,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     public final static class IndexFlags {
 
         public boolean indexOnQName = true;
+        public boolean partialIndexOnQName = false;
         public boolean hasIndexOnPaths = false;
         public boolean hasIndexOnQNames = false;
 
@@ -988,6 +998,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
         public void reset(boolean indexOnQName) {
             this.indexOnQName = indexOnQName;
+            this.partialIndexOnQName = false;
             this.hasIndexOnPaths = false;
             this.hasIndexOnQNames = false;
         }
