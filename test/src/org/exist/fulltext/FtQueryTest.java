@@ -22,6 +22,7 @@
 package org.exist.fulltext;
 
 import java.io.File;
+import java.util.Arrays;
 
 import junit.textui.TestRunner;
 
@@ -664,6 +665,14 @@ public class FtQueryTest extends XMLTestCase {
                     assertNotNull(testCollection.getResource(modsFiles[i].getName()));
                 }
             }
+
+            File modsFile = new File(MODS_DIR, "eXist/exist-articles.xml");
+            XMLResource doc =
+                (XMLResource) testCollection.createResource(
+                        modsFile.getName(), "XMLResource" );
+            doc.setContent(modsFile);
+            testCollection.storeResource(doc);
+            assertNotNull(testCollection.getResource(modsFile.getName()));
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {
