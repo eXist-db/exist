@@ -698,21 +698,24 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
 
             boolean indexScan = false;
-
+            boolean indexMixed = false;
             if( contextSequence != null ) {
                 IndexFlags iflags     = checkForQNameIndex( idxflags, context, contextSequence, contextQName );
                 boolean    indexFound = false;
 
                 if( !iflags.indexOnQName ) {
-
                     // if contextQName != null and no index is defined on
                     // contextQName, we don't need to scan other QName indexes
                     // and can just use the generic range index
                     indexFound   = contextQName != null;
 
-                    // set contextQName to null so the index lookup below is not
-                    // restricted to that QName
-                    contextQName = null;
+                    if (iflags.partialIndexOnQName) {
+                        indexMixed = true;
+                    } else {
+                        // set contextQName to null so the index lookup below is not
+                        // restricted to that QName
+                        contextQName = null;
+                    }
                 }
 
                 if( !indexFound && ( contextQName == null ) ) {
@@ -799,7 +802,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             if( indexScan ) {
                                 ns = context.getBroker().getValueIndex().findAll( relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key, collator );
                             } else {
-                                ns = context.getBroker().getValueIndex().find( relation, docs, nodes, NodeSet.ANCESTOR, contextQName, ( Indexable )key, collator );
+                                ns = context.getBroker().getValueIndex().find( relation, docs, nodes, NodeSet.ANCESTOR, contextQName,
+                                        ( Indexable )key, collator, indexMixed );
                             }
                             hasUsedIndex = true;
 
@@ -1269,6 +1273,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     public final static class IndexFlags
     {
         public boolean indexOnQName     = true;
+        public boolean partialIndexOnQName = false;
         public boolean hasIndexOnPaths  = false;
         public boolean hasIndexOnQNames = false;
 
@@ -1293,6 +1298,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         public void reset( boolean indexOnQName )
         {
             this.indexOnQName     = indexOnQName;
+            this.partialIndexOnQName = false;
             this.hasIndexOnPaths  = false;
             this.hasIndexOnQNames = false;
         }
