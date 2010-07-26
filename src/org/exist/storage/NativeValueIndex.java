@@ -788,11 +788,15 @@ public class NativeValueIndex implements ContentLoadingObserver
 
     public NodeSet find( int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value ) throws TerminatedException
     {
-        return( find( relation, docs, contextSet, axis, qname, value, null ) );
+        return( find( relation, docs, contextSet, axis, qname, value, null, false ) );
     }
 
-
     public NodeSet find( int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator ) throws TerminatedException
+    {
+        return( find( relation, docs, contextSet, axis, qname, value, collator, false ) );
+    }
+
+    public NodeSet find( int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator, boolean mixedIndex ) throws TerminatedException
     {
         final NodeSet result = new NewArrayNodeSet();
 
@@ -801,7 +805,9 @@ public class NativeValueIndex implements ContentLoadingObserver
         } else {
             List qnames = new LinkedList();
             qnames.add( qname );
-            return( findAll( relation, docs, contextSet, axis, qnames, value, result, collator ) );
+            findAll( relation, docs, contextSet, axis, qnames, value, result, collator );
+            if (mixedIndex)
+                findAll(relation, docs, contextSet, axis, null, value, result);
         }
         return( result );
     }
