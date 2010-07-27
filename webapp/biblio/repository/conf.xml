@@ -1,0 +1,10 @@
+<repositroy>
+    <driver type="mysql">
+        <name>com.mysql.jdbc.Driver</name>
+        <database>db</database>
+        <db-server>server.uni-heidelberg.de</db-server>
+        <user>myuser</user>
+        <password>mypass</password>
+    </driver>
+    <name>http://server:80800/anypath/getRepositoryData.xql</name>
+</repositroy>
