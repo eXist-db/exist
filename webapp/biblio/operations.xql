@@ -12,6 +12,11 @@ declare function op:create-collection($parent as xs:string, $name as xs:string) 
         <status id="created">{$collection}</status>
 };
 
+declare function op:move-collection($parent as xs:string, $path as xs:string) as element(status) {
+    let $null := xmldb:move($parent, $path) return
+        <status id="moved" from="{$parent}">{$path}</status>
+};
+
 declare function op:remove-collection($collection as xs:string) as element(status) {
     let $null := xmldb:remove($collection) return
         <status id="removed">{$collection}</status>
@@ -27,6 +32,8 @@ $collection := request:get-parameter("collection", ())
 return
     if($action eq "create-collection")then
         op:create-collection($collection, request:get-parameter("name",()))
+    else if($action eq "move-collection")then
+        op:move-collection($collection, request:get-parameter("path",()))
     else if($action eq "remove-collection")then
         op:remove-collection($collection)
     else
