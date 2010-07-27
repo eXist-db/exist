@@ -344,7 +344,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
-		Permission perm = PermissionFactory.getPermission(
+		Permission perm = new UnixStylePermission(
 				(String) hash.get("owner"),
 				(String) hash.get("group"),
 				((Integer) hash.get("permissions")).intValue());

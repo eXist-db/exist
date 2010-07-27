@@ -84,7 +84,6 @@ import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;

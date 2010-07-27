@@ -37,7 +37,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;

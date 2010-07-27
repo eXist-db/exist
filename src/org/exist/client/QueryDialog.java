@@ -440,9 +440,6 @@ public class QueryDialog extends JFrame {
 			setCursor(Cursor.getDefaultCursor());
 			
 		}
-		
-		
-		
 	}
 	
 	
@@ -531,6 +528,7 @@ public class QueryDialog extends JFrame {
 			progress.setVisible(false);
 		}
 	}
+	
 	private void addQuery(String query) {
 		if(query.length() > 40)
 			query = query.substring(0, 40);
