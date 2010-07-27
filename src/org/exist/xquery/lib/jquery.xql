@@ -418,11 +418,11 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
             for $button in $config/jquery:button
             return
                 if ($button/@id eq 'cancel') then
-                    string-join(('"', $button/@label, '": function() { $("#', $id/string(), '").dialog("close"); }'), "")
+                    string-join(('"', $button/@label, '": function() { $(this).dialog("close"); }'), "")
                 else if ($button/@id eq 'submit') then
                     string-join(('"', $button/@label, '": function() { $("#', $id/string(), ' form").submit(); }'), "")
                 else if ($button/@function) then
-                    string-join(('"', $button/@label, '": function () { ', $button/@function, '($("#', $id/string(), '")); }'), "")
+                    string-join(('"', $button/@label, '": function () { ', $button/@function, '($(this)); }'), "")
                 else
                     string-join(('"', $button/@label, '": function() {', $button/node(), '}'), "")
             , ", ")
