@@ -113,6 +113,7 @@
                   <li><a href="#" id="collection-collapse-all"><img src="img/arrow_in.png" title="Collapse All"/></a></li>
                   <li><a href="#" id="collection-reload"><img src="img/arrow_refresh.png" title="Reload"/></a></li>
                   <li><a href="#" id="collection-create-folder"><img src="img/folder_add.png" title="Create Folder"/></a></li>
+                  <li><a href="#" id="collection-move-folder"><img src="img/folder_go.png" title="Move Folder"/></a></li>
                   <li><a href="#" id="collection-remove-folder"><img src="img/folder_delete.png" title="Remove Folder"/></a></li>
               </ul>
               <div id="collection-tree-tree">
@@ -199,6 +200,14 @@
                         </td>
                     </tr>
                 </table>
+            </form>
+        </jquery:dialog>
+        <jquery:dialog id="move-collection-dialog" modal="true" title="Create New Folder" trigger="#collection-move-folder"
+            width="450">
+            <jquery:button label="Move" function="moveCollection"/>
+            <jquery:button id="cancel" label="Cancel"/>
+            <form id="move-collection-form" action="operations.xql">
+                <div>Move collection '<span><biblio:collection-path/></span>' to <input name="path" type="text"/></div>
             </form>
         </jquery:dialog>
         <jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder" trigger="#collection-remove-folder"
