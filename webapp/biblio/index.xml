@@ -115,6 +115,7 @@
                   <li><a href="#" id="collection-create-folder"><img src="img/folder_add.png" title="Create Folder"/></a></li>
                   <li><a href="#" id="collection-move-folder"><img src="img/folder_go.png" title="Move Folder"/></a></li>
                   <li><a href="#" id="collection-remove-folder"><img src="img/folder_delete.png" title="Remove Folder"/></a></li>
+                  <li><a href="#" id="collection-permissions"><img src="img/user_edit.png" title="Edit Folder Permissions"/></a></li>
               </ul>
               <div id="collection-tree-tree">
               </div>
@@ -192,14 +193,8 @@
             <jquery:button label="Create" function="createCollection"/>
             <jquery:button id="cancel" label="Cancel"/>
             <form id="create-collection-form" action="operations.xql">
-                <table>
-                    <tr>
-                        <td>New collection:</td>
-                        <td>
-                            <input name="name" type="text"/>
-                        </td>
-                    </tr>
-                </table>
+                <div>New Collection: </div>
+                <div><input name="name" type="text"/></div>
             </form>
         </jquery:dialog>
         <jquery:dialog id="move-collection-dialog" modal="true" title="Create New Folder" trigger="#collection-move-folder"
@@ -216,6 +211,31 @@
             <jquery:button id="cancel" label="Cancel"/>
             <form id="remove-collection-form" action="operations.xql">
                 <div>Are you sure you wish to remove the collection: <span><biblio:collection-path/></span></div>
+            </form>
+        </jquery:dialog>
+        <jquery:dialog id="permissions-collection-dialog" modal="true" title="Edit Folder Permissions" trigger="#collection-permissions"
+            width="450">
+            <jquery:button label="Update" function="updateCollectionPermissions"/>
+            <jquery:button id="cancel" label="Cancel"/>
+            <form id="update-collection-permissions-form" action="operations.xql">
+                <div>Update Collection Permissions for: <span><biblio:collection-path/></span></div>
+                <div>
+                    <div>
+                        <input id="collection-restrict-all" name="restriction" type="radio" value="*"/>
+                        <label for="collection-restrict-all">All</label>
+                    </div>
+                    <div>
+                        <input id="collection-restrict-user" name="restriction" type="radio" value="user"/>
+                        <label for="collection-restrict-user">User (<biblio:current-user/>)</label>
+                    </div>
+                    <div>
+                        <input id="collection-restrict-group" name="restriction" type="radio" value="group"/>
+                        <label for="collection-restrict-group">Group</label>
+                    </div>
+                </div>
+                <div id="collection-restrict-user-group">
+                    <biblio:form-select-current-user-groups/>
+                </div>
             </form>
         </jquery:dialog>
     </chapter>
