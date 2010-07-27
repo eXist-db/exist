@@ -113,6 +113,7 @@
                   <li><a href="#" id="collection-collapse-all"><img src="img/arrow_in.png" title="Collapse All"/></a></li>
                   <li><a href="#" id="collection-reload"><img src="img/arrow_refresh.png" title="Reload"/></a></li>
                   <li><a href="#" id="collection-create-folder"><img src="img/folder_add.png" title="Create Folder"/></a></li>
+                  <li><a href="#" id="collection-remove-folder"><img src="img/folder_delete.png" title="Remove Folder"/></a></li>
               </ul>
               <div id="collection-tree-tree">
               </div>
@@ -198,6 +199,14 @@
                         </td>
                     </tr>
                 </table>
+            </form>
+        </jquery:dialog>
+        <jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder" trigger="#collection-remove-folder"
+            width="450">
+            <jquery:button label="Remove" function="removeCollection"/>
+            <jquery:button id="cancel" label="Cancel"/>
+            <form id="remove-collection-form" action="operations.xql">
+                <div>Are you sure you wish to remove the collection: <span><biblio:collection-path/></span></div>
             </form>
         </jquery:dialog>
     </chapter>

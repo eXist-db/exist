@@ -65,6 +65,18 @@ function createCollection(dialog) {
     });
 }
 
+/*
+    Called when the user clicks on the "remove" button in the remove collection dialog.
+ */
+function removeCollection(dialog) {
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var params = { action: 'remove-collection', collection: collection };
+    $.get("operations.xql", params, function (data) {
+        $("#collection-tree-tree").dynatree("getRoot").reload();
+        dialog.dialog("close");
+    });
+}
+
 /**
  * Called after the user clicked "Login" on the login form.
  * Checks if the supplied credentials are valid. If yes, submit
