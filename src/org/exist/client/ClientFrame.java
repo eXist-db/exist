@@ -98,6 +98,7 @@ import org.exist.backup.Restore;
 import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
+import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
@@ -1380,7 +1381,7 @@ public class ClientFrame extends JFrame
                 }
             } else {
                 name = XmldbURI.create(".."); //$NON-NLS-1$
-                perm = PermissionFactory.getPermission("", "", Permission.DEFAULT_PERM); //$NON-NLS-1$ //$NON-NLS-2$
+                perm = new UnixStylePermission("", "", Permission.DEFAULT_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
             ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
                     service, name, perm, created, modified, mimeType);
