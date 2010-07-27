@@ -41,7 +41,7 @@ declare function op:update-collection-permissions($collection as xs:string, $res
         )
         else
         (
-            (: anyone can access, so allow full access to everyone group :)
+            (: anyone can access, so allow full access to everyone :)
             let $current-owner := xmldb:get-owner($collection),
             $current-group := xmldb:get-group($collection) return
                 xmldb:set-collection-permissions($collection, $current-owner, $current-group, $rwxrwxrwx)
