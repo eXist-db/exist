@@ -308,6 +308,7 @@ public class StoredModuleTest {
         }
     }
 
+    @Ignore
     @Test
     public void testCircularImports() throws XMLDBException {
         
