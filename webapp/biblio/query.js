@@ -6,6 +6,17 @@ $(function() {
     initCollectionTree();
 });
 
+/* collection permissions toggles for user groups */
+$('#collection-restrict-all').click(function(){
+    $('#collection-restrict-user-group').hide()
+});
+$('#collection-restrict-user').click(function(){
+    $('#collection-restrict-user-group').hide()
+});
+$('#collection-restrict-group').click(function(){
+    $('#collection-restrict-user-group').show()
+});
+
 /*
     Initialize the collection tree. Connect toolbar button events.
  */
@@ -84,6 +95,20 @@ function moveCollection(dialog) {
 function removeCollection(dialog) {
     var collection = $('#simple-search-form input[name = collection]').val();
     var params = { action: 'remove-collection', collection: collection };
+    $.get("operations.xql", params, function (data) {
+        $("#collection-tree-tree").dynatree("getRoot").reload();
+        dialog.dialog("close");
+    });
+}
+
+/*
+    Called when the user clicks on the "create" button in the create collection dialog.
+ */
+function updateCollectionPermissions(dialog) {
+    var restriction = $('#update-collection-permissions-form input[name = restriction]').val();
+    var userGroup = $('#update-collection-permissions-form input[name = userGroup]').val();
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var params = { action: 'update-collection-permissions', restriction: restriction, userGroup: userGroup, collection: collection };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
         dialog.dialog("close");

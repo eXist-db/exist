@@ -21,6 +21,8 @@ import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:
 
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
 
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 import module namespace sort="http://exist-db.org/xquery/sort"
 	at "java:org.exist.xquery.modules.sort.SortModule";
@@ -428,6 +430,16 @@ declare function biblio:process-templates($query as element(), $hitCount as xs:i
                 <span class="collection-path">{$collection}</span>,
                 <input type="hidden" name="collection" value="{$collection}"/>
             )
+        case element(biblio:form-select-current-user-groups) return
+            let $user := request:get-attribute("xquery.user") return
+                <select name="userGroup">
+                {
+                    for $group in xmldb:get-user-groups($user) return
+                        <option value="{$group}">{$group}</option>
+                }
+                </select>
+        case element(biblio:current-user) return
+            <span>{request:get-attribute("xquery.user")}</span>
         case element() return
             element { node-name($node) } {
                 $node/@*,
