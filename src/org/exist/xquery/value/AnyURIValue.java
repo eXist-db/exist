@@ -99,8 +99,9 @@ public class AnyURIValue extends AtomicValue {
 	public AnyURIValue(XmldbURI uri) {
 		this.uri = uri.toString();
 	}
-	public AnyURIValue(String s) throws XPathException {		
-		String escapedString = escape(StringValue.trimWhitespace(s));
+	public AnyURIValue(String s) throws XPathException {
+		String wsTrimString = StringValue.trimWhitespace(s);
+		String escapedString = escape(StringValue.trimWhitespace(wsTrimString));
         try {
 			new URI(escapedString);
 		} catch (URISyntaxException e) {
@@ -122,7 +123,7 @@ public class AnyURIValue extends AtomicValue {
 		*/
 		//TODO : find a way to perform the 3 operations at the same time
 		//s = StringValue.expand(s); //Should we have character entities
-		s = StringValue.normalizeWhitespace(s); //Should we have TABs, new lines...
+		s = StringValue.normalizeWhitespace(wsTrimString); //Should we have TABs, new lines...
 		this.uri = StringValue.collapseWhitespace(s);
 	}
 
