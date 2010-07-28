@@ -359,6 +359,13 @@ public class OptimizerTest {
                 resource.setContent(file);
                 testCollection.storeResource(resource);
             }
+            
+            File modsFile = new File(dir, "eXist/exist-articles.xml");
+            XMLResource doc =
+            	(XMLResource) testCollection.createResource(
+            			modsFile.getName(), "XMLResource" );
+            			doc.setContent(modsFile);
+            			testCollection.storeResource(doc);
         } catch (Exception e) {
 			e.printStackTrace();
             Assert.fail(e.getMessage());
