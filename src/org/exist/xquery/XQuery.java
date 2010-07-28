@@ -44,6 +44,7 @@ import org.exist.xquery.value.Sequence;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.Properties;
 
@@ -93,7 +94,14 @@ public class XQuery {
 
         context.setSource(XACMLSource.getInstance(source));
 		
-        Reader reader = source.getReader();
+        Reader reader;
+        
+        try {
+        	reader = source.getReader();
+        } catch (UnsupportedEncodingException e) {
+        	throw new XPathException("err:XQST0087: unsupported encoding " + e.getMessage());
+		}
+        
         try {
         	CompiledXQuery compiled = compile(context, reader, xpointer);
             return compiled;
