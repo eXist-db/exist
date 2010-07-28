@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:bf="http://betterform.sourceforge.net/xforms">
+    <type id="1">Sleep</type>
+    <type id="2">Eat</type>
+    <type id="3">Cook</type>
+    <type id="4">watch TV</type>
+    <type id="5">get donuts</type>
+    <type id="6">drink duff</type>
+    <type id="7">skateboarding</type>
+    <type id="8">play sax</type>
+    <type id="9">other</type>
+</data>

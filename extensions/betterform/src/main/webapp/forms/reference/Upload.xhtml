@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xf="http://www.w3.org/2002/xforms"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      lang="de">
+    <head>
+        <title>Upload Control</title>
+
+        <style type="text/css">
+            .xfGroupLabel {
+                font-size: 12pt;
+                font-weight: bold;
+                padding-bottom: 10px;
+            }
+
+            #mips .xfTrigger .dijitButtonContents {
+                width: 200px;
+            }
+            .blocked{
+				display:block;
+				color:darkred;
+				font-weight:bold;
+				text-align:center;
+				font-size:large;
+			}
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="../../resources/scripts/dojox/highlight/resources/highlight.css" />
+        <link rel="stylesheet" type="text/css" href="../../resources/styles/reference.css" />
+
+        <script type="text/javascript">
+            dojo.require("dijit.form.Button");
+            dojo.require("dijit.TitlePane");
+            dojo.require('dijit.layout.ContentPane');
+            dojo.require("dojox.highlight");
+            dojo.require("dojox.highlight.languages.xml");
+            dojo.addOnLoad(function() {
+                dojo.query("code").forEach(dojox.highlight.init);
+            });
+        </script>
+
+    </head>
+    <body class="soria" style="margin:30px;">
+
+        <div id="xforms">
+            <div class="blocked" >disabled for security reasons.<br/>remove readonly="true" from: <br/>&lt;xf:bind nodeset="items" readonly="true()"&gt; to activate</div>
+
+
+            <div style="display:none;">
+                <xf:model id="model-1">
+                    <xf:instance id="instance-1" xmlns="">
+                        <data>
+                            <items>
+                                <item type="" file=""/>
+                                <item type="" file=""/>
+                                <item type="" file=""/>
+                            </items>
+                        </data>
+                    </xf:instance>
+
+                    <xf:bind nodeset="items" readonly="true()">
+                        <xf:bind nodeset="item[1]" type="anyURI"/>
+                        <xf:bind nodeset="item[2]" type="base64Binary"/>
+                        <xf:bind nodeset="item[3]" type="hexBinary"/>
+                    </xf:bind>
+                </xf:model>
+            </div>
+
+            <div class="pagetitle">The upload Element</div>
+            <div class="Section">
+                <div class="Headline">Description</div>
+                This form control enables the common feature found on Web sites
+                to upload a file from the local file system, as well as
+                accepting input from various devices including microphones,
+                pens, and digital cameras.
+            </div>
+            <div class="Section">
+                <div class="Headline">
+                    <a href="http://www.w3.org/TR/xforms11/#ui-upload">XForms 1.1 Element Specification</a>
+                </div>
+            </div>
+
+
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <div class="Section">
+
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="File Upload Control">
+                    <div class="description">
+                        An upload control binding to datatype 'anyURI' is equivalent to a file upload known
+                        from HTML.
+                    </div>
+
+                    <div class="Sample">
+                        <xf:upload ref="items/item[1]">
+                            <xf:label>a standard file upload</xf:label>
+                            <xf:filename ref="attribute::file"/>
+                            <xf:mediatype ref="attribute::type"/>
+                        </xf:upload>
+                        <xf:group appearance="bf:verticalTable">
+                            <xf:output ref="items/item[1]/@file">
+                                <xf:label>File: </xf:label>
+                            </xf:output>
+                            <xf:output ref="items/item[1]/@type">
+                                <xf:label>Type: </xf:label>
+                            </xf:output>
+                            <xf:output value="items/item[1]">
+                                <xf:label>Download Link: </xf:label>
+                            </xf:output>
+
+                        </xf:group>
+                    </div>
+                    
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms instance -->
+<item type="" file=""/>
+
+<!-- XForms Binding -->
+<xf:bind nodeset="item" type="anyURI"/>
+
+<!-- XForms UI -->
+<xf:upload ref="item">
+    <xf:label>a standard upload</xf:label>
+    <xf:filename ref="attribute::file"/>
+    <xf:mediatype ref="attribute::type"/>
+</xf:upload>]]></code></pre>
+                    </div>
+                </div>
+
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Upload as base64Binary data">
+                    <div class="description">
+                        An upload control binding to datatype 'base64Binary' encodes the uploaded data as base64Binary and
+                        stores these as the value of the bound node.
+                    </div>
+
+                    <div class="Sample">
+                        <xf:upload ref="items/item[2]">
+                            <xf:label>a base64Binary upload</xf:label>
+                            <xf:filename ref="attribute::file"/>
+                            <xf:mediatype ref="attribute::type"/>
+                        </xf:upload>
+                        <xf:group appearance="bf:verticalTable">
+                            <xf:output ref="items/item[2]/@file">
+                                <xf:label>File: </xf:label>
+                            </xf:output>
+                            <xf:output ref="items/item[2]/@type">
+                                <xf:label>Type: </xf:label>
+                            </xf:output>
+                            <xf:output ref="items/item[2]">
+                                <xf:label>base64Binary data: </xf:label>
+                            </xf:output>
+
+                        </xf:group>
+                    </div>
+
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms instance -->
+<item type="" file=""/>
+
+<!-- XForms Binding -->
+<xf:bind nodeset="item" type="base64Binary"/>
+
+<!-- XForms UI -->
+<xf:upload ref="item">
+    <xf:label>a standard upload</xf:label>
+    <xf:filename ref="attribute::file"/>
+    <xf:mediatype ref="attribute::type"/>
+</xf:upload>]]></code></pre>
+                    </div>
+                </div>
+
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Upload as hexBinary data">
+                    <div class="description">
+                        An upload control binding to datatype 'hexBinary' encodes the uploaded data as hexBinary and
+                        stores these as the value of the bound node.
+                    </div>
+
+                    <div class="Sample">
+                        <xf:upload ref="items/item[3]">
+                            <xf:label>a hexBinary upload</xf:label>
+                            <xf:filename ref="attribute::file"/>
+                            <xf:mediatype ref="attribute::type"/>
+                        </xf:upload>
+                        <xf:group appearance="bf:verticalTable">
+                            <xf:output ref="items/item[3]/@file">
+                                <xf:label>File: </xf:label>
+                            </xf:output>
+                            <xf:output ref="items/item[3]/@type">
+                                <xf:label>Type: </xf:label>
+                            </xf:output>
+                            <xf:output ref="items/item[3]">
+                                <xf:label>hexBinary data: </xf:label>
+                            </xf:output>
+
+                        </xf:group>
+                    </div>
+
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms instance -->
+<item type="" file=""/>
+
+<!-- XForms Binding -->
+<xf:bind nodeset="item" type="hexBinary"/>
+
+<!-- XForms UI -->
+<xf:upload ref="item">
+    <xf:label>a standard upload</xf:label>
+    <xf:filename ref="attribute::file"/>
+    <xf:mediatype ref="attribute::type"/>
+</xf:upload>]]></code></pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </body>
+</html>

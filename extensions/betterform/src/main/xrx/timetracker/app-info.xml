@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app name="xfTimeTracker" rootCollection="">
+    <description>XRX Timetracker Sample</description>
+    <version>0.2</version>
+    <authors>
+        <author>Joern Turner</author>
+        <author>Fabian Otto</author>
+        <author>Lars Windauer</author>
+        <author>Tobias Krebs</author>
+    </authors>
+    <license>BSD</license>
+    <dependencies>
+        <dependency/>
+    </dependencies>
+    <dbPath></dbPath>
+</app>

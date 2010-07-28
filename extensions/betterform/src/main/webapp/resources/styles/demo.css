@@ -1,0 +1,542 @@
+#demoTarget {
+	 height: 400px;
+	 overflow: auto; /*padding:10px;*/
+	 border: thin solid #bbbbbb; /*text-align:left;*/
+	 background: white;
+	 min-height: 400px;
+	 max-height: 400px;
+	 padding: 10px;
+ }
+
+
+ .backgroundImage {
+	 width: 100%;
+	 height: 100%;
+	 background: transparent url(resources/images/play.png) no-repeat 50%;
+ }
+ #demoWrapper {
+	 position: relative;
+	 width: 750px;
+	 height: 421px;
+	 min-height: 421px;
+	 max-height: 421px;
+	 float: left;
+	 border: 1px dotted #666;
+	 /*margin-bottom: 20px;*/
+	 background: url(resources/images/ajax-loader.gif) no-repeat center center;
+ }
+
+ #demoTrigger {
+	 display: none;
+ }
+
+ #content {
+	 min-height: 500px;
+ }
+ #backTrigger {
+	 position: absolute;
+	 float: right;
+ }
+ .tundra .dijitButtonNode {
+	 border:none;
+ }
+
+#xforms {
+    background: none repeat scroll 0 0 white;
+    border: thin solid #BBBBBB;
+    display: block;
+    overflow: auto;
+    padding: 10px;
+    text-align: left;
+    margin-left:auto;
+    margin-right:auto;
+    width: 750px;
+}
+
+.dijitContentPane {
+    overflow: hidden;
+}
+
+.xfFullRepeat .xfRepeatItem .xfControl  {
+    clear:both;
+}
+.xfFullRepeat .xfRepeatItem {
+	display:block;
+	position:relative;
+}
+.Headline {
+    font-size:   16pt;
+    font-weight: bold;
+    text-align:  center;
+}
+
+.Section {
+    padding: 10px;
+}
+
+.Section .description{
+    padding:5px;
+    background:#fafafa;
+}
+
+.Sample {
+    background-color: lightsteelblue;
+    vertical-align: middle;
+    padding: 20px 10px 20px 10px;
+    overflow: auto;
+}
+
+/* Atom Demo */
+.atomReload {
+    height: 25px;
+    width: 25px;
+    padding: 10px;
+    float: right;
+}
+
+.atomReload button {
+    height: 24px;
+    width: 27px;
+    background: url(../../resources/images/001_39.png) no-repeat 2px 2px;
+}
+
+.atomSubtitle .xfLabel {
+    font-weight: bold;
+    font-size: medium;
+    display: block;
+}
+
+.atomSubtitle .xfValue {
+    font-weight: bolder;
+    padding: 5px;
+    font-size: 12pt;
+}
+
+.atomData {
+    display: block;
+    padding: 20px;
+}
+
+.atomPadding .xfValue {
+    display:block;
+    margin:5px;
+}
+
+.atomArticleLink {
+    padding: 5px;
+}
+
+.atomArticleLink .xfValue {
+    padding-top: 5px;
+}
+
+/* Contacts */
+.contactsRepeatHeader {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.contactsRepeat {
+    border: 1px solid black;
+    padding: 5px;
+    width: 100%;	
+	display:block;
+	
+}
+
+.contactsRepeat .xfRepeatHeader {
+    padding: 5px;
+}
+
+.contactsRepeat .xfRepeatItem .xfValue {
+    padding: 3px;
+    display: block;
+}
+
+.contactsSubForm {
+    border: 1px solid black;
+    display: block;
+}
+
+.contactsSubForm .xfGroupLabel {
+    padding: 5px;
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+.contactsSubForm .xfLabel {
+    padding: 3px 3px 3px 8px;
+    width: 7em;
+}
+
+.contactsFullGroup .xfLabel {
+    width: 7em;
+}
+.contactsSpacerLeft {
+    width:20px;
+}
+
+.contactsTriggerGroup {
+    display: block;
+    text-align: center;
+    padding: 5px;
+}
+
+.contactsMasterTrigger {
+    display: inline;
+    text-align: center;
+    width: 210px;
+    padding-right: 15px;
+}
+
+.contactsMasterTrigger button {
+    background: url(../../resources/images/001_22.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 210px;
+    text-indent: 15px;
+}
+
+.contactsSubTrigger {
+    display: inline;
+    text-align: center;
+    width: 210px;
+    padding-right: 15px;
+}
+
+.contactsSubTrigger button {
+    background: url(../../resources/images/001_22.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 210px;
+    text-indent: 15px;
+
+}
+
+.contactsUpdateMasterTrigger {
+    display: inline;
+    text-align: center;
+    width: 210px;
+    padding-right: 15px;
+}
+
+.contactsUpdateMasterTrigger button {
+    background: url(../../resources/images/001_24.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 210px;
+    text-indent: 15px;
+}
+
+/* Order List */
+.orderListRegionSelect {
+    display: block;
+    text-align: right;
+}
+
+.orderListRegionSelect .xfLabel {
+    display: block;
+    text-align: right !important;
+    width: 85% !important; /* Dirty */
+}
+
+.orderListHeader {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.orderListRepeat {
+    border: 1px solid black;
+    padding: 5px;
+    width: 100%;
+	clear:both;
+}
+
+.orderListRepeat .xfRepeatHeader {
+    padding: 5px;
+}
+
+.orderListRepeat .xfRepeatItem .xfValue {
+    width:130px;
+}
+
+.orderlistRepeatFooter {
+    display: block;
+    text-align: right !important;
+    margin-bottom: 5px;
+    padding-right: 10px;
+    padding-top: 10px !important;
+}
+
+.orderlistRepeatFooter .xfLabel {
+    text-align: right !important;
+    font-size: medium;
+    width: 86% !important; /* Dirty */
+    font-weight: bold;
+    padding-top: 0px !important;
+}
+
+.orderListSpacerLeft {
+    width:105px;
+}
+
+.orderListTriggerGroup {
+    display: block;
+    text-align: center;
+    padding: 5px;
+    margin-top: 10px;
+}
+
+.orderListNewTrigger {
+    display: inline;
+    text-align: center;
+    width: 150px;
+    padding-right: 15px;
+}
+
+.orderListNewTrigger button {
+    background: url(../../resources/images/001_47.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 150px;
+    text-indent: 15px;
+}
+
+.orderListAddTrigger {
+    display: inline;
+    text-align: center;
+    width: 150px;
+    padding-right: 15px;
+}
+
+.orderListAddTrigger button {
+    background: url(../../resources/images/001_03.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 150px;
+    text-indent: 15px;
+
+}
+
+.orderListDelTrigger {
+    display: inline;
+    text-align: center;
+    width: 150px;
+    padding-right: 15px;
+}
+
+.orderListDelTrigger button {
+    background: url(../../resources/images/001_04.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 150px;
+    text-indent: 15px;
+
+}
+
+.orderListResetTrigger {
+    display: inline;
+    text-align: center;
+    width: 150px;
+    padding-right: 15px;
+}
+
+.orderListResetTrigger button {
+    background: url(../../resources/images/001_39.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 150px;
+    text-indent: 15px;
+}
+
+.orderListOKTrigger {
+    display: inline !important;
+    text-align: center;
+    width: 150px;
+    padding-right: 15px;
+}
+
+.orderListOKTrigger button {
+    background: url(../../resources/images/001_06.png) no-repeat 5px 5px;
+    display: inline;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 150px;
+    text-indent: 15px;
+    text-align: center;
+}
+
+.orderListAbortTrigger {
+    display: inline !important;
+    text-align: center;
+    width: 150px;
+}
+
+.orderListAbortTrigger button {
+    background: url(../../resources/images/001_05.png) no-repeat 5px 5px;
+    display: block;
+    height: 30px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 150px;
+    text-indent: 15px;
+
+}
+
+
+
+/*#### Twitter Demo #### */
+#xforms .twitter {
+    background: none repeat scroll 0 0 white;
+    border: thin solid #BBBBBB;
+    display: block;
+    overflow: auto;
+    padding: 10px;
+    text-align: left;
+    width: 750px;
+    height: 100%;
+}
+
+.twitterTimeLineMenu {
+    display:block;
+    border-bottom:medium double;
+    padding-bottom:5px;
+}
+.twitterReload {
+    display: inline;
+}
+
+.twitterSearch {
+    display: inline-block;
+    padding-left:207px;
+}
+
+.twitterReload button {
+    background: url(../../resources/images/001_39.png) no-repeat 1px 1px;
+    display: block;
+    height: 23px;
+    width: 150px;
+    line-height: 19px;
+    text-decoration: none;
+    text-indent: 15px;
+}
+.twitterGo {
+    height: 23px;
+    width: 50px;
+    padding: 10px;
+   display: inline-block;
+}
+
+.twitterGo button {
+    background: url(../../resources/images/001_60.png) no-repeat 1px 1px;
+    display: block;
+    height: 23px;
+    line-height: 19px;
+    text-decoration: none;
+    width: 47px;
+    text-indent: 10px;
+}
+
+.twitterContentTable {
+    padding-top: 5px;
+}
+
+.twitterUserIcon {
+    width: 48px;
+}
+
+.twitterUserIcon .xfLabel {
+    width: 0px;
+}
+
+.twitterUserIcon .xfValue{
+    margin-right: 5px;
+    height: 48px;
+    width: 48px;
+    display: block;
+}
+
+.twitterContent .xfMinimalTrigger .xfValue {
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+.twitterContent .xfOutput .xfValue {
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+.twitterTweet {
+    font-size: 10pt;
+}
+
+.twitterStatus {
+    font-size: 8pt;
+    display: block;
+    float: left;
+    margin-left: 4px;
+}
+
+.twitterStatus .xfOutput .xfLabel,
+.twitterStatus .xfRepeated .xfLabel {
+    display: inline;
+    margin-right: 3px;
+    margin-left: 0px;
+    font-size: 8pt;
+    font-weight: bold;
+    float:none;
+}
+
+.twitterStatus .xfOutput .xfValue{
+    display: inline;
+    margin-right: 3px;
+    font-size: 8pt;
+    float:none;
+}
+
+.twitterUserContent {
+    width:70%;
+}
+
+.twitterUserHeading .xfLabel {
+   font-size: 12pt !important;
+}
+
+.twitterUserInfo {
+    display:block;
+}
+
+.twitterUserInfo .xfLabel{
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+.twitterUserInfo .xfValue{
+    margin-left: 5px;
+    font-size: 8pt;
+}
+
+.twitterPublic button {
+    background: url(../../resources/images/001_60-r.png) no-repeat 5px 5px;
+    display: block;
+    height: 32px;
+    line-height: 29px;
+    text-decoration: none;
+    width: 195px;
+    text-indent: 15px;
+}

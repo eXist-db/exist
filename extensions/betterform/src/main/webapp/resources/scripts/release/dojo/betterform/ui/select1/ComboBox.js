@@ -1,0 +1,8 @@
+/*
+	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
+if(!dojo._hasResource["betterform.ui.select1.ComboBox"]){dojo._hasResource["betterform.ui.select1.ComboBox"]=true;dojo.provide("betterform.ui.select1.ComboBox");dojo.require("betterform.ui.ControlValue");dojo.declare("betterform.ui.select1.ComboBox",betterform.ui.ControlValue,{buildRendering:function $DA4N_(){this.domNode=this.srcNodeRef;},postMixInProperties:function $DA4O_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);if(dojo.attr(this.srcNodeRef,"incremental")==undefined||dojo.attr(this.srcNodeRef,"incremental")==""||dojo.attr(this.srcNodeRef,"incremental")=="true"){this.incremental=true;}else{this.incremental=false;}},postCreate:function $DA4P_(){dojo.connect(this.domNode,"onchange",this,"_onChange");this.setCurrentValue();},_onFocus:function $DA4Q_(){this.inherited(arguments);this.handleOnFocus();},_onBlur:function $DA4R_(){this.inherited(arguments);this.handleOnBlur();},_onChange:function $DA4S_(){var _1=this.domNode.options[this.domNode.selectedIndex];fluxProcessor.dispatchEventType(this.xfControl.id,"DOMActivate",dojo.attr(_1,"id"));if(this.incremental){this.setControlValue();}},getControlValue:function $DA4T_(){if(this.domNode.selectedIndex!=-1&&this.domNode.options!=undefined){var _2=this.domNode.options[this.domNode.selectedIndex];return dojo.attr(_2,"value");}else{return null;}},_handleSetControlValue:function $DA4U_(_3){for(i=0;i<this.domNode.options.length;i++){if(this.domNode.options[i].value==_3){this.domNode.selectedIndex=i;}}}});}

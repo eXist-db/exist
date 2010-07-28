@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:xf="http://www.w3.org/2002/xforms"
+	  xmlns:ev="http://www.w3.org/2001/xml-events"
+		>
+	<head>
+		<title>Embedding a subform with the load action</title>
+		<meta name="author" content="joernt at users.sourceforge.net"/>
+		<meta name="author" content="lars.windauer at chiba-project.org"/>
+		<meta name="description" content="XForms demo for embedding subforms with the load action"/>
+
+		<link rel="stylesheet" type="text/css" href="../../styles/bf.css"/>
+		<link rel="stylesheet" type="text/css" href="../../resources/styles/demo.css"/>
+
+		<script type="text/javascript">
+			dojo.require('dijit.layout.ContentPane');
+		</script>
+	</head>
+<body class="soria" style="margin:30px;">
+		<div id="xforms">
+			<div style="display:none">
+				<xf:model id="master">
+					<xf:instance id="contact">
+						<data xmlns="">
+							<address id="1">
+								<title>Herr</title>
+								<firstNames>Max</firstNames>
+								<name>Mustermann</name>
+								<street>Goethestr. 47</street>
+								<city>Hamburg</city>
+								<zip>223456</zip>
+								<country>Germany</country>
+							</address>
+							<address id="2">
+								<title>Frau</title>
+								<firstNames>Maxi</firstNames>
+								<name>Musterfrau</name>
+								<street>Schillerstr. 42</street>
+								<city>Berlin</city>
+								<zip>12234</zip>
+								<country>Germany</country>
+							</address>
+							<address id="3">
+								<title>Prof. Dr.</title>
+								<firstNames>Mäxle</firstNames>
+								<name>Mustermann</name>
+								<street>Passeig de Gràcia 12</street>
+								<city>Barcelona</city>
+								<zip>08008</zip>
+								<country>Spain</country>
+							</address>
+							<address id="4">
+								<title>Dipl. Inf</title>
+								<firstNames>Max</firstNames>
+								<name>Power</name>
+								<street>Hegelweg. 23</street>
+								<city>Dresden</city>
+								<zip>01326</zip>
+								<country>Germany</country>
+							</address>
+						</data>
+					</xf:instance>
+
+					<xf:submission id="update-subform"
+								   resource="model:address#instance('default')/address"
+								   method="post"
+								   replace="none"
+								   ref="address[index('addresses')]">
+						<!--<xf:message ev:event="xforms-submit-done" level="ephemeral">Masterform has updated Subform.</xf:message>-->
+					</xf:submission>
+
+				</xf:model>
+			</div>
+			<div class="Section" dojotype="dijit.layout.ContentPane">
+
+				<xf:group appearance="full" id="contact" class="contactsFullGroup">
+					<div class="Headline">Address Collection:</div>
+
+					<div class="description">
+						This Demo shows the loading of embeded Forms and how the data for the Subforms could be gathered.<br/>
+						The "Down"-Button loads a Subform which data is updated by the Masterform.<br/>
+						The "Up"-Button loads a Subform which updates its data for itself.
+					</div>
+
+					<xf:repeat id="addresses" nodeset="address" appearance="compact" class="contactsRepeat">
+						<xf:output ref="title">
+							<xf:label class="orderListHeader">Title</xf:label>
+						</xf:output>
+						<xf:output ref="firstNames">
+							<xf:label class="orderListHeader">First names</xf:label>
+						</xf:output>
+						<xf:output ref="name">
+							<xf:label class="orderListHeader">Name</xf:label>
+						</xf:output>
+						<xf:output ref="street">
+							<xf:label class="orderListHeader">Street</xf:label>
+						</xf:output>
+						<xf:output ref="zip">
+							<xf:label class="orderListHeader">ZIP Code</xf:label>
+						</xf:output>
+						<xf:output ref="city">
+							<xf:label class="orderListHeader">City</xf:label>
+						</xf:output>
+						<xf:output ref="country">
+							<xf:label class="orderListHeader">Country</xf:label>
+						</xf:output>
+
+					</xf:repeat>
+				</xf:group>
+
+				<xf:group appearance="minimal" class="contactsTriggerGroup">
+                    <table>
+                        <tr>
+                            <td class="contactsSpacerLeft"/>
+<!--
+                            <td>
+                                <xf:trigger class="contactsMasterTrigger">
+                                    <xf:label>push address to subform</xf:label>
+                                    <xf:action>
+                                        <xf:load show="embed" targetid="address">
+                                            <xf:resource
+                                                    value="concat(bffn:appContext('contextroot'),'/forms/demo/contacts_subform_1.xml')"/>
+                                        </xf:load>
+                                        <xf:send submission="update-subform"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </td>
+-->
+                            <td>
+                                <xf:trigger class="contactsSubTrigger">
+                                    <xf:label>pull address from master</xf:label>
+                                    <xf:action>
+                                        <xf:load show="embed" targetid="address">
+                                            <xf:resource
+                                                    value="concat(bffn:appContext('contextroot'),'/forms/demo/contacts_subform_2.xml')"/>
+                                        </xf:load>
+                                    </xf:action>
+                                </xf:trigger>
+                            </td>
+                            <td>
+                                <xf:trigger class="contactsUpdateMasterTrigger">
+                                    <xf:label>update master</xf:label>
+                                    <xf:send submission="s-update-master"/>
+                                </xf:trigger>
+                            </td>
+                            <td class="contactsSpacerRight"/>
+                        </tr>
+                    </table>
+				</xf:group>
+
+
+				<xf:group appearance="full" class="contactsFullGroup">
+					<div class="contactsSubForm">
+						<div id="address"></div>
+					</div>
+				</xf:group>
+
+			</div>
+		</div>
+	</body>
+</html>

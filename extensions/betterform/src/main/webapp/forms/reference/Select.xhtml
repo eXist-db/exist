@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xf="http://www.w3.org/2002/xforms"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      lang="de">
+    <head>
+        <title>Select Control</title>
+
+        <style type="text/css">
+            .xfGroupLabel {
+                font-size: 12pt;
+                font-weight: bold;
+                padding-bottom: 10px;
+            }
+
+            #mips{display:block;}
+
+            #mips .xfTrigger .dijitButtonContents {
+                width: 200px;
+            }
+            /*#control2{display:block;}*/
+
+        </style>
+
+
+        <link rel="stylesheet" type="text/css" href="../../resources/scripts/dojox/highlight/resources/highlight.css" />
+        <link rel="stylesheet" type="text/css" href="../../resources/styles/reference.css" />
+
+        <script type="text/javascript">
+            dojo.require("dijit.form.Button");
+            dojo.require("dijit.TitlePane");
+            dojo.require("dijit.Dialog");
+            dojo.require("dijit.form.DropDownButton");
+            dojo.require('dijit.layout.ContentPane');
+            dojo.require("dojox.highlight");
+            dojo.require("dojox.highlight.languages.xml");
+            dojo.require("dojox.xmpp.util");
+            dojo.addOnLoad(function() {
+                dojo.query("code").forEach(dojox.highlight.init);
+            });
+
+            function addToDocument(id){
+                var model = dojo.query(".xfModel", dojo.doc)[0];
+                dijit.byId(dojo.attr(model, "id")).getInstanceAsString(id,
+                    function(data){
+                        dojo.byId("instanceData").innerHTML=data;
+                    });
+            }
+        </script>
+
+    </head>
+    <body class="soria" style="margin:30px;">
+
+        <div id="xforms">
+            <div style="display:none;">
+                <xf:model id="model-1">
+                    <xf:instance id="instance-1" xmlns="">
+                        <data constraint="true" readonly="false" required="false" relevant="true">
+    <item>AX DZ</item>
+</data>
+                    </xf:instance>
+                    <xf:instance id="codes" xmlns="">
+                        <countrylist lang="en">
+                            <country>
+                                <country-name>AFGHANISTAN</country-name>
+                                <code>AF</code>
+                            </country>
+                            <country>
+                                <country-name>LAND ISLANDS</country-name>
+                                <code>AX</code>
+                            </country>
+                            <country>
+                                <country-name>ALBANIA</country-name>
+                                <code>AL</code>
+                            </country>
+                            <country>
+                                <country-name>ALGERIA</country-name>
+                                <code>DZ</code>
+                            </country>
+                        </countrylist>
+                    </xf:instance>
+                    <xf:instance id="instance" xmlns="">
+                        <data>
+    <content><![CDATA[]]></content>
+</data>
+                    </xf:instance>
+
+                    <xf:submission id="showInstance"
+                                   resource="{$contextroot}/jsp/debug-instance.jsp"
+                                   replace="instance"
+                                   ref="instance('instance')"
+                                   target="content"
+                                   instance="instance"
+                                   method="post"
+                            serialization="none"/>
+                    <xf:submission id="showInstance2"
+                                   resource="{$contextroot}/jsp/debug-instance.jsp"
+                                   replace="all"
+                                   ref="instance('instance')"
+                                   method="post"/>
+                </xf:model>
+            </div>
+
+            <div class="pagetitle">The select Control</div>
+            <div class="Section">
+                <div class="Headline">Description</div>
+                This form control allows the user to make multiple selections from a set of choices.
+                <br/><br/>
+                All select controls on this page are bound to the same instance. Thus if you change the value of
+                one control the others will update acccordngly.
+            </div>
+            <div class="Section">
+                <div class="Headline"><a href="http://www.w3.org/TR/xforms11/#ui-selectMany">XForms 1.1 Element Specification</a></div>
+            </div>
+
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <div class="Section">
+
+                <!-- ########### default (minimal) select ############ -->
+                <!-- ########### default (minimal) select ############ -->
+                <!-- ########### default (minimal) select ############ -->
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Select Control with appearance 'minimal'">
+                    <div class="description">
+                        If no appearance is given, the XForms select control defaults to a HTML select control.
+                    </div>
+
+                    <div class="Sample">
+                        <xf:select ref="item">
+                            <xf:label>Country</xf:label>
+                            <xf:itemset nodeset="instance('codes')/country">
+                                <xf:label ref="country-name"/>
+                                <xf:value ref="code"/>
+                            </xf:itemset>
+                        </xf:select>
+                    </div>
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms Model -->
+<xf:model id="model-1">
+    <xf:instance id="instance-1" xmlns="">
+        <data>
+            <item>AX DZ</item>
+        </data>
+    </xf:instance>
+
+    <xf:instance id="codes" xmlns="">
+        <countrylist lang="en">
+            <country>
+                <country-name>AFGHANISTAN</country-name>
+                <code>AF</code>
+            </country>
+            <country>
+                <country-name>LAND ISLANDS</country-name>
+                <code>AX</code>
+            </country>
+            <country>
+                <country-name>ALBANIA</country-name>
+                <code>AL</code>
+            </country>
+            <country>
+                <country-name>ALGERIA</country-name>
+                <code>DZ</code>
+            </country>
+        </countrylist>
+    </xf:instance>
+</xf:model>
+
+<!-- There's no xf:bind in this sample as 'string' is the default datatype. -->
+
+<!-- XForms UI -->
+<xf:select ref="item">
+    <xf:label>Country</xf:label>
+    <xf:itemset nodeset="instance('codes')/country">
+        <xf:label ref="country-name"/>
+        <xf:value ref="code"/>
+    </xf:itemset>
+</xf:select>]]></code></pre>
+                    </div>
+
+                </div>
+
+                <!-- ########### selection=open ############ -->
+                <!-- ########### selection=open ############ -->
+                <!-- ########### selection=open ############ -->
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Standart Select Control Appearance 'full'">
+                    <div class="description">
+                        Select with appearance="full" will be rendered as a set of checkboxes.
+                    </div>
+                    <div class="Sample">
+                        <xf:select id="control2" ref="item" appearance="full">
+                            <xf:label>Country</xf:label>
+                            <!--<xf:label>appearance = 'full'</xf:label>-->
+                            <xf:hint>This is a standard select control</xf:hint>
+                            <xf:help>Not much to say here but some basic html formatting
+                                is <b>possible</b></xf:help>
+                            <xf:alert>The select value is not valid</xf:alert>
+                            <xf:itemset nodeset="instance('codes')/country">
+                                <xf:label ref="country-name"/>
+                                <xf:value ref="code"/>
+                            </xf:itemset>
+                        </xf:select>
+                    </div>
+                    <div  dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms Model -->
+<xf:model id="model-1">
+    <xf:instance id="instance-1" xmlns="">
+        <data>
+            <item>AX DZ</item>
+        </data>
+    </xf:instance>
+
+    <xf:instance id="codes" xmlns="">
+        <countrylist lang="en">
+            <country>
+                <country-name>AFGHANISTAN</country-name>
+                <code>AF</code>
+            </country>
+            <country>
+                <country-name>LAND ISLANDS</country-name>
+                <code>AX</code>
+            </country>
+            <country>
+                <country-name>ALBANIA</country-name>
+                <code>AL</code>
+            </country>
+            <country>
+                <country-name>ALGERIA</country-name>
+                <code>DZ</code>
+            </country>
+        </countrylist>
+    </xf:instance>
+</xf:model>
+
+<!-- There's no xf:bind in this sample as 'string' is the default datatype. -->
+
+<!-- XForms UI -->
+<xf:select id="control2" ref="item" appearance="full">
+    <xf:label>Country</xf:label>
+    <xf:itemset nodeset="instance('codes')/country">
+        <xf:label ref="country-name"/>
+        <xf:value ref="code"/>
+    </xf:itemset>
+</xf:select>]]></code></pre>
+                    </div>
+
+
+                </div>
+
+
+                <!-- ########### selection=open ############ -->
+                <!-- ########### selection=open ############ -->
+                <!-- ########### selection=open ############ -->
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Standard Select Control">
+                    <div class="description">
+                        A select with attribute 'selection="open"' allows the user to add an entry that is not
+                        contained in the predefined list of choices. It will be rendered as a select along with an
+                        input control. The selection attribute takes precedence over the appearance attribute.
+            </div>
+
+                    <div class="Sample">
+                        <xf:select id="control3" ref="item"  selection="open">
+                            <xf:label>Country</xf:label>
+                            <!--<xf:label>selection='open'</xf:label>-->
+                            <xf:hint>This is a standard select control</xf:hint>
+                            <xf:help>Not much to say here but some basic html formatting
+                                is <b>possible</b></xf:help>
+                            <xf:alert>The select value is not valid</xf:alert>
+                            <xf:itemset nodeset="instance('codes')/country">
+                                <xf:label ref="country-name"/>
+                                <xf:value ref="code"/>
+                            </xf:itemset>
+                        </xf:select>
+                    </div>
+                    <div  dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms Model -->
+<xf:model id="model-1">
+    <xf:instance id="instance-1" xmlns="">
+        <data>
+            <item>AX DZ</item>
+        </data>
+    </xf:instance>
+
+    <xf:instance id="codes" xmlns="">
+        <countrylist lang="en">
+            <country>
+                <country-name>AFGHANISTAN</country-name>
+                <code>AF</code>
+            </country>
+            <country>
+                <country-name>LAND ISLANDS</country-name>
+                <code>AX</code>
+            </country>
+            <country>
+                <country-name>ALBANIA</country-name>
+                <code>AL</code>
+            </country>
+            <country>
+                <country-name>ALGERIA</country-name>
+                <code>DZ</code>
+            </country>
+        </countrylist>
+    </xf:instance>
+</xf:model>
+
+<!-- There's no xf:bind in this sample as 'string' is the default datatype. -->
+
+<!-- XForms UI -->
+<xf:select id="control3" ref="item"  selection="open">
+    <xf:label>Country</xf:label>
+    <xf:itemset nodeset="instance('codes')/country">
+        <xf:label ref="country-name"/>
+        <xf:value ref="code"/>
+    </xf:itemset>
+</xf:select>]]></code></pre>
+        </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div dojoType="dijit.Dialog" id="dFloatingPane" title="Instance Data Viewer"
+                    style="width:400px;height:400px;">
+            <div style="width:100%;height:400px;">
+                <pre><code id="instanceData"><data>
+        <foo/>
+    </data>
+</code></pre>
+</div>
+            </div>
+    </body>
+</html>

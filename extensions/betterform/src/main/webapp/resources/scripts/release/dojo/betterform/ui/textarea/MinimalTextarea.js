@@ -1,0 +1,8 @@
+/*
+	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
+if(!dojo._hasResource["betterform.ui.textarea.MinimalTextarea"]){dojo._hasResource["betterform.ui.textarea.MinimalTextarea"]=true;dojo.provide("betterform.ui.textarea.MinimalTextarea");dojo.require("betterform.ui.ControlValue");dojo.declare("betterform.ui.textarea.MinimalTextarea",betterform.ui.ControlValue,{rows:5,cols:40,templateString:"<span\n    ><textarea name=\"\" rows=\"${rows}\" cols=\"${cols}\" class=\"xfValue\" dojoAttachPoint=\"inputNode\" dojoAttachEvent=\"onchange:_valueChanged\"\n> </textarea></span>\n",templateString:null,postMixInProperties:function $DA5J_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);},postCreate:function $DA5K_(){this.inherited(arguments);this.inputNode.value=this.srcNodeRef.innerHTML;dojo.connect(this.domNode,"onkeypress",this,"_valueChanged");},_onFocus:function $DA5L_(){this.inherited(arguments);this.handleOnFocus();},_onBlur:function $DA5M_(){this.inherited(arguments);this.handleOnBlur();},getControlValue:function $DA5N_(){return this.inputNode.value;},_valueChanged:function $DA5O_(_1){if(this.incremental){this.setControlValue();}},applyState:function $DA5P_(){if(this.xfControl.isReadonly()){dojo.attr(this.inputNode,"disabled","disabled");}else{if(dojo.hasAttr(this.inputNode,"readonly")){dojo.removeAttr(this.inputNode,"disabled");}else{if(dojo.hasAttr(this.inputNode,"disabled")){dojo.removeAttr(this.inputNode,"disabled");}}}},_handleSetControlValue:function $DA5Q_(_2){this._setValueAttr(_2);}});}

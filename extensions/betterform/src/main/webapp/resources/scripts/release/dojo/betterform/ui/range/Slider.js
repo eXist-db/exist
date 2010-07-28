@@ -1,0 +1,8 @@
+/*
+	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
+if(!dojo._hasResource["betterform.ui.range.Slider"]){dojo._hasResource["betterform.ui.range.Slider"]=true;dojo.provide("betterform.ui.range.Slider");dojo.require("dijit.form.Slider");dojo.require("betterform.ui.ControlValue");dojo.require("dijit._Widget");dojo.require("dijit._Templated");dojo.declare("betterform.ui.range.Slider",[betterform.ui.ControlValue,dijit.form.HorizontalSlider],{start:null,end:null,step:null,postMixInProperties:function $DA3o_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);this.start=eval(dojo.attr(this.srcNodeRef,"start"));this.step=eval(dojo.attr(this.srcNodeRef,"step"));this.end=eval(dojo.attr(this.srcNodeRef,"end"));},postCreate:function $DA3p_(){this.inherited(arguments);this.setCurrentValue();},_onFocus:function $DA3q_(){this.inherited(arguments);this.handleOnFocus();},_onBlur:function $DA3r_(){this.inherited(arguments);this.handleOnBlur();},getControlValue:function $DA3s_(){return this.valueNode.value;},_setValueAttr:function $DA3t_(_1,_2){if(this.incremental&&this.valueNode.value!=_1&&this.valueNode.value!=""&&this.valueNode.value!="NaN"){this.valueNode.value=_1;this.setControlValue();}this.inherited(arguments);},_handleSetControlValue:function $DA3u_(_3){_3=eval(_3);if(_3!=undefined&&_3!=""&&_3!="NaN"){if(_3>this.end){this._setValueAttr(this.end);}else{if(_3<this.start){this._setValueAttr(this.start);}else{this._setValueAttr(_3);}}}}});}

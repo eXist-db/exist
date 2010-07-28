@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<errors>
+    <error id="xforms-exception">
+        <message xml:lang="de">
+            <title>Interner Prozessor Fehler</title>
+            <description/>
+        </message>
+        <message xml:lang="en">
+            <title>Internal Processor Exception</title>
+            <description/>
+        </message>
+    </error>
+    <error id="xforms-binding-exception">
+        <message xml:lang="de">
+            <title>Ungültiger Binding Ausdruck</title>
+            <description>
+            Ein xforms:model- oder xforms:bind Attribute enthält eine ungültige Referenz.
+            </description>
+        </message>
+        <message xml:lang="en">
+            <title>Invalid Binding</title>
+            <description>
+            Dispatched as an indication of: an illegal binding expression,
+            or a model attribute that fails to point to the ID of a model element,
+            or a bind attribute that fails to point to the ID of a bind element.
+            </description>
+        </message>
+    </error>
+    <error id="xforms-link-exception">
+        <message xml:lang="de">
+            <title></title>
+            <description></description>
+        </message>
+        <message xml:lang="en">
+            <title></title>
+            <description></description>
+        </message>
+    </error>
+    <error id="xforms-link-error">
+        <message xml:lang="de">
+            <title></title>
+            <description></description>
+        </message>
+        <message xml:lang="en">
+            <title></title>
+            <description></description>
+        </message>
+    </error>
+    <error id="xforms-compute-exception">
+        <message xml:lang="de">
+            <title></title>
+            <description></description>
+        </message>
+        <message xml:lang="en">
+            <title></title>
+            <description></description>
+        </message>
+    </error>
+</errors>
