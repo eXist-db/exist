@@ -29,6 +29,22 @@
     This file is applied to a Web application before it's own WEB_INF/web.xml file
   </description>
 
+    <!-- ======================================================================== -->
+    <!-- The AuditTrailSessionListener allows for the execution of XQuery scripts -->
+    <!-- when an HTTP session is created or destroyed.  Set the following Java    -->
+    <!-- properties to specify the scripts to run.                                -->
+    <!--                                                                          -->
+    <!-- org.exist.http.session_create_listener                                   -->
+    <!-- org.exist.http.session_destroy_listener                                  -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+    <!-- UNCOMMENT TO ACTIVATE
+    <listener>
+        <listener-class>org.exist.http.AuditTrailSessionListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.exist.http.SessionCountListener</listener-class>
+    </listener>
+    -->
 
   <!-- ==================================================================== -->
   <!-- Context params to control Session Cookies                            -->
