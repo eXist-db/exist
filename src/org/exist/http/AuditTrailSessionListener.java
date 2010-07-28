@@ -30,11 +30,13 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 
 import javax.servlet.http.HttpSessionListener;
@@ -130,14 +132,34 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     return;
                 }
 
-                XQueryContext context = xquery.newContext(AccessContext.REST);
+                XQueryPool xqpool = xquery.getXQueryPool();
+                CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
+                XQueryContext context;
+                if (compiled == null)
+                    context = xquery.newContext(AccessContext.REST);
+                else
+                    context = compiled.getContext();
+                context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
+                context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
-                CompiledXQuery compiled = xquery.compile(context, source);
+                if (compiled == null)
+                    compiled = xquery.compile(context, source);
+                else {
+                    compiled.getContext().updateContext(context);
+                    context.getWatchDog().reset();
+                }
 
                 Properties outputProperties = new Properties();
+                Sequence result = null;
 
-                Sequence result = xquery.execute(compiled, null, outputProperties);
-                LOG.info("XQuery execution results: " + result.toString());
+                try {
+                    long startTime = System.currentTimeMillis();
+                    result = xquery.execute(compiled, null, outputProperties);
+                    long queryTime = System.currentTimeMillis() - startTime;
+                    LOG.info("XQuery execution results: " + result.toString()  + " in " + queryTime + "ms.");
+                } finally {
+                    xqpool.returnCompiledXQuery(source, compiled);
+                }
 
             } catch (Exception e) {
                 LOG.error("Exception while executing [" + xqueryResourcePath + "] script for " + principal.getName(), e);
