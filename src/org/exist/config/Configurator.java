@@ -21,22 +21,25 @@
  */
 package org.exist.config;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
 import org.exist.dom.ElementAtExist;
 import org.exist.memtree.SAXAdapter;
+import org.exist.util.ConfigurationHelper;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -47,8 +50,6 @@ import org.xml.sax.XMLReader;
  */
 public class Configurator {
 	
-	private final static Logger LOG = Logger.getLogger(Configurator.class);
-
 	private static Map<Class<Configurable>, Map<String, Field>> map = 
 		new HashMap<Class<Configurable>, Map<String, Field>>();
 	
@@ -65,29 +66,37 @@ public class Configurator {
     	return link;
 	}
 	
-	public static boolean configure(Configurable instance, ConfigElement configuration) {
+	public static Configuration configure(Configurable instance, Configuration configuration) {
 		Class<?> clazz = instance.getClass();
 		instance.getClass().getAnnotations();
 		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
-			LOG.info("no configuration name at "+instance.getClass());
-			return false;
+			//LOG.info("no configuration name at "+instance.getClass());
+			return null;
 		}
 		
 		String configName = clazz.getAnnotation(ConfigurationClass.class).value();
 		
-		return configureByCurrent(instance, configuration.getConfiguration(configName));
+		Configuration config = configuration.getConfiguration(configName);
+		if (config == null) {
+			System.out.println("no configuration ["+configName+"]");
+			return null;
+		}
+		
+		return configureByCurrent(instance, config);
 	}
 
-	private static boolean configureByCurrent(Configurable instance, ConfigElement configuration) {
+	private static Configuration configureByCurrent(Configurable instance, Configuration configuration) {
 		Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
-		List<String> properties = configuration.getProperties();
+		Set<String> properties = configuration.getProperties();
 		
-		if (properties.size() == 0)
-			LOG.info("no properties for "+instance.getClass()+" @ "+configuration);
+		if (properties.size() == 0) {
+			//LOG.info("no properties for "+instance.getClass()+" @ "+configuration);
+			return configuration;
+		}
 		
 		for (String property : properties) {
 			if (!properyFieldMap.containsKey(property)) {
-				LOG.warn("unused property "+property);
+				System.out.println("unused property "+property+" @"+configuration.getName());
 				continue;
 			}
 			
@@ -96,32 +105,63 @@ public class Configurator {
 			try {
 				if (typeName.equals("java.lang.String")) {
 					String value = configuration.getProperty(property);
-					if (value != null)
+					if (value != null) {
+						field.setAccessible(true);
 						field.set(instance, value);
+					}
 				} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
 					Integer value = configuration.getPropertyInteger(property);
-					if (value != null)
+					if (value != null) {
+						field.setAccessible(true);
 						field.set(instance, value);
+					}
+				} else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
+					Long value = configuration.getPropertyLong(property);
+					if (value != null) {
+						field.setAccessible(true);
+						field.set(instance, value);
+					}
 				} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
 					Boolean value = configuration.getPropertyBoolean(property);
-					if (value != null)
+					if (value != null) {
+						field.setAccessible(true);
 						field.set(instance, value);
+					}
 				} else {
 					throw new IllegalArgumentException("unsupported configuration value type "+field.getType());
 				}
 			} catch (IllegalArgumentException e) {
-				LOG.warn("configuration error",e);
-				return false;
+				System.out.println("configuration error: \n" +
+						" config: "+configuration.getName()+"\n" +
+						" property: "+property+"\n" +
+						" message: "+e.getMessage());
+				return null; //XXX: throw configuration error
 			} catch (IllegalAccessException e) {
-				LOG.debug("security error",e);
-				return false;
+				System.out.println("security error: "+e.getMessage());
+				return null; //XXX: throw configuration error
 			}
 		}
 		
-		return true;
+		return configuration;
 	}
 
-	public static ConfigElement parse(InputStream is) throws IOException {
+//	public static Configuration parse(InputStream is) throws ExceptionConfiguration {
+//		throw new ExceptionConfiguration("parser was not implemented");
+//	}
+
+	public static Configuration parse(File file) throws ExceptionConfiguration {
+		try {
+			return parse(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			throw new ExceptionConfiguration(e);
+		}
+	}
+
+//	public static Configuration parseDefault() throws ExceptionConfiguration {
+//		throw new ExceptionConfiguration("default configuration parser was not implemented");
+//	}
+
+	public static Configuration parse(InputStream is) throws ExceptionConfiguration {
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(true);
@@ -132,11 +172,21 @@ public class Configurator {
 			reader.setContentHandler(adapter);
 			reader.parse(src);
     
-			return new ConfigElementImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+			return new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
 		} catch (ParserConfigurationException e) {
-			throw new IOException(e);
+			throw new ExceptionConfiguration(e);
 		} catch (SAXException e) {
-			throw new IOException(e);
+			throw new ExceptionConfiguration(e);
+		} catch (IOException e) {
+			throw new ExceptionConfiguration(e);
+		}
+	}
+	
+	public static Configuration parseDefault() throws ExceptionConfiguration {
+		try {
+			return parse(new FileInputStream(ConfigurationHelper.lookup("conf.xml")));
+		} catch (FileNotFoundException e) {
+			throw new ExceptionConfiguration(e);
 		}
 	}
 }

@@ -22,20 +22,33 @@
 package org.exist.config;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface ConfigElement {
+public interface Configuration {
 
-	public ConfigElement getConfiguration(String name);
+	public Configuration getConfiguration(String name);
 	
-	public List<ConfigElement> getConfigurations(String name);
+	public List<Configuration> getConfigurations(String name);
 
-    public List<String> getProperties();
+    public Set<String> getProperties();
 	
-	public String getProperty(String name);
-    public Integer getPropertyInteger(String name);
-    public Boolean getPropertyBoolean(String name);
+	public boolean hasProperty(String name);
+
+	public String getProperty(String property);
+	public Integer getPropertyInteger(String property);
+	public Long getPropertyLong(String property);
+    public Boolean getPropertyBoolean(String property);
+	public Class<?> getPropertyClass(String propertySecurityClass);
+
+	public void setProperty(String property, String value);
+	public void setProperty(String property, Integer value);
+
+	public Object putObject(String name, Object object);
+	public Object getObject(String name);
+
+	public String getName();
 }

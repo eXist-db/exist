@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2009 The eXist Project
+ *  Copyright (C) 2008-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -19,13 +19,14 @@
  *  
  *  $Id$
  */
-
 package org.exist.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.exist.dom.ElementAtExist;
 import org.w3c.dom.NamedNodeMap;
@@ -38,25 +39,31 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ConfigElementImpl extends ProxyElement<ElementAtExist> implements ConfigElement {
+public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements Configuration {
 	
 	private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
 	
-	private Map<String, List<ConfigElement>> configs = new HashMap<String, List<ConfigElement>>();
+	private Map<String, List<Configuration>> configs = new HashMap<String, List<Configuration>>();
 	
-	protected ConfigElementImpl() {
+	private ConfigurationImpl() {
 	}
 
-	protected ConfigElementImpl(ElementAtExist element) {
+	protected ConfigurationImpl(ElementAtExist element) {
+		this();
 		setProxyObject(element);
 	}
 
-	public ConfigElement getConfiguration(String name) {
+	@Override
+	public String getName() {
+		return getLocalName();
+	}
+
+	public Configuration getConfiguration(String name) {
 		if (getLocalName().equals(name)) {
 			return this;
 		}
 		
-		List<ConfigElement> list = getConfigurations(name);
+		List<Configuration> list = getConfigurations(name);
 		
 		if (list == null)
 			return null;
@@ -67,17 +74,17 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> implements C
 		return null;
 	}
 
-	public List<ConfigElement> getConfigurations(String name) {
+	public List<Configuration> getConfigurations(String name) {
 		if (configs.containsKey(name))
 			return configs.get(name);
 		
 		NodeList nodes = getElementsByTagName(name);
 
 		if (nodes.getLength() > 0) { 
-			List<ConfigElement> list = new ArrayList<ConfigElement>();
+			List<Configuration> list = new ArrayList<Configuration>();
 		
 			for (int i = 0; i < nodes.getLength(); i++) {
-				ConfigElement config = new ConfigElementImpl((ElementAtExist) nodes.item(i));
+				Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
 				list.add(config);
 			}
 			
@@ -108,6 +115,11 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> implements C
         setAttribute(name, value);
     }
 
+	@Override
+	public void setProperty(String property, Integer value) {
+		setAttribute(property, String.valueOf(value));
+	}
+    
     public Object getRuntimeProperty(String name) {
         return runtimeProperties.get(name);
     }
@@ -209,14 +221,33 @@ public class ConfigElementImpl extends ProxyElement<ElementAtExist> implements C
     }
 
 	
-    public List<String> getProperties() {
+    public Set<String> getProperties() {
     	NamedNodeMap attrs = getAttributes();
     	
-    	List<String> properties = new ArrayList<String>();
+    	Set<String> properties = new HashSet<String>();
     	for (int index = 0; index < attrs.getLength(); index++) {
     		properties.add(attrs.item(index).getLocalName());
     	}
     	
     	return properties;
+	}
+
+	@Override
+	public Class<?> getPropertyClass(String propertySecurityClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	//related objects
+	Map<String, Object> objects = new HashMap<String, Object>();
+	
+	@Override
+	public Object putObject(String name, Object object) {
+		return objects.put(name, object);
+	}
+
+	@Override
+	public Object getObject(String name) {
+		return objects.get(name);
 	}
 }
