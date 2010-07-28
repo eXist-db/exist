@@ -1,0 +1,128 @@
+/* ***************************************************************************** */
+/* ************** XFORMS CSS STYLESHEET  *************************************** */
+/* ***************************************************************************** */
+
+/* ***************************************************************************** */
+/* ****************** GENERAL XFORMS MIP AND COMMON-CHILD STYLES *************** */
+/* ***************************************************************************** */
+
+/*
+    The rules contained in this stylesheet have importance for the execution
+    of XForms logic such as hiding/showing non-relevant/relevant elements.
+
+    You may change the rendering of such styles but should do so by overwriting
+    these rules in your own stylesheet which you import in the document or by
+    inline style rules defined in the document.
+*/
+.xfDisabled iframe {
+    display: none;
+}
+
+.xfDisabled label {
+    display: none;
+}
+
+.xfDisabled .xfValue {
+    display: none;
+}
+
+.xfDisabled {
+    display: none;
+}
+
+.xfDisabled .xfHelpIcon {
+    display: none;
+}
+
+.xfDisabled span {
+    display: none;
+}
+
+.xfReadOnly .xfValue {
+    background:#E4E4E4 url(../images/buttonDisabled.png) repeat-x scroll center top;
+    border-color:#D5D5D5 #D5D5D5 #BDBDBD;
+    cursor:not-allowed !important;
+}
+
+/*********** styles character used for signaling 'required' (normally '*') ***********/
+
+.xfRepeat .xfLabel .xfRequiredSymbol {
+    display: inline;
+}
+
+.xfOptional .xfRequiredSymbol {
+    display: none;
+}
+
+.xfRequired .xfLabel{
+    /*background:url(../images/required.gif) no-repeat left top;*/
+    padding-left:10px;
+    font-weight:bold;
+}
+
+.xfRequiredEmpty  .xfLabel {
+    font-weight:bold;
+    color:orangered;
+}
+
+.xfRequired .xfValue .xfLabel{
+/*background:url(../images/required.gif) no-repeat left top;*/
+    padding-left: 0px;
+    font-weight: normal;
+}
+
+/*.xfHelpText {
+    position: absolute;
+    z-index:999;
+}*/
+
+.xfSelectOpen .xfValue{
+    width:100%;
+}
+/* ***************************************************************************** */
+/* **************************** REPEAT STYLES  ********************************* */
+/* ***************************************************************************** */
+
+.xfRepeatPrototype {
+    display: none;
+}
+
+.xfRepeatSelector {
+/*float: left;*/
+}
+
+.xfSelectorPrototype {
+    display: none;
+}
+
+.xfMinimalRepeat{
+    display:block;}
+
+.xfMinimalRepeat .xfRepeatItem{
+    float:left;
+    clear:none;}
+
+.xfMinimalRepeat .xfRepeatIndex{
+    float:left;
+    clear:none;}
+
+.xfCompactRepeat td .xfDisabled {
+    display:none;}
+
+
+/* ***************************************************************************** */
+/* **************************** SWITCH STYLES ********************************** */
+/* ***************************************************************************** */
+
+.xfSwitch .xfSelectedCase {
+    display: inherit;
+}
+
+.xfSwitch .xfDeselectedCase {
+    display: none;
+}
+
+.xfFullSwitch .caFillerTab {
+    overflow: hidden;
+}
+

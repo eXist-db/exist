@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xf="http://www.w3.org/2002/xforms"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      lang="de">
+    <head>
+        <title>Trigger Control</title>
+
+        <style type="text/css">
+            .xfGroupLabel {
+                font-size: 12pt;
+                font-weight: bold;
+                padding-bottom: 10px;
+            }
+
+            #mips .xfTrigger .dijitButtonContents {
+                width: 200px;
+            }
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="../../resources/scripts/dojox/highlight/resources/highlight.css" />
+        <link rel="stylesheet" type="text/css" href="../../resources/styles/reference.css" />
+
+        <script type="text/javascript">
+            dojo.require("dijit.form.Button");
+            dojo.require("dijit.TitlePane");
+            dojo.require('dijit.layout.ContentPane');
+            dojo.require("dojox.highlight");
+            dojo.require("dojox.highlight.languages.xml");
+            dojo.addOnLoad(function() {
+                dojo.query("code").forEach(dojox.highlight.init);
+            });
+        </script>
+
+
+    </head>
+    <body class="soria" style="margin:30px;">
+
+        <div id="xforms">
+            <div style="display:none;">
+                <xf:model id="model-1">
+                    <xf:instance id="instance-1" xmlns="">
+                        <data constraint="true" readonly="false" required="false" relevant="true">
+                            <item/>
+                        </data>
+                    </xf:instance>
+                </xf:model>
+            </div>
+
+            <div class="pagetitle">The trigger Control</div>
+            <div class="Section">
+                <div class="Headline">Description</div>
+                This form control is similar to the HTML element button and
+                allows for user-triggered actions. This form control may
+                also be used to construct other custom form controls.
+            </div>
+            <div class="Section">
+                <div class="Headline"><a href="http://www.w3.org/TR/xforms11/#ui-trigger">XForms 1.1 Element Specification</a></div>
+            </div>
+
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <!-- ####################### CONTENT SECTION STARTING HERE ########################### -->
+            <div class="Section">
+
+                <!-- ########### minimal trigger ############ -->
+                <!-- ########### minimal trigger ############ -->
+                <!-- ########### minimal trigger ############ -->
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Minimal trigger Control">
+                    <div class="description">
+                        A trigger with minimal appearance is rendered as a Link.
+                    </div>
+                    <div class="Sample">
+                        <xf:trigger ref="item" appearance="minimal">
+                            <xf:label>A minimal trigger</xf:label>
+                            <xf:message level="modal">Clicked minimal trigger</xf:message>
+                        </xf:trigger>
+                    </div>
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms UI -->
+<xf:trigger ref="item" appearance="minimal">
+    <xf:label>A minimal trigger</xf:label>
+    <xf:message level="modal">Clicked minimal trigger</xf:message>
+</xf:trigger>]]></code></pre>
+                    </div>
+                </div>
+
+                <!-- ########### standard trigger ############ -->
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Stanaard trigger">
+                    <div class="description">
+                        A trigger without any appearance is rendered as a standard button.
+                    </div>
+                    <div class="Sample">
+                        <xf:trigger ref="item">
+                            <xf:label>A standard trigger</xf:label>
+                            <xf:message level="ephemeral">Clicked standard trigger</xf:message>
+                        </xf:trigger>
+                    </div>
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms UI -->
+<xf:trigger ref="item">
+    <xf:label>A standard trigger</xf:label>
+    <xf:message level="ephemeral">Clicked standard trigger</xf:message>
+</xf:trigger>]]></code></pre>
+                    </div>
+
+                </div>
+
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Image trigger">
+                    <div class="description">
+                        A trigger can reference a picture to display instead of the label.
+                    </div>
+                    <div class="Sample">
+                        <xf:trigger src="../../images/bf_logo_67x27.png" ref="item">
+                            <xf:label>A image trigger</xf:label>
+                            <xf:message level="modal">Message from image trigger</xf:message>
+                        </xf:trigger>
+                    </div>
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<!-- XForms UI -->
+<xf:trigger src="../../resources/images/betterform50t.gif" ref="item">
+    <xf:label>A image trigger</xf:label>
+    <xf:message level="modal">Message from image trigger/xf:message>
+</xf:trigger> ]]></code></pre>
+                    </div>
+
+                </div>
+
+                <div class="Subsection" dojotype="dijit.TitlePane" open="true" title="Image trigger with CSS">
+                    <div class="description">
+                        <p>A trigger can be styled by CSS.</p>
+                        <p>
+                            Here the trigger is given an id and a CSS matcher is added for it. The corresponding
+                            button rendered in HTML will have the original id with '-value' attached. The matcher
+                            for the button is therefore #imageTrigger-value.
+                        </p>
+                        <p>This is only one example how to style controls with CSS. Besides identity matching alternative
+                        style rules are possible to achieve the same result. E.g. instead of #imageTrigger .xfValue would
+                        match the same element in the tree.</p>
+                    </div>
+                    <div class="Sample">
+                        <xf:trigger id="imageTrigger" ref="item">
+                            <xf:label/>
+                            <xf:message level="modal">Message from CSS image trigger</xf:message>
+                        </xf:trigger>
+                    </div>
+                    <div dojotype="dijit.TitlePane" open="false" title="XForms Markup">
+                        <pre><code class="xml"><![CDATA[<style type="text/css">
+    #imageTrigger-value{
+        background:url(../../images/bf_logo_67x27.png) no-repeat center;
+        width:100px;
+        height:40px;
+    }
+</style>
+<!-- XForms UI -->
+<xf:trigger id="imageTrigger" ref="item">
+    <xf:label/>
+    <xf:message level="modal">Message from CSS image trigger/xf:message>
+</xf:trigger> ]]></code></pre>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </body>
+</html>
+

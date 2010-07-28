@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2010. betterForm Project - http://www.betterform.de
+  ~ Licensed under the terms of BSD License
+  -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xf="http://www.w3.org/2002/xforms"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<head>
+    <title>Registration </title>
+
+    <link rel="stylesheet" type="text/css" href="../../resources/styles/registration.css"/>
+</head>
+<body>
+<div id="xforms">
+    <div id="registration" class="InlineRoundBordersAlert">
+    <div style="display:none">
+        <xf:model>
+            <xf:instance>
+                <data xmlns="">
+                    <firstname></firstname>
+                    <lastname></lastname>
+                    <alias></alias>
+                    <email></email>
+                    <pass1/>
+                    <pass2/>
+                    <agreement>true</agreement>
+                </data>
+            </xf:instance>
+
+            <xf:bind nodeset="alias" constraint="string-length(.) &gt; 3" required="true()"/>
+            <xf:bind nodeset="email" type="email" required="true()"/>
+            <xf:bind nodeset="pass1" constraint="string-length(.) &gt;= 6" required="true()"/>
+            <xf:bind nodeset="pass2" constraint=". = ../pass1" required="true()"/>
+            <xf:bind nodeset="agreement" type="boolean" />
+
+            <xf:submission id="s-send"
+						   replace="instance"
+						   resource="echo:test"
+						   method="get">
+                <xf:action ev:event="xforms-submit-error">
+                    <xf:message>Registration failed. Please fill in valid values</xf:message>
+                </xf:action>
+                <xf:action ev:event="xforms-submit-done">
+                    <xf:message>You have been registered successfully.</xf:message>
+                </xf:action>
+            </xf:submission>
+
+
+            <xf:setfocus control="first" ev:event="xforms-ready"/>
+
+
+        </xf:model>
+    </div>
+
+    <div id="signin">
+        Already a member? Sign in here
+    </div>
+    <xf:group appearance="bf:verticalTable">
+			<xf:label>Join the group<span id="subtitle">Enjoy being a part of it!</span></xf:label>
+			<xf:input id="first" ref="firstname">
+				<xf:label>Firstname:</xf:label>
+				<xf:hint>enter your firstname</xf:hint>
+			</xf:input>
+			<xf:input ref="lastname">
+				<xf:label>Lastname:</xf:label>
+				<xf:hint>enter your lastname</xf:hint>
+			</xf:input>
+			<xf:input ref="alias">
+				<xf:label>Username:</xf:label>
+				<xf:hint>please choose a username</xf:hint>
+				<xf:alert>enter more than 3 characters</xf:alert>
+			</xf:input>
+			<xf:input ref="email">
+				<xf:label>Email:</xf:label>
+				<xf:alert>is not a valid email address</xf:alert>
+				<xf:hint>enter a valid email address</xf:hint>
+			</xf:input>
+			<xf:secret ref="pass1">
+				<xf:label>password:</xf:label>
+				<xf:alert>must be at least 6 characters</xf:alert>
+				<xf:hint>more than 6 characters required</xf:hint>
+			</xf:secret>
+			<xf:secret ref="pass2">
+				<xf:label>reenter password:</xf:label>
+				<xf:hint>please retype your password</xf:hint>
+				<xf:alert>password does not match</xf:alert>
+			</xf:secret>
+			<xf:trigger appearance="triggerMiddleColumn">
+				<xf:label>Create my account</xf:label>
+                <xf:hint>Be calm - this is just a demo! ;)</xf:hint>
+				<xf:send submission="s-send"/>
+			</xf:trigger>
+		</xf:group>
+	</div>
+</div>
+</body>
+</html>

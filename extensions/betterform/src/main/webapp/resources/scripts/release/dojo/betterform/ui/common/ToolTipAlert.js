@@ -1,0 +1,8 @@
+/*
+	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
+if(!dojo._hasResource["betterform.ui.common.ToolTipAlert"]){dojo._hasResource["betterform.ui.common.ToolTipAlert"]=true;dojo.provide("betterform.ui.common.ToolTipAlert");dojo.declare("betterform.ui.common.ToolTipAlert",null,{handleValid:function $DA00_(id,_2){var _3=dijit.byId(id+"-value");var _4=undefined;_4=dijit.byId(id+"-MasterToolTip-alert");if(_4!=undefined){_4.hide(_3.domNode);}if(dojo.hasClass(_3.domNode,"bfInvalidControl")){dojo.removeClass(_3.domNode,"bfInvalidControl");}},handleInvalid:function $DA01_(id,_6){var _7=dijit.byId(id+"-MasterToolTip-alert");if(_7==undefined){_7=new dijit._MasterTooltip({id:id+"-MasterToolTip-alert"});}var _8=dijit.byId(id);var _9=dojo.byId(id+"-alert");if(_9!=undefined){if(_6=="xfDisabled"){_7.hide(_8.domNode);}if(_6=="onFocus"&&(_8.getControlValue()!="")){_7.show(_9.innerHTML,dojo.byId(id+"-value"));}else{if(_6=="applyChanges"&&(_8.getControlValue()!=""||dojo.hasClass(_8.domNode,"xsdBoolean"))){_7.show(_9.innerHTML,dojo.byId(id+"-value"));dojo.style(_7.domNode,"opacity","1");dojo.fadeOut({node:_7.domNode,duration:8000,invalidControl:_8.controlValue,onBegin:function $DA02_(){dojo.addClass(this.invalidControl.domNode,"bfInvalidControl");}}).play();}else{_7.hide(dojo.byId(id+"-value"));}}}}});}

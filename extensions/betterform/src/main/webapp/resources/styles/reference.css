@@ -1,0 +1,120 @@
+/* 
+    Document   : reference.css
+    Created on : Oct 19, 2009, 1:48:59 PM
+    Author     : Jörn Turner <joern.turner (at) betterform.de>,
+                 Fabian Otto <fabian.otto (at) betterform.de>
+    Description:
+        Styling for refrence pages.
+*/
+
+#xforms{
+    margin-left:auto;
+    margin-right:auto;
+    width:620px;
+}
+.xfGroupLabel {
+    font-size: 12pt;
+    /*font-weight: bold;*/
+    /*padding-bottom: 10px;*/
+}
+
+.note{
+    font-size:12pt;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+
+#mips .xfTrigger .dijitButtonContents {
+    width: 200px;
+}
+
+.pagetitle{
+    font-size:16pt;
+    margin-left:8px;
+}
+
+.Headline {
+    font-size:   16pt;
+    font-weight: bold;
+    text-align:  center;
+}
+
+.Section {
+    /*
+                    border-width: 1px;
+                    border-color: black;
+                    border-style: dotted;
+    */
+    /*margin: 10px;*/
+    padding: 10px;
+}
+
+.Section .Headline {
+    font-size: 12pt;
+    text-align: left;
+}
+.Section .description{
+    padding:5px;
+    background:#fafafa;
+}
+
+.Section .Subsection {
+    /* border-top: 1px gray dotted; */
+    border:thin dotted;
+    margin-bottom:12px;
+}
+
+.Section .Subsection .Headline {
+    font-size: 14px;
+    margin: 5px;
+}
+
+.dijitTitlePane .dijitTitlePane{
+    margin-left:4px;
+    margin-right:4px;
+    margin-bottom:4px;
+}
+pre {
+    /* background: silver; */
+    font-family: monospace;
+    padding: 0px 0px 0px 8px;
+}
+
+pre, code {
+    border-width: 0px;
+    /*background:#ddddff;*/
+    background:white;
+    font-size:100%;
+}
+.model{
+    background:#dddddd;
+    padding:3px;
+    border:thin solid #cccccc;
+}
+.Sample {
+    background-color: lightsteelblue;
+    vertical-align: middle;
+    padding: 20px 10px 20px 10px;
+    overflow: auto;
+}
+.dateSample .xfControl {
+	display:block;	
+}
+.notes{
+    font-size:9pt;
+}
+.tundra .dijitTitlePaneContentInner {
+    padding:4px;
+}
+.soria .dijitTitlePaneContentInner {
+    padding:0;
+}
+.soria .dijitCheckBox {
+    background-image:url( '../images/spriteCheckbox.gif' );
+}
+#imageTrigger-value{
+    background:url(../../images/bf_logo_67x27.png) no-repeat center;
+    width:100px;
+    height:40px;
+}
+

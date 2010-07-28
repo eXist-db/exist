@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is the DTD for DWR v2.x -->
+
+<!--
+Top level conviguration element.
+-->
+<!ELEMENT dwr (
+    (init?), (allow?), (signatures?)
+)>
+
+<!--
+A list of all the classes to configure as part of dwr at startup time.
+-->
+<!ELEMENT init (
+    (creator | converter)*
+)>
+
+<!--
+Define a new method of creating objects for use by Javascript.
+We don't just allow access to any object and some may need special code to
+get a reference to them.
+-->
+<!ELEMENT creator EMPTY>
+<!--
+@attr id The unique name by which create elements refer to us.
+@attr class The fully qualified name of a class that implements Creator.
+-->
+<!ATTLIST creator
+    id ID #REQUIRED
+    class CDATA #REQUIRED
+>
+
+<!--
+Define a new way of converting between javascript objects and java objects.
+Many classes can have default conversion mechanisms but some require more
+custom conversion
+-->
+<!ELEMENT converter EMPTY>
+<!--
+@attr id The unique name by which convert elements refer to us.
+@attr class The fully qualified name of a class that implements Converter.
+-->
+<!ATTLIST converter
+    id ID #REQUIRED
+    class CDATA #REQUIRED
+>
+
+<!--
+Security: we must define which classes we are allowed to access because a
+free-for-all will be very dangerous.
+-->
+<!ELEMENT allow (
+    (create | convert | filter)*
+)>
+
+<!--
+Allow the creation of a class, and give it a name in javascript land.
+A reference to a creator is required as are some parameters specific to each
+creator that define the objects it allows creation of.
+It would be nice to make the creator and IDREF rather than a CDATA, since it
+refers to an element defined elsewhere, however we allow multiple dwr.xml
+files and we might refer to one in another file.
+-->
+<!ELEMENT create (
+    (param | include | exclude | auth | filter)*
+)>
+<!--
+@attr creator The id of the creator to use
+@attr javascript The name of the object to export to the browser
+@attr scope The scope of the created variable. The default is page.
+-->
+<!ATTLIST create
+    creator CDATA #REQUIRED
+    javascript CDATA #REQUIRED
+    scope (application | session | script | request | page) #IMPLIED
+>
+
+<!--
+A filter is a way to insert procesing tasks at various points during the
+processing of an Ajax call. See org.directwebremoting.AjaxFilter
+-->
+<!ELEMENT filter (
+    (param)*
+)>
+<!--
+@attr class The class name to use to filter requests
+-->
+<!ATTLIST filter
+    class CDATA #REQUIRED
+>
+
+<!--
+Some elements (currently only create although there is no hard reason why
+convert elements should not be the same) need customization in ways that we
+can't predict now, and this seems like the only way to do it.
+-->
+<!ELEMENT param (#PCDATA)>
+<!--
+@attr name The name of the parameter to this creator
+@attr value The value to set to the names parameter
+-->
+<!ATTLIST param
+    name CDATA #REQUIRED
+    value CDATA #IMPLIED
+>
+
+<!--
+A creator can allow and disallow access to the methods of the class that it
+contains. A Creator should specify EITHER a list of include elements (which
+implies that the default policy is denial) OR a list of exclude elements
+(which implies that the default policy is to allow access)
+-->
+<!ELEMENT include EMPTY>
+<!--
+@attr method The method to include
+-->
+<!ATTLIST include
+    method CDATA #IMPLIED
+>
+
+<!--
+See the include element
+-->
+<!ELEMENT exclude EMPTY>
+<!--
+@attr method The method to exclude
+-->
+<!ATTLIST exclude
+    method CDATA #IMPLIED
+>
+
+<!--
+The auth element allows you to specify that the user of a given method must be
+authenticated using J2EE security and authorized under a certain role.
+-->
+<!ELEMENT auth EMPTY>
+<!--
+@attr method The method to add role requirements to
+@attr role The role required to execute the given method
+-->
+<!ATTLIST auth
+    method CDATA #REQUIRED
+    role CDATA #REQUIRED
+>
+
+<!--
+Allow conversion of a class between Java and Javascript.
+A convert element uses a previously defined converter and gives a class match
+pattern (which can end with *) to define the classes it allows conversion of
+It would be nice to make the converter and IDREF rather than a CDATA, since it
+refers to an element defined elsewhere, however we allow multiple dwr.xml
+files and we might refer to one in another file.
+-->
+<!ELEMENT convert (
+    (param)*
+)>
+<!--
+@attr converter The id of the converter to use
+@attr match A class name to match for conversion
+@attr javascript The optional classname for the parameter
+-->
+<!ATTLIST convert
+    converter CDATA #REQUIRED
+    match CDATA #REQUIRED
+    javascript CDATA #IMPLIED
+>
+
+<!--
+If we are marshalling to collections, we need to be able to specify extra
+type information to converters that are unable to tell from reflection what to
+do. This element contains some Java method definitions
+-->
+<!ELEMENT signatures (#PCDATA)>

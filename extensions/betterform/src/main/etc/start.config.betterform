@@ -1,0 +1,83 @@
+# $Id: start.config 10356 2009-11-04 15:09:35Z shabanovd $
+#
+# This file controls what file are to be put on classpath or command line.
+#
+# Copied from Jetty and adopted to eXist.
+#
+# Format is as follows:
+# Each line contains entry for one JAR file.
+# Format of line:
+#
+#  <subject> [ <space> <condition> ]*
+#
+# where <subject>
+#   ends with ".class" is the Main class to run.
+#   ends with ".xml" is a configuration file for the command line
+#   ends with "/" is a directory from which add all jar and zip files from.
+#   ends with "/*" is a directory from which add all unconsidered jar and zip files from.
+#   all other subjects are treated as files to be added to the classpath.
+# Files starting with "/" are considered absolute, all others are relative to
+# the home directory.
+#
+# <condition> is one of:
+# "always"
+# "never"
+# "available" <space> <classname>
+# "!available" <space> <classname>
+# "java" <space> <operator> <version>
+# "nargs" <space> <operator> <number>
+# "mode" <space> <operator> <modename>
+# <modename> is one of "client", "standalone", "jetty" or "other"
+#  <operator> := one of "<",">","<=",">=","==","!="
+#
+exist.jar                                          always
+exist-optional.jar                                 always
+test/classes                                       mode == other
+lib/endorsed/*                                     always
+lib/core/antlr-%latest%.jar                        always
+lib/core/commons-pool-%latest%.jar                 always
+lib/core/excalibur-cli-%latest%.jar                mode != jetty
+lib/core/log4j-%latest%.jar                        always
+lib/core/sunxacml-%latest%.jar                              always
+lib/core/xmldb.jar                                 always
+lib/core/xmlrpc-common-%latest%.jar                always
+lib/core/xmlrpc-server-%latest%.jar                always
+lib/core/xmlrpc-client-%latest%.jar                always
+lib/core/ws-commons-util-%latest%.jar              always
+lib/core/jgroups-all-%latest%.jar                           always
+lib/core/javax.servlet-1.4.jar                     always
+lib/core/jEdit-syntax.jar                          mode == client
+lib/core/jline-%latest%.jar                        mode == client
+lib/core/quartz-%latest%.jar                       always
+lib/core/jta-%latest%.jar                                   always
+lib/core/stax-api-%latest%.jar                     always
+lib/core/commons-collections-%latest%.jar          always
+lib/core/commons-logging-%latest%.jar              always
+lib/optional/*                                     mode == other
+lib/optional/*                                     mode == jetty
+lib/optional/*                                     mode == cluster
+lib/optional/*                                     mode == standalone
+lib/optional/jing-%latest%.jar                     mode == client
+lib/optional/isorelax-%latest%.jar                 mode == client
+lib/extensions/*                                   always
+extensions/debuggee/lib/*                          always
+extensions/indexes/spatial/lib/*                   always
+extensions/indexes/lucene/lib/*                    always
+extensions/xprocxq/main/lib/*					   always
+lib/cocoon/*                                       mode == other
+lib/cocoon/*                                       mode == jetty
+lib/cocoon/*                                       mode == cluster
+lib/*                                              always
+tools/ant/lib/ant.jar                   		   always
+tools/ant/lib/junit-%latest%.jar                   mode == other
+tools/ant/lib/xmlunit-%latest%.jar                 mode == other
+tools/ant/lib/xmlunit-%latest%.jar                 mode == client
+tools/ant/lib/xmlunit-%latest%.jar                 mode == jetty
+tools/jetty/lib/*                                  mode == jetty
+tools/jetty/lib/*                                  mode == cluster
+tools/jetty/lib/*                                  mode == standalone
+tools/jetty/lib/*                                  mode == other
+lib/user/*                                         always
+tools/ircbot/lib/*                                 mode == jetty
+extensions/betterform/target/betterform/WEB-INF/lib/*	always
+extensions/betterform/target/betterform/WEB-INF/classes	always
