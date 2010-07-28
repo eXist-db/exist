@@ -55,7 +55,7 @@ public class ConfigurableTest {
 	public void simple() throws Exception {
 		InputStream is = new ByteArrayInputStream(config1.getBytes("UTF-8"));
         
-        ConfigElement config = Configurator.parse(is);
+        Configuration config = Configurator.parse(is);
         
         ConfigurableObject object = new ConfigurableObject(config);
         
@@ -86,7 +86,7 @@ public class ConfigurableTest {
         reader.setContentHandler(adapter);
         reader.parse(src);
         
-        ConfigElementImpl config = new ConfigElementImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+        ConfigurationImpl config = new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
         
         ConfigurableObject object = new ConfigurableObject(config);
         

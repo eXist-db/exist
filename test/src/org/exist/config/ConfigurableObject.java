@@ -49,8 +49,10 @@ public class ConfigurableObject implements Configurable {
 	@ConfigurationField("valueBoolean")
 	protected Boolean someBoolean = true;
 
-	public ConfigurableObject(ConfigElement config) {
-		Configurator.configure(this, config);
+	private Configuration configuration;
+	
+	public ConfigurableObject(Configuration config) {
+		configuration = Configurator.configure(this, config);
 	}
 
 	/* (non-Javadoc)
@@ -58,8 +60,12 @@ public class ConfigurableObject implements Configurable {
 	 */
 	@Override
 	public boolean isConfigured() {
-		// TODO Auto-generated method stub
-		return false;
+		return (configuration == null);
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 }
