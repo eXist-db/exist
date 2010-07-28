@@ -232,10 +232,10 @@ public class QName implements Comparable<QName> {
 		if (p == Constants.STRING_NOT_FOUND)
 			return null;
 		if (p == 0)
-			throw new IllegalArgumentException("Illegal QName: starts with a :");
+			throw new IllegalArgumentException("Illegal QName: starts with a :"); //TODO: change to XPathException? -shabanovd
         // fixme! Should we not use isQName() here? /ljo
         if (Character.isDigit(qname.substring(0,1).charAt(0))) {
-            throw new IllegalArgumentException("Illegal QName: starts with a digit");
+            throw new IllegalArgumentException("Illegal QName: starts with a digit"); //TODO: change to XPathException? -shabanovd
         }
 		return qname.substring(0, p);
 	}
@@ -252,11 +252,11 @@ public class QName implements Comparable<QName> {
 		if (p == Constants.STRING_NOT_FOUND)
 			return qname;
 		if (p == 0)
-			throw new IllegalArgumentException("Illegal QName: starts with a :");
+			throw new IllegalArgumentException("Illegal QName: starts with a :"); //TODO: change to XPathException? -shabanovd
 		if (p == qname.length())
-			throw new IllegalArgumentException("Illegal QName: ends with a :");
+			throw new IllegalArgumentException("Illegal QName: ends with a :"); //TODO: change to XPathException? -shabanovd
         if (!isQName(qname)) {
-			throw new IllegalArgumentException("Illegal QName: not a valid local name.");
+			throw new IllegalArgumentException("Illegal QName: not a valid local name."); //TODO: change to XPathException? -shabanovd
         }
 
 		return qname.substring(p + 1);

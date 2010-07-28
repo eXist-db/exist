@@ -228,7 +228,12 @@ public class ElementConstructor extends NodeConstructor {
                 qn = ((QNameValue)qnitem).getQName();
             } else {
                 //Do we have the same result than Atomize there ? -pb
-                qn = QName.parse(context, qnitem.getStringValue());
+            	try {
+            		qn = QName.parse(context, qnitem.getStringValue());
+            	} catch (IllegalArgumentException e) {
+        			throw new XPathException(this, "XPTY0004 '" + qnitem.getStringValue() + "' is not a valid element name");
+				}
+            	
                 //Use the default namespace if specified
                 /*
                  if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
