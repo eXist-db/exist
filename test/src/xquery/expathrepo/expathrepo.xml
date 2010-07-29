@@ -14,21 +14,22 @@
     <tearDown>
         <remove-collection collection="/db/expathrepo-test"/>
     </tearDown>
-    <!--test output="text">
-        <task>Install</task>      
-        <code>repo:install('file://./fxsl-1.0.xar')</code>
-        <expected>true</expected>
-    </test>
     <test output="text">
         <task>List</task>
         <code>contains(repo:list(),'fxsl-1.0')</code>
         <expected>false</expected>
     </test>
-    <test output="text">
+    
+    <!--test output="text">
         <task>List</task>
         <code>repo:list()</code>
         <expected>true</expected>
     </test>
+    <test output="text">
+        <task>Install</task>
+        <code>repo:install('http://127.0.0.1:8088/exist/repo/packages/fxsl-1.0.xar')</code>
+        <expected>true</expected>
+    </test>    
     <test output="text">
         <task>Remove</task>
         <code>repo:remove('fxsl-1.0')</code>
