@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Expath Repo tests</testName>
+    <description>
+        <p></p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="expathrepo-test"/>
+        <store collection="/db/expathrepo-test" name="test.xml"><![CDATA[
+<test>some test input</test>
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/expathrepo-test"/>
+    </tearDown>
+    <!--test output="text">
+        <task>Install</task>      
+        <code>repo:install('file://./fxsl-1.0.xar')</code>
+        <expected>true</expected>
+    </test-->    
+    <test output="text">
+        <task>List</task>
+        <code>contains(repo:list(),'fxsl-1.0')</code>
+        <expected>false</expected>
+    </test>
+    <!--test output="text">
+        <task>List</task>
+        <code>repo:list()</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>Remove</task>
+        <code>repo:remove('fxsl-1.0')</code>
+        <expected>true</expected>
+    </test-->
+
+    <!--test output="text">
+        <task>Locate</task>
+        <code>repo:locate()</code>
+        <expected></expected>
+    </test>
+    <test output="text">
+        <task>Create</task>
+        <code>repo:create()</code>
+        <expected></expected>
+    </test-->
+</TestSet>
