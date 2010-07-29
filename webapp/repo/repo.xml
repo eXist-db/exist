@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="../logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Package Management Repository</title>
+    	<subject>Package Management Repository</subject>
+    	<date>July 2010</date>
+        <author>
+            <firstname>James</firstname>
+            <surname>Fuller</surname>
+            <affiliation>
+                <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+
+    <chapter>
+    	<title>Repository</title>
+    	<section>
+        <title>Package Management</title>
+        <para>In any computing environment, managing dependencies is always difficult. The eXist-db repository
+            makes it easier to load external packages (.xar archives) which include everything they need to run third
+            party XQuery libraries or other XML technology functionality.
+        </para>
+         <para>
+             eXist-db now uses expath repository to resolve external dependencies located in repository to be used by xquery
+             and other XML technologies.
+         </para>
+        <para>
+            Using an XQuery package in the repository is as simple as importing it the normal way.
+<example>
+            <title>List existing packages</title>
+            <programlisting>
+            <markup>
+import module namespace repo="http://www.functx.com";
+
+functx:capitalize-first('hello')
+            </markup>
+            </programlisting>
+</example>
+            If you installed the functx-1.0.xar package the above would work as eXist package manager will resolve the module
+            from the repository.
+        </para>
+        <para>
+            <important>
+                <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
+            </important>
+        </para>
+    </section>
+
+        <section>
+            <title>Installation</title>
+            <para>
+                This module relies on the presence of the following jar files in the EXIST_HOME/lib/core folder
+
+<example>
+            <programlisting>
+            <markup>
+pkg-repo.jar
+            </markup>
+            </programlisting>
+</example>
+
+ This jar archive is downloaded for you during build or rebuild and placed into lib/core.
+</para>
+            <para>
+               If you are working off development /trunk you will need to do the following as eXist-db now depends on
+                package management repository.
+
+                <ul>
+                    <li>
+                        svn update to pick up new code
+                    </li>
+                    <li>
+                        ensure include.module.expathrepo = true in your extensions/local.build.properties
+                     </li>
+                    <li>
+                        rebuild eXist (so repo extension module gets built)
+                    </li>
+                </ul>
+You will then need to add the following module element to your conf.xml
+<example>
+            <programlisting>
+            <markup>
+                <module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
+                        uri="http://exist-db.org/xquery/repo" />
+
+            </markup>
+            </programlisting>
+</example>
+
+            </para>
+        </section>
+
+    <section>
+        <title>.xar Archive</title>
+        <para>The repository supports package archive in .xar format, containing XQuery, XSLT, Schema and XProc modules
+
+ </para>
+<para>
+    A .xar package format is a set of files bundled with a package description (expath-pkg.xml). For example, The
+    <a href="http://www.functx.com" target="functx">FunctX XQuery library</a> is packaged up as follows
+<example>
+            <title>functx-1.0.xar package distribution</title>
+            <programlisting>
+            <markup>
+expath-pkg.xml
+functx/
+   functx.xql
+   functx.xsl
+            </markup>
+            </programlisting>
+</example>
+The expath-pkg.xml contains <a href="http://expath.org/modules/pkg.html#d2e112" target="expathspec">package description</a>. The
+    .xar comprises of the zipped up distribution.
+</para>
+
+<para>
+    <important>
+        <para>We have shipped a few .xar packages in the <a href="http://127.0.0.1:8080/exist/repo/packages" target="dir">.xar directory</a> which you can use
+            to test installing a package.</para>
+    </important>
+</para>
+
+    </section>
+
+     <section>
+        <title>Using Repository from XQuery</title>
+<para>
+ The repository includes an extension module which provides three functions for programmatically controlling repository
+    from XQuery
+</para>
+         <section>
+            <title>repo:list()</title>
+<para>
+    The repo:list() function returns a sequence of strings containing the names of installed packages.
+
+    <example>
+			<title>List existing packages</title>
+			<programlisting>
+			<markup>
+import module namespace repo="http://exist-db.org/xquery/repo";
+
+repo:list()
+            </markup>
+			</programlisting>
+</example>
+</para>
+ </section>
+ <section>
+            <title>repo:install( URI )</title>
+    <para>
+        The repo:install() function returns a boolean value indicating success or failure of installation.
+
+        <example>
+			<title>Install existing packages</title>
+			<programlisting>
+			<markup>
+import module namespace repo="http://exist-db.org/xquery/repo";
+
+repo:install('http://127.0.0.1:8080/exist/repo/packages/functx-1.0.xar')
+            </markup>
+			</programlisting>
+</example>
+ </para>
+</section>
+
+<section>
+            <title>repo:remove( package name )</title>
+    <para>
+        The repo:remove() function returns a sequence of strings containing the names of installed packages.
+
+        <example>
+			<title>Remove existing packages</title>
+			<programlisting>
+			<markup>
+import module namespace repo="http://exist-db.org/xquery/repo";
+
+repo:remove('functx-1.0')
+            </markup>
+			</programlisting>
+</example>
+ </para>
+ </section>
+
+    </section>
+
+
+    <section>
+        <title>Resources</title>
+        <ul>
+            <li><a href="http://expath.org" target="_resource">EXPath</a>: Florent Georges maintains this Community defined extensions to XPath. Currently, xprocxq uses expath http-client module.</li>
+            <li><a href="http://expath.org/modules/pkg/" target="_resource">Expath Packaging Documentation</a>: Information on vendor specific expath repository implementations.</li>
+            <li><a href="http://expath.org/modules/pkg.html" target="_resource">Expath Package Specification</a>: Community defined specification</li>
+        </ul>
+    </section>
+
+    <section>
+        <title>FAQ</title>
+        <section>
+            <title>Why do we need this ?</title>
+        <para>Dependency management is difficult, but its also important to gaurd against 'bloat'. Over the coming weeks/months we will
+        be exporting functionality into third party .xar packages and it will reduce eXist core as well make it easy for you 
+        to create and distribute your own libraries and applications.</para>
+        </section>
+        <section>
+            <title>Where is the repository located ?</title>
+        <para>The repository gets created under the webapp/WEB-INF/expathrepo directory or top level directory relative from $EXIST_HOME.</para>
+        </section>
+
+        <section>
+            <title>Can I interact with the repository from the commandline ?</title>
+        <para>Yes, currently you can run the expath package jar commandline utility againt eXist repository.</para>
+        </section>
+
+        <section>
+            <title>I want more information</title>
+        <para>You can find more information in the sourcecode README at extensions/modules/src/org.exist.modules/expathrepo/readme.txt.</para>
+        </section>
+</section>
+</chapter>
+    
+</book>
