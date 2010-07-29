@@ -91,8 +91,8 @@ public class ExpathPackageModule extends AbstractInternalModule {
                     _repo = new Repository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
 
                 }else{
-                    new File("expathrepo").mkdir();
-                    _repo = new Repository(new File("expathrepo"));
+                    new File( System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
+                    _repo = new Repository(new File( System.getProperty("java.io.tmpdir") + "/expathrepo"));
                 }
 
             }
