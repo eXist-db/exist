@@ -724,6 +724,10 @@
             <module class="org.exist.xquery.functions.system.SystemModule"
                 uri="http://exist-db.org/xquery/system"/>
 
+            <!-- expathrepo module: required for managing external dependencies -->
+            <module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
+                uri="http://exist-db.org/xquery/repo" />
+
             <!-- New Modularized Indexes -->
             <module class="org.exist.xquery.modules.ngram.NGramModule"
                 uri="http://exist-db.org/xquery/ngram"/>
