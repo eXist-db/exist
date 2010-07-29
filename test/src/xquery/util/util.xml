@@ -249,9 +249,6 @@ return
 $text</code>
         <expected>http://www.example.com/~user/?test=1&amp;test1=2</expected>
     </test>
-
-
-
     <test output="text">
         <task>util:uuid</task>
         <code>let $input := util:uuid(<test/>)
@@ -260,8 +257,26 @@ return
         <expected>true</expected>
     </test>
 
+    <test output="text">
+        <task>util:system-property</task>
+        <code>util:system-property("vendor")</code>
+        <expected>eXist Project</expected>
+    </test>
+    <test output="text">
+        <task>util:system-property</task>
+        <code>util:system-property("vendor-url")</code>
+        <expected>http://exist-db.org</expected>
+    </test>
+    <test output="text">
+        <task>util:system-property</task>
+        <code>util:system-property("product-name")</code>
+        <expected>eXist</expected>
+    </test>
 
-
-
+    <test output="text">
+        <task>util:system-property</task>
+        <code>util:system-property("java.classpath")</code>
+        <expected>eXist</expected>
+    </test>
 
 </TestSet>
