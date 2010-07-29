@@ -18,13 +18,13 @@
         <task>Install</task>      
         <code>repo:install('file://./fxsl-1.0.xar')</code>
         <expected>true</expected>
-    </test-->    
+    </test>
     <test output="text">
         <task>List</task>
         <code>contains(repo:list(),'fxsl-1.0')</code>
         <expected>false</expected>
     </test>
-    <!--test output="text">
+    <test output="text">
         <task>List</task>
         <code>repo:list()</code>
         <expected>true</expected>
