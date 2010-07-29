@@ -561,8 +561,8 @@ public class Main {
                 new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();
                 repo = new File(existHome +"/webapp/WEB-INF/expathrepo");
             }else{
-                new File("expathrepo").mkdir();
-                repo = new File("expathrepo");
+                new File( System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
+                repo = new File( System.getProperty("java.io.tmpdir") + "/expathrepo");
             }           
             File[] modules = repo.listFiles(new FileFilter() {
                 public boolean accept(File file) {
