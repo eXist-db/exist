@@ -17,9 +17,9 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
 
     <chapter>
-    	<title>Repository</title>
+    	<title>Package Repository</title>
     	<section>
-        <title>Package Management</title>
+        <title>Overview</title>
         <para>In any computing environment, managing dependencies is always difficult. The eXist-db repository
             makes it easier to load external packages (.xar archives) which include everything they need to run third
             party XQuery libraries or other XML technology functionality.
@@ -57,8 +57,8 @@ functx:capitalize-first('hello')
         <section>
             <title>Installation</title>
             <para>
-                This module relies on the presence of the following jar files in the EXIST_HOME/lib/core folder
-
+                This module relies on the presence of the following jar files in the EXIST_HOME/lib/core folder. This jar
+                is included in the lib/core already.
 <example>
             <programlisting>
             <markup>
@@ -67,12 +67,10 @@ pkg-repo.jar
             </programlisting>
 </example>
 
- This jar archive is downloaded for you during build or rebuild and placed into lib/core.
 </para>
             <para>
                If you are working off development /trunk you will need to do the following as eXist-db now depends on
                 package management repository.
-
                 <ul>
                     <li>
                         svn update to pick up new code
@@ -88,8 +86,8 @@ You will then need to add the following module element to your conf.xml
 <example>
             <programlisting>
             <markup>
-                <module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
-                        uri="http://exist-db.org/xquery/repo" />
+&lt;module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
+        uri="http://exist-db.org/xquery/repo" /&gt;
 
             </markup>
             </programlisting>
@@ -191,7 +189,6 @@ repo:remove('functx-1.0')
 
     </section>
 
-
     <section>
         <title>Resources</title>
         <ul>
@@ -210,15 +207,27 @@ repo:remove('functx-1.0')
         to create and distribute your own libraries and applications.</para>
         </section>
         <section>
-            <title>Where is the repository located ?</title>
-        <para>The repository gets created under the webapp/WEB-INF/expathrepo directory or top level directory relative from $EXIST_HOME.</para>
+            <title>Where is the package repository located ?</title>
+        <para>The repository gets created under the webapp/WEB-INF/expathrepo directory, alternatively it will use the directory stored in java.io.tmp directory to install the repository.</para>
+        </section>
+        <section>
+            <title>Can I interact with the repository from the commandline ?</title>
+        <para>Yes, currently you can run the expath package jar commandline utility againt the eXist package repository. In the future
+            we may extend the expath package specification to suit eXist needs which may make it incompatible. You can unzip
+        the webapp/repo/packages/functx-1.0.xar package as an example or review the expath <a href="http://expath.org/modules/pkg.html" target="spec">specification</a>.
+        </para>
+        </section>    
+        <section>
+            <title>Can we use package types then XQuery</title>
+        <para>Currently we are focused on making XQuery module packages, though in the near future we should be able to deploy full applications
+            with xproc, schema, data, resources, as well as java jars.</para>
         </section>
 
         <section>
-            <title>Can I interact with the repository from the commandline ?</title>
-        <para>Yes, currently you can run the expath package jar commandline utility againt eXist repository.</para>
+            <title>I want to make my own .xar package</title>
+        <para>Its very easy to package up your own XQuery modules to create a .xar format. Essentially you need to define expath-pkg.xml
+        file which describes the package, then include the libraries then zip it up and give it a .xar extension. </para>
         </section>
-
         <section>
             <title>I want more information</title>
         <para>You can find more information in the sourcecode README at extensions/modules/src/org.exist.modules/expathrepo/readme.txt.</para>
