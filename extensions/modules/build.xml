@@ -95,7 +95,9 @@
     <condition property="include.module.xmlcalabash.config">
         <istrue value="${include.module.xmlcalabash}"/>
     </condition>
-
+    <condition property="include.module.expathrepo.config">
+        <istrue value="${include.module.expathrepo}"/>
+    </condition>
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
@@ -149,10 +151,23 @@
     </target>
 
     <!-- 
-        Special targets for xmlcalabash module 
+        existdb-contrib fetch task import used for downloading and extracting jar/class from zip
     -->
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
- 
+
+   <!--
+        Special targets for expath package module
+    -->
+    <target name="prepare-expathrepo" if="include.module.expathrepo.config">
+        <echo message="------------------------------------------------------"/>
+        <echo message="Downloading libraries required by the expath package module"/>
+        <echo message="------------------------------------------------------"/>
+
+          <get src="${include.module.expathrepo.url}"
+                dest="${top.dir}/${lib.core}"/>
+
+    </target>
+
     <!-- 
         Special targets for xmlcalabash module 
     -->
@@ -254,7 +269,7 @@
         ========================================
     -->
 
-    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-xmpp,prepare-xmlcalabash">
+    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
         <mkdir dir="${classes}"/>
     </target>
 
@@ -296,6 +311,7 @@
             <exclude name="org/exist/xquery/modules/xmpp/**" unless="include.module.xmpp.config"/>
             <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
             <exclude name="org/exist/xquery/modules/xmlcalabash/**" unless="include.module.xmlcalabash.config"/>
+            <exclude name="org/exist/xquery/modules/expathrepo/**" unless="include.module.expathrepo.config"/>
         </javac>
     </target>
 
