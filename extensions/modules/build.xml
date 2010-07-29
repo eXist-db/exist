@@ -163,8 +163,9 @@
         <echo message="Downloading libraries required by the expath package module"/>
         <echo message="------------------------------------------------------"/>
 
-          <get src="${include.module.expathrepo.url}"
-                dest="${top.dir}/${lib.core}"/>
+        <!-- disabled because teamcity doesn't like it -->
+          <!--get src="${include.module.expathrepo.url}"
+                dest="${top.dir}/${lib.core}"/-->
 
     </target>
 
