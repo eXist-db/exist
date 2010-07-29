@@ -52,10 +52,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
     private final static FunctionDef[] functions = {
         new FunctionDef(ListFunction.signature, ListFunction.class),
         new FunctionDef(InstallFunction.signature, InstallFunction.class),
-        new FunctionDef(RemoveFunction.signature, RemoveFunction.class),
-        new FunctionDef(CreateFunction.signature, CreateFunction.class),
-        new FunctionDef(LookupFunction.signature, LookupFunction.class),
-        new FunctionDef(RepoFunction.signature, RepoFunction.class)
+        new FunctionDef(RemoveFunction.signature, RemoveFunction.class)
     };
 
     public ExpathPackageModule() throws XPathException {
