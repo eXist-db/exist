@@ -20,13 +20,14 @@
     	<title>Package Repository</title>
     	<section>
         <title>Overview</title>
-        <para>In any computing environment, managing dependencies is always difficult. The eXist-db repository
-            makes it easier to load external packages (.xar archives) which include everything they need to run third
-            party XQuery libraries or other XML technology functionality.
+        <para>In any computing environment, managing dependencies is difficult. The eXist-db package repository
+            makes it easy to manage and deploy external packages (.xar archives) which include everything they need to run
+            third party XQuery libraries to full applications or other XML technology functionality.
         </para>
          <para>
-             eXist-db now uses expath repository to resolve external dependencies located in repository to be used by xquery
-             and other XML technologies.
+             eXist-db now uses expath repository to resolve external XQuery dependencies located in [package repository
+             to be used by your own XQuery. Soon we will also have support for being able to deploy and manage
+             other XML technologies like XSLT, Xproc, Schema, and data/resources.
          </para>
         <para>
             Using an XQuery package in the repository is as simple as importing it the normal way.
@@ -39,6 +40,8 @@ import module namespace repo="http://www.functx.com";
 functx:capitalize-first('hello')
             </markup>
             </programlisting>
+    <a href="install-functx.xqy" target="_example">click here to install functx</a>
+
 </example>
             If you installed the functx-1.0.xar package the above would work as eXist package manager will resolve the module
             from the repository.
@@ -148,7 +151,9 @@ import module namespace repo="http://exist-db.org/xquery/repo";
 repo:list()
             </markup>
 			</programlisting>
-</example>
+        <a href="list-repo.xqy" target="_example">click here to list packages in repository</a>
+        </example>
+
 </para>
  </section>
  <section>
@@ -165,6 +170,7 @@ import module namespace repo="http://exist-db.org/xquery/repo";
 repo:install('http://127.0.0.1:8080/exist/repo/packages/functx-1.0.xar')
             </markup>
 			</programlisting>
+            <a href="install-functx.xqy" target="_example">click here to install functx</a>
 </example>
  </para>
 </section>
@@ -183,6 +189,8 @@ import module namespace repo="http://exist-db.org/xquery/repo";
 repo:remove('functx-1.0')
             </markup>
 			</programlisting>
+            <a href="remove-functx.xqy" target="_example">click here to remove functx</a>
+
 </example>
  </para>
  </section>
