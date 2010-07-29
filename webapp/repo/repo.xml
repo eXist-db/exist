@@ -47,6 +47,10 @@ functx:capitalize-first('hello')
             <important>
                 <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
             </important>
+            <important>
+                <para>Any newly installed packages still requires you to restart eXistdb, a limitation we will be addressing in the near future.</para>
+            </important>
+
         </para>
     </section>
 
