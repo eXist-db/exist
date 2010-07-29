@@ -3,11 +3,11 @@ declare namespace rb="http://kjc-fs1.kjc.uni-heidelberg.de/refbase";
 
 (: credentials :)
 declare variable $scope  := doc('/db/scripts/refbase/conf.xml');
-declare variable $repository-name as xs:string := $scope/repositroy/name/string();
-declare variable $database as xs:string := $scope/repositroy/driver/database/string();
+declare variable $repository-name as xs:string := $scope/repository/name/string();
+declare variable $database as xs:string := $scope/repository/driver/database/string();
 declare variable $repository := concat($repository-name,"?repository=",$database,"&amp;");
-declare variable $username as xs:string := $scope/repositroy/driver/user/string();
-declare variable $password as xs:string := $scope/repositroy/driver/password/string();
+declare variable $username as xs:string := $scope/repository/driver/user/string();
+declare variable $password as xs:string := $scope/repository/driver/password/string();
 declare variable $collection := 'xmldb:exist:///db/mods/refbase/';
 declare variable $file-name := 'refbase-metadata.xml';
 
@@ -28,7 +28,7 @@ declare function local:transform-entries($doc as document-node()) as document-no
  document {
    
      for $serial in $doc//rb:repository/rb:id/sql:result/sql:row
-      return  
+      return
         <mods xmlns="http://www.loc.gov/mods/v3" version="3.4" ID="{$serial/sql:serial/string()}">
         <typeOfResource>text</typeOfResource> 
         <titleInfo><title>{$serial/sql:title/string()}</title></titleInfo>
@@ -55,7 +55,6 @@ declare function local:transform-entries($doc as document-node()) as document-no
  
 };
 
-
 (: retrieve the input doc :)
 declare function local:get-in($serial) as document-node() {
 let $serial_id := concat('serial=',$serial)
@@ -67,6 +66,7 @@ let $serial_id := concat('serial=',$serial)
                            send-authorization="true"/>
    return
      (: error checking is left as an exercise :)
+
      http:send-request($req)[2]
 };
 
@@ -95,4 +95,3 @@ if (not($serial))
  
 }
 </modsCollection>
-
