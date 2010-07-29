@@ -126,6 +126,12 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
+import java.io.File;
+import org.exist.source.FileSource;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.PkgHandlerExist;
+import org.expath.pkg.repo.Repository;
+import org.expath.pkg.repo.URISpace;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -339,6 +345,91 @@ public class XQueryContext
     private XACMLSource                                source                        = null;
 
     private DebuggeeJoint                              debuggeeJoint                 = null;
+
+
+    // NOTE: expathrepo whilst we figure out managing deps
+    private static Repository _repo = null;
+
+    private static synchronized Repository getRepo()
+            throws XPathException
+    {
+        if ( _repo == null ) {
+            try {
+                String existHome = System.getProperty("exist.home");
+                if (existHome != null){
+                    new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();
+                    _repo = new Repository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
+                }else{
+                    new File("expathrepo").mkdir();
+                    _repo = new Repository(new File("expathrepo"));
+                }
+            }
+            catch ( PackageException ex ) {
+                throw new XPathException("Problem setting expath repository", ex);
+            }
+        }
+        return _repo;
+    }
+
+    private Module resolveInEXPathRepository(String namespace, String prefix)
+            throws XPathException
+    {
+        // the uri
+        URI uri = null;
+        try {
+            uri = new URI(namespace);
+       }
+        catch ( URISyntaxException ex ) {
+            throw new XPathException("Namespace not a URI, namespaceURI=" + namespace, ex);
+        }
+        // the repo and its eXist handler
+        Repository repo = getRepo();
+        PkgHandlerExist handler = (PkgHandlerExist) repo.getComponentHandler("exist");
+        // try an internal module
+        String clazz = handler.getJavaModules().get(uri);
+        if ( clazz != null ) {
+            try {
+                Class c = Class.forName(clazz);
+                InternalModule im = (InternalModule) c.newInstance();
+                String im_ns = im.getNamespaceURI();
+                if ( ! im_ns.equals(namespace) ) {
+                    throw new XPathException("The namespace in the Java module does not match the namespace in the package descriptor: " + namespace + " - " + im_ns);
+                }
+                return loadBuiltInModule(namespace, clazz);
+            }
+            catch ( ClassNotFoundException ex ) {
+                throw new XPathException("Cannot find module from expath repository, but it should be there.", ex);
+            }
+            catch ( InstantiationException ex ) {
+                throw new XPathException("Problem instantiating module from expath repository.", ex);
+            }
+            catch ( IllegalAccessException ex ) {
+                throw new XPathException("Cannot access expath repository directory", ex);
+            }
+            catch ( ClassCastException ex ) {
+                throw new XPathException("Problem casting module from expath repository.", ex);
+            }
+        }
+        // try an eXist-specific module
+        File resolved = handler.getXqueries().get(uri);
+        // try the standard XQuery URI space
+        if ( resolved == null ) {
+            try {
+                resolved = repo.resolveFile(namespace, URISpace.XQUERY);
+            }
+            catch ( PackageException ex ) {
+                throw new XPathException("Problem resolving package from expath repository", ex);
+            }
+        }
+        // use the resolved file or return null
+        if ( resolved == null ) {
+            return null;
+        }
+
+        Source src = new FileSource(resolved, "utf-8", false);
+        return compileOrBorrowModule(prefix, namespace, "", src);
+    }
+    // NOTE: expathrepo whilst we figure out managing deps
 
 
     protected XQueryContext( AccessContext accessCtx )
@@ -1637,7 +1728,9 @@ public class XQueryContext
                 LOG.info( "failed to load module. " + moduleClass + " is not an instance of org.exist.xquery.Module." );
                 return( null );
             }
-            instantiateModule( namespaceURI, (Class<Module>)mClass );
+            //instantiateModule( namespaceURI, (Class<Module>)mClass );
+            // INOTE: expathrepo
+             module = instantiateModule( namespaceURI, (Class<Module>)mClass );
             //LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
         }
         catch( ClassNotFoundException e ) {
@@ -2573,6 +2666,8 @@ public class XQueryContext
             // Set locally to remember the dependency in case it was inherited.
             setModule( namespaceURI, module );
         } else {
+            module = resolveInEXPathRepository(namespaceURI, prefix);
+            if ( module == null ) {
 
             if( location == null ) {
 
@@ -2662,6 +2757,7 @@ public class XQueryContext
                     module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
                 }
             }
+            } // NOTE: expathrepo related, closes the EXPath else (if module != null)
         }
 
         if( prefix == null ) {
