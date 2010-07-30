@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace style = "http://www.danmccreary.com/library" at "../../../modules/style.xqm";
+import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 
 let $app-collection := $style:db-path-to-app
 let $id := request:get-parameter('id', '')

@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace style = "http://www.danmccreary.com/library" at "../../../modules/style.xqm";
+import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 declare namespace mods="http://www.loc.gov/mods/v3";
 
 let $title := 'Analysis of first level elements of MODS record'

@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace style = "http://www.danmccreary.com/library" at "../../../modules/style.xqm";
+import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 import module namespace mods = "http://www.loc.gov/mods/v3" at "../modules/mods.xqm";
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
