@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>display-label-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Supplied title</label>
+            <value>Supplied title</value>
+        </item>
+    </items>
+</code-table>

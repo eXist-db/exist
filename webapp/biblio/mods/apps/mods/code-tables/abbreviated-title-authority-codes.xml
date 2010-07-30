@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <status>finished</status>
+    <code-table-name>abbreviated-title-authority-code</code-table-name>
+    <basis>http://www.loc.gov/standards/sourcelist/abbreviated-title.html</basis>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Local</label>
+            <value>local</value>
+        </item>
+        <item>
+            <label>Key Title nach DIN 1430</label>
+            <value>din1430</value>
+        </item>
+        <item>
+            <label>Regeln für das Kürzen von Wörtern in Titeln und für das Kürzen der Titel von Veröffentlichungen: DIN 1502</label>
+            <value>din1502</value>
+        </item>
+        <item>
+            <label>National Library of Medicine Locatorplus</label>
+            <value>dnlm</value>
+        </item>
+        <item>
+            <label>HLAS journal abbreviations</label>
+            <value>hlasja</value>
+        </item>
+        <item>
+            <label>INIS: authority list for journals</label>
+            <value>inisaljt</value>
+        </item>
+        <item>
+            <label>Abbreviated Key Titles</label>
+            <value>issnkey</value>
+        </item>
+    </items>
+</code-table>

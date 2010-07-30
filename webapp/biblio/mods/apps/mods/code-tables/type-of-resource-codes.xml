@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>type-of-resource-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Text</label>
+            <value>text</value>
+        </item>
+        <item>
+            <label>Cartographic</label>
+            <value>cartographic</value>
+        </item>
+        <item>
+            <label>Notated music</label>
+            <value>notated music</value>
+        </item>
+        <item>
+            <label>Sound Recording</label>
+            <value>sound recording</value>
+        </item>
+        <item>
+            <label>Musical Sound Recording</label>
+            <value>sound recording-musical</value>
+        </item>
+        <item>
+            <label>Nonmusical Sound Recording</label>
+            <value>sound recording-nonmusical</value>
+        </item>
+        <item>
+            <label>Still Image</label>
+            <value>still image</value>
+        </item>
+        <item>
+            <label>Moving Image</label>
+            <value>moving image</value>
+        </item>
+        <item>
+            <label>Three Dimensional Object</label>
+            <value>three dimensional object</value>
+        </item>
+        <item>
+            <label>Family</label>
+            <value>family</value>
+        </item>
+        <item>
+            <label>Software, Multimedia</label>
+            <value>software, multimedia</value>
+        </item>
+        <item>
+            <label>Mixed Material</label>
+            <value>mixed material</value>
+        </item>
+    </items>
+</code-table>

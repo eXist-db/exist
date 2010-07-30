@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>dublin-core-type-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Collection</label>
+            <value>collection</value>
+        </item>
+        <item>
+            <label>Dataset</label>
+            <value>dataset</value>
+        </item>
+        <item>
+            <label>Event</label>
+            <value>event</value>
+        </item>
+        <item>
+            <label>Image</label>
+            <value>image</value>
+        </item>
+        <item>
+            <label>Interactive Resource</label>
+            <value>interactive-resource</value>
+        </item>
+        <item>
+            <label>Moving Image</label>
+            <value>moving-image</value>
+        </item>
+        <item>
+            <label>Physical Object</label>
+            <value>physical-object</value>
+        </item>
+        <item>
+            <label>Service</label>
+            <value>service</value>
+        </item>
+        <item>
+            <label>Software</label>
+            <value>software</value>
+        </item>
+        <item>
+            <label>Sound</label>
+            <value>sound</value>
+        </item>
+        <item>
+            <label>Still Image</label>
+            <value>still-image</value>
+        </item>
+        <item>
+            <label>Text</label>
+            <value>text</value>
+        </item>
+    </items>
+</code-table>

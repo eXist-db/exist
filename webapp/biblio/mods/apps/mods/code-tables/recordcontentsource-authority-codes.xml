@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>recordcontensource-authority-code</code-table-name>
+    <basis>http://www.loc.gov/standards/sourcelist/organization.html</basis>
+    <status>finished</status>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <value>marcorg</value>
+            <label>marcorg</label>
+        </item>
+        <item>
+            <value>doi</value>
+            <label>Digital Objects Identifier</label>
+        </item>
+        <item>
+            <value>oclcorg</value>
+            <label>oclcorg</label>
+        </item>
+    </items>
+</code-table>

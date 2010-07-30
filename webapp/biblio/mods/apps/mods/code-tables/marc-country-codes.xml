@@ -1,0 +1,2003 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>marc-country-code</code-table-name>
+    <status>finished, but clean up divs</status>
+    <basis>http://www.loc.gov/marc/countries/countries_name.html</basis>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Afghanistan</label>
+            <code>af</code>
+        </item>
+        <item>
+            <label>Alabama</label>
+            <code>alu</code>
+        </item>
+        <item>
+            <label>Alaska</label>
+            <code>aku</code>
+        </item>
+        <item>
+            <label>Albania</label>
+            <code>aa</code>
+        </item>
+        <item>
+            <label>Alberta</label>
+            <code>abc</code>
+        </item>
+        <item>
+            <label>Algeria</label>
+            <code>ae</code>
+        </item>
+        <item>
+            <label>American Samoa</label>
+            <code>as</code>
+            <div class="useforref1"> Eastern Samoa</div>
+            <div class="useforref2"> Samoa, American</div>
+        </item>
+        <item>
+            <label>Andorra</label>
+            <code>an</code>
+        </item>
+        <item>
+            <label>Angola</label>
+            <code>ao</code>
+            <div class="useforref1"> Cabinda</div>
+        </item>
+        <item>
+            <label>Anguilla</label>
+            <code>am</code>
+            <div class="note">Coded [xi] (Saint Kitts-Nevis-Anguilla) before Jan. 1985. Code changed from [ai] to [am] in Mar. 1988</div>
+            <div class="useforref1"> Saint Kitts-Nevis-Anguilla</div>
+            <div class="usefforref2"> Sombrero Island</div>
+        </item>
+        <item>
+            <label>Antarctica</label>
+            <code>ay</code>
+        </item>
+        <item>
+            <label>Antigua and Barbuda</label>
+            <code>aq</code>
+            <div class="useforref1"> Antigua</div>
+            <div class="useforref2"> Barbuda</div>
+            <div class="useforref2"> Redonda</div>
+        </item>
+        <item>
+            <label>Argentina</label>
+            <code>ag</code>
+        </item>
+        <item>
+            <label>Arizona</label>
+            <code>azu</code>
+        </item>
+        <item>
+            <label>Arkansas</label>
+            <code>aru</code>
+        </item>
+        <item>
+            <label>Armenia</label>
+            <code>ai</code>
+            <div class="note">Coded [air] (Armenian S.S.R.) before June 1992</div>
+            <div class="useforref1"> Armenian S.S.R.</div>
+        </item>
+        <item>
+            <label>Aruba</label>
+            <code>aw</code>
+            <div class="note">Coded [na] (Netherlands Antilles) before Mar. 1988</div>
+        </item>
+        <item>
+            <label>Australia</label>
+            <code>at</code>
+            <div class="useforref1"> Ashmore and Cartier Islands</div>
+            <div class="useforref2"/>
+            <div class="useforref2">Macquarie Island</div>
+        </item>
+        <item>
+            <label>Australian Capital Territory</label>
+            <code>aca</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Austria</label>
+            <code>au</code>
+        </item>
+        <item>
+            <label>Azerbaijan</label>
+            <code>aj</code>
+            <div class="note">Coded [ajr] (Azerbaijan S.S.R.) before June 1992</div>
+            <div class="useforref1"> Azerbaijan S.S.R.</div>
+        </item>
+        <item>
+            <label>Bahamas</label>
+            <code>bf</code>
+        </item>
+        <item>
+            <label>Bahrain</label>
+            <code>ba</code>
+            <div class="useforref1"> Bahrein</div>
+        </item>
+        <item>
+            <label>Bangladesh</label>
+            <code>bg</code>
+            <div class="useforref1"> East Pakistan</div>
+        </item>
+        <item>
+            <label>Barbados</label>
+            <code>bb</code>
+        </item>
+        <item>
+            <label>Belarus</label>
+            <code>bw</code>
+            <div class="note">Coded [bwr] (Byelorussian S.S.R.) before June 1992</div>
+            <div class="useforref1"> Byelarus</div>
+            <div class="useforref2"> Belorussian S.S.R.</div>
+            <div class="useforref2"> Byeolorussian S.S.R.</div>
+        </item>
+        <item>
+            <label>Belgium</label>
+            <code>be</code>
+        </item>
+        <item>
+            <label>Belize</label>
+            <code>bh</code>
+            <div class="useforref1"> British Honduras</div>
+        </item>
+        <item>
+            <label>Benin</label>
+            <code>dm</code>
+            <div class="useforref1"> Dahomey</div>
+        </item>
+        <item>
+            <label>Bermuda Islands</label>
+            <code>bm</code>
+        </item>
+        <item>
+            <label>Bhutan</label>
+            <code>bt</code>
+        </item>
+        <item>
+            <label>Bolivia</label>
+            <code>bo</code>
+        </item>
+        <item>
+            <label>Bosnia and Hercegovina</label>
+            <code>bn</code>
+            <div class="note">Coded [yu] (Yugoslavia) before Oct. 1992</div>
+            <div class="uforref1"> Hercegovina</div>
+        </item>
+        <item>
+            <label>Botswana</label>
+            <code>bs</code>
+            <div class="useforref1"> Bechuanaland</div>
+        </item>
+        <item>
+            <label>Bouvet Island</label>
+            <code>bv</code>
+        </item>
+        <item>
+            <label>Brazil</label>
+            <code>bl</code>
+            <div class="useforref1"> Fernando de Noronha</div>
+            <div class="useforref2"> Ilha da Trindade</div>
+            <div class="useforref2"> Ilhas Martim Vaz</div>
+            <div class="usefforref2"> Martim Vaz, Ilhas</div>
+            <div class="useforref2"> Penedos de São Pedro e São Paulo</div>
+            <div class="useforref2"> Rocas</div>
+            <div class="useforref2"> Trindade, Ilha da</div>
+        </item>
+        <item>
+            <label>British Columbia</label>
+            <code>bcc</code>
+        </item>
+        <item>
+            <label>British Indian Ocean Territory</label>
+            <code>bi</code>
+            <div class="useforref1"> Chagos Archipelago</div>
+            <div class="useforref2"> Diego Garcia Island</div>
+        </item>
+        <item>
+            <label>British Virgin Islands</label>
+            <code>vb</code>
+            <div class="useforref1"> Anegada</div>
+            <div class="useforref2"> Colony of the Virgin Islands</div>
+            <div class="useforref2"> Jost Van Dyke</div>
+            <div class="useforref2"> Tortola</div>
+            <div class="useforref2"> Virgin Gorda</div>
+            <div class="useforref2"> Virgin Islands (British)</div>
+        </item>
+        <item>
+            <label>Brunei</label>
+            <code>bx</code>
+        </item>
+        <item>
+            <label>Bulgaria</label>
+            <code>bu</code>
+        </item>
+        <item>
+            <label>Burkina Faso</label>
+            <code>uv</code>
+            <div class="useforref1"> Upper Volta</div>
+        </item>
+        <item>
+            <label>Burma</label>
+            <code>br</code>
+            <div class="useforref1"> Myanmar</div>
+        </item>
+        <item>
+            <label>Burundi</label>
+            <code>bd</code>
+        </item>
+        <item>
+            <label>California</label>
+            <code>cau</code>
+        </item>
+        <item>
+            <label>Cambodia</label>
+            <code>cb</code>
+            <div class="useforref1"> Democratic Kampuchea</div>
+            <div class="useforref2"> Kampuchea</div>
+            <div class="useforref2"> Khmer Republic</div>
+        </item>
+        <item>
+            <label>Cameroon</label>
+            <code>cm</code>
+            <div class="useforref1"> British Cameroons</div>
+            <div class="useforref2"> East Cameroon</div>
+            <div class="useforref2"> French Cameroons</div>
+            <div class="useforref2"> German Cameroons</div>
+            <div class="useforref2"> Southern Cameroons</div>
+            <div class="useforref2"> West Cameroon</div>
+        </item>
+        <item>
+            <label>Canada</label>
+            <code>xxc</code>
+            <div class="note">Also coded [cn] (Canada) before Mar. 1988</div>
+        </item>
+        <item>
+            <label>Cape Verde</label>
+            <code>cv</code>
+            <div class="useforref1"> Boa Vista</div>
+            <div class="useforref2"> Brava</div>
+            <div class="useforref2"> Fogo</div>
+            <div class="useforref2"> Maio</div>
+            <div class="useforref2"> Sal</div>
+            <div class="useforref2"> Santo Antao</div>
+            <div class="useforref2"> São Nicolau</div>
+            <div class="useforref2"> São Tiago</div>
+            <div class="useforref2"> São Vicente</div>
+        </item>
+        <item>
+            <label>Cayman Islands</label>
+            <code>cj</code>
+            <div class="useforref1"> Cayman Brac Island</div>
+            <div class="useforref2"> Grand Cayman Island</div>
+            <div class="useforref2"> Little Cayman Island</div>
+        </item>
+        <item>
+            <label>Central African Republic</label>
+            <code>cx</code>
+            <div class="useforref1"> Central African Empire</div>
+            <div class="useforref2"> Ubangi-Shari</div>
+        </item>
+        <item>
+            <label>Chad</label>
+            <code>cd</code>
+        </item>
+        <item>
+            <label>Chile</label>
+            <code>cl</code>
+            <div class="useforref1"> Easter Island</div>
+            <div class="useforref2"> Isla de Pasqua</div>
+            <div class="useforref2"> Isla Sala y Gómez</div>
+            <div class="useforref2"> Islas Juan Fernández</div>
+            <div class="useforref2"> Juan Fernández, Islas</div>
+            <div class="useforref2"> Pasqua, Isla de</div>
+            <div class="useforref2"> Sala y Gómez, Isla</div>
+            <div class="useforref2"> San Félix</div>
+        </item>
+        <item>
+            <label>China</label>
+            <code>cc</code>
+            <div class="useforref1"> Hainan Island</div>
+            <div class="useforref2"> Hong Kong</div>
+            <div class="useforref2"> Inner Mongolia</div>
+            <div class="useforref2"> Kowloon</div>
+            <div class="useforref2"> Macao</div>
+            <div class="useforref2"> Macau</div>
+            <div class="useforref2"> Manchuria</div>
+            <div class="useforref2"> Sinkiang</div>
+            <div class="useforref2"> New Territories</div>
+            <div class="useforref2"> Taipa</div>
+            <div class="useforref2"> Tibet</div>
+        </item>
+        <item>
+            <label>China (Republic : 1949- )</label>
+            <code>ch</code>
+            <div class="useforref1"> Formosa Island</div>
+            <div class="useforref2"> Nationalist China</div>
+            <div class="useforref2"> P'eng-hu Island</div>
+            <div class="useforref2"> Pescadores Islands</div>
+            <div class="useforref2"> Taiwan Island</div>
+        </item>
+        <item>
+            <label>Christmas Island (Indian Ocean)</label>
+            <code>xa</code>
+        </item>
+        <item>
+            <label>Cocos (Keeling) Islands</label>
+            <code>xb</code>
+            <div class="useforref1"> Keeling Islands</div>
+        </item>
+        <item>
+            <label>Colombia</label>
+            <code>ck</code>
+            <div class="useforref1"> Isla de Malpelo</div>
+            <div class="useforref2"> Malpelo, Isla de</div>
+            <div class="useforref2"> San Andrés y Providencia</div>
+            <div class="useforref2"> Serrana Bank</div>
+            <div class="useforref2"> Serranilla Bank</div>
+        </item>
+        <item>
+            <label>Colorado</label>
+            <code>cou</code>
+        </item>
+        <item>
+            <label>Comoros</label>
+            <code>cq</code>
+            <div class="useforref1"> Anjouan Island</div>
+            <div class="useforref2"> Comores</div>
+            <div class="useforref2"> Grande Comore Island</div>
+            <div class="useforref2"> Moheli Island</div>
+        </item>
+        <item>
+            <label>Congo (Brazzaville)</label>
+            <code>cf</code>
+            <div class="useforref1"> Middle Congo</div>
+        </item>
+        <item>
+            <label>Congo (Democratic Republic)</label>
+            <code>cg</code>
+            <div class="useforref1"> Belgian Congo</div>
+            <div class="useforref2"> Congo (Kinshasa)</div>
+            <div class="useforref2"> Democratic Republic of the Congo</div>
+            <div class="useforref2"> Zaire</div>
+        </item>
+        <item>
+            <label>Connecticut</label>
+            <code>ctu</code>
+        </item>
+        <item>
+            <label>Cook Islands</label>
+            <code>cw</code>
+            <div class="useforref1"> Danger Atoll</div>
+            <div class="useforref2"> Manihiki Atoll</div>
+            <div class="useforref2"> Penrhyn Atoll</div>
+            <div class="useforref2"> Rakahanga Atoll</div>
+        </item>
+        <item>
+            <label>Coral Sea Islands Territory</label>
+            <code>xga</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Costa Rica</label>
+            <code>cr</code>
+            <div class="useforref1"> Cocos Island</div>
+        </item>
+        <item>
+            <label>Côte d'Ivoire</label>
+            <code>iv</code>
+            <div class="useforref1"> Ivory Coast</div>
+        </item>
+        <item>
+            <label>Croatia</label>
+            <code>ci</code>
+            <div class="note">Coded [yu] (Yugoslavia) before Oct. 1992</div>
+        </item>
+        <item>
+            <label>Cuba</label>
+            <code>cu</code>
+            <div class="useforref1"> Isle of Pines (Caribbean)</div>
+            <div class="useforref2"> Pines, Isle of (Caribbean)</div>
+        </item>
+        <item>
+            <label>Cyprus</label>
+            <code>cy</code>
+        </item>
+        <item>
+            <label>Czech Republic</label>
+            <code>xr</code>
+            <div class="note">Coded [cs] (Czechoslovakia) before May 1993</div>
+            <div class="useforref1"> Czechoslovakia</div>
+        </item>
+        <item>
+            <label>Delaware</label>
+            <code>deu</code>
+        </item>
+        <item>
+            <label>Denmark</label>
+            <div class="code">dk</div>
+            <div class="useforref1"> Bornholm Island</div>
+        </item>
+        <item>
+            <label>District of Columbia</label>
+            <code>dcu</code>
+        </item>
+        <item>
+            <label>Djibouti</label>
+            <code>ft</code>
+            <div class="useforref1"> Afars</div>
+            <div class="useforref2"> French Somaliland</div>
+            <div class="useforref2"> French Territory of the Afars and Issas</div>
+            <div class="useforref2"> Issas</div>
+        </item>
+        <item>
+            <label>Dominica</label>
+            <code>dq</code>
+        </item>
+        <item>
+            <label>Dominican Republic</label>
+            <code>dr</code>
+        </item>
+        <item>
+            <label>East Timor</label>
+            <code>em</code>
+        </item>
+        <item>
+            <label>Ecuador</label>
+            <code>ec</code>
+            <div class="useforref1"> Archipiélago de Colón</div>
+            <div class="useforref2"> Colón, Archipiélago de</div>
+            <div class="useforref2"> Galapagos Islands</div>
+        </item>
+        <item>
+            <label>Egypt</label>
+            <code>ua</code>
+            <div class="useforref1"> Arab Republic of Egypt</div>
+            <div class="useforref2"> United Arab Republic</div>
+        </item>
+        <item>
+            <label>El Salvador</label>
+            <code>es</code>
+            <div class="useforref1"> Salvador</div>
+        </item>
+        <item>
+            <label>England</label>
+            <code>enk</code>
+        </item>
+        <item>
+            <label>Equatorial Guinea</label>
+            <code>eg</code>
+            <div class="useforref1"> Annobón</div>
+            <div class="useforref2"> Bioko</div>
+            <div class="useforref2"> Corisco Island</div>
+            <div class="useforref2"> Elobey, Great</div>
+            <div class="useforref2"> Elobey, Small</div>
+            <div class="useforref2"> Fernando Po Island</div>
+            <div class="useforref2"> Macias Nguema Biyogo</div>
+            <div class="useforref2"> Pagalu</div>
+            <div class="useforref2"> Rio Muni</div>
+        </item>
+        <item>
+            <label>Eritrea</label>
+            <code>ea</code>
+            <div class="note">Coded [et] (Ethiopia) before Nov. 1993</div>
+        </item>
+        <item>
+            <label>Estonia</label>
+            <code>er</code>
+            <div class="note">Coded [err] (Estonia) before Oct. 1992</div>
+        </item>
+        <item>
+            <label>Ethiopia</label>
+            <code>et</code>
+        </item>
+        <item>
+            <label>Falkland Islands</label>
+            <code>fk</code>
+            <div class="useforref1"> East Falkland Island</div>
+            <div class="useforref2"> Islas Malvinas</div>
+            <div class="useforref2"> Malvinas, Islas</div>
+            <div class="useforref2"> West Falkland Island</div>
+        </item>
+        <item>
+            <label>Faroe Islands</label>
+            <code>fa</code>
+            <div class="useforref1"> Færoe Islands</div>
+        </item>
+        <item>
+            <label>Fiji</label>
+            <code>fj</code>
+            <div class="useforref1"> Rotuma Island</div>
+            <div class="useforref2"> Vanua Levu Island</div>
+            <div class="useforref2"> Viti Levu Island</div>
+        </item>
+        <item>
+            <label>Finland</label>
+            <code>fi</code>
+            <div class="useforref1"> Ahvenanmaa</div>
+            <div class="useforref2"> Åland Islands</div>
+        </item>
+        <item>
+            <label>Florida</label>
+            <code>flu</code>
+        </item>
+        <item>
+            <label>France</label>
+            <code>fr</code>
+            <div class="useforref1"> Corsica</div>
+        </item>
+        <item>
+            <label>French Guiana</label>
+            <code>fg</code>
+            <div class="useforref1"> Guiana, French</div>
+        </item>
+        <item>
+            <label>French Polynesia</label>
+            <code>fp</code>
+            <div class="useforref1"> Austral Islands</div>
+            <div class="useforref2"> Clipperton Island</div>
+            <div class="useforref2"> Gambier Islands</div>
+            <div class="useforref2"> Iles Australes</div>
+            <div class="useforref2"> Iles du Vent</div>
+            <div class="useforref2"> Iles Sous le Vent</div>
+            <div class="useforref2"> Marquesas Islands</div>
+            <div class="useforref2"> Polynesia, French</div>
+            <div class="useforref2"> Society Islands</div>
+            <div class="useforref2"> Sous le Vent, Iles</div>
+            <div class="useforref2"> Tahiti</div>
+            <div class="useforref2"> Tuamotu Archipelago</div>
+            <div class="useforref2"> Vent, Iles du</div>
+        </item>
+        <item>
+            <label>Gabon</label>
+            <code>go</code>
+        </item>
+        <item>
+            <label>Gambia</label>
+            <code>gm</code>
+        </item>
+        <item>
+            <label>Gaza Strip</label>
+            <code>gz</code>
+        </item>
+        <item>
+            <label>Georgia</label>
+            <code>gau</code>
+        </item>
+        <item>
+            <label>Georgia (Republic)</label>
+            <code>gs</code>
+            <div class="note">Coded [gsr] (Georgian S.S.R.) before June 1992</div>
+            <div class="useforref1"> Georgian S.S.R.</div>
+        </item>
+        <item>
+            <label>Germany</label>
+            <code>gw</code>
+            <div class="useforref1"> Berlin, East</div>
+            <div class="useforref2"> Berlin, West</div>
+            <div class="useforref2"> East Berlin</div>
+            <div class="useforref2"> Germany (East)</div>
+            <div class="useforref2"> Germany (West)</div>
+            <div class="useforref2"> Germany, Democratic Republic of</div>
+            <div class="useforref2"> Germany, Federal Republic of</div>
+            <div class="useforref2"> West Berlin</div>
+        </item>
+        <item>
+            <label>Ghana</label>
+            <code>gh</code>
+            <div class="useforref1"> Ashanti</div>
+            <div class="useforref2"> Gold Coast</div>
+            <div class="useforref2"> Northern Territories</div>
+            <div class="useforref2"> Togoland</div>
+        </item>
+        <item>
+            <label>Gibraltar</label>
+            <code>gi</code>
+        </item>
+        <item>
+            <label>Greece</label>
+            <code>gr</code>
+            <div class="useforref1"> Aegean Islands</div>
+            <div class="useforref2"> Crete</div>
+            <div class="useforref2"> Dodecanese</div>
+            <div class="useforref2"> Ionian Islands</div>
+            <div class="useforref2"> Mount Athos</div>
+        </item>
+        <item>
+            <label>Greenland</label>
+            <code>gl</code>
+        </item>
+        <item>
+            <label>Grenada</label>
+            <code>gd</code>
+            <div class="useforref1"> Grenadine Islands, Southern</div>
+        </item>
+        <item>
+            <label>Guadeloupe</label>
+            <code>gp</code>
+            <div class="useforref1"> Basse-Terre</div>
+            <div class="useforref2"> Grande-Terre</div>
+            <div class="useforref2"> Ile Saint-Barthélemy</div>
+            <div class="useforref2"> Iles de la Petite Terre</div>
+            <div class="useforref2"> Iles des Saintes</div>
+            <div class="useforref2"> La Désirade</div>
+            <div class="useforref2"> Marie-Galante</div>
+            <div class="useforref2"> Petite Terre, Iles de</div>
+            <div class="useforref2"> Saint-Barthélemy</div>
+            <div class="useforref2"> Saint Martin, Northern</div>
+            <div class="useforref2"> Saintes, Iles des</div>
+        </item>
+        <item>
+            <label>Guam</label>
+            <code>gu</code>
+        </item>
+        <item>
+            <label>Guatemala</label>
+            <code>gt</code>
+        </item>
+        <item>
+            <label>Guinea</label>
+            <code>gv</code>
+            <div class="useforref1"> French Guinea</div>
+        </item>
+        <item>
+            <label>Guinea-Bissau</label>
+            <code>pg</code>
+            <div class="useforref1"> Arquipélago dos Bijagós</div>
+            <div class="useforref2"> Bijagós, Arquipélago dos</div>
+            <div class="useforref2"> Bissagos Islands</div>
+            <div class="useforref2"> Guinea, Portuguese</div>
+            <div class="useforref2"> Portuguese Guinea</div>
+        </item>
+        <item>
+            <label>Guyana</label>
+            <code>gy</code>
+            <div class="useforref1"> British Guiana</div>
+            <div class="useforref2"> Guiana, British</div>
+        </item>
+        <item>
+            <label>Haiti</label>
+            <code>ht</code>
+        </item>
+        <item>
+            <label>Hawaii</label>
+            <code>hiu</code>
+        </item>
+        <item>
+            <label>Heard and McDonald Islands</label>
+            <code>hm</code>
+        </item>
+        <item>
+            <label>Honduras</label>
+            <code>ho</code>
+            <div class="useforref1"> Swan Islands</div>
+        </item>
+        <item>
+            <label>Hungary</label>
+            <code>hu</code>
+        </item>
+        <item>
+            <label>Iceland</label>
+            <code>ic</code>
+        </item>
+        <item>
+            <label>Idaho</label>
+            <code>idu</code>
+        </item>
+        <item>
+            <label>Illinois</label>
+            <code>ilu</code>
+        </item>
+        <item>
+            <label>India</label>
+            <code>ii</code>
+            <div class="useforref1"> Amindivi Islands</div>
+            <div class="useforref2"> Andaman Islands</div>
+            <div class="useforref2"> Daman</div>
+            <div class="useforref2"> Diu</div>
+            <div class="useforref2"> Goa</div>
+            <div class="useforref2"> Laccadive Island</div>
+            <div class="useforref2"> Minicoy Island</div>
+            <div class="useforref2"> Nicobar Islands</div>
+            <div class="useforref2"> Sikkim</div>
+        </item>
+        <item>
+            <label>Indiana</label>
+            <code>inu</code>
+        </item>
+        <item>
+            <label>Indonesia</label>
+            <code>io</code>
+            <div class="useforref1"> Atauro, Ilha de</div>
+            <div class="useforref2"> Ilha de Atauro</div>
+            <div class="useforref2"> Ilheu de Jaco</div>
+            <div class="useforref2"> Irian Barat</div>
+            <div class="useforref2"> Jaco, Ilheu de</div>
+            <div class="useforref2"> Netherlands New Guinea</div>
+            <div class="useforref2"> Oe-Cussi</div>
+            <div class="useforref2"> Portuguese Timor</div>
+            <div class="useforref2"> West New Guinea</div>
+        </item>
+        <item>
+            <label>Iowa</label>
+            <code>iau</code>
+        </item>
+        <item>
+            <label>Iran</label>
+            <code>ir</code>
+        </item>
+        <item>
+            <label>Iraq</label>
+            <code>iq</code>
+        </item>
+        <item>
+            <label>Iraq-Saudi Arabia Neutral Zone</label>
+            <code>iy</code>
+        </item>
+        <item>
+            <label>Ireland</label>
+            <code>ie</code>
+            <div class="useforref1"> Eire</div>
+        </item>
+        <item>
+            <label>Israel</label>
+            <code>is</code>
+            <div class="useforref1"> Israel-Jordan Demilitarized Zones</div>
+            <div class="useforref2"> Israel-Syria Demilitarized Zones</div>
+        </item>
+        <item>
+            <label>Italy</label>
+            <code>it</code>
+            <div class="useforref1"> Pantelleria</div>
+            <div class="useforref2"> Sardinia</div>
+            <div class="useforref2"> Sicily</div>
+        </item>
+        <item>
+            <label>Jamaica</label>
+            <code>jm</code>
+            <div class="useforref1"> Morant Cays</div>
+            <div class="useforref2"> Pedro Cays</div>
+        </item>
+        <item>
+            <label>Japan</label>
+            <code>ja</code>
+            <div class="useforref1"> Bonin Islands</div>
+            <div class="useforref2"> Daitojima</div>
+            <div class="useforref2"> Marcus Island</div>
+            <div class="useforref2"> Namposhoto (Northern)</div>
+            <div class="useforref2"> Namposhoto (Southern)</div>
+            <div class="useforref2"> Nishinoshima Island</div>
+            <div class="useforref2"> Okinawa</div>
+            <div class="useforref2"> Parece Vela Island</div>
+            <div class="useforref2"> Ryukyu Islands, Northern</div>
+            <div class="useforref2"> Ryukyu Islands, Southern</div>
+            <div class="useforref2"> Torishima</div>
+            <div class="useforref2"> Volcano Islands</div>
+        </item>
+        <item>
+            <label>Johnston Atoll</label>
+            <code>ji</code>
+            <div class="useforref1"> Sand Island</div>
+        </item>
+        <item>
+            <label>Jordan</label>
+            <code>jo</code>
+        </item>
+        <item>
+            <label>Kansas</label>
+            <code>ksu</code>
+        </item>
+        <item>
+            <label>Kazakhstan</label>
+            <code>kz</code>
+            <div class="note">Coded [kzr] (Kazakh S.S.R.) before June 1992</div>
+            <div class="useforref1"> Kazakh S.S.R.</div>
+        </item>
+        <item>
+            <label>Kentucky</label>
+            <code>kyu</code>
+        </item>
+        <item>
+            <label>Kenya</label>
+            <code>ke</code>
+        </item>
+        <item>
+            <label>Kiribati</label>
+            <code>gb</code>
+            <div class="note">Coded [gn] (Gilbert and Ellice Islands) or [ln] (Central and Southern Line Islands) before Oct. 1978</div>
+            <div class="useforref1"> Banaba</div>
+            <div class="useforref2"> Birnie Island</div>
+            <div class="useforref2"> Canton Island</div>
+            <div class="useforref2"> Caroline Island</div>
+            <div class="useforref2"> Central and Southern Line Islands</div>
+            <div class="useforref2"> Christmas Atoll</div>
+            <div class="useforref2"> Enderbury Island</div>
+            <div class="useforref2"> Fanning Atoll</div>
+            <div class="useforref2"> Flint Island</div>
+            <div class="useforref2"> Gardner Atoll</div>
+            <div class="useforref2"> Gilbert and Ellice Islands</div>
+            <div class="useforref2"> Gilbert Islands</div>
+            <div class="useforref2"> Hull Atoll</div>
+            <div class="useforref2"> Kiritimati</div>
+            <div class="useforref2"> Line Islands (Southern)</div>
+            <div class="useforref2"> Malden Island</div>
+            <div class="useforref2"> Manra Atoll</div>
+            <div class="useforref2"> McKean Atoll</div>
+            <div class="useforref2"> Nikomaroro Atoll</div>
+            <div class="useforref2"> Ocean Island</div>
+            <div class="useforref2"> Orona Atoll</div>
+            <div class="useforref2"> Phoenix Atoll</div>
+            <div class="useforref2"> Phoenix Islands</div>
+            <div class="useforref2"> Rawaki</div>
+            <div class="useforref2"> Starbuck Island</div>
+            <div class="useforref2"> Sydney Atoll</div>
+            <div class="useforref2"> Tabuarean Island</div>
+            <div class="useforref2"> Vostok Island</div>
+            <div class="useforref2"> Washington Island</div>
+        </item>
+        <item>
+            <label>Korea (North)</label>
+            <code>kn</code>
+            <div class="useforref1"> Democratic People's Republic of Korea</div>
+            <div class="useforref2"> North Korea</div>
+        </item>
+        <item>
+            <label>Korea (South)</label>
+            <code>ko</code>
+            <div class="useforref1"> Korea, Republic of</div>
+            <div class="useforref2"> South Korea</div>
+        </item>
+        <item>
+            <label>Kosovo</label>
+            <code>kv</code>
+            <div class="note">Coded [rb] for Serbia from February 2007-May 2008. From 1992-April 2007 it was coded [yu] for Serbia and Montenegro</div>
+        </item>
+        <item>
+            <label>Kuwait</label>
+            <code>ku</code>
+        </item>
+        <item>
+            <label>Kyrgyzstan</label>
+            <code>kg</code>
+            <div class="note">Coded [kgr] (Kirghiz S.S.R. before June 1992</div>
+            <div class="useforref1"> Kirghiz S.S.R.</div>
+            <div class="useforref2"> Kirghizia</div>
+        </item>
+        <item>
+            <label>Laos</label>
+            <code>ls</code>
+        </item>
+        <item>
+            <label>Latvia</label>
+            <code>lv</code>
+            <div class="note">Coded [lvr] (Latvia) before June 1992</div>
+        </item>
+        <item>
+            <label>Lebanon</label>
+            <code>le</code>
+        </item>
+        <item>
+            <label>Lesotho</label>
+            <code>lo</code>
+            <div class="useforref1"> Basutoland</div>
+        </item>
+        <item>
+            <label>Liberia</label>
+            <code>lb</code>
+        </item>
+        <item>
+            <label>Libya</label>
+            <code>ly</code>
+        </item>
+        <item>
+            <label>Liechtenstein</label>
+            <code>lh</code>
+        </item>
+        <item>
+            <label>Lithuania</label>
+            <code>li</code>
+            <div class="note">Coded [lir] (Lithuania) before June 1992</div>
+        </item>
+        <item>
+            <label>Louisiana</label>
+            <code>lau</code>
+        </item>
+        <item>
+            <label>Luxembourg</label>
+            <code>lu</code>
+        </item>
+        <item>
+            <label>Macedonia</label>
+            <code>xn</code>
+            <div class="note">Coded [yu] (Yugoslavia) before Oct. 1992</div>
+        </item>
+        <item>
+            <label>Madagascar</label>
+            <code>mg</code>
+            <div class="useforref1"> Malagasy Republic</div>
+        </item>
+        <item>
+            <label>Maine</label>
+            <code>meu</code>
+        </item>
+        <item>
+            <label>Malawi</label>
+            <code>mw</code>
+            <div class="useforref1"> Nyasaland</div>
+        </item>
+        <item>
+            <label>Malaysia</label>
+            <code>my</code>
+            <div class="useforref1"> Borneo, North</div>
+            <div class="useforref2"> Malaya</div>
+            <div class="useforref2"> North Borneo</div>
+            <div class="useforref2"> Sabah</div>
+            <div class="useforref2"> Sarawak</div>
+        </item>
+        <item>
+            <label>Maldives</label>
+            <code>xc</code>
+            <div class="useforref1"> Maldive Islands</div>
+        </item>
+        <item>
+            <label>Mali</label>
+            <code>ml</code>
+            <div class="useforref1"> French Sudan</div>
+            <div class="useforref2"> Soudan</div>
+            <div class="useforref2"> Sudan, French</div>
+        </item>
+        <item>
+            <label>Malta</label>
+            <code>mm</code>
+            <div class="useforref1"> Comino Island</div>
+            <div class="useforref2"> Gozo Island</div>
+        </item>
+        <item>
+            <label>Manitoba</label>
+            <code>mbc</code>
+        </item>
+        <item>
+            <label>Marshall Islands</label>
+            <code>xe</code>
+            <div class="note">Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</div>
+            <div class="useforref1"> Ailinglapalap Atoll</div>
+            <div class="useforref2"> Arno (Atoll)</div>
+            <div class="useforref2"> Bikini (Atoll)</div>
+            <div class="useforref2"> Ebon Atoll</div>
+            <div class="useforref2"> Eniwetok Atoll</div>
+            <div class="useforref2"> Jaluit Atoll</div>
+            <div class="useforref2"> Kili Island</div>
+            <div class="useforref2"> Kwajalein Atoll</div>
+            <div class="useforref2"> Majuro Atoll</div>
+            <div class="useforref2"> Maloelap Atoll</div>
+            <div class="useforref2"> Mili Atoll</div>
+            <div class="useforref2"> Namorik Atoll</div>
+            <div class="useforref2"> Pacific Islands (Trust Territory)</div>
+            <div class="useforref2"> Ralik Chain</div>
+            <div class="useforref2"> Ratak Chains</div>
+            <div class="useforref2"> Rongelap Atoll</div>
+            <div class="useforref2"> Taongi Atoll</div>
+            <div class="useforref2"> Trust Territory of the Pacific Islands</div>
+            <div class="useforref2"> Ujelang Atoll</div>
+            <div class="useforref2"> Utirik Atoll</div>
+            <div class="useforref2"> Wotje Atoll</div>
+        </item>
+        <item>
+            <label>Martinique</label>
+            <code>mq</code>
+        </item>
+        <item>
+            <label>Maryland</label>
+            <code>mdu</code>
+        </item>
+        <item>
+            <label>Massachusetts</label>
+            <code>mau</code>
+        </item>
+        <item>
+            <label>Mauritania</label>
+            <code>mu</code>
+        </item>
+        <item>
+            <label>Mauritius</label>
+            <code>mf</code>
+            <div class="useforref1"> Agalega Islands</div>
+            <div class="useforref2"> Cargados Carajos Shoals</div>
+            <div class="useforref2"> Rodrigues Island</div>
+            <div class="useforref2"> Saint Brandon</div>
+        </item>
+        <item>
+            <label>Mayotte</label>
+            <code>ot</code>
+            <div class="note">Coded [cq] (Comoros) before July 1987</div>
+        </item>
+        <item>
+            <label>Mexico</label>
+            <code>mx</code>
+            <div class="useforref1"> Islas de Revillagigedo</div>
+            <div class="useforref2"> Revillagigedo, Islas de</div>
+        </item>
+        <item>
+            <label>Michigan</label>
+            <code>miu</code>
+        </item>
+        <item>
+            <label>Micronesia (Federated States)</label>
+            <code>fm</code>
+            <div class="note">Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</div>
+            <div class="useforref1"> Ascension Island (Micronesia)</div>
+            <div class="useforref2"> Eauripik Atoll</div>
+            <div class="useforref2"> Fais Island</div>
+            <div class="useforref2"> Faraulep Atoll</div>
+            <div class="useforref2"> Federated States of Micronesia</div>
+            <div class="useforref2"> Gaferut Island</div>
+            <div class="useforref2"> Hall Islands</div>
+            <div class="useforref2"> Ifalik Atoll</div>
+            <div class="useforref2"> Kapingamarangi Atoll</div>
+            <div class="useforref2"> Kosrae (Micronesia)</div>
+            <div class="useforref2"> Kusaie (Micronesia)</div>
+            <div class="useforref2"> Mortlock Islands</div>
+            <div class="useforref2"> Namonuito Atoll</div>
+            <div class="useforref2"> Ngatik Atoll</div>
+            <div class="useforref2"> Ngulu Atoll</div>
+            <div class="useforref2"> Nukuoru Atoll</div>
+            <div class="useforref2"> Oroluk Atoll</div>
+            <div class="useforref2"> Pacific Islands (Trust Territory)</div>
+            <div class="useforref2"> Pingelap Atoll</div>
+            <div class="useforref2"> Pohnpei</div>
+            <div class="useforref2"> Ponape (Micronesia)</div>
+            <div class="useforref2"> Pulap Atoll</div>
+            <div class="useforref2"> Pulusak Island</div>
+            <div class="useforref2"> Puluwat Atoll</div>
+            <div class="useforref2"> Satawal Island</div>
+            <div class="useforref2"> Senyavin Islands</div>
+            <div class="useforref2"> Truk (Micronesia)</div>
+            <div class="useforref2"> Trust Territory of the Pacific Islands</div>
+            <div class="useforref2"> Ulithi Islands</div>
+            <div class="useforref2"> West Fayu Atoll</div>
+            <div class="useforref2"> Woleai Atolls</div>
+            <div class="useforref2"> Yap (Micronesia)</div>
+        </item>
+        <item>
+            <label>Midway Islands</label>
+            <code>xf</code>
+        </item>
+        <item>
+            <label>Minnesota</label>
+            <code>mnu</code>
+        </item>
+        <item>
+            <label>Mississippi</label>
+            <code>msu</code>
+        </item>
+        <item>
+            <label>Missouri</label>
+            <code>mou</code>
+        </item>
+        <item>
+            <label>Moldova</label>
+            <code>mv</code>
+            <div class="note">Coded [mvr] (Moldavian S.S.R.) before June 1992</div>
+            <div class="useforref1"> Moldavian S.S.R.</div>
+        </item>
+        <item>
+            <label>Monaco</label>
+            <code>mc</code>
+        </item>
+        <item>
+            <label>Mongolia</label>
+            <code>mp</code>
+            <div class="useforref1"> Mongolian People's Republic</div>
+            <div class="useforref2"> Outer Mongolia</div>
+        </item>
+        <item>
+            <label>Montana</label>
+            <code>mtu</code>
+        </item>
+        <item>
+            <label>Montenegro</label>
+            <code>mo</code>
+            <div class="note">Coded [yu] for Serbia and Montenegro from 1992-April 2007</div>
+            <div class="useforref1"> Yugoslavia</div>
+        </item>
+        <item>
+            <label>Montserrat</label>
+            <code>mj</code>
+        </item>
+        <item>
+            <label>Morocco</label>
+            <code>mr</code>
+            <div class="useforref1"> French Morocco</div>
+            <div class="useforref2"> Ifni</div>
+            <div class="useforref2"> Spanish Morocco</div>
+            <div class="useforref2"> Tangier Zone</div>
+            <div class="useforref2"> Zona Sur del Protectorado de Marruecos</div>
+        </item>
+        <item>
+            <label>Mozambique</label>
+            <code>mz</code>
+        </item>
+        <item>
+            <label>Namibia</label>
+            <code>sx</code>
+            <div class="useforref1"> South-West Africa</div>
+        </item>
+        <item>
+            <label>Nauru</label>
+            <code>nu</code>
+        </item>
+        <item>
+            <label>Nebraska</label>
+            <code>nbu</code>
+        </item>
+        <item>
+            <label>Nepal</label>
+            <code>np</code>
+        </item>
+        <item>
+            <label>Netherlands</label>
+            <code>ne</code>
+            <div class="useforref1"> Holland</div>
+        </item>
+        <item>
+            <label>Netherlands Antilles</label>
+            <code>na</code>
+            <div class="useforref1"> Bonaire</div>
+            <div class="useforref2"> Curaçao</div>
+            <div class="useforref2"> Saba</div>
+            <div class="useforref2"> Saint Martin, Southern</div>
+            <div class="useforref2"> Sint Eustatius</div>
+        </item>
+        <item>
+            <label>Nevada</label>
+            <code>nvu</code>
+        </item>
+        <item>
+            <label>New Brunswick</label>
+            <code>nkc</code>
+        </item>
+        <item>
+            <label>New Caledonia</label>
+            <code>nl</code>
+            <div class="useforref1"> Belep Islands</div>
+            <div class="useforref2"> Chesterfield, Iles</div>
+            <div class="useforref2"> Huon, Ile</div>
+            <div class="useforref2"> Ile des Pins</div>
+            <div class="useforref2"> Ile Huon</div>
+            <div class="useforref2"> Ile Uvea (New Caledonia)</div>
+            <div class="useforref2"> Ile Walpole</div>
+            <div class="useforref2"> Iles Belep</div>
+            <div class="useforref2"> Iles Chesterfield</div>
+            <div class="useforref2"> Isle of Pines (Pacific Ocean)</div>
+            <div class="useforref2"> Loyalty Islands</div>
+            <div class="useforref2"> Pines, Isle of (Pacific Ocean)</div>
+            <div class="useforref2"> Pins, Ile des</div>
+            <div class="useforref2"> Uvea (New Caledonia)</div>
+            <div class="useforref2"> Walpole, Ile</div>
+        </item>
+        <item>
+            <label>New Hampshire</label>
+            <code>nhu</code>
+        </item>
+        <item>
+            <label>New Jersey</label>
+            <code>nju</code>
+        </item>
+        <item>
+            <label>New Mexico</label>
+            <code>nmu</code>
+        </item>
+        <item>
+            <label>New South Wales</label>
+            <code>xna</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>New York (State)</label>
+            <code>nyu</code>
+        </item>
+        <item>
+            <label>New Zealand</label>
+            <code>nz</code>
+            <div class="useforref1"> Chatham Islands</div>
+            <div class="useforref2"> Kermadec Islands</div>
+            <div class="useforref2"> North Island</div>
+            <div class="useforref2"> South Island</div>
+            <div class="useforref2"> Stewart Island</div>
+        </item>
+        <item>
+            <label>Newfoundland and Labrador</label>
+            <code>nfc</code>
+            <div class="useforref1"> Labrador</div>
+            <div class="useforref2"> Newfoundland</div>
+        </item>
+        <item>
+            <label>Nicaragua</label>
+            <code>nq</code>
+            <div class="useforref1"> Corn Islands</div>
+        </item>
+        <item>
+            <label>Niger</label>
+            <code>ng</code>
+        </item>
+        <item>
+            <label>Nigeria</label>
+            <code>nr</code>
+            <div class="useforref1"> British Cameroons, Northern</div>
+        </item>
+        <item>
+            <label>Niue</label>
+            <code>xh</code>
+        </item>
+        <item>
+            <label>No place, unknown, or undetermined</label>
+            <code>xx</code>
+        </item>
+        <item>
+            <label>Norfolk Island</label>
+            <code>nx</code>
+        </item>
+        <item>
+            <label>North Carolina</label>
+            <code>ncu</code>
+        </item>
+        <item>
+            <label>North Dakota</label>
+            <code>ndu</code>
+        </item>
+        <item>
+            <label>Northern Ireland</label>
+            <code>nik</code>
+            <div class="useforref1"> Ireland, Northern</div>
+        </item>
+        <item>
+            <label>Northern Mariana Islands</label>
+            <code>nw</code>
+            <div class="note">Coded [tt] (Trust Territory of the Pacific Islands) before Jan. 1985. Code changed from [nm] to [nw] in July 1987</div>
+            <div class="useforref1"> Agrihan Island</div>
+            <div class="useforref2"> Aguijan Island</div>
+            <div class="useforref2"> Alamagan Island</div>
+            <div class="useforref2"> Anatahan Island</div>
+            <div class="useforref2"> Asuncion Island</div>
+            <div class="useforref2"> Farallon de Medinilla Island</div>
+            <div class="useforref2"> Farallon de Pajaros Island</div>
+            <div class="useforref2"> Guguan Island</div>
+            <div class="useforref2"> Mariana Islands</div>
+            <div class="useforref2"> Maug Islands</div>
+            <div class="useforref2"> Pacific Islands (Trust Territory)</div>
+            <div class="useforref2"> Pagan Island</div>
+            <div class="useforref2"> Rota Island</div>
+            <div class="useforref2"> Saipan Island</div>
+            <div class="useforref2"> Sarigan Island</div>
+            <div class="useforref2"> Tinian Island</div>
+            <div class="useforref2"> Trust Territory of the Pacific Islands</div>
+        </item>
+        <item>
+            <label>Northern Territory</label>
+            <code>xoa</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Northwest Territories</label>
+            <code>ntc</code>
+        </item>
+        <item>
+            <label>Norway</label>
+            <code>no</code>
+            <div class="useforref1"> Bear Island</div>
+            <div class="useforref2"> Jan Mayen</div>
+            <div class="useforref2"> Spitsbergen</div>
+            <div class="useforref2"> Svalbard (Norway)</div>
+        </item>
+        <item>
+            <label>Nova Scotia</label>
+            <code>nsc</code>
+        </item>
+        <item>
+            <label>Nunavut</label>
+            <code>nuc</code>
+        </item>
+        <item>
+            <label>Ohio</label>
+            <code>ohu</code>
+        </item>
+        <item>
+            <label>Oklahoma</label>
+            <code>oku</code>
+        </item>
+        <item>
+            <label>Oman</label>
+            <code>mk</code>
+            <div class="useforref1"> Kuria Muria Islands</div>
+            <div class="useforref2"> Muscat and Oman</div>
+        </item>
+        <item>
+            <label>Ontario</label>
+            <code>onc</code>
+        </item>
+        <item>
+            <label>Oregon</label>
+            <code>oru</code>
+        </item>
+        <item>
+            <label>Pakistan</label>
+            <code>pk</code>
+            <div class="useforref1"> Gwadar</div>
+            <div class="useforref2"> West Pakistan</div>
+        </item>
+        <item>
+            <label>Palau</label>
+            <code>pw</code>
+            <div class="note">Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</div>
+            <div class="useforref1"> Angaur Island</div>
+            <div class="useforref2"> Babelthuap Island</div>
+            <div class="useforref2"> Belau</div>
+            <div class="useforref2"> Helen Island</div>
+            <div class="useforref2"> Merir Island</div>
+            <div class="useforref2"> Pacific Islands (Trust Territory)</div>
+            <div class="useforref2"> Peleliu Island</div>
+            <div class="useforref2"> Pelew</div>
+            <div class="useforref2"> Pulo Anna Island</div>
+            <div class="useforref2"> Sonsoral Islands</div>
+            <div class="useforref2"> Tobi Island</div>
+            <div class="useforref2"> Trust Territory of the Pacific Islands</div>
+        </item>
+        <item>
+            <label>Panama</label>
+            <code>pn</code>
+            <div class="useforref1"> Canal Zone</div>
+        </item>
+        <item>
+            <label>Papua New Guinea</label>
+            <code>pp</code>
+            <div class="useforref1"> Admiralty Islands</div>
+            <div class="useforref2"> Bismarck Archipelago</div>
+            <div class="useforref2"> D'Entrecasteaux Islands</div>
+            <div class="useforref2"> Louisiada Archipelago</div>
+            <div class="useforref2"> New Britain Island</div>
+            <div class="useforref2"> New Guinea</div>
+            <div class="useforref2"> New Ireland Island</div>
+            <div class="useforref2"> North East New Guinea</div>
+            <div class="useforref2"> Solomon Islands, Northern</div>
+            <div class="useforref2"> Trobriand Islands</div>
+            <div class="useforref2"> Woodlark Island</div>
+        </item>
+        <item>
+            <label>Paracel Islands</label>
+            <code>pf</code>
+        </item>
+        <item>
+            <label>Paraguay</label>
+            <code>py</code>
+        </item>
+        <item>
+            <label>Pennsylvania</label>
+            <code>pau</code>
+        </item>
+        <item>
+            <label>Peru</label>
+            <code>pe</code>
+        </item>
+        <item>
+            <label>Philippines</label>
+            <code>ph</code>
+        </item>
+        <item>
+            <label>Pitcairn Island</label>
+            <code>pc</code>
+            <div class="useforref1"> Ducie Atoll</div>
+            <div class="useforref2"> Henderson Island</div>
+            <div class="useforref2"> Oeno Atoll</div>
+        </item>
+        <item>
+            <label>Poland</label>
+            <code>pl</code>
+        </item>
+        <item>
+            <label>Portugal</label>
+            <code>po</code>
+            <div class="useforref1"> Azores</div>
+            <div class="useforref2"> Madeira Island</div>
+        </item>
+        <item>
+            <label>Prince Edward Island</label>
+            <code>pic</code>
+        </item>
+        <item>
+            <label>Puerto Rico</label>
+            <code>pr</code>
+        </item>
+        <item>
+            <label>Qatar</label>
+            <code>qa</code>
+        </item>
+        <item>
+            <label>Québec (Province)</label>
+            <code>quc</code>
+        </item>
+        <item>
+            <label>Queensland</label>
+            <code>qea</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Réunion</label>
+            <code>re</code>
+            <div class="useforref1"> Bassas da India</div>
+            <div class="useforref2"> Europa, Ile</div>
+            <div class="useforref2"> Glorieuses, Iles</div>
+            <div class="useforref2"> Ile Europa</div>
+            <div class="useforref2"> Ile Juan de Nova</div>
+            <div class="useforref2"> Ile Tromelin</div>
+            <div class="useforref2"> Iles Glorieuses</div>
+            <div class="useforref2"> Juan de Nova, Ile</div>
+            <div class="useforref2"> Tromelin, Ile</div>
+        </item>
+        <item>
+            <label>Rhode Island</label>
+            <code>riu</code>
+        </item>
+        <item>
+            <label>Romania</label>
+            <code>rm</code>
+            <div class="useforref1"> Rumania</div>
+        </item>
+        <item>
+            <label>Russia (Federation)</label>
+            <code>ru</code>
+            <div class="note">Coded [rur] (Russian S.F.S.R.) before June 1992</div>
+            <div class="useforref1"> Franz Josef Land</div>
+            <div class="useforref2"> Habomai Islands</div>
+            <div class="useforref2"> Kuril Islands (Southern)</div>
+            <div class="useforref2"> New Siberian Islands</div>
+            <div class="useforref2"> Novaya Zemlya</div>
+            <div class="useforref2"> Russian S.F.S.R.</div>
+            <div class="useforref2"> Sakhalin (Southern)</div>
+            <div class="useforref2"> Severnaya Zemlya</div>
+            <div class="useforref2"> Wrangel Island</div>
+        </item>
+        <item>
+            <label>Rwanda</label>
+            <code>rw</code>
+        </item>
+        <item>
+            <label>Saint Helena</label>
+            <code>xj</code>
+            <div class="useforref1"> Ascension Island (Atlantic Ocean)</div>
+            <div class="useforref2"> Gough Island</div>
+            <div class="useforref2"> Inaccessible Island</div>
+            <div class="useforref2"> Nightingale Island</div>
+            <div class="useforref2"> Tristan da Cunha Island</div>
+        </item>
+        <item>
+            <label>Saint Kitts-Nevis</label>
+            <code>xd</code>
+            <div class="note">Coded [xi] (Saint Kitts-Nevis-Anguilla) before Jan. 1985</div>
+            <div class="useforref1"> Saint Christopher</div>
+            <div class="useforref2"> Saint Kitts-Nevis-Anguilla</div>
+            <div class="useforref2"> St. Christopher</div>
+        </item>
+        <item>
+            <label>Saint Lucia</label>
+            <code>xk</code>
+        </item>
+        <item>
+            <label>Saint Pierre and Miquelon</label>
+            <code>xl</code>
+            <div class="useforref1"> Miquelon</div>
+        </item>
+        <item>
+            <label>Saint Vincent and the Grenadines</label>
+            <code>xm</code>
+            <div class="useforref1"> Grenadine Islands, Northern</div>
+            <div class="useforref2"> Saint Vincent</div>
+        </item>
+        <item>
+            <label>Samoa</label>
+            <code>ws</code>
+            <div class="useforref1"> Samoa i Sisifo</div>
+            <div class="useforref2"> Samoa, Western</div>
+            <div class="useforref2"> Savai'i</div>
+            <div class="useforref2"> Upolu</div>
+            <div class="useforref2"> Western Samoa</div>
+        </item>
+        <item>
+            <label>San Marino</label>
+            <code>sm</code>
+        </item>
+        <item>
+            <label>Sao Tome and Principe</label>
+            <code>sf</code>
+        </item>
+        <item>
+            <label>Saskatchewan</label>
+            <code>snc</code>
+        </item>
+        <item>
+            <label>Saudi Arabia</label>
+            <code>su</code>
+        </item>
+        <item>
+            <label>Scotland</label>
+            <code>stk</code>
+        </item>
+        <item>
+            <label>Senegal</label>
+            <code>sg</code>
+        </item>
+        <item>
+            <label>Serbia</label>
+            <code>rb</code>
+            <div class="note">Coded [yu] for Serbia and Montenegro from 1992-April 2007</div>
+            <div class="useforref1"> Yugoslavia</div>
+        </item>
+        <item>
+            <label>Seychelles</label>
+            <code>se</code>
+            <div class="useforref1"> Aldabra Islands</div>
+            <div class="useforref2"> Alphonse Island</div>
+            <div class="useforref2"> Amirante Isles</div>
+            <div class="useforref2"> Bijoutier Island</div>
+            <div class="useforref2"> Cosmoledo Islands</div>
+            <div class="useforref2"> Desroches, Ile</div>
+            <div class="useforref2"> Farquhar Atoll</div>
+            <div class="useforref2"> François Island</div>
+            <div class="useforref2"> Ile Desroches</div>
+            <div class="useforref2"> Saint Francois Island</div>
+            <div class="useforref2"> Saint Pierre Islet</div>
+        </item>
+        <item>
+            <label>Sierra Leone</label>
+            <code>sl</code>
+        </item>
+        <item>
+            <label>Singapore</label>
+            <code>si</code>
+        </item>
+        <item>
+            <label>Slovakia</label>
+            <code>xo</code>
+            <div class="note">Coded [cs] (Czechoslovakia) before June 1993</div>
+            <div class="useforref1"> Czechoslovakia</div>
+            <div class="useforref2"> Slovak Socialist Republic</div>
+        </item>
+        <item>
+            <label>Slovenia</label>
+            <code>xv</code>
+            <div class="note">Coded [yu] (Yugoslavia) before Oct. 1992</div>
+        </item>
+        <item>
+            <label>Solomon Islands</label>
+            <code>bp</code>
+            <div class="useforref1"> British Solomon Islands</div>
+            <div class="useforref2"> Choiseul</div>
+            <div class="useforref2"> Guadalcanal</div>
+            <div class="useforref2"> Malaita</div>
+            <div class="useforref2"> San Cristóbal</div>
+            <div class="useforref2"> Santa Isabel</div>
+            <div class="useforref2"> Solomon Islands Protectorate</div>
+        </item>
+        <item>
+            <label>Somalia</label>
+            <code>so</code>
+            <div class="useforref1"> Somali Republic</div>
+        </item>
+        <item>
+            <label>South Africa</label>
+            <code>sa</code>
+            <div class="useforref1"> Bophuthatswana</div>
+            <div class="useforref2"> Ciskei</div>
+            <div class="useforref2"> Lebowa</div>
+            <div class="useforref2"> Machangana</div>
+            <div class="useforref2"> Marion Island</div>
+            <div class="useforref2"> Prince Edward Islands</div>
+            <div class="useforref2"> South Sotho</div>
+            <div class="useforref2"> Transkei</div>
+            <div class="useforref2"> Tswana</div>
+            <div class="useforref2"> Venda</div>
+            <div class="useforref2"> Walvis Bay Enclave</div>
+            <div class="useforref2"> Zulu</div>
+        </item>
+        <item>
+            <label>South Australia</label>
+            <code>xra</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>South Carolina</label>
+            <code>scu</code>
+        </item>
+        <item>
+            <label>South Dakota</label>
+            <code>sdu</code>
+        </item>
+        <item>
+            <label>South Georgia and the South Sandwich Islands</label>
+            <code>xs</code>
+            <div class="note">Coded [fk] (Falkland Islands) before Jan. 1991</div>
+            <div class="useforref1"> South Georgia Island</div>
+            <div class="useforref2"> South Sandwich Islands</div>
+        </item>
+        <item>
+            <label>Spain</label>
+            <code>sp</code>
+            <div class="useforref1"> Balearic Islands</div>
+            <div class="useforref2"> Canary Islands</div>
+        </item>
+        <item>
+            <label>Spanish North Africa</label>
+            <code>sh</code>
+            <div class="useforref1"> Ceuta</div>
+            <div class="useforref2"> Chafarinas, Islas</div>
+            <div class="useforref2"> Islas Chafarinas</div>
+            <div class="useforref2"> Melilla</div>
+            <div class="useforref2"> Peñón de Alhucemas</div>
+            <div class="useforref2"> Peñón de Vélez de la Gomera</div>
+            <div class="useforref2"> Plazas de Soberania</div>
+            <div class="useforref2"> Spanish Territories in Northern Morocco</div>
+        </item>
+        <item>
+            <label>Spratly Island</label>
+            <code>xp</code>
+        </item>
+        <item>
+            <label>Sri Lanka</label>
+            <code>ce</code>
+            <div class="useforref1"> Ceylon</div>
+        </item>
+        <item>
+            <label>Sudan</label>
+            <code>sj</code>
+        </item>
+        <item>
+            <label>Surinam</label>
+            <code>sr</code>
+            <div class="useforref1"> Dutch Guiana</div>
+            <div class="useforref2"> Guiana, Dutch</div>
+            <div class="useforref2"> Netherlands Guiana</div>
+        </item>
+        <item>
+            <label>Swaziland</label>
+            <code>sq</code>
+        </item>
+        <item>
+            <label>Sweden</label>
+            <code>sw</code>
+        </item>
+        <item>
+            <label>Switzerland</label>
+            <code>sz</code>
+        </item>
+        <item>
+            <label>Syria</label>
+            <code>sy</code>
+            <div class="useforref1"> Syrian Arab Republic</div>
+        </item>
+        <item>
+            <label>Tajikistan</label>
+            <code>ta</code>
+            <div class="note">Coded [tar] (Tajik S.S.R.) before June 1992</div>
+            <div class="useforref1"> Tadzhik S.S.R.</div>
+            <div class="useforref2"> Tajik S.S.R.</div>
+        </item>
+        <item>
+            <label>Tanzania</label>
+            <code>tz</code>
+            <div class="useforref1"> Pemba</div>
+            <div class="useforref2"> Tanganyika</div>
+            <div class="useforref2"> Zanzibar</div>
+        </item>
+        <item>
+            <label>Tasmania</label>
+            <code>tma</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Tennessee</label>
+            <code>tnu</code>
+        </item>
+        <item>
+            <label>Terres australes et antarctiques françaises</label>
+            <code>fs</code>
+            <div class="useforref1"> Amsterdam Island</div>
+            <div class="useforref2"> Crozet Island</div>
+            <div class="useforref2"> French Southern and Antarctic Lands</div>
+            <div class="useforref2"> Kerguelen Island</div>
+            <div class="useforref2"> Saint Paul Island</div>
+            <div class="useforref2"> T.A.A.F.</div>
+        </item>
+        <item>
+            <label>Texas</label>
+            <code>txu</code>
+        </item>
+        <item>
+            <label>Thailand</label>
+            <code>th</code>
+            <div class="useforref1"> Siam</div>
+        </item>
+        <item>
+            <label>Togo</label>
+            <code>tg</code>
+        </item>
+        <item>
+            <label>Tokelau</label>
+            <code>tl</code>
+            <div class="useforref1"> Atafu Atoll</div>
+            <div class="useforref2"> Fakaofu Atoll</div>
+            <div class="useforref2"> Nukunono Atoll</div>
+            <div class="useforref2"> Union Islands</div>
+        </item>
+        <item>
+            <label>Tonga</label>
+            <code>to</code>
+            <div class="useforref1"> Friendly Islands</div>
+            <div class="useforref2"> Haapai</div>
+            <div class="useforref2"> Lulunga</div>
+            <div class="useforref2"> Nomuka</div>
+            <div class="useforref2"> Otu Tolu</div>
+            <div class="useforref2"> Tongatapu</div>
+            <div class="useforref2"> Vavau</div>
+        </item>
+        <item>
+            <label>Trinidad and Tobago</label>
+            <code>tr</code>
+            <div class="useforref1"> Tobago</div>
+        </item>
+        <item>
+            <label>Tunisia</label>
+            <code>ti</code>
+        </item>
+        <item>
+            <label>Turkey</label>
+            <code>tu</code>
+        </item>
+        <item>
+            <label>Turkmenistan</label>
+            <code>tk</code>
+            <div class="note">Coded [tkr] (Turkmen S.S.R.) before June 1992</div>
+            <div class="useforref1"> Turkmen S.S.R.</div>
+        </item>
+        <item>
+            <label>Turks and Caicos Islands </label>
+            <code>tc</code>
+            <div class="useforref1"> Caicos Islands</div>
+        </item>
+        <item>
+            <label>Tuvalu</label>
+            <code>tv</code>
+            <div class="note">Coded [gn] (Gilbert and Ellice Islands) before Oct. 1978</div>
+            <div class="useforref1"> Ellice Islands</div>
+            <div class="useforref2"> Funafuti Atoll</div>
+            <div class="useforref2"> Gilbert and Ellice Islands</div>
+            <div class="useforref2"> Niulakita Island</div>
+            <div class="useforref2"> Nukufetau Atoll</div>
+            <div class="useforref2"> Nukulaelae Atoll</div>
+            <div class="useforref2"> Nukulailai Atoll</div>
+            <div class="useforref2"> Nurakita Island</div>
+        </item>
+        <item>
+            <label>Uganda</label>
+            <code>ug</code>
+        </item>
+        <item>
+            <label>Ukraine</label>
+            <code>un</code>
+            <div class="note">Coded [unr] (Ukraine) before June 1992</div>
+        </item>
+        <item>
+            <label>United Arab Emirates</label>
+            <code>ts</code>
+            <div class="useforref1"> Abu Dhabi</div>
+            <div class="useforref2"> Abu Zaby</div>
+            <div class="useforref2"> `Ajman</div>
+            <div class="useforref2"> Dubai</div>
+            <div class="useforref2"> Dubayy</div>
+            <div class="useforref2"> Fujairah</div>
+            <div class="useforref2"> Fujayrah</div>
+            <div class="useforref2"> Kalba</div>
+            <div class="useforref2"> Oman, Trucial</div>
+            <div class="useforref2"> Ras al Khaimah</div>
+            <div class="useforref2"> Ra's al-Khaymah</div>
+            <div class="useforref2"> Shariqah</div>
+            <div class="useforref2"> Sharjah</div>
+            <div class="useforref2"> Trucial Coast</div>
+            <div class="useforref2"> Trucial Oman</div>
+            <div class="useforref2"> Trucial Sheikdoms</div>
+            <div class="useforref2"> Trucial States</div>
+            <div class="useforref2"> Umm al Qaiwain</div>
+            <div class="useforref2"> Umm al-Qaywayn</div>
+        </item>
+        <item>
+            <label>United Kingdom</label>
+            <code>xxk</code>
+            <div class="note">Also coded [uk] (United Kingdom) before Mar. 1988</div>
+            <div class="useforref1"> Great Britain</div>
+        </item>
+        <item>
+            <label>United Kingdom Misc. Islands</label>
+            <code>uik</code>
+            <div class="note">Code changed from [ui] to [uik] in Mar. 1988</div>
+            <div class="useforref1"> Alderney</div>
+            <div class="useforref2"> Brechou</div>
+            <div class="useforref2"> Channel Islands</div>
+            <div class="useforref2"> Guernsey Island</div>
+            <div class="useforref2"> Herm Island</div>
+            <div class="useforref2"> Isle of Man</div>
+            <div class="useforref2"> Jersey (Island)</div>
+            <div class="useforref2"> Jethou</div>
+            <div class="useforref2"> Lihou</div>
+            <div class="useforref2"> Orkney Islands</div>
+            <div class="useforref2"> Sark Island</div>
+            <div class="useforref2"> Shetland Islands</div>
+        </item>
+        <item>
+            <label>United States</label>
+            <code>xxu</code>
+            <div class="note">Also coded [us] (United States before Mar. 1988</div>
+        </item>
+        <item>
+            <label>United States Misc. Caribbean Islands</label>
+            <code>uc</code>
+            <div class="useforref1"> Navassa Island</div>
+            <div class="useforref2"> Quita Sueno Bank</div>
+            <div class="useforref2"> Roncador Cay</div>
+        </item>
+        <item>
+            <label>United States Misc. Pacific Islands</label>
+            <code>up</code>
+            <div class="useforref1"> Baker Island</div>
+            <div class="useforref2"> Howland Island</div>
+            <div class="useforref2"> Jarvis Island</div>
+            <div class="useforref2"> Kingman Reef</div>
+            <div class="useforref2"> Palmyra Atoll</div>
+        </item>
+        <item>
+            <label>Uruguay</label>
+            <code>uy</code>
+        </item>
+        <item>
+            <label>Utah</label>
+            <code>utu</code>
+        </item>
+        <item>
+            <label>Uzbekistan</label>
+            <code>uz</code>
+            <div class="note">Coded [uzr] (Uzbek S.S.R.) before June 1992</div>
+            <div class="useforref1"> Uzbek S.S.R.</div>
+        </item>
+        <item>
+            <label>Vanuatu</label>
+            <code>nn</code>
+            <div class="useforref1"> Banks Islands</div>
+            <div class="useforref2"> New Hebrides</div>
+            <div class="useforref2"> Torres Islands</div>
+        </item>
+        <item>
+            <label>Various places</label>
+            <code>vp</code>
+        </item>
+        <item>
+            <label>Vatican City</label>
+            <code>vc</code>
+            <div class="useforref1"> Holy See</div>
+        </item>
+        <item>
+            <label>Venezuela</label>
+            <code>ve</code>
+        </item>
+        <item>
+            <label>Vermont</label>
+            <code>vtu</code>
+        </item>
+        <item>
+            <label>Victoria</label>
+            <code>vra</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Vietnam</label>
+            <code>vm</code>
+            <div class="note">Coded [vn] (Vietnam, North) or [vs] (Vietnam, South) before Jan. 1978</div>
+            <div class="useforref1"> Democratic People's Republic of Vietnam</div>
+            <div class="useforref2"> North Vietnam</div>
+            <div class="useforref2"> South Vietnam</div>
+            <div class="useforref2"> Vietnam, North</div>
+            <div class="useforref2"> Vietnam, Republic of</div>
+            <div class="useforref2"> Vietnam, South</div>
+        </item>
+        <item>
+            <label>Virgin Islands of the United States</label>
+            <code>vi</code>
+        </item>
+        <item>
+            <label>Virginia</label>
+            <code>vau</code>
+        </item>
+        <item>
+            <label>Wake Island</label>
+            <code>wk</code>
+        </item>
+        <item>
+            <label>Wales</label>
+            <code>wlk</code>
+        </item>
+        <item>
+            <label>Wallis and Futuna</label>
+            <code>wf</code>
+            <div class="useforref1"> Alofi</div>
+            <div class="useforref2"> Futuna</div>
+            <div class="useforref2"> Horne, Iles de</div>
+            <div class="useforref2"> Ile Uvea (Wallis and Futuna)</div>
+            <div class="useforref2"> Iles de Horne</div>
+            <div class="useforref2"> Uvea (Wallis and Futuna)</div>
+        </item>
+        <item>
+            <label>Washington (State)</label>
+            <code>wau</code>
+        </item>
+        <item>
+            <label>West Bank of the Jordan River</label>
+            <code>wj</code>
+            <div class="useforref1"> Jordan (Territory under Israeli occupation, 1967- )</div>
+        </item>
+        <item>
+            <label>West Virginia</label>
+            <code>wvu</code>
+        </item>
+        <item>
+            <label>Western Australia</label>
+            <code>wea</code>
+            <div class="note">Coded [at] (Australia) before Sept. 2005</div>
+        </item>
+        <item>
+            <label>Western Sahara</label>
+            <code>ss</code>
+            <div class="useforref1"> Río de Oro</div>
+            <div class="useforref2"> Saguia el Hamra</div>
+            <div class="useforref2"> Spanish Sahara</div>
+        </item>
+        <item>
+            <label>Wisconsin</label>
+            <code>wiu</code>
+        </item>
+        <item>
+            <label>Wyoming</label>
+            <code>wyu</code>
+        </item>
+        <item>
+            <label>Yemen</label>
+            <code>ye</code>
+            <div class="useforref1"> Aden</div>
+            <div class="useforref2"> Aden (Protectorate)</div>
+            <div class="useforref2"> Arab Republic of Yemen</div>
+            <div class="useforref2"> Federation of South Arabia</div>
+            <div class="useforref2"> Kamaran</div>
+            <div class="useforref2"> Perim</div>
+            <div class="useforref2"> Protectorate of South Arabia</div>
+            <div class="useforref2"> Socotra</div>
+            <div class="useforref2"> South Arabia</div>
+            <div class="useforref2"> Southern Yemen</div>
+            <div class="useforref2"> Yemen (People's Democratic Republic)</div>
+        </item>
+        <item>
+            <label>Yukon Territory</label>
+            <code>ykc</code>
+        </item>
+        <item>
+            <label>Zambia</label>
+            <code>za</code>
+            <div class="useforref1"> Northern Rhodesia</div>
+        </item>
+        <item>
+            <label>Zimbabwe</label>
+            <code>rh</code>
+            <div class="useforref1"> Rhodesia</div>
+            <div class="useforref2"> Southern Rhodesia</div>
+            <div class="useforref2"> Zimbabwe Rhodesia</div>
+        </item>
+    </items>
+</code-table>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <status>dummy</status>
+    <code-table-name>transliteration-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>pinyin</label>
+            <value>pinyin</value>
+        </item>
+        <item>
+            <label>romaji</label>
+            <value>romaji</value>
+        </item>
+    </items>
+</code-table>

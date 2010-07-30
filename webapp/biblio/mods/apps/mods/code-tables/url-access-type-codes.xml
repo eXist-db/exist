@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <status>finished</status>
+    <code-table-name>url-access-type-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>preview</label>
+            <value>preview</value>
+        </item>
+        <item>
+            <label>raw object</label>
+            <value>raw object</value>
+        </item>
+        <item>
+            <label>object in context</label>
+            <value>object in context</value>
+        </item>
+    </items>
+</code-table>

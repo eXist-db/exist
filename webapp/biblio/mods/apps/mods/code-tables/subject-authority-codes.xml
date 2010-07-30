@@ -1,0 +1,1128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <status>finished</status>
+    <code-table-name>subject-authority-code</code-table-name>
+    <basis>http://www.loc.gov/standards/sourcelist/abbreviated-title.html</basis>
+    <items>
+        <term>
+            <value>aass</value>
+            <label>"Asian American Studies Library subject headings" in A Guide for establishing Asian American core collections. (Berkeley, CA: Asian American
+                Studies Library, University of California, Berkeley)</label>
+        </term>
+        <term>
+            <value>aat</value>
+            <label>Art &amp; architecture thesaurus (Los Angeles, CA: Getty Research Institute, Getty Vocabulary Program)</label>
+        </term>
+        <term>
+            <value>abne</value>
+            <label>Autoridades de la Biblioteca Nacional de España (Madrid: Biblioteca Nacional de España)</label>
+        </term>
+        <term>
+            <value>agrifors</value>
+            <label>AGRIFOREST-sanasto (Helsinki: Helsingin Yliopisto)</label>
+        </term>
+        <term>
+            <value>agrovoc</value>
+            <label>AGROVOC multilingual agricultural thesaurus. (Rome: APIMONDIA)</label>
+        </term>
+        <term>
+            <value>agrovocf</value>
+            <label>AGROVOC thésaurus agricole multilingue (Rome: APIMONDIA)</label>
+        </term>
+        <term>
+            <value>agrovocs</value>
+            <label>AGROVOC tesauro agrícola multilingüe (Roma: APIMONDIA)</label>
+        </term>
+        <term>
+            <value>afset</value>
+            <label>American Folklore Society Ethnographic Thesaurus</label>
+        </term>
+        <term>
+            <value>aiatsisl</value>
+            <label>AIATSIS language thesaurus (Canberra: Australian Institute of Aboriginal and Torres Strait Islander Studies)</label>
+        </term>
+        <term>
+            <value>aiatsisp</value>
+            <label>AIATSIS place thesaurus (Canberra: Australian Institute of Aboriginal and Torres Strait Islander Studies)</label>
+        </term>
+        <term>
+            <value>aiatsiss</value>
+            <label>AIATSIS Subject Thesaurus (Canberra: Australian Institute of Aboriginal and Torres Strait Islander Studies)</label>
+        </term>
+        <term>
+            <value>aktp</value>
+            <label>Alphavētikos Katalogos Thematikōn Perigrapheōn (Naupaktos: Papacharalampeios Dēmosia Kentrikē Vivliothēkē Naupaktou)</label>
+        </term>
+        <term>
+            <value>albt</value>
+            <label>Arbetslivsbibliotekets tesaurus (Stockholm: Arbetslivsbiblioteket)</label>
+        </term>
+        <term>
+            <value>allars</value>
+            <label>Allärs: allmän tesaurus på svenska (Helsingfors: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>apaist</value>
+            <label>APAIS thesaurus: a list of subject terms used in the Australian Public Affairs Information Service (Canberra: National Library of
+                Australia)</label>
+        </term>
+        <term>
+            <value>asft</value>
+            <label>Aquatic sciences and fisheries thesaurus (Rome: Cambridge Scientific Abstracts)</label>
+        </term>
+        <term>
+            <value>asrcrfcd</value>
+            <label>Australian Standard Research Classification: Research Fields, Courses and Disciplines (RFCD) classification (Canberra: Australian Bureau of
+                Statistics)</label>
+        </term>
+        <term>
+            <value>asrcseo</value>
+            <label>Australian Standard Research Classification: Socio-Economic Objective (SEO) classification (Canberra: Australian Bureau of
+                Statistics)</label>
+        </term>
+        <term>
+            <value>asrctoa</value>
+            <label>Australian Standard Research Classification: Type of Activity (TOA) classification (Canberra: Australian Bureau of Statistics)</label>
+        </term>
+        <term>
+            <value>asth</value>
+            <label>Astronomy thesaurus (Epping, N.S.W.: Anglo-Australian Observatory for the International Astronomical Union)</label>
+        </term>
+        <term>
+            <value>atla</value>
+            <label>Religion indexes: thesaurus (Evanston, IL: American Theological Library Association</label>
+        </term>
+        <term>
+            <value>aucsh</value>
+            <label>Qâ'imat ru'ûs mawdû'ât al-fahras al-'Arabîyah al-mowahad = Arabic Union Catalog Subject Headings</label>
+        </term>
+        <term>
+            <value>barn</value>
+            <label>Svenska ämnesord för barn (Stockholm: Svensk biblioteksförening)</label>
+        </term>
+        <term>
+            <value>bella</value>
+            <label>Bella: specialtesaurus för skönlitteratur (Helsingfors: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>bet</value>
+            <label>British education thesaurus (Leeds: Leeds University Press)</label>
+        </term>
+        <term>
+            <value>bgtchm</value>
+            <label>Basic genre terms for cultural heritage materials</label>
+        </term>
+        <term>
+            <value>bhammf</value>
+            <label>BHA, Bibliographie d'histoire de l'art, mots-matière/français (Paris: Institut national d'information scientifique et technique)</label>
+        </term>
+        <term>
+            <value>bhashe</value>
+            <label>BHA, Bibliography of the history of art, subject headings/English (Santa Monica, CA: J. Paul Getty Trust ; Paris: Centre national de
+                recherche scientifique)</label>
+        </term>
+        <term>
+            <value>bibalex</value>
+            <label>Bibliotheca Alexandrina name and subject authority file (Alexandria, Egypt : Bibliotheca Alexandrina)</label>
+        </term>
+        <term>
+            <value>biccbmc</value>
+            <label>BIC Children's Books Marketing Classifications (London: Book Industry Communication)</label>
+        </term>
+        <term>
+            <value>bicssc</value>
+            <label>BIC standard subject categories (London: Book Industry Communication)</label>
+        </term>
+        <term>
+            <value>bidex</value>
+            <label>Bilindex: a bilingual Spanish-English subject heading list (Oakland: California Spanish Language Data Base)</label>
+        </term>
+        <term>
+            <value>bisacmt</value>
+            <label>BISAC Merchandising Themes</label>
+        </term>
+        <term>
+            <value>bisacrt</value>
+            <label>BISAC Regional Themes</label>
+        </term>
+        <term>
+            <value>bisacsh</value>
+            <label>BISAC Subject Headings</label>
+        </term>
+        <term>
+            <value>bjornson</value>
+            <label>Bjornson: emneord for Bjornsonbibliografien</label>
+        </term>
+        <term>
+            <value>blcpss</value>
+            <label>COMPASS subject authority system</label>
+        </term>
+        <term>
+            <value>blmlsh</value>
+            <label>British Library - Map library subject headings (London: British Library</label>
+        </term>
+        <term>
+            <value>blnpn</value>
+            <label>British Library newspaper place names (London: British Library)</label>
+        </term>
+        <term>
+            <value>bt</value>
+            <label>Bioethics thesaurus. (Washington, DC: Kennedy Institute of Ethics, Georgetown Univ.)</label>
+        </term>
+        <term>
+            <value>cabt</value>
+            <label>CAB thesaurus (Slough [ England ]: Commonwealth Agricultural Bureaux)</label>
+        </term>
+        <term>
+            <value>cash</value>
+            <label>Canadian subject headings (Ottawa, ON: National Library of Canada)</label>
+        </term>
+        <term>
+            <value>cct</value>
+            <label>Zhong guo fen lei zhu ti ci biao (di er ban) = Chinese Classified Thesaurus (Beijing: Guo jia tu shu guan "Zhongguo tu shu guan fen lei fa"
+                bian wei hui)</label>
+        </term>
+        <term>
+            <value>ccte</value>
+            <label>Carto-Canadiana thesaurus - English (Ottawa, ON: National Archives of Canada)</label>
+        </term>
+        <term>
+            <value>cctf</value>
+            <label>Carto-Canadiana thésaurus - Français (Ottawa, ON: Archives nationales du Canada )</label>
+        </term>
+        <term>
+            <value>cdcng</value>
+            <label>Catalogage des documents cartographiques: forme et structure des vedettes noms géographiques - NF Z 44-081 (Paris-La Défense: AFNOR)</label>
+        </term>
+        <term>
+            <value>ceeus</value>
+            <label>Counties and equivalent entities of the United States , its possessions, and associated areas (Gaithersburg, MD: National Institute of
+                Standards and Technology)</label>
+        </term>
+        <term>
+            <value>chirosh</value>
+            <label>Chiropractic Subject Headings [PDF: 272 KB] (Download the Adobe Acrobat Reader to view PDF documents)</label>
+        </term>
+        <term>
+            <value>cht</value>
+            <label>Chicano thesaurus for indexing Chicano materials in Chicano periodical index (Berkeley: Chicano Studies Library Publications Unit, University
+                of California, Berkeley)</label>
+        </term>
+        <term>
+            <value>ciesiniv</value>
+            <label>CIESIN indexing vocabulary (University Center, MI: Consortium for International Earth Science Information Network)</label>
+        </term>
+        <term>
+            <value>cilla</value>
+            <label>Cilla: specialtesaurus för musik (Helsingfors: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>conorsi</value>
+            <label>CONOR.SI (name authority file) (Maribor, Slovenia : Institut informacijskih znanosti (IZUM))</label>
+        </term>
+        <term>
+            <value>csahssa</value>
+            <label>"Controlled vocabulary" in Health and safety science abstracts (Bethesda, MD: Cambridge Scientific Abstracts)</label>
+        </term>
+        <term>
+            <value>csalsct</value>
+            <label>CSA life sciences collection thesaurus (Bethesda, MD: Cambridge Scientific Abstracts)</label>
+        </term>
+        <term>
+            <value>csapa</value>
+            <label>"Controlled vocabulary" in Pollution abstracts (Bethesda, MD: Cambridge Scientific Abstracts)</label>
+        </term>
+        <term>
+            <value>csh</value>
+            <label>Kapsner, Oliver Leonard. Catholic subject headings. (Haverford, PA: Catholic Lib. Assoc.)</label>
+        </term>
+        <term>
+            <value>csht</value>
+            <label>Chinese subject headings (Taipei: National Central Library)</label>
+        </term>
+        <term>
+            <value>cstud</value>
+            <label>Classificatieschema's Bibliotheek TU Delft (Delft: Technische Universiteit Delft, Bibliotheek)</label>
+        </term>
+        <term>
+            <value>czenas</value>
+            <label>Soubor vĕcných autorit Národní knihovny ČR = CZENAS thesaurus: a list of subject terms used in the National Library of the Czech Republic
+                (Praha : Národní knihovna Čseké republiky)</label>
+        </term>
+        <term>
+            <value>dcs</value>
+            <label>Descritores em Ciências da Saúde = Descriptores en Ciencias de la Salud = Health Sciences Descriptors (São Paulo: BIREME)</label>
+        </term>
+        <term>
+            <value>ddcri</value>
+            <label>Dewey Decimal Classification Relative Index (Dublin, Ohio: OCLC Online Computer Center)</label>
+        </term>
+        <term>
+            <value>ddcrit</value>
+            <label>DDC retrieval and indexing terminology; posting terms with hierarchy and KWOC (Alexandria, VA: Defense Documentation Center, Defense
+                Logistics Agency)</label>
+        </term>
+        <term>
+            <value>dissao</value>
+            <label>"Dissertation abstracts online" in Search tools: the guide to UNI/Data Courier Online (Louisville, KY: UNI/Data Courier Online)</label>
+        </term>
+        <term>
+            <value>dit</value>
+            <label>Defense intelligence thesaurus. (Washington, DC: Defense Intelligence Agency)</label>
+        </term>
+        <term>
+            <value>drama</value>
+            <label>Drama: specialtesaurus för teater och dans (Helsingfors: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>dtict</value>
+            <label>Defense Technical Information Center thesaurus (Fort Belvoir, VA: DTIC)</label>
+        </term>
+        <term>
+            <value>ebfem</value>
+            <label>Encabezamientos bilingües de la Fundación Educativa Ana G. Mendez (Puerto Rico: Fundación Educativa Ana G. Mendez)</label>
+        </term>
+        <term>
+            <value>eclas</value>
+            <label>ECLAS thesaurus (Luxembourg : European Communities, Office for Official Publications)</label>
+        </term>
+        <term>
+            <value>eet</value>
+            <label>European education thesaurus</label>
+        </term>
+        <term>
+            <value>eflch</value>
+            <label>E4Libraries Category Headings</label>
+        </term>
+        <term>
+            <value>eks</value>
+            <label>Eduskunnan kirjaston asiasanasto (Helsinki: Eduskunnan kirasto)</label>
+        </term>
+        <term>
+            <value>embne</value>
+            <label>Encabezamientos de Materia de la Biblioteca Nacional de España (Madrid: Biblioteca Nacional de España)</label>
+        </term>
+        <term>
+            <value>ept</value>
+            <label>Evropski pedagoski tezaver = European education thesaurus (EET) : slovenska razliica - izdelana po angleski razliici (Ljubljana: Zavod
+                Republike Slovenije za solstvo)</label>
+        </term>
+        <term>
+            <value>ericd</value>
+            <label>Thesaurus of ERIC descriptors (Washington: Educational Resources Information Center, National Institute of Education, U.S. Dept. of
+                Education)</label>
+        </term>
+        <term>
+            <value>est</value>
+            <label>International energy: subject thesaurus([Paris]: International Energy Agency, Energy Technology Data Exchange)</label>
+        </term>
+        <term>
+            <value>eum</value>
+            <label>Eesti üldine marksonastik</label>
+        </term>
+        <term>
+            <value>eurovocen</value>
+            <label>Eurovoc thesaurus (English)</label>
+        </term>
+        <term>
+            <value>eurovocsl</value>
+            <label>Eurovoc thesaurus (Slovenian)</label>
+        </term>
+        <term>
+            <value>fast</value>
+            <label>Faceted application of subject terminology (Dublin, Ohio: OCLC)</label>
+        </term>
+        <term>
+            <value>finmesh</value>
+            <label>FinMeSH</label>
+        </term>
+        <term>
+            <value>fire</value>
+            <label>FireTalk, IFSI thesaurus (Champaign, IL: Illinois Fire Service Institute)</label>
+        </term>
+        <term>
+            <value>fmesh</value>
+            <label>Liste systématique et liste permutée des descripteurs français MeSH (Le Kremlin-Bicêtre, France : Service information médicale automatisée de
+                l'INSERM)</label>
+        </term>
+        <term>
+            <value>fnhl</value>
+            <label>First Nations House of Learning Subject Headings (Vancouver, BC: Xwi7xwa Library, University of British Columbia)</label>
+        </term>
+        <term>
+            <value>francis</value>
+            <label>Base de données FRANCIS: plan de classement = FRANCIS database classification scheme (Vandoeuvre: Centre national de la recherche
+                scientifique)</label>
+        </term>
+        <term>
+            <value>galestne</value>
+            <label>Gale Group subject thesaurus and named entity vocabulary (Farmington Hills, MI: Gale Group)</label>
+        </term>
+        <term>
+            <value>gem</value>
+            <label>GEM controlled vocabularies (Syracuse, NY: ERIC Clearinghouse on Information &amp; Technology, Gateway to Educational Materials)</label>
+        </term>
+        <term>
+            <value>georeft</value>
+            <label>GeoRef thesaurus (Alexandria, VA: American Geological Institute)</label>
+        </term>
+        <term>
+            <value>gst</value>
+            <label>Gay studies thesaurus: a controlled vocabulary for indexing and accessing materials of relevance to gay culture, history, politics and
+                psychology (Princeton, NJ: Michel)</label>
+        </term>
+        <term>
+            <value>gtt</value>
+            <label>GOO-trefwoorden thesaurus (Den Haag: Koninklijke Bibliotheek)</label>
+        </term>
+        <term>
+            <value>hamsun</value>
+            <label>Hamsun: emneord for Hamsunbibliografien</label>
+        </term>
+        <term>
+            <value>hapi</value>
+            <label>HAPI thesaurus and name authority, 1970-2000 (Los Angeles, CA: UCLC Latin America Center Pubs.)</label>
+        </term>
+        <term>
+            <value>helecon</value>
+            <label>Asiasanasto HELECON-tietikantoihin (Helsinki: Helsingin Kauppakorkeakoulu)</label>
+        </term>
+        <term>
+            <value>henn</value>
+            <label>Hennepin County Library cumulative authority list (Edina, MN: Hennepin Co. Library)</label>
+        </term>
+        <term>
+            <value>hkcan</value>
+            <label>Hong Kong Chinese Authority File (Name) - HKCAN (Honk Kong: JULAC)</label>
+        </term>
+        <term>
+            <value>hlasstg</value>
+            <label>HLAS subject term glossary (Washington, DC: Library of Congress, Hispanic Division, Handbook of Latin American Studies section)</label>
+        </term>
+        <term>
+            <value>hoidokki</value>
+            <label>Hoitotieteellinen asiasanasto (Helsinki: Sairaanhoitajien koulutussäätiö)</label>
+        </term>
+        <term>
+            <value>hrvmesh</value>
+            <label>Croatian MeSH / Hrvatski MeSH (Zagreb: Medicinski fakultet Sveučilišta u Zagrebu - Središnja medicinska knjižnica)</label>
+        </term>
+        <term>
+            <value>huc</value>
+            <label>U.S. Geological Survey water-supply paper 2294: hydrologic basins unit codes (Reston, VA: U.S. Geological Survey)</label>
+        </term>
+        <term>
+            <value>ica</value>
+            <label>Index of Christian art (Princeton, NJ: Princeton University)</label>
+        </term>
+        <term>
+            <value>icpsr</value>
+            <label>ICPSR controlled vocabulary system (Ann Arbor, MI: Inter-university Consortium for Political and Social Research)</label>
+        </term>
+        <term>
+            <value>idas</value>
+            <label>ID-Archivschlüssel [Informationsdienst zur Verbreitung unterbliebener Nachrichten] (Amsterdam: Internationales Institut für
+                Sozialgeschichte)</label>
+        </term>
+        <term>
+            <value>idsbb</value>
+            <label>Thesaurus IDS Basel Bern (Basel: Universitätsbibliothek; Bern: Universitätsbibliothek)</label>
+        </term>
+        <term>
+            <value>idszbz</value>
+            <label>Thesaurus IDS Nebis Zentralbibliothek Zürich (Zürich: Zentralbibliothek)</label>
+        </term>
+        <term>
+            <value>idszbzes</value>
+            <label>Thesaurus IDS Nebis Bibliothek Englisches Seminar der Universität Zürich (Zürich: Universität Zürich)</label>
+        </term>
+        <term>
+            <value>idszbzna</value>
+            <label>Thesaurus IDS Nebis Zentralbibliothek Zürich, Nordamerika-Bibliothek (Zürich: Zentralbibliothek)</label>
+        </term>
+        <term>
+            <value>idszbzzg</value>
+            <label>Thesaurus IDS Nebis Zentralbibliothek Zürich, Graphische Sammlung (Zürich: Zentralbibliothek)</label>
+        </term>
+        <term>
+            <value>idszbzzh</value>
+            <label>Thesaurus IDS Nebis Zentralbibliothek Zürich, Handschriftenabteilung (Zürich: Zentralbibliothek</label>
+        </term>
+        <term>
+            <value>idszbzzk</value>
+            <label>Thesaurus IDS Nebis Zentralbibliothek Zürich, Kartensammlung (Zürich: Zentralbibliothek)</label>
+        </term>
+        <term>
+            <value>iescs</value>
+            <label>International energy subject categories and scope (Paris: International Energy Agency)</label>
+        </term>
+        <term>
+            <value>iest</value>
+            <label>International energy: subject thesaurus (Paris, France : International Energy Agency, Energy Technology Data Exchange)</label>
+        </term>
+        <term>
+            <value>ilpt</value>
+            <label>Index to legal periodicals: thesaurus. (New York, NY: H.W. Wilson)</label>
+        </term>
+        <term>
+            <value>inist</value>
+            <label>INIS: thesaurus (Vienna: International Atomic Energy Agency)</label>
+        </term>
+        <term>
+            <value>inspect</value>
+            <label>INSPEC thesaurus. (London: Institution of Electrical Engineers)</label>
+        </term>
+        <term>
+            <value>ipat</value>
+            <label>IPA thesaurus and frequency list. (Bethesda, MD: American Society of Hospital Pharmacists)</label>
+        </term>
+        <term>
+            <value>ipsp</value>
+            <label>Defense intelligence production schedule. (Washington, DC: Defense Intelligence Agency)</label>
+        </term>
+        <term>
+            <value>isis</value>
+            <label>"Classification scheme" in Isis. (Chicago, IL: University of Chicago Press)</label>
+        </term>
+        <term>
+            <value>itglit</value>
+            <label>International thesaurus of gay and lesbian index terms (Chicago?: Thesaurus Committee, Gay and Lesbian Task Force, American Library
+                Association)</label>
+        </term>
+        <term>
+            <value>itrt</value>
+            <label>International Thesaurus of Refugee Terminology (New York &amp; Geneva: United Nations High Commissioner for Refugees)</label>
+        </term>
+        <term>
+            <value>jhpb</value>
+            <label>Język haseł przedmiotowych Biblioteki Narodowej = National Library of Poland Subject Headings (Warszawie: Biblioteki Narodowej)</label>
+        </term>
+        <term>
+            <value>jhpk</value>
+            <label>Język haseł przedmiotowych KABA = KABA Subject Headings (Warszawie: Stowarzyszenie Bibliotekarzy Polskich, Centrum Formatów i Kartotek Haseł
+                Wzorcowych Biblioteki Uniwersyteckiej w Warszawie</label>
+        </term>
+        <term>
+            <value>jlabsh</value>
+            <label>Kihon kenmei hyômokuhyô = Japan Library Association] Basic subject headings (Tokyo: Nihon Toshokan Kyôkai)</label>
+        </term>
+        <term>
+            <value>kaa</value>
+            <label>Kasvatusalan asiasanasto (Jyväskylä: Kasvatustieteiden tutkimuslaitos)</label>
+        </term>
+        <term>
+            <value>kao</value>
+            <label>KVINNSAM ämnesordsregister = KVINNSAM subject headings (Göteborg: Göteborgs universitetsbibliotek, Kvinnohistoriska samlingarna)</label>
+        </term>
+        <term>
+            <value>kaunokki</value>
+            <label>Kaunokki: kaunokirjallisuuden asiasanasto (Helsinki: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>kdm</value>
+            <label>Khung dê muc hê thông thông tin khoa hoc và ky thuât quôc gia (Hà Nôi: Viên Thông Tin Khoa Hoc Và Ky Thuât Trung Uong)</label>
+        </term>
+        <term>
+            <value>kitu</value>
+            <label>Kirjallisuudentutkimuksen asiasanasto (Helsinki: Suomalaisen Kirjallisuuden seura)</label>
+        </term>
+        <term>
+            <value>kkts</value>
+            <label>Katalogos Kathierōmenōn Typōn Syllogikou Katalogou Demosion Vivliothekon (5 vols.) (Livadeia: Dēmosia Kentrikē Vivliothēkē Levadeias)</label>
+        </term>
+        <term>
+            <value>kssbar</value>
+            <label>Klassifikationssystem for svenska bibliotek. Ämnesordregister. Alfabetisk del (Lund: Bibliotekstjanst)</label>
+        </term>
+        <term>
+            <value>kta</value>
+            <label>Kielitieteen asiasanasto (Helsinki: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>ktpt</value>
+            <label>Kirjasto- ja tietopalvelualan tesaurus (Tampere: Tampereen yliopisto)</label>
+        </term>
+        <term>
+            <value>ktta</value>
+            <label>Käsi- ja taideteollisuuden asiasanasto (Kuopio: Kuopinon käsi- ja taideteollisuusakatemia taito- ja tutkimuskeskus Taitemia)</label>
+        </term>
+        <term>
+            <value>kula</value>
+            <label>Kulttuurien tutkimuksen asiasanasto (Helsinki: Suomalaisen Kirjallisuuden seura)</label>
+        </term>
+        <term>
+            <value>kupu</value>
+            <label>He puna kupu / Maori Wordnet (Wellington: National Library of New Zealand)</label>
+        </term>
+        <term>
+            <value>lacnaf</value>
+            <label>Library Archives Canada name authority file (Ottawa: ON: Library Archives Canada)</label>
+        </term>
+        <term>
+            <value>larpcal</value>
+            <label>Lista de assuntos referente ao programa de cadastramento automatizado de livros da USP (São Paulo: Universidade de São Paulo, Sistema
+                Integrado de Bibliotecas)</label>
+        </term>
+        <term>
+            <value>lcac</value>
+            <label>Library of Congress Annotated Children's Cataloging Program subject headings (Washington, DC: LC, Cataloging Distribution Service)</label>
+        </term>
+        <term>
+            <value>lcsh</value>
+            <label>Library of Congress subject headings (Washington, DC: LC, Cataloging Distribution Service)</label>
+        </term>
+        <term>
+            <value>lcshac</value>
+            <label>Library of Congress subject headings: Annotated Card Program., AC Subject headings (Washington, DC: Library of Congress, Cataloging
+                Distribution Service)</label>
+        </term>
+        <term>
+            <value>lcstt</value>
+            <label>List of Chinese subject terms (Taipei: National Central Library)</label>
+        </term>
+        <term>
+            <value>lctgm</value>
+            <label>Thesaurus for graphic materials: TGM I, Subject terms</label>
+        </term>
+        <term>
+            <value>lemac</value>
+            <label>Llista d'encapçalaments de matèria en català (Barcelona: Biblioteca de Catalunya, Servei de Normalització Bibliogràfica)</label>
+        </term>
+        <term>
+            <value>lemb</value>
+            <label>Lista de encabezamientos de materia para bibliotecas (Santafe de Bogotá: Rojas Eberhard Editores, Ltda)</label>
+        </term>
+        <term>
+            <value>liv</value>
+            <label>Legislative indexing vocabulary (Washington, DC: Library of Congress, Congressional Research Service)</label>
+        </term>
+        <term>
+            <value>lnmmbr</value>
+            <label>Lietuvos nacionalines Martyno Mazvydo bibliotekos rubrikynas (Vilnius: LNMMB)</label>
+        </term>
+        <term>
+            <value>local</value>
+            <label>Locally assigned term.</label>
+        </term>
+        <term>
+            <value>ltcsh</value>
+            <label>Land Tenure Center Library list of subject headings (Madison, WI: Land Tenure Center Library, University of Wisconsin-- Madison)</label>
+        </term>
+        <term>
+            <value>lua</value>
+            <label>Liikunnan ja urheilun asiasanasto (Jyvässkylä: Likkunnan ja kansanterveyden edustämissäätiö)</label>
+        </term>
+        <term>
+            <value>maaq</value>
+            <label>Madâkhil al-asmâ' al-'arabîyah al-qadîmah (Cairo: Maktabah al-Akâdîmîyah)</label>
+        </term>
+        <term>
+            <value>mar</value>
+            <label>Merenkulun asiasanasto = MariTerm (Maritime technology) (Helsinki: Finnish Maritime Administration)</label>
+        </term>
+        <term>
+            <value>masa</value>
+            <label>Museoalan asiasanasto (Helsinki: Museovirasto)</label>
+        </term>
+        <term>
+            <value>mech</value>
+            <label>Iskanje po zbirki MECH</label>
+        </term>
+        <term>
+            <value>mesh</value>
+            <label>Medical subject headings (Bethesda, MD: National Library of Medicine)</label>
+        </term>
+        <term>
+            <value>mipfesd</value>
+            <label>Macrothesaurus for information processing in the field of economic and social development (Paris: Organisation for Economic Co-operation and
+                Development)</label>
+        </term>
+        <term>
+            <value>mmm</value>
+            <label>"Subject key" in Marxism and the mass media (New York: International General)</label>
+        </term>
+        <term>
+            <value>mpirdes</value>
+            <label>Macrothesaurus para el procesamiento de la información relativa al desarrollo económico y social (Paris: Organización de Cooperación y
+                Desarrollo Económicos)</label>
+        </term>
+        <term>
+            <value>msc</value>
+            <label>Mathematical subject classification (Providence, RI: American Mathematical Society)</label>
+        </term>
+        <term>
+            <value>msh</value>
+            <label>Trimboli, T., and Martyn S. Marianist subject headings [PDF: 138 KB] (Download the Adobe Acrobat Reader to view PDF documents)</label>
+        </term>
+        <term>
+            <value>mtirdes</value>
+            <label>Macrothésaurus pour le traitement de l'information relative au développement économique et social (Paris: Organisation de coopération et
+                développement économiques)</label>
+        </term>
+        <term>
+            <value>musa</value>
+            <label>Musiikin asiasanasto: erikoissanasto (Helsinki: Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>muzeukc</value>
+            <label>MuzeMusic UK classical music classification (London: Muze Europe Ltd)</label>
+        </term>
+        <term>
+            <value>muzeukn</value>
+            <label>MuzeMusic UK non-classical music classification (London: Muze Europe Ltd)</label>
+        </term>
+        <term>
+            <value>muzvukci</value>
+            <label>MuzeVideo UK contributor index (London: Muze Europe Ltd)</label>
+        </term>
+        <term>
+            <value>naf</value>
+            <label>NACO authority file</label>
+        </term>
+        <term>
+            <value>nal</value>
+            <label>National Agricultural Library subject headings (Beltsville, MD: National Agricultural Library)</label>
+        </term>
+        <term>
+            <value>nalnaf</value>
+            <label>National Agricultural Library name authority file (Beltsville, Maryland; National Agricultural Library)</label>
+        </term>
+        <term>
+            <value>nasat</value>
+            <label>NASA thesaurus. (Washington: NASA, Scientific and Technical Information Office)</label>
+        </term>
+        <term>
+            <value>ncjt</value>
+            <label>National criminal justice thesaurus (Rockville, MD: U.S. Dept. of Justice, Institute of Justice, National Criminal Justice Reference
+                Service)</label>
+        </term>
+        <term>
+            <value>ndllsh</value>
+            <label>Kokuritsu Kokkai Toshokan kenmei hyômokuhyô = National Diet Library list of subject headings (Tokyo: Kokuritsu Kokkai Toshokan)</label>
+        </term>
+        <term>
+            <value>netc</value>
+            <label>National Emergency Training Center Thesaurus (NETC)</label>
+        </term>
+        <term>
+            <value>nicem</value>
+            <label>NICEM subject headings and classification system (Albuquerque, NM: National Information Center for Educational Media)</label>
+        </term>
+        <term>
+            <value>nimacsc</value>
+            <label>NIMA cartographic subject categories (Bethesda, MD: National Imagery and Mapping Agency)</label>
+        </term>
+        <term>
+            <value>nlgaf</value>
+            <label>Archeio Kathierōmenōn Epikephalidōn (Athēna: Ethnikē vivliothēkē tēs Hellados)</label>
+        </term>
+        <term>
+            <value>nlgkk</value>
+            <label>Katalogos kathierōmenōn onomatōn physikōn prosōpōn (Athēna: Ethnikē vivliothēkē tēs Hellados)</label>
+        </term>
+        <term>
+            <value>nlgsh</value>
+            <label>Katalogos Hellēnikōn thematikōn epikephalidōn (Athēna: Ethnikē vivliothēkē tēs Hellados.)</label>
+        </term>
+        <term>
+            <value>nlmnaf</value>
+            <label>National Library of Medicine name authority file (Bethesda, Maryland: National Library of Medicine)</label>
+        </term>
+        <term>
+            <value>nsbncf</value>
+            <label>Nuovo Soggettario (Firenze: Biblioteca Nazionale Centrale di Firenze)</label>
+        </term>
+        <term>
+            <value>nskps</value>
+            <label>Priručnik za izradu predmetnog kataloga u Nacionalnoj i sveučilišnoj knjižnici u Zagrebu (Manual for NSK subject headings) (Zagreb:
+                Nacionalne i sveučilišne knjižnice u Zagrebu)</label>
+        </term>
+        <term>
+            <value>ntcpsc</value>
+            <label>" National Translations Center primary subject classification" in National Translations Center primary subject classification and secondary
+                descriptors (Washington, DC: National Translations Center, Cataloging Distribution Service, Library of Congress)</label>
+        </term>
+        <term>
+            <value>ntcsd</value>
+            <label>" National Translations Center secondary descriptors" in National Translation Center primary subject classification and secondary descriptor
+                (Washington, DC: National Translations Center, Cataloging Distribution Service, Library of Congress)</label>
+        </term>
+        <term>
+            <value>ntissc</value>
+            <label>NTIS subject categories (Springfield, VA: National Technical Information Service)</label>
+        </term>
+        <term>
+            <value>nzggn</value>
+            <label>New Zealand gazetteer of official geographic names (New Zealand Geographic Board Ngā Pou Taunaha o Aotearoa (NZGB))</label>
+        </term>
+        <term>
+            <value>nznb</value>
+            <label>New Zealand national bibliographic (Wellington: National Library of New Zealand)</label>
+        </term>
+        <term>
+            <value>ogst</value>
+            <label>Oregon GILS Subject Tree (Oregon: Oregon State Library and Oregon Information Resource Management Division (IRMD)) ]</label>
+        </term>
+        <term>
+            <value>opms</value>
+            <label>Opetusministeriön asiasanasto (Helsinki: Opetusministeriön)</label>
+        </term>
+        <term>
+            <value>pascal</value>
+            <label>Base de données PASCAL: plan de classement = PASCAL database classification scheme (Vandoeuvre: Centre national de la recherche
+                scientifique)</label>
+        </term>
+        <term>
+            <value>peri</value>
+            <label>Perinnetieteiden asiasanasto (Helsinki: Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>pha</value>
+            <label>Puolostushallinnon asiasanasto (Helsinki: Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>pmbok</value>
+            <label>Guide to the project management body of knowledge (PMBOK Guide) (Newtown Square, PA: Project Management Institute)</label>
+        </term>
+        <term>
+            <value>pmcsg</value>
+            <label>Combined standards glossary (Newtown Square, PA: Project Management Institute)</label>
+        </term>
+        <term>
+            <value>pmont</value>
+            <label>Powerhouse Museum Object Name Thesaurus</label>
+        </term>
+        <term>
+            <value>pmt</value>
+            <label>Project management terminology. Newtown Square, PA: Project Management Institute</label>
+        </term>
+        <term>
+            <value>poliscit</value>
+            <label>Political science thesaurus II (Pittsburgh: University Center for International Studies, University of Pittsburgh)</label>
+        </term>
+        <term>
+            <value>popinte</value>
+            <label>POPIN thesaurus: population multilingual thesaurus (Paris: Population Information Network)</label>
+        </term>
+        <term>
+            <value>pkk</value>
+            <label>Predmetnik za katoliske knjiznice (Ljubljana: Maribor)</label>
+        </term>
+        <term>
+            <value>precis</value>
+            <label>PRECIS: a manual of concept analysis and subject indexing (London: British Library)</label>
+        </term>
+        <term>
+            <value>prvt</value>
+            <label>Patent- och registreringsverkets tesaurus (Stockholm: Patent- och Registreringsverket)</label>
+        </term>
+        <term>
+            <value>psychit</value>
+            <label>Thesaurus of psychological index terms. (Washington: American Psychological Association)</label>
+        </term>
+        <term>
+            <value>qlsp</value>
+            <label>Queens Library Spanish language subject headings (Queens, New York: Queens Library)</label>
+        </term>
+        <term>
+            <value>qrma</value>
+            <label>Qâ'imat ru'ûs al-mawdû'ât al-'Arabîyah = List of Arabic subject headings (al-Kuwayt: Dhat al-Salasil)</label>
+        </term>
+        <term>
+            <value>qrmak</value>
+            <label>Qâ'imat ru'ûs al-mawdû'ât al-'Arabîyah al-qiyâsîyah al-maktabât wa-marâkaz al-ma'lûmât wa-qawâ'id al-bayânât (al-Qâhirah: Dâr Shurûq)</label>
+        </term>
+        <term>
+            <value>qtglit</value>
+            <label>A queer thesaurus : an international thesaurus of gay and lesbian index terms (Amsterdam: Homodok)</label>
+        </term>
+        <term>
+            <value>quiding</value>
+            <label>Quiding, Nils Herman. Svenskt allmänt författningsregister för tiden från år 1522 till och med år 1862 (Stockholm: Norstedt).</label>
+        </term>
+        <term>
+            <value>ram</value>
+            <label>RAMEAU: répertoire d'authorité de matières encyclopédique unifié (Paris: Bibliothèque nationale)</label>
+        </term>
+        <term>
+            <value>rasuqam</value>
+            <label>Répertoire d'autorités-sujet de l'UQAM (Montréal: Université du Québec à Montréal, Services techniques des bibliothèques)</label>
+        </term>
+        <term>
+            <value>renib</value>
+            <label>Renib [base de datos de autoridad] (Santiago de Chile: Biblioteca Nacional)</label>
+        </term>
+        <term>
+            <value>reo</value>
+            <label>Māori Subject Headings thesaurus - Ngā Ūpoko Tukutuku</label>
+        </term>
+        <term>
+            <value>rero</value>
+            <label>Indexation matières RERO (Martigny: Réseau des bibliothèques de Suisse occidentale)</label>
+        </term>
+        <term>
+            <value>rerovoc</value>
+            <label>Indexation matières RERO (autorités) (Martigny: Réseau des bibliothèques de Suisse occidentale)</label>
+        </term>
+        <term>
+            <value>rma</value>
+            <label>Ru'us al-mawdu'at al-'Arabiyah (al-Riyad: 'Imadat Shu'un al-Maktabah, Jam. al-Riyad)</label>
+        </term>
+        <term>
+            <value>rpe</value>
+            <label>Rubrikator po ekonomike = Rubricator on economics (Moskva: Institut nauchnoi informatsii po obshchestvennym naukam)</label>
+        </term>
+        <term>
+            <value>rswk</value>
+            <label>Regeln für den Schlagwortkatalog (Berlin: Deutsches Bibliotheksinstitut)</label>
+        </term>
+        <term>
+            <value>rswkaf</value>
+            <label>Alternativform zum Hauptschlagwort</label>
+        </term>
+        <term>
+            <value>rugeo</value>
+            <label>Natsional'nyi normativnyi fail geograficheskikh nazvanii Rossiiskoi Federatsii (Moskva: Rossiiska íà gosudarstvennaíà biblioteka)</label>
+        </term>
+        <term>
+            <value>rurkp</value>
+            <label>Predmetnye rubriki Rossiiskoi knizhnoi palaty. (Moskva: Rossiiskaíà knizhnaíà palata)</label>
+        </term>
+        <term>
+            <value>rvm</value>
+            <label>Répertoire de vedettes-matière (Ottawa, ON, Canada : Bibliothè que nationale du Canada )</label>
+        </term>
+        <term>
+            <value>sanb</value>
+            <label>South African national bibliography authority file</label>
+        </term>
+        <term>
+            <value>sao</value>
+            <label>Svenska ämnesord (Stockholm: Kungliga Biblioteket, LIBRIS-avdelningen)</label>
+        </term>
+        <term>
+            <value>sbiao</value>
+            <label>Svenska barnboksinstitutets ämnesordslista (Stockholm: Svenska barnboksinstitutet)</label>
+        </term>
+        <term>
+            <value>sbt</value>
+            <label>Soggettario Sistema Bibliotecario Ticinese (Cantone Ticino, Svizzera: Sistema Bibliotecario Ticinese)</label>
+        </term>
+        <term>
+            <value>scbi</value>
+            <label>Soggettario per i cataloghi delle biblioteche italiane (Firenze: Biblioteca Nazionale Centrale di Firenze)</label>
+        </term>
+        <term>
+            <value>scgdst</value>
+            <label>Subject categorization guide for defense science and technology (Fort Belvoir, VA: Defense Technical Information Center, Defense Logistics
+                Agency)</label>
+        </term>
+        <term>
+            <value>scisshl</value>
+            <label>SCIS subject headings (Carlton South, Vic.: Curriculum Corp.)</label>
+        </term>
+        <term>
+            <value>scot</value>
+            <label>Schools online thesaurus (Carlton South, Vic.: Curriculum Corp.)</label>
+        </term>
+        <term>
+            <value>sears</value>
+            <label>Sears list of subject headings (New York: H.W. Wilson)</label>
+        </term>
+        <term>
+            <value>sfit</value>
+            <label>Svenska filminstitutets tesaurus (Stockholm: Svenska filminstitutet)</label>
+        </term>
+        <term>
+            <value>sgc</value>
+            <label>Spolšni geslovnik COBISS.SI = COBISS.SI General List of subject headings (Slovenian subject headings) (Maribor, Slovenia : Institut
+                informacijskih znanosti (IZUM))</label>
+        </term>
+        <term>
+            <value>sgce</value>
+            <label>Spolšni geslovnik COBISS.SI = COBISS.SI General List of subject headings (English subject headings) (Maribor, Slovenia : Institut
+                informacijskih znanosti (IZUM))</label>
+        </term>
+        <term>
+            <value>shbe</value>
+            <label>Subject headings in business and economics (Stockholm: Handelshögskolan i Stockholm)</label>
+        </term>
+        <term>
+            <value>she</value>
+            <label>SHE: subject headings for engineering (New York: Engineering Index, inc.)</label>
+        </term>
+        <term>
+            <value>sigle</value>
+            <label>SIGLE [System for Information on Grey Literature in Europe] manual, Part 2, Subject category list (Den Haag: European Association for Grey
+                Literature Exploitation)</label>
+        </term>
+        <term>
+            <value>sipri</value>
+            <label>SIPRI library thesaurus (Stockholm: Stockholm International Peace Research Institute)</label>
+        </term>
+        <term>
+            <value>sk</value>
+            <label>"Zhong guo gu ji shan ban shu zong mu" fen lei biao [Si ku] (Bei jing: Zhong guo gu ji shan ban shu zong mu bian ji ling dao xiao zu ban gong
+                shi)</label>
+        </term>
+        <term>
+            <value>skon</value>
+            <label>Att indexera skönlitteratur: Ämnesordslista, vuxenlitteratur. (Stockholm: Svensk biblioteksförening)</label>
+        </term>
+        <term>
+            <value>slem</value>
+            <label>Sears: lista de encabezamientos de materia (New York: H. W. Wilson)</label>
+        </term>
+        <term>
+            <value>smda</value>
+            <label>Smithsonian National Air and Space Museum Directory of Airplanes (Washington, DC: Smithsonian Air &amp; Space Museum)</label>
+        </term>
+        <term>
+            <value>snt</value>
+            <label>Sexual nomenclature : a thesaurus (Boston: G.K. Hall)</label>
+        </term>
+        <term>
+            <value>socio</value>
+            <label>Sociological Abstracts Thesaurus (Bethesda, Maryland: CSA)</label>
+        </term>
+        <term>
+            <value>sosa</value>
+            <label>Sociaalialan asiasanasto (Helsinki: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>spines</value>
+            <label>Tesauro SPINES: un vocabulario controlado y estructurado para el tratamiento de información sobre ciencia y tecnología para el desarrollo
+                (Madrid: UNESCO, ICYT)</label>
+        </term>
+        <term>
+            <value>ssg</value>
+            <label>Splosni slovenski geslovnik</label>
+        </term>
+        <term>
+            <value>stw</value>
+            <label>Standard-Thesaurus Wirtschaft = STW Thesaurus for Economics (Kiel: ZBW - Deutsche Zentralbibliothek fur Wirtschaftswissenschaften)</label>
+        </term>
+        <term>
+            <value>swd</value>
+            <label>Schlagwortnormdatei. (Frankfurt am Main: Die Deutsche Bibliothek)</label>
+        </term>
+        <term>
+            <value>swemesh</value>
+            <label>Svenska MeSH = Swedish MeSH (Stockholm: Karolinska Institutets Bibliotek)</label>
+        </term>
+        <term>
+            <value>taika</value>
+            <label>Taideteollisuuden asiasanasto (Helsinki: Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>taxhs</value>
+            <label>A taxonomy or human services: a conceptual framework with standardized terminology and definitions for the field (El Monte, CA: Info. and
+                Referral Fed. of LA County)</label>
+        </term>
+        <term>
+            <value>tesa</value>
+            <label>Tesauro Agrícola (Beltsville, Maryland: National Agricultural Library)</label>
+        </term>
+        <term>
+            <value>test</value>
+            <label>Thesaurus of engineering and scientific terms (Washington: U.S. Dept. of Defense)</label>
+        </term>
+        <term>
+            <value>tgn</value>
+            <label>Getty thesaurus of geographic names (Los Angeles, CA: Getty Research Institute)</label>
+        </term>
+        <term>
+            <value>tho</value>
+            <label>Thesauros Hellēnikōn Oron (Athēna: Ethniko Kentro Tekmēriosēs)</label>
+        </term>
+        <term>
+            <value>thub</value>
+            <label>Thesaurus de la Universitat de Barcelona (Barcelona: Universitat de Barcelona, Centre de Recursos per a l'Aprenentatge i la Investigació,
+                Procés Tècnic)</label>
+        </term>
+        <term>
+            <value>tlka</value>
+            <label>Työväenliikkeen kirjaston asiasanasto (Helsinki: Työväenliikkeen kirjasto)</label>
+        </term>
+        <term>
+            <value>tlsh</value>
+            <label>Subject heading authority list (Evanston, Ill.: Northwestern University Library, Transportation Library)</label>
+        </term>
+        <term>
+            <value>trt</value>
+            <label>Transportation resource thesaurus (Silver Spring, MD: CDB Enterprises)</label>
+        </term>
+        <term>
+            <value>trtsa</value>
+            <label>Teatterin ja tanssin asiasanasto (Helsinki: BTJ Kirjastopalvelu)</label>
+        </term>
+        <term>
+            <value>tsht</value>
+            <label>Thesaurus of subject headings for television (Phoenix, AZ: Oryx Press)</label>
+        </term>
+        <term>
+            <value>ttka</value>
+            <label>Teologisen tiedekunnan kirjaston asiasanasto (Helsinki: Helsingin yliopisto)</label>
+        </term>
+        <term>
+            <value>tucua</value>
+            <label>Thesaurus for use in college and university archives (Chicago, IL: Society of American Archivists)</label>
+        </term>
+        <term>
+            <value>ulan</value>
+            <label>Union list of artist names (Los Angeles: Getty Research Institute)</label>
+        </term>
+        <term>
+            <value>umitrist</value>
+            <label>University of Michigan Transportation Research Institute structured thesaurus (Ann Arbor, MI: Research Information and Publications Center,
+                University of Michigan, Transportation Research Institute)</label>
+        </term>
+        <term>
+            <value>unbisn</value>
+            <label>UNBIS name authority list (New York, NY: Dag Hammarskjöld Library, United Nations; [ London]: Chadwyck-Healey)</label>
+        </term>
+        <term>
+            <value>unbist</value>
+            <label>UNBIS thesaurus (New York, NY: Dag Hammarskjöld Library, United Nations)</label>
+        </term>
+        <term>
+            <value>unescot</value>
+            <label>UNESCO thesaurus = Thésaurus de l'UNESCO = Tesauro de la UNESCO (Paris: UNESCO Publishing)</label>
+        </term>
+        <term>
+            <value>usaidt</value>
+            <label>USAID thesaurus: Keywords used to index documents included in the USAID Development Experience System. (Washington, DC: U.S. Agency for
+                International Development)</label>
+        </term>
+        <term>
+            <value>vmj</value>
+            <label>Vedettes-matière jeunesse (Montréal, QC: Services documentaires multimédia)</label>
+        </term>
+        <term>
+            <value>waqaf</value>
+            <label>Maknas Uloom Al Waqaf (Kuwait : Kuwait Awqaf Public Foundation)</label>
+        </term>
+        <term>
+            <value>watrest</value>
+            <label>Thesaurus of water resources terms: a collection of water resources and related terms for use in indexing technical information. (Washington:
+                U.S. Bureau of Reclamation)</label>
+        </term>
+        <term>
+            <value>wgst</value>
+            <label>Washington GILS Subject Tree (Tumwater, WA: Washington State Library)</label>
+        </term>
+        <term>
+            <value>wot</value>
+            <label>A Women's thesaurus (New York: Harper &amp; Row)</label>
+        </term>
+        <term>
+            <value>wpicsh</value>
+            <label>WPIC Library thesaurus of subject headings (Pittsburgh, PA: Western Psychiatric Institute and Clinic Library, University of Pittsburgh,
+                School of Medicine)</label>
+        </term>
+        <term>
+            <value>ysa</value>
+            <label>Yleinen suomalainen asiasanasto (Helsinki: Kirjastopalvelu)</label>
+        </term>
+    </items>
+</code-table>
