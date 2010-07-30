@@ -225,7 +225,7 @@ repo:remove('functx-1.0')
         </para>
         </section>    
         <section>
-            <title>Can we use package types then XQuery</title>
+            <title>Can we use package types other then XQuery modules ?</title>
         <para>Currently we are focused on making XQuery module packages, though in the near future we should be able to deploy full applications
             with xproc, schema, data, resources, as well as java jars.</para>
         </section>
