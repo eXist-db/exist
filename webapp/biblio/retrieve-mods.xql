@@ -33,6 +33,20 @@ declare function functx:trim
         ()
 };
 
+declare function mods:get-collection($entry as element(mods:mods)) {
+    let $collection := util:collection-name($entry)
+    return
+                <tr>
+                <td class="host">In Collection:</td>
+                <td>
+                {$collection}
+                </td>
+                </tr>
+            
+            
+};
+
+
 (: ### general functions end ###:)
 
 declare function mods:add-part($part, $sep as xs:string) {
@@ -42,11 +56,12 @@ declare function mods:add-part($part, $sep as xs:string) {
         concat(string-join($part, " "), $sep)
 };
 
-declare function mods:get-publisher($publishers as element(mods:publisher)*) as xs:string? {
+declare function mods:get-publisher($publishers as element(mods:publisher)?) as xs:string? {
     string-join(
         for $publisher in $publishers
         return
             if ($publisher/mods:name) then
+            (: the encoding of <publisher> with <name and <namePart> is not standard.:)
                 let $name := $publisher/mods:name[1]
                 return
                     string-join((
@@ -54,20 +69,54 @@ declare function mods:get-publisher($publishers as element(mods:publisher)*) as 
                         $name/mods:namePart[not(@transliteration)]),
                         " ")
             else
-                $publisher/string(),
+                    string-join((
+                        $publisher[@transliteration],
+                        $publisher[not(@transliteration)]),
+                        " "),
         ', '
     )
 };
 
+(: ### <originInfo> begins ### :)
 
 
+(: <extent> belongs to <physicalDescription>, <part> as a top level element and <part> under <relatedItem>. 
+Under <physicalDescription>, <extent> has no subelements.:)
 
-declare function mods:get-extent($extent as element(mods:extent)) {
-    if ($extent/mods:end) then
+declare function mods:get-extent($extent as element(mods:extent)?) {
+    if ((functx:trim($extent/mods:start)) or (functx:trim($extent/mods:end))) then
+      concat(
+      if ($extent/@unit, ' ') then
+      concat(($extent/@unit), ' ')
+      else
+      ()
+      ,
+      concat($extent/mods:start, "-", $extent/mods:end))
+    else
+    $extent/string()
+    (:<total>, <list> and <extent> with no subelemet shoulld all give the string value of <extent>. They do not require unit.:)
+        
+};
+
+(:
+declare function mods:get-extent($extent as element(mods:extent)?) {
+    if  ($extent/mods:list/string()) then
+    $extent/mods:list
+    else
+    concat(
+    if  (($extent/mods:start/string()) or ($extent/mods:end/string())) then
+      concat($extent/@unit, ' ')
+      else
+      ()
+       ,
+    if (string-length($extent/mods:end) > 0 or string-length($extent/mods:end) > 0) then
         concat($extent/mods:start, "-", $extent/mods:end)
     else
-        $extent/mods:start
+        $extent/mods:total
+      )
 };
+:)
+
 
 (: ### <originInfo> begins ### :)
 
@@ -108,6 +157,8 @@ declare function mods:get-place($places as element(mods:place)*) as xs:string? {
         ' '
     )
 };
+
+(: <part> is found both as a top level element and under <relatedItem>.:)
 
 declare function mods:get-part-and-origin($entry as element()) {
     let $part := $entry/mods:part
@@ -152,18 +203,16 @@ declare function mods:get-part-and-origin($entry as element()) {
             (: Subelements: <start>, <end>, <total>, <list>. :)
                 (: Unaccounted for: <total>, <list>. :)
 
-declare function mods:get-related-part($entry as element()) {
+declare function mods:get-related-item-part($entry as element()) {
 
-    let $part := $entry/mods:relatedItem/mods:part
+    let $part := $entry/mods:relatedItem[@type="host"][1]/mods:part
     let $volume := $part/mods:detail[@type='volume']/mods:number
     let $issue := $part/mods:detail[@type='issue']/mods:number
     let $date := $part/mods:date
-    let $start := $part/mods:extent/mods:start
-    let $end := $part/mods:extent/mods:end
-    let $total := $part/mods:extent/mods:total
-    
+    let $extent := mods:get-extent($part/mods:extent)
+
     return
-    if ($part or $volume or $issue or $date or $start or $end or $total) then
+    if ($part or $volume or $issue or $date or $extent) then
     (
             <tr>
                 <td class="host">Place in Publication:</td>
@@ -196,20 +245,10 @@ declare function mods:get-related-part($entry as element()) {
             else
             ()
             ,
-            if ($start and $end) then
-            <tr>
-                <td class="label">Pages</td>
-                <td class="record">{string-join(($start/string(), $end/string()), '-')}</td>
-            </tr>
-            else if ($start) then
-            <tr>
-                <td class="label">Pages</td>
-                <td class="record">{$start/string()}</td>
-            </tr>
-            else if ($total) then
+            if ($extent) then
             <tr>
                 <td class="label">Extent</td>
-                <td class="record">{$total/string()}</td>
+                <td class="record">{$extent}</td>
             </tr>
             else
             ()
@@ -374,7 +413,7 @@ declare function mods:format-name($name as element(mods:name), $pos as xs:intege
                     (: If there is a transliteration, but no name in original script. :)
               , ''), 
               (: If there are any nameParts with @date, they are given last, without regard to transliteration or language. :)
-              (if ($date) then functx:trim(concat(' (', $date, ')')) else ()))
+              (if ($date) then concat(' (', functx:trim($date), ')') else ()))
               (: NB: Why is this part only shown in list-view? :)
 };
 
@@ -467,10 +506,15 @@ declare function mods:get-language-name() {
 (: ### <typeOfResource> begins ### :)
 
 declare function mods:return-type($id as xs:string, $entry as element(mods:mods)) {
-let $typeInfo :=$entry/mods:typeOfResource/string()
+let $type := $entry/mods:typeOfResource/string()
     return
      <span>{ 
-        replace($typeInfo,' ','_')
+        replace(
+        if($type) then
+        $type
+        else
+        'text'
+        ,' ','_')
         }
       </span>  
 };
@@ -505,7 +549,7 @@ declare function mods:get-genre() {
 
 (: The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use in all records of at least one <titleInfo> element with one <title> subelement. Other subelements of <titleInfo> are recommended when they apply. This element is repeatable. :)
 (: Application: <titleInfo> is repeated for each type attribute value. If multiple titles are recorded, repeat <titleInfo><title> for each. The language of the title may be indicated if desired using the xml:lang (RFC3066) or lang (3-character ISO 639-2 code) attributes. :)
-    (: Problem: the wrong (2-character) language codes seem to be used. :)
+    (: Problem: the wrong (2-character) language codes seem to be used in samples. :)
 (: Attributes: type [RECOMMENDED IF APPLICABLE], authority [RECOMMENDED IF APPLICABLE], displayLabel [OPTIONAL], xlink, ID, lang, xml:lang, script, transliteration. :)
     (: All attributes are applied to the <titleInfo> element; none are used on any subelements. :)
     (: Unaccounted for: authority, displayLabel, xlink, ID, xml:lang, script. :)
@@ -573,6 +617,7 @@ declare function mods:get-transliteration($entry as element(), $title as element
 
 (: If there is a Japanese or Chinese title, any English title will be a translated title. :) 
     (: Problem: a variant or parallel title in English? :)
+
 declare function mods:get-title-translated($entry as element(mods:mods), $titleInfo as element(mods:titleInfo)?) {
     let $titleInfo :=
         if ($titleInfo/@lang = 'ja' or $titleInfo/@lang = 'zh') then
@@ -679,6 +724,7 @@ declare function mods:title-full($titleInfo as element(mods:titleInfo)) {
     (: Unaccounted for: preceding, succeeding, original, constituent, series, otherVersion, otherFormat, isReferencedBy. :)
 (: Subelements: any MODS element. :)
 (: NB! This function is constructed differently from mods:entry-full; the two should be harmonised. :)
+
 declare function mods:get-related($entry as element(mods:mods)) {
     let $related0 := $entry/mods:relatedItem[@type = 'host']
     let $collection := util:collection-name($entry)
@@ -691,7 +737,6 @@ declare function mods:get-related($entry as element(mods:mods)) {
         else
             $related0[1]
     return
-    (: period before " In:" removed. :)
         if ($related) then
             <span class="related"> In Publication:
             { 
@@ -795,7 +840,9 @@ declare function mods:url($entry as element()) as element(tr)* {
 };
         
 (: Prepares for the recursive mods:format-full. :)
-declare function mods:entry-full($entry as element()) {
+declare function mods:entry-full($entry as element()) 
+    {
+    
     mods:names-full($entry),
     for $titleInfo in (
         $entry/mods:titleInfo[not(@type)],
@@ -807,23 +854,28 @@ declare function mods:entry-full($entry as element()) {
     return 
     mods:title-full($titleInfo),
     mods:simple-row(mods:get-conference-detail-view($entry), "Conference"),
+    
     mods:simple-row(mods:get-place($entry/mods:originInfo/mods:place), "Place"),
-    mods:simple-row(mods:get-publisher($entry/mods:originInfo/mods:publisher), "Publisher"),
+    mods:simple-row(mods:get-publisher($entry/mods:originInfo/mods:publisher[1]), "Publisher"),
     if ($entry/mods:relatedItem/mods:originInfo/mods:dateCreated) then () else
     mods:simple-row($entry/mods:originInfo/mods:dateCreated[1], "Date created"),
     if ($entry/mods:relatedItem/mods:originInfo/mods:dateIssued) then () else
     mods:simple-row($entry/mods:originInfo[1]/mods:dateIssued[1], "Date issued"),
     (: NB! [1] should not be necessary. :)
     mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
-    mods:simple-row($entry/mods:part/mods:extent/mods:total[1], "Extent"),
+    if ($entry/mods:extent) then mods:simple-row(mods:get-extent($entry/mods:extent), "Extent") else (),
     mods:simple-row($entry/mods:typeOfResource/string(), "Type of Resource"),
     
     for $genre in ($entry/mods:genre)
     let $authority := $genre/@authority/string()
     return
     mods:simple-row($genre/string(), 
-    concat('Genre (', $authority, ')')),
-
+    concat('Genre', 
+        if ($authority) then
+        concat('(', $authority, ')') else ()
+        )
+    ),
+    
     for $abstract in ($entry/mods:abstract)
     return
     mods:simple-row($abstract, "Abstract"),
@@ -840,7 +892,6 @@ declare function mods:entry-full($entry as element()) {
     <td class="record">
     <table class="subject">
     {
-    if ($subject/mods:*/mods:*) then 
     for $item in ($subject/mods:*)
     let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
     let $encoding := if ($item/@encoding/string()) then concat('(', ($item/@encoding/string()), ')') else ()
@@ -851,12 +902,13 @@ declare function mods:entry-full($entry as element()) {
             $authority, $encoding}
         </td>
         <td class="subrecord">
-            <table>
-            {        
+            {
+            if ($item/mods:*) then
             for $subitem in ($item/mods:*)
             let $authority := if ($subitem/@authority/string()) then concat('(', ($subitem/@authority/string()), ')') else ()
             let $encoding := if ($subitem/@encoding/string()) then concat('(', ($subitem/@encoding/string()), ')') else ()
             return
+            <table>
             <tr>
             <td class="sublabel">
                 {functx:capitalize-first(functx:camel-case-to-words($subitem/name(), ' ')),
@@ -868,36 +920,21 @@ declare function mods:entry-full($entry as element()) {
                 </td>
             </td>
             </tr>
+            </table>
+            else
+            <table>
+            <tr>
+            <td class="subrecord" colspan="2">
+            {$item/string()}
+            </td>
+            <td/>
+            </tr>
+            </table>
             }
-            </table></td></tr>
-    else if ($subject/mods:*) then
-    for $item in ($subject/mods:*)
-    let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
-    let $encoding := if ($item/@encoding/string()) then concat('(', ($item/@encoding/string()), ')') else ()
-    return
-        <tr>
-        <td class="sublabel">
-            {functx:capitalize-first(functx:camel-case-to-words($item/name(), ' ')),
-            $authority, $encoding}
-        </td>
-        <td class="subrecord">
-                {$item/string()}
             </td></tr>
-    else
-    ()
     }
     </table></td>
     </tr>
-    (: cannot format subjects with varying depths, such as:
-    <subject authority="lctgm">
-        <topic>Gates</topic>
-        <hierarchicalGeographic>
-            <geographic>China</geographic>
-            <geographic>Beijing</geographic>
-        </hierarchicalGeographic>
-        <temporal>1900-1910</temporal>
-    </subject>
-:)
     , 
     
     mods:simple-row($entry/mods:identifier[@type="isbn"][1], "ISBN"),
@@ -915,9 +952,9 @@ declare function mods:entry-full($entry as element()) {
             if (($relatedItem/@xlink:href) and (collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href])) then            
                 for $ref in collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href]
                 return
-                    (mods:entry-full($ref), mods:get-related-part($entry))
+                    (mods:entry-full($ref), mods:get-related-item-part($entry))
             else
-                    (mods:entry-full($relatedItem[@type = "host"][1]), mods:get-related-part($entry))
+                    (mods:entry-full($relatedItem[@type = "host"][1]), mods:get-related-item-part($entry))
         ) else
             ()
 };
@@ -927,7 +964,10 @@ declare function mods:format-full($id as xs:string, $entry as element(mods:mods)
     let $log := util:log("DEBUG", $entry)
     return
     <table class="biblio-full">
-    { mods:entry-full($entry) }
+    {
+    mods:get-collection($entry),
+    mods:entry-full($entry)
+    }
     </table>
 };
 (:(<span class="pagination-toggle"><a>{$formatted}</a></span>):)
