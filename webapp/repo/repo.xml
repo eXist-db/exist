@@ -221,8 +221,7 @@ repo:remove('functx-1.0')
         <section>
             <title>Can I interact with the repository from the commandline ?</title>
         <para>Yes, currently you can run the expath package jar commandline utility againt the eXist package repository. In the future
-            we may extend the expath package specification to suit eXist needs which may make it incompatible. You can unzip
-        the webapp/repo/packages/functx-1.0.xar package as an example or review the expath <a href="http://expath.org/modules/pkg.html" target="spec">specification</a>.
+            we may extend the expath package specification to suit eXist needs which may make it incompatible.
         </para>
         </section>    
         <section>
@@ -234,7 +233,8 @@ repo:remove('functx-1.0')
         <section>
             <title>I want to make my own .xar package</title>
         <para>Its very easy to package up your own XQuery modules to create a .xar format. Essentially you need to define expath-pkg.xml
-        file which describes the package, then include the libraries then zip it up and give it a .xar extension. </para>
+        file which describes the package, then include the libraries then zip it up and give it a .xar extension. You can unzip
+        the webapp/repo/packages/functx-1.0.xar package as an example or review the expath <a href="http://expath.org/modules/pkg.html" target="spec">specification</a>. </para>
         </section>
         <section>
             <title>I want more information</title>
