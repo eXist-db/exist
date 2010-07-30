@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace style = "http://www.danmccreary.com/library";
+module namespace style = "http://exist-db.org/mods-style";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xf="http://www.w3.org/2002/xforms";

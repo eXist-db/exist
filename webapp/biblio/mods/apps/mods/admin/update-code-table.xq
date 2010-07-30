@@ -2,7 +2,7 @@ xquery version "1.0";
 
 (: XQuery script to save a new Code table :)
 
-import module namespace style = "http://www.danmccreary.com/library" at "../../../modules/style.xqm";
+import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
