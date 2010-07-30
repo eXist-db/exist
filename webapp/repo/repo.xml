@@ -122,15 +122,12 @@ functx/
 <para>The expath-pkg.xml contains <a href="http://expath.org/modules/pkg.html#d2e112" target="expathspec">package description</a>. The
     .xar comprises of the zipped up distribution.
 </para>
-
-
         <para>We have shipped a few .xar packages in the <a href="http://127.0.0.1:8080/exist/repo/packages" target="dir">.xar directory</a> which you can use
             to test installing a package. This is achieved by using controller.xql to identify
-
         <ul>
             <li><a href="packages/functx-1.0.xar?install=true" target="install">one-click install Functx-1.0</a> </li>
             <li><a href="packages/fxsl-1.0.xar?install=true" target="install">one-click install FXSL-1.0</a> </li>
-            <li><a href="packages/Invoice-1.0.xar?install=true" target="install">one-click install example app Invoice-1.0</a> </li>
+            <li><a href="packages/invoice-1.0.xar?install=true" target="install">one-click install example app Invoice-1.0</a> </li>
         </ul>
     </para>
 <para>
