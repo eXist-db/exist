@@ -12,6 +12,12 @@ return
 	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<redirect url="examples.xml"/>
     	</dispatch>
+    else if (ends-with($uri, '.xar')) then
+       <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="../install-package.xqy"/>
+        </dispatch>
+
+
     else if (ends-with($uri, '.xml')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<view>
