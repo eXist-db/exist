@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>name-type-code</code-table-name>
+    <status>finished</status>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Personal</label>
+            <value>personal</value>
+        </item>
+        <item>
+            <label>Corporate</label>
+            <value>corporate</value>
+        </item>
+        <item>
+            <label>Conference</label>
+            <value>conference</value>
+        </item>
+    </items>
+</code-table>

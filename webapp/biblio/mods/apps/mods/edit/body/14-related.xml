@@ -1,0 +1,650 @@
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="contents-misc">
+    <fieldset>
+                <legend>Related Items</legend>
+            
+<!--relatedItem begins-->
+
+<!--
+    The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of the relatedItem element in three cases: 
+    1. to point to a full metadata record for a related item 
+    2. to provide contextual information useful for full description of the resource. 
+    3. to provide additional information about intellectual constituent units of the resource being described 
+    This element is repeatable.
+    
+    Although the MODS relatedItem element allows multiple items to be described in a hierarchical fashion within a single MODS record, the guidelines recommend that the use of the relatedItem element be restricted to the three cases described below. 
+    Do not use multiple nested <relatedItem> elements within a single MODS record to describe an entire collection in metadata records shared for aggregation. 
+    As stated in the MODS User Guidelines, "deep recursion may be counter-productive."
+
+    The core MODS record should describe the resource at the level metadata aggregators should return as matches to user queries. 
+    Information about the original from which a digital surrogate or reproduction was made should be included in the main record. 
+    Any subelements of the relatedItem element should describe related material of only subsidiary interest, helpful for identifying and completely describing a resource, or providing context for the resource which may be useful for retrieval.
+    
+    1. To link to records for related items, without duplicating the metadata for these items as subelements of relatedItem, using the xlink attribute. 
+    Best practices for use of the XLink language are still emerging, but potentially the link could be used by aggregators to retrieve or interact with the remote metadata. 
+    No subelements of relatedItem should be used in this case. 
+    Note that a link to give user access to a described related resource would be encoded in relatedItem/location/url.
+    2. To provide contextual information about the item being described in relationship to other items. 
+    Applicable subelements of relatedItem should be used. 
+    Most frequently, these subelements are used to describe a host item, series, or other version.
+    3. To provide information about constituent parts when a physical object being described (for example a compact disc) contains multiple intellectual items that require description (for example tracks on a compact disc).
+-->
+        <fieldset>
+            <legend><span class="legend">Related Item</span></legend>
+        <xf:hint>
+            Information that identifies other resources related to the one being described.            
+        </xf:hint>
+        
+<!--relatedItem repeat begins-->
+        
+            <xf:repeat nodeset="instance('save-data')/mods:relatedItem" id="relatedItem-repeat">
+        
+        <div class="block-form">
+        
+<!--relatedItem input begins-->
+        
+        <!--DLF/Aquifer: OPTIONAL-->
+        <!--Cluster: omit-->
+        
+        <xf:input ref="./@ID" class="text_50">
+            <xf:label>ID: </xf:label>
+            <xf:hint>
+                This attribute is used to link among records inside the database and to reference an element inside the database from the outside. 
+                The UID of the record as a whole is noted in mods:identifier type="local".
+            </xf:hint>
+        </xf:input>
+
+        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+        <!--Cluster: include-->
+
+<!-- 
+    Use the xlink:href attribute to link to external resources. 
+    These guidelines recommend that this attribute, when used, contain the URI of a MODS record or an OAI GetRecord request, if available, for a related resource. 
+    The 'info' URI scheme supported by the Library of Congress can also be used to encode an external link here using an LCCN or DOI (see http://www.loc.gov/standards/uri/info.html for more information). 
+    These guidelines also recommend that no subelements appear under <relatedItem> when this attribute is used.
+-->
+
+        <xf:input ref="./@xlink" class="text_50">
+            <xf:label>XLink: </xf:label>
+            <xf:hint>
+                The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of Contents.
+            </xf:hint>
+        </xf:input>
+        
+        <br/>
+        
+        <!--DLF/Aquifer: REQUIRED]-->
+        <!--Cluster: include-->
+        
+        <xf:select1 ref="./@type">
+            <xf:label>Type:</xf:label>
+            <xf:hint>
+                The type attribute describes the relationship between the resource in Related Item and the resource in the parent record. 
+                Use one of the following values: Host, Constituent, Series, Other Version.
+                "Host" is used to describe a host or parent resource, for example a book or periodical in which an article appears or a collection in which an item belongs.
+                "Constituent" is used to describe parts of the resource, except information that falls within the scope of the Table Of Contents element.
+                "Series" is used to describe a named series of which the resource is a part.
+                "Other Version" is used to describe other versions of the work contained in the resource.
+            </xf:hint>
+            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='related-item-type-code']/items/item">
+                <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+        </xf:select1>
+        
+        
+        <!--DLF/Aquifer: OPTIONAL]]-->
+        <!--Cluster: omit-->
+                     
+        <xf:input ref="./@displayLabel" class="text_150">
+             <xf:label>Display Label: </xf:label>
+             <xf:hint>
+                This attribute is intended to be used when additional text associated with the title is needed for display.
+                The Display Label attribute may be used whenever appropriate to indicate the preferred labeling when displayed by a metadata aggregator. 
+                Appropriate cases include titles other than the primary title or subtitle. 
+                Include the text preferred and capitalisation, but do not include delimiters such as colons.                
+             </xf:hint>
+        </xf:input>
+                     
+        <div class="hr"/>
+        
+<!--relatedItem/part begins-->
+<!--
+The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend that the part element be used in cases where the part of a resource being represented is a physical or structural part of another resource. 
+Examples include an issue of a journal or a single story from a collection. 
+This element is repeatable.
+-->
+
+<fieldset>
+
+    <legend>Parts</legend>
+    <xf:hint>
+        The designation of physical parts of a resource in a detailed form.
+        Part is used to provide detailed coding for physical parts of a resource. 
+        It may be used as a top level element to designate physical parts or under Related Item. 
+        It may be used under Related Item for generating citations about the location of a part within a host/parent item.<br/>
+        Use Part when the record in question refers to either a physical or structural part of a resource, rather than an intellectual part.
+        An intellectual part of a resource should be recorded in various subelements under Title. 
+        A newspaper issue would generally be indicated with Part, rather than indicating the issue number as part of the title. 
+        The Part element at the top level would also be used to describe one reel of microfilm in a set, or in any other case in which the part being described is not an intellectual whole by itself. 
+        When in doubt, and only part numbers or names are needed, use Part Number and/or Part Name under Title under Title Information.        
+    </xf:hint>
+
+<!--relatedItem/part repeat begins-->
+    
+    <xf:repeat nodeset="./mods:part" id="related-part-repeat">
+
+<!--relatedItem/part input begins-->
+
+        <!--DLF/Aquifer: OPTIONAL-->
+        <!--Cluster: omit-->
+        
+        <xf:input ref="./@ID" class="text_50">
+            <xf:label>ID: </xf:label>
+            <xf:hint>Hint</xf:hint>
+        </xf:input>
+        
+        <!--DLF/Aquifer: OPTIONAL]-->
+        <!--Cluster: omit-->
+        
+        <xf:input ref="./@type" class="text_50">
+            <xf:label>Type: </xf:label>
+            <xf:hint>
+                A designation of a document segment type. 
+                See the MODS User Guidelines for suggested values. 
+                However, since there is not a controlled set of terms for type, if used, the value should be expressed clearly and be generally understandable outside of the local context of the resource.
+            </xf:hint>
+        </xf:input>
+        
+        <br/>
+        
+        <!--DLF/Aquifer: OPTIONAL]-->
+        <!--Cluster: omit-->
+        
+        <xf:input ref="./@order" class="text_50">
+            <xf:label>Order:</xf:label>
+            <xf:hint>
+                An integer that designates the sequence of parts.
+            </xf:hint>
+        </xf:input>
+        
+<!--relatedItem/part input ends-->
+        
+<!--relatedItem/part/detail begins-->
+
+<!--DLF/Aquifer: RECOMMENDED IF APPLICABLE]-->
+<!--Cluster: include-->
+        
+        <fieldset>
+        
+            <legend>Detail</legend>
+            <xf:hint>
+                Use this subelement to indicate the numbering and type of designation of the part in relation to the parent item.
+                Detail contains numbering and type of designation of the part in relation to the host/parent item in which a host item resides.
+            </xf:hint>
+
+<!--relatedItem/part/detail repeat begins-->
+
+            <xf:repeat nodeset="./mods:detail" id="relatedItem-part-detail-repeat">
+
+<!--relatedItem/part/detail input begins-->
+
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
+
+                <xf:input ref="./@type" class="text_50">
+                    <xf:label>Type:</xf:label>
+                    <xf:hint>
+                        Use this attribute to indicate the type of the part described. 
+                        Suggested values include part, volume, issue, chapter, section, paragraph, track. 
+                        Other values may be used as needed.
+                        However, since there is not a controlled set of terms for type, if used, the value should be expressed clearly and be generally understandable outside of the local context of the resource.
+                        <!--NB: make open selcetion with code table?-->
+                    </xf:hint>
+                </xf:input>
+                
+                <!--DLF/Aquifer: OPTIONAL]-->
+                <!--Cluster: omit-->
+                
+                <xf:input ref="./@order" class="text_50">
+                    <xf:label>Order:</xf:label>
+                    <xf:hint>
+                        An integer that designates the sequence of parts.
+                    </xf:hint>
+                </xf:input>
+                
+                <!--DLF/Aquifer: N/A-->
+                <!--Cluster: omit-->
+
+                <xf:input ref="./@level" class="text_50">
+                    <xf:label>Level:</xf:label>
+                    <xf:hint>
+                        Describes the level of numbering in the host/parent item. 
+                        This is used to ensure that the numbering is retained in the proper order. 
+                        An example is: "v. 2, no. 3".
+                    </xf:hint>
+                </xf:input>
+
+<!--relatedItem/part/detail input ends-->
+                
+<!--relatedItem/part/detail/number begins-->
+                
+
+                        <!--DLF/Aquifer: OPTIONAL-->
+                        <!--Cluster: ?-->
+
+                        <xf:input ref="./mods:number" class="text_50">
+                            <xf:label>Number:</xf:label>
+                            <xf:hint>
+                                Contains the actual number within the part.
+                            </xf:hint>
+                        </xf:input>
+
+<!--relatedItem/part/detail/number ends-->
+                    
+                    <br/>
+
+<!--relatedItem/part/detail/caption begins-->
+
+                        <xf:input ref="./mods:caption" class="text_150">
+                            <xf:label>Caption:</xf:label>
+                            <xf:hint>
+                                Contains the caption describing the enumeration within a part. 
+                                This may be the same as type, but conveys what is on the item being described.
+                            </xf:hint>
+                        </xf:input>
+ 
+<!--relatedItem/part/detail/caption ends-->
+                
+                <br/>
+                
+<!--relatedItem/part/detail/title begins-->
+
+                        <xf:input ref="./mods:title" class="text_150">
+                            <xf:label>Title:</xf:label>
+                            <xf:hint>
+                                Contains the title of the part. 
+                                Only include if this is different than the Title in Title Information.
+                            </xf:hint>
+                        </xf:input>
+                
+<!--relatedItem/part/detail/title ends-->
+
+                <div class="hr"/>
+                
+<!--relatedItem/part/detail delete begins-->
+
+                <xf:trigger ref="self::node()[count(../mods:detail) &gt; 1]">
+                    <xf:label>Delete This Detail</xf:label>
+                    <xf:hint>Hint</xf:hint>
+                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:relatedItem/mods:part/mods:detail" at="index('relatedItem-part-detail-repeat')"/>
+                </xf:trigger>
+
+<!--relatedItem/part/detail delete ends-->
+                
+                <div class="hr"/>
+            
+            </xf:repeat>
+
+<!--relatedItem/part/detail repeat ends-->
+            
+
+<!--relatedItem/part/detail add begins-->
+
+            <xf:trigger class="add">
+                <xf:label>Add Detail</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:action ev:event="DOMActivate">
+                    <xf:insert nodeset="mods:detail" at="index('relatedItem-part-detail-repeat')" position="after"
+                        origin="instance('insert-templates')/mods:relatedItem/mods:part/mods:detail"/>
+                    <xf:setvalue ref="instance('save-data')/mods:detail[last()]" value="''"/>
+                </xf:action>
+            </xf:trigger>
+
+<!--relatedItem/part/detail add ends-->
+            
+        </fieldset>
+
+<!--relatedItem/part/detail ends-->
+
+<!--relatedItem/part/extent begins-->
+
+<!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+<!--Cluster: include-->
+
+<fieldset>
+    <legend>Extent</legend>
+    <xf:hint>
+        Use this subelement to indicate the measured units making up the part (for example pages, minutes, etc.).
+    </xf:hint>
+    
+<!--relatedItem/part/extent repeat begins-->
+
+    <xf:repeat nodeset="./mods:extent" id="extent-repeat">
+        
+<!--relatedItem/part/extent input begins-->
+        
+        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+        <!--Cluster: include-->
+        
+        <xf:select1 ref="./@unit">
+            <xf:label>Unit:</xf:label>
+            <xf:hint>
+                Suggested values include page, minute, etc.
+                <!--NB: make code table with open selection?-->
+            </xf:hint>
+            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='part-extent-unit-code']/items/item">
+                <xf:label ref="label"/>
+                <xf:value ref="value"/>
+            </xf:itemset>
+        </xf:select1>
+        
+<!--relatedItem/part/extent input ends-->
+
+<!--relatedItem/part/start begins-->
+
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
+                
+                <xf:input ref="./mods:start" class="text_50">
+                    <xf:label>Start:</xf:label>
+                    <xf:hint>
+                        Contains the beginning unit of the extent within a part (e.g., first page).
+                    </xf:hint>
+                </xf:input>
+            
+<!--relatedItem/part/start ends-->
+        
+        <br/>
+
+<!--relatedItem/part/end begins-->
+
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
+                
+                <xf:input ref="./mods:end" class="text_50">
+                    <xf:label>End:</xf:label>
+                    <xf:hint>
+                        Contains the ending unit of the extent within a part.
+                    </xf:hint>
+                </xf:input>
+
+<!--relatedItem/part/end ends-->
+        
+        <br/>
+
+<!--relatedItem/part/total begins-->
+
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
+                
+                <xf:input ref="./mods:total" class="text_50">
+                    <xf:label>Total:</xf:label>
+                    <xf:hint>
+                        Contains the total number of units within a part, rather than specific units.
+                    </xf:hint>
+                </xf:input>
+
+<!--relatedItem/part/total ends-->
+        
+        <br/>
+
+<!--relatedItem/part/list begins-->
+
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
+                
+                <xf:input ref="./mods:list" class="text_150">
+                    <xf:label>List:</xf:label>
+                    <xf:hint>
+                        Contains a textual listing of the units within a part (e.g., "pp. 5-9".)
+                    </xf:hint>
+                </xf:input>
+            
+<!--relatedItem/part/list ends-->
+        
+        <div class="hr"/>
+                
+<!--relatedItem/part/extent delete begins-->
+
+        <xf:trigger ref="self::node()[count(../mods:extent) &gt; 1]">
+            <xf:label>Delete This Extent</xf:label>
+            <xf:hint>Hint</xf:hint>
+            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part/mods:extent" at="index('extent-repeat')"/>
+        </xf:trigger>
+
+<!--relatedItem/part/extent delete ends-->
+        
+        <div class="hr"/>
+        
+    </xf:repeat>
+
+<!--relatedItem/part/extent repeat ends-->
+
+        <br/>
+        <div class="hr"/>
+
+<!--relatedItem/part/extent add begins-->
+
+    <xf:trigger class="add">
+        <xf:label>Add Extent</xf:label>
+        <xf:hint>Hint</xf:hint>
+        <xf:action ev:event="DOMActivate">
+            <xf:insert nodeset="mods:extent" at="index('extent-repeat')" position="after"
+                origin="instance('insert-templates')/mods:part/mods:extent"/>
+            <xf:setvalue ref="instance('save-data')/mods:extent[last()]" value="''"/>
+        </xf:action>
+    </xf:trigger>
+
+<!--relatedItem/part/extent add ends-->
+    
+</fieldset>
+
+<!--relatedItem/part/extent ends-->
+
+<!--relatedItem/part/date begins-->
+
+<!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+<!--Cluster: include-->
+
+<fieldset>
+    <legend><span class="legend">Date</span></legend>
+    <xf:hint>
+        Date contains date information relevant to the part described.
+    </xf:hint>
+    
+
+<!--relatedItem/part/date repeat begins-->
+
+    <xf:repeat nodeset="instance('save-data')mods:relatedItem/mods:part/mods:date" id="part-date-repeat">
+        
+        <div class="block-form">
+    
+<!--relatedItem/part/date input begins-->
+            
+            <!--DLF/Aquifer: RECOMMENDED-->
+            <!--Cluster: include-->
+            
+            <xf:select1 ref="./@encoding">
+                <xf:label>Encoding:</xf:label>
+                <xf:hint>
+                    If a structured date is used, indicate the formatting source using the encoding attribute. 
+                    These guidelines recommend using the following value for the encoding attribute: "w3cdtf" 
+                    This encoding is used to specify YYYY-MM-DD date patterns.
+                </xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='part-date-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            
+            <br/>
+            
+            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+            <!--Cluster: include-->
+            
+            <xf:select1 ref="./@point">
+                <xf:label>Point:</xf:label>
+                <xf:hint>
+                    The point attribute can be used to encode date ranges using the following values: "start" and "end".
+                </xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='start-end-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            
+            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+            <!--Cluster: include-->
+            
+            <xf:select1 ref="./@qualifier">
+                <xf:label>Qualifier:</xf:label>
+                <xf:hint>
+                    The qualifier attribute has three allowed values: approximate, inferred, and questionable. 
+                    Best practice is to use this attribute with the appropriate value when a date is approximate, inferred, or questionable, rather than inserting characters such as "ca.", brackets or a question mark within the date string.
+                </xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='part-date-qualifier-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            
+            <div class="hr"/>
+            
+            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+            <!--Cluster: include-->
+            
+            <xf:input ref="." class="text_50">
+                <xf:label>Date: </xf:label>
+                <xf:hint>
+                    Date contains date information relevant to the part described.
+                </xf:hint>
+            </xf:input>
+            
+<!--relatedItem/part/date input ends-->
+            
+<!--relatedItem/part/date delete begins-->
+
+        </div>
+        
+        <div class="hr"/>
+        
+        <xf:trigger ref="self::node()[count(../mods:date) &gt; 1]">
+            <xf:label>Delete This Date</xf:label>
+            <xf:hint>Hint</xf:hint>
+            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part/mods:date" at="index('part-date-repeat')"/>
+        </xf:trigger>
+        <!--date delete ends-->
+        
+        <div class="hr"/>
+    
+    </xf:repeat>
+
+<!--relatedItem/part/date repeat ends-->
+    
+<!--relatedItem/part/date add begins-->
+    <xf:trigger class="add">
+
+        <xf:label>Add Date</xf:label>
+        <xf:hint>Hint</xf:hint>
+        <xf:action ev:event="DOMActivate">
+            <xf:insert nodeset="mods:date" at="index('part-date-repeat')" position="after"
+                origin="instance('insert-templates')/mods:part/mods:date"/>
+            <xf:setvalue ref="instance('save-data')/mods:part/mods:date[last()]" value="''"/>
+        </xf:action>
+    </xf:trigger>
+    
+<!--relatedItem/part/date add ends-->
+
+</fieldset>
+
+<!--relatedItem/part/date ends-->
+
+<!--relatedItem/part/text begins-->
+
+<xf:textarea ref="instance('save-data')/mods:part/mods:text" class="textarea">
+    <xf:label>Text:</xf:label>
+    <xf:hint>
+        Use this subelement to record information in textual form. 
+        Use this subelement when other subelements will not capture the appropriate information. 
+    </xf:hint>
+</xf:textarea>
+
+<!--relatedItem/part/text ends-->
+        
+        <div class="hr"/>
+        
+<!--relatedItem/part delete begins-->
+
+        <xf:trigger ref="self::node()[count(../mods:part) &gt; 1]">
+            <xf:label>Delete This Part</xf:label>
+            <xf:hint>Hint</xf:hint>
+            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part" at="index('part-repeat')"/>
+        </xf:trigger>
+
+<!--relatedItem/part delete ends-->
+        
+        <div class="hr"/>
+        
+    </xf:repeat>
+
+<!--relatedItem/part repeat ends-->
+    
+<!--relatedItem/part add begins-->
+
+    <xf:trigger class="add">
+        <xf:label>Add Part</xf:label>
+        <xf:hint>Hint</xf:hint>
+        <xf:action ev:event="DOMActivate">
+            <xf:insert nodeset="mods:part" at="index('part-repeat')" position="after"
+                origin="instance('insert-templates')/mods:part"/>
+            <xf:setvalue ref="instance('save-data')/mods:part[last()]" value="''"/>
+        </xf:action>
+    </xf:trigger>
+
+<!--relatedItem/part add ends-->
+    
+</fieldset>
+
+<!--relatedItem/part ends-->
+
+
+            <!--relatedItem delete begins-->
+
+</div>
+
+<div class="hr"/>
+
+                <xf:trigger ref="self::node()[count(../mods:relatedItem) &gt; 1]">
+                    <xf:label>Delete This Related Item</xf:label>
+          <xf:hint>Hint</xf:hint>
+                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:relatedItem" at="index('relatedItem-repeat')"/>
+      </xf:trigger>
+
+                <!--relatedItem delete ends-->
+    
+    <div class="hr"/>
+    
+    </xf:repeat>
+    
+<!--title repeat ends-->
+             
+            <!--relatedItem add begins-->
+
+             <xf:trigger class="add">
+                 <xf:label>Add Related Item</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:action ev:event="DOMActivate">
+                    <xf:insert nodeset="mods:relatedItem" at="index('relatedItem-repeat')" position="after"
+                        origin="instance('insert-templates')/mods:relatedItem"/>
+                    <xf:setvalue ref="instance('save-data')/mods:relatedItem[last()]" value="''"/>
+                </xf:action>
+            </xf:trigger>
+            
+            <!--relatedItem add ends-->
+
+        </fieldset>
+
+<!--relatedItem ends-->
+
+            </fieldset>
+</div>

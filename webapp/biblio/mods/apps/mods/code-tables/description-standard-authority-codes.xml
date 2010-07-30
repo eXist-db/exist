@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <status>dummy</status>
+    <code-table-name>description-standard-authority-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>iso639-2b</label>
+            <value>iso639-2b</value>
+        </item>
+        <item>
+            <label>rfc3066</label>
+            <value>rfc3066</value>
+        </item>
+        <item>
+            <label>iso639-3</label>
+            <value>iso639-3</value>
+        </item>
+        <item>
+            <label>rfc4646</label>
+            <value>rfc4646</value>
+        </item>
+    </items>
+</code-table>

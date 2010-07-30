@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>place-authority-code</code-table-name>
+    <status>finished</status>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <value>marccountry</value>
+            <label>marccountry</label>
+        </item>
+        <item>
+            <value>iso3166</value>
+            <label>iso3166</label>
+        </item>
+    </items>
+</code-table>

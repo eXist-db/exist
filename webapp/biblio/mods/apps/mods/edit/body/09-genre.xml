@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="genre">
+    
+    <!--genre begins-->
+    <fieldset>
+        <legend>
+            <span class="legend">Genre</span>
+        </legend>
+        
+        <!--genre repeat begins-->
+        <xf:repeat nodeset="instance('save-data')/mods:genre" id="genre-repeat">
+            
+            <!--genre input begins-->
+            <xf:select1 ref="./@type">
+                <xf:label>Type:</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <!--NB: change code-table-->
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            <xf:select1 ref="./@authority" selection="open">
+                <xf:label>Authority:</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            <br/>
+            <xf:select1 ref="./@lang">
+                <xf:label>Language:</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            
+            <!--DLF/Aquifer: NOT RECOMMENDED]-->
+            <!--Cluster: omit-->
+            <xf:select1 ref="./@xml:lang">
+                <xf:label>xml:lang:</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            <br/>
+            <xf:select1 ref="./@script">
+                <xf:label>Script:</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            <xf:select1 ref="./@transliteration">
+                <xf:label>Transliteration:</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            <div class="hr"/>
+            <xf:select1 ref="." selection="open">
+                <xf:label>Genre:</xf:label>
+                <xf:hint>
+                    One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. 
+                    Genre contains terms that give more specificity than the broad terms used in Type Of Resource.
+                </xf:hint>
+                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-code']/items/item">
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
+                </xf:itemset>
+            </xf:select1>
+            
+            <!--genre input ends-->
+            
+            <!--genre delete begins-->
+            <xf:trigger ref="self::node()[count(../mods:genre) &gt; 1]">
+                <xf:label>Delete This Genre</xf:label>
+                <xf:hint>Hint</xf:hint>
+                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:genre" at="index('genre-repeat')"/>
+            </xf:trigger>
+            <!--genre delete ends-->
+            <div class="hr"/>
+        </xf:repeat>
+        
+        <!--genre repeat ends-->
+        <!--genre add begins-->
+        <xf:trigger class="add">
+            <xf:label>Add Genre</xf:label>
+            <xf:hint>Hint</xf:hint>
+            <xf:action ev:event="DOMActivate">
+                <xf:insert nodeset="mods:genre" at="index('genre-repeat')" position="after" origin="instance('insert-templates')/mods:genre"/>
+                <xf:setvalue ref="instance('save-data')/mods:genre[last()]" value="''"/>
+            </xf:action>
+        </xf:trigger>
+        <!--genre add ends-->
+    </fieldset>
+    <!--genre ends-->
+</div>

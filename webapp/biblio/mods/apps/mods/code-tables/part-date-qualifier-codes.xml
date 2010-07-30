@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>part-date-qualifier-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Approximate</label>
+            <value>approximate</value>
+        </item>
+        <item>
+            <label>Inferred</label>
+            <value>inferred</value>
+        </item>
+        <item>
+            <label>Questionable</label>
+            <value>questionable</value>
+        </item>
+    </items>
+</code-table>

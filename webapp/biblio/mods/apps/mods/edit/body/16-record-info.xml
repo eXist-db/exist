@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="record-info">
+<!--recordInfo begins-->
+
+<!--
+The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of one recordInfo element with the subelement languageOfCataloging to record the language of the text in the MODS record. 
+recordInfo is not repeatable.
+-->
+<!--
+at save time, the first recordContentSource element should be populated with the current user id, and the first recordChangeDate element should be populated with the current time. 
+-->
+    <fieldset>
+        <legend>
+            <span class="legend">Record Information</span>
+        </legend>
+        <xf:hint>Information about the metadata record.</xf:hint>
+                
+<!--recordInfo repeat begins-->
+        <xf:repeat nodeset="instance('save-data')/mods:recordInfo" id="recordinfo-repeat">
+            <div class="block-form">
+                
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: omit-->
+                <xf:select1 ref="./@type">
+                    <xf:label>Type:</xf:label>
+                    <xf:hint>Hint</xf:hint>
+                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item">
+                        <xf:label ref="label"/>
+                        <xf:value ref="value"/>
+                    </xf:itemset>
+                </xf:select1>
+                    
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: omit-->
+                <xf:select1 ref="./@authority" selection="open">
+                    <xf:label>Authority:</xf:label>
+                    <xf:hint>Hint</xf:hint>
+                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item">
+                        <xf:label ref="label"/>
+                        <xf:value ref="value"/>
+                    </xf:itemset>
+                </xf:select1>
+                <br/>
+                    
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: omit-->
+                <xf:select1 ref="./@lang">
+                    <xf:label>Language:</xf:label>
+                    <xf:hint>Hint</xf:hint>
+                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
+                        <xf:label ref="label"/>
+                        <xf:value ref="value"/>
+                    </xf:itemset>
+                </xf:select1>
+                     
+                     <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                     <!--Cluster: omit-->
+                <xf:select1 ref="./@xml:lang">
+                    <xf:label>xml:lang:</xf:label>
+                    <xf:hint>Hint</xf:hint>
+                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
+                        <xf:label ref="label"/>
+                        <xf:value ref="value"/>
+                    </xf:itemset>
+                </xf:select1>
+                <div class="hr"/>
+
+<!--DLF/Aquifer: RECOMMENDED]-->
+
+<!--recordInfo/recordContentSource begins-->
+                <fieldset>
+                    <legend>Record Content Source</legend>
+    
+    <!--recordContentSource repeat begins-->
+                    <xf:repeat nodeset="./mods:recordContentSource" id="record-content-source-repeat">
+        
+        <!--DLF/Aquifer: RECOMMENDED]-->
+                        <xf:select1 ref="./@authority">
+                            <xf:label>Authority:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+            <!--change code-table!-->
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='recordcontentsource-authority-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <br/>
+        
+        <!--DLF/Aquifer: RECOMMENDED]-->
+
+<!--recordInfo/recordContentSource input begins-->
+                        <xf:input ref="." class="text_150">
+                            <xf:label>Record Content Source:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                        </xf:input>
+
+<!--recordInfo/recordContentSource input ends-->
+        
+<!--recordInfo/recordContentSource delete begins-->
+                        <xf:trigger ref="self::node()[count(../mods:recordContentSource) &gt; 1]">
+                            <xf:label>Delete This Record Content Source</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:recordInfo/mods:recordContentSource" at="index('record-content-source-repeat')"/>
+                        </xf:trigger>
+        <!--recordContentSource delete ends-->
+                        <div class="hr"/>
+                    </xf:repeat>
+
+<!--recordInfo/recordContentSource repeat ends-->
+
+<!--recordInfo/recordContentSource add begins-->
+                    <xf:trigger class="add">
+                        <xf:label>Add Record Content Source</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:recordContentSource" at="index('record-content-source-repeat')" position="after" origin="instance('insert-templates')/mods:recordContentSource"/>
+                            <xf:setvalue ref="instance('save-data')/mods:recordContentSource[last()]" value="''"/>
+                        </xf:action>
+                    </xf:trigger>
+
+<!--recordInfo/recordContentSource add ends-->
+                </fieldset>
+
+<!--recordInfo/recordContentSource ends-->
+
+<!--DLF/Aquifer: OPTIONAL-->
+
+<!--
+If either or both of the subelements recordCreationDate and recordChangeDate is used, follow the guidelines outlined in the date section of the originInfo element. 
+The one exception is that neither of these subelements should be identified as the keyDate.
+-->
+<!--Cluster: these values should be entered automatically and be uneditable.-->
+
+<!--recordInfo/recordCreationDate begins-->
+                <fieldset>
+                    <legend>Record Creation Date</legend>
+                    <xf:hint>Hint</xf:hint>
+    
+<!--recordInfo/recordCreationDate repeat begins-->
+                    <xf:repeat nodeset="./mods:recordCreationDate" id="record-creation-date-repeat">
+        
+<!--recordInfo/recordCreationDate input begins-->
+                        <xf:input ref="." class="text_50">
+                            <xf:label>Record Creation Date:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                        </xf:input>
+                        <br/>
+                        <xf:select1 ref="./@encoding">
+                            <xf:label>Encoding:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <xf:select1 ref="./@point">
+                            <xf:label>Point:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <br/>
+        
+        <!--DLF/Aquifer: NOT RECOMMENDED-->
+        <!--Cluster: omit-->
+                        <xf:select1 ref="./@keyDate">
+                            <xf:label>Key Date:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <xf:select1 ref="./@qualifier">
+                            <xf:label>Qualifier:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+        
+<!--recordInfo/recordCreationDate input ends-->
+        
+<!--recordInfo/recordCreationDate delete begins-->
+                        <xf:trigger ref="self::node()[count(../mods:recordCreationDate) &gt; 1]">
+                            <xf:label>Delete This Record Creation Date</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:recordInfo/mods:recordCreationDate" at="index('record-creation-date-repeat')"/>
+                        </xf:trigger>
+        <!--recordCreationDate delete ends-->
+                        <div class="hr"/>
+                    </xf:repeat>
+    
+<!--recordInfo/recordCreationDate repeat ends-->
+    
+    <!--recordCreationDate add begins-->
+                    <xf:trigger class="add">
+                        <xf:label>Add Record Creation Date</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:recordCreationDate" at="index('record-creation-date-repeat')" position="after" origin="instance('insert-templates')/mods:recordCreationDate"/>
+                            <xf:setvalue ref="instance('save-data')/mods:recordCreationDate[last()]" value="''"/>
+                        </xf:action>
+                    </xf:trigger>
+
+<!--recordInfo/recordCreationDate add ends-->
+                </fieldset>
+
+<!--recordInfo/recordCreationDate ends-->
+<!--recordChangeDate begins-->
+                <fieldset>
+                    <legend>Record Change Date</legend>
+    <!--recordChangeDate repeat begins-->
+                    <xf:repeat nodeset="./mods:recordChangeDate" id="record-change-date-repeat">
+        
+        <!--recordChangeDate input begins-->
+                        <xf:input ref="." class="text_50">
+                            <xf:label>Record Change Date:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                        </xf:input>
+                        <br/>
+                        <xf:select1 ref="./@encoding">
+                            <xf:label>Encoding:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <xf:select1 ref="./@point">
+                            <xf:label>Point:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+                        <br/>
+<!--        
+        <xf:select1 ref="./@keyDate">
+            <xf:label>Key Date:</xf:label>
+            <xf:hint>Hint</xf:hint>
+            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item">
+                <xf:label ref="label"/>
+                <xf:value ref="value"/>
+            </xf:itemset>
+        </xf:select1>
+-->
+                        <xf:select1 ref="./@qualifier">
+                            <xf:label>Qualifier:</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item">
+                                <xf:label ref="label"/>
+                                <xf:value ref="value"/>
+                            </xf:itemset>
+                        </xf:select1>
+        <!--recordChangeDate input ends-->
+        
+        <!--recordChangeDate delete begins-->
+                        <xf:trigger ref="self::node()[count(../mods:recordChangeDate) &gt; 1]">
+                            <xf:label>Delete This Record Change Date</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:recordInfo/mods:recordChangeDate" at="index('record-change-date-repeat')"/>
+                        </xf:trigger>
+        <!--recordChangeDate delete ends-->
+                        <div class="hr"/>
+                    </xf:repeat>
+    
+    <!--recordChangeDate repeat ends-->
+    
+    <!--recordChangeDate add begins-->
+                    <xf:trigger class="add">
+                        <xf:label>Add Record Change Date</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:recordChangeDate" at="index('record-change-date-repeat')" position="after" origin="instance('insert-templates')/mods:recordChangeDate"/>
+                            <xf:setvalue ref="instance('save-data')/mods:recordChangeDate[last()]" value="''"/>
+                        </xf:action>
+                    </xf:trigger>
+    <!--recordChangeDate add ends-->
+                </fieldset>
+<!--recordChangeDate ends-->
+
+<!--recordIdentifier begins-->
+                <fieldset>
+                    <legend>Record Identifier</legend>
+                    <xf:hint>Hint</xf:hint>
+    
+<!--recordIdentifier input begins-->
+                    <xf:select1 ref="mods:recordIdentifier/@source">
+                        <xf:label>Source:</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='record-identifier-source-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                    <br/>
+                    <xf:input ref="./mods:recordIdentifier" class="text_150">
+                        <xf:label>Record Identifier: </xf:label>
+                        <xf:hint>Hint</xf:hint>
+                    </xf:input>
+    <!--recordIdentifier input ends-->
+                </fieldset>
+
+<!--recordIdentifier ends-->
+
+<!--recordOrigin begins-->
+                <fieldset>
+                    <legend>Record Origin</legend>
+    
+    <!--recordOrigin input begins-->
+                    <xf:input ref="./mods:recordOrigin" class="text_150">
+                        <xf:label>Record Origin: </xf:label>
+                        <xf:hint>Hint</xf:hint>
+                    </xf:input>
+    
+    <!--recordOrigin input ends-->
+                </fieldset>
+
+<!--recordOrigin ends-->
+
+<!--languageOfCataloging begins-->
+
+<!--DLF/Aquifer: REQUIRED-->
+<!--Cluster: default-->
+                <fieldset>
+                    <legend>Language of Cataloging</legend>
+                    <xf:hint>
+            Language Of Cataloging applies to the language of cataloging in a record.
+        </xf:hint>
+        
+        <!--languageOfCataloging input begins-->
+<!--        
+        <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/@type">
+            <xf:label>Type:</xf:label>
+            <xf:hint>
+                This attribute is used to express whether the Language of Cataloging value is in textual or coded form.
+            </xf:hint>
+            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item">
+                <xf:label ref="label"/>
+                <xf:value ref="value"/>
+            </xf:itemset>
+        </xf:select1>
+        
+        <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/[@type='code']/mods:languageTerm/@authority" selection="open">
+            <xf:label>Authority:</xf:label>
+            <xf:hint>
+                The name of the authoritative list for the uniform title is recorded here.
+            </xf:hint>
+            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item">
+                <xf:label ref="label"/>
+                <xf:value ref="value"/>
+            </xf:itemset>
+        </xf:select1>
+-->
+                    <xf:input ref="./mods:languageOfCataloging/mods:languageTerm" class="text_150">
+                        <xf:label>Language of Cataloging: </xf:label>
+                        <xf:hint>
+                Hint
+            </xf:hint>
+                    </xf:input>
+        
+        <!--languageOfCataloging input ends-->
+                </fieldset>
+                <fieldset>
+                    <legend>Language of Cataloging, Type Code</legend>
+    
+    <!--languageOfCataloging input begins-->
+                    <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm[@type='code']">
+                        <xf:label>Language:</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                    <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/@authority">
+                        <xf:label>Authority:</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-authority-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+    
+    <!--languageOfCataloging input ends-->
+                </fieldset>
+
+
+
+<!--languageOfCataloging ends-->
+
+
+<!--descriptionStandard begins-->
+                <fieldset>
+                    <legend>Description Standard</legend>
+    
+    <!--descriptionStandard input begins-->
+                    <xf:select1 ref="./mods:descriptionStandard/@authority">
+                        <xf:label>Authority:</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='description-standard-authority-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                    <xf:input ref="./mods:recordOrigin/descriptionStandard" class="text_150">
+                        <xf:label>Description Standard: </xf:label>
+                        <xf:hint>Hint</xf:hint>
+                    </xf:input>
+    
+    <!--descriptionStandard input ends-->
+                </fieldset>
+
+<!--descriptionStandard ends-->
+
+<!--location begins-->
+                <fieldset>
+                    <legend>Locations</legend>
+                    <xf:hint>
+        General information about what the institution identified in physicalLocation holds of the resource and its specific location.
+        Holdings information consists of copy-specific information about the resource, information about the specific location within an institution, version information, and other information that is peculiar to the institution. 
+        Holding Simple is a set of internally defined elements and corresponds roughly to summary holdings information. 
+        If more granularity is required, Holding External may be used in lieu of Holding Simple with elements from an external schema. 
+        Holding Simple consists of a single subelement, Copy Information which has several subelements.
+        Holding Simple is not repeatable; if additional holdings statements are needed for the resource, repeat Location with appropriate subelements. 
+        For more information see MODS Holdings Information.        
+    </xf:hint>
+    
+    <!--location repeat begins-->
+                    <xf:repeat nodeset="mods:location" id="location-repeat">
+    
+        <!--location input begins-->
+        
+        <!--no attributes-->
+        <!--no input-->
+        
+        <!--location input ends-->
+        
+<!--physicalLocation begins-->
+                        <fieldset>
+                            <legend>
+                                <span class="legend">Physical Location</span>
+                            </legend>
+                            <xf:hint>
+        The institution or repository that holds the resource or where it is available.
+        Physical Location may be expressed as text and/or as a code. 
+        Use the authority attribute to designate the source of the code. 
+        Physical Location typically includes specific information used to locate a resource within a collection, such as the name or code of an institution/repository, and perhaps subcollection. 
+        A shelf number is given in Shelf Locator.
+    </xf:hint>
+    
+    <!--physicalLocation repeat begins-->
+                            <xf:repeat nodeset="instance('save-data')/mods:location/mods:physicalLocation" id="physical-location-repeat">
+                                <div class="block-form">
+            
+            <!--physicalLocation input begins-->
+            
+            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+            <!--Cluster: omit-->
+                                    <xf:input ref="./@xlink" class="text_150">
+                                        <xf:label>XLink: </xf:label>
+                                        <xf:hint>
+                    The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of Contents.
+                </xf:hint>
+                                    </xf:input>
+                                    <br/>
+                                    <xf:select1 ref="./@type" selection="open">
+                                        <xf:label>Type:</xf:label>
+                                        <xf:hint>
+                    This attribute is used to indicate different kinds of locations, e.g. current, discovery, former, creation.
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='physical-location-type-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <xf:select1 ref="./@authority" selection="open">
+                                        <xf:label>Authority:</xf:label>
+                                        <xf:hint>
+                    The name of the authoritative list for a controlled value is recorded here. 
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='physical-location-authority-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <br/>
+                                    <xf:select1 ref="./@lang">
+                                        <xf:label>Language:</xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+            
+            <!--DLF/Aquifer: NOT RECOMMENDED]-->
+            <!--Cluster: omit-->
+                                    <xf:select1 ref="./@xml:lang">
+                                        <xf:label>xml:lang:</xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <br/>
+                                    <xf:select1 ref="./@script">
+                                        <xf:label>Script:</xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <xf:select1 ref="./@transliteration" selection="open">
+                                        <xf:label>Transliteration:</xf:label>
+                                        <xf:hint>
+                    Hint
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <br/>
+                                    <xf:input ref="./@displayLabel" class="text_150">
+                                        <xf:label>Display Label: </xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                    </xf:input>
+                                    <div class="hr"/>
+                                    <xf:input ref="." class="text_150">
+                                        <xf:label>Physical Location: </xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                    </xf:input>
+            
+            <!--physicalLocation input ends-->
+            
+            <!--physicalLocation delete begins-->
+                                </div>
+                                <div class="hr"/>
+                                <xf:trigger ref="self::node()[count(../mods:physicalLocation) &gt; 1]">
+                                    <xf:label>Delete This Physical Location</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:physicalLocation" at="index('physical-location-repeat')"/>
+                                </xf:trigger>
+        <!--physicalLocation delete ends-->
+                                <div class="hr"/>
+                            </xf:repeat>
+    
+    <!--physicalLocation repeat ends-->
+    
+    <!--physicalLocation add begins-->
+                            <xf:trigger class="add">
+                                <xf:label>Add Physical Location</xf:label>
+                                <xf:hint>Hint</xf:hint>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:insert nodeset="mods:physicalLocation" at="index('physical-location-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:physicalLocation"/>
+                                    <xf:setvalue ref="instance('save-data')/mods:physicalLocation[last()]" value="''"/>
+                                </xf:action>
+                            </xf:trigger>
+    
+    <!--physicalLocation add ends-->
+                        </fieldset>
+<!--physicalLocation ends-->
+
+<!--shelfLocator begins-->
+                        <fieldset>
+                            <legend>
+                                <span class="legend">Shelf Locator</span>
+                            </legend>
+                            <xf:hint>
+        The institution or repository that holds the resource or where it is available.
+        Physical Location may be expressed as text and/or as a code. 
+        Use the authority attribute to designate the source of the code. 
+        Physical Location typically includes specific information used to locate a resource within a collection, such as the name or code of an institution/repository, and perhaps subcollection. 
+        A shelf number is given in Shelf Locator.
+    </xf:hint>
+    
+    <!--shelfLocator repeat begins-->
+                            <xf:repeat nodeset="instance('save-data')/mods:location/mods:shelfLocator" id="shelf-locator-repeat">
+                                <div class="block-form">
+            
+            <!--shelfLocator input begins-->
+                                    <xf:input ref="." class="text_150">
+                                        <xf:label>Shelf Locator: </xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                    </xf:input>
+            
+            <!--shelfLocator input ends-->
+            
+            <!--shelfLocator delete begins-->
+                                </div>
+                                <div class="hr"/>
+                                <xf:trigger ref="self::node()[count(../mods:shelfLocator) &gt; 1]">
+                                    <xf:label>Delete This Shelf Locator</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:shelfLocator" at="index('shelf-locator-repeat')"/>
+                                </xf:trigger>
+        <!--shelfLocator delete ends-->
+                                <div class="hr"/>
+                            </xf:repeat>
+    
+    <!--title repeat ends-->
+    
+    <!--shelfLocator add begins-->
+                            <xf:trigger class="add">
+                                <xf:label>Add Shelf Locator</xf:label>
+                                <xf:hint>Hint</xf:hint>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:insert nodeset="mods:shelfLocator" at="index('shelf-locator-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:shelfLocator"/>
+                                    <xf:setvalue ref="instance('save-data')/mods:shelfLocator[last()]" value="''"/>
+                                </xf:action>
+                            </xf:trigger>
+    
+    <!--shelfLocator add ends-->
+                        </fieldset>
+<!--shelfLocator ends-->
+
+<!--url begins-->
+                        <fieldset>
+                            <legend>
+                                <span class="legend">URL</span>
+                            </legend>
+                            <xf:hint>
+        The institution or repository that holds the resource or where it is available.
+        URL may be expressed as text and/or as a code. 
+        Use the authority attribute to designate the source of the code. 
+        URL typically includes specific information used to locate a resource within a collection, such as the name or code of an institution/repository, and perhaps subcollection. 
+        A shelf number is given in Shelf Locator.
+    </xf:hint>
+    
+    <!--url repeat begins-->
+                            <xf:repeat nodeset="instance('save-data')/mods:location/mods:url" id="location-url-repeat">
+                                <div class="block-form">
+            
+            <!--url input begins-->
+                                    <xf:input ref="./@dateLastAccessed" class="text_150">
+                                        <xf:label>Date Last Accessed: </xf:label>
+                                        <xf:hint>
+                    This attribute is intended to express the date that a digital resource has been accessed remotely. This may be useful to a user trying to access the site because of the volatility of Web content. There is no encoding scheme specified for use with this attribute, however, a structured date is recommended.
+                </xf:hint>
+                                    </xf:input>
+                                    <br/>
+                                    <xf:select1 ref="./@access" selection="open">
+                                        <xf:label>Access:</xf:label>
+                                        <xf:hint>
+                    This attribute indicates the type of resource that the user or aggregator will access when following the URL link. It is particularly useful to provide a flag in the context of OAI service providers harvesting metadata. 
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='url-access-type-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <xf:select1 ref="./@usage">
+                                        <xf:label>Usage:</xf:label>
+                                        <xf:hint>
+                    This attribute indicates how the object represented by the link will be used. Aggregators may use it to determine which URL is most appropriate for end-user display, which in most cases is the object in context (which may be marked as such using the access attribute).  
+                </xf:hint>
+                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='url-usage-type-code']/items/item">
+                                            <xf:label ref="label"/>
+                                            <xf:value ref="value"/>
+                                        </xf:itemset>
+                                    </xf:select1>
+                                    <br/>
+                                    <xf:input ref="./@displayLabel" class="text_150">
+                                        <xf:label>Display Label: </xf:label>
+                                        <xf:hint>
+                    This attribute is intended to be used when additional text associated with the URL is needed for display.  
+                </xf:hint>
+                                    </xf:input>
+                                    <br/>
+                                    <xf:input ref="./@note" class="text_150">
+                                        <xf:label>Note: </xf:label>
+                                        <xf:hint>
+                    This attribute is intended to be used when additional text associated with the URL is needed for display.  
+                </xf:hint>
+                                    </xf:input>
+                                    <div class="hr"/>
+                                    <xf:input ref="." class="text_150">
+                                        <xf:label>URL: </xf:label>
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                    </xf:input>
+            
+            <!--url input ends-->
+            
+            <!--url delete begins-->
+                                </div>
+                                <div class="hr"/>
+                                <xf:trigger ref="self::node()[count(../mods:url) &gt; 1]">
+                                    <xf:label>Delete This URL</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:url" at="index('location-url-repeat')"/>
+                                </xf:trigger>
+        <!--url delete ends-->
+                                <div class="hr"/>
+                            </xf:repeat>
+    
+    <!--title repeat ends-->
+    
+    <!--url add begins-->
+                            <xf:trigger class="add">
+                                <xf:label>Add URL</xf:label>
+                                <xf:hint>Hint</xf:hint>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:insert nodeset="mods:url" at="index('location-url-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:url"/>
+                                    <xf:setvalue ref="instance('save-data')/mods:url[last()]" value="''"/>
+                                </xf:action>
+                            </xf:trigger>
+    
+    <!--url add ends-->
+                        </fieldset>
+<!--url ends-->
+
+
+        <!--location/holdingSimple begins-->
+                        <fieldset>
+                            <legend>Holdings Simple</legend>
+    <!--location/holdingSimple repeat begins-->
+                            <xf:hint>
+        General information about what the institution identified in physicalLocation holds of the resource and its specific location.
+        Holdings information consists of copy-specific information about the resource, information about the specific location within an institution, version information, and other information that is peculiar to the institution. 
+        Holding Simple is a set of MODS internally defined elements and corresponds roughly to summary holdings information. If more granularity is required, Holding External may be used in lieu of Holding Simple with elements from an external schema. Holding Simple consists of a single subelement, Copy Information which has several subelements. Holding Simple is not repeatable; if additional holdings statements are needed for the resource, repeat Location with appropriate subelements. For more information see MODS Holdings Information.
+    </xf:hint>
+                            <xf:repeat nodeset="instance('save-data')/mods:location/mods:holdingSimple" id="location-holdingSimple-repeat">
+        
+        <!--location/holdingSimple input begins-->
+        
+        <!--no attributes-->
+        
+        <!--location/holdingSimple input ends-->
+        
+        <!--location/copyInformation begins-->
+                                <fieldset>
+            <!--location/copyInformation repeat begins-->
+                                    <xf:repeat nodeset="./mods:copyInformation" id="location-copyInformation-repeat">
+                
+                <!--location/copyInformation input begins-->
+                
+                <!--no attributes-->
+                <!--no input-->
+                
+                <!--location/form begins-->
+                                        <fieldset>
+                    <!--location/form repeat begins-->
+                                            <xf:repeat nodeset="./mods:form" id="location-location-repeat">
+                        
+                        <!--location/form input begins-->
+                                                <xf:select1 ref="./@authority">
+                                                    <xf:label>Type:</xf:label>
+                                                    <xf:hint>
+                                The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/form/formsource.html. 
+                            </xf:hint>
+                                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='location-type-code']/items/item">
+                                                        <xf:label ref="label"/>
+                                                        <xf:value ref="value"/>
+                                                    </xf:itemset>
+                                                </xf:select1>
+                                                <xf:input ref="." class="text_150">
+                                                    <xf:label>Form:</xf:label>
+                                                    <xf:hint>
+                                Designation of a particular physical presentation of a resource.
+                                This is equivalent to MODS Physical Description/Form. 
+                                It may be included under Copy Information when the MODS record refers to multiple forms and there is different detailed holdings information associated with each form. 
+                                Form is not repeatable; Copy Information is repeated within Holding Simple for multiple forms.
+                            </xf:hint>
+                                                </xf:input>
+                        
+                        <!--location/form input ends-->
+                                                <div class="hr"/>
+                        
+                        <!--location/form delete begins-->
+                        <!--        
+                            <xf:trigger ref="self::node()[count(../mods:form) > 1]">
+                            <xf:label>Delete This Form</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:name/mods:form" at="index('location-location-repeat')"/>
+                            </xf:trigger>
+                            -->
+                            <!--location/form delete ends-->
+                                                <div class="hr"/>
+                                            </xf:repeat>
+                    
+                    <!--location/form repeat ends-->
+                        
+                        <!--location/form add begins-->
+                    <!--
+                    <xf:trigger class="add">
+                        <xf:label>Add Form</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:form" at="index('location-location-repeat')" position="after"
+                                origin="instance('insert-templates')/mods:form"/>
+                            <xf:setvalue ref="instance('save-data')/mods:form[last()]" value="''"/>
+                        </xf:action>
+                    </xf:trigger>
+                    -->
+                    <!--location/form add ends-->
+                                        </fieldset>
+                <!--location/form ends-->
+                
+                <!--location/sublocation begins-->
+                                        <fieldset>
+                    <!--location/sublocation  repeat begins-->
+                                            <xf:repeat nodeset="./mods:sublocation " id="location-sublocation-repeat">
+                        
+                        <!--location/sublocation input begins-->
+                        <!--        
+                            <xf:select1 ref="./@authority">
+                            <xf:label>Type:</xf:label>
+                            <xf:hint>
+                            The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/form/formsource.html. 
+                            </xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='sublocation-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                            </xf:itemset>
+                            </xf:select1>
+                        -->
+                                                <xf:input ref="." class="text_150">
+                                                    <xf:label>Sublocation:</xf:label>
+                                                    <xf:hint>
+                                Department, division or section of an institution holding a copy of the resource.
+                            </xf:hint>
+                                                </xf:input>
+                        
+                        <!--location/sublocation input ends-->
+                                                <div class="hr"/>
+                        
+                        <!--location/sublocation delete begins-->
+                                                <xf:trigger ref="self::node()[count(../mods:sublocation) &gt; 1]">
+                                                    <xf:label>Delete This Sublocation</xf:label>
+                                                    <xf:hint>Hint</xf:hint>
+                                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:sublocation" at="index('location-sublocation-repeat')"/>
+                                                </xf:trigger>
+                        <!--location/sublocation delete ends-->
+                                                <div class="hr"/>
+                                            </xf:repeat>
+                    
+                    <!--location/sublocation repeat ends-->
+                    
+                    <!--location/sublocation add begins-->
+                                            <xf:trigger class="add">
+                                                <xf:label>Add Sublocation</xf:label>
+                                                <xf:hint>Hint</xf:hint>
+                                                <xf:action ev:event="DOMActivate">
+                                                    <xf:insert nodeset="mods:sublocation" at="index('location-sublocation-repeat')" position="after" origin="instance('insert-templates')/mods:sublocation"/>
+                                                    <xf:setvalue ref="instance('save-data')/mods:sublocation[last()]" value="''"/>
+                                                </xf:action>
+                                            </xf:trigger>
+                    <!--location/sublocation add ends-->
+                                        </fieldset>
+                <!--location/sublocation ends-->
+                
+                <!--location/shelfLocator begins-->
+                                        <fieldset>
+                    <!--location/shelfLocator  repeat begins-->
+                                            <xf:repeat nodeset="./mods:shelfLocator " id="location-shelfLocator-repeat">
+                        
+                        <!--location/shelfLocator input begins-->
+                        <!--        
+                            <xf:select1 ref="./@authority">
+                            <xf:label>Type:</xf:label>
+                            <xf:hint>
+                            The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/form/formsource.html. 
+                            </xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='sublocation-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                            </xf:itemset>
+                            </xf:select1>
+                        -->
+                                                <xf:input ref="." class="text_150">
+                                                    <xf:label>Shelf Locator:</xf:label>
+                                                    <xf:hint>
+                                Shelfmark or other shelving designation that indicates the location identifier for a copy.
+                            </xf:hint>
+                                                </xf:input>
+                        
+                        <!--location/shelfLocator input ends-->
+                                                <div class="hr"/>
+                        
+                        <!--location/shelfLocator delete begins-->
+                                                <xf:trigger ref="self::node()[count(../mods:shelfLocator) &gt; 1]">
+                                                    <xf:label>Delete This Shelf Locator</xf:label>
+                                                    <xf:hint>Hint</xf:hint>
+                                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:shelfLocator" at="index('location-shelfLocator-repeat')"/>
+                                                </xf:trigger>
+                        <!--location/shelfLocator delete ends-->
+                                                <div class="hr"/>
+                                            </xf:repeat>
+                    
+                    <!--location/shelfLocator repeat ends-->
+                    
+                    <!--location/shelfLocator add begins-->
+                                            <xf:trigger class="add">
+                                                <xf:label>Add Shelf Locator</xf:label>
+                                                <xf:hint>Hint</xf:hint>
+                                                <xf:action ev:event="DOMActivate">
+                                                    <xf:insert nodeset="mods:shelfLocator" at="index('location-shelfLocator-repeat')" position="after" origin="instance('insert-templates')/mods:shelfLocator"/>
+                                                    <xf:setvalue ref="instance('save-data')/mods:shelfLocator[last()]" value="''"/>
+                                                </xf:action>
+                                            </xf:trigger>
+                    <!--location/shelfLocator add ends-->
+                                        </fieldset>
+                <!--location/shelfLocator ends-->
+                
+                <!--location/electronicLocator begins-->
+                                        <fieldset>
+                    <!--location/electronicLocator  repeat begins-->
+                                            <xf:repeat nodeset="./mods:electronicLocator " id="location-electronicLocator-repeat">
+                        
+                        <!--location/electronicLocator input begins-->
+                        <!--        
+                            <xf:select1 ref="./@authority">
+                            <xf:label>Type:</xf:label>
+                            <xf:hint>
+                            The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/form/formsource.html. 
+                            </xf:hint>
+                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='sublocation-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                            </xf:itemset>
+                            </xf:select1>
+                        -->
+                                                <xf:input ref="." class="text_150">
+                                                    <xf:label>Electronic Locator:</xf:label>
+                                                    <xf:hint>
+                                Uniform Resource Location of the resource.
+                            </xf:hint>
+                                                </xf:input>
+                        
+                        <!--location/electronicLocator input ends-->
+                                                <div class="hr"/>
+                        
+                        <!--location/electronicLocator delete begins-->
+                                                <xf:trigger ref="self::node()[count(../mods:electronicLocator) &gt; 1]">
+                                                    <xf:label>Delete This Electronic Locator</xf:label>
+                                                    <xf:hint>Hint</xf:hint>
+                                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:electronicLocator" at="index('location-electronicLocator-repeat')"/>
+                                                </xf:trigger>
+                        <!--location/electronicLocator delete ends-->
+                                                <div class="hr"/>
+                                            </xf:repeat>
+                    
+                    <!--location/electronicLocator repeat ends-->
+                    
+                    <!--location/electronicLocator add begins-->
+                                            <xf:trigger class="add">
+                                                <xf:label>Add Electronic Locator</xf:label>
+                                                <xf:hint>Hint</xf:hint>
+                                                <xf:action ev:event="DOMActivate">
+                                                    <xf:insert nodeset="mods:electronicLocator" at="index('location-electronicLocator-repeat')" position="after" origin="instance('insert-templates')/mods:electronicLocator"/>
+                                                    <xf:setvalue ref="instance('save-data')/mods:electronicLocator[last()]" value="''"/>
+                                                </xf:action>
+                                            </xf:trigger>
+                    <!--location/electronicLocator add ends-->
+                                        </fieldset>
+                <!--location/electronicLocator ends-->
+                
+                <!--location/note begins-->
+                                        <fieldset>
+                    <!--location/note  repeat begins-->
+                                            <xf:repeat nodeset="./mods:note " id="location-note-repeat">
+                        
+                        <!--location/note input begins-->
+                                                <xf:input ref="./@type" class="text_50">
+                                                    <xf:label>Type:</xf:label>
+                                                    <xf:hint>
+                                This attribute is not controlled by a list and thus is open-ended.
+                            </xf:hint>
+                                                </xf:input>
+                                                <xf:input ref="./@displayLabel" class="text_150">
+                                                    <xf:label>Display Label:</xf:label>
+                                                    <xf:hint>
+                                This attribute is intended to be used when additional text associated with the note is necessary for display.
+                            </xf:hint>
+                                                </xf:input>
+                                                <br/>
+                                                <xf:input ref="." class="text_150">
+                                                    <xf:label>Note:</xf:label>
+                                                    <xf:hint>
+                                Note relating to a specific copy of a document.
+                            </xf:hint>
+                                                </xf:input>
+                        
+                        <!--location/note input ends-->
+                                                <div class="hr"/>
+                        
+                        <!--location/note delete begins-->
+                                                <xf:trigger ref="self::node()[count(../mods:note) &gt; 1]">
+                                                    <xf:label>Delete This Note</xf:label>
+                                                    <xf:hint>Hint</xf:hint>
+                                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:note" at="index('location-note-repeat')"/>
+                                                </xf:trigger>
+                        <!--location/note delete ends-->
+                                                <div class="hr"/>
+                                            </xf:repeat>
+                    
+                    <!--location/note repeat ends-->
+                    
+                    <!--location/note add begins-->
+                                            <xf:trigger class="add">
+                                                <xf:label>Add Note</xf:label>
+                                                <xf:hint>Hint</xf:hint>
+                                                <xf:action ev:event="DOMActivate">
+                                                    <xf:insert nodeset="mods:note" at="index('location-note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/>
+                                                    <xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/>
+                                                </xf:action>
+                                            </xf:trigger>
+                    <!--location/note add ends-->
+                                        </fieldset>
+                <!--location/note ends-->
+                
+                <!--location/enumerationAndChronology begins-->
+                                        <fieldset>
+                    <!--location/enumerationAndChronology  repeat begins-->
+                                            <xf:repeat nodeset="./mods:enumerationAndChronology " id="location-enumerationAndChronology-repeat">
+                        
+                        <!--location/enumerationAndChronology input begins-->
+                                                <xf:select1 ref="./@unitType">
+                                                    <xf:label>Type:</xf:label>
+                                                    <xf:hint>
+                                The category of bibliographic entity for which enumerationAndChronology is given, i.e. basic bibliographic unit, supplement, or index. 
+                            </xf:hint>
+                                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='location-unittype-code']/items/item">
+                                                        <xf:label ref="label"/>
+                                                        <xf:value ref="value"/>
+                                                    </xf:itemset>
+                                                </xf:select1>
+                                                <br/>
+                                                <xf:input ref="." class="text_150">
+                                                    <xf:label>Enumeration And Chronology:</xf:label>
+                                                    <xf:hint>
+                                Alpha-numeric identification, such as a volume or issue, and an indication of the date of publication or date of issue of a component of a multi-part resource, distinguishing it from other components of the same resource.
+                            </xf:hint>
+                                                </xf:input>
+                        
+                        <!--location/enumerationAndChronology input ends-->
+                                                <div class="hr"/>
+                        
+                        <!--location/enumerationAndChronology delete begins-->
+                                                <xf:trigger ref="self::node()[count(../mods:enumerationAndChronology) &gt; 1]">
+                                                    <xf:label>Delete This Enumeration And Chronology</xf:label>
+                                                    <xf:hint>Hint</xf:hint>
+                                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:enumerationAndChronology" at="index('location-enumerationAndChronology-repeat')"/>
+                                                </xf:trigger>
+                        <!--location/enumerationAndChronology delete ends-->
+                                                <div class="hr"/>
+                                            </xf:repeat>
+                    
+                    <!--location/enumerationAndChronology repeat ends-->
+                    
+                    <!--location/enumerationAndChronology add begins-->
+                                            <xf:trigger class="add">
+                                                <xf:label>Add Enumeration And Chronology</xf:label>
+                                                <xf:hint>Hint</xf:hint>
+                                                <xf:action ev:event="DOMActivate">
+                                                    <xf:insert nodeset="mods:enumerationAndChronology" at="index('location-enumerationAndChronology-repeat')" position="after" origin="instance('insert-templates')/mods:enumerationAndChronology"/>
+                                                    <xf:setvalue ref="instance('save-data')/mods:enumerationAndChronology[last()]" value="''"/>
+                                                </xf:action>
+                                            </xf:trigger>
+                    <!--location/enumerationAndChronology add ends-->
+                                        </fieldset>
+                <!--location/enumerationAndChronology ends-->
+                
+                <!--location/copyInformation input ends-->
+                                        <div class="hr"/>
+                
+                <!--location/copyInformation delete begins-->
+                                        <xf:trigger ref="self::node()[count(../mods:copyInformation) &gt; 1]">
+                                            <xf:label>Delete This Copy Information</xf:label>
+                                            <xf:hint>Hint</xf:hint>
+                                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation" at="index('location-copyInformation-repeat')"/>
+                                        </xf:trigger>
+                <!--location/copyInformation delete ends-->
+                                        <div class="hr"/>
+                                    </xf:repeat>
+            
+            <!--location/copyInformation repeat ends-->
+            
+            <!--location/copyInformation add begins-->
+                                    <xf:trigger class="add">
+                                        <xf:label>Add Copy Information</xf:label>
+                                        <xf:hint>Hint</xf:hint>
+                                        <xf:action ev:event="DOMActivate">
+                                            <xf:insert nodeset="mods:copyInformation" at="index('location-copyInformation-repeat')" position="after" origin="instance('insert-templates')/mods:copyInformation"/>
+                                            <xf:setvalue ref="instance('save-data')/mods:copyInformation[last()]" value="''"/>
+                                        </xf:action>
+                                    </xf:trigger>
+            <!--location/copyInformation add ends-->
+                                </fieldset>
+        <!--location/copyInformation ends-->
+                                <div class="hr"/>
+        
+        <!--location/holdingSimple delete begins-->
+                                <xf:trigger ref="self::node()[count(../mods:holdingSimple) &gt; 1]">
+                                    <xf:label>Delete This Holding Simple</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location//mods:holdingSimple" at="index('location-holdingSimple-repeat')"/>
+                                </xf:trigger>
+        <!--location/holdingSimple delete ends-->
+                                <div class="hr"/>
+                            </xf:repeat>
+    
+    <!--location/holdingSimple repeat ends-->
+    
+    <!--location/holdingSimple add begins-->
+                            <xf:trigger class="add">
+                                <xf:label>Add Holding Simple</xf:label>
+                                <xf:hint>Hint</xf:hint>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:insert nodeset="mods:holdingSimple" at="index('location-holdingSimple-repeat')" position="after" origin="instance('insert-templates')/mods:holdingSimple"/>
+                                    <xf:setvalue ref="instance('save-data')/mods:holdingSimple[last()]" value="''"/>
+                                </xf:action>
+                            </xf:trigger>
+    <!--location/holdingSimple add ends-->
+                        </fieldset>
+<!--location/holdingSimple ends-->
+
+<!--holdingExternal begins-->
+                        <fieldset>
+                            <legend>
+                                <span class="legend">Holding External</span>
+                            </legend>
+                            <xf:hint>
+        Holdings information that uses a schema defined externally to MODS.
+        Holding External may include more detailed holdings information than that accommodated by the MODS schema. 
+            Holding External may include more detailed holdings information than that accommodated by the MODS schema. 
+            An example is ISO 20775 and its accompanying schema.
+    </xf:hint>
+    
+    <!--holdingExternal repeat begins-->
+                            <xf:repeat nodeset="instance('save-data')/mods:location/mods:holdingExternal" id="holding-external-repeat">
+                                <div class="block-form">
+            
+            <!--holdingExternal input begins-->
+                                    <xf:textarea ref="instance('save-data')/mods:location/mods:holdingExternal" class="textarea">
+                                        <xf:hint>
+                    Hint 
+                </xf:hint>
+                                    </xf:textarea>
+            
+            <!--holdingExternal input ends-->
+                                    <div class="hr"/>
+            
+            <!--holdingExternal delete begins-->
+                                </div>
+                                <xf:trigger ref="self::node()[count(../mods:holdingExternal) &gt; 1]">
+                                    <xf:label>Delete This Holding External</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingExternal" at="index('holding-external-repeat')"/>
+                                </xf:trigger>
+        <!--holdingExternal delete ends-->
+                                <div class="hr"/>
+                            </xf:repeat>
+    
+    <!--title repeat ends-->
+    
+    <!--holdingExternal add begins-->
+                            <xf:trigger class="add">
+                                <xf:label>Add Holding External</xf:label>
+                                <xf:hint>Hint</xf:hint>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:insert nodeset="mods:holdingExternal" at="index('holding-external-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:holdingExternal"/>
+                                    <xf:setvalue ref="instance('save-data')/mods:holdingExternal[last()]" value="''"/>
+                                </xf:action>
+                            </xf:trigger>
+    
+    <!--holdingExternal add ends-->
+                        </fieldset>
+<!--holdingExternal ends-->
+                        <div class="hr"/>
+        
+        <!--location delete begins-->
+                        <xf:trigger ref="self::node()[count(../mods:location) &gt; 1]">
+                            <xf:label>Delete This Location</xf:label>
+                            <xf:hint>Hint</xf:hint>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location" at="index('location-repeat')"/>
+                        </xf:trigger>
+        <!--location delete ends-->
+                        <div class="hr"/>
+                    </xf:repeat>
+    
+    <!--location repeat ends-->
+    
+    <!--location add begins-->
+                    <xf:trigger class="add">
+                        <xf:label>Add Location</xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:location" at="index('location-repeat')" position="after" origin="instance('insert-templates')/mods:location"/>
+                            <xf:setvalue ref="instance('save-data')/mods:location[last()]" value="''"/>
+                        </xf:action>
+                    </xf:trigger>
+    <!--location add ends-->
+                </fieldset>
+<!--location ends-->
+            </div>
+        </xf:repeat>
+                 
+                 <!--recordInfo repeat ends-->
+    </fieldset>
+        
+        <!--recordInfo ends-->
+</div>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>part-date-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>w3cdtf</label>
+            <value>w3cdtf</value>
+        </item>
+        <item>
+            <label>iso8601</label>
+            <value>iso8601</value>
+        </item>
+        <item>
+            <label>marc</label>
+            <value>marc</value>
+        </item>
+    </items>
+</code-table>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>code-text-code</code-table-name>
+    <form>closed</form>
+    <status>finished</status>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Code</label>
+            <value>code</value>
+        </item>
+        <item>
+            <label>Text</label>
+            <value>text</value>
+        </item>
+    </items>
+</code-table>

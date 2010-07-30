@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <status>finished</status>
+    <basis>3.3 guidelines</basis>
+    <code-table-name>date-encoding-code</code-table-name>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>w3cdtf</label>
+            <value>w3cdtf</value>
+            <description>
+                This value is used for the profile of ISO 8601 that specifies the following date pattern: YYYY-MM-DD.
+            </description>
+        </item>
+        <item>
+            <label>iso8601</label>
+            <value>iso8601</value>
+            <description>
+                This value is used for formatted dates allowed in ISO 8601 which use the alternative described as "basic" rather than "extended". 
+                This alternative specified in the standard uses the following date pattern: YYYYMMDD (hours, minutes, seconds may also be added). 
+                It is also used for other encodings specified in ISO 8601, e.g. date ranges, which are in the form of YYYY/YYYY (in which case start and end portions are not parsed). 
+                The ISO 8601 basic expression has been used widely in MARC 21 date elements.
+            </description>
+        </item>
+        <item>
+            <label>marc</label>
+            <value>marc</value>
+            <description>
+                This value is used only for dates coded according to MARC 21 rules in field 008/07-14 for dates of publication/issuance. 
+                Thus, this would only apply to the attribute in dateIssued. 
+                Examples include: 19uu (a MARC convention to show unknown digits in a date), 9999 (a MARC convention showing that the end date has not occurred or is not known).
+            </description>
+        </item>
+    </items>
+</code-table>
