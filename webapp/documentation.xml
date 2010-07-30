@@ -111,6 +111,11 @@
                                 <td>provides a few rules to consider when tuning the db and the
                                     XQueries</td>
                             </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="repo/repo.xml">Package Repository</ulink>:</td>
+                                <td>Manage or deploy dependencies/applications (.xar) to eXist-db repository.
+                                </td>
+                            </tr>
                         </tbody>
                     </tgroup>
                 </table>
