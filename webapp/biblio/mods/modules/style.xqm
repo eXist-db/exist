@@ -177,7 +177,7 @@ as node()+ {
 
 declare function style:header() as node()+  {
         <div class="span-24 last">
-            Library Managment System XRX Demo Copyright Dan McCreary &amp; Associates, All Rights Reserved.
+            Demo of MODS Editor
             <hr/>
         </div>
 };
@@ -192,7 +192,7 @@ as node()*  {
         <hr/>
             <div class="inner">
                 <div class="footer">
-                    Library Managment System XRX Demo Copyright Dan McCreary &amp; Associates, All Rights Reserved.
+                    Demo of MODS Editor
                 </div>
             </div>
         </div>
