@@ -1,306 +1,300 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?> 
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="title">
-<!--titleInfo begins-->
     <fieldset>
         <legend>
             <span class="legend">Title Information</span>
         </legend>
         <xf:hint>
-            At least one Title inside a Title Information is required for a record to be saved.
-            Title Information can be <em>repeated</em> for alternative, translated, transliterated or uniform titles.
-            These values are chosen in Type.
-            For the basic (untyped) Title Information entry, use the default value "<em>Basic Title Information</em>".
-            If, in addition to the basic title , there is an alternative, translated, transliterated or uniform title, add a Title Information Block and choose the relevant Type.
-            Repeat Title Information as many times as necessary.<br/>
+            At least one Title inside a Title Information is required. 
+            Title Information can be repeated for alternative, translated, transliterated or uniform titles. 
+            These values are chosen in Type. 
+            For the basic Title Information entry, use the default value "Basic Title Information". 
+            If, in addition to the basic title, there is also an alternative, translated, transliterated or
+            uniform title, add a Title Information and choose the relevant Type. 
+            Repeat Title Information as many times as necessary.
             <br/>
-            When <em>no title</em> appears on the item being described, a title should be <em>supplied</em> by the cataloguer. 
-            Do not use brackets or other punctuation to indicate that the title has been supplied; instead, use the Display Label attribute to indicate that the title is supplied, by giving it the value "Supplied Title".
-            Preferably, a supplied should be created in accordance with an established standard, and describe, as concisely as possible, the content of the resource in question.             
-            If no standards apply, consider carefully the expectations end users have for the naming of similar resources.<br/>            
-            If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title Information.<br/>
-            If a uniform or abbreviated title is catalogued, choose the appropriate value in Type and note in which <em>authority file</em> the uniform or abbreviated title in Authority has been found.
-            Authority files are only used with uniform and abbreviated titles.<br/>
-            Always record the <em>language</em> of the title information using the Language attribute.
+            A Title Information consists of a Title and fields that relate to it.
+            A Title may have a Subtitle, usually an expansion of the Title proper.
+            If the Title begins with a word according to which it should not be sorted (such as "The" or "A" and the like), enter this word in Non Sort and remove it from Title.
+            If a publication consists of several parts, parts that are either numbered or named, use Part Number and/or Part Name.
+            A "History of Europe" may have several numbered part, such as "Part One. Ancient Greece."
+            Enter "Part One" in Part Number and "Ancient Grecce" in Part Name.            
+            <br/>
+            When no title appears on the item being described, a title should be supplied by the cataloguer. 
+            Do not use brackets or other punctuation to indicate that the title has been supplied; instead, use the Display Label attribute to indicate that the title is supplied, by giving it the value "Supplied Title". 
+            A supplied title should be created in accordance with an established standard, and describe, as concisely as possible, the content of the resource in question. 
+            If no standards apply, consider carefully the expectations end users have for the naming of similar resources.
+            <br/>
+            If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title Information.
+            <br/>
+            If a uniform or abbreviated title is entered, choose the appropriate value in Type and note in which authority file the uniform or abbreviated title in Authority has been found. 
+            Authority files are only used in connection with uniform and abbreviated titles.
+            <br/>
+            Record the language of the title information by choosing the Language used in the resource.
         </xf:hint>
-        
         <!--titleInfo repeat begins-->
         <xf:repeat nodeset="instance('save-data')/mods:titleInfo" id="titleinfo-repeat">
             <div class="block-form">
-        
-        <!--titleInfo input begins-->
-        
-        <!--DLF/Aquifer: OPTIONAL-->
-        <!--Cluster: omit-->
+                <!--titleInfo input begins-->
+                <!--DLF/Aquifer: OPTIONAL-->
+                <!--Cluster: omit-->
                 <xf:input ref="./@ID" class="text_50">
                     <xf:label>ID: </xf:label>
-                    <xf:hint>
-                This attribute is used to link among records inside the database and to reference an element inside the database from the outside. 
-                The UID of the record as a whole is noted in mods:identifier type="local".
-                --&gt;
-            </xf:hint>
+                    <xf:hint> This attribute is used to link among records inside the database and to reference an element inside the database from the outside.
+                        The UID of the record as a whole is noted in mods:identifier type="local". </xf:hint>
                 </xf:input>
                 <br/>
-
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: omit-->
-                <xf:input ref="./@xlink" class="text_50">
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: omit-->
+                <!--
+                    <xf:input ref="./@xlink" class="text_50">
                     <xf:label>XLink: </xf:label>
-                    <xf:hint>
-                The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of Contents.
-            </xf:hint>
-                </xf:input>
-                <br/>
-        
-        
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: include-->
+                    <xf:hint> The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table
+                    Of Contents. </xf:hint>
+                    </xf:input>
+                    <br/>
+                -->
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
                 <xf:select1 ref="./@type">
                     <xf:label>Type:</xf:label>
                     <xf:hint>
-                This attribute identifies what type of title information is recorded.
-                The default is Basic Title Information.
-                The following values may be used in addition to this: Abbreviated, Translated, Transliterated <!--NB: addition to MODS!!!-->, Alternative, Uniform.
-                When an abbreviated  title is present, an Authority must be chosen.
-                An alternative title may be a parallel title found in the authoritative title information (in written works, typically the title page) or a title that does not occur in the authoritative title information, e.g. a title found on a cover.
-                If the alternative title does not occur in the authoritative title information, indicate in Display Label where the information comes from (e.g. "Cover Title").
-                If the alternative title does occur in the authoritative title information, it is probably a translation (or a transcription) of the main title information.
-                If a translation or transcription is authorial in this way, choose "Alternative" for Type and note the language, transcrition and script of the title information as appropriate.<br/>
-                A uniform title is a title that refers uniformly to a work that is known by several titles, e.g. the works of Shakespeare. 
-                When a uniform title is present, an Authority for the selection must be chosen.<br/>
-                When title information is translated and transliterated by the cataloguer, choose the values "Translated" and "Transliterated" for Type and note the language, transcrition and script of the title information as appropriate.
-            </xf:hint>
+                        This attribute identifies what type of Title Information is recorded. 
+                        The default is Basic Title Information. 
+                        The following values may be used in addition to this: Abbreviated, Translated, Transliterated <!--NB: addition to MODS!!!-->, Alternative, Uniform.
+                        <br/>                        
+                        When an abbreviated title is present, an Authority must be chosen. 
+                        An alternative title may be a parallel title found in the authoritative title information (in written works, typically the title page) or a title that does not occur in the authoritative title information, e.g. a
+                        title found on a cover. 
+                        If the alternative title does not occur in the authoritative title information, indicate in Display Label where
+                        the information comes from (e.g., "Cover Title"). 
+                        If the alternative title does occur in the authoritative title information, it is
+                        probably a translation (or a transliteration) of the main title information. 
+                        If a translation or transliteration based on the evidence of the work being catalogued, choose "Alternative" for Type and note the language, transliteration and script of the title information, as appropriate.
+                        <br/>
+                        A uniform title is a title that refers uniformly to a work that is known by several titles, e.g. the works of Shakespeare or the Bible. 
+                        When a uniform title is present, an Authority for its selection must be chosen.
+                        <br/>
+                        When title information is translated or transliterated by the cataloguer, choose the values "Translated" or "Transliterated" for Type and note the language, transliteration and script of the title information as
+                        appropriate.
+                    </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
                 <br/>
-        
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: include-->
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
                 <xf:select1 ref=".[@type='abbreviated']/@authority" selection="open">
                     <xf:label>Authority:</xf:label>
                     <xf:hint>
-                The name of the authoritative list for a controlled value is recorded here.
-            </xf:hint>
+                        The name of the authoritative list for the abbreviated title is recorded here. </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='abbreviated-title-authority-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
-        
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: include-->
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include-->
                 <xf:select1 ref=".[@type='uniform']/@authority" selection="open">
                     <xf:label>Authority:</xf:label>
-                    <xf:hint>
-                The name of the authoritative list for the uniform title is recorded here.
-            </xf:hint>
+                    <xf:hint> The name of the authoritative list for the uniform title is recorded here. </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
                 <br/>
-        
-        <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
-        <!--Cluster: include-->
+                <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
+                <!--Cluster: include-->
                 <xf:select1 ref="./@lang">
                     <xf:label>Language:</xf:label>
-                    <xf:hint>
-                    The language used within Title Information is specified here.
-                    The most common languages have been moved to the top of the list.
-                    (The language used in the resource as a whole is given in Language.)
-                </xf:hint>
+                    <xf:hint> The language used within Title Information is specified here. 
+                        The most common languages have been moved to the top of the list.
+                        <br/>
+                        The language used in the resource as a whole is given in Language Of Resource and may well be the same.
+                    </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
                 <br/>
-                     
-        <!--DLF/Aquifer: NOT RECOMMENDED]-->
-        <!--Cluster: omit-->
-                <xf:select1 ref="./@xml:lang">
+                <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                <!--Cluster: omit-->
+                <!--
+                    <xf:select1 ref="./@xml:lang">
                     <xf:label>xml:lang:</xf:label>
-                    <xf:hint>
-                This attribute is used to specify the language used within individual elements, using specifications in RFC 3066. 
-                RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. 
-                Using the xml:lang attribute is equivalent to authority="rfc3066" used with the Language element. 
-                The Language element identifies the language of the resource described in the record as a whole, whereas xml:lang applies to the language used as content of the element it modifies. 
-            </xf:hint>
+                    <xf:hint> This attribute is used to specify the language used within individual elements, using specifications in RFC 3066. RFC 3066 uses
+                    the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. Using the xml:lang
+                    attribute is equivalent to authority="rfc3066" used with the Language element. The Language element identifies the language of the
+                    resource described in the record as a whole, whereas xml:lang applies to the language used as content of the element it modifies. </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                        <xf:label ref="label"/>
-                        <xf:value ref="value"/>
+                    <xf:label ref="label"/>
+                    <xf:value ref="value"/>
                     </xf:itemset>
-                </xf:select1>
-                <br/>
-                
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: include-->
+                    </xf:select1>
+                    <br/>
+                -->
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: include-->
                 <xf:select1 ref=".[@type='transliterated']/@transliteration" selection="open">
                     <xf:label>Transliteration:</xf:label>
                     <xf:hint>
-                This attribute specifies the transliteration (transcription, romanisation) scheme used within individual elements.
-                When specificing the transliteration used, also specify the language employed.                
-                There is at present no standard list of transliteration schemes available.
-            </xf:hint>
+                        This attribute specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
+                        When specificing the transliteration used, also specify the language employed. 
+                        There is at present no standard list of transliteration schemes available.
+                        If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
+                        In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
+                        If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
+                        The following transliteration schemes are authorised by <!--NB-->:
+                        Chinese: pinyin
+                        Japanese: (modified) Hepburn
+                        Korean: <!--NB-->
+                        Russian: <!--NB-->
+                        Sanskrit: <!--NB-->
+                        If you employ a different, but reccognised, transliteration scheme, you may have it added to the list.                        
+                    </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
-                     
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: include-->
-                <xf:select1 ref=".[not(@type='transliterated') and not(@lang='ger') and not(@lang='eng') and not(@lang='fre')]/@script">
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: include-->
+                <xf:select1 ref=".[not(@type='transliterated')]/@script">
                     <xf:label>Script:</xf:label>
                     <xf:hint>
-                This attribute specifies the script used within individual elements.
-                The use of Latin script is default and is not noted.
-                "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)".                
-            </xf:hint>
+                        This attribute specifies the script used within individual elements. 
+                        The use of Latin script is not noted.
+                        "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". 
+                        If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. 
+                    </xf:hint>
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
                 <br/>
-        
-        <!--DLF/Aquifer: OPTIONAL]]-->
-        <!--Cluster: omit-->
+                <!--DLF/Aquifer: OPTIONAL]]-->
+                <!--Cluster: hide-->
                 <xf:input ref="./@displayLabel" class="text_50">
                     <xf:label>Display Label: </xf:label>
                     <xf:hint>
-                This attribute is intended to be used when additional text associated with the title is needed for display.
-                The Display Label attribute may be used whenever appropriate to indicate the preferred labeling when displayed by a metadata aggregator. 
-                Appropriate cases include titles other than the primary title or subtitle. 
-                Include the text preferred and capitalisation, but do not include delimiters such as colons.                
-             </xf:hint>
+                        This attribute is intended to be used when additional text associated with the title is needed for display. 
+                        The Display Label attribute may be used whenever appropriate to indicate the preferred labeling when displayed. 
+                        Appropriate cases include titles other than the primary title or subtitle. 
+                        Include the text preferred and capitalisation, but do not include delimiters such as colons.
+                    </xf:hint>
                 </xf:input>
                 <br/>
-        
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]]-->
-        <!--Cluster: include-->
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]]-->
+                <!--Cluster: hide-->
                 <xf:input ref="./mods:nonSort" class="text_50">
                     <xf:label>Non Sort: </xf:label>
-                    <xf:hint>
-                Non Sort contains characters, including initial articles (typically "A" and "The" in English), punctuation, and spaces that appear at the beginning of a title that should be ignored for indexing and sorting of titles. 
-            </xf:hint>
+                    <xf:hint> Non Sort contains characters, including initial articles (typically "A" and "The" in English), punctuation, and spaces that appear
+                        at the beginning of a title that should be ignored when indexing and sorting.
+                    </xf:hint>
                 </xf:input>
                 <br/>
-        
-        <!--DLF/Aquifer: [REQUIRED]-->
-        <!--Cluster: require-->
+                <!--DLF/Aquifer: [REQUIRED]-->
+                <!--Cluster: require-->
                 <xf:input ref="./mods:title" class="text_150">
                     <xf:label>Title: </xf:label>
                     <xf:hint>
-                Title contains the core title of the resource catalogued.
-                <br/>
-                At least one Title is required in a record.
-                When no title appears on the item being described, a title should be supplied.
-                <br/>
-                Title includes all parts of a title that are not covered by Non Sort, Subtitle, Part Number and Part Name.
-                <br/>
-                Dates may be recorded under Title or Subtitle only if considered part of the title. 
-                Publication dates are included under Origin Information.
-                <br/>
-                For parallel titles, i.e., equivalent titles in different languages that are not translated by the cataloguer, add a Title Information block and enter the Title there with the Type attribute "alternative" for each parallel title.
-                Note the language, script and transliteration of each title.
-                <br/>
-                For a title translated or transcribed by the cataloguer, add a Title Information block and enter the Title there with the Type attribute "translated" or "transliterated" for each title.
-                Note the language, script and transliteration of each title made in this way.
-                <br/>
-                For abbreviated titles, add a Title Information block and enter the Title there with the Type attribute "abbreviated" for each parallel title.
-                <br/>
-                For uniform titles, i.e., titles with various renderings that are regulated by an authority file, add a Title Information block and enter the Title there with the Type attribute "uniform" for each parallel title. Under each uniform title, state the Authority according to which the uniform title is selected.
-            </xf:hint>
+                        Title contains the core title of the resource catalogued.
+                        <br/>
+                        At least one Title is required. 
+                        When no title appears on the item being described, a title should be supplied.
+                        <br/>
+                        Title includes all parts of a title that are not covered by Non Sort, Subtitle, Part Number and Part Name.
+                        <br/>
+                        Dates may be recorded under Title or Subtitle only if they are part of the title.
+                        Publication dates are included under Origin Information.
+                        <br/>
+                        For parallel titles, i.e., equivalent titles in different languages that have not been translated by the cataloguer, add a Title Information and enter the Title there with the Type attribute "Alternative" for each parallel title. 
+                        Note the language, script and transliteration of each title.
+                        <br/>
+                        For a title translated or transcribed by the cataloguer, add a Title Information and enter the Title there with the Type attribute "Translated" or "Transliterated" for each title. 
+                        Note the language, script and transliteration of each title added in this way.
+                        <br/>
+                        For abbreviated titles, add a Title Information block and enter the Title there with the Type attribute "Abbreviated" for each parallel title. 
+                        <br/>
+                        For uniform titles, i.e., titles with various renderings that are unified by an authority file, add a Title Information and enter the Title there with the Type attribute "Uniform". 
+                        Under each uniform title, state the Authority according to which the uniform title has been selected.
+                    </xf:hint>
                 </xf:input>
                 <br/>
-        
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: include-->
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: include-->
                 <xf:input ref="./mods:subTitle" class="text_150">
                     <xf:label>Subtitle: </xf:label>
-                    <xf:hint>
-                Subtitle is used to record a part of a title deemed secondary to the core portion.
-                <br/>
-                Use Subtitle when a subtitle is present, rather than including the subtitle in Title.
-                <br/>
-                When using Subtitle, do not include punctuation intended to separate the title from the subtitle at the end of Title.
-                <br/>
-                If more than two levels are in evidence in the whole title, i.e. if there is a sub-subtitle, include the sub-subtitle in Subtitle, with relevant punctuation.
-                <!--NB: What are the rules here? Should subTitle repeat?-->
-                Every part of the title that is not the major title, or a part number and part name, belong in Subtitle.            
-            </xf:hint>
+                    <xf:hint> Subtitle is used to record a part of a title deemed secondary to the core title.
+                        <br/>
+                        Use Subtitle whenever a subtitle is present, rather than including the subtitle in Title.
+                        <br/>
+                        When using Subtitle, do not include punctuation intended to separate the title from the subtitle at the end of Title. 
+                        <br/>
+                        If more than two levels are in evidence in the whole title, i.e. if there is a sub-subtitle, include the sub-subtitle in Subtitle, with appropriate punctuation. 
+                        <!--NB: What are the rules here? Should subTitle repeat?-->
+                        Every part of the title that do not belong in Title, Part Number or Part Name, belong in Subtitle.
+                    </xf:hint>
                 </xf:input>
                 <br/>
-        
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: hide-->
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: hide-->
                 <xf:input ref="./mods:partNumber" class="text_50">
                     <xf:label>Part Number: </xf:label>
                     <xf:hint>
-                Part Number is used for a part or section number in a title.
-                <br/>
-                A Part Number does not have to be a digit, i.e. "First Part" may be the contents of Part Number if this is how it occurs on the title page.
-                <br/>
-                Part Number may describe the section of an digital object (for example, an episode number or an audio or video clip).
-                <br/>
-                Use Part Number when a part number is present, rather than including the part number in the text of the Title.
-                <br/>
-                When using Part Number, do not include punctuation at the end of the preceding element intended to separate the part number from previous parts of the title.
-                <br/>
-                Multiple parts of an item should appear in separate records or Related Item elements.
-            </xf:hint>
+                        Part Number is used for a part or section number in a title.
+                        <br/>
+                        A Part Number does not have to be a digit, i.e. "First Part" may be the contents of the Part Number field if this is how it occurs on the title page. 
+                        <br/>
+                        Part Number may describe the section of an digital object (for example, an episode number or an audio or video clip).
+                        <br/>
+                        Use Part Number when a part number is present, rather than including the part number in the text of the Title.
+                        <br/>
+                        When using Part Number, do not include punctuation at the end of the preceding element intended to separate the part number from previous parts of the title. 
+                        <br/>
+                    </xf:hint>
                 </xf:input>
                 <br/>
-        
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: hide-->
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: hide-->
                 <xf:input ref="./mods:partName" class="text_150">
                     <xf:label>Part Name: </xf:label>
                     <xf:hint>
-                Part Name is used for a part or section name of a title.
-                Use Part Name when a part name is present, rather than including the part name in the text of Title.
-                Use Part Name to describe the section or division titles of a digital object (for example, a chapter title, episode name, or an audio or video clip).
-                <br/>
-                <!--NB: not implemented:
-                Multiple Part Name elements may be nested in a single Title Information to describe a single part with multiple hierarchical levels; multiple parts, however, should be separated into multiple Title Information blocks.
-                -->
+                        Part Name is used for a part or section name of a title. 
+                        Use Part Name when a part name is present, rather than including the part name in the text of Title. 
+                        Use Part Name to describe the section or division titles of a digital object (for example, a chapter title, episode name, or an audio or video clip).
                         <br/>
-                When representing the Part Name, do not include punctuation at the end of the preceding element intended to separate the part name from previous parts of the title.
-                <br/>
-                Multiple parts of an item should appear in separate records or as Related Items.
-            </xf:hint>
+                        If a resource has multiple parts, each with its own Part Name, the work should be catalogued in as many records as there are Part Names.
+                        <!--NB: not implemented: Multiple Part Name elements may be nested in a single Title Information to describe a single part with multiple hierarchical levels; multiple parts, however, should be separated into multiple Title Information blocks. -->
+                        <br/>
+                        When representing the Part Name, do not include punctuation at the end of the preceding element intended to separate the part name from previous parts of the title. 
+                        <br/>
+                        <!--Multiple parts of an item should appear in separate records or as Related Items.-->
+                    </xf:hint>
                 </xf:input>
-
-<!--titleInfo input ends-->
-
-<!--titleInfo delete begins-->
+                <!--titleInfo input ends-->
+                <!--titleInfo delete begins-->
             </div>
             <xf:trigger ref="self::node()[count(../mods:titleInfo) &gt; 1]">
                 <xf:label>Delete This Title Information</xf:label>
-                <xf:hint>Hint</xf:hint>
                 <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo" at="index('titleinfo-repeat')"/>
             </xf:trigger>
-
-<!--titleInfo delete ends-->
+            <!--titleInfo delete ends-->
             <div class="hr"/>
         </xf:repeat>
-    
-<!--title repeat ends-->
-             
-<!--titleInfo add begins-->
+        <!--title repeat ends-->
+        <!--titleInfo add begins-->
         <xf:trigger class="add">
             <xf:label>Add Title Information</xf:label>
-            <xf:hint>Hint</xf:hint>
             <xf:action ev:event="DOMActivate">
                 <xf:insert nodeset="mods:titleInfo" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo"/>
                 <xf:setvalue ref="instance('save-data')/mods:titleInfo[last()]" value="''"/>
             </xf:action>
         </xf:trigger>
-            
-<!--titleInfo add ends-->
     </fieldset>
 </div>
