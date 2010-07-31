@@ -35,7 +35,7 @@
             <title>List existing packages</title>
             <programlisting>
             <markup>
-import module namespace repo="http://www.functx.com";
+import module namespace functx="http://www.functx.com";
 
 functx:capitalize-first('hello')
             </markup>
@@ -126,7 +126,7 @@ functx/
             to test installing a package. This is achieved by using controller.xql to identify
         <ul>
             <li>Functx-1.0 <a href="packages/functx-1.0.xar?install=true" target="install">install</a> | <a href="packages/functx-1.0.xar?remove=true" target="remove">remove</a> </li>
-            <li>EXPATH-HTTP-Client-0.1 <a href="packages/expath-http-client-exist-0.1.xar?install=true" target="install">install</a> | <a href="packages/expath-http-client-exist-0.1.xar?remove=true" target="remove">remove</a> </li>
+            <!--li>EXPATH-HTTP-Client-0.1 <a href="packages/expath-http-client-exist-0.1.xar?install=true" target="install">install</a> | <a href="packages/expath-http-client-exist-0.1.xar?remove=true" target="remove">remove</a> </li-->
             <li>XQuery-Json-0.1 <a href="packages/xquery-json-0.1.xar?install=true" target="install">install</a> | <a href="packages/xquery-json-0.1.xar?remove=true" target="remove">remove</a> </li>
             <li>FXSL-1.0 <a href="packages/fxsl-1.0.xar?install=true" target="install">install</a> | <a href="packages/fxsl-1.0.xar?remove=true" target="remove">remove</a></li>
             <li>example app Invoice-1.0 <a href="packages/invoice-1.0.xar?install=true" target="install">install</a> | <a href="packages/invoice-1.0.xar?remove=true" target="remove">remove</a> </li>
@@ -214,7 +214,7 @@ repo:remove('functx-1.0')
     <section>
         <title>FAQ</title>
         <section>
-            <title>Why do we need this ?</title>
+            <title>Why do we need package management ?</title>
         <para>Dependency management is difficult, but its also important to gaurd against 'bloat'. Over the coming weeks/months we will
         be exporting functionality into third party .xar packages and it will reduce eXist core as well make it easy for you 
         to create and distribute your own libraries and applications.</para>
@@ -226,7 +226,8 @@ repo:remove('functx-1.0')
         <section>
             <title>Can I interact with the repository from the commandline ?</title>
         <para>Yes, currently you can run the expath package jar commandline utility againt the eXist package repository. In the future
-            we may extend the expath package specification to suit eXist needs which may make it incompatible.
+            we may extend the expath package specification to suit eXist needs which may make it incompatible. In addition you can use
+            eXist Apache Ant xdb:query Task to install and remove packages.
         </para>
         </section>    
         <section>
