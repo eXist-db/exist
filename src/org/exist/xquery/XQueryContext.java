@@ -347,7 +347,7 @@ public class XQueryContext
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
 
-    // NOTE: expathrepo whilst we figure out managing deps
+    // TODO: expath repo manageer, may change
     private static Repository _repo = null;
 
     private static synchronized Repository getRepo()
@@ -365,7 +365,7 @@ public class XQueryContext
                 }
             }
             catch ( PackageException ex ) {
-                throw new XPathException("Problem setting expath repository", ex);
+                //throw new XPathException("Problem setting expath repository", ex);
             }
         }
         return _repo;
@@ -429,7 +429,7 @@ public class XQueryContext
         Source src = new FileSource(resolved, "utf-8", false);
         return compileOrBorrowModule(prefix, namespace, "", src);
     }
-    // NOTE: expathrepo whilst we figure out managing deps
+    // TODO: end of expath repo manageer, may change
 
 
     protected XQueryContext( AccessContext accessCtx )
