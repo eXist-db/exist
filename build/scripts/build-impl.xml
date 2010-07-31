@@ -599,7 +599,7 @@
         <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xqdoc" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/cocoon" target="clean" inheritall="false"/>
-        <ant antfile="xprocxq.xml" dir="extensions" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xslt" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
@@ -698,7 +698,7 @@
     </target>
     
     <target name="extension-xprocxq" depends="jar">
-        <ant antfile="xprocxq.xml" dir="extensions" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/xprocxq" inheritall="false"/>
     </target>
     
     <target name="samples" depends="jar" description="Build samples">
