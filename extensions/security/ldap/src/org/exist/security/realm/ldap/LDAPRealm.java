@@ -19,14 +19,24 @@
  *  
  *  $Id$
  */
-package org.exist.security.ldap;
+package org.exist.security.realm.ldap;
 
 import java.util.Collection;
 
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapContext;
+
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.config.Configurable;
+import org.exist.config.Configuration;
+import org.exist.config.Configurator;
+import org.exist.config.annotation.*;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.UserImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 
@@ -34,9 +44,34 @@ import org.exist.storage.DBBroker;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class LDAPRealm implements Realm {
+@ConfigurationClass("LDAP")
+public class LDAPRealm implements Realm, Configurable {
 
-	@Override
+	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+
+    private LdapContextFactory ldapContextFactory = null;
+    
+    private Configuration configuration = null;
+    
+    public LDAPRealm(Configuration config) {
+    	configuration = Configurator.configure(this, config);
+    }
+
+    protected LdapContextFactory ensureContextFactory() {
+        if (this.ldapContextFactory == null) {
+
+            if (LOG.isDebugEnabled()) {
+            	LOG.debug("No LdapContextFactory specified - creating a default instance.");
+            }
+
+            LdapContextFactory factory = new LdapContextFactory(configuration);
+
+            this.ldapContextFactory = factory;
+        }
+        return this.ldapContextFactory;
+    }
+
+    @Override
 	public String getId() {
 		// TODO Auto-generated method stub
 		return null;
@@ -100,6 +135,33 @@ public class LDAPRealm implements Realm {
 	public void startUp(DBBroker broker) throws EXistException {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public User authenticate(String username, Object credentials) throws AuthenticationException {
+		// Binds using the username and password provided by the user.
+        LdapContext ctx = null;
+        try {
+			ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
+		
+        } catch (NamingException e) {
+			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+        
+        } finally {
+            LdapUtils.closeContext(ctx);
+        }
+        
+        return new UserImpl(this, username);
+	}
+
+	//configurable methods
+	@Override
+	public boolean isConfigured() {
+		return (configuration != null);
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 }
