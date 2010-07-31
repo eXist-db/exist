@@ -365,6 +365,7 @@ public class XQueryContext
                 }
             }
             catch ( PackageException ex ) {
+                // problem with pck-repo.jar throwing exception 
                 //throw new XPathException("Problem setting expath repository", ex);
             }
         }
