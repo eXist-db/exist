@@ -133,7 +133,7 @@
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
                maxmemory="${junit.forked.VM.maxmemory}">
-            <sysproperty key="exist.home" value="${top.dir}"/>
+            <!--sysproperty key="exist.home" value="${top.dir}"/-->
 
             <classpath>
                 <path refid="classpath.core"/>
