@@ -1,15 +1,13 @@
 <!-- $Id$ -->
 <project basedir="." default="all" name="fluent">
 
-    <property name="exist.home" value="../.."/>
-    
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
     <property name="test" value="./test"/>
     <property name="javadoc" value="./javadoc"/>
     <property name="top.dir" value="../.."/>
     <property file="${top.dir}/build.properties" />
-    
+
     <property file="../local.build.properties"/>
     <property file="../build.properties" />
     
@@ -135,7 +133,7 @@
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
                maxmemory="${junit.forked.VM.maxmemory}">
-            <sysproperty key="exist.home" value="${basedir}"/>
+            <sysproperty key="exist.home" value="${top.dir}"/>
 
             <classpath>
                 <path refid="classpath.core"/>
