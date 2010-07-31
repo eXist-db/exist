@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.Properties;
 
@@ -227,10 +228,13 @@ public abstract class TestCase {
 							} catch (Exception e) {
 							}
 							
-							//workaround problematic results
-							if (expResult.equals("<?pi ?>") && (res.equals("<?pi?>")))
-								;
-							else if (!ok) return false;
+							if (!ok) { 
+								//workaround problematic results
+								if (expResult.equals("<?pi ?>") && (res.equals("<?pi?>")))
+									;
+								else
+									return false;
+							}
 							
 						} else {
 							//workaround problematic results
@@ -321,22 +325,45 @@ public abstract class TestCase {
 	}
 	
     public NodeImpl loadVarFromURI(XQueryContext context, String uri) throws IOException {
+        SAXAdapter adapter = new SAXAdapter(context);
+
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        
+        XMLReader xr;
 		try {
+			SAXParser parser = factory.newSAXParser();
+
+			xr = parser.getXMLReader();
+			xr.setContentHandler(adapter);
+			xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+        
+        try {
 //			URL url = new URL(uri);
 //			InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(uri), "UTF-8");
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
             InputSource src = new InputSource(isr);
-            SAXParser parser = factory.newSAXParser();
-            XMLReader xr = parser.getXMLReader();
-            SAXAdapter adapter = new SAXAdapter(context);
-            xr.setContentHandler(adapter);
-            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
             isr.close();
             return (NodeImpl) adapter.getDocument();
-		} catch (Exception e) {
+		} catch (SAXException e) {
+			
+			//workaround BOM
+			if (e.getMessage().equals("Content is not allowed in prolog.")) {
+	            try {
+	            	String xml = readFileAsString(new File(uri));
+	            	xml = xml.trim().replaceFirst("^([\\W]+)<","<");
+	            	InputSource src = new InputSource(new StringReader(xml));
+					xr.parse(src);
+		            return (NodeImpl) adapter.getDocument();
+				} catch (SAXException e1) {
+					throw new IOException(e);
+				}
+			}
 			throw new IOException(e);
         }
     }
