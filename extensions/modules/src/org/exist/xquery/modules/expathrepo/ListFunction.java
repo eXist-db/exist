@@ -35,8 +35,6 @@ public class ListFunction extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "sequence of strings"));
 
-    private static Repository _repo = null;
-
 	public ListFunction(XQueryContext context) {
 		super(context, signature);
  	}
@@ -45,21 +43,12 @@ public class ListFunction extends BasicFunction {
 		throws XPathException {
         ValueSequence result = new ValueSequence();
         try {
-            String existHome = System.getProperty("exist.home");            
-            if (existHome != null){
-                new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();
-                _repo = new Repository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
 
-            }else{
-                new File( System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
-                _repo = new Repository(new File( System.getProperty("java.io.tmpdir") + "/expathrepo"));
-            }
-
-            for ( File p : _repo.listPackages() ) {
+            for ( File p :  ExpathPackageModule._repo.listPackages() ) {
                 System.out.println(p);
                 result.add(new StringValue(p.getName()));
             }
-        } catch (PackageException ex ) {
+        } catch (Exception ex ) {
             throw new XPathException("Problem listing packages in expath repository ", ex);
         }
         return result;
