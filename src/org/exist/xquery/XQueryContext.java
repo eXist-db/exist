@@ -365,8 +365,8 @@ public class XQueryContext
                 }
             }
             catch ( PackageException ex ) {
-                // problem with pck-repo.jar throwing exception 
-                //throw new XPathException("Problem setting expath repository", ex);
+                // problem with pkg-repo.jar throwing exception
+                throw new XPathException("Problem setting expath repository", ex);
             }
         }
         return _repo;
@@ -419,6 +419,7 @@ public class XQueryContext
                 resolved = repo.resolveFile(namespace, URISpace.XQUERY);
             }
             catch ( PackageException ex ) {
+                // problem with pkg-repo.jar throwing exception                
                 throw new XPathException("Problem resolving package from expath repository", ex);
             }
         }
