@@ -126,6 +126,7 @@ functx/
             to test installing a package. This is achieved by using controller.xql to identify
         <ul>
             <li><a href="packages/functx-1.0.xar?install=true" target="install">one-click install Functx-1.0</a> </li>
+            <li><a href="packages/xquery-json-0.1.xar?install=true" target="install">one-click install XQuery-Json-0.1</a> </li>
             <li><a href="packages/fxsl-1.0.xar?install=true" target="install">one-click install FXSL-1.0</a> </li>
             <li><a href="packages/invoice-1.0.xar?install=true" target="install">one-click install example app Invoice-1.0</a> </li>
         </ul>
