@@ -125,10 +125,10 @@ functx/
         <para>We have shipped a few .xar packages in the <a href="http://127.0.0.1:8080/exist/repo/packages" target="dir">.xar directory</a> which you can use
             to test installing a package. This is achieved by using controller.xql to identify
         <ul>
-            <li><a href="packages/functx-1.0.xar?install=true" target="install">one-click install Functx-1.0</a> </li>
-            <li><a href="packages/xquery-json-0.1.xar?install=true" target="install">one-click install XQuery-Json-0.1</a> </li>
-            <li><a href="packages/fxsl-1.0.xar?install=true" target="install">one-click install FXSL-1.0</a> </li>
-            <li><a href="packages/invoice-1.0.xar?install=true" target="install">one-click install example app Invoice-1.0</a> </li>
+            <li>Functx-1.0 <a href="packages/functx-1.0.xar?install=true" target="install">install</a> | <a href="packages/functx-1.0.xar?remove=true" target="remove">remove</a> </li>
+            <li>XQuery-Json-0.1 <a href="packages/xquery-json-0.1.xar?install=true" target="install">install</a> | <a href="packages/xquery-json-0.1.xar?remove=true" target="remove">remove</a> </li>
+            <li>FXSL-1.0 <a href="packages/fxsl-1.0.xar?install=true" target="install">install</a> | <a href="packages/fxsl-1.0.xar?remove=true" target="remove">remove</a></li>
+            <li>example app Invoice-1.0 <a href="packages/invoice-1.0.xar?install=true" target="install">install</a> | <a href="packages/invoice-1.0.xar?remove=true" target="remove">remove</a> </li>
         </ul>
     </para>
 <para>

@@ -5,7 +5,8 @@ import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
 let $uri := request:get-uri()
 let $context := request:get-context-path()
-let $install :=  request:get-parameter('install','no')
+let $install :=  request:get-parameter('install','')
+let $remove :=  request:get-parameter('remove','')
 let $path := substring-after($uri, $context)
 let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
@@ -13,14 +14,22 @@ return
 	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<redirect url="examples.xml"/>
     	</dispatch>
-    else if (ends-with($uri, '.xar') and $install eq 'true') then
+    else if (ends-with($uri, '.xar')) then
+
+     if($install eq 'true') then
        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="../install-package.xqy">
                 <add-parameter name="url" value="{$uri}"/>
             </forward>
         </dispatch>
-
-
+     else if ($remove eq 'true') then
+       <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="../remove-package.xqy">
+                <add-parameter name="name" value="{substring-before($name,'.xar')}"/>
+            </forward>
+        </dispatch>
+     else
+        ()     
     else if (ends-with($uri, '.xml')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<view>
