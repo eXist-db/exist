@@ -47,7 +47,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2010-07-27";
     public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
-    private static Repository _repo = null;
+    public static Repository _repo = null;
 
     private final static FunctionDef[] functions = {
         new FunctionDef(ListFunction.signature, ListFunction.class),
@@ -103,5 +103,8 @@ public class ExpathPackageModule extends AbstractInternalModule {
 
         return _repo;
     }
+
+
+    
 
 }

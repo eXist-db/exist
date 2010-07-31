@@ -36,8 +36,6 @@ public class InstallFunction extends BasicFunction {
 			new SequenceType[] { new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ZERO_OR_MORE, "package name")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
 
-    private static Repository _repo = null;
-
 	public InstallFunction(XQueryContext context) {
 		super(context, signature);
  	}
@@ -48,32 +46,25 @@ public class InstallFunction extends BasicFunction {
         boolean force = true;
         UserInteractionStrategy interact = new BatchUserInteraction();
         String pkg = args[0].getStringValue();
-        URI uri = getURI(pkg);
+        URI uri = _getURI(pkg);
         try {
-            String existHome = System.getProperty("exist.home");
-            if (existHome != null){
-                new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();
-                _repo = new Repository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
-            }else{
-                new File( System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
-                _repo = new Repository(new File( System.getProperty("java.io.tmpdir") + "/expathrepo"));
-            }
+
             if ( pkg == null ) {
                 System.err.println("Package name required");
             }
             else {
-                _repo.installPackage(uri,force,interact);
+                ExpathPackageModule._repo.installPackage(uri,force,interact);
             }
             removed = BooleanValue.TRUE;
         } catch (PackageException ex ) {
-            //return removed;
+            return removed;
             // /TODO: _repo.removePackage seems to throw PackageException
-            throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
+            //throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
         }
         return removed;
 	}
 
-    private URI getURI(String s)
+    private URI _getURI(String s)
     {
         URI uri;
         try {

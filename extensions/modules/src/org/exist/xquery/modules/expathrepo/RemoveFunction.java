@@ -34,9 +34,6 @@ public class RemoveFunction extends BasicFunction {
 			new SequenceType[] { new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ZERO_OR_MORE, "package name")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
 
-
-    private static Repository _repo = null;
-
 	public RemoveFunction(XQueryContext context) {
 		super(context, signature);
  	}
@@ -49,19 +46,11 @@ public class RemoveFunction extends BasicFunction {
         String pkg = args[0].getStringValue();
 
         try {
-            String existHome = System.getProperty("exist.home");
-            if (existHome != null){
-                new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();
-                _repo = new Repository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
-            }else{
-                new File( System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
-                _repo = new Repository(new File( System.getProperty("java.io.tmpdir") + "/expathrepo"));
-            }
             if ( pkg == null ) {
                 System.err.println("Package name required");
             }
             else {
-                _repo.removePackage(pkg, force, interact);
+                ExpathPackageModule._repo.removePackage(pkg, force, interact);
             }
         } catch (PackageException ex ) {
             return removed;
