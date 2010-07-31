@@ -31,7 +31,7 @@ public class QueryServiceTest extends DatabaseTestCase {
 		assertEquals("foo", f.query().single("$_1", "foo").value());
 		f.query().single("$_1");
 	}
-	
+/*	
 	@Test public void importModule1() {
 		Folder f = db.getFolder("/");
 		Document doc = f.documents().load(Name.create("module1"), Source.blob(
@@ -88,7 +88,7 @@ public class QueryServiceTest extends DatabaseTestCase {
 		QueryService qs = db.query(doc1).importModule(module);
 		assertEquals(1, qs.all("/").size());
 		assertEquals(1, qs.all("ex:root()").size());
-	}
+	}*/
 	
 	@Test public void limitRootDocuments1() {
 		Folder f = db.getFolder("/");
