@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://expath.org/ns/pkg">
+   <module name="math" version="1.0">
+      <title>Math extension packaged as xar</title>
+      <exist>
+         <jar>math.jar</jar>
+         <java>
+            <namespace>http://exist-db.org/xquery/math</namespace>
+            <class>org.exist.xquery.modules.math.MathModule</class>
+         </java>
+      </exist>
+   </module>
+</package>
