@@ -53,7 +53,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     private Map<String, String> namespaces     = null;
     private boolean             explicitNSDecl = false;
-
+    
+    public boolean checkNS = false;
+    
     public DocumentBuilderReceiver()
     {
         super();
@@ -162,8 +164,11 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     public void startElement( QName qname, AttrList attribs )
     {
-        builder.startElement( qname, null );
-        declareNamespaces();
+    	qname = checkNS(qname);
+
+    	builder.startElement( qname, null );
+        
+    	declareNamespaces();
 
         if( attribs != null ) {
 
@@ -219,6 +224,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     public void attribute( QName qname, String value ) throws SAXException
     {
         try {
+        	qname = checkNS(qname);
             builder.addAttribute( qname, value );
         }
         catch( DOMException e ) {
@@ -336,5 +342,38 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     public void setCurrentNode( StoredNode node )
     {
         // ignored
+    }
+    
+    public QName checkNS( QName qname ) {
+		if (checkNS) {
+			
+			if (qname.getPrefix() == null || qname.getPrefix().equals("") || qname.getNamespaceURI() == null)
+				return qname;
+			
+			XQueryContext context = builder.getContext();
+			
+			String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
+			
+			if (inScopeNamespace == null) {
+				context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
+
+			} else if (inScopeNamespace != qname.getNamespaceURI()) {
+				String prefix = context.getInScopePrefix(qname.getNamespaceURI());
+				
+				int i = 0;
+				while (prefix == null) {
+					prefix = "XXX";
+					if (i > 0) prefix += String.valueOf(i);
+					if (context.getInScopeNamespace(prefix) != null) {
+						prefix = null;
+						i++;
+					}
+				}
+				context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
+				
+				qname.setPrefix(prefix);
+			}
+		}
+		return qname;
     }
 }
