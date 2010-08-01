@@ -204,6 +204,21 @@ We will probably be repackaging all existing extensions to take advantage of thi
     <ul>
         <li>Math-1.0 <a href="packages/math-1.0.xar?install=true" target="install">install</a> | <a href="packages/math-1.0.xar?remove=true" target="remove">remove</a> </li>
     </ul>
+
+Once you have installed and restarted eXist you should now be able to use math functions.    
+<example>
+            <title>List existing packages</title>
+            <programlisting>
+            <markup>
+import module namespace math="http://exist-db.org/xquery/math";
+
+math:pi()
+            </markup>
+            </programlisting>
+    <a href="/exist/rest/db?_query=import module namespace math='http://exist-db.org/xquery/math';math:pi()" target="_example">click here to test math function</a>
+
+</example>
+
 </para>
     </section>
 
