@@ -3,8 +3,8 @@
     <bookinfo>
         <graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>Package Management Repository</title>
-    	<subject>Package Management Repository</subject>
+        <title>Package Repository</title>
+    	<subject>Package Repository</subject>
     	<date>July 2010</date>
         <author>
             <firstname>James</firstname>
@@ -284,6 +284,12 @@ repo:remove('functx-1.0')
 
 </example>
  </para>
+<para>
+ <important>
+    <para>These functions will soon be usable only by DBA user, as we are still developing they will be
+    available by guest user for short period of time.</para>
+</important>
+</para>
  </section>
 
     </section>
@@ -313,7 +319,7 @@ repo:remove('functx-1.0')
             <title>Can I interact with the repository from the commandline ?</title>
         <para>Yes, currently you can run the expath package jar commandline utility againt the eXist package repository. In the future
             we may extend the expath package specification to suit eXist needs which may make it incompatible. In addition you can use
-            eXist Apache Ant xdb:query Task to install and remove packages.
+            eXist Apache Ant <a href="http://127.0.0.1:8080/exist/ant-tasks.xml#N1041F" target="ant">xdb:query</a> Task to install and remove packages.
         </para>
         </section>    
         <section>
