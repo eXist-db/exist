@@ -122,7 +122,7 @@ public class ModuleContext extends XQueryContext {
             modules.remove(namespaceURI);   // unbind the module
         } else {
             modules.put(namespaceURI, module);
-            if (!module.isInternalModule()) {
+            if (!module.isInternalModule() && module.isReady()) {
                 ((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(parentContext);
             }
         }
@@ -138,7 +138,7 @@ public class ModuleContext extends XQueryContext {
     }
 
     public XQueryContext getRootContext() {
-        return parentContext;
+        return parentContext.getRootContext();
     }
 
     public void updateContext(XQueryContext from) {

@@ -1472,6 +1472,9 @@ public class XQueryContext
         }
 
         for( Module module : modules.values() ) {
+            if (module instanceof ExternalModule && ((ModuleContext)((ExternalModule)module).getContext()).getParentContext() != this) {
+                continue;
+            }
             module.reset( this );
         }
 
@@ -1627,7 +1630,7 @@ public class XQueryContext
         } else {
             modules.put( namespaceURI, module );
 
-            if( !module.isInternalModule() ) {
+            if( !module.isInternalModule() && module.isReady() ) {
                 ( (ModuleContext)( (ExternalModule)module ).getContext() ).setParentContext( this );
             }
         }
@@ -2848,10 +2851,13 @@ public class XQueryContext
         catch( IOException e ) {
             throw( new XPathException( "IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e ) );
         }
+        ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
+        setModule(namespaceURI, modExternal);
         XQueryContext    modContext = new ModuleContext( this, prefix, namespaceURI, location );
+        modExternal.setContext( modContext );
         XQueryLexer      lexer      = new XQueryLexer( modContext, reader );
         XQueryParser     parser     = new XQueryParser( lexer );
-        XQueryTreeParser astParser  = new XQueryTreeParser( modContext );
+        XQueryTreeParser astParser  = new XQueryTreeParser( modContext, modExternal );
 
         try {
             parser.xpath();
@@ -2869,7 +2875,6 @@ public class XQueryContext
                 throw( new XPathException( "error found while loading module from " + location + ": " + astParser.getErrorMessage(), astParser.getLastException() ) );
             }
             path.analyze( new AnalyzeContextInfo() );
-            ExternalModule modExternal = astParser.getModule();
 
             if( modExternal == null ) {
                 throw( new XPathException( "source at " + location + " is not a valid module" ) );
@@ -2887,7 +2892,7 @@ public class XQueryContext
 //            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
 
             modExternal.setSource( source );
-            modExternal.setContext( modContext );
+            modExternal.setIsReady(true);
             return( modExternal );
         }
         catch( RecognitionException e ) {
@@ -2953,7 +2958,7 @@ public class XQueryContext
     {
         while( !forwardReferences.empty() ) {
             FunctionCall        call = forwardReferences.pop();
-            UserDefinedFunction func = resolveFunction( call.getQName(), call.getArgumentCount() );
+            UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
 
             if( func == null ) {
                 throw( new XPathException( call, "err:XPST0017: Call to undeclared function: " + call.getQName().getStringValue() ) );

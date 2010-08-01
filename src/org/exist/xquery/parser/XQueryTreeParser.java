@@ -23,7 +23,7 @@
 	import org.exist.dom.DocumentImpl;
 	import org.exist.dom.QName;
 	import org.exist.security.PermissionDeniedException;
-	import org.exist.security.UserImpl;
+	import org.exist.security.User;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;
@@ -57,11 +57,16 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	protected boolean foundError= false;
 	protected Map declaredNamespaces = new HashMap();
 	protected Set declaredGlobalVars = new TreeSet();
-	
+
 	public XQueryTreeParser(XQueryContext context) {
+        this(context, null);
+	}
+
+	public XQueryTreeParser(XQueryContext context, ExternalModule module) {
 		this();
-                this.staticContext = new XQueryContext(context);
+        this.staticContext = new XQueryContext(context);
 		this.context= context;
+		this.myModule = module;
 	}
 
 	public ExternalModule getModule() {
@@ -3172,7 +3177,10 @@ public XQueryTreeParser() {
 		match(_t,STRING_LITERAL);
 		_t = _t.getNextSibling();
 		
+		if (myModule == null)
 		myModule = new ExternalModuleImpl(uri.getText(), m.getText());
+		else
+		myModule.setNamespace(m.getText(), uri.getText());
 		context.declareNamespace(m.getText(), uri.getText());
 		staticContext.declareNamespace(m.getText(), uri.getText());
 		
