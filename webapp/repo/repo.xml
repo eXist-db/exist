@@ -29,6 +29,8 @@
              to be used by your own XQuery. Soon we will also have support for being able to deploy and manage
              other XML technologies like XSLT, Xproc, Schema, and data/resources.
          </para>
+         <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
+
         <para>
             Using an XQuery package in the repository is as simple as importing it the normal way.
 <example>
@@ -47,9 +49,6 @@ functx:capitalize-first('hello')
             from the repository. You can <a href="/exist/rest/db?_query=import%20module%20namespace%20repo=%22http://exist-db.org/xquery/repo%22;%20repo:list%28%29" target="list">list installed packages</a>
 to see if Functx module is now installed.</para>
         <para>
-            <important>
-                <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
-            </important>
             <important>
                 <para>Any newly installed packages still requires you to restart eXistdb, a limitation we will be addressing in the near future.</para>
             </important>
